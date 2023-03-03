@@ -123,8 +123,8 @@ def slicer(
         as slices. The key method of this object is ``display_extent`` where
         one can input grid coordinates and display the slice in space (or grid)
         coordinates as calculated by the affine parameter.
-
     """
+
     if value_range is None:
         value_range = (data.min(), data.max())
 
@@ -351,28 +351,28 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
         The point cloud defining the surface.
     faces : array
         An array of precomputed triangulation for the point cloud.
-        It is an optional parameter, it is computed locally if None
+        It is an optional parameter, it is computed locally if None.
     colors : (N, 3) array
         Specifies the colors associated with each vertex in the
         vertices array. Range should be 0 to 1.
         Optional parameter, if not passed, all vertices
-        are colored white
+        are colored white.
     smooth : string - "loop" or "butterfly"
         Defines the type of subdivision to be used
-        for smoothing the surface
+        for smoothing the surface.
     subdivision : integer, default = 3
         Defines the number of subdivisions to do for
         each triangulation of the point cloud.
         The higher the value, smoother the surface
-        but at the cost of higher computation
+        but at the cost of higher computation.
 
     Returns
     -------
     surface_actor : Actor
         An Actor visualizing the final surface
         computed from the point cloud is returned.
-
     """
+
     from scipy.spatial import Delaunay
 
     points = Points()
@@ -438,8 +438,8 @@ def contour_from_roi(data, affine=None, color=np.array([1, 0, 0]), opacity=1):
     contour_assembly : vtkAssembly
         ROI surface object displayed in space
         coordinates as calculated by the affine parameter.
-
     """
+
     if data.ndim != 3:
         raise ValueError('Only 3D arrays are currently supported.')
 
@@ -555,8 +555,8 @@ def contour_from_label(data, affine=None, color=None):
         Array surface object displayed in space
         coordinates as calculated by the affine parameter
         in the order of their roi ids.
-
     """
+
     unique_roi_id = np.delete(np.unique(data), 0)
 
     nb_surfaces = len(unique_roi_id)
@@ -602,7 +602,6 @@ def streamtube(
     ----------
     lines : list
         list of N curves represented as 2D ndarrays
-
     colors : array (N, 3), list of arrays, tuple (3,), array (K,)
         If None or False, a standard orientation colormap is used for every
         line.
@@ -622,7 +621,6 @@ def streamtube(
         streamline.
         If an array (X, Y, Z) or (X, Y, Z, 3) is given then the values for the
         colormap are interpolated automatically using trilinear interpolation.
-
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque). Default is 1.
     linewidth : float, optional
@@ -672,8 +670,8 @@ def streamtube(
     See Also
     --------
     :func:`fury.actor.line`
-
     """
+
     # Poly data with lines and colors
     poly_data, color_is_scalar = lines_to_vtk_polydata(lines, colors)
     next_input = poly_data
@@ -758,9 +756,8 @@ def line(
     """Create an actor for one or more lines.
 
     Parameters
-    ------------
+    ----------
     lines :  list of arrays
-
     colors : array (N, 3), list of arrays, tuple (3,), array (K,)
         If None or False, a standard orientation colormap is used for every
         line.
@@ -780,10 +777,8 @@ def line(
         streamline.
         If an array (X, Y, Z) or (X, Y, Z, 3) is given then the values for the
         colormap are interpolated automatically using trilinear interpolation.
-
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque). Default is 1.
-
     linewidth : float, optional
         Line thickness. Default is 1.
     spline_subdiv : int, optional
@@ -807,12 +802,12 @@ def line(
         Add shading to lines to approximate the look of tubes.
 
     Returns
-    ----------
+    -------
     v : Actor or LODActor object
         Line.
 
     Examples
-    ----------
+    --------
     >>> from fury import actor, window
     >>> scene = window.Scene()
     >>> lines = [np.random.rand(10, 3), np.random.rand(20, 3)]
@@ -820,8 +815,8 @@ def line(
     >>> c = actor.line(lines, colors)
     >>> scene.add(c)
     >>> #window.show(scene)
-
     """
+
     # Poly data with lines and colors
     poly_data, color_is_scalar = lines_to_vtk_polydata(lines, colors)
     next_input = poly_data
@@ -882,7 +877,7 @@ def line(
 
 
 def scalar_bar(lookup_table=None, title=' '):
-    """Default scalar bar actor for a given colormap (colorbar)
+    """Default scalar bar actor for a given colormap (colorbar).
 
     Parameters
     ----------
@@ -897,8 +892,8 @@ def scalar_bar(lookup_table=None, title=' '):
     See Also
     --------
     :func:`fury.actor.colormap_lookup_table`
-
     """
+
     lookup_table_copy = LookupTable()
     if lookup_table is None:
         lookup_table = colormap_lookup_table()
@@ -934,8 +929,8 @@ def axes(
     Returns
     -------
     arrow_actor: Actor
-
     """
+
     centers = np.zeros((3, 3))
     dirs = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
     colors = np.array([colorx + (opacity,), colory + (opacity,), colorz + (opacity,)])
@@ -958,8 +953,7 @@ def odf_slicer(
     global_cm=False,
     B_matrix=None,
 ):
-    """
-    Create an actor for rendering a grid of ODFs given an array of
+    """Create an actor for rendering a grid of ODFs given an array of
     spherical function (SF) or spherical harmonics (SH) coefficients.
 
     Parameters
@@ -996,10 +990,11 @@ def odf_slicer(
         to be expressed in SF coefficients.
 
     Returns
-    ---------
+    -------
     actor : OdfSlicerActor
         Actor representing the ODF field.
     """
+
     # first we check if the input array is 4D
     n_dims = len(odfs.shape)
     if n_dims != 4:
@@ -1065,13 +1060,12 @@ def _roll_evals(evals, axis=-1):
     """Check evals shape.
 
     Helper function to check that the evals provided to functions calculating
-    tensor statistics have the right shape
+    tensor statistics have the right shape.
 
     Parameters
     ----------
     evals : array-like
         Eigenvalues of a diffusion tensor. shape should be (...,3).
-
     axis : int
         The axis of the array which contains the 3 eigenvals. Default: -1
 
@@ -1080,8 +1074,8 @@ def _roll_evals(evals, axis=-1):
     evals : array-like
         Eigenvalues of a diffusion tensor, rolled so that the 3 eigenvals are
         the last axis.
-
     """
+
     if evals.shape[-1] != 3:
         msg = 'Expecting 3 eigenvalues, got {}'.format(evals.shape[-1])
         raise ValueError(msg)
@@ -1115,8 +1109,8 @@ def _fa(evals, axis=-1):
         FA = \sqrt{\frac{1}{2}\frac{(\lambda_1-\lambda_2)^2+(\lambda_1-
                     \lambda_3)^2+(\lambda_2-\lambda_3)^2}{\lambda_1^2+
                     \lambda_2^2+\lambda_3^2}}
-
     """
+
     evals = _roll_evals(evals, axis)
     # Make sure not to get nans
     all_zero = (evals == 0).all(axis=0)
@@ -1131,15 +1125,14 @@ def _fa(evals, axis=-1):
 
 
 def _color_fa(fa, evecs):
-    r"""Color fractional anisotropy of diffusion tensor
+    r"""Color fractional anisotropy of diffusion tensor.
 
     Parameters
     ----------
     fa : array-like
-        Array of the fractional anisotropy (can be 1D, 2D or 3D)
-
+        Array of the fractional anisotropy (can be 1D, 2D or 3D).
     evecs : array-like
-        eigen vectors from the tensor model
+        eigen vectors from the tensor model.
 
     Returns
     -------
@@ -1149,9 +1142,8 @@ def _color_fa(fa, evecs):
 
     Notes
     -----
-
     It is computed from the clipped FA between 0 and 1 using the following
-    formula
+    formula.
 
     .. math::
 
@@ -1200,11 +1192,11 @@ def tensor_slicer(
         Default None, color the ellipsoids using ``color_fa``
 
     Returns
-    ---------
+    -------
     tensor_actor : Actor
         Ellipsoid
-
     """
+
     if not evals.shape == evecs.shape[:-1]:
         raise RuntimeError(
             "Eigenvalues shape {} is incompatible with eigenvectors' {}."
@@ -1284,15 +1276,15 @@ def _tensor_slicer_mapper(
     Parameters
     ----------
     evals : (3,) or (X, 3) or (X, Y, 3) or (X, Y, Z, 3) ndarray
-        eigenvalues
+        eigenvalues.
     evecs : (3, 3) or (X, 3, 3) or (X, Y, 3, 3) or (X, Y, Z, 3, 3) ndarray
-        eigenvectors
+        eigenvectors.
     affine : array
-        4x4 transformation array from native coordinates to world coordinates
+        4x4 transformation array from native coordinates to world coordinates.
     mask : ndarray
-        3D mask
+        3D mask.
     sphere : Sphere
-        a sphere
+        a sphere.
     scale : float
         Distance between spheres.
     norm : bool
@@ -1302,11 +1294,11 @@ def _tensor_slicer_mapper(
         Default None, color the ellipsoids using ``color_fa``
 
     Returns
-    ---------
+    -------
     mapper : vtkPolyDataMapper
         Ellipsoid mapper
-
     """
+
     mask = np.ones(evals.shape[:3]) if mask is None else mask
 
     ijk = np.ascontiguousarray(np.array(np.nonzero(mask)).T)
@@ -1394,19 +1386,19 @@ def peak_slicer(
     ----------
     peaks_dirs : ndarray
         Peak directions. The shape of the array can be (M, 3) or (X, M, 3) or
-        (X, Y, M, 3) or (X, Y, Z, M, 3)
+        (X, Y, M, 3) or (X, Y, Z, M, 3).
     peaks_values : ndarray
         Peak values. The shape of the array can be (M, ) or (X, M) or
-        (X, Y, M) or (X, Y, Z, M)
+        (X, Y, M) or (X, Y, Z, M).
     affine : array
-        4x4 transformation array from native coordinates to world coordinates
+        4x4 transformation array from native coordinates to world coordinates.
     mask : ndarray
-        3D mask
+        3D mask.
     colors : tuple or None
         Default red color. If None then every peak gets an orientation color
         in similarity to a DEC map.
     opacity : float, optional
-        Takes values from 0 (fully transparent) to 1 (opaque)
+        Takes values from 0 (fully transparent) to 1 (opaque).
     linewidth : float, optional
         Line thickness. Default is 1.
     lod : bool
@@ -1429,8 +1421,8 @@ def peak_slicer(
     See Also
     --------
     :func:`fury.actor.odf_slice`
-
     """
+
     peaks_dirs = np.asarray(peaks_dirs)
     if peaks_dirs.ndim > 5:
         raise ValueError('Wrong shape')
@@ -1555,7 +1547,7 @@ def peak(
         :func:`fury.actor.colormap_lookup_table`.
     linewidth : float, optional
         Line thickness. Default is 1.
-    symmetric: bool, optional
+    symmetric : bool, optional
         If True, peaks are drawn for both peaks_dirs and -peaks_dirs. Else,
         peaks are only drawn for directions given by peaks_dirs. Default is
         True.
@@ -1567,7 +1559,7 @@ def peak(
         magnitudes.
 
     Examples
-    ----------
+    --------
     >>> from fury import actor, window
     >>> import numpy as np
     >>> scene = window.Scene()
@@ -1575,8 +1567,8 @@ def peak(
     >>> c = actor.peak(peak_dirs)
     >>> scene.add(c)
     >>> #window.show(scene)
-
     """
+
     if peaks_dirs.ndim != 5:
         raise ValueError(
             'Invalid peak directions. The shape of the structure '
@@ -1639,15 +1631,14 @@ def peak(
 
 
 def dot(points, colors=None, opacity=None, dot_size=5):
-    """
-    Create one or more 3d points.
+    """Create one or more 3d points.
 
     Parameters
     ----------
     points : ndarray, (N, 3)
-        dots positions
+        dots positions.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If a value is given, each dot will have the same opacity otherwise
@@ -1656,14 +1647,14 @@ def dot(points, colors=None, opacity=None, dot_size=5):
     dot_size : int
 
     Returns
-    --------
+    -------
     dot_actor: Actor
 
     See Also
-    ---------
+    --------
     :func:`fury.actor.point`
-
     """
+
     if points.ndim != 2:
         raise ValueError(
             'Invalid points. The shape of the structure must be '
@@ -1751,7 +1742,6 @@ def point(points, colors, point_radius=0.1, phi=8, theta=8, opacity=1.0):
     >>> point_actor = actor.point(pts, window.colors.coral)
     >>> scene.add(point_actor)
     >>> # window.show(scene)
-
     """
     return sphere(
         centers=points,
@@ -1776,20 +1766,20 @@ def sphere(
     opacity=1,
     use_primitive=False,
 ):
-    """Visualize one or many spheres with different colors and radii
+    """Visualize one or many spheres with different colors and radii.
 
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        Spheres positions
+        Spheres positions.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     radii : float or ndarray, shape (N,)
-        Sphere radius
+        Sphere radius.
     phi : int, optional
-        Set the number of points in the latitude direction
+        Set the number of points in the latitude direction.
     theta : int, optional
-        Set the number of points in the longitude direction
+        Set the number of points in the longitude direction.
     vertices : ndarray, shape (N, 3)
         The point cloud defining the sphere.
     faces : ndarray, shape (M, 3)
@@ -1799,7 +1789,6 @@ def sphere(
         Takes values from 0 (fully transparent) to 1 (opaque). Default is 1.
     use_primitive : boolean, optional
         If True, uses primitives to create an actor.
-
 
     Returns
     -------
@@ -1813,8 +1802,8 @@ def sphere(
     >>> sphere_actor = actor.sphere(centers, window.colors.coral)
     >>> scene.add(sphere_actor)
     >>> # window.show(scene)
-
     """
+
     if not use_primitive:
         src = SphereSource() if faces is None else None
 
@@ -1873,23 +1862,23 @@ def cylinder(
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        Cylinder positions
+        Cylinder positions.
     directions : ndarray, shape (N, 3)
         The orientation vector of the cylinder.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     radius : float
-        cylinder radius, default: 1
+        cylinder radius, default: 1.
     heights : ndarray, shape (N)
         The height of the arrow.
     capped : bool
-        Turn on/off whether to cap cylinder with polygons. Default (False)
+        Turn on/off whether to cap cylinder with polygons. Default (False).
     resolution: int
         Number of facets used to define cylinder.
     vertices : ndarray, shape (N, 3)
         The point cloud defining the sphere.
     faces : ndarray, shape (M, 3)
-        If faces is None then a sphere is created based on theta and phi angles
+        If faces is None then a sphere is created based on theta and phi angles.
         If not then a sphere is created with the provided vertices and faces.
 
     Returns
@@ -1906,8 +1895,8 @@ def cylinder(
     >>> actor = actor.cylinder(centers, dirs, (1, 1, 1), heights=heights)
     >>> scene.add(actor)
     >>> # window.show(scene)
-
     """
+
     if faces is None:
         src = CylinderSource()
         src.SetCapping(capped)
@@ -1948,11 +1937,11 @@ def disk(
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        Disk positions
+        Disk positions.
     directions : ndarray, shape (N, 3)
         The orientation vector of the disk.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     rinner : float
         disk inner radius, default: 0.3
     router : float
@@ -1964,7 +1953,7 @@ def disk(
     vertices : ndarray, shape (N, 3)
         The point cloud defining the disk.
     faces : ndarray, shape (M, 3)
-        If faces is None then a disk is created based on theta and phi angles
+        If faces is None then a disk is created based on theta and phi angles.
         If not then a disk is created with the provided vertices and faces.
 
     Returns
@@ -1984,6 +1973,7 @@ def disk(
     >>> scene.add(actor)
     >>> window.show(scene)
     """
+
     if faces is None:
         src = DiskSource()
         src.SetCircumferentialResolution(cresolution)
@@ -2014,11 +2004,11 @@ def square(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        Square positions
+        Square positions.
     directions : ndarray, shape (N, 3), optional
         The orientation vector of the square.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     scales : int or ndarray (N,3) or tuple (3,), optional
         Square size on each direction (x, y), default(1)
 
@@ -2035,8 +2025,8 @@ def square(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> sq_actor = actor.square(centers, dirs)
     >>> scene.add(sq_actor)
     >>> # window.show(scene)
-
     """
+
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(
         verts,
@@ -2062,11 +2052,11 @@ def rectangle(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 0))
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        Rectangle positions
+        Rectangle positions.
     directions : ndarray, shape (N, 3), optional
         The orientation vector of the rectangle.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     scales : int or ndarray (N,3) or tuple (3,), optional
         Rectangle size on each direction (x, y), default(1)
 
@@ -2087,8 +2077,8 @@ def rectangle(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 0))
     >>> rect_actor = actor.rectangle(centers, dirs)
     >>> scene.add(rect_actor)
     >>> # window.show(scene)
-
     """
+
     return square(centers=centers, directions=directions, colors=colors, scales=scales)
 
 
@@ -2099,11 +2089,11 @@ def box(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 3)):
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        Box positions
+        Box positions.
     directions : ndarray, shape (N, 3), optional
         The orientation vector of the box.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     scales : int or ndarray (N,3) or tuple (3,), optional
         Box size on each direction (x, y), default(1)
 
@@ -2120,8 +2110,8 @@ def box(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 3)):
     >>> box_actor = actor.box(centers, dirs, (1, 1, 1))
     >>> scene.add(box_actor)
     >>> # window.show(scene)
-
     """
+
     verts, faces = fp.prim_box()
     res = fp.repeat_primitive(
         verts,
@@ -2147,13 +2137,13 @@ def cube(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        Cube positions
+        Cube positions.
     directions : ndarray, shape (N, 3), optional
         The orientation vector of the cube.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     scales : int or ndarray (N,3) or tuple (3,), optional
-        Cube size, default=1
+        Cube size, default: 1
 
     Returns
     -------
@@ -2168,8 +2158,8 @@ def cube(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> cube_actor = actor.cube(centers, dirs)
     >>> scene.add(cube_actor)
     >>> # window.show(scene)
-
     """
+
     return box(centers=centers, directions=directions, colors=colors, scales=scales)
 
 
@@ -2192,11 +2182,11 @@ def arrow(
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        Arrow positions
+        Arrow positions.
     directions : ndarray, shape (N, 3)
         The orientation vector of the arrow.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     heights : ndarray, shape (N)
         The height of the arrow.
     resolution : int
@@ -2228,8 +2218,8 @@ def arrow(
     >>> arrow_actor = actor.arrow(centers, directions, (1, 1, 1), heights)
     >>> scene.add(arrow_actor)
     >>> # window.show(scene)
-
     """
+
     if repeat_primitive:
         vertices, faces = fp.prim_arrow()
         res = fp.repeat_primitive(
@@ -2283,11 +2273,11 @@ def cone(
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        Cone positions
+        Cone positions.
     directions : ndarray, shape (N, 3)
         The orientation vector of the cone.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     heights : ndarray, shape (N)
         The height of the cone.
     resolution : int
@@ -2296,9 +2286,9 @@ def cone(
         The point cloud defining the cone.
     faces : ndarray, shape (M, 3)
         If faces is None then a cone is created based on directions, heights
-        and resolution. If not then a cone is created with the provided
+        and resolution. If not then a cone is created with the provided.
         vertices and faces.
-    use_primitive: boolean, optional
+    use_primitive : boolean, optional
         If True uses primitives to create the cone actor.
 
     Returns
@@ -2315,8 +2305,8 @@ def cone(
     >>> cone_actor = actor.cone(centers, directions, (1, 1, 1), heights)
     >>> scene.add(cone_actor)
     >>> # window.show(scene)
-
     """
+
     if not use_primitive:
         src = ConeSource() if faces is None else None
 
@@ -2356,11 +2346,11 @@ def triangularprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        Triangular prism positions
+        Triangular prism positions.
     directions : ndarray, shape (N, 3)
-        The orientation vector(s) of the triangular prism(s)
+        The orientation vector(s) of the triangular prism(s).
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     scales : int or ndarray (N,3) or tuple (3,), optional
         Triangular prism size on each direction (x, y), default(1)
 
@@ -2379,8 +2369,8 @@ def triangularprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> actor = actor.triangularprism(centers, dirs, colors, scales)
     >>> scene.add(actor)
     >>> # window.show(scene)
-
     """
+
     verts, faces = fp.prim_triangularprism()
     res = fp.repeat_primitive(
         verts,
@@ -2404,11 +2394,11 @@ def rhombicuboctahedron(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        Rhombicuboctahedron positions
+        Rhombicuboctahedron positions.
     directions : ndarray, shape (N, 3)
-        The orientation vector(s) of the Rhombicuboctahedron(s)
+        The orientation vector(s) of the Rhombicuboctahedron(s).
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     scales : int or ndarray (N,3) or tuple (3,), optional
         Rhombicuboctahedron size on each direction (x, y), default(1)
 
@@ -2427,7 +2417,6 @@ def rhombicuboctahedron(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=
     >>> actor = actor.rhombicuboctahedron(centers, dirs, colors, scales)
     >>> scene.add(actor)
     >>> # window.show(scene)
-
     """
     verts, faces = fp.prim_rhombicuboctahedron()
     res = fp.repeat_primitive(
@@ -2452,11 +2441,11 @@ def pentagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     Parameters
     ----------
     centers : ndarray, shape (N, 3), optional
-        Pentagonal prism positions
+        Pentagonal prism positions.
     directions : ndarray, shape (N, 3), optional
         The orientation vector of the pentagonal prism.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     scales : int or ndarray (N,3) or tuple (3,), optional
         Pentagonal prism size on each direction (x, y), default(1)
 
@@ -2476,8 +2465,8 @@ def pentagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> actor_pentagonal = actor.pentagonalprism(centers, dirs, colors, scales)
     >>> scene.add(actor_pentagonal)
     >>> # window.show(scene)
-
     """
+
     verts, faces = fp.prim_pentagonalprism()
     res = fp.repeat_primitive(
         verts,
@@ -2502,11 +2491,11 @@ def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        Octagonal prism positions
+        Octagonal prism positions.
     directions : ndarray, shape (N, 3)
         The orientation vector of the octagonal prism.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     scales : int or ndarray (N,3) or tuple (3,), optional
         Octagonal prism size on each direction (x, y), default(1)
 
@@ -2525,8 +2514,8 @@ def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> actor = actor.octagonalprism(centers, dirs, colors, scales)
     >>> scene.add(actor)
     >>> # window.show(scene)
-
     """
+
     verts, faces = fp.prim_octagonalprism()
     res = fp.repeat_primitive(
         verts,
@@ -2551,13 +2540,14 @@ def frustum(centers, directions=(1, 0, 0), colors=(0, 1, 0), scales=1):
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        Frustum pyramid positions
+        Frustum pyramid positions.
     directions : ndarray, shape (N, 3)
         The orientation vector of the frustum pyramid.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     scales : int or ndarray (N,3) or tuple (3,), optional
         Frustum pyramid size on each direction (x, y), default(1)
+
     Returns
     -------
     frustum_actor: Actor
@@ -2573,8 +2563,8 @@ def frustum(centers, directions=(1, 0, 0), colors=(0, 1, 0), scales=1):
     >>> actor = actor.frustum(centers, dirs, colors, scales)
     >>> scene.add(actor)
     >>> # window.show(scene)
-
     """
+
     verts, faces = fp.prim_frustum()
     res = fp.repeat_primitive(
         verts,
@@ -2601,13 +2591,13 @@ def superquadric(
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        Superquadrics positions
+        Superquadrics positions.
     roundness : ndarray, shape (N, 2) or tuple/list (2,), optional
-        parameters (Phi and Theta) that control the shape of the superquadric
+        parameters (Phi and Theta) that control the shape of the superquadric.
     directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the cone.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     scales : ndarray, shape (N) or (N,3) or float or int, optional
         The height of the cone.
 
@@ -2629,7 +2619,6 @@ def superquadric(
     ...                               colors=colors, scales=scales)
     >>> scene.add(sq_actor)
     >>> # window.show(scene)
-
     """
 
     def have_2_dimensions(arr):
@@ -2703,7 +2692,6 @@ def billboard(
     Returns
     -------
     billboard_actor: Actor
-
     """
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(
@@ -2753,7 +2741,7 @@ def vector_text(
 ):
     """Create a label actor.
 
-    This actor will always face the camera
+    This actor will always face the camera.
 
     Parameters
     ----------
@@ -2784,9 +2772,9 @@ def vector_text(
     >>> scene = window.Scene()
     >>> l = actor.vector_text(text='Hello')
     >>> scene.add(l)
-    >>> #window.show(scene)
-
+    >>> # window.show(scene)
     """
+
     atext = VectorText()
     atext.SetText(text)
     textm = PolyDataMapper()
@@ -2860,7 +2848,7 @@ def text_3d(
     italic=False,
     shadow=False,
 ):
-    """Generate 2D text that lives in the 3D world
+    """Generate 2D text that lives in the 3D world.
 
     Parameters
     ----------
@@ -2870,9 +2858,9 @@ def text_3d(
     font_size : int
     font_family : str
     justification : str
-        Left, center or right (default left)
+        Left, center or right (default left).
     vertical_justification : str
-        Bottom, middle or top (default bottom)
+        Bottom, middle or top (default bottom).
     bold : bool
     italic : bool
     shadow : bool
@@ -2974,8 +2962,7 @@ class Container:
     padding : 6-tuple of float
         Padding around this container bounding box. The 6-tuple represents
         (pad_x_neg, pad_x_pos, pad_y_neg, pad_y_pos, pad_z_neg, pad_z_pos).
-        Default: (0, 0, 0, 0, 0, 0)
-
+        Default: (0, 0, 0, 0, 0, 0).
     """
 
     def __init__(self, layout=layout.Layout()):
@@ -3153,6 +3140,7 @@ def grid(
         Object that represents the grid containing all the actors and
         captions, if any.
     """
+
     grid_layout = layout.GridLayout(
         cell_padding=cell_padding,
         cell_shape=cell_shape,
@@ -3292,8 +3280,7 @@ def texture(rgb, interp=True):
 
 
 def texture_update(texture_actor, arr):
-    """
-    Updates texture of an actor by updating the vtkImageData
+    """Updates texture of an actor by updating the vtkImageData
     assigned to the vtkTexture object.
 
     Parameters
@@ -3309,6 +3296,7 @@ def texture_update(texture_actor, arr):
     --------------
     Check docs/examples/viz_video_on_plane.py
     """
+
     grid = texture_actor.GetTexture().GetInput()
     dim = arr.shape[-1]
     img_data = np.flip(arr.swapaxes(0, 1), axis=1).reshape((-1, dim), order='F')
@@ -3344,7 +3332,7 @@ def texture_on_sphere(rgb, theta=60, phi=60, interpolate=True):
 
 
 def texture_2d(rgb, interp=False):
-    """Create 2D texture from array
+    """Create 2D texture from array.
 
     Parameters
     ----------
@@ -3410,21 +3398,21 @@ def texture_2d(rgb, interp=False):
 
 
 def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus', scales=1):
-    """Create a SDF primitive based actor
+    """Create a SDF primitive based actor.
 
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        SDF primitive positions
+        SDF primitive positions.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     directions : ndarray, shape (N, 3)
         The orientation vector of the SDF primitive.
     primitives : str, list, tuple, np.ndarray
         The primitive of choice to be rendered.
         Options are sphere, torus and ellipsoid. Default is torus.
     scales : float
-        The size of the SDF primitive
+        The size of the SDF primitive.
 
     Returns
     -------
@@ -3456,7 +3444,7 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus', sca
             primlist = primlist + [2] * (len(centers) - len(primitives))
             warnings.warn(
                 'Not enough primitives provided,\
-             defaulting to torus',
+                defaulting to torus',
                 category=UserWarning,
             )
         rep_prims = np.repeat(primlist, verts.shape[0])
@@ -3505,19 +3493,45 @@ def markers(
     ----------
     centers : ndarray, shape (N, 3)
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     scales : ndarray, shape (N) or (N,3) or float or int, optional
     marker : str or a list
         Available markers are: '3d', 'o', 's', 'd', '^', 'p', 'h', 's6',
-        'x', '+', optional
+        'x', '+', optional.
     marker_opacity : float, optional
     edge_width : int, optional
     edge_color : ndarray, shape (3), optional
+    edge_opacity : float, optional
 
     Returns
     -------
     sq_actor: Actor
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from fury import actor, window
+    >>> scene = window.Scene()
+    >>> markers = ['o', 'x', '^', 's']  # some examples
+    >>> n = len(markers)
+    >>> centers = np.random.normal(size=(n, 3), scale=10)
+    >>> colors = np.random.rand(n, 4)
+    >>> nodes_actor = actor.markers(
+            centers,
+            marker=markers,
+            edge_width=.1,
+            edge_color=[255, 255, 0],
+            colors=colors,
+            scales=10,
+        )
+    >>> center = np.random.normal(size=(1, 3), scale=10)
+    >>> nodes_3d_actor = actor.markers(
+            center,
+            marker='3d',
+            scales=5,
+        )
+    >>> scene.add(nodes_actor, nodes_3d_actor)
+    >>> # window.show(scene, size=(600, 600))
     """
 
     n_markers = centers.shape[0]
