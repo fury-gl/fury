@@ -27,7 +27,6 @@ from fury.animation import Animation, Timeline
 scene = window.Scene()
 
 showm = window.ShowManager(scene, size=(900, 768))
-showm.initialize()
 
 ###############################################################################
 # Creating a ``Timeline``

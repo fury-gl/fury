@@ -47,7 +47,6 @@ scene = window.Scene()
 showm = window.ShowManager(
     scene, size=(900, 768), reset_camera=True, order_transparent=True
 )
-showm.initialize()
 scene.add(animation)
 
 ##############################################################################
