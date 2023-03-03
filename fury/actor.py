@@ -2062,7 +2062,8 @@ def square(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     return sq_actor
 
 
-def rectangle(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 0)):
+def rectangle(centers, directions=(1, 0, 0), colors=(1, 0, 0),
+              scales=(1, 2, 0)):
     """Visualize one or many rectangles with different features.
 
     Parameters
@@ -2095,10 +2096,12 @@ def rectangle(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 0))
     >>> # window.show(scene)
 
     """
-    return square(centers=centers, directions=directions, colors=colors, scales=scales)
+    return square(centers=centers, directions=directions, colors=colors,
+                  scales=scales)
 
 
-@deprecated_params(['size', 'heights'], ['scales', 'scales'], since='0.6', until='0.8')
+@deprecated_params(['size', 'heights'], ['scales', 'scales'], since='0.6',
+                   until='0.8')
 def box(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 3)):
     """Visualize one or many boxes with different features.
 
@@ -2176,7 +2179,8 @@ def cube(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> # window.show(scene)
 
     """
-    return box(centers=centers, directions=directions, colors=colors, scales=scales)
+    return box(centers=centers, directions=directions, colors=colors,
+               scales=scales)
 
 
 def arrow(
@@ -2705,7 +2709,7 @@ def billboard(
     fs_impl : str or list of str, optional
         Fragment Shaders code that contains all variable/function
         implementation.
-    bb_type : str
+    bb_type : str, optional
         Type of billboard (spherical, cylindrical_x, cylindrical_y).
         If spherical, billboard will always face the camera.
         If cylindrical_x or cylindrical_y, billboard will face the camera only
@@ -2735,7 +2739,8 @@ def billboard(
 
     if bb_type.lower() == 'cylindrical_x':
         bb_type_sd = import_fury_shader(os.path.join('billboard',
-                                                     'cylindrical_x.glsl'))
+                                                     'cylindrical_x.glsl')
+                                        )
         v_pos_mc = \
             """
             vec3 vertexPositionMC = cylindricalXVertexPos(center, MCVCMatrix,
@@ -2743,7 +2748,8 @@ def billboard(
             """
     elif bb_type.lower() == 'cylindrical_y':
         bb_type_sd = import_fury_shader(os.path.join('billboard',
-                                                     'cylindrical_y.glsl'))
+                                                     'cylindrical_y.glsl')
+                                        )
         v_pos_mc = \
             """
             vec3 vertexPositionMC = cylindricalYVertexPos(center,MCVCMatrix,
@@ -2773,30 +2779,44 @@ def billboard(
         gl_Position = MCDCMatrix * vec4(vertexPositionMC, 1.);
         '''
 
+    billboard_dec_vert = \
+        '''
+        /* Billboard  vertex shader declaration */
+        in vec3 center;
+        
+        out vec3 centerVertexMCVSOutput;
+        out vec3 normalizedVertexMCVSOutput;
+        '''
+
+    billboard_dec_frag = \
+        '''
+        /* Billboard  fragment shader declaration */
+        in vec3 centerVertexMCVSOutput;
+        in vec3 normalizedVertexMCVSOutput;
+        '''
+
     billboard_vert_impl = compose_shader(
-        [import_fury_shader('billboard_impl.vert') +
-         compose_shader(v_pos_mc) +
-         compose_shader(gl_position)])
+        [import_fury_shader('billboard_impl.vert'), v_pos_mc, gl_position])
 
     vs_dec_code = compose_shader(
-        [import_fury_shader('billboard_dec.vert') + compose_shader(vs_dec) +
-         compose_shader(bb_norm) +
-         compose_shader(bb_type_sd)])
+        [billboard_dec_vert, compose_shader(vs_dec), bb_norm, bb_type_sd])
     vs_impl_code = compose_shader(
-        [compose_shader(vs_impl) + billboard_vert_impl])
+        [compose_shader(vs_impl), billboard_vert_impl])
 
     gs_code = compose_shader(gs_prog)
     fs_dec_code = compose_shader(
-        [import_fury_shader('billboard_dec.frag') + compose_shader(fs_dec)]
+        [billboard_dec_frag, compose_shader(fs_dec)]
     )
     fs_impl_code = compose_shader(
-        [import_fury_shader('billboard_impl.frag') + compose_shader(fs_impl)]
+        [import_fury_shader('billboard_impl.frag'), compose_shader(fs_impl)]
     )
 
-    shader_to_actor(bb_actor, 'vertex', impl_code=vs_impl_code, decl_code=vs_dec_code)
+    shader_to_actor(bb_actor, 'vertex', impl_code=vs_impl_code,
+                    decl_code=vs_dec_code)
     replace_shader_in_actor(bb_actor, 'geometry', gs_code)
     shader_to_actor(bb_actor, 'fragment', decl_code=fs_dec_code)
-    shader_to_actor(bb_actor, 'fragment', impl_code=fs_impl_code, block='light')
+    shader_to_actor(bb_actor, 'fragment', impl_code=fs_impl_code,
+                    block='light')
 
     return bb_actor
 
@@ -3640,7 +3660,14 @@ def markers(
         gl_Position = MCDCMatrix * vec4(vertexPositionMC, 1.);
         """
 
-    vs_dec_code = import_fury_shader('billboard_dec.vert')
+    vs_dec_code = \
+        '''
+        /* Billboard  vertex shader declaration */
+        in vec3 center;
+        
+        out vec3 centerVertexMCVSOutput;
+        out vec3 normalizedVertexMCVSOutput;
+        '''
     vs_dec_code += \
         f'\n{import_fury_shader("utils/billboard_normalization.glsl")}'
     vs_dec_code += f'\n{import_fury_shader("billboard/spherical.glsl")}'
@@ -3649,7 +3676,12 @@ def markers(
     vs_impl_code += f'\n{compose_shader(bb_impl)}'
     vs_impl_code += f'\n{import_fury_shader("marker_billboard_impl.vert")}'
 
-    fs_dec_code = import_fury_shader('billboard_dec.frag')
+    fs_dec_code = \
+        '''
+        /* Billboard  fragment shader declaration */
+        in vec3 centerVertexMCVSOutput;
+        in vec3 normalizedVertexMCVSOutput;
+        '''
     fs_dec_code += f'\n{import_fury_shader("marker_billboard_dec.frag")}'
     fs_impl_code = import_fury_shader('billboard_impl.frag')
 

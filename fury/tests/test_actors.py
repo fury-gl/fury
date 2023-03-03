@@ -1593,97 +1593,43 @@ def test_billboard_actor(interactive=False):
             {fragOutput0 = vec4(color, 1);}
         """
 
-    spherical_billboard = actor.billboard(centers, colors=colors,
-                                          scales=scales, bb_type='spherical',
-                                          fs_impl=b_point)
+    b_type = ['spherical', 'cylindrical_x', 'cylindrical_y']
+    expected_val = [True, False, False]
+    rotations = [[87, 0, -87, 87], [87, 0, -87, 87], [0, 87, 87, -87]]
+    for i in range(3):
+        billboard = actor.billboard(centers, colors=colors, scales=scales,
+                                    bb_type=b_type[i], fs_impl=b_point)
 
-    scene.add(spherical_billboard)
-    scene.add(actor.axes())
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr, colors=255 * colors)
-    npt.assert_equal(report.colors_found, [True] * 5)
+        scene.add(billboard)
+        if b_type[i] == 'spherical':
+            arr = window.snapshot(scene)
+            report = window.analyze_snapshot(arr, colors=255 * colors)
+            npt.assert_equal(report.colors_found, [True] * 5)
 
-    scene.pitch(87)
-    if interactive:
-        window.show(scene)
+        scene.pitch(rotations[i][0])
+        scene.yaw(rotations[i][1])
+        if interactive:
+            window.show(scene)
 
-    scene.reset_camera()
-    scene.reset_clipping_range()
-    arr = window.snapshot(scene, offscreen=True)
-    report = window.analyze_snapshot(arr, colors=255 * colors)
-    npt.assert_equal(report.colors_found, [True] * 5)
+        scene.reset_camera()
+        scene.reset_clipping_range()
+        arr = window.snapshot(scene, offscreen=True)
+        report = window.analyze_snapshot(arr, colors=255 * colors)
+        npt.assert_equal(report.colors_found, [True] * 5)
 
-    scene.pitch(-87)
-    scene.yaw(87)
-    if interactive:
-        window.show(scene)
+        scene.pitch(rotations[i][2])
+        scene.yaw(rotations[i][3])
+        if interactive:
+            window.show(scene)
 
-    scene.reset_camera()
-    scene.reset_clipping_range()
-    arr = window.snapshot(scene, offscreen=True)
-    report = window.analyze_snapshot(arr, colors=255 * colors)
-    npt.assert_equal(report.colors_found, [True] * 5)
+        scene.reset_camera()
+        scene.reset_clipping_range()
+        arr = window.snapshot(scene, offscreen=True)
+        report = window.analyze_snapshot(arr, colors=255 * colors)
+        npt.assert_equal(report.colors_found, [expected_val[i]] * 5)
 
-    scene.yaw(-87)
-    scene.clear()
-
-    cylindrical_x_billboard = actor.billboard(centers, colors=colors,
-                                              scales=scales,
-                                              bb_type='cylindrical_x',
-                                              fs_impl=b_point)
-
-    scene.add(cylindrical_x_billboard)
-    scene.add(actor.axes())
-    scene.pitch(87)
-    if interactive:
-        window.show(scene)
-
-    scene.reset_camera()
-    scene.reset_clipping_range()
-    arr = window.snapshot(scene, offscreen=True)
-    report = window.analyze_snapshot(arr, colors=255 * colors)
-    npt.assert_equal(report.colors_found, [True] * 5)
-
-    scene.pitch(-87)
-    scene.yaw(87)
-    if interactive:
-        window.show(scene)
-
-    scene.reset_camera()
-    scene.reset_clipping_range()
-    arr = window.snapshot(scene, offscreen=True)
-    report = window.analyze_snapshot(arr, colors=255 * colors)
-    npt.assert_equal(report.colors_found, [False] * 5)
-
-    scene.yaw(-87)
-    scene.clear()
-
-    cylindrical_y_billboard = actor.billboard(centers, colors=colors,
-                                              scales=scales,
-                                              bb_type='cylindrical_y',
-                                              fs_impl=b_point)
-
-    scene.yaw(87)
-    scene.add(cylindrical_y_billboard)
-    if interactive:
-        window.show(scene)
-
-    scene.reset_camera()
-    scene.reset_clipping_range()
-    arr = window.snapshot(scene, offscreen=True)
-    report = window.analyze_snapshot(arr, colors=255 * colors)
-    npt.assert_equal(report.colors_found, [True] * 5)
-
-    scene.yaw(-87)
-    scene.pitch(87)
-    if interactive:
-        window.show(scene)
-
-    scene.reset_camera()
-    scene.reset_clipping_range()
-    arr = window.snapshot(scene, offscreen=True)
-    report = window.analyze_snapshot(arr, colors=255 * colors)
-    npt.assert_equal(report.colors_found, [False] * 5)
+        scene.yaw(-87)
+        scene.clear()
 
 
 @pytest.mark.skipif(
