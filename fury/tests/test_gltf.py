@@ -188,7 +188,6 @@ def test_simple_animation():
     timeline.add_animation(animation)
     scene = window.Scene()
     showm = window.ShowManager(scene, size=(900, 768))
-    showm.initialize()
 
     scene.add(timeline)
 
@@ -255,7 +254,6 @@ def test_skinning():
 
     scene = window.Scene()
     showm = window.ShowManager(scene, size=(900, 768))
-    showm.initialize()
 
     scene.add(timeline)
     timeline.seek(1.0)
@@ -329,7 +327,6 @@ def test_morphing():
 
     scene = window.Scene()
     showm = window.ShowManager(scene, size=(900, 768))
-    showm.initialize()
 
     timeline_1 = Timeline()
     timeline_1.add_animation(anim_1)

@@ -606,7 +606,6 @@ def test_opengl_state_add_remove_and_check():
 
 def test_add_animation_to_show_manager():
     showm = window.ShowManager()
-    showm.initialize()
 
     cube = actor.cube(np.array([[2, 2, 3]]))
 
