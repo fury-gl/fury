@@ -42,7 +42,6 @@ Anything that has to be rendered needs to be added to the scene so let's create 
 We set the window scene variables e.g. (width, height)::
 
     showm = window.ShowManager(scene, size=(1024,720), reset_camera=False)
-    showm.initialize()
 
 We add a text block to add some information::
 
