@@ -176,7 +176,8 @@ class UI(object, metaclass=abc.ABCMeta):
                 raise TypeError(msg)
 
             if callback[0] == self._scene:
-
+                if not iren.GetInitialized():
+                    iren.Initialize()
                 iren.add_callback(iren, callback[1], callback[2], args=[self])
             else:
                 iren.add_callback(*callback, args=[self])
