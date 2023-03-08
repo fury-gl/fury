@@ -360,6 +360,16 @@ def test_streamtube_and_line_actors():
 
     npt.assert_equal(c3.GetProperty().GetRenderLinesAsTubes(), True)
 
+    c4 = actor.streamtube(lines, colors, replace_strips=False)
+
+    c5 = actor.streamtube(lines, colors, replace_strips=True)
+
+    strips4 = c4.GetMapper().GetInput().GetStrips().GetData().GetSize()
+    strips5 = c5.GetMapper().GetInput().GetStrips().GetData().GetSize()
+
+    npt.assert_equal(strips4 > 0, True)
+    npt.assert_equal(strips5 == 0, True)
+
 
 def simulated_bundle(no_streamlines=10, waves=False):
     t = np.linspace(20, 80, 200)
@@ -1716,3 +1726,4 @@ def test_actors_primitives_count():
         primitives_count = test_case[2]
         act = act_func(**args)
         npt.assert_equal(primitives_count_from_actor(act), primitives_count)
+

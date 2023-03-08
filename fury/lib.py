@@ -118,6 +118,7 @@ PolyDataNormals = fcvtk.vtkPolyDataNormals
 ContourFilter = fcvtk.vtkContourFilter
 TubeFilter = fcvtk.vtkTubeFilter
 Glyph3D = fcvtk.vtkGlyph3D
+TriangleFilter = fcvtk.vtkTriangleFilter
 
 ##############################################################
 #  vtkFiltersGeneral Module

@@ -54,6 +54,7 @@ from fury.lib import (
     TransformPolyDataFilter,
     TubeFilter,
     VectorText,
+    TriangleFilter,
     numpy_support,
 )
 from fury.shaders import (
@@ -595,6 +596,7 @@ def streamtube(
     lod_points_size=3,
     spline_subdiv=None,
     lookup_colormap=None,
+    replace_strips=False
 ):
     """Use streamtubes to visualize polylines.
 
@@ -642,6 +644,10 @@ def streamtube(
     lookup_colormap : vtkLookupTable, optional
         Add a default lookup table to the colormap. Default is None which calls
         :func:`fury.actor.colormap_lookup_table`.
+    replace_strips : bool, optional
+        If True it changes streamtube representation from triangle strips to
+        triangles. Useful with SelectionManager or PickingManager.
+        Default False.
 
     Examples
     --------
@@ -712,6 +718,12 @@ def streamtube(
 
     # Poly mapper
     poly_mapper = set_input(PolyDataMapper(), next_input)
+    if replace_strips:
+        triangle_filter = set_input(TriangleFilter(), next_input)
+        poly_mapper = set_input(PolyDataMapper(), triangle_filter.GetOutputPort())
+
+    else:
+        poly_mapper = set_input(PolyDataMapper(), next_input)
     poly_mapper.ScalarVisibilityOn()
     poly_mapper.SetScalarModeToUsePointFieldData()
     poly_mapper.SelectColorArray('colors')
@@ -738,6 +750,8 @@ def streamtube(
     actor.GetProperty().SetInterpolationToPhong()
     actor.GetProperty().BackfaceCullingOn()
     actor.GetProperty().SetOpacity(opacity)
+
+
 
     return actor
 
