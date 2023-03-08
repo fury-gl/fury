@@ -33,7 +33,7 @@ from fury.colormap import line_colors
 # Tutorial.
 
 hardi_img, gtab, labels_img = read_stanford_labels()
-data = hardi_img.get_data()
+data = hardi_img.get_fdata()
 labels = labels_img.get_data()
 affine = hardi_img.affine
 
