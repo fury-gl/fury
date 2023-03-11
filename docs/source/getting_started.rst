@@ -10,7 +10,18 @@ Start by importing FURY.
     from fury import window, actor, ui, io, utils
 
 To import a model, use :py:func:`.io.load_polydata`. Currently supported formats include OBJ, VTK, FIB, PLY, STL and XML.
-Let us include the ``suzanne`` model used by Blender
+
+Here we are going to use ``suzanne`` model used by Blender. You can find more detail about `what is suzanne model <https://en.wikipedia.org/wiki/Blender_(software)#:~:text=A%20low-polygon%20model%20with%20only%20500%20faces%2C%20Suzanne,gives%20out%20an%20award%20called%20the%20Suzanne%20Award.).>`_.
+
+We can download the model by
+
+.. code-block:: python
+
+    from fury.data import fetch_viz_models
+    models = fetch_viz_models()
+
+Then the models will be downloaded in ``~/.fury/models``.
+To include the ``suzanne`` model used by Blender:
 
 .. code-block:: python
 
