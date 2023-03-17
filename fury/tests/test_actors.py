@@ -1524,7 +1524,7 @@ def test_superquadric_actor(interactive=False):
     npt.assert_equal(report.colors_found, [True, True, True])
 
 
-def test_billboard_actor(interactive=False):
+def test_billboard_actor(interactive=True):
     scene = window.Scene()
     scene.background((1, 1, 1))
     centers = np.array(
@@ -1558,7 +1558,6 @@ def test_billboard_actor(interactive=False):
         float radius = 1.;
         if(len > radius)
             {discard;}
-
         vec3 normalizedPoint = normalize(vec3(point.xy, sqrt(1. - len)));
         vec3 direction = normalize(vec3(1., 1., 1.));
         float df_1 = max(0, dot(direction, normalizedPoint));
@@ -1570,13 +1569,104 @@ def test_billboard_actor(interactive=False):
         centers, colors=colors, scales=scales, fs_impl=fake_sphere
     )
     scene.add(billboard_actor)
-    scene.add(actor.axes())
+
     if interactive:
         window.show(scene)
 
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=colors)
     npt.assert_equal(report.objects, 8)
+    scene.clear()
+
+    centers = np.array([[0, 0, 0], [-15, 15, -5], [10, -10, 5],
+                        [-30, 30, -10], [20, -20, 10]])
+    colors = np.array([[1, 1, 0], [0, 0, 1], [1, 0, 1],
+                       [1, 0, 0], [0, 1, 0]])
+    scales = [3, 1, 2, 1, 3]
+
+    spherical_billboard = actor.billboard(centers, colors=colors,
+                                          scales=scales, bb_type='spherical')
+
+    scene.add(spherical_billboard)
+    scene.add(actor.axes())
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=colors)
+    npt.assert_equal(report.objects, 5)
+
+    scene.pitch(87)
+    if interactive:
+        window.show(scene)
+
+    scene.reset_camera()
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=255 * colors)
+    npt.assert_equal(report.colors_found, [True] * 5)
+
+    scene.pitch(-87)
+    scene.yaw(87)
+    if interactive:
+        window.show(scene)
+
+    scene.reset_camera()
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=255 * colors)
+    npt.assert_equal(report.colors_found, [True] * 5)
+
+    scene.yaw(-87)
+    scene.clear()
+
+    cylindrical_x_billboard = actor.billboard(centers, colors=colors,
+                                              scales=scales,
+                                              bb_type='cylindrical_x')
+
+    scene.add(cylindrical_x_billboard)
+    scene.add(actor.axes())
+    scene.pitch(87)
+    if interactive:
+        window.show(scene)
+
+    scene.reset_camera()
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=255 * colors)
+    npt.assert_equal(report.colors_found, [True] * 5)
+
+    scene.pitch(-87)
+    scene.yaw(87)
+    if interactive:
+        window.show(scene)
+
+    scene.reset_camera()
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=255 * colors)
+    npt.assert_equal(report.colors_found, [False] * 5)
+
+    scene.yaw(-87)
+    scene.clear()
+
+    cylindrical_y_billboard = actor.billboard(centers, colors=colors,
+                                              scales=scales,
+                                              bb_type='cylindrical_y')
+
+    scene.yaw(87)
+    scene.add(cylindrical_y_billboard)
+    scene.add(actor.axes())
+    if interactive:
+        window.show(scene)
+
+    scene.reset_camera()
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=255 * colors)
+    npt.assert_equal(report.colors_found, [True] * 5)
+
+    scene.yaw(-87)
+    scene.pitch(87)
+    if interactive:
+        window.show(scene)
+
+    scene.reset_camera()
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=255 * colors)
+    npt.assert_equal(report.colors_found, [False] * 5)
 
 
 @pytest.mark.skipif(
