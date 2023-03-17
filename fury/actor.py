@@ -2062,8 +2062,7 @@ def square(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     return sq_actor
 
 
-def rectangle(centers, directions=(1, 0, 0), colors=(1, 0, 0),
-              scales=(1, 2, 0)):
+def rectangle(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 0)):
     """Visualize one or many rectangles with different features.
 
     Parameters
@@ -2096,12 +2095,10 @@ def rectangle(centers, directions=(1, 0, 0), colors=(1, 0, 0),
     >>> # window.show(scene)
 
     """
-    return square(centers=centers, directions=directions, colors=colors,
-                  scales=scales)
+    return square(centers=centers, directions=directions, colors=colors, scales=scales)
 
 
-@deprecated_params(['size', 'heights'], ['scales', 'scales'], since='0.6',
-                   until='0.8')
+@deprecated_params(['size', 'heights'], ['scales', 'scales'], since='0.6', until='0.8')
 def box(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 3)):
     """Visualize one or many boxes with different features.
 
@@ -2179,8 +2176,7 @@ def cube(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> # window.show(scene)
 
     """
-    return box(centers=centers, directions=directions, colors=colors,
-               scales=scales)
+    return box(centers=centers, directions=directions, colors=colors, scales=scales)
 
 
 def arrow(
@@ -2788,6 +2784,16 @@ def billboard(
         out vec3 normalizedVertexMCVSOutput;
         '''
 
+    billboard_impl_vert = \
+        '''
+        /* Billboard  vertex shader implementation */
+        centerVertexMCVSOutput = center;
+        normalizedVertexMCVSOutput = bbNorm(vertexMC.xyz, center);
+        float scalingFactor = 1. / abs(normalizedVertexMCVSOutput.x);
+        float size = abs((vertexMC.xyz - center).x) * 2;
+        vec2 shape = vec2(size, size); // Fixes the scaling issue
+        '''
+
     billboard_dec_frag = \
         '''
         /* Billboard  fragment shader declaration */
@@ -2795,8 +2801,17 @@ def billboard(
         in vec3 normalizedVertexMCVSOutput;
         '''
 
+    billboard_impl_frag = \
+        '''
+        /* Billboard  Fragment shader implementation */
+        // Renaming variables passed from the Vertex Shader
+        vec3 color = vertexColorVSOutput.rgb;
+        vec3 point = normalizedVertexMCVSOutput;
+        fragOutput0 = vec4(color, 1.);
+        '''
+
     billboard_vert_impl = compose_shader(
-        [import_fury_shader('billboard_impl.vert'), v_pos_mc, gl_position])
+        [billboard_impl_vert, v_pos_mc, gl_position])
 
     vs_dec_code = compose_shader(
         [billboard_dec_vert, compose_shader(vs_dec), bb_norm, bb_type_sd])
@@ -2808,7 +2823,7 @@ def billboard(
         [billboard_dec_frag, compose_shader(fs_dec)]
     )
     fs_impl_code = compose_shader(
-        [import_fury_shader('billboard_impl.frag'), compose_shader(fs_impl)]
+        [billboard_impl_frag, compose_shader(fs_impl)]
     )
 
     shader_to_actor(bb_actor, 'vertex', impl_code=vs_impl_code,
@@ -3672,7 +3687,15 @@ def markers(
         f'\n{import_fury_shader("utils/billboard_normalization.glsl")}'
     vs_dec_code += f'\n{import_fury_shader("billboard/spherical.glsl")}'
     vs_dec_code += f'\n{import_fury_shader("marker_billboard_dec.vert")}'
-    vs_impl_code = import_fury_shader('billboard_impl.vert')
+    vs_impl_code = \
+        '''
+        /* Billboard  vertex shader implementation */
+        centerVertexMCVSOutput = center;
+        normalizedVertexMCVSOutput = bbNorm(vertexMC.xyz, center);
+        float scalingFactor = 1. / abs(normalizedVertexMCVSOutput.x);
+        float size = abs((vertexMC.xyz - center).x) * 2;
+        vec2 shape = vec2(size, size); // Fixes the scaling issue
+        '''
     vs_impl_code += f'\n{compose_shader(bb_impl)}'
     vs_impl_code += f'\n{import_fury_shader("marker_billboard_impl.vert")}'
 
@@ -3683,7 +3706,14 @@ def markers(
         in vec3 normalizedVertexMCVSOutput;
         '''
     fs_dec_code += f'\n{import_fury_shader("marker_billboard_dec.frag")}'
-    fs_impl_code = import_fury_shader('billboard_impl.frag')
+    fs_impl_code = \
+        '''
+        /* Billboard  Fragment shader implementation */
+        // Renaming variables passed from the Vertex Shader
+        vec3 color = vertexColorVSOutput.rgb;
+        vec3 point = normalizedVertexMCVSOutput;
+        fragOutput0 = vec4(color, 1.);
+        '''
 
     if marker == '3d':
         fs_impl_code += f'{import_fury_shader("billboard_spheres_impl.frag")}'
