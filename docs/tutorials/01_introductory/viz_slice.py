@@ -29,7 +29,7 @@ fname_t1 = os.path.join(
 
 
 img = nib.load(fname_t1)
-data = img.get_data()
+data = img.get_fdata()
 affine = img.affine
 
 ###############################################################################
@@ -106,7 +106,7 @@ fname_fa = os.path.join(
 )
 
 img = nib.load(fname_fa)
-fa = img.get_data()
+fa = img.get_fdata()
 
 ###############################################################################
 # Notice here how the scale range is. We use FA min and max values to set it up
