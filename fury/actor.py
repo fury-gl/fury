@@ -749,8 +749,6 @@ def streamtube(
     actor.GetProperty().BackfaceCullingOn()
     actor.GetProperty().SetOpacity(opacity)
 
-
-
     return actor
 
 
@@ -1883,13 +1881,13 @@ def cylinder(
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     radius : float
-        cylinder radius, default: 1.
+        cylinder radius, default: 0.05.
     heights : ndarray, shape (N)
-        The height of the arrow.
+        The height of the cylinder, default: 1.
     capped : bool
         Turn on/off whether to cap cylinder with polygons. Default (False).
     resolution: int
-        Number of facets used to define cylinder.
+        Number of facets used to define cylinder, default: 6
     vertices : ndarray, shape (N, 3)
         The point cloud defining the sphere.
     faces : ndarray, shape (M, 3)
@@ -2982,6 +2980,7 @@ class Container:
         Default: (0, 0, 0, 0, 0, 0).
 
     """
+
     def __init__(self, layout=layout.Layout()):
         """
 
