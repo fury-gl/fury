@@ -1866,7 +1866,7 @@ def cylinder(
     radius=0.05,
     heights=1,
     capped=False,
-    resolution=6,
+    resolution=8,
     vertices=None,
     faces=None,
     repeat_primitive=True,
@@ -1888,7 +1888,7 @@ def cylinder(
     capped : bool
         Turn on/off whether to cap cylinder with polygons. Default (False).
     resolution: int
-        Number of facets used to define cylinder, default: 6
+        Number of facets used to define cylinder, default: 8
     vertices : ndarray, shape (N, 3)
         The point cloud defining the sphere.
     faces : ndarray, shape (M, 3)
@@ -1915,7 +1915,27 @@ def cylinder(
 
     """
     if repeat_primitive:
-        pass
+
+        verts, faces = fp.prim_cylinder(
+            radius=radius,
+            sectors=resolution,
+            capped=capped,
+        )
+        res = fp.repeat_primitive(
+            verts,
+            faces,
+            centers=centers,
+            directions=directions,
+            colors=colors,
+            scales=heights,
+        )
+
+        big_verts, big_faces, big_colors, _ = res
+        prim_count = len(centers)
+        cylinder_actor = get_actor_from_primitive(
+            big_verts, big_faces, big_colors, prim_count=prim_count
+        )
+
     else:
         if faces is None:
             src = CylinderSource()
