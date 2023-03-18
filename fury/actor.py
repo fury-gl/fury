@@ -1869,6 +1869,7 @@ def cylinder(
     resolution=6,
     vertices=None,
     faces=None,
+    repeat_primitive=True,
 ):
     """Visualize one or many cylinder with different features.
 
@@ -1893,6 +1894,9 @@ def cylinder(
     faces : ndarray, shape (M, 3)
         If faces is None then a sphere is created based on theta and phi angles.
         If not then a sphere is created with the provided vertices and faces.
+    repeat_primitive: bool
+        If True, cylinder will be generated with primitives
+        If False, repeat_sources will be invoked to use VTK filters for cylinder.
 
     Returns
     -------
@@ -1910,26 +1914,29 @@ def cylinder(
     >>> # window.show(scene)
 
     """
-    if faces is None:
-        src = CylinderSource()
-        src.SetCapping(capped)
-        src.SetResolution(resolution)
-        src.SetRadius(radius)
-        rotate = np.array([[0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+    if repeat_primitive:
+        pass
     else:
-        src = None
-        rotate = None
+        if faces is None:
+            src = CylinderSource()
+            src.SetCapping(capped)
+            src.SetResolution(resolution)
+            src.SetRadius(radius)
+            rotate = np.array([[0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+        else:
+            src = None
+            rotate = None
 
-    cylinder_actor = repeat_sources(
-        centers=centers,
-        colors=colors,
-        directions=directions,
-        active_scalars=heights,
-        source=src,
-        vertices=vertices,
-        faces=faces,
-        orientation=rotate,
-    )
+        cylinder_actor = repeat_sources(
+            centers=centers,
+            colors=colors,
+            directions=directions,
+            active_scalars=heights,
+            source=src,
+            vertices=vertices,
+            faces=faces,
+            orientation=rotate,
+        )
 
     return cylinder_actor
 
