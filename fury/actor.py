@@ -1888,7 +1888,7 @@ def cylinder(
     capped : bool
         Turn on/off whether to cap cylinder with polygons. Default (False).
     resolution: int
-        Number of facets used to define cylinder, default: 8
+        Number of facets/sectors used to define cylinder, default: 8
     vertices : ndarray, shape (N, 3)
         The point cloud defining the sphere.
     faces : ndarray, shape (M, 3)
@@ -1915,6 +1915,10 @@ def cylinder(
 
     """
     if repeat_primitive:
+
+        if resolution < 8:
+            # Sectors parameter should be greater than 7 in fp.prim_cylinder()
+            raise ValueError('resolution parameter should be greater than 7')
 
         verts, faces = fp.prim_cylinder(
             radius=radius,
