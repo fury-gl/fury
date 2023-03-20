@@ -2362,6 +2362,11 @@ class ComboBox2D(UI):
     def selected_text_index(self):
         return self._selection_ID
 
+    def set_visibility(self, visibility):
+        super().set_visibility(visibility)
+        if not self._menu_visibility:
+            self.drop_down_menu.set_visibility(False)
+
     def append_item(self, *items):
         """Append additional options to the menu.
 
