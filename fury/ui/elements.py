@@ -2296,9 +2296,9 @@ class ComboBox2D(UI):
                 self.select_option_callback,
             )
 
-            self.drop_down_button.on_left_mouse_button_clicked = (
-                self.menu_toggle_callback
-            )
+        self.drop_down_button.on_left_mouse_button_clicked = (
+            self.menu_toggle_callback
+        )
 
         # Offer some standard hooks to the user.
         self.on_change = lambda ui: None
