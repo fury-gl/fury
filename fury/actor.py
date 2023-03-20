@@ -1882,9 +1882,9 @@ def cylinder(
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     radius : float
-        cylinder radius, default: 0.05.
+        cylinder radius.
     heights : ndarray, shape (N)
-        The height of the cylinder, default: 1.
+        The height of the cylinder.
     capped : bool
         Turn on/off whether to cap cylinder with polygons. Default (False).
     resolution: int
