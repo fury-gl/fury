@@ -20,9 +20,9 @@ We can download the model by
     from fury.data import fetch_viz_models
     fetch_viz_models()
     
-Then the models will be downloaded in ``~/.fury/models``
+The models will be downloaded in ``~/.fury/models`` directory.
 
-If store the return value to ``models``, you can find the detailed information in the dictionary. The directory of the ``suzanne`` model will be in ``model[1]``.
+If you store the return value to ``models``, you can find the detailed information about models in the dictionary. The directory of the ``suzanne`` model will be in ``models[1]``.
 
 .. code-block:: python
 
