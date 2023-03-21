@@ -1,6 +1,18 @@
 [main]
-title = "introductory"
-description = "introductory"
+readme = """
+Examples
+--------
+
+How to use widgets, ui, actor and windows module. Below some examples and apps to go in details.
+"""
+position = 0   # it should always be 0
+enable = true  # it should always be true
+files = []
+
+[introductory]
+readme = "introductory"
+position = 21
+enable = true
 files = [
     "viz_earth_coordinates.py",
     "viz_morphing.py",
@@ -23,9 +35,8 @@ files = [
 ]
 
 [demos]
-title = ""
-description = ""
-position = 1
+readme = ""
+position = 4
 enable = true
 files = [
     "viz_advanced.py",
@@ -48,9 +59,8 @@ files = [
 ]
 
 [ui]
-title = ""
-description = ""
-position = 4
+readme = ""
+position = 7
 enable = true
 files = [
     "viz_check_boxes.py",
@@ -67,9 +77,8 @@ files = [
 ]
 
 [animation]
-title = ""
-description = ""
-position = 7
+readme = ""
+position = 10
 enable = true
 files = [
     "viz_interpolators.py",
@@ -86,9 +95,8 @@ files = [
 ]
 
 [shaders]
-title = ""
-description = ""
-position = 9
+readme = ""
+position = 13
 enable = true
 files = [
     "viz_pbr_spheres.py",
@@ -99,9 +107,8 @@ files = [
 ]
 
 [pybullet]
-title = ""
-description = ""
-position = 10
+readme = ""
+position = 17
 enable = true
 files = [
     "viz_ball_collide.py",
@@ -112,9 +119,8 @@ files = [
 ]
 
 [stream]
-title = ""
-description = ""
-position = 13
+readme = ""
+position = 20
 enable = true
 files = [
     "viz_interaction.py",
