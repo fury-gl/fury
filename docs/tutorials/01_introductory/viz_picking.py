@@ -157,4 +157,4 @@ if interactive:
 ###############################################################################
 # Save the current framebuffer in a PNG file
 
-window.record(showm.scene, size=(1024, 768), out_path='viz_picking.png')
+showm.record(size=(1024, 768), out_path='viz_picking.png')

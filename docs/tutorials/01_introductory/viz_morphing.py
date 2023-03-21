@@ -71,4 +71,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_morphing.png', size=(900, 768))
+showm.record(out_path='viz_morphing.png', size=(900, 768))

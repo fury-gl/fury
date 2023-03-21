@@ -21,6 +21,9 @@ colors = np.array([1, 1, 1])
 
 scene = window.Scene()
 
+showm = window.ShowManager(scene, size=(1280, 720))
+showm.initialize()
+
 ##############################################################################
 # Creating actors and adding to scene.
 
@@ -62,6 +65,6 @@ scene.add(*actors)
 interactive = False
 
 if interactive:
-    window.show(scene, size=(1280, 720))
+    showm.start()
 
-window.record(scene, out_path='viz_gltf_export.png', size=(1280, 720))
+showm.record(out_path='viz_gltf_export.png', size=(1280, 720))

@@ -37,17 +37,17 @@ cols2 = np.random.rand(5, 3)
 
 arrow_actor2 = actor.arrow(cen2, dir2, colors=cols2, scales=1.5)
 
-scene = window.Scene()
+showm = window.ShowManager(size=(600, 600))
 
 ############################################################################
 # Adding our Arrow actors to scene.
 
-scene.add(arrow_actor)
-scene.add(arrow_actor2)
+showm.scene.add(arrow_actor)
+showm.scene.add(arrow_actor2)
 
 interactive = False
 
 if interactive:
-    window.show(scene, size=(600, 600))
+    showm.start()
 
-window.record(scene, out_path='viz_arrow.png', size=(600, 600))
+showm.record(out_path='viz_arrow.png', size=(600, 600))

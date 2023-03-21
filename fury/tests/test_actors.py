@@ -61,7 +61,7 @@ def test_slicer(verbose=False):
     # window.show(scene)
 
     # copy pixels in numpy array directly
-    arr = window.snapshot(scene, 'test_slicer.png', offscreen=True)
+    arr = window.snapshot(scene, fname='test_slicer.png', offscreen=True)
 
     if verbose:
         print(arr.sum())
@@ -84,7 +84,7 @@ def test_slicer(verbose=False):
     # save pixels in png file not a numpy array
     with InTemporaryDirectory() as tmpdir:
         fname = os.path.join(tmpdir, 'slice.png')
-        window.snapshot(scene, fname, offscreen=True)
+        window.snapshot(scene, fname=fname, offscreen=True)
         report = window.analyze_snapshot(fname, find_objects=True)
         npt.assert_equal(report.objects, 1)
 
@@ -191,7 +191,7 @@ def test_surface():
                 )
                 scene.add(surface_actor)
                 # window.show(scene, size=(600, 600), reset_camera=False)
-                arr = window.snapshot(scene, 'test_surface.png', offscreen=True)
+                arr = window.snapshot(scene, fname='test_surface.png', offscreen=True)
                 report = window.analyze_snapshot(arr, find_objects=True)
                 npt.assert_equal(report.objects, 1)
 
@@ -233,8 +233,8 @@ def test_contour_from_roi(interactive=False):
     if interactive:
         window.show(scene2)
 
-    arr = window.snapshot(scene, 'test_surface.png', offscreen=True)
-    arr2 = window.snapshot(scene2, 'test_surface2.png', offscreen=True)
+    arr = window.snapshot(scene, fname='test_surface.png', offscreen=True)
+    arr2 = window.snapshot(scene2, fname='test_surface2.png', offscreen=True)
 
     report = window.analyze_snapshot(arr, find_objects=True)
     report2 = window.analyze_snapshot(arr2, find_objects=True)
@@ -292,10 +292,10 @@ def test_contour_from_label(interactive=False):
         window.show(scene2)
 
     arr = window.snapshot(
-        scene, 'test_surface.png', offscreen=True, order_transparent=False
+        scene, fname='test_surface.png', offscreen=True, order_transparent=False
     )
     arr2 = window.snapshot(
-        scene2, 'test_surface2.png', offscreen=True, order_transparent=True
+        scene2, fname='test_surface2.png', offscreen=True, order_transparent=True
     )
 
     report = window.analyze_snapshot(

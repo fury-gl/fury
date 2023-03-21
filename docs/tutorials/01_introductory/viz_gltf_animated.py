@@ -54,4 +54,4 @@ showm.add_timer_callback(True, 10, timer_callback)
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_gltf_animated.png', size=(900, 768))
+showm.record(out_path='viz_gltf_animated.png', size=(900, 768))
