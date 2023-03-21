@@ -1,5 +1,6 @@
 """Module that provide actors to render."""
 
+import os
 import warnings
 from functools import partial
 
@@ -2707,12 +2708,12 @@ def billboard(
     gs_prog=None,
     fs_dec=None,
     fs_impl=None,
+    bb_type='spherical'
 ):
     """Create a billboard actor.
-
+-
     Billboards are 2D elements placed in a 3D world. They offer possibility to
     draw different shapes/elements at the fragment shader level.
-
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
@@ -2733,11 +2734,15 @@ def billboard(
     fs_impl : str or list of str, optional
         Fragment Shaders code that contains all variable/function
         implementation.
+    bb_type : str, optional
+        Type of billboard (spherical, cylindrical_x, cylindrical_y).
+        If spherical, billboard will always face the camera.
+        If cylindrical_x or cylindrical_y, billboard will face the camera only
+        when rotating around x-axis and y-axis respectively.
 
     Returns
     -------
     billboard_actor: Actor
-
     """
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(
@@ -2754,24 +2759,108 @@ def billboard(
     bb_actor.GetProperty().BackfaceCullingOff()
     attribute_to_actor(bb_actor, big_centers, 'center')
 
+    bb_norm = import_fury_shader(os.path.join('utils',
+                                              'billboard_normalization.glsl'))
+
+    if bb_type.lower() == 'cylindrical_x':
+        bb_type_sd = import_fury_shader(os.path.join('billboard',
+                                                     'cylindrical_x.glsl')
+                                        )
+        v_pos_mc = \
+            """
+            vec3 vertexPositionMC = cylindricalXVertexPos(center, MCVCMatrix,
+                                        normalizedVertexMCVSOutput, shape);
+            """
+    elif bb_type.lower() == 'cylindrical_y':
+        bb_type_sd = import_fury_shader(os.path.join('billboard',
+                                                     'cylindrical_y.glsl')
+                                        )
+        v_pos_mc = \
+            """
+            vec3 vertexPositionMC = cylindricalYVertexPos(center,MCVCMatrix,
+                                        normalizedVertexMCVSOutput, shape);
+            """
+    elif bb_type.lower() == 'spherical':
+        bb_type_sd = import_fury_shader(os.path.join('billboard',
+                                                     'spherical.glsl'))
+        v_pos_mc = \
+            """
+            vec3 vertexPositionMC = sphericalVertexPos(center, MCVCMatrix,
+                                        normalizedVertexMCVSOutput, shape);
+            """
+    else:
+        bb_type_sd = import_fury_shader(os.path.join('billboard',
+                                                     'spherical.glsl'))
+        v_pos_mc = \
+            """
+            vec3 vertexPositionMC = sphericalVertexPos(center, MCVCMatrix,
+                                        normalizedVertexMCVSOutput, shape);
+            """
+        warnings.warn('Invalid option. The billboard will be generated '
+                      'with the default spherical option. ', UserWarning)
+
+    gl_position = \
+        '''
+        gl_Position = MCDCMatrix * vec4(vertexPositionMC, 1.);
+        '''
+
+    billboard_dec_vert = \
+        '''
+        /* Billboard  vertex shader declaration */
+        in vec3 center;
+        
+        out vec3 centerVertexMCVSOutput;
+        out vec3 normalizedVertexMCVSOutput;
+        '''
+
+    billboard_impl_vert = \
+        '''
+        /* Billboard  vertex shader implementation */
+        centerVertexMCVSOutput = center;
+        normalizedVertexMCVSOutput = bbNorm(vertexMC.xyz, center);
+        float scalingFactor = 1. / abs(normalizedVertexMCVSOutput.x);
+        float size = abs((vertexMC.xyz - center).x) * 2;
+        vec2 shape = vec2(size, size); // Fixes the scaling issue
+        '''
+
+    billboard_dec_frag = \
+        '''
+        /* Billboard  fragment shader declaration */
+        in vec3 centerVertexMCVSOutput;
+        in vec3 normalizedVertexMCVSOutput;
+        '''
+
+    billboard_impl_frag = \
+        '''
+        /* Billboard  Fragment shader implementation */
+        // Renaming variables passed from the Vertex Shader
+        vec3 color = vertexColorVSOutput.rgb;
+        vec3 point = normalizedVertexMCVSOutput;
+        fragOutput0 = vec4(color, 1.);
+        '''
+
+    billboard_vert_impl = compose_shader(
+        [billboard_impl_vert, v_pos_mc, gl_position])
+
     vs_dec_code = compose_shader(
-        [import_fury_shader('billboard_dec.vert') + compose_shader(vs_dec)]
-    )
+        [billboard_dec_vert, compose_shader(vs_dec), bb_norm, bb_type_sd])
     vs_impl_code = compose_shader(
-        [compose_shader(vs_impl) + import_fury_shader('billboard_impl.vert')]
-    )
+        [compose_shader(vs_impl), billboard_vert_impl])
+
     gs_code = compose_shader(gs_prog)
     fs_dec_code = compose_shader(
-        [import_fury_shader('billboard_dec.frag') + compose_shader(fs_dec)]
+        [billboard_dec_frag, compose_shader(fs_dec)]
     )
     fs_impl_code = compose_shader(
-        [import_fury_shader('billboard_impl.frag') + compose_shader(fs_impl)]
+        [billboard_impl_frag, compose_shader(fs_impl)]
     )
 
-    shader_to_actor(bb_actor, 'vertex', impl_code=vs_impl_code, decl_code=vs_dec_code)
+    shader_to_actor(bb_actor, 'vertex', impl_code=vs_impl_code,
+                    decl_code=vs_dec_code)
     replace_shader_in_actor(bb_actor, 'geometry', gs_code)
     shader_to_actor(bb_actor, 'fragment', decl_code=fs_dec_code)
-    shader_to_actor(bb_actor, 'fragment', impl_code=fs_impl_code, block='light')
+    shader_to_actor(bb_actor, 'fragment', impl_code=fs_impl_code,
+                    block='light')
 
     return bb_actor
 
@@ -3536,7 +3625,6 @@ def markers(
     edge_opacity=0.8,
 ):
     """Create a marker actor with different shapes.
-
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
@@ -3610,14 +3698,52 @@ def markers(
         '3d': 0,
     }
 
-    vs_dec_code = import_fury_shader('billboard_dec.vert')
+    bb_impl = \
+        """
+        vec3 vertexPositionMC = sphericalVertexPos(center, MCVCMatrix,
+                                    normalizedVertexMCVSOutput, shape);
+        gl_Position = MCDCMatrix * vec4(vertexPositionMC, 1.);
+        """
+
+    vs_dec_code = \
+        '''
+        /* Billboard  vertex shader declaration */
+        in vec3 center;
+        
+        out vec3 centerVertexMCVSOutput;
+        out vec3 normalizedVertexMCVSOutput;
+        '''
+    vs_dec_code += \
+        f'\n{import_fury_shader("utils/billboard_normalization.glsl")}'
+    vs_dec_code += f'\n{import_fury_shader("billboard/spherical.glsl")}'
     vs_dec_code += f'\n{import_fury_shader("marker_billboard_dec.vert")}'
-    vs_impl_code = import_fury_shader('billboard_impl.vert')
+    vs_impl_code = \
+        '''
+        /* Billboard  vertex shader implementation */
+        centerVertexMCVSOutput = center;
+        normalizedVertexMCVSOutput = bbNorm(vertexMC.xyz, center);
+        float scalingFactor = 1. / abs(normalizedVertexMCVSOutput.x);
+        float size = abs((vertexMC.xyz - center).x) * 2;
+        vec2 shape = vec2(size, size); // Fixes the scaling issue
+        '''
+    vs_impl_code += f'\n{compose_shader(bb_impl)}'
     vs_impl_code += f'\n{import_fury_shader("marker_billboard_impl.vert")}'
 
-    fs_dec_code = import_fury_shader('billboard_dec.frag')
+    fs_dec_code = \
+        '''
+        /* Billboard  fragment shader declaration */
+        in vec3 centerVertexMCVSOutput;
+        in vec3 normalizedVertexMCVSOutput;
+        '''
     fs_dec_code += f'\n{import_fury_shader("marker_billboard_dec.frag")}'
-    fs_impl_code = import_fury_shader('billboard_impl.frag')
+    fs_impl_code = \
+        '''
+        /* Billboard  Fragment shader implementation */
+        // Renaming variables passed from the Vertex Shader
+        vec3 color = vertexColorVSOutput.rgb;
+        vec3 point = normalizedVertexMCVSOutput;
+        fragOutput0 = vec4(color, 1.);
+        '''
 
     if marker == '3d':
         fs_impl_code += f'{import_fury_shader("billboard_spheres_impl.frag")}'
