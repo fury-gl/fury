@@ -1,7 +1,9 @@
 [main]
 readme = """
+.. _ref_examples:
+
 Examples
---------
+========
 
 How to use widgets, ui, actor and windows module. Below some examples and apps to go in details.
 """
@@ -10,8 +12,8 @@ enable = true  # it should always be true
 files = []
 
 [introductory]
-readme = "introductory"
-position = 21
+readme = "file: _introductory.rst"
+position = 1
 enable = true
 files = [
     "viz_earth_coordinates.py",
@@ -35,7 +37,7 @@ files = [
 ]
 
 [demos]
-readme = ""
+readme = "file: _demos.rst"
 position = 4
 enable = true
 files = [
@@ -59,7 +61,7 @@ files = [
 ]
 
 [ui]
-readme = ""
+readme = "file: _ui.rst"
 position = 7
 enable = true
 files = [
@@ -77,7 +79,7 @@ files = [
 ]
 
 [animation]
-readme = ""
+readme = "file: _animation.rst"
 position = 10
 enable = true
 files = [
@@ -95,7 +97,7 @@ files = [
 ]
 
 [shaders]
-readme = ""
+readme = "file: _shaders.rst"
 position = 13
 enable = true
 files = [
@@ -107,7 +109,7 @@ files = [
 ]
 
 [pybullet]
-readme = ""
+readme = "file: _bullet.rst"
 position = 17
 enable = true
 files = [
@@ -119,7 +121,7 @@ files = [
 ]
 
 [stream]
-readme = ""
+readme = "file:_stream.rst"
 position = 20
 enable = true
 files = [

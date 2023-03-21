@@ -98,6 +98,7 @@ def translate_cube_ver(slider):
     value = slider.value
     cube.SetPosition(0, value, 0)
 
+
 def translate_cube_hor(slider):
     value = slider.value
     cube.SetPosition(value, 0, 0)

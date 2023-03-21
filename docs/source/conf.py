@@ -204,7 +204,7 @@ html_css_files = ['css/custom.css', 'vendor/fonts.css']
 
 html_logo = '_static/images/logo.svg'
 
-html_favicon = "_static/images/logo.ico"
+html_favicon = '_static/images/logo.ico'
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
@@ -293,16 +293,18 @@ from scrap import ImageFileScraper
 sc = ImageFileScraper()
 
 sphinx_gallery_conf = {
-     'doc_module': ('fury',),
-     # path to your examples scripts
-     'examples_dirs': ['../examples_revamp'],
-     # path where to save gallery generated examples
-     'gallery_dirs': ['auto_examples'],
-     'image_scrapers': (sc),
-     'backreferences_dir': 'api',
-     'reference_url': {'fury': None, },
-     'filename_pattern': re.escape(os.sep),
-     'plot_gallery': "'True'",
+    'doc_module': ('fury',),
+    # path to your examples scripts
+    'examples_dirs': ['../examples_revamped'],
+    # path where to save gallery generated examples
+    'gallery_dirs': ['auto_examples'],
+    'image_scrapers': (sc),
+    'backreferences_dir': 'api',
+    'reference_url': {
+        'fury': None,
+    },
+    'filename_pattern': re.escape(os.sep),
+    'plot_gallery': "'True'",
 }
 
 # -- Options for Blog -------------------------------------------
