@@ -1889,7 +1889,7 @@ def cylinder(
     capped : bool
         Turn on/off whether to cap cylinder with polygons. Default (False).
     resolution: int
-        Number of facets/sectors used to define cylinder, default: 8
+        Number of facets/sectors used to define cylinder.
     vertices : ndarray, shape (N, 3)
         The point cloud defining the sphere.
     faces : ndarray, shape (M, 3)
