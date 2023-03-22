@@ -69,11 +69,11 @@ autosummary_generate = []
 numpydoc_show_class_members = False
 
 # Add any paths that contain templates here, relative to this directory.
-import ablog
+# import ablog
 
 templates_path = [
     '_templates',
-    ablog.get_html_templates_path(),
+    # ablog.get_html_templates_path(),
 ]
 
 # The suffix(es) of source filenames.

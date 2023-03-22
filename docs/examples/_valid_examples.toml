@@ -30,6 +30,7 @@ files = [
     "viz_selection.py",
     "viz_sphere.py",
     "viz_timers.py",
+    "viz_multithread.py",
     "viz_earth_animation.py",
     "viz_gltf_export.py",
     "viz_skinning.py",
