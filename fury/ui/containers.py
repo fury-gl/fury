@@ -486,6 +486,86 @@ class TabPanel2D(UI):
             New title for tab panel.
         """
         self.text_block.message = text
+    
+    @property
+    def title_bold(self):
+        """Is the title of a tab panel bold."""
+        return self.text_block.bold
+
+    @title_bold.setter
+    def title_bold(self, bold):
+        """Determine if the text title of a tab panel must be bold.
+
+        Parameters
+        ----------
+        bold : bool
+            Bold property for a text title in a tab panel.
+        """
+        self.text_block.bold = bold
+    
+    @property
+    def title_color(self):
+        """Return the title color of tab panel."""
+        return self.text_block.color
+
+    @title_color.setter
+    def title_color(self, color):
+        """Set the title color of tab panel.
+
+        Parameters
+        ----------
+        color : tuple
+            New title color for tab panel.
+        """
+        self.text_block.color = color
+        
+    @property
+    def title_font_size(self):
+        """Return the title font size of tab panel."""
+        return self.text_block.font_size
+
+    @title_font_size.setter
+    def title_font_size(self, font_size):
+        """Set the title font size of tab panel.
+
+        Parameters
+        ----------
+        font_size : int
+            New title font size for tab panel.
+        """
+        self.text_block.font_size = font_size
+    
+    @property
+    def title_italic(self):
+        """Is the title of a tab panel italic."""
+        return self.text_block.italic
+
+    @title_italic.setter
+    def title_italic(self, italic):
+        """Determine if the text title of a tab panel must be italic.
+
+        Parameters
+        ----------
+        italic : bool
+            Italic property for a text title in a tab panel.
+        """
+        self.text_block.italic = italic
+    
+    @property
+    def title_justification(self):
+        """Return the title justification of tab panel."""
+        return self.text_block.justification
+
+    @title_justification.setter
+    def title_justification(self, justification):
+        """Set the title justification of tab panel.
+
+        Parameters
+        ----------
+        justification : str
+            New title justification for tab panel.
+        """
+        self.text_block.justification = justification
 
     def add_element(self, element, coords, anchor='position'):
         """Add a UI component to the content panel.
