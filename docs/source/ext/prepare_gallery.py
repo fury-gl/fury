@@ -121,8 +121,6 @@ def prepare_gallery(app=None):
         msg = f'File {all_ex} not found in examples description file: {f_example_desc}'
         logger.info(msg)
 
-    print(dir(app))
-
 
 def setup(app):
     """Install the plugin.
