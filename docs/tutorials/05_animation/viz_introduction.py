@@ -64,7 +64,6 @@ from fury.animation import Animation
 scene = window.Scene()
 
 showm = window.ShowManager(scene, size=(900, 768))
-showm.initialize()
 
 
 ###############################################################################

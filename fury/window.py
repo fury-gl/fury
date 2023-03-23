@@ -535,6 +535,8 @@ class ShowManager:
             else:
                 self.window.SetWindowName(self.title)
             if multithreaded:
+                if not self.iren.GetInitialized():
+                    self.iren.Initialize()
                 while self.iren.GetDone() is False:
                     start_time = time.perf_counter()
                     self.lock()

@@ -1,11 +1,12 @@
-
 import time
 from threading import Thread
-from fury.utils import rotate, update_actor, vertices_from_actor
+
 import numpy as np
 import numpy.testing as npt
 import pytest
+
 from fury import actor, window
+from fury.utils import rotate, update_actor, vertices_from_actor
 
 
 def test_multithreading():
@@ -14,19 +15,15 @@ def test_multithreading():
     radii = np.random.random(100) + 0.5
 
     scene = window.Scene()
-    sphere_actor = actor.sphere(centers = xyz,
-                                colors = colors,
-                                radii = radii,
-                                use_primitive = False)
+    sphere_actor = actor.sphere(
+        centers=xyz, colors=colors, radii=radii, use_primitive=False
+    )
     scene.add(sphere_actor)
 
     # Preparing the show manager as usual
-    showm = window.ShowManager(scene,
-                               size = (900, 768),
-                               reset_camera = False,
-                               order_transparent = True)
-
-    # showm.initialize()
+    showm = window.ShowManager(
+        scene, size=(900, 768), reset_camera=False, order_transparent=True
+    )
 
     vsa = vertices_from_actor(sphere_actor)
 
@@ -48,11 +45,10 @@ def test_multithreading():
         #     showm.exit()
         #     npt.assert_equal(np.sum(arr) > 1, True)
 
-
-    thread_a = Thread(target = callback1)
+    thread_a = Thread(target=callback1)
     thread_a.start()
 
-    showm.start(multithreaded = True)
+    showm.start(multithreaded=True)
     thread_a.join()
 
 

@@ -10,31 +10,29 @@ rotates the camera, thread B prints a counter, and thread C
 adds and removes elements from the scene.
 """
 
-from fury import window, actor, ui
-from threading import Thread
-import numpy as np
 import time
+from threading import Thread
 
+import numpy as np
+
+from fury import actor, ui, window
 
 # Preparing to draw some spheres
-xyz = 10 * (np.random.random((100, 3))-0.5)
+xyz = 10 * (np.random.random((100, 3)) - 0.5)
 colors = np.random.random((100, 4))
 radii = np.random.random(100) + 0.5
 
 scene = window.Scene()
-sphere_actor = actor.sphere(centers=xyz,
-                            colors=colors,
-                            radii=radii,
-                            use_primitive=False)
+sphere_actor = actor.sphere(
+    centers=xyz, colors=colors, radii=radii, use_primitive=False
+)
 scene.add(sphere_actor)
 
 
 # Preparing the show manager as usual
-showm = window.ShowManager(scene,
-                           size=(900, 768), reset_camera=False,
-                           order_transparent=True)
-
-# showm.initialize()
+showm = window.ShowManager(
+    scene, size=(900, 768), reset_camera=False, order_transparent=True
+)
 
 # Creating a text block to show a message and reset the camera
 tb = ui.TextBlock2D(bold=True)
@@ -44,16 +42,17 @@ scene.ResetCamera()
 
 # Create a function to print a counter to the console
 def print_counter():
-    print("")
+    print('')
     for i in range(100):
-        print("\rCounter: %d" % i, end="")
-        message = "Let's count up to 100 and exit :" + str(i+1)
+        print('\rCounter: %d' % i, end='')
+        message = "Let's count up to 100 and exit :" + str(i + 1)
         tb.message = message
         time.sleep(0.05)
         if showm.is_done():
             break
     showm.exit()
-    print("")
+    print('')
+
 
 # Create a function to rotate the camera
 
@@ -66,6 +65,7 @@ def rotate_camera():
             time.sleep(0.05)
         else:
             break
+
 
 # Create a function to add or remove the axes and increase its scale
 
