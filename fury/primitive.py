@@ -203,11 +203,18 @@ def repeat_primitive(
             dirs = dirs / dir_abs
             v = np.cross(normal, dirs)
             c = np.dot(normal, dirs)
+
             v1, v2, v3 = v
-            h = 1 / (1 + c)
+
             Vmat = np.array([[0, -v3, v2], [v3, 0, -v1], [-v2, v1, 0]])
 
-            rotation_matrix = np.eye(3, dtype=np.float64) + Vmat + (Vmat.dot(Vmat) * h)
+            if c == -1.0:
+                rotation_matrix = -np.eye(3, dtype=np.float64)
+            else:
+                h = 1 / (1 + c)
+                rotation_matrix = np.eye(3, dtype=np.float64) + \
+                    Vmat + (Vmat.dot(Vmat) * h)
+
         else:
             rotation_matrix = np.identity(3)
 
