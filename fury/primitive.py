@@ -935,11 +935,11 @@ def prim_cylinder(radius=0.5, height=1, sectors=36, capped=True):
     sector_step = 2 * math.pi / sectors
     unit_circle_vertices = []
 
-    # generate a unit circle on XY plane
+    # generate a unit circle on YZ plane
     for i in range(sectors + 1):
         sector_angle = i * sector_step
-        unit_circle_vertices.append(math.cos(sector_angle))
         unit_circle_vertices.append(0)
+        unit_circle_vertices.append(math.cos(sector_angle))
         unit_circle_vertices.append(math.sin(sector_angle))
 
     vertices = []
@@ -947,12 +947,12 @@ def prim_cylinder(radius=0.5, height=1, sectors=36, capped=True):
     for i in range(2):
         h = -height / 2 + i * height
         k = 0
-        for j in range(sectors + 1):
-            ux = unit_circle_vertices[k]
+        for _ in range(sectors + 1):
+            uy = unit_circle_vertices[k + 1]
             uz = unit_circle_vertices[k + 2]
             # position vector
-            vertices.append(ux * radius)
             vertices.append(h)
+            vertices.append(uy * radius)
             vertices.append(uz * radius)
             k += 3
 
@@ -966,16 +966,16 @@ def prim_cylinder(radius=0.5, height=1, sectors=36, capped=True):
 
         for i in range(2):
             h = -height / 2 + i * height
-            vertices.append(0)
             vertices.append(h)
             vertices.append(0)
+            vertices.append(0)
             k = 0
-            for j in range(sectors):
-                ux = unit_circle_vertices[k]
+            for _ in range(sectors):
+                uy = unit_circle_vertices[k + 1]
                 uz = unit_circle_vertices[k + 2]
                 # position vector
-                vertices.append(ux * radius)
                 vertices.append(h)
+                vertices.append(uy * radius)
                 vertices.append(uz * radius)
                 k += 3
 
