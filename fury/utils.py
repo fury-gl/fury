@@ -1552,7 +1552,7 @@ def check_color_ndarray(color_array):
     """
     Check if all values in a color array are within the range [0, 1].
     If there is out of bounds values, the function sends a message, 
-    replaces the out-of-bounds values with the red color [1, 0, 0].
+    replaces the out-of-bounds colors with the red color [1, 0, 0].
 
     Args:
         color_array (numpy.ndarray): An array of shape (N, 3) or (N, 4).
@@ -1564,8 +1564,10 @@ def check_color_ndarray(color_array):
     # Convert tuple or list to ndarray (N, 3)
     if isinstance(color_array, (list, tuple)):
         color_array = np.asarray(color_array)
-        if color_array.ndim == 1:
-            color_array = color_array.reshape(1, len(color_array))
+
+    # change ndarray (3,) or (4,) to (1,3) or (1,4)
+    if color_array.ndim == 1:
+        color_array = color_array.reshape(1, len(color_array))
 
     # Check that the array is of the correct shape
     assert color_array.ndim == 2 and color_array.shape[1] in [3, 4], \

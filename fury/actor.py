@@ -750,8 +750,6 @@ def streamtube(
     actor.GetProperty().BackfaceCullingOn()
     actor.GetProperty().SetOpacity(opacity)
 
-
-
     return actor
 
 
@@ -3071,6 +3069,7 @@ class Container:
         Default: (0, 0, 0, 0, 0, 0).
 
     """
+
     def __init__(self, layout=layout.Layout()):
         """
 

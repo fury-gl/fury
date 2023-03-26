@@ -892,6 +892,12 @@ def test_check_color_ndarray():
     npt.assert_array_equal(
         utils.check_color_ndarray(color_list), color_list_expected)
 
+    # Test for input of type 1d np.array
+    color_1d = np.array([0.1, 0.5, 0.9, 0.3])
+    color_1d_expected = np.array([[0.1, 0.5, 0.9, 0.3]])
+    npt.assert_array_equal(
+        utils.check_color_ndarray(color_1d), color_1d_expected)
+
 
 def test_is_ui():
     panel = Panel2D(position=(0, 0), size=(100, 100))
@@ -913,7 +919,7 @@ def test_empty_array_to_polydata():
     npt.assert_raises(ValueError, utils.lines_to_vtk_polydata, lines)
 
 
-@pytest.mark.skipif(not have_dipy, reason='Requires DIPY')
+@ pytest.mark.skipif(not have_dipy, reason='Requires DIPY')
 def test_empty_array_sequence_to_polydata():
     from dipy.tracking.streamline import Streamlines
 
