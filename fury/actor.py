@@ -687,6 +687,7 @@ def streamtube(
 
     """
     # Poly data with lines and colors
+    colors = check_color_ndarray(colors)
     poly_data, color_is_scalar = lines_to_vtk_polydata(lines, colors)
     next_input = poly_data
 
@@ -838,6 +839,7 @@ def line(
 
     """
     # Poly data with lines and colors
+    colors = check_color_ndarray(colors)
     poly_data, color_is_scalar = lines_to_vtk_polydata(lines, colors)
     next_input = poly_data
 
@@ -954,6 +956,8 @@ def axes(
     centers = np.zeros((3, 3))
     dirs = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
     colors = np.array([colorx + (opacity,), colory + (opacity,), colorz + (opacity,)])
+
+    colors = check_color_ndarray(colors)
 
     scales = np.asarray(scale)
     arrow_actor = arrow(centers, dirs, colors, scales, repeat_primitive=False)
@@ -1697,6 +1701,7 @@ def dot(points, colors=None, opacity=None, dot_size=5):
         vtk_faces.InsertNextCell(1)
         vtk_faces.InsertCellPoint(idd)
 
+    # colors = check_color_ndarray(colors)
     color_tuple = color_check(len(points), colors)
     color_array, global_opacity = color_tuple
 
