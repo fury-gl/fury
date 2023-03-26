@@ -80,7 +80,7 @@ from fury.utils import (
     set_polydata_triangles,
     set_polydata_vertices,
     shallow_copy,
-    check_color_ndarray,
+    check_color_range,
 )
 
 
@@ -384,7 +384,7 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
     triangle_poly_data.SetPoints(points)
 
     if colors is not None:
-        colors = check_color_ndarray(colors)
+        colors = check_color_range(colors)
         triangle_poly_data.GetPointData().SetScalars(numpy_to_vtk_colors(255 * colors))
 
     if faces is None:
@@ -531,7 +531,7 @@ def contour_from_roi(data, affine=None, color=np.array([1, 0, 0]), opacity=1):
 
     skin_actor.SetMapper(skin_mapper)
 
-    color = check_color_ndarray(color)
+    color = check_color_range(color)
 
     skin_actor.GetProperty().SetColor(color[0][0], color[0][1], color[0][2])
     skin_actor.GetProperty().SetOpacity(opacity)
@@ -575,7 +575,7 @@ def contour_from_label(data, affine=None, color=None):
     elif color.shape != (nb_surfaces, 3) and color.shape != (nb_surfaces, 4):
         raise ValueError('Incorrect color array shape')
 
-    color = check_color_ndarray(color)
+    color = check_color_range(color)
 
     if color.shape == (nb_surfaces, 4):
         opacity = color[:, -1]
@@ -687,7 +687,7 @@ def streamtube(
 
     """
     # Poly data with lines and colors
-    colors = check_color_ndarray(colors)
+    colors = check_color_range(colors)
     poly_data, color_is_scalar = lines_to_vtk_polydata(lines, colors)
     next_input = poly_data
 
@@ -839,7 +839,7 @@ def line(
 
     """
     # Poly data with lines and colors
-    colors = check_color_ndarray(colors)
+    colors = check_color_range(colors)
     poly_data, color_is_scalar = lines_to_vtk_polydata(lines, colors)
     next_input = poly_data
 
@@ -957,7 +957,7 @@ def axes(
     dirs = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
     colors = np.array([colorx + (opacity,), colory + (opacity,), colorz + (opacity,)])
 
-    colors = check_color_ndarray(colors)
+    colors = check_color_range(colors)
 
     scales = np.asarray(scale)
     arrow_actor = arrow(centers, dirs, colors, scales, repeat_primitive=False)
@@ -1701,8 +1701,6 @@ def dot(points, colors=None, opacity=None, dot_size=5):
         vtk_faces.InsertNextCell(1)
         vtk_faces.InsertCellPoint(idd)
 
-    # colors = check_color_ndarray(colors)
-    colors = check_color_ndarray(colors)
     color_tuple = color_check(len(points), colors)
     color_array, global_opacity = color_tuple
 

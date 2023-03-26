@@ -1548,7 +1548,7 @@ def color_check(pts_len, colors=None):
     return color_array, global_opacity
 
 
-def check_color_ndarray(color_array):
+def check_color_range(color_array):
     """
     Check if all values in a color array are within the range [0, 1].
     If there is out of bounds values, the function sends a message, 
