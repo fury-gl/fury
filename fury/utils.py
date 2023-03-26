@@ -1574,19 +1574,20 @@ def check_color_range(color_array):
         is_tuple = True
         color_array = np.asarray(color_array)
 
+    # Inform there is out of bounds color
+    # Change the out of bounds color to red [1, 0, 0]
     if color_array.ndim == 1:
         if np.any(color_array > 1) or np.any(color_array < 0):
             print(
                 f"{color_array} in the color array are outside the valid range [0, 1]")
             color_array = [1, 0, 0, 1][:len(color_array)]
+            print("It has been modified to red color")
 
     elif color_array.ndim == 2:
         for i, row in enumerate(color_array):
             if np.any(row > 1) or np.any(row < 0):
                 print(f"{row} in the color array are outside the valid range [0, 1]")
-                # if so, set entire row to [1, 0, 0] or [1, 0, 0, 1]
                 color_array[i] = [1, 0, 0, 1][:len(row)]
-                print(color_array[i])
                 print("It has been modified to red color")
 
     if is_tuple:

@@ -533,7 +533,7 @@ def contour_from_roi(data, affine=None, color=np.array([1, 0, 0]), opacity=1):
 
     color = check_color_range(color)
 
-    skin_actor.GetProperty().SetColor(color[0][0], color[0][1], color[0][2])
+    skin_actor.GetProperty().SetColor(color[0], color[1], color[2])
     skin_actor.GetProperty().SetOpacity(opacity)
 
     return skin_actor
@@ -570,12 +570,12 @@ def contour_from_label(data, affine=None, color=None):
 
     unique_roi_surfaces = Assembly()
 
+    # color = check_color_range(color)
+
     if color is None:
         color = np.random.rand(nb_surfaces, 3)
     elif color.shape != (nb_surfaces, 3) and color.shape != (nb_surfaces, 4):
         raise ValueError('Incorrect color array shape')
-
-    color = check_color_range(color)
 
     if color.shape == (nb_surfaces, 4):
         opacity = color[:, -1]
@@ -1833,7 +1833,7 @@ def sphere(
     >>> # window.show(scene)
 
     """
-
+    colors = check_color_range(colors)
     if not use_primitive:
         src = SphereSource() if faces is None else None
 
@@ -1927,6 +1927,7 @@ def cylinder(
     >>> # window.show(scene)
 
     """
+    colors = check_color_range(colors)
     if faces is None:
         src = CylinderSource()
         src.SetCapping(capped)
@@ -2015,6 +2016,8 @@ def disk(
         src = None
         rotate = None
 
+    colors = check_color_range(colors)
+
     disk_actor = repeat_sources(
         centers=centers,
         colors=colors,
@@ -2057,6 +2060,7 @@ def square(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> # window.show(scene)
 
     """
+    colors = check_color_range(colors)
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(
         verts,
@@ -2109,6 +2113,7 @@ def rectangle(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 0))
     >>> # window.show(scene)
 
     """
+    colors = check_color_range(colors)
     return square(centers=centers, directions=directions, colors=colors, scales=scales)
 
 
@@ -2142,6 +2147,7 @@ def box(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 3)):
     >>> # window.show(scene)
 
     """
+    colors = check_color_range(colors)
     verts, faces = fp.prim_box()
     res = fp.repeat_primitive(
         verts,
@@ -2190,6 +2196,7 @@ def cube(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> # window.show(scene)
 
     """
+    colors = check_color_range(colors)
     return box(centers=centers, directions=directions, colors=colors, scales=scales)
 
 
@@ -2250,6 +2257,7 @@ def arrow(
     >>> # window.show(scene)
 
     """
+    colors = check_color_range(colors)
     if repeat_primitive:
         vertices, faces = fp.prim_arrow()
         res = fp.repeat_primitive(
@@ -2337,6 +2345,7 @@ def cone(
     >>> # window.show(scene)
 
     """
+    colors = check_color_range(colors)
     if not use_primitive:
         src = ConeSource() if faces is None else None
 
@@ -2401,6 +2410,7 @@ def triangularprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> # window.show(scene)
 
     """
+    colors = check_color_range(colors)
     verts, faces = fp.prim_triangularprism()
     res = fp.repeat_primitive(
         verts,
@@ -2449,6 +2459,7 @@ def rhombicuboctahedron(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=
     >>> # window.show(scene)
 
     """
+    colors = check_color_range(colors)
     verts, faces = fp.prim_rhombicuboctahedron()
     res = fp.repeat_primitive(
         verts,
@@ -2498,6 +2509,7 @@ def pentagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> # window.show(scene)
 
     """
+    colors = check_color_range(colors)
     verts, faces = fp.prim_pentagonalprism()
     res = fp.repeat_primitive(
         verts,
@@ -2547,6 +2559,7 @@ def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> # window.show(scene)
 
     """
+    colors = check_color_range(colors)
     verts, faces = fp.prim_octagonalprism()
     res = fp.repeat_primitive(
         verts,
@@ -2596,6 +2609,7 @@ def frustum(centers, directions=(1, 0, 0), colors=(0, 1, 0), scales=1):
     >>> # window.show(scene)
 
     """
+    colors = check_color_range(colors)
     verts, faces = fp.prim_frustum()
     res = fp.repeat_primitive(
         verts,
@@ -2667,6 +2681,8 @@ def superquadric(
     else:
         roundness = np.array(roundness)
 
+    colors = check_color_range(colors)
+
     res = fp.repeat_primitive_function(
         func=fp.prim_superquadric,
         centers=centers,
@@ -2729,6 +2745,7 @@ def billboard(
     -------
     billboard_actor: Actor
     """
+    colors = check_color_range(colors)
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(
         verts, faces, centers=centers, colors=colors, scales=scales
@@ -2939,6 +2956,7 @@ def vector_text(
 
     texta.SetMapper(textm)
 
+    color = check_color_range(color)
     texta.GetProperty().SetColor(color)
 
     # Set ser rotation origin to the center of the text is following the camera
@@ -3061,6 +3079,8 @@ def text_3d(
     text_actor.set_position(position)
     text_actor.font_family(font_family)
     text_actor.font_style(bold, italic, shadow)
+
+    color = check_color_range(color)
     text_actor.color(color)
     text_actor.justification(justification)
     text_actor.vertical_justification(vertical_justification)
@@ -3362,7 +3382,7 @@ def texture(rgb, interp=True):
     act: Actor
 
     """
-    arr = rgb
+    arr = check_color_range(rgb)
     grid = rgb_to_vtk(np.ascontiguousarray(arr))
 
     Y, X = arr.shape[:2]
@@ -3543,6 +3563,7 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus', sca
     """
     prims = {'sphere': 1, 'torus': 2, 'ellipsoid': 3, 'capsule': 4}
 
+    colors = check_color_range(colors)
     verts, faces = fp.prim_box()
     repeated = fp.repeat_primitive(
         verts,
@@ -3655,6 +3676,7 @@ def markers(
     >>> # window.show(scene, size=(600, 600))
 
     """
+    colors = check_color_range(colors)
     n_markers = centers.shape[0]
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(
