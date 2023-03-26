@@ -891,13 +891,13 @@ def test_check_color_range():
 
     # Test for input of type list (invalid)
     color_list = [100, 150, 200, 0.4]
-    color_list_expected = np.array([[1.0, 0.0, 0.0, 1.0]])
+    color_list_expected = np.array([1.0, 0.0, 0.0, 1.0])
     npt.assert_array_equal(
         utils.check_color_range(color_list), color_list_expected)
 
     # Test for input of type 1d np.array
     color_1d = np.array([0.1, 0.5, 0.9, 0.3])
-    color_1d_expected = np.array([[0.1, 0.5, 0.9, 0.3]])
+    color_1d_expected = np.array([0.1, 0.5, 0.9, 0.3])
     npt.assert_array_equal(
         utils.check_color_range(color_1d), color_1d_expected)
 

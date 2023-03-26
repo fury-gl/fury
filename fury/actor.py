@@ -1701,6 +1701,7 @@ def dot(points, colors=None, opacity=None, dot_size=5):
         vtk_faces.InsertNextCell(1)
         vtk_faces.InsertCellPoint(idd)
 
+    colors = check_color_range(colors)
     color_tuple = color_check(len(points), colors)
     color_array, global_opacity = color_tuple
 
@@ -1768,6 +1769,9 @@ def point(points, colors, point_radius=0.1, phi=8, theta=8, opacity=1.0):
     >>> # window.show(scene)
 
     """
+
+    colors = check_color_range(colors)
+
     return sphere(
         centers=points,
         colors=colors,
@@ -1829,6 +1833,7 @@ def sphere(
     >>> # window.show(scene)
 
     """
+
     if not use_primitive:
         src = SphereSource() if faces is None else None
 

@@ -1566,32 +1566,31 @@ def check_color_range(color_array):
         return color_array
 
     # Convert tuple or list to ndarray (N, 3)
-    is_tuple = False
     if isinstance(color_array, list):
         color_array = np.asarray(color_array)
+
+    is_tuple = False
     if isinstance(color_array, tuple):
         is_tuple = True
         color_array = np.asarray(color_array)
 
-    # change ndarray (3,) or (4,) to (1,3) or (1,4)
     if color_array.ndim == 1:
-        color_array = color_array.reshape(1, len(color_array))
+        if np.any(color_array > 1) or np.any(color_array < 0):
+            print(
+                f"{color_array} in the color array are outside the valid range [0, 1]")
+            color_array = [1, 0, 0, 1][:len(color_array)]
 
-    # Check that the array is of the correct shape
-    assert color_array.ndim == 2 and color_array.shape[1] in [3, 4], \
-        "Invalid color array shape, expect a numpy.ndarray (N,3) or (N,4)"
-
-    # Check that all values are within [0, 1]
-    for i, row in enumerate(color_array):
-        if np.any(row > 1) or np.any(row < 0):
-            print(f"{row} in the color array are outside the valid range [0, 1]")
-            # if so, set entire row to [1, 0, 0] or [1, 0, 0, 1]
-            color_array[i] = [1, 0, 0, 1][:len(row)]
-            print(color_array[i])
-            print("It has been modified to red color")
+    elif color_array.ndim == 2:
+        for i, row in enumerate(color_array):
+            if np.any(row > 1) or np.any(row < 0):
+                print(f"{row} in the color array are outside the valid range [0, 1]")
+                # if so, set entire row to [1, 0, 0] or [1, 0, 0, 1]
+                color_array[i] = [1, 0, 0, 1][:len(row)]
+                print(color_array[i])
+                print("It has been modified to red color")
 
     if is_tuple:
-        color_array = tuple(color_array.flatten())
+        color_array = tuple(color_array)
 
     return color_array
 
