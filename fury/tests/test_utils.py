@@ -858,26 +858,39 @@ def test_color_check():
 
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
 
-    color_tuple = color_check(len(points))import numpy as np
-
-
-def test_check_color_ndarray():
-    # Test a valid color array
-    color_arr_valid = np.array([[0.2, 0.4, 0.6], [0.8, 0.9, 0.7], [0.5, 0.5, 0.5]])
-    assert utils.check_color_ndarray(color_arr_valid) == True
-
-    # Test an invalid color array
-    color_arr_invalid = np.array([[0.2, 0.4, 1.2], [-0.1, 0.8, 0.9], [0.5, -0.1, 0.5]])
-    with pytest.warns(UserWarning):
-        assert utils.check_color_ndarray(color_arr_invalid) == False
-        assert np.array_equal(color_arr_invalid[0], np.array([0.2, 0.4, 1.0]))
-        assert np.array_equal(color_arr_invalid[1], np.array([0.0, 0.8, 0.9]))
-        assert np.array_equal(color_arr_invalid[2], np.array([0.5, 0.0, 0.5]))
-
+    color_tuple = color_check(len(points))
     color_array, global_opacity = color_tuple
 
     npt.assert_equal(color_array, np.floor(np.array([[1, 1, 1]] * 3) * 255))
     npt.assert_equal(global_opacity, 1)
+
+
+def test_check_color_ndarray():
+    # Test input data
+    valid_color_array = np.array([[0.1, 0.2, 0.3, 0.4], [0.4, 0.5, 0.6, 0.7]])
+    invalid_color_array = [[0.1, 0.2, 1.0, 0.3], [255, 255, 255, 0.7]]
+    invalid_color_array_expected = np.array(
+        [[0.1, 0.2, 1.0, 0.3], [1.0, 0.0, 0.0, 1.0]])
+
+    # Test for valid input
+    npt.assert_array_equal(utils.check_color_ndarray(
+        valid_color_array), valid_color_array)
+
+    # Test for invalid input
+    npt.assert_array_equal(utils.check_color_ndarray(
+        invalid_color_array), invalid_color_array_expected)
+
+    # Test for input of type tuple
+    color_tuple = (0.1, 0.2, 0.3)
+    color_tuple_expected = np.array([[0.1, 0.2, 0.3]])
+    npt.assert_array_equal(
+        utils.check_color_ndarray(color_tuple), color_tuple_expected)
+
+    # Test for input of type list (invalid)
+    color_list = [100, 150, 200, 0.4]
+    color_list_expected = np.array([[1.0, 0.0, 0.0, 1.0]])
+    npt.assert_array_equal(
+        utils.check_color_ndarray(color_list), color_list_expected)
 
 
 def test_is_ui():
