@@ -1566,7 +1566,11 @@ def check_color_ndarray(color_array):
         return color_array
 
     # Convert tuple or list to ndarray (N, 3)
-    if isinstance(color_array, (list, tuple)):
+    is_tuple = False
+    if isinstance(color_array, list):
+        color_array = np.asarray(color_array)
+    if isinstance(color_array, tuple):
+        is_tuple = True
         color_array = np.asarray(color_array)
 
     # change ndarray (3,) or (4,) to (1,3) or (1,4)
@@ -1585,6 +1589,9 @@ def check_color_ndarray(color_array):
             color_array[i] = [1, 0, 0, 1][:len(row)]
             print(color_array[i])
             print("It has been modified to red color")
+
+    if is_tuple:
+        color_array = tuple(color_array.flatten())
 
     return color_array
 

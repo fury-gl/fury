@@ -886,9 +886,8 @@ def test_check_color_ndarray():
 
     # Test for input of type tuple
     color_tuple = (0.1, 0.2, 0.3)
-    color_tuple_expected = np.array([[0.1, 0.2, 0.3]])
-    npt.assert_array_equal(
-        utils.check_color_ndarray(color_tuple), color_tuple_expected)
+    color_tuple_expected = (0.1, 0.2, 0.3)
+    assert utils.check_color_ndarray(color_tuple) == color_tuple_expected
 
     # Test for input of type list (invalid)
     color_list = [100, 150, 200, 0.4]
