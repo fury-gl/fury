@@ -858,7 +858,22 @@ def test_color_check():
 
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
 
-    color_tuple = color_check(len(points))
+    color_tuple = color_check(len(points))import numpy as np
+
+
+def test_check_color_ndarray():
+    # Test a valid color array
+    color_arr_valid = np.array([[0.2, 0.4, 0.6], [0.8, 0.9, 0.7], [0.5, 0.5, 0.5]])
+    assert utils.check_color_ndarray(color_arr_valid) == True
+
+    # Test an invalid color array
+    color_arr_invalid = np.array([[0.2, 0.4, 1.2], [-0.1, 0.8, 0.9], [0.5, -0.1, 0.5]])
+    with pytest.warns(UserWarning):
+        assert utils.check_color_ndarray(color_arr_invalid) == False
+        assert np.array_equal(color_arr_invalid[0], np.array([0.2, 0.4, 1.0]))
+        assert np.array_equal(color_arr_invalid[1], np.array([0.0, 0.8, 0.9]))
+        assert np.array_equal(color_arr_invalid[2], np.array([0.5, 0.0, 0.5]))
+
     color_array, global_opacity = color_tuple
 
     npt.assert_equal(color_array, np.floor(np.array([[1, 1, 1]] * 3) * 255))

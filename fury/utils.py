@@ -1,4 +1,5 @@
 import numpy as np
+import warnings
 from scipy.ndimage import map_coordinates
 
 from fury.colormap import line_colors
@@ -1545,6 +1546,40 @@ def color_check(pts_len, colors=None):
     color_array.SetName('colors')
 
     return color_array, global_opacity
+
+
+def check_color_ndarray(color_arr):
+    """
+    Check if all values in a color array are within the range [0, 1].
+    If there is out of bounds values, the function sends a message, 
+    replaces the out-of-bounds values with the red color [1, 0, 0].
+
+    Args:
+        color_arr (numpy.ndarray): An array of shape (N, 3) or (N, 4).
+
+    Returns:
+        The orignal array if all values are within the range [0,1].
+        Otherwise, the updated numpy.ndarray of color_arr
+    """
+    # Convert tuple or list to ndarray
+    if not isinstance(color_arr, np.ndarray):
+        color_arr = np.asarray(color_arr)
+        color_arr = color_arr.reshape(1, len(color_arr))
+
+    # Check that the array is of the correct shape
+    assert color_arr.ndim == 2 and color_arr.shape[1] in [3, 4], \
+        "Invalid color array shape, expect a numpy.ndarray (N,3) or (N,4)"
+
+    # Check that all values are within [0, 1]
+    for i, row in enumerate(color_arr):
+        if np.any(row > 1) or np.any(row < 0):
+            print(f"{row} in the color array are outside the valid range [0, 1]")
+            # if so, set entire row to [1, 0, 0] or [1, 0, 0, 1]
+            color_arr[i] = [1, 0, 0, 1][:len(row)]
+            print(color_arr[i])
+            print("It has been modified to red color")
+
+    return color_arr
 
 
 def is_ui(actor):
