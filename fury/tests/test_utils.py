@@ -866,6 +866,10 @@ def test_color_check():
 
 
 def test_check_color_ndarray():
+    # Test input None in color
+    none_color = None
+    assert utils.check_color_ndarray(none_color) == None
+
     # Test input data
     valid_color_array = np.array([[0.1, 0.2, 0.3, 0.4], [0.4, 0.5, 0.6, 0.7]])
     invalid_color_array = [[0.1, 0.2, 1.0, 0.3], [255, 255, 255, 0.7]]

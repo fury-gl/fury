@@ -1561,6 +1561,10 @@ def check_color_ndarray(color_array):
         The orignal array if all values are within the range [0,1].
         Otherwise, the updated numpy.ndarray of color_array
     """
+    # Keep the option for color = None for some actors
+    if color_array is None:
+        return color_array
+
     # Convert tuple or list to ndarray (N, 3)
     if isinstance(color_array, (list, tuple)):
         color_array = np.asarray(color_array)
