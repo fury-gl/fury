@@ -80,6 +80,7 @@ from fury.utils import (
     set_polydata_triangles,
     set_polydata_vertices,
     shallow_copy,
+    check_color_ndarray,
 )
 
 
@@ -383,6 +384,7 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
     triangle_poly_data.SetPoints(points)
 
     if colors is not None:
+        colors = check_color_ndarray(colors)
         triangle_poly_data.GetPointData().SetScalars(numpy_to_vtk_colors(255 * colors))
 
     if faces is None:
@@ -528,7 +530,10 @@ def contour_from_roi(data, affine=None, color=np.array([1, 0, 0]), opacity=1):
     skin_actor = Actor()
 
     skin_actor.SetMapper(skin_mapper)
-    skin_actor.GetProperty().SetColor(color[0], color[1], color[2])
+
+    color = check_color_ndarray(color)
+
+    skin_actor.GetProperty().SetColor(color[0][0], color[0][1], color[0][2])
     skin_actor.GetProperty().SetOpacity(opacity)
 
     return skin_actor
@@ -569,6 +574,8 @@ def contour_from_label(data, affine=None, color=None):
         color = np.random.rand(nb_surfaces, 3)
     elif color.shape != (nb_surfaces, 3) and color.shape != (nb_surfaces, 4):
         raise ValueError('Incorrect color array shape')
+
+    color = check_color_ndarray(color)
 
     if color.shape == (nb_surfaces, 4):
         opacity = color[:, -1]
