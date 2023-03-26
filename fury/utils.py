@@ -1581,6 +1581,7 @@ def check_color_range(color_array):
             print(
                 f"{color_array} in the color array are outside the valid range [0, 1]")
             color_array = [1, 0, 0, 1][:len(color_array)]
+            color_array = np.array(color_array)
             print("It has been modified to red color")
 
     elif color_array.ndim == 2:

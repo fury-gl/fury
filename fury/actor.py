@@ -570,12 +570,12 @@ def contour_from_label(data, affine=None, color=None):
 
     unique_roi_surfaces = Assembly()
 
-    # color = check_color_range(color)
-
     if color is None:
         color = np.random.rand(nb_surfaces, 3)
     elif color.shape != (nb_surfaces, 3) and color.shape != (nb_surfaces, 4):
         raise ValueError('Incorrect color array shape')
+
+    color = check_color_range(color)
 
     if color.shape == (nb_surfaces, 4):
         opacity = color[:, -1]
