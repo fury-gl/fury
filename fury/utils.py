@@ -1585,22 +1585,19 @@ def normalize_color(color_array):
         is_tuple = True
         color_array = np.asarray(color_array)
 
-    # Inform there is out of bounds color
-    # Change the out of bounds color to red [1, 0, 0]
-    if color_array.ndim == 1:
-        if np.any(color_array > 1) or np.any(color_array < 0):
-            print(
-                f"{color_array} in the color array are outside the valid range [0, 1]")
-            color_array = [1, 0, 0, 1][:len(color_array)]
-            color_array = np.array(color_array)
-            print("It has been modified to red color")
+    # Normalize the out of bounds array
+    if color_array.ndim == 1 and np.any(color_array > 1):
+        print(
+            f"{color_array} in the color array are outside the valid range [0, 1]")
+        color_array = color_array / 255.0
+        print("It has been normalized to fit the range.")
 
     elif color_array.ndim == 2:
         for i, row in enumerate(color_array):
-            if np.any(row > 1) or np.any(row < 0):
+            if np.any(row > 1):
                 print(f"{row} in the color array are outside the valid range [0, 1]")
-                color_array[i] = [1, 0, 0, 1][:len(row)]
-                print("It has been modified to red color")
+                color_array[i, :3] = color_array[i, :3] / 255.0
+                print("It has been normalized to fit the range.")
 
     if is_tuple:
         color_array = tuple(color_array)
