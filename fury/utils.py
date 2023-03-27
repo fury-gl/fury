@@ -1550,16 +1550,27 @@ def color_check(pts_len, colors=None):
 
 def normalize_color(color_array):
     """
-    Check if all values in a color array are within the range [0, 1].
-    If there is out of bounds values, the function sends a message, 
-    replaces the out-of-bounds colors with the red color [1, 0, 0].
+    Normalize an array of RGB or RGBA color values to be within the range 
+    [0, 1].
 
-    Args:
-        color_array (numpy.ndarray): An array of shape (N, 3) or (N, 4).
+    If any values are out of bounds, normalize the color array by scaling all
+    color values to fit within the valid range.
 
-    Returns:
-        The orignal array if all values are within the range [0,1].
-        Otherwise, the updated numpy.ndarray of color_array
+    Parameters
+    ----------
+    color_array : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        An array of RGB or RGBA color values, where each row represents 
+        a single color as an array of shape (3,) or (4,). Alternatively,
+        a tuple of length 3 or 4 can be passed to represent a single color.
+
+    Returns
+    -------
+    color_array : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        The original array if all values are within the range [0,1]. 
+        If any values in the input array were out of bounds, a new array
+        or tuple is returned with the colors normalized to fit within the
+        valid range.
+
     """
     # Keep the option for color = None for some actors
     if color_array is None:
