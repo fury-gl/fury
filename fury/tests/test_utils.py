@@ -870,28 +870,29 @@ def test_normalize_color():
     none_color = None
     assert utils.normalize_color(none_color) == None
 
-    # Test input data
+    # Test 2d input data
     valid_color_array = np.array([[0.1, 0.2, 0.3, 0.4], [0.4, 0.5, 0.6, 0.7]])
-    invalid_color_array = [[0.1, 0.2, 1.0, 0.3], [255, 255, 255, 0.7]]
-    invalid_color_array_expected = np.array(
-        [[0.1, 0.2, 1.0, 0.3], [1.0, 0.0, 0.0, 1.0]])
+    outbound_color_array = [[0.1, 0.2, 1.0, 0.3], [255, 255, 255, 0.7]]
+    outbound_color_array_expected = np.array(
+        [[0.1, 0.2, 1.0, 0.3], [1.0, 1.0, 1.0, 0.7]])
 
-    # Test for valid input
+    # Test for valid 2d input
     npt.assert_array_equal(utils.normalize_color(
         valid_color_array), valid_color_array)
 
-    # Test for invalid input
+    # Test for invalid 2d input
     npt.assert_array_equal(utils.normalize_color(
-        invalid_color_array), invalid_color_array_expected)
+        outbound_color_array), outbound_color_array_expected)
 
     # Test for input of type tuple
     color_tuple = (0.1, 0.2, 0.3)
     color_tuple_expected = (0.1, 0.2, 0.3)
     assert utils.normalize_color(color_tuple) == color_tuple_expected
 
-    # Test for input of type list (invalid)
+    # Test for input of type list
     color_list = [100, 150, 200, 0.4]
-    color_list_expected = np.array([1.0, 0.0, 0.0, 1.0])
+    color_list_expected = np.array(color_list)
+    color_list_expected[:3] = color_list_expected[:3]/255.0
     npt.assert_array_equal(
         utils.normalize_color(color_list), color_list_expected)
 

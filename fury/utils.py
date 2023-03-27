@@ -1589,7 +1589,7 @@ def normalize_color(color_array):
     if color_array.ndim == 1 and np.any(color_array > 1):
         print(
             f"{color_array} in the color array are outside the valid range [0, 1]")
-        color_array = color_array / 255.0
+        color_array[:3] = color_array[:3] / 255.0
         print("It has been normalized to fit the range.")
 
     elif color_array.ndim == 2:
