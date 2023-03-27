@@ -865,10 +865,10 @@ def test_color_check():
     npt.assert_equal(global_opacity, 1)
 
 
-def test_check_color_range():
+def test_normalize_color():
     # Test input None in color
     none_color = None
-    assert utils.check_color_range(none_color) == None
+    assert utils.normalize_color(none_color) == None
 
     # Test input data
     valid_color_array = np.array([[0.1, 0.2, 0.3, 0.4], [0.4, 0.5, 0.6, 0.7]])
@@ -877,29 +877,29 @@ def test_check_color_range():
         [[0.1, 0.2, 1.0, 0.3], [1.0, 0.0, 0.0, 1.0]])
 
     # Test for valid input
-    npt.assert_array_equal(utils.check_color_range(
+    npt.assert_array_equal(utils.normalize_color(
         valid_color_array), valid_color_array)
 
     # Test for invalid input
-    npt.assert_array_equal(utils.check_color_range(
+    npt.assert_array_equal(utils.normalize_color(
         invalid_color_array), invalid_color_array_expected)
 
     # Test for input of type tuple
     color_tuple = (0.1, 0.2, 0.3)
     color_tuple_expected = (0.1, 0.2, 0.3)
-    assert utils.check_color_range(color_tuple) == color_tuple_expected
+    assert utils.normalize_color(color_tuple) == color_tuple_expected
 
     # Test for input of type list (invalid)
     color_list = [100, 150, 200, 0.4]
     color_list_expected = np.array([1.0, 0.0, 0.0, 1.0])
     npt.assert_array_equal(
-        utils.check_color_range(color_list), color_list_expected)
+        utils.normalize_color(color_list), color_list_expected)
 
     # Test for input of type 1d np.array
     color_1d = np.array([0.1, 0.5, 0.9, 0.3])
     color_1d_expected = np.array([0.1, 0.5, 0.9, 0.3])
     npt.assert_array_equal(
-        utils.check_color_range(color_1d), color_1d_expected)
+        utils.normalize_color(color_1d), color_1d_expected)
 
 
 def test_is_ui():
