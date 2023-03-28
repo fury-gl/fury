@@ -1533,7 +1533,7 @@ def color_check(pts_len, colors=None):
         # Automatic RGB colors
         colors = np.asarray((1, 1, 1))
         color_array = numpy_to_vtk_colors(np.tile(255 * colors, (pts_len, 1)))
-    elif type(colors) is tuple:
+    elif colors.shape in [(3,), (4,)]:
         global_opacity = 1 if len(colors) == 3 else colors[3]
         colors = np.asarray(colors)
         color_array = numpy_to_vtk_colors(np.tile(255 * colors, (pts_len, 1)))
@@ -1576,13 +1576,8 @@ def normalize_color(color_array):
     if color_array is None:
         return color_array
 
-    # Convert tuple or list to ndarray (N, 3)
-    if isinstance(color_array, list):
-        color_array = np.asarray(color_array)
-
-    is_tuple = False
-    if isinstance(color_array, tuple):
-        is_tuple = True
+    # Convert tuple or list to ndarray
+    if isinstance(color_array, (tuple, list)):
         color_array = np.asarray(color_array)
 
     # Normalize the out of bounds array
@@ -1598,9 +1593,6 @@ def normalize_color(color_array):
                 print(f"{row} in the color array are outside the valid range [0, 1]")
                 color_array[i, :3] = color_array[i, :3] / 255.0
                 print("It has been normalized to fit the range.")
-
-    if is_tuple:
-        color_array = tuple(color_array)
 
     return color_array
 

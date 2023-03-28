@@ -839,7 +839,7 @@ def test_color_check():
     npt.assert_equal(global_opacity, 1)
 
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
-    colors = (1, 1, 1, 0.5)
+    colors = np.array([1, 1, 1, 0.5])
 
     color_tuple = color_check(len(points), colors)
     color_array, global_opacity = color_tuple
@@ -848,7 +848,7 @@ def test_color_check():
     npt.assert_equal(global_opacity, 0.5)
 
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
-    colors = (1, 0, 0)
+    colors = np.array([1, 0, 0])
 
     color_tuple = color_check(len(points), colors)
     color_array, global_opacity = color_tuple
@@ -886,8 +886,8 @@ def test_normalize_color():
 
     # Test for input of type tuple
     color_tuple = (0.1, 0.2, 0.3)
-    color_tuple_expected = (0.1, 0.2, 0.3)
-    assert utils.normalize_color(color_tuple) == color_tuple_expected
+    color_tuple_expected = np.array([0.1, 0.2, 0.3])
+    npt.assert_array_equal(utils.normalize_color(color_tuple), color_tuple_expected)
 
     # Test for input of type list
     color_list = [100, 150, 200, 0.4]
