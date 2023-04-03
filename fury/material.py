@@ -353,9 +353,16 @@ def manifest_standard(actor, ambient_level=0, ambient_color=(1, 1, 1),
         return
     
 
-def opacity(actor, number):
-    actor.GetProperty().GetOpactity()
-    actor.GetPropertry().SetOpacity(number)
+def opacity(actor, alpha):
+    """Change actors opacity (transparency)
+
+    Parameters
+    -----------
+    actor : actor
+    alpha : float
+        Values should be between 0 (transparent) to 1 (opaque).
+    """
+    actor.GetPropertry().SetOpacity(alpha)
     return actor
 
 def manifest_points(actor, pointsize):
