@@ -958,6 +958,71 @@ def axes(
     arrow_actor = arrow(centers, dirs, colors, scales, repeat_primitive=False)
     return arrow_actor
 
+def dualpoint_arrow(centers, directions, colors, heights=1,
+          tip_length=0.35, tip_radius=0.1, shaft_radius=0.03, scales=1, resolution=10,
+          vertices=None, faces=None, repeat_primitive=True):
+    """Visualize one or many arrows with differents features.
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+        Arrow positions
+    directions : ndarray, shape (N, 3)
+        The orientation vector of the arrow.
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    heights : ndarray, shape (N)
+        The height of the arrow.
+    resolution : int
+        The resolution of the arrow.
+    tip_length : float
+        The tip size of the arrow (default: 0.35)
+    tip_radius : float
+        the tip radius of the arrow (default: 0.1)
+    shaft_radius : float
+        The shaft radius of the arrow (default: 0.03)
+    vertices : ndarray, shape (N, 3)
+        The point cloud defining the arrow.
+    faces : ndarray, shape (M, 3)
+        If faces is None then a arrow is created based on directions, heights
+        and resolution. If not then a arrow is created with the provided
+        vertices and faces.
+    Returns
+    -------
+    dualpoint_arrow_actor: Actor
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(5, 3)
+    >>> directions = np.random.rand(5, 3)
+    >>> heights = np.random.rand(5)
+    >>> dualpoint_arrow_actor = actor.dualpoint_arrow(centers, directions, (1, 1, 1), heights)
+    >>> scene.add(dualpoint_arrow_actor)
+    >>> # window.show(scene)
+    """
+    if repeat_primitive:
+        vertices, faces = fp.prim_dualpoint_arrow()
+        res = fp.repeat_primitive(vertices, faces, directions=directions, centers=centers,
+                                  colors=colors, scales=scales)
+        big_vertices, big_faces, big_colors, _ = res
+        prim_count = len(centers)
+        dualpoint_arrow_actor = get_actor_from_primitive(big_vertices, big_faces, big_colors,
+                                                         prim_count=prim_count)
+        return dualpoint_arrow_actor
+
+    src = ArrowSource() if faces is None else None
+
+    if src is not None:
+        src.SetTipResolution(resolution)
+        src.SetShaftResolution(resolution)
+        src.SetTipLength(tip_length)
+        src.SetTipRadius(tip_radius)
+        src.SetShaftRadius(shaft_radius)
+
+    dualpoint_arrow_actor = repeat_sources(centers=centers, directions=directions,
+                                 colors=colors, active_scalars=heights,
+                                 source=src, vertices=vertices, faces=faces)
+    return dualpoint_arrow_actor
 
 def odf_slicer(
     odfs,

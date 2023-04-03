@@ -1123,6 +1123,93 @@ def prim_arrow(
 
     return vertices, triangles
 
+def prim_dualpoint_arrow(height=1.0, resolution=10, tip_length=0.35, tip_radius=0.1, shaft_radius=0.03):
+    """Return vertices and triangle for arrow geometry.
+    Parameters
+    ----------
+    height : float
+        The height of the arrow (default: 1.0).
+    resolution : int
+        The resolution of the arrow.
+    tip_length : float
+        The tip size of the arrow (default: 0.35)
+    tip_radius : float
+        the tip radius of the arrow (default: 0.1)
+    shaft_radius : float
+        The shaft radius of the arrow (default: 0.03)
+    Returns
+    -------
+    vertices: ndarray
+        vertices of the Arrow
+    triangles: ndarray
+        Triangles of the Arrow
+    """
+
+    shaft_height = height - tip_length
+
+    all_faces = []
+    shaft_outer_circle_down = []
+    shaft_outer_circle_up = []
+    tip_outer_circle = []
+
+    # calculating vertices
+    for i in range(resolution + 1):
+        x = math.cos((i * 2) * math.pi / resolution)
+        y = math.sin((i * 2) * math.pi / resolution)
+
+        shaft_x = x * shaft_radius
+        shaft_y = y * shaft_radius
+
+        tip_x = x * tip_radius
+        tip_y = y * tip_radius
+
+        # lower shaft circle (d)
+        shaft_outer_circle_down.append((0.0, shaft_x, shaft_y))
+        # upper shaft circle (u)
+        shaft_outer_circle_up.append((shaft_height, shaft_x, shaft_y))
+        # tip outer circle
+        tip_outer_circle.append((shaft_height, tip_x, tip_y))
+
+    #  center, center at shaft height, center at overall height
+    v1, v2, v3 = (.0, .0, .0), (shaft_height, .0, .0), (height, .0, .0)
+
+    all_verts = [v1, v2, v3] + shaft_outer_circle_down + shaft_outer_circle_up + tip_outer_circle
+
+    offset = len(shaft_outer_circle_down)
+
+    off_1 = 3
+    off_2 = off_1 + offset
+    off_3 = off_2 + offset
+
+    # calculating triangles
+    for i in range(resolution):
+        # down circle  d[i] , 0, d[i + 1]
+        # all_faces.append((i + off_1 + 1, i + off_1, 0))
+
+        # cylinder triangles 1 d[i], d[i + 1], u[i + 1]
+        all_faces.append((i + off_2 + 1, i + off_1, i + off_1 + 1))
+
+        # cylinder triangles 2 u[i + 1], u[i], d[i]
+        all_faces.append((i + off_1, i + off_2 + 1, i + off_2))
+
+        # tip circle u[i] , 1, d[i + 1]
+        all_faces.append((i + off_3 + 1, i + off_3, 1))
+
+        # tip cone t[i], t[i + 1], 2
+        all_faces.append((2, i + off_3, i + off_3 + 1))
+
+    vertices_front = np.asarray(all_verts)
+    triangles_front = np.asarray(all_faces, dtype=int)
+    vertices_back = vertices_front.copy()
+    vertices_back = - vertices_back
+    triangles_back = triangles_front.copy()
+    addition_factor = vertices_front.shape[0]
+    triangles_back = np.add(triangles_back, addition_factor)
+
+    vertices = np.vstack((vertices_front, vertices_back))
+    triangles = np.vstack((triangles_front, triangles_back))
+
+    return vertices, triangles
 
 def prim_cone(radius=0.5, height=1, sectors=10):
     """Return vertices and triangle of a Cone.

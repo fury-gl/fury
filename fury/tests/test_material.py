@@ -268,3 +268,8 @@ def test_manifest_standard():
     actual = ss[100, 150, :] / 1000
     desired = np.array([180, 0, 180]) / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
+
+# def test_opacity(actor, number):
+#     actor.GetProperty().GetOpactity()
+#     actor.GetPropertry().SetOpacity(number)
+#     return actor
