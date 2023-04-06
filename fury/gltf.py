@@ -4,14 +4,16 @@ import os
 import numpy as np
 import copy
 import pygltflib as gltflib
-from pygltflib.utils import glb2gltf, gltf2glb
 from PIL import Image
-from fury.lib import Texture, Camera, numpy_support, Transform, Matrix4x4, PolyDataTangents
-from fury import transform, utils, io, actor, material
+from pygltflib.utils import glb2gltf, gltf2glb
+
+from fury import actor, io, transform, utils, material
 from fury.animation import Animation
-from fury.animation.interpolator import (linear_interpolator, slerp,
+from fury.animation.interpolator import (linear_interpolator,
+                                         slerp,
                                          step_interpolator,
                                          tan_cubic_spline_interpolator)
+from fury.lib import Camera, Matrix4x4, Texture, Transform, numpy_support, PolyDataTangents
 
 comp_type = {
     5120: {'size': 1, 'dtype': np.byte},
