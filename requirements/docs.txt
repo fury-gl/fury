@@ -5,7 +5,8 @@ matplotlib
 sphinx-copybutton
 sphinx-gallery>=0.10.0
 pydata-sphinx-theme>=0.10.1
+tomli>=2.0.1
 networkx
-ablog >= 0.10.5
+ablog >=0.11.1
 pybullet>=2.7.0
 opencv-python

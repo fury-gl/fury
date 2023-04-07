@@ -63,6 +63,7 @@ docs/source/reference
 docs/examples/*.png
 docs/examples/*.vtk
 docs/examples/*.gif
+docs/examples_revamped
 docs/tutorials/*.png
 docs/tutorials/*.vtk
 docs/tutorials/*.gif
