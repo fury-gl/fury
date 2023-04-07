@@ -102,9 +102,10 @@ readme = "file: _shaders.rst"
 position = 13
 enable = true
 files = [
+    "viz_billboard_sdf_spheres.py",
+    "viz_sdf_cylinder.py",
     "viz_pbr_spheres.py",
     "viz_principled_spheres.py",
-    "viz_sdf_cylinder.py",
     "viz_sdfactor.py",
     "viz_shader.py"
 ]
