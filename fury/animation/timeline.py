@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from fury.lib import WindowToImageFilter, RenderWindow, numpy_support
 from fury import window
@@ -314,6 +315,19 @@ class Timeline:
         It's recommended to use 50 or 30 FPS while recording to a GIF file.
         """
 
+        ext = os.path.splitext(fname)[-1]
+
+        mp4 = ext == '.mp4'
+
+        if mp4:
+            try:
+                import cv2
+            except ImportError:
+                raise ImportError('OpenCV must be installed in order to '
+                                  'save as MP4 video.')
+            fourcc = cv2.VideoWriter.fourcc(*'mp4v')
+            out = cv2.VideoWriter(fname, fourcc, fps, size)
+
         duration = self.duration
         step = speed / fps
         frames = []
@@ -331,51 +345,59 @@ class Timeline:
         render_window.SetOffScreenRendering(1)
         render_window.AddRenderer(scene)
         render_window.SetSize(*size)
+
         if order_transparent:
             window.antialiasing(scene, render_window, multi_samples, max_peels,
                                 0)
+
+        render_window = RenderWindow()
+        render_window.SetOffScreenRendering(1)
+        render_window.AddRenderer(scene)
+        render_window.SetSize(*size)
+
+        if order_transparent:
+            window.antialiasing(scene, render_window, multi_samples, max_peels, 0)
+
+        window_to_image_filter = WindowToImageFilter()
+
         print('Recording...')
         while t < duration:
             self.seek(t)
             render_window.Render()
-            window_to_image_filter = WindowToImageFilter()
             window_to_image_filter.SetInput(render_window)
             window_to_image_filter.Update()
+            window_to_image_filter.Modified()
             vtk_image = window_to_image_filter.GetOutput()
             h, w, _ = vtk_image.GetDimensions()
             vtk_array = vtk_image.GetPointData().GetScalars()
             components = vtk_array.GetNumberOfComponents()
             snap = numpy_support.vtk_to_numpy(vtk_array).reshape(w, h,
                                                                  components)
-            frames.append(snap)
+            corrected_snap = np.flipud(snap)
+
+            if mp4:
+                cv_img = cv2.cvtColor(corrected_snap, cv2.COLOR_RGB2BGR)
+                out.write(cv_img)
+            else:
+                pillow_snap = Image.fromarray(corrected_snap)
+                frames.append(pillow_snap)
+
             t += step
 
         print('Saving...')
+
         if fname is None:
             return frames
 
-        images = [Image.fromarray(frame).transpose(1) for frame in frames]
-        if 'mp4' not in fname:
-            if fname[-4:] != '.gif':
-                fname += '.gif'
-            images[0].save(fname, append_images=images[1:], loop=0,
-                           duration=1000 / fps, save_all=True)
-        else:
-            try:
-                import cv2
-            except ImportError:
-                raise ImportError('OpenCV must be installed in order to '
-                                  'save as MP4 video.')
-            fourcc = cv2.VideoWriter.fourcc(*'mp4v')
-            out = cv2.VideoWriter(fname, fourcc, fps, size)
-
-            for img in images:
-                cv_img = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
-                out.write(cv_img)
-
+        if mp4:
             out.release()
+        else:
+            frames[0].save(fname, append_images=frames[1:], loop=0,
+                           duration=1000 / fps, save_all=True)
+
         if _hide_panel:
             self.playback_panel.show()
+
         return frames
 
     def add_animation(self, animation):
