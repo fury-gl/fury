@@ -1,22 +1,26 @@
 import os
-import pytest
+from tempfile import TemporaryDirectory as InTemporaryDirectory
 
 import numpy as np
 import numpy.testing as npt
+import pytest
 
 from fury import actor, window
-from fury.shaders import (add_shader_callback, attribute_to_actor,
-                          compose_shader, import_fury_shader, load_shader,
-                          load, shader_to_actor, replace_shader_in_actor)
+from fury.lib import Actor, CellArray, Points, PolyData, PolyDataMapper, numpy_support
+from fury.shaders import (
+    add_shader_callback,
+    attribute_to_actor,
+    compose_shader,
+    import_fury_shader,
+    load,
+    load_shader,
+    replace_shader_in_actor,
+    shader_to_actor,
+)
 from fury.shaders.base import SHADERS_DIR
-from fury.lib import (Actor, CellArray, Points, PolyData, PolyDataMapper,
-                      numpy_support)
 from fury.utils import set_polydata_colors
-from tempfile import TemporaryDirectory as InTemporaryDirectory
 
-
-vertex_dec = \
-    """
+vertex_dec = """
     uniform float time;
     out vec4 myVertexMC;
     mat4 rotationMatrix(vec3 axis, float angle) {
@@ -45,16 +49,14 @@ vertex_dec = \
     vec3 ax = vec3(1, 0, 0);
     """
 
-vertex_impl = \
-    """
+vertex_impl = """
     myVertexMC = vertexMC;
     myVertexMC.xyz = rotate(vertexMC.xyz, ax, time*0.01);
         vertexVCVSOutput = MCVCMatrix * myVertexMC;
         gl_Position = MCDCMatrix * myVertexMC;
     """
 
-geometry_code = \
-    """
+geometry_code = """
     //VTK::System::Dec
     //VTK::PositionVC::Dec
     uniform mat4 MCDCMatrix;
@@ -99,14 +101,12 @@ geometry_code = \
     }
     """
 
-frag_dec = \
-    """
+frag_dec = """
     varying vec4 myVertexMC;
     uniform float time;
     """
 
-frag_impl = \
-    """
+frag_impl = """
     vec3 rColor = vec3(.9, .0, .3);
     vec3 gColor = vec3(.0, .9, .3);
     vec3 bColor = vec3(.0, .3, .9);
@@ -143,10 +143,12 @@ frag_impl = \
 
 def generate_cube_with_effect():
     cube = actor.cube(np.array([[0, 0, 0]]))
-    shader_to_actor(cube, "vertex", impl_code=vertex_impl,
-                    decl_code=vertex_dec, block="valuepass")
-    shader_to_actor(cube, "fragment", impl_code=frag_impl,
-                    decl_code=frag_dec, block="light")
+    shader_to_actor(
+        cube, 'vertex', impl_code=vertex_impl, decl_code=vertex_dec, block='valuepass'
+    )
+    shader_to_actor(
+        cube, 'fragment', impl_code=frag_impl, decl_code=frag_dec, block='light'
+    )
     return cube
 
 
@@ -189,7 +191,8 @@ def test_add_shader_callback():
     scene.add(cube)
 
     showm = window.ShowManager(scene)
-    class Timer(object):
+
+    class Timer:
         idx = 0.0
 
     timer = Timer()
@@ -206,7 +209,7 @@ def test_add_shader_callback():
 
         if program is not None:
             try:
-                program.SetUniformf("time", timer.idx)
+                program.SetUniformf('time', timer.idx)
             except ValueError:
                 pass
 
@@ -219,8 +222,7 @@ def test_add_shader_callback():
     report = window.analyze_snapshot(arr)
     npt.assert_equal(report.objects, 1)
 
-    cone_actor = actor.cone(np.array([[0, 0, 0]]), np.array([[0, 1, 0]]),
-                            (0, 0, 1))
+    cone_actor = actor.cone(np.array([[0, 0, 0]]), np.array([[0, 1, 0]]), (0, 0, 1))
 
     test_values = []
 
@@ -262,17 +264,17 @@ def test_add_shader_callback():
 
     # check the priority of each call
     arr2 = window.snapshot(scene, size=(200, 200))
-    assert np.abs([
-        test_values[0] - 999, test_values[1] - 500,
-        test_values[2] - 0]).sum() == 0
+    assert (
+        np.abs([test_values[0] - 999, test_values[1] - 500, test_values[2] - 0]).sum()
+        == 0
+    )
 
     # check if the correct observer was removed
     mapper.RemoveObserver(id_mean)
     test_values = []
 
     arr3 = window.snapshot(scene, size=(200, 200))
-    assert np.abs([
-        test_values[0] - 999, test_values[1] - 0]).sum() == 0
+    assert np.abs([test_values[0] - 999, test_values[1] - 0]).sum() == 0
 
 
 def test_attribute_to_actor():
@@ -292,7 +294,7 @@ def test_compose_shader():
     list_str2 = [str_test1, str_test2]
     # Test empty parameter
     code = compose_shader(None)
-    npt.assert_equal(code, "")
+    npt.assert_equal(code, '')
     # Test invalid list
     npt.assert_raises(IOError, compose_shader, list_str1)
     # Test str code
@@ -360,11 +362,11 @@ def test_replace_shader_in_actor(interactive=False):
     if interactive:
         window.show(scene)
     ss = window.snapshot(scene, size=(200, 200))
-    actual = ss[40, 140, :]
+    actual = ss[160, 140, :]
     npt.assert_array_equal(actual, [0, 0, 0])
-    actual = ss[140, 40, :]
+    actual = ss[60, 40, :]
     npt.assert_array_equal(actual, [0, 0, 0])
-    actual = ss[40, 40, :]
+    actual = ss[160, 40, :]
     npt.assert_array_equal(actual, [0, 0, 0])
     scene.clear()
     replace_shader_in_actor(test_actor, 'geometry', geometry_code)
@@ -372,11 +374,11 @@ def test_replace_shader_in_actor(interactive=False):
     if interactive:
         window.show(scene)
     ss = window.snapshot(scene, size=(200, 200))
-    actual = ss[40, 140, :]
+    actual = ss[160, 140, :]
     npt.assert_array_equal(actual, [255, 0, 0])
-    actual = ss[140, 40, :]
+    actual = ss[60, 40, :]
     npt.assert_array_equal(actual, [0, 255, 0])
-    actual = ss[40, 40, :]
+    actual = ss[160, 40, :]
     npt.assert_array_equal(actual, [0, 0, 255])
 
 
@@ -394,11 +396,9 @@ def test_shader_to_actor(interactive=False):
     npt.assert_equal(report.objects, 1)
 
     # test errors
-    npt.assert_raises(ValueError, shader_to_actor, cube, "error",
-                      vertex_impl)
-    npt.assert_raises(ValueError, shader_to_actor, cube, "geometry",
-                      vertex_impl)
-    npt.assert_raises(ValueError, shader_to_actor, cube, "vertex",
-                      vertex_impl, block="error")
-    npt.assert_raises(ValueError, replace_shader_in_actor, cube, "error",
-                      vertex_impl)
+    npt.assert_raises(ValueError, shader_to_actor, cube, 'error', vertex_impl)
+    npt.assert_raises(ValueError, shader_to_actor, cube, 'geometry', vertex_impl)
+    npt.assert_raises(
+        ValueError, shader_to_actor, cube, 'vertex', vertex_impl, block='error'
+    )
+    npt.assert_raises(ValueError, replace_shader_in_actor, cube, 'error', vertex_impl)

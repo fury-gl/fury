@@ -16,7 +16,7 @@ What did you do this week?
 	.. figure:: https://user-images.githubusercontent.com/65067354/129559593-baf201bf-720c-45f7-9269-3b31954efd5e.png
 	    :width: 300
 	    :height: 300
-	    
+
 	    Notice that it's rather rough
 
    Current implementation (this implementation was according to the paper):

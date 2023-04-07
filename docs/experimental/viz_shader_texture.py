@@ -1,11 +1,9 @@
-from fury import window
-from fury.utils import rgb_to_vtk
-from viz_shader_canvas import cube
-
-
 import numpy as np
 import vtk
+from viz_shader_canvas import cube
 
+from fury import window
+from fury.utils import rgb_to_vtk
 
 scene = window.Scene()
 
@@ -35,7 +33,7 @@ texture.CubeMapOn()
 selected_texture = 'numpy'
 
 if selected_texture == 'file':
-    file = "sugar.jpg"
+    file = 'sugar.jpg'
     imgReader = vtk.vtkJPEGReader()
     imgReader.SetFileName(file)
     for i in range(6):
@@ -57,18 +55,18 @@ mapper = canvas_actor.GetMapper()
 # // Add new code in default VTK vertex shader
 mapper.AddShaderReplacement(
     vtk.vtkShader.Vertex,
-    "//VTK::PositionVC::Dec",  # replace the normal block
+    '//VTK::PositionVC::Dec',  # replace the normal block
     True,  # before the standard replacements
     """
     //VTK::PositionVC::Dec  // we still want the default
     out vec3 TexCoords;
     """,
-    False  # only do it once
+    False,  # only do it once
 )
 
 mapper.AddShaderReplacement(
     vtk.vtkShader.Vertex,
-    "//VTK::PositionVC::Impl",  # replace the normal block
+    '//VTK::PositionVC::Impl',  # replace the normal block
     True,  # before the standard replacements
     """
     //VTK::PositionVC::Impl  // we still want the default
@@ -77,7 +75,7 @@ mapper.AddShaderReplacement(
     //TexCoords.xyz = normalMC;
     //TexCoords.xyz = vertexMC.xyz;
     """,
-    False  # only do it once
+    False,  # only do it once
 )
 
 mapper.SetFragmentShaderCode(

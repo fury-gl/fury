@@ -3,7 +3,7 @@ Week 10 - Understanding Codes and Playing with Animation
 ========================================================
 
 .. post:: August 10 2022
-   :author: Praneeth Shetty 
+   :author: Praneeth Shetty
    :tags: google
    :category: gsoc
 

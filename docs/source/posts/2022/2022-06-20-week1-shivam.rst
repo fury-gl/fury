@@ -50,4 +50,4 @@ Did you get stuck anywhere?
    :width: 500
    :align: center
 
-* Praneeth told me that some models with multiple nodes and multiple meshes weren't loading correctly. The reason for it was the way SCALAR data was extracted from the binary blob, I had to change some variables in `get_accessor_data` method and everything started to work just fine. 
+* Praneeth told me that some models with multiple nodes and multiple meshes weren't loading correctly. The reason for it was the way SCALAR data was extracted from the binary blob, I had to change some variables in `get_accessor_data` method and everything started to work just fine.
