@@ -1931,7 +1931,7 @@ def cylinder(
     >>> # window.show(scene)
 
     """
-
+    colors = normalize_color(colors)
     if repeat_primitive:
 
         if resolution < 8:
