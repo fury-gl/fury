@@ -47,6 +47,7 @@ dependencies = [
     "vtk>=9.1.0",
     "pillow>=5.4.1",
     "packaging >=17.0",
+    "pygltflib>=1.15.3",
 ]
 
 dynamic = ["version"]
