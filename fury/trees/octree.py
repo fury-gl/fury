@@ -1,4 +1,5 @@
-from vtk import *
+from vtk import vtkExtractEdges, vtkProperty, vtkCubeSource
+from fury import utils
 import numpy as np
 
 
@@ -221,7 +222,23 @@ class branch2d():
                 self._POINTS = np.append(self._POINTS, point)
                 self._N_POINTS += 1
 
-        
+    def ProcessBranch(self, Function):
+        '''Abstract recursive method that process the branch or its subbranches with a given function.
+           If the function returns any value, it will be returned as the value itself or a list of the
+           values returned by each subbranch processed, if the branch is already divided.
+           * Function : Any function that has only a branch as input'''
+        if self.IsDivided() == True:
+            list = np.array([])
+
+            for i in range(len(self.subBranches)):
+                list = np.append(list, self.GetSubBranch(i).ProcessBranch(Function))
+
+            return list
+                
+        else:
+            return Function(self)
+
+
 
 
 
@@ -563,7 +580,6 @@ class Tree3d():
            * point : point3d to be added into the tree.'''
         self._ROOT.AddPoint(point)
         self._N_POINTS += 1
-
 # END OF OCTREE IMPLEMENTATION
     
 
@@ -591,11 +607,10 @@ def BoundingBox(center : tuple = (0.0, 0.0, 0.0),
     edges = vtkExtractEdges()
     edges.SetInputConnection(cube.GetOutputPort())
 
-    cubeMapper = vtkPolyDataMapper() # Replace for fury poly data mapper method
+    cubeMapper = utils.PolyDataMapper()
     cubeMapper.SetInputConnection(edges.GetOutputPort())
 
-    cubeActor = vtkActor() # Replace for fury actor method
-    cubeActor.SetMapper(cubeMapper)
+    cubeActor = utils.get_actor_from_polymapper(cubeMapper)
     cubeActor.SetProperty(vtkProperty().SetLineWidth(line_width))
     cubeActor.GetProperty().SetColor(color[0], color[1], color[2])
     cubeActor.GetProperty().SetLighting(False)
@@ -603,14 +618,14 @@ def BoundingBox(center : tuple = (0.0, 0.0, 0.0),
     return cubeActor
 
 
-def GetActorFromBranch(branch : branch3d) -> vtkActor:
+def GetActorFromBranch(branch : branch3d) -> utils.Actor:
     '''Recursive function that creates actors for the branch given. If the branch is divided,
        then the function is run for the subbranches until the function reaches a non-divided branch, 
        that creates the actor to be returned. This actor is then appended into a list, that is then returned.
        * branch : branch3d that will have the actor created.'''
 
     if branch.IsDivided() == True:
-        actors = np.array([], dtype = vtkActor)
+        actors = np.array([], dtype = utils.Actor)
         actors = np.append(actors, GetActorFromBranch(branch.GetSubBranch(0)))
         actors = np.append(actors, GetActorFromBranch(branch.GetSubBranch(1)))
         actors = np.append(actors, GetActorFromBranch(branch.GetSubBranch(2)))
@@ -638,7 +653,7 @@ def GetActorFromBranch(branch : branch3d) -> vtkActor:
         y_l = (branch.GetYSize()[1] - branch.GetYSize()[0])
         z_l = (branch.GetZSize()[1] - branch.GetZSize()[0])
 
-        cubeActor = BoundingBox((x_c, y_c, z_c), (x_l, y_l, z_l), (0.5, 0.5, 0.5), 1.0)
+        cubeActor = BoundingBox((x_c, y_c, z_c), (x_l, y_l, z_l), (0.5, 0.5, 0.5), 3.0)
 
         return cubeActor
 # END OF GRAPH IMPLEMENTATION
