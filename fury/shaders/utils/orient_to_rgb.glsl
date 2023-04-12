@@ -1,8 +1,3 @@
-in vec3 center;
-in vec3 diff;
-
-out vec3 centerVertexMCVSOutput;
-
 vec3 orient2rgb(vec3 v)
 {
     float r = sqrt(dot(v, v));

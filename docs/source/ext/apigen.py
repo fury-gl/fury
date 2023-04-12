@@ -18,11 +18,10 @@ is an MIT-licensed project.
 """
 
 # Stdlib imports
+import ast
 import os
 import re
 from importlib import import_module
-from inspect import getmodule, ismethod
-from types import BuiltinFunctionType, FunctionType
 
 # suppress print statements (warnings for empty files)
 DEBUG = True
@@ -230,34 +229,39 @@ class ApiDocWriter:
         patterns = '(?:{0})'.format('|'.join(self.object_skip_patterns))
         pat = re.compile(patterns)
 
-        # find all public objects in the module.
-        obj_strs = [
-            obj for obj in dir(mod) if not obj.startswith('_') if not pat.search(obj)
-        ]
+        with open(mod.__file__) as fi:
+            node = ast.parse(fi.read())
+
         functions = []
         classes = []
-        for obj_str in obj_strs:
-            # find the actual object from its string representation
-            if obj_str not in mod.__dict__:
-                continue
-            obj = mod.__dict__[obj_str]
-            # Check if function / class defined in module
-            if not self.other_defines and not getmodule(obj) == mod:
-                continue
-            # figure out if obj is a function or class
-            if (
-                hasattr(obj, 'func_name')
-                or ismethod(obj)
-                or isinstance(obj, (BuiltinFunctionType, FunctionType))
-            ):
-                functions.append(obj_str)
-            else:
+        for n in node.body:
+
+            if not hasattr(n, 'name'):
+                if not isinstance(n, ast.Assign):
+                    continue
+
+            if isinstance(n, ast.ClassDef):
+                if n.name.startswith('_') or pat.search(n.name):
+                    continue
+                classes.append(n.name)
+            elif isinstance(n, ast.FunctionDef):
+                if n.name.startswith('_') or pat.search(n.name):
+                    continue
+                functions.append(n.name)
+            # Specific condition for vtk and fury
+            elif isinstance(n, ast.Assign):
                 try:
-                    issubclass(obj, object)
-                    classes.append(obj_str)
-                except TypeError:
-                    # not a function or class
-                    pass
+                    if isinstance(n.value, ast.Call):
+                        if isinstance(n.targets[0], ast.Tuple):
+                            continue
+                        functions.append(n.targets[0].id)
+                    elif hasattr(n.value, 'attr') and n.value.attr.startswith('vtk'):
+                        classes.append(n.targets[0].id)
+                except Exception:
+                    print(mod.__file__)
+                    print(n.lineno)
+                    print(n.targets[0])
+
         return functions, classes
 
     def _parse_lines(self, linesource):
