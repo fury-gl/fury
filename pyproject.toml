@@ -126,3 +126,8 @@ fail_under = 100
 
 # [tool.pytest.ini_options]
 # addopts = "--cov --cov-report html --cov-report term-missing --cov-fail-under 95"
+
+[tool.codespell]
+skip = '*.po,*.ts,*.html,./docs/build,./.mypy_cache,./build,./dist,.git,*.pdf,*.svg,*.bib'
+count = ''
+quiet-level = 3
