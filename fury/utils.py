@@ -1488,6 +1488,10 @@ def get_bounds(actor):
     return actor.GetMapper().GetInput().GetBounds()
 
 
+def represent_actor_as_wireframe(actor):
+    return actor.GetProperty().SetRepresentationToWireframe()
+
+
 def update_surface_actor_colors(actor, colors):
     """Update colors of a surface actor.
 
