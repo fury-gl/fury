@@ -222,21 +222,22 @@ class branch2d():
                 self._POINTS = np.append(self._POINTS, point)
                 self._N_POINTS += 1
 
-    def ProcessBranch(self, Function):
-        '''Abstract recursive method that process the branch or its subbranches with a given function.
+    def ProcessBranch(self, Function, *args):
+        '''Abstract recursive method that process the branch or its subbranches with a given function and its arguments.
            If the function returns any value, it will be returned as the value itself or a list of the
            values returned by each subbranch processed, if the branch is already divided.
-           * Function : Any function that has only a branch as input'''
+           * Function : Any function that has only a branch as input
+           * *args : arguments of the function in the order requested by the funciton passed'''
         if self.IsDivided() == True:
             list = np.array([])
 
             for i in range(len(self.subBranches)):
-                list = np.append(list, self.GetSubBranch(i).ProcessBranch(Function))
+                list = np.append(list, self.GetSubBranch(i).ProcessBranch(Function, *args))
 
             return list
                 
         else:
-            return Function(self)
+            return Function(self, *args)
 
 
 

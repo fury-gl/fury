@@ -35,37 +35,38 @@ for i in range(npoints):
 print(tree)
 
 
-def abstract(branch : branch3d):
-    print(branch.GetPointsNumber())
+# BELOW, THE ABSTRACT PROCESSING METHOD 
+def abstract(branch : branch3d, number):
+    print(number + branch.GetPointsNumber())
 
-tree.GetRoot().ProcessBranch(abstract)
-
-
-
-# # FOR THIS EXAMPLE, LET'S RENDER THE OCTREE WITH THE PROVIDED FUNCTIONS
-# scene = window.Scene()
-# scene.set_camera(position=(-6, 5, -10), 
-#                  focal_point=(tree.GetRoot().GetXMiddlePoint(), 
-#                               tree.GetRoot().GetYMiddlePoint(), 
-#                               tree.GetRoot().GetZMiddlePoint()),
-#                  view_up=(0.0, 0.0, 0.0))
-# showmanager = window.ShowManager(scene, "trees demo", (1080, 1080), reset_camera = True, order_transparent=True)
+tree.GetRoot().ProcessBranch(abstract, 10)
 
 
 
-# actorPoints = actor.dots(data, (1.0, 0.5, 0.4), 1, 5)
-# scene.add(actorPoints)
+# FOR THIS EXAMPLE, LET'S RENDER THE OCTREE WITH THE PROVIDED FUNCTIONS
+scene = window.Scene()
+scene.set_camera(position=(-6, 5, -10), 
+                 focal_point=(tree.GetRoot().GetXMiddlePoint(), 
+                              tree.GetRoot().GetYMiddlePoint(), 
+                              tree.GetRoot().GetZMiddlePoint()),
+                 view_up=(0.0, 0.0, 0.0))
+showmanager = window.ShowManager(scene, "trees demo", (1080, 1080), reset_camera = True, order_transparent=True)
 
 
-# actorslist = GetActorFromBranch(tree.GetRoot())
 
-# for i in range(len(actorslist)):
-#     scene.add(actorslist[i])
+actorPoints = actor.dots(data, (1.0, 0.5, 0.4), 1, 5)
+scene.add(actorPoints)
 
 
-# interactor = lib.RenderWindowInteractor()
-# interactor.SetRenderWindow(showmanager.window)
+actorslist = GetActorFromBranch(tree.GetRoot())
 
-# interactor.Initialize()
-# showmanager.render()
-# interactor.Start()
+for i in range(len(actorslist)):
+    scene.add(actorslist[i])
+
+
+interactor = lib.RenderWindowInteractor()
+interactor.SetRenderWindow(showmanager.window)
+
+interactor.Initialize()
+showmanager.render()
+interactor.Start()
