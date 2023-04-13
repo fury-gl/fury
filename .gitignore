@@ -108,3 +108,5 @@ tmp/
 temp/
 
 _version.py
+
+.mypy_cache
