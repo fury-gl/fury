@@ -41,6 +41,7 @@ from fury.utils import (
     numpy_to_vtk_matrix,
     primitives_count_from_actor,
     primitives_count_to_actor,
+    represent_actor_as_wireframe,
     rotate,
     set_input,
     set_polydata_primitives_count,
@@ -758,6 +759,14 @@ def test_get_bounds():
     actor.SetMapper(mapper)
     compute_bounds(actor)
     npt.assert_equal(get_bounds(actor), test_bounds)
+
+
+def test_represent_actor_as_wireframe():
+    my_actor = actor.square(np.array([[0, 0, 0]]))
+    # 0: Points, 1: Wireframe, 2: Surface
+    npt.assert_equal(my_actor.GetProperty().GetRepresentation(), 2)
+    represent_actor_as_wireframe(my_actor)
+    npt.assert_equal(my_actor.GetProperty().GetRepresentation(), 1)
 
 
 def test_update_surface_actor_colors():
