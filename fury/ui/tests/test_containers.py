@@ -349,9 +349,6 @@ def test_ui_tab_ui(interactive=False):
     show_manager.scene.add(tab_ui)
 
     if interactive:
-        show_manager.initialize()
-        show_manager.render()
-        show_manager.start()
         show_manager.record_events_to_file(recording_filename)
         print(list(event_counter.events_counts.items()))
         event_counter.save(expected_events_counts_filename)
