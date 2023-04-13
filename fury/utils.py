@@ -1489,6 +1489,16 @@ def get_bounds(actor):
 
 
 def represent_actor_as_wireframe(actor):
+    """Returns the actor wireframe.
+
+    Parameters
+    ----------
+    actor : actor
+
+    Returns
+    -------
+    actor : actor
+    """
     return actor.GetProperty().SetRepresentationToWireframe()
 
 
