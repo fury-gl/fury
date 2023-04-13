@@ -550,22 +550,6 @@ class TabPanel2D(UI):
             Italic property for a text title in a tab panel.
         """
         self.text_block.italic = italic
-    
-    @property
-    def title_justification(self):
-        """Return the title justification of tab panel."""
-        return self.text_block.justification
-
-    @title_justification.setter
-    def title_justification(self, justification):
-        """Set the title justification of tab panel.
-
-        Parameters
-        ----------
-        justification : str
-            New title justification for tab panel.
-        """
-        self.text_block.justification = justification
 
     def add_element(self, element, coords, anchor='position'):
         """Add a UI component to the content panel.
