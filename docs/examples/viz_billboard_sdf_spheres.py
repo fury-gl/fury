@@ -36,6 +36,7 @@ import numpy as np
 
 from fury import actor, window
 from fury.shaders import compose_shader, import_fury_shader
+from fury.utils import represent_actor_as_wireframe
 
 ###############################################################################
 # Now set up a new scene to place our actors in.
@@ -70,33 +71,33 @@ interactive = False
 
 if interactive:
     window.show(scene)
-
-window.record(scene, size=(600, 600), out_path='viz_regular_spheres.png')
+else:
+    window.record(scene, size=(600, 600), out_path='viz_regular_spheres.png')
 
 ###############################################################################
 # Now, let's explore our scene to understand what we have created. Traditional
 # FURY spheres are designed using a set of interconnected triangles. To
 # visualize them, we want to transform our representation from *Surface* to
 # *Wireframe* using the following command.
-spheres_actor.GetProperty().SetRepresentationToWireframe()
+represent_actor_as_wireframe(spheres_actor)
 
 if interactive:
     window.show(scene)
-
-window.record(scene, size=(600, 600), out_path='viz_low_res_wireframe.png')
+else:
+    window.record(scene, size=(600, 600), out_path='viz_low_res_wireframe.png')
 
 ###############################################################################
 # Let's clean the scene and play with the parameters `phi` and `theta`.
 scene.clear()
 spheres_actor = actor.sphere(
     centers, colors, radii=scales, phi=16, theta=16, use_primitive=False)
-spheres_actor.GetProperty().SetRepresentationToWireframe()
+represent_actor_as_wireframe(spheres_actor)
 scene.add(spheres_actor)
 
 if interactive:
     window.show(scene)
-
-window.record(scene, size=(600, 600), out_path='viz_hi_res_wireframe.png')
+else:
+    window.record(scene, size=(600, 600), out_path='viz_hi_res_wireframe.png')
 
 ###############################################################################
 # As you might have noticed, these parameters control the resolution of the
@@ -121,13 +122,14 @@ scene.clear()
 # The billboard actor is suited and continuously improved to render SDFs. To
 # create and visualize it, we can use the following instructions:
 billboards_actor = actor.billboard(centers, colors=colors, scales=scales)
-billboards_actor.GetProperty().SetRepresentationToWireframe()
+represent_actor_as_wireframe(billboards_actor)
 scene.add(billboards_actor)
 
 if interactive:
     window.show(scene)
-
-window.record(scene, size=(600, 600), out_path='viz_billboards_wireframe.png')
+else:
+    window.record(
+        scene, size=(600, 600), out_path='viz_billboards_wireframe.png')
 
 ###############################################################################
 # If you interacted with this actor, you might have noticed how it always
@@ -176,8 +178,9 @@ scene.add(spheres_actor)
 
 if interactive:
     window.show(scene)
-
-window.record(scene, size=(600, 600), out_path='viz_billboards_circles.png')
+else:
+    window.record(
+        scene, size=(600, 600), out_path='viz_billboards_circles.png')
 
 ###############################################################################
 # Hold on, those actors don't look exactly like the ones we created using
@@ -264,8 +267,9 @@ scene.add(spheres_actor)
 
 if interactive:
     window.show(scene)
-
-window.record(scene, size=(600, 600), out_path='viz_billboards_spheres.png')
+else:
+    window.record(
+        scene, size=(600, 600), out_path='viz_billboards_spheres.png')
 
 ###############################################################################
 # References
