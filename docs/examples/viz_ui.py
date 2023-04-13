@@ -61,7 +61,7 @@ panel.center = (500, 400)
 
 ###############################################################################
 # Then we'll make two text labels and place them on the panel.
-# Note that we specifiy the position with integer numbers of pixels.
+# Note that we specify the position with integer numbers of pixels.
 
 text = ui.TextBlock2D(text='Click me')
 text2 = ui.TextBlock2D(text='Me too')

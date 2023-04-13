@@ -240,7 +240,7 @@ Doing the release
       git co main-master
 
 
-    Next merge the maintenace branch with the "ours" strategy.  This just labels
+    Next merge the maintenance branch with the "ours" strategy.  This just labels
     the maintenance branch `info.py` edits as seen but discarded, so we can
     merge from maintenance in future without getting spurious merge conflicts::
 

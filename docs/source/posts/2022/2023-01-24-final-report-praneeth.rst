@@ -50,8 +50,8 @@ Objectives Completed
    ``DrawPanel`` is the parent component that contains and manages all the other sub-components to efficiently visualize the shapes. The main functions of the ``DrawPanel`` are capturing interactions from user, managing modes, drawing shapes and transforming them. The ``DrawPanel`` is mainly divided into three parts :
 
    i. **Main Panel**
-        It is the main background panel(``Panel2D``) on which the main interaction and visualization happen. Here user can interactively draw shapes, reposition and rotate them. This panel also defines the boundaries for the shapes. It can also be called as a container element as it containes all the shapes and other DrawPanel components.
-   ii. **Mode Panel** 
+        It is the main background panel(``Panel2D``) on which the main interaction and visualization happen. Here user can interactively draw shapes, reposition and rotate them. This panel also defines the boundaries for the shapes. It can also be called as a container element as it contains all the shapes and other DrawPanel components.
+   ii. **Mode Panel**
         It is a composite UI element consisting of the main panel(``Panel2D``) on which buttons(``Button2D``) are arranged which can toggle the current working mode. Each button has an icon associated with it which tries to depict the information about the mode. Here mode is nothing but the different channels which on selection can perform different tasks. Some of the modes present in the Mode Panel are discussed below:
             -  Selection:  This mode is used to select an individual or group of shapes.
             -  Deletion:  This mode is used to delete an individual or group of shapes.
@@ -112,7 +112,7 @@ Objectives Completed
 
       .. image:: https://user-images.githubusercontent.com/64432063/194773295-4303ec78-3f2b-44e5-8c85-ff01140a8c95.gif
         :width: 400
-        :align: center    
+        :align: center
 
    *Pull Requests:*
 
@@ -176,7 +176,7 @@ Objectives in Progress
         :width: 400
         :align: center
 
-   -  **DrawPanel Feature: Resizing Shapes (Under Devlopment)**: `https://github.com/ganimtron-10/fury/blob/resize_shapes/fury/ui/elements.py <https://github.com/ganimtron-10/fury/blob/resize_shapes/fury/ui/elements.py>`__
+   -  **DrawPanel Feature: Resizing Shapes (Under Development)**: `https://github.com/ganimtron-10/fury/blob/resize_shapes/fury/ui/elements.py <https://github.com/ganimtron-10/fury/blob/resize_shapes/fury/ui/elements.py>`__
 
 GSoC Weekly Blogs
 -----------------
@@ -216,7 +216,7 @@ Timeline
 +---------------------+----------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Week 12(24-08-2022) | Fixing translating issues and updating tests       | `FURY <https://fury.gl/latest/posts/2022/2022-08-24-week-12-praneeth.html>`__ - `Python <https://blogs.python-gsoc.org/en/ganimtron_10s-blog/week-12-fixing-translating-issues-and-updating-tests>`__     |
 +---------------------+----------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Week 13(31-08-2022) | Seperating tests and fixing bugs                   | `FURY <https://fury.gl/latest/posts/2022/2022-08-31-week-13-praneeth.html>`__ - `Python <https://blogs.python-gsoc.org/en/ganimtron_10s-blog/week-13-separating-tests-and-fixing-bugs>`__                 |
+| Week 13(31-08-2022) | Separating tests and fixing bugs                   | `FURY <https://fury.gl/latest/posts/2022/2022-08-31-week-13-praneeth.html>`__ - `Python <https://blogs.python-gsoc.org/en/ganimtron_10s-blog/week-13-separating-tests-and-fixing-bugs>`__                 |
 +---------------------+----------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Week 14(07-09-2022) | Updating DrawPanel architecture                    | `FURY <https://fury.gl/latest/posts/2022/2022-09-07-week-14-praneeth.html>`__ - `Python <https://blogs.python-gsoc.org/en/ganimtron_10s-blog/week-14-updating-drawpanel-architecture>`__                  |
 +---------------------+----------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+

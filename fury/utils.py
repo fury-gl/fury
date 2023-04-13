@@ -915,7 +915,7 @@ def apply_affine_to_actor(act, affine):
     act: Actor
 
     affine: (4, 4) array-like
-        Homogenous affine, for 3D object.
+        Homogeneous affine, for 3D object.
 
     Returns
     -------
@@ -942,7 +942,8 @@ def apply_affine(aff, pts):
     Parameters
     ----------
     aff : (N, N) array-like
-        Homogenous affine, for 3D points, will be 4 by 4. Contrary to first
+
+        Homogeneous affine, for 3D points, will be 4 by 4. Contrary to first
         appearance, the affine will be applied on the left of `pts`.
     pts : (..., N-1) array-like
         Points, where the last dimension contains the coordinates of each
@@ -1125,7 +1126,7 @@ def rotate(actor, rotation=(90, 1, 0, 0)):
     newTransform.RotateWXYZ(*rotation)
     newTransform.Translate(*center)
 
-    # now try to get the composit of translate, rotate, and scale
+    # now try to get the composite of translate, rotate, and scale
     newTransform.Translate(*(-orig))
     newTransform.PreMultiply()
     newTransform.Translate(*orig)

@@ -17,7 +17,7 @@ fetch_gltf('MorphStressTest', 'glTF')
 filename = read_viz_gltf('MorphStressTest')
 
 ##############################################################################
-# Initializing the glTF object, You can additionaly set `apply_normals=True`.
+# Initializing the glTF object, You can additionally set `apply_normals=True`.
 # Note: Normals might not work as intended with morphing.
 
 gltf_obj = glTF(filename, apply_normals=True)
@@ -38,7 +38,7 @@ gltf_obj.update_morph(animation)
 ##############################################################################
 # Create a scene, and show manager.
 # Initialize the show manager and add timeline to the scene (No need to add
-# actors to the scene seperately).
+# actors to the scene separately).
 
 scene = window.Scene()
 showm = window.ShowManager(
