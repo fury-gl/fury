@@ -33,7 +33,7 @@ _CQUEUE_EVENT_IDs = namedtuple('CQUEUE_EVENT_IDS', list(_event_ids.keys()))(
     **_event_ids
 )
 
-# In each circular_queue element we have the following informations
+# In each circular_queue element we have the following information
 # ----------
 # index info
 # -----| ----

@@ -53,9 +53,9 @@ from fury.lib import (
     TextureMapToPlane,
     Transform,
     TransformPolyDataFilter,
+    TriangleFilter,
     TubeFilter,
     VectorText,
-    TriangleFilter,
     numpy_support,
 )
 from fury.shaders import (
@@ -999,7 +999,7 @@ def odf_slicer(
         it will be applied individually at each voxel.
     B_matrix : ndarray (n_coeffs, n_vertices)
         Optional SH to SF matrix for projecting `odfs` given in SH
-        coefficents on the `sphere`. If None, then the input is assumed
+        coefficients on the `sphere`. If None, then the input is assumed
         to be expressed in SF coefficients.
 
     Returns
@@ -1033,13 +1033,13 @@ def odf_slicer(
     if B_matrix is None:
         if len(vertices) != odfs.shape[-1]:
             raise ValueError(
-                'Invalid nunber of SF coefficients. '
+                'Invalid number of SF coefficients. '
                 'Expected {0}, got {1}.'.format(len(vertices), odfs.shape[-1])
             )
     else:
         if len(vertices) != B_matrix.shape[1]:
             raise ValueError(
-                'Invalid nunber of SH coefficients. '
+                'Invalid number of SH coefficients. '
                 'Expected {0}, got {1}.'.format(len(vertices), B_matrix.shape[1])
             )
 
@@ -2222,7 +2222,7 @@ def arrow(
     faces=None,
     repeat_primitive=True,
 ):
-    """Visualize one or many arrows with differents features.
+    """Visualize one or many arrows with different features.
 
     Parameters
     ----------
@@ -2808,7 +2808,7 @@ def billboard(
         '''
         /* Billboard  vertex shader declaration */
         in vec3 center;
-        
+
         out vec3 centerVertexMCVSOutput;
         out vec3 normalizedVertexMCVSOutput;
         '''
@@ -2956,7 +2956,7 @@ def vector_text(
 
     texta.GetProperty().SetColor(color)
 
-    # Set ser rotation origin to the center of the text is following the camera
+    # Set rotation origin to the center of the text is following the camera
     if align_center or direction is None:
         trans_matrix.Translate(-np.array(textm.GetCenter()))
 
@@ -3709,7 +3709,7 @@ def markers(
         '''
         /* Billboard  vertex shader declaration */
         in vec3 center;
-        
+
         out vec3 centerVertexMCVSOutput;
         out vec3 normalizedVertexMCVSOutput;
         '''

@@ -486,7 +486,7 @@ class TabPanel2D(UI):
             New title for tab panel.
         """
         self.text_block.message = text
-    
+
     @property
     def title_bold(self):
         """Is the title of a tab panel bold."""
@@ -502,7 +502,7 @@ class TabPanel2D(UI):
             Bold property for a text title in a tab panel.
         """
         self.text_block.bold = bold
-    
+
     @property
     def title_color(self):
         """Return the title color of tab panel."""
@@ -518,7 +518,7 @@ class TabPanel2D(UI):
             New title color for tab panel.
         """
         self.text_block.color = color
-        
+
     @property
     def title_font_size(self):
         """Return the title font size of tab panel."""
@@ -534,7 +534,7 @@ class TabPanel2D(UI):
             New title font size for tab panel.
         """
         self.text_block.font_size = font_size
-    
+
     @property
     def title_italic(self):
         """Is the title of a tab panel italic."""
@@ -603,7 +603,7 @@ class TabUI(UI):
     Attributes
     ----------
     tabs: :class: List of 'TabPanel2D'
-        Stores all the instances of 'TabPanel2D' that renderes the contents.
+        Stores all the instances of 'TabPanel2D' that renders the contents.
     """
 
     def __init__(

@@ -82,7 +82,7 @@ class EventCounter:
         self.events_counts = {name: 0 for name in events_names}
 
     def count(self, i_ren, _obj, _element):
-        """Count events occurences."""
+        """Count events occurrences."""
         self.events_counts[i_ren.event.name] += 1
 
     def monitor(self, ui_component):

@@ -208,7 +208,7 @@ def test_cone_primitive():
     npt.assert_equal(verts.max(), 0.5)
     npt.assert_almost_equal(np.mean(verts), 0, decimal=1)
 
-    # tests for traingles
+    # tests for triangles
     npt.assert_equal(faces.shape, (20, 3))
     npt.assert_equal(
         np.unique(np.concatenate(faces, axis=None)).tolist(), list(range(len(verts)))
