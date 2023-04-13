@@ -1,7 +1,4 @@
-import sys
-sys.path.append('C:/Users/Lampada/Desktop/GSoC/fury/fury/')
-import trees
-from fury import window, actor, lib
+from fury import window, actor, lib, trees
 import numpy as np
 
 
