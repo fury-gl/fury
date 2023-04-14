@@ -127,8 +127,7 @@ Checklist before Releasing
 
 * Check whether there are no build failing on `Travis`.
 
-* Review and update the release notes.  Review and update the :file:`Changelog`
-  file.  Get a partial list of contributors with something like::
+* Review and update the release notes. Get a partial list of contributors with something like::
 
       git shortlog -nse v0.1.0..
 
@@ -142,7 +141,7 @@ Checklist before Releasing
 
 * Add any new authors to the ``AUTHORS`` file.
 
-* Check the copyright years in ``docs/source/conf.py`` and ``LICENSE``
+* Check the copyright years in ``LICENSE``
 
 * Generate release notes. Go to ``docs/source/ext`` and run ``github_tools.py`` script the following way::
 

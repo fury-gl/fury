@@ -12,6 +12,8 @@ The mandatory dependencies are:
 - numpy >= 1.7.1
 - vtk >= 8.1.0
 - scipy >= 0.9
+- aiohttp
+- pygltflib
 
 The optional dependencies are:
 
