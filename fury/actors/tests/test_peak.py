@@ -236,7 +236,7 @@ def test_symmetric_param():
     npt.assert_array_equal(actor_points, desired_points)
 
 
-def test_colors(interactive=False):
+def test_colors(interactive=True):
     peak_dirs, peak_vals, peak_affine = generate_peaks()
 
     valid_mask = np.abs(peak_dirs).max(axis=(-2, -1)) > 0

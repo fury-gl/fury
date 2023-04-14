@@ -141,16 +141,16 @@ class PeakActor(Actor):
         attribute_to_actor(self, diffs_array, 'diff')
 
         vs_var_dec = """
-            in ivec3 center;
+            in vec3 center;
             in vec3 diff;
-            out vec3 centerVertexMCVSOutput;
+            flat out vec3 centerVertexMCVSOutput;
             """
         fs_var_dec = """
-            in vec3 centerVertexMCVSOutput;
+            flat in vec3 centerVertexMCVSOutput;
             uniform bool isRange;
-            uniform ivec3 crossSection;
-            uniform ivec3 lowRanges;
-            uniform ivec3 highRanges;
+            uniform vec3 crossSection;
+            uniform vec3 lowRanges;
+            uniform vec3 highRanges;
             """
         orient_to_rgb = import_fury_shader(pjoin('utils', 'orient_to_rgb.glsl'))
         visible_cross_section = import_fury_shader(
