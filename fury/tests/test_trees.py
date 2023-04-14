@@ -1,3 +1,5 @@
+import sys
+sys.path.append('C:/Users/Lampada/Desktop/GSoC/fury/fury/')
 import trees
 from fury import window, actor, lib
 import numpy as np
@@ -18,8 +20,7 @@ print(tree)
 
 
 actorslist = trees.GetActorFromBranch2d(tree.GetRoot(), (1.0, 1.0, 1.0), 1.0)
-
-zeros = np.zeros((npoints, 1))
+zeros = np.zeros((10, 1))
 actorPoints = actor.dots(np.hstack((points, zeros)), (1.0, 0.5, 0.4), 1, 5)
 
 scene = window.Scene()
@@ -36,7 +37,7 @@ showmanager = window.ShowManager(
     reset_camera=True,
     order_transparent=True)
 
-scene.add(actorPoints)
+# scene.add(actorPoints)
 
 if tree.GetRoot().IsDivided():
     for i in range(len(actorslist)):
@@ -51,6 +52,8 @@ interactor.SetRenderWindow(showmanager.window)
 interactor.Initialize()
 showmanager.render()
 interactor.Start()
+
+
 
 
 xl = 1.0
