@@ -1,4 +1,4 @@
-bool inVisibleCrossSection(vec3 center)
+bool inVisibleCrossSection(ivec3 center)
 {
     bool xVal = center.x == crossSection.x;
     bool yVal = center.y == crossSection.y;
