@@ -118,6 +118,7 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         directory: ./for_testing
+        files: ./coverage.xml
         fail_ci_if_error: true
         env_vars: ${{ matrix.os }}, PYTHON_VERSION
         flags: unittests

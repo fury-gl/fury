@@ -29,7 +29,7 @@ if [ "$COVERAGE" == "1" ] || [ "$COVERAGE" == true ]; then
     done
     coverage combine .
     coverage report -m  # Generate test coverage report.
-    ls .
+    coverage xml  # Generate coverage report in xml format for codecov.
     # codecov  # Upload the report to codecov.
 else
     # Threads issue so we run test on individual file
@@ -44,5 +44,8 @@ else
       fi
     done
 fi
+
+cd ..
+ls .
 
 set +ex
