@@ -445,7 +445,7 @@ class LineSlider2D(UI):
         outer_radius : int
             Outer radius of the handles (if disk).
         handle_side : int
-            Side length of the handles (if sqaure).
+            Side length of the handles (if square).
         font_size : int
             Size of the text to display alongside the slider (pt).
         orientation : str
@@ -809,7 +809,7 @@ class LineDoubleSlider2D(UI):
         outer_radius : int
             Outer radius of the handles (if disk).
         handle_side : int
-            Side length of the handles (if sqaure).
+            Side length of the handles (if square).
         center : (float, float)
             Center of the slider.
         length : int

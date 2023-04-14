@@ -48,6 +48,7 @@ dependencies = [
     "pillow>=5.4.1",
     "packaging >=17.0",
     "pygltflib>=1.15.3",
+    "aiohttp>=3.8.4",
 ]
 
 dynamic = ["version"]
@@ -126,3 +127,8 @@ fail_under = 100
 
 # [tool.pytest.ini_options]
 # addopts = "--cov --cov-report html --cov-report term-missing --cov-fail-under 95"
+
+[tool.codespell]
+skip = '*.po,*.ts,*.html,./docs/build,./.mypy_cache,./build,./dist,.git,*.pdf,*.svg,*.bib'
+count = ''
+quiet-level = 3

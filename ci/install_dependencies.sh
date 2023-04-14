@@ -29,7 +29,7 @@ else
 
     if [ "$DEPENDS" == "OPTIONAL_DEPS" ]; then $PIPI -r requirements/optional.txt; fi
     if [ "$BUILD_DOCS" == "1" ]; then $PIPI -r requirements/docs.txt; fi
-    if [ "$COVERAGE" == "1" ] || [ "$COVERAGE" = true ]; then pip install coverage coveralls codecov; fi
+    if [ "$COVERAGE" == "1" ] || [ "$COVERAGE" = true ]; then pip install coverage coveralls; fi
 fi
 
 set +ex

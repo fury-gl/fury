@@ -127,7 +127,7 @@ coor_1 = np.array([0, 0, 0])
 
 
 ###############################################################################
-# Coordinates to be plotted are changed everytime timer_callback is called by
+# Coordinates to be plotted are changed every time timer_callback is called by
 # using the update_coordinates function. The wave is rendered here.
 
 

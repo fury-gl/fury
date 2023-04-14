@@ -1,4 +1,4 @@
-SOLID, monkey patching  a python issue and  network vizualization through WebRTC
+SOLID, monkey patching  a python issue and  network visualization through WebRTC
 ================================================================================
 
 .. post:: July 05 2021

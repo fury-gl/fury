@@ -97,7 +97,7 @@ slicer_opacity = 0.6
 image_actor_z.opacity(slicer_opacity)
 
 ###############################################################################
-# We can add additonal slicers by copying the original and adjusting the
+# We can add additional slicers by copying the original and adjusting the
 # ``display_extent``.
 
 image_actor_x = image_actor_z.copy()

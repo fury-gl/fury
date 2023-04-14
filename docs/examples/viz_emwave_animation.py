@@ -144,7 +144,7 @@ counter = itertools.count()
 
 
 ###############################################################################
-# Coordinates to be plotted are changed everytime timer_callback is called by
+# Coordinates to be plotted are changed every time timer_callback is called by
 # using the update_coordinates function. The wave is rendered here.
 
 

@@ -17,7 +17,7 @@ What did you do this week?
    time researching to found a cause for this. Fortunately, I could found
    the cause and the solution. This troublesome MacOs was falling in a
    silent bug because the SharedMemory Object was creating a memory
-   resource with at least 4086 bytes indepedent if I've requested less
+   resource with at least 4086 bytes independent if I've requested less
    than that. If we look into the MultiDimensionalBuffer Object
    (stream/tools.py) before the 8c670c2 commit we can see that Object
    has max_size parameter which needs to be updated if the SharedMemory
@@ -27,7 +27,7 @@ What did you do this week?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In the past week I've made a lot of improvements in this PR, from
-performance improvements to visual effects. Bellow are the list of the
+performance improvements to visual effects. Below are the list of the
 tasks related with this PR:
 
 -  Code refactoring.
@@ -36,7 +36,7 @@ tasks related with this PR:
    runtime.
 -  2D Layout: Meanwhile 3d network representations are very usefully
    for exploring a dataset is hard to convice a group of network
-   scientists to use a visualization system which dosen't allow 2d
+   scientists to use a visualization system which doesn't allow 2d
    representations. Because of that I started to coding the 2d behavior
    in the network visualization system.
 -  Minimum Distortion Embeddings examples: I've created some examples

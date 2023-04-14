@@ -8,7 +8,7 @@ import multiprocessing
 from os.path import join as pjoin
 
 # if this example it's not working for you and you're using MacOs
-# uncoment the following line
+# uncomment the following line
 # multiprocessing.set_start_method('spawn')
 import numpy as np
 

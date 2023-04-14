@@ -118,7 +118,7 @@ for i in range(50):
 # ====================
 #
 # Since, only one camera is needed, camera animations are preferably done using
-# a seperate ``Animation``.
+# a separate ``Animation``.
 # Three properties can control the camera's animation:
 # Position, focal position (referred to by `focal`), and up-view.
 

@@ -585,11 +585,11 @@ class ShowManager:
 
     def lock_current(self):
         """Lock the render window and acquire the current context and
-        check if the lock was sucessfully acquired.
+        check if the lock was successfully acquired.
 
         Returns
         -------
-        sucessful : bool
+        successful : bool
             Returns if the lock was acquired."""
         if self.is_done():
             return False
@@ -1256,7 +1256,7 @@ def analyze_snapshot(
     Returns
     -------
     report : ReportSnapshot
-        This is an object with attibutes like ``colors_found`` that give
+        This is an object with attributes like ``colors_found`` that give
         information about what was found in the current snapshot array ``im``.
 
     """

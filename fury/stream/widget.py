@@ -43,7 +43,7 @@ def check_port_is_available(host, port):
 
 
 class Widget:
-    """Thi Obj it's able execute the fury streaming system
+    """This Obj it's able execute the fury streaming system
     using the SharedMemory object from Python multiprocessing.
     """
 
@@ -72,8 +72,8 @@ class Widget:
             If should use MJPEG streaming or WebRTC.
         ms_jpeg : float, optional
             This it's used  only if the MJPEG will be used. The
-            ms_jpeg represents the amount of miliseconds between to
-            consecutive calls of the jpeg enconding.
+            ms_jpeg represents the amount of milliseconds between to
+            consecutive calls of the jpeg encoding.
         queue_size : int, optional
             maximum number of user interactions to be stored
 

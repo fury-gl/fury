@@ -337,7 +337,7 @@ def add_shader_callback(actor, callback, priority=0.0):
     if not isinstance(priority, (float, int)):
         raise TypeError(
             """
-            add_shader_callback priority argument shoud be a float/int"""
+            add_shader_callback priority argument should be a float/int"""
         )
 
     mapper = actor.GetMapper()
