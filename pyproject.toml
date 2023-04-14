@@ -48,6 +48,7 @@ dependencies = [
     "pillow>=5.4.1",
     "packaging >=17.0",
     "pygltflib>=1.15.3",
+    "aiohttp>=3.8.4",
 ]
 
 dynamic = ["version"]

@@ -114,9 +114,10 @@ jobs:
         fi
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
+      if: ${{ matrix.coverage }}
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        directory: for_testing
+        directory: ./for_testing
         fail_ci_if_error: true
         env_vars: ${{ matrix.os }}, PYTHON_VERSION
         flags: unittests

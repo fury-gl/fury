@@ -2,4 +2,4 @@
 skip = .git,*.pdf,*.svg,*.bib,*.html
 # ue,lod,ans,lastr,numer,lamda,PrIs -- variable names
 # Hart,Flagg -- name
-ignore-words-list = ue,lod,hart,ans,lastr,numer,lamda,flagg,pris,lod,IST
+ignore-words-list = IST,nd,te,ue,lod,hart,ans,lastr,numer,lamda,flagg,pris,lod,IST
