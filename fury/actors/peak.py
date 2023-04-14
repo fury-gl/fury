@@ -23,7 +23,7 @@ from fury.utils import apply_affine, numpy_to_vtk_colors, numpy_to_vtk_points
 
 
 class PeakActor(Actor):
-    """VTK actor for visualizing slices of ODF field.
+    """FURY actor for visualizing DWI peaks.
 
     Parameters
     ----------
