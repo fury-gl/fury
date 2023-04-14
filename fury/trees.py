@@ -128,7 +128,7 @@ class Branch2d():
         if self.IsDivided() == True:
             return self.subBranches[index]
         else:
-            raise ("Error: The branch got no subbranches.")
+            raise AttributeError("The branch got no subbranches.")
 
     def GetTotalPoints(self) -> int:
         '''Returns the total number of points in that branch, including the points in the subranches.'''
@@ -149,7 +149,30 @@ class Branch2d():
             self._POINTS = np.delete(self._POINTS, index)
             self._N_POINTS -= 1
         else:
-            raise ("This branch has no point to be removed.")
+            raise AttributeError("This branch has no point to be removed.")
+
+    # def SubAddPoint(self):
+
+    def SubAddPoint(self, point : Point2d):
+        if self.GetXSize()[0] <= point.GetXCoord() < self.GetXMiddlePoint():
+            if self.GetYSize()[0] <= point.GetYCoord() < self.GetYMiddlePoint():
+                self._DOWNLEFT.AddPoint(point)
+            elif self.GetYMiddlePoint() <= point.GetYCoord() <= self.GetYSize()[1]:
+                self._UPLEFT.AddPoint(point)
+            else:
+                raise ValueError(
+                    f"The point {point()} is outside the tree's bounds : ({self.GetXSize()}, {self.GetYSize()}).")
+        elif self.GetXMiddlePoint() <= point.GetXCoord() <= self.GetXSize()[1]:
+            if self.GetYSize()[0] <= point.GetYCoord() < self.GetYMiddlePoint():
+                self._DOWNRIGHT.AddPoint(point)
+            elif self.GetYMiddlePoint() <= point.GetYCoord() <= self.GetYSize()[1]:
+                self._UPRIGHT.AddPoint(point)
+            else:
+                raise ValueError(
+                    f"The point {point()} is outside the tree's bounds : ({self.GetXSize()}, {self.GetYSize()}).")
+        else:
+            raise ValueError(
+                f"The point {point()} is outside the tree's bounds : ({self.GetXSize()}, {self.GetYSize()}).")
 
     def AddPoint(self, point : Point2d):
         '''Recursively adds a point to the branch. \n
@@ -166,16 +189,7 @@ class Branch2d():
 
         if self.IsDivided() == True:
 
-            if point.GetXCoord() < self.GetXMiddlePoint():
-                if point.GetYCoord() < self.GetYMiddlePoint():
-                    self._DOWNLEFT.AddPoint(point)
-                else:
-                    self._UPLEFT.AddPoint(point)
-            else:
-                if point.GetYCoord() < self.GetYMiddlePoint():
-                    self._DOWNRIGHT.AddPoint(point)
-                else:
-                    self._UPRIGHT.AddPoint(point)
+            self.SubAddPoint(point)
 
         else:
 
@@ -214,30 +228,10 @@ class Branch2d():
                 list = self.GetPointsList()
                 for i in range(self.GetPointsNumber()):
 
-                    if list[i].GetXCoord() < self.GetXMiddlePoint():
-                        if list[i].GetYCoord() < self.GetYMiddlePoint():
-                            self._DOWNLEFT.AddPoint(list[i])
-                        else:
-                            self._UPLEFT.AddPoint(list[i])
-
-                    else:
-                        if list[i].GetYCoord() < self.GetYMiddlePoint():
-                            self._DOWNRIGHT.AddPoint(list[i])
-                        else:
-
-                            self._UPRIGHT.AddPoint(list[i])
+                    self.SubAddPoint(list[i])
                     self.RemovePoint(0)
 
-                if point.GetXCoord() < self.GetXMiddlePoint():
-                    if point.GetYCoord() < self.GetYMiddlePoint():
-                        self._DOWNLEFT.AddPoint(point)
-                    else:
-                        self._UPLEFT.AddPoint(point)
-                else:
-                    if point.GetYCoord() < self.GetYMiddlePoint():
-                        self._DOWNRIGHT.AddPoint(point)
-                    else:
-                        self._UPRIGHT.AddPoint(point)
+                self.SubAddPoint(point)
 
             else:
                 self._POINTS = np.append(self._POINTS, point)
@@ -439,7 +433,48 @@ class Branch3d(Branch2d):
         if self.IsDivided() == True:
             return self.subBranches[index]
         else:
-            raise ("Error: The branch got no subbranches.")
+            raise AttributeError("The branch got no subbranches.")
+
+    def SubAddPoint(self, point : Point3d):
+        if self.GetXSize()[0] <= point.GetXCoord() < self.GetXMiddlePoint():
+            if self.GetYSize()[0] <= point.GetYCoord() < self.GetYMiddlePoint():
+                if self.GetZSize()[0] <= point.GetZCoord() < self.GetZMiddlePoint():
+                    self._FRONTDOWNLEFT.AddPoint(point)
+                elif self.GetZMiddlePoint() <= point.GetZCoord() <= self.GetZSize()[1]:
+                    self._BACKDOWNLEFT.AddPoint(point)
+                else:
+                    raise ValueError(
+                        f"The point {point()} is outside the tree's bounds : ({self.GetXSize()}, {self.GetYSize()}, {self.GetZSize()}).")
+
+            elif self.GetYMiddlePoint() <= point.GetYCoord() <= self.GetYSize()[1]:
+                if self.GetZSize()[0] <= point.GetZCoord() < self.GetZMiddlePoint():
+                    self._FRONTUPLEFT.AddPoint(point)
+                elif self.GetZMiddlePoint() <= point.GetZCoord() <= self.GetZSize()[1]:
+                    self._BACKUPLEFT.AddPoint(point)
+            else:
+                raise ValueError(
+                    f"The point {point()} is outside the tree's bounds : ({self.GetXSize()}, {self.GetYSize()}, {self.GetZSize()}).")
+        elif self.GetXMiddlePoint() <= point.GetXCoord() <= self.GetXSize()[1]:
+            if self.GetYSize()[0] <= point.GetYCoord() < self.GetYMiddlePoint():
+                if self.GetZSize()[0] <= point.GetZCoord() < self.GetZMiddlePoint():
+                    self._FRONTDOWNRIGHT.AddPoint(point)
+                elif self.GetZMiddlePoint() <= point.GetZCoord() <= self.GetZSize()[1]:
+                    self._BACKDOWNRIGHT.AddPoint(point)
+                else:
+                    raise ValueError(
+                        f"The point {point()} is outside the tree's bounds : ({self.GetXSize()}, {self.GetYSize()}, {self.GetZSize()}).")
+            elif self.GetYMiddlePoint() <= point.GetYCoord() <= self.GetYSize()[1]:
+                if self.GetZSize()[0] <= point.GetZCoord() < self.GetZMiddlePoint():
+                    self._FRONTUPRIGHT.AddPoint(point)
+                elif self.GetZMiddlePoint() <= point.GetZCoord() <= self.GetZSize()[1]:
+                    self._BACKUPRIGHT.AddPoint(point)
+                else:
+                    raise ValueError(
+                        f"The point {point()} is outside the tree's bounds : ({self.GetXSize()}, {self.GetYSize()}, {self.GetZSize()}).")
+
+        else:
+            raise ValueError(
+                f"The point {point()} is outside the tree's bounds : ({self.GetXSize()}, {self.GetYSize()}, {self.GetZSize()}).")
 
     def AddPoint(self, point : Point3d):
         '''Recursively adds a point to the branch. \n
@@ -455,28 +490,7 @@ class Branch3d(Branch2d):
            add the point in one of the newly-created subbranches.'''
         if self.IsDivided() == True:
 
-            if point.GetXCoord() < self.GetXMiddlePoint():
-                if point.GetYCoord() < self.GetYMiddlePoint():
-                    if point.GetZCoord() < self.GetZMiddlePoint():
-                        self._FRONTDOWNLEFT.AddPoint(point)
-                    else:
-                        self._BACKDOWNLEFT.AddPoint(point)
-                else:
-                    if point.GetZCoord() < self.GetZMiddlePoint():
-                        self._FRONTUPLEFT.AddPoint(point)
-                    else:
-                        self._BACKUPLEFT.AddPoint(point)
-            else:
-                if point.GetYCoord() < self.GetYMiddlePoint():
-                    if point.GetZCoord() < self.GetZMiddlePoint():
-                        self._FRONTDOWNRIGHT.AddPoint(point)
-                    else:
-                        self._BACKDOWNRIGHT.AddPoint(point)
-                else:
-                    if point.GetZCoord() < self.GetZMiddlePoint():
-                        self._FRONTUPRIGHT.AddPoint(point)
-                    else:
-                        self._BACKUPRIGHT.AddPoint(point)
+            self.SubAddPoint(point)
 
         else:
 
@@ -559,52 +573,10 @@ class Branch3d(Branch2d):
                 list = self.GetPointsList()
                 for i in range(self.GetPointsNumber()):
 
-                    if list[i].GetXCoord() < self.GetXMiddlePoint():
-                        if list[i].GetYCoord() < self.GetYMiddlePoint():
-                            if list[i].GetZCoord() < self.GetZMiddlePoint():
-                                self._FRONTDOWNLEFT.AddPoint(list[i])
-                            else:
-                                self._BACKDOWNLEFT.AddPoint(list[i])
-                        else:
-                            if list[i].GetZCoord() < self.GetZMiddlePoint():
-                                self._FRONTUPLEFT.AddPoint(list[i])
-                            else:
-                                self._BACKUPLEFT.AddPoint(list[i])
-                    else:
-                        if list[i].GetYCoord() < self.GetYMiddlePoint():
-                            if list[i].GetZCoord() < self.GetZMiddlePoint():
-                                self._FRONTDOWNRIGHT.AddPoint(list[i])
-                            else:
-                                self._BACKDOWNRIGHT.AddPoint(list[i])
-                        else:
-                            if list[i].GetZCoord() < self.GetZMiddlePoint():
-                                self._FRONTUPRIGHT.AddPoint(list[i])
-                            else:
-                                self._BACKUPRIGHT.AddPoint(list[i])
+                    self.SubAddPoint(list[i])
                     self.RemovePoint(0)
 
-                if point.GetXCoord() < self.GetXMiddlePoint():
-                    if point.GetYCoord() < self.GetYMiddlePoint():
-                        if point.GetZCoord() < self.GetZMiddlePoint():
-                            self._FRONTDOWNLEFT.AddPoint(point)
-                        else:
-                            self._BACKDOWNLEFT.AddPoint(point)
-                    else:
-                        if point.GetZCoord() < self.GetZMiddlePoint():
-                            self._FRONTUPLEFT.AddPoint(point)
-                        else:
-                            self._BACKUPLEFT.AddPoint(point)
-                else:
-                    if point.GetYCoord() < self.GetYMiddlePoint():
-                        if point.GetZCoord() < self.GetZMiddlePoint():
-                            self._FRONTDOWNRIGHT.AddPoint(point)
-                        else:
-                            self._BACKDOWNRIGHT.AddPoint(point)
-                    else:
-                        if point.GetZCoord() < self.GetZMiddlePoint():
-                            self._FRONTUPRIGHT.AddPoint(point)
-                        else:
-                            self._BACKUPRIGHT.AddPoint(point)
+                self.SubAddPoint(point)
 
             else:
                 self._POINTS = np.append(self._POINTS, point)
@@ -657,10 +629,10 @@ class Tree3d(Tree2d):
 
 
 # GRAPHICAL IMPLEMENTATION
-def BoundingBox(center : tuple = (0.0, 0.0, 0.0),
-                size : tuple = (1.0, 1.0, 1.0),
-                color : tuple = (1.0, 1.0, 1.0, 1.0),
-                line_width : float = 1.0):
+def BoundingBox3d(center : tuple = (0.0, 0.0, 0.0),
+                  size : tuple = (1.0, 1.0, 1.0),
+                  color : tuple = (1.0, 1.0, 1.0, 1.0),
+                  line_width : float = 1.0):
     '''Creates a bounding box with the parameters given. The box got only is edges renderized.
        * center : tuple with 3 coordinates, x, y, and z, that determines where is the center of the box.
        * size : tuple with 3 coordinates, x, y, and z, that determines its lateral sizes.
@@ -683,7 +655,6 @@ def BoundingBox(center : tuple = (0.0, 0.0, 0.0),
                   [x_c + x_l, y_c - y_l, z_c + z_l],
                   [x_c + x_l, y_c + y_l, z_c + z_l],
                   [x_c - x_l, y_c + y_l, z_c + z_l]
-
                 ])
 
     data = np.array([
@@ -708,7 +679,64 @@ def BoundingBox(center : tuple = (0.0, 0.0, 0.0),
     return lines
 
 
-def GetActorFromBranch(branch : Branch3d, color=(
+def GetActorFromBranch2d(branch : Branch2d, color=(
+        1.0, 1.0, 1.0), linewidth=1.0) -> Actor:
+    '''Recursively creates actors for the branch given. If the branch is divided,
+       then the function is run for the subbranches until the function reaches a non-divided branch,
+       that creates the actor to be returned. This actor is then appended into a list, that is then returned.
+       NOTE: This returns a 3d actor.
+       * branch : Branch3d that will have the actor created.'''
+
+    if branch.IsDivided() == True:
+        actors = np.array([], dtype=Actor)
+        actors = np.append(
+            actors,
+            GetActorFromBranch2d(
+                branch.GetSubBranch(0),
+                color,
+                linewidth))
+        actors = np.append(
+            actors,
+            GetActorFromBranch2d(
+                branch.GetSubBranch(1),
+                color,
+                linewidth))
+        actors = np.append(
+            actors,
+            GetActorFromBranch2d(
+                branch.GetSubBranch(2),
+                color,
+                linewidth))
+        actors = np.append(
+            actors,
+            GetActorFromBranch2d(
+                branch.GetSubBranch(3),
+                color,
+                linewidth))
+
+        return actors
+
+    else:
+
+        data = np.array([])
+        data0 = branch.GetPointsList()
+        for i in range(data0.shape[0]):
+            np.append(data, data0[i]())
+
+        x_c = branch.GetXMiddlePoint()
+        y_c = branch.GetYMiddlePoint()
+        z_c = 0.0
+
+        x_l = (branch.GetXSize()[1] - branch.GetXSize()[0])
+        y_l = (branch.GetYSize()[1] - branch.GetYSize()[0])
+        z_l = 0.0
+
+        cubeActor = BoundingBox3d((x_c, y_c, z_c), (x_l, y_l, z_l), color, linewidth)
+
+        return cubeActor
+
+
+def GetActorFromBranch3d(branch : Branch3d, color=(
         1.0, 1.0, 1.0), linewidth=1.0) -> Actor:
     '''Recursively creates actors for the branch given. If the branch is divided,
        then the function is run for the subbranches until the function reaches a non-divided branch,
@@ -719,49 +747,49 @@ def GetActorFromBranch(branch : Branch3d, color=(
         actors = np.array([], dtype=Actor)
         actors = np.append(
             actors,
-            GetActorFromBranch(
+            GetActorFromBranch3d(
                 branch.GetSubBranch(0),
                 color,
                 linewidth))
         actors = np.append(
             actors,
-            GetActorFromBranch(
+            GetActorFromBranch3d(
                 branch.GetSubBranch(1),
                 color,
                 linewidth))
         actors = np.append(
             actors,
-            GetActorFromBranch(
+            GetActorFromBranch3d(
                 branch.GetSubBranch(2),
                 color,
                 linewidth))
         actors = np.append(
             actors,
-            GetActorFromBranch(
+            GetActorFromBranch3d(
                 branch.GetSubBranch(3),
                 color,
                 linewidth))
         actors = np.append(
             actors,
-            GetActorFromBranch(
+            GetActorFromBranch3d(
                 branch.GetSubBranch(4),
                 color,
                 linewidth))
         actors = np.append(
             actors,
-            GetActorFromBranch(
+            GetActorFromBranch3d(
                 branch.GetSubBranch(5),
                 color,
                 linewidth))
         actors = np.append(
             actors,
-            GetActorFromBranch(
+            GetActorFromBranch3d(
                 branch.GetSubBranch(6),
                 color,
                 linewidth))
         actors = np.append(
             actors,
-            GetActorFromBranch(
+            GetActorFromBranch3d(
                 branch.GetSubBranch(7),
                 color,
                 linewidth))
@@ -783,7 +811,7 @@ def GetActorFromBranch(branch : Branch3d, color=(
         y_l = (branch.GetYSize()[1] - branch.GetYSize()[0])
         z_l = (branch.GetZSize()[1] - branch.GetZSize()[0])
 
-        cubeActor = BoundingBox((x_c, y_c, z_c), (x_l, y_l, z_l), color, linewidth)
+        cubeActor = BoundingBox3d((x_c, y_c, z_c), (x_l, y_l, z_l), color, linewidth)
 
         return cubeActor
 # END OF GRAPH IMPLEMENTATION
