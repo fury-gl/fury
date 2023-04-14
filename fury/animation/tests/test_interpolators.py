@@ -301,7 +301,10 @@ def test_color_interpolators():
             data = {1: {'value': None}, 2: {'value': np.array([1, 1, 1])}}
             try:
                 interpolator(data)
-                raise "This shouldn't work since invalid keyframes " 'were provided! and hence cant be converted to ' 'targeted color space.'
+                msg =  "This shouldn't work since invalid keyframes "
+                msg += "were provided! and hence can't be converted to"
+                msg += "targeted color space."
+                raise  msg
             except (
                 TypeError,
                 AttributeError,

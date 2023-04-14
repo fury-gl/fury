@@ -29,7 +29,7 @@ listbox_1 = ui.ListBox2D(size=(150, 150), values=['First', 'Second', 'Third'])
 listbox_2 = ui.ListBox2D(size=(250, 250), values=['First', 'Second', 'Third'])
 
 ###############################################################################
-# Now we create two diffrent UI i.e. a slider and a listbox
+# Now we create two different UI i.e. a slider and a listbox
 
 slider = ui.LineSlider2D(length=150)
 listbox = ui.ListBox2D(size=(150, 150), values=['First', 'Second', 'Third'])

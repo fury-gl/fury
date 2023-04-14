@@ -9,7 +9,7 @@ Quick Overview
 
 * Enable Anti aliasing and frame rate features
 * Add multiples actors (arrow, box, ...)
-* Glyph extentions
+* Glyph extensions
 * Remove Nose dependency
 * Replace Appveyor by Azure pipeline for Windows
 * Update Documentation, examples and tutorials

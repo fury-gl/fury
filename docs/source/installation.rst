@@ -166,7 +166,7 @@ In our ``docs`` folder structure above:
 
 - ``source`` is the folder that contains all ``*.rst`` files.
 - ``examples`` is the directory where we have all python scripts that describe how to use the library.
-- ``experimental`` directory contains experimental Python scripts. The goal is to keep a trace of expermiental work.
+- ``experimental`` directory contains experimental Python scripts. The goal is to keep a trace of experimental work.
 
 Building the documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~

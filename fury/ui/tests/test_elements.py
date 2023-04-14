@@ -1275,3 +1275,10 @@ def test_playback_panel(interactive=False):
     playback.current_time = 5
     assert_equal(playback.current_time, 5)
     assert_equal(playback.current_time_str, '00:05.00')
+    # test show/hide
+    playback.show()
+    ss = window.snapshot(show_manager.scene)
+    assert_not_equal(np.max(ss), 0)
+    playback.hide()
+    ss = window.snapshot(show_manager.scene)
+    assert_equal(np.max(ss), 0)

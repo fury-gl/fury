@@ -123,7 +123,7 @@ window.record(scene, out_path='bundle3.png', size=(600, 600))
 # Show every bundle with a specific color
 # ========================================
 #
-# You can have a bundle with a specific color. In this example, we are chosing
+# You can have a bundle with a specific color. In this example, we are choosing
 # orange.
 
 scene.clear()

@@ -253,7 +253,7 @@ def test_contour_from_roi(interactive=False):
     ' vtkAssembly + actor opacity.',
 )
 def test_contour_from_label(interactive=False):
-    # Render volumne
+    # Render volume
     scene = window.Scene()
     data = np.zeros((50, 50, 50))
     data[5:15, 1:10, 25] = 1.0
@@ -514,7 +514,7 @@ def test_odf_slicer(interactive=False):
     if interactive:
         window.show(scene)
 
-    # Test that the most basic odf_slicer instanciation works
+    # Test that the most basic odf_slicer instantiation works
     odf_actor = actor.odf_slicer(odfs)
     scene.clear()
     scene.add(odf_actor)
@@ -1779,4 +1779,3 @@ def test_actors_primitives_count():
         primitives_count = test_case[2]
         act = act_func(**args)
         npt.assert_equal(primitives_count_from_actor(act), primitives_count)
-

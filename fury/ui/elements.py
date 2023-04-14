@@ -445,7 +445,7 @@ class LineSlider2D(UI):
         outer_radius : int
             Outer radius of the handles (if disk).
         handle_side : int
-            Side length of the handles (if sqaure).
+            Side length of the handles (if square).
         font_size : int
             Size of the text to display alongside the slider (pt).
         orientation : str
@@ -809,7 +809,7 @@ class LineDoubleSlider2D(UI):
         outer_radius : int
             Outer radius of the handles (if disk).
         handle_side : int
-            Side length of the handles (if sqaure).
+            Side length of the handles (if square).
         center : (float, float)
             Center of the slider.
         length : int
@@ -4028,6 +4028,12 @@ class PlaybackPanel(UI):
         speed_str = f'{speed}'.strip('0').rstrip('.')
         self.speed_text.font_size = 21 if 0.01 <= speed < 100 else 14
         self.speed_text.message = speed_str
+
+    def show(self):
+        [act.SetVisibility(1) for act in self._get_actors()]
+
+    def hide(self):
+        [act.SetVisibility(0) for act in self._get_actors()]
 
     def _get_actors(self):
         """Get the actors composing this UI component."""

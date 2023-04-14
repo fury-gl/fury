@@ -104,10 +104,10 @@ class GenericMultiDimensionalBuffer(ABC):
         logging.info(f'dequeue start {int(time.time()*1000)}')
         ts = time.time() * 1000
 
-        itens = self._buffer_repr[start:end]
+        items = self._buffer_repr[start:end]
         te = time.time() * 1000
         logging.info(f'dequeue frombuffer cost {te-ts:.2f}')
-        return itens
+        return items
 
     def __setitem__(self, idx, data):
         start, end = self.get_start_end(idx)
@@ -135,7 +135,7 @@ class RawArrayMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
     def __init__(self, max_size, dimension=4, buffer=None):
         """
 
-        Stream system uses that to implemenet the CircularQueue
+        Stream system uses that to implement the CircularQueue
         with shared memory resources.
 
         Parameters
@@ -185,7 +185,7 @@ class SharedMemMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
     def __init__(self, max_size, dimension=4, buffer_name=None):
         """
 
-        Stream system uses that to implemenet the
+        Stream system uses that to implement the
         CircularQueue with shared memory resources.
 
         Parameters
@@ -467,7 +467,7 @@ class SharedMemCircularQueue(GenericCircularQueue):
     ):
         """
 
-        Stream system uses that to implemenet user interactions
+        Stream system uses that to implement user interactions
 
         Parameters
         ----------
@@ -480,7 +480,7 @@ class SharedMemCircularQueue(GenericCircularQueue):
         head_tail_buffer_name : str, optional
             if buffer_name is passed than this Obj will read a
             a already created SharedMemory with the head and tail
-            informations
+            information
         buffer_name : str, optional
             if buffer_name is passed than this Obj will read a
             a already created SharedMemory to create the MultiDimensionalBuffer
@@ -569,7 +569,7 @@ class SharedMemCircularQueue(GenericCircularQueue):
 
 class GenericImageBufferManager(ABC):
     """This implements a abstract (generic) ImageBufferManager with
-    the n-buffer techinique."""
+    the n-buffer technique."""
 
     def __init__(self, max_window_size=None, num_buffers=2, use_shared_mem=False):
         """
@@ -581,7 +581,7 @@ class GenericImageBufferManager(ABC):
             Should be greater than the window size.
         num_buffers : int, optional
             Number of buffers to be used in the n-buffering
-            techinique.
+            technique.
         use_shared_mem: bool, default False
 
         """
@@ -711,7 +711,7 @@ class RawArrayImageBufferManager(GenericImageBufferManager):
                 Should be greater than the window size.
         num_buffers : int, optional
                 Number of buffers to be used in the n-buffering
-                techinique.
+                technique.
         info_buffer : buffer, optional
             A buffer with the information about the current
             frame to be streamed and the respective sizes
@@ -790,7 +790,7 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
                 Should be greater than the window size.
         num_buffers : int, optional
                 Number of buffers to be used in the n-buffering
-                techinique.
+                technique.
         info_buffer_name : str
             The name of a buffer with the information about the current
             frame to be streamed and the respective sizes
@@ -911,7 +911,7 @@ class IntervalTimerThreading:
         Parameters
         ----------
         seconds : float
-            A postive float number. Represents the total amount of
+            A positive float number. Represents the total amount of
             seconds between each call
         callback : function
             The function to be called
@@ -983,7 +983,7 @@ class IntervalTimer:
         Parameters
         ----------
         seconds : float
-            A postive float number. Represents the total amount of
+            A positive float number. Represents the total amount of
             seconds between each call
         callback : function
             The function to be called

@@ -26,7 +26,7 @@ Google Summer of Code Final Work Product
 -  **Organisation:** Python Software Foundation
 -  **Sub-Organisation:** FURY
 -  **Project:** `FURY - glTF
-   Intergration <https://github.com/fury-gl/fury/wiki/Google-Summer-of-Code-2022>`__
+   Integration <https://github.com/fury-gl/fury/wiki/Google-Summer-of-Code-2022>`__
 
 
 Proposed Objectives
@@ -220,7 +220,7 @@ The
 `KhronosGroup/gltf-samples <https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/>`__
 contain multiple glTF sample models to test a glTF viewer for free.
 Implemented new methods in fetcher that can load all of these models
-by (usind type) asynchronously. The glTF fetcher is capable
+by (using type) asynchronously. The glTF fetcher is capable
 of the following:
 
 -  Downloading multiple models asynchronously.
@@ -312,4 +312,3 @@ Timeline
    * - Week 14\ :raw-html:`<br>`\ (28-09-2022)
      - Morphing is here !
      - `FURY <https://fury.gl/latest/posts/2022/2022-09-28-week-14-shivam.html>`_ - `Python <https://blogs.python-gsoc.org/en/xtanions-blog/week-14-morphing-is-here/>`_
-
