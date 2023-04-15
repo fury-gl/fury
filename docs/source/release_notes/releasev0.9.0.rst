@@ -1,8 +1,8 @@
 .. _releasev0.9.0:
 
-==============================
- Release notes v0.9.0
-==============================
+===================================
+ Release notes v0.9.0 (2023/04/15)
+===================================
 
 Quick Overview
 --------------
@@ -11,7 +11,6 @@ Quick Overview
 * Large improvement of Signed Distance Functions actors (SDF).
 * Continuous Integration (CI) platform updated. Migrate Windows CI from Azure to Github Actions
 * Migration from setuptools to hatching. versioning system updated also.
-* New actors added (Rhombicuboctahedron, Pentagonal Prism).
 * New module fury.animation added.
 * New module fury.gltf added. Module to support glTF 2.0.
 * Multiple tutorials added and updated.
