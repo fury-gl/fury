@@ -1,7 +1,7 @@
 FURY 0.9.0 Released
 ===================
 
-.. post:: April 13 2023
+.. post:: April 15 2023
    :author: skoudoro
    :tags: fury
    :category: release
