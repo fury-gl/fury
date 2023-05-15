@@ -952,6 +952,7 @@ def axes(
     arrow_actor = arrow(centers, dirs, colors, scales, repeat_primitive=False)
     return arrow_actor
 
+
 def dualpoint_arrow(centers, directions, colors, heights=1,
           tip_length=0.35, tip_radius=0.1, shaft_radius=0.03, scales=1, resolution=10,
           vertices=None, faces=None, repeat_primitive=True):
