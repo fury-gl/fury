@@ -1781,3 +1781,4 @@ def test_actors_primitives_count():
         primitives_count = test_case[2]
         act = act_func(**args)
         npt.assert_equal(primitives_count_from_actor(act), primitives_count)
+
