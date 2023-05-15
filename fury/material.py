@@ -354,7 +354,22 @@ def manifest_standard(actor, ambient_level=0, ambient_color=(1, 1, 1),
     
 
 def opacity(actor, alpha):
-    """Change actors opacity (transparency)
+    """Change or get actor's opacity (transparency)
+
+    Parameters
+    -----------
+    actor : actor
+    alpha : float
+        Values should be between 0 (transparent) to 1 (opaque).
+        If None then the function returns current alpha value.
+    """
+    if alpha is None:
+        return actor.GetProperty().GetOpacity()
+    actor.GetProperty().SetOpacity(alpha)
+
+
+def set_opacity(actor, alpha):
+    """Set actor's global opacity (transparency)
 
     Parameters
     -----------
@@ -362,22 +377,79 @@ def opacity(actor, alpha):
     alpha : float
         Values should be between 0 (transparent) to 1 (opaque).
     """
-    actor.GetPropertry().SetOpacity(alpha)
-    return actor
+    actor.GetProperty().SetOpacity(alpha)
+
+
+def get_opacity(actor):
+    """Get actor's global opacity (transparency)
+
+    Parameters
+    -----------
+    actor : actor
+
+    Returns
+    --------
+    alpha : float
+        Values should be between 0 (transparent) to 1 (opaque).
+    """
+    return actor.GetProperty().GetOpacity()
+
 
 def manifest_points(actor, pointsize):
-    actor.GetProperty.GetPointSize()
-    actor.GetProperty.SetPointSize(pointsize)
+    """Set actor points size
+
+    Parameters
+    -----------
+    actor : actor
+    pointsize : float
+
+    Returns
+    --------
+    actor : actor
+    """
+
+    actor.GetProperty().SetRepresentationToPoints()
+    actor.GetProperty().SetPointSize(pointsize)
     return actor
 
-# Needs Fix
-# def manifest_surface():
+
+def manifest_surface(actor):
+    """Set the actor representation to surface
+    
+    Parameters
+    -----------
+    actor : actor
+    """
+
+    actor.GetProperty().SetRepresentationToSurface()
+
 
 def manifest_wireframe(actor):
-    actor = actor.GetProperty().GetRepresentation
+    """Toggle wireframe representation of a given actor
+
+    Parameters
+    -----------
+    actor : actor
+    """
+
     actor.GetProperty().SetRepresentationToWireframe()
 
+
 def culling(actor, back, front):
+    """Sets culling in a given actor
+    
+    Parameters
+    -----------
+    actor : actor
+    back : bool 
+        Enables/disables backface culling
+    front : bool
+        Enables/disables frontface culling
+
+    Returns
+    --------
+    actor : actor
+    """
     prop = actor.GetProperty()
     
     if back and not front and not prop.GetBackfaceCulling():
