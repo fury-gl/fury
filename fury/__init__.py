@@ -1,15 +1,7 @@
 """Init file for visualization package."""
 import warnings
 
-try:
-    from ._version import version as __version__
-    from ._version import version_tuple
-
-    __revision_id__ = version_tuple[-1][1:9]
-except ImportError:
-    __version__ = 'unknown version'
-    version_tuple = (0, 0, 0, 'unknown version', 'unknown version')
-    __revision_id__ = 'unknown revision'
+from fury.pkg_info import __version__, pkg_commit_hash
 
 
 def get_info(verbose=False):
@@ -37,10 +29,12 @@ def get_info(verbose=False):
     mpl, have_mpl, _ = optional_package('matplotlib')
     dipy, have_dipy, _ = optional_package('dipy')
 
+    install_type, commit_hash = pkg_commit_hash(dirname(__file__))
+
     info = dict(
         fury_version=__version__,
         pkg_path=dirname(__file__),
-        commit_hash=__revision_id__,
+        commit_hash=commit_hash,
         sys_version=sys.version,
         sys_executable=sys.executable,
         sys_platform=sys.platform,

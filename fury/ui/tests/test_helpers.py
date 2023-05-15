@@ -1,4 +1,4 @@
-"""Test helpers fonction ."""
+"""Test helpers function ."""
 import numpy as np
 import numpy.testing as npt
 

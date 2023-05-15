@@ -37,6 +37,6 @@ I have two major goals for the next week:
 
 Did you get stuck anywhere?
 ---------------------------
-I tried to create a class in python which inherits from a vtk class called vtkMoleculeReaderBase but was unsucessful in this endeavour. I'll try to find a workaround.
+I tried to create a class in python which inherits from a vtk class called vtkMoleculeReaderBase but was unsuccessful in this endeavour. I'll try to find a workaround.
 
 ``Au Revoir!``

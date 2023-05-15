@@ -47,7 +47,7 @@ class OdfSlicerActor(Actor):
         coordinates to world coordinates.
     B : ndarray (n_coeffs, n_vertices)
         Optional SH to SF matrix for projecting `odfs` given in SH
-        coefficents on the `sphere`. If None, then the input is assumed
+        coefficients on the `sphere`. If None, then the input is assumed
         to be expressed in SF coefficients.
     """
 

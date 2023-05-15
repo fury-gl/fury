@@ -254,11 +254,60 @@ def test_ui_tab_ui(interactive=False):
     recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
     expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
 
-    tab_ui = ui.TabUI(position=(50, 50), size=(300, 300), nb_tabs=3, draggable=True)
+    tab_ui = ui.TabUI(
+        position=(50, 50), size=(300, 300), nb_tabs=3, draggable=True)
 
     tab_ui.tabs[0].title = 'Tab 1'
     tab_ui.tabs[1].title = 'Tab 2'
     tab_ui.tabs[2].title = 'Tab 3'
+    
+    npt.assert_equal(tab_ui.tabs[0].title_bold, False)
+    npt.assert_equal(tab_ui.tabs[1].title_bold, False)
+    npt.assert_equal(tab_ui.tabs[2].title_bold, False)
+    
+    tab_ui.tabs[0].title_bold = True
+    tab_ui.tabs[1].title_bold = False
+    tab_ui.tabs[2].title_bold = True
+    
+    npt.assert_equal(tab_ui.tabs[0].title_bold, True)
+    npt.assert_equal(tab_ui.tabs[1].title_bold, False)
+    npt.assert_equal(tab_ui.tabs[2].title_bold, True)
+    
+    npt.assert_equal(tab_ui.tabs[0].title_color, (.0, .0, .0))
+    npt.assert_equal(tab_ui.tabs[1].title_color, (.0, .0, .0))
+    npt.assert_equal(tab_ui.tabs[2].title_color, (.0, .0, .0))
+    
+    tab_ui.tabs[0].title_color = (1, 0, 0)
+    tab_ui.tabs[1].title_color = (0, 1, 0)
+    tab_ui.tabs[2].title_color = (0, 0, 1)
+    
+    npt.assert_equal(tab_ui.tabs[0].title_color, (1., .0, .0))
+    npt.assert_equal(tab_ui.tabs[1].title_color, (.0, 1., .0))
+    npt.assert_equal(tab_ui.tabs[2].title_color, (.0, .0, 1.))
+    
+    npt.assert_equal(tab_ui.tabs[0].title_font_size, 12)
+    npt.assert_equal(tab_ui.tabs[1].title_font_size, 12)
+    npt.assert_equal(tab_ui.tabs[2].title_font_size, 12)
+    
+    tab_ui.tabs[0].title_font_size = 10
+    tab_ui.tabs[1].title_font_size = 20
+    tab_ui.tabs[2].title_font_size = 30
+    
+    npt.assert_equal(tab_ui.tabs[0].title_font_size, 10)
+    npt.assert_equal(tab_ui.tabs[1].title_font_size, 20)
+    npt.assert_equal(tab_ui.tabs[2].title_font_size, 30)
+    
+    npt.assert_equal(tab_ui.tabs[0].title_italic, False)
+    npt.assert_equal(tab_ui.tabs[1].title_italic, False)
+    npt.assert_equal(tab_ui.tabs[2].title_italic, False)
+    
+    tab_ui.tabs[0].title_italic = False
+    tab_ui.tabs[1].title_italic = True
+    tab_ui.tabs[2].title_italic = False
+    
+    npt.assert_equal(tab_ui.tabs[0].title_italic, False)
+    npt.assert_equal(tab_ui.tabs[1].title_italic, True)
+    npt.assert_equal(tab_ui.tabs[2].title_italic, False)
 
     tab_ui.add_element(0, ui.Checkbox(['Option 1', 'Option 2']), (0.5, 0.5))
     tab_ui.add_element(1, ui.LineSlider2D(), (0.0, 0.5))
@@ -311,9 +360,3 @@ def test_ui_tab_ui(interactive=False):
     npt.assert_equal(0, tab_ui.active_tab_idx)
     npt.assert_equal(11, next(changes))
     npt.assert_equal(5, next(collapses))
-
-
-# test_wrong_interactor_style()
-# test_grid_ui()
-# test_grid_ui2()
-# test_ui_tab_ui()

@@ -216,4 +216,4 @@ Did you get stuck anywhere?
             pil_image = pil_image.convert('RGB')
 
 
-- pygltflib's ``load`` method doesnot handle glb files very well. It does not contain the buffer ``uri``. I used ``glb2gltf`` method as of now.
+- pygltflib's ``load`` method does not handle glb files very well. It does not contain the buffer ``uri``. I used ``glb2gltf`` method as of now.

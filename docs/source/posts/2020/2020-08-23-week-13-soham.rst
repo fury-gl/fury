@@ -6,7 +6,7 @@ Part of the Journey is the end unless its Open Source!
    :tags: google
    :category: gsoc
 
-Hello and welcome to my final weekly check-in. Today officially marks the end of  the coding period for GSoC 2020. I enjoyed every bit of it. This was a life-changing experience for me and now I observe and interpret everything from a different perspective altogether. I have grown into a better developer and a person since GSoC. I would like to thank all my mentors and especially Serge for his immense support and mentorship. I would love to contribute to fury even after GSoC is over but unfortunately my semester break is over so I wont be as active as I was during the summer.
+Hello and welcome to my final weekly check-in. Today officially marks the end of  the coding period for GSoC 2020. I enjoyed every bit of it. This was a life-changing experience for me and now I observe and interpret everything from a different perspective altogether. I have grown into a better developer and a person since GSoC. I would like to thank all my mentors and especially Serge for his immense support and mentorship. I would love to contribute to fury even after GSoC is over but unfortunately my semester break is over so I won't be as active as I was during the summer.
 
 Now, regarding work I will be sharing my progress with the File Dialog UI component. The official repository of my sub-org can be found `here <https://github.com/fury-gl/fury/>`_.
 

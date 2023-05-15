@@ -1,3 +1,5 @@
+from os.path import join as pjoin
+
 import numpy as np
 
 from fury.colormap import boys2rgb, colormap_lookup_table, orient2rgb
@@ -11,12 +13,17 @@ from fury.lib import (
     calldata_type,
     numpy_support,
 )
-from fury.shaders import attribute_to_actor, import_fury_shader, shader_to_actor
+from fury.shaders import (
+    attribute_to_actor,
+    compose_shader,
+    import_fury_shader,
+    shader_to_actor,
+)
 from fury.utils import apply_affine, numpy_to_vtk_colors, numpy_to_vtk_points
 
 
 class PeakActor(Actor):
-    """VTK actor for visualizing slices of ODF field.
+    """FURY actor for visualizing DWI peaks.
 
     Parameters
     ----------
@@ -133,14 +140,51 @@ class PeakActor(Actor):
         attribute_to_actor(self, centers_array, 'center')
         attribute_to_actor(self, diffs_array, 'diff')
 
-        vs_dec_code = import_fury_shader('peak_dec.vert')
-        vs_impl_code = import_fury_shader('peak_impl.vert')
-        fs_dec_code = import_fury_shader('peak_dec.frag')
-        fs_impl_code = import_fury_shader('peak_impl.frag')
+        vs_var_dec = """
+            in vec3 center;
+            in vec3 diff;
+            flat out vec3 centerVertexMCVSOutput;
+            """
+        fs_var_dec = """
+            flat in vec3 centerVertexMCVSOutput;
+            uniform bool isRange;
+            uniform vec3 crossSection;
+            uniform vec3 lowRanges;
+            uniform vec3 highRanges;
+            """
+        orient_to_rgb = import_fury_shader(pjoin('utils', 'orient_to_rgb.glsl'))
+        visible_cross_section = import_fury_shader(
+            pjoin('interaction', 'visible_cross_section.glsl')
+        )
+        visible_range = import_fury_shader(pjoin('interaction', 'visible_range.glsl'))
 
-        shader_to_actor(self, 'vertex', decl_code=vs_dec_code, impl_code=vs_impl_code)
-        shader_to_actor(self, 'fragment', decl_code=fs_dec_code)
-        shader_to_actor(self, 'fragment', impl_code=fs_impl_code, block='light')
+        vs_dec = compose_shader([vs_var_dec, orient_to_rgb])
+        fs_dec = compose_shader([fs_var_dec, visible_cross_section, visible_range])
+
+        vs_impl = """
+            centerVertexMCVSOutput = center;
+            if (vertexColorVSOutput.rgb == vec3(0))
+            {
+                vertexColorVSOutput.rgb = orient2rgb(diff);
+            }
+            """
+
+        fs_impl = """
+            if (isRange)
+            {
+                if (!inVisibleRange(centerVertexMCVSOutput))
+                    discard;
+            }
+            else
+            {
+                if (!inVisibleCrossSection(centerVertexMCVSOutput))
+                    discard;
+            }
+            """
+
+        shader_to_actor(self, 'vertex', decl_code=vs_dec, impl_code=vs_impl)
+        shader_to_actor(self, 'fragment', decl_code=fs_dec)
+        shader_to_actor(self, 'fragment', impl_code=fs_impl, block='light')
 
         # Color scale with a lookup table
         if colors_are_scalars:

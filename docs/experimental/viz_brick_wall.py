@@ -69,7 +69,7 @@ for i in range(wall_height):
     for j in range(wall_width):
         pos = np.array([[-1, (0.2 + j * 0.4), (0.1 + 0.2 * i)]])
 
-        # brick defination
+        # brick definition
         brick_actor = actor.box(
             centers=np.array([[0, 0, 0]]),
             directions=np.array([1.57, 0, 0]),
@@ -111,7 +111,7 @@ showm = window.ShowManager(
 )
 
 
-# Counter interator for tracking simulation steps.
+# Counter iterator for tracking simulation steps.
 counter = itertools.count()
 
 # Variable for tracking applied force.
