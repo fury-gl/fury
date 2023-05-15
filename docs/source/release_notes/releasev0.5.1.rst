@@ -121,7 +121,7 @@ Issues (104):
 * :ghissue:`213`: Utils vtk
 * :ghissue:`179`: Utility functions are needed for getting numpy arrays from actors
 * :ghissue:`212`: Namanb009 issue 133 fix
-* :ghissue:`214`: Namanb009 Remove mulitple actors
+* :ghissue:`214`: Namanb009 Remove multiple actors
 * :ghissue:`215`: Remove more than one actors at once
 * :ghissue:`211`: Namanb009 hexadecimal color support
 * :ghissue:`187`: New utility functions are added in utils.py and tests are added in te…

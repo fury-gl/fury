@@ -156,8 +156,8 @@ def web_server_raw_array(
         http://host:port
     ms_jpeg : float, optional
         This it's used  only if the MJPEG will be used. The
-        ms_jpeg represents the amount of miliseconds between to
-        consecutive calls of the jpeg enconding.
+        ms_jpeg represents the amount of milliseconds between to
+        consecutive calls of the jpeg encoding.
     run_app : bool, default True
         This will run the aiohttp application. The False condition
         is used just to be able to test the server.
@@ -251,8 +251,8 @@ def web_server(
         a python>=3.8 core bug
     ms_jpeg : float, optional
         This it's used  only if the MJPEG will be used. The
-        ms_jpeg represents the amount of miliseconds between to
-        consecutive calls of the jpeg enconding.
+        ms_jpeg represents the amount of milliseconds between to
+        consecutive calls of the jpeg encoding.
     run_app : bool, default True
         This will run the aiohttp application. The False condition
         is used just to be able to test the server.

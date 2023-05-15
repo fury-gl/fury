@@ -38,7 +38,7 @@ We can also join our `discord community <https://discord.gg/6btFPPj>`_
 
 We would like to thanks to :ref:`all contributors <community>` for this release:
 
-.. include:: ../../release_notes/releasev0.7.0.rst
+.. include:: ../../release_notes/releasev0.8.0.rst
     :start-after: commits.
     :end-before: We closed
 

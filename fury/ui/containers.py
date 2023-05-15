@@ -487,6 +487,70 @@ class TabPanel2D(UI):
         """
         self.text_block.message = text
 
+    @property
+    def title_bold(self):
+        """Is the title of a tab panel bold."""
+        return self.text_block.bold
+
+    @title_bold.setter
+    def title_bold(self, bold):
+        """Determine if the text title of a tab panel must be bold.
+
+        Parameters
+        ----------
+        bold : bool
+            Bold property for a text title in a tab panel.
+        """
+        self.text_block.bold = bold
+
+    @property
+    def title_color(self):
+        """Return the title color of tab panel."""
+        return self.text_block.color
+
+    @title_color.setter
+    def title_color(self, color):
+        """Set the title color of tab panel.
+
+        Parameters
+        ----------
+        color : tuple
+            New title color for tab panel.
+        """
+        self.text_block.color = color
+
+    @property
+    def title_font_size(self):
+        """Return the title font size of tab panel."""
+        return self.text_block.font_size
+
+    @title_font_size.setter
+    def title_font_size(self, font_size):
+        """Set the title font size of tab panel.
+
+        Parameters
+        ----------
+        font_size : int
+            New title font size for tab panel.
+        """
+        self.text_block.font_size = font_size
+
+    @property
+    def title_italic(self):
+        """Is the title of a tab panel italic."""
+        return self.text_block.italic
+
+    @title_italic.setter
+    def title_italic(self, italic):
+        """Determine if the text title of a tab panel must be italic.
+
+        Parameters
+        ----------
+        italic : bool
+            Italic property for a text title in a tab panel.
+        """
+        self.text_block.italic = italic
+
     def add_element(self, element, coords, anchor='position'):
         """Add a UI component to the content panel.
 
@@ -539,7 +603,7 @@ class TabUI(UI):
     Attributes
     ----------
     tabs: :class: List of 'TabPanel2D'
-        Stores all the instances of 'TabPanel2D' that renderes the contents.
+        Stores all the instances of 'TabPanel2D' that renders the contents.
     """
 
     def __init__(
@@ -550,6 +614,7 @@ class TabUI(UI):
         active_color=(1, 1, 1),
         inactive_color=(0.5, 0.5, 0.5),
         draggable=False,
+        startup_tab_id=None,
     ):
         """Init class instance.
 
@@ -568,6 +633,9 @@ class TabUI(UI):
             Background color of inactive tab panels.
         draggable : bool
             Whether the UI element is draggable or not.
+        startup_tab_id : int, optional
+            Tab to be activated and uncollapsed on startup.
+            by default None is activated/ all collapsed.
         """
         self.tabs = []
         self.nb_tabs = nb_tabs
@@ -576,7 +644,7 @@ class TabUI(UI):
         self.draggable = draggable
         self.active_color = active_color
         self.inactive_color = inactive_color
-        self.active_tab_idx = None
+        self.active_tab_idx = startup_tab_id
         self.collapsed = True
 
         super(TabUI, self).__init__()
@@ -600,6 +668,10 @@ class TabUI(UI):
             tab_panel = TabPanel2D(content_panel=content_panel)
             self.tabs.append(tab_panel)
         self.update_tabs()
+
+        if self.active_tab_idx is not None:
+            self.tabs[self.active_tab_idx].color = self.active_color
+            self.tabs[self.active_tab_idx].content_panel.set_visibility(True)
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -647,32 +719,24 @@ class TabUI(UI):
 
             content_panel = tab_panel.content_panel
             if self.draggable:
-                tab_panel.panel.background.on_left_mouse_button_pressed = (
+                tab_panel.panel.background.on_left_mouse_button_pressed = \
                     self.left_button_pressed
-                )
-                content_panel.background.on_left_mouse_button_pressed = (
+                content_panel.background.on_left_mouse_button_pressed = \
                     self.left_button_pressed
-                )
-                tab_panel.text_block.on_left_mouse_button_pressed = (
+                tab_panel.text_block.on_left_mouse_button_pressed = \
                     self.left_button_pressed
-                )
 
-                tab_panel.panel.background.on_left_mouse_button_dragged = (
+                tab_panel.panel.background.on_left_mouse_button_dragged = \
                     self.left_button_dragged
-                )
-                content_panel.background.on_left_mouse_button_dragged = (
+                content_panel.background.on_left_mouse_button_dragged = \
                     self.left_button_dragged
-                )
-                tab_panel.text_block.on_left_mouse_button_dragged = (
+                tab_panel.text_block.on_left_mouse_button_dragged = \
                     self.left_button_dragged
-                )
             else:
-                tab_panel.panel.background.on_left_mouse_button_dragged = (
+                tab_panel.panel.background.on_left_mouse_button_dragged = \
                     lambda i_ren, _obj, _comp: i_ren.force_render
-                )
-                content_panel.background.on_left_mouse_button_dragged = (
+                content_panel.background.on_left_mouse_button_dragged = \
                     lambda i_ren, _obj, _comp: i_ren.force_render
-                )
 
             tab_panel.text_block.on_left_mouse_button_clicked = self.select_tab_callback
             tab_panel.panel.background.on_left_mouse_button_clicked = (
@@ -699,8 +763,12 @@ class TabUI(UI):
                 tab_panel.color = self.inactive_color
                 tab_panel.content_panel.set_visibility(False)
             else:
-                tab_panel.color = self.active_color
-                tab_panel.content_panel.set_visibility(True)
+                current_visibility = tab_panel.content_panel.actors[0].GetVisibility()
+                if not current_visibility:
+                    tab_panel.color = self.active_color
+                else:
+                    tab_panel.color = self.inactive_color
+                tab_panel.content_panel.set_visibility(not current_visibility)
                 self.active_tab_idx = idx
 
         self.collapsed = False
@@ -724,6 +792,8 @@ class TabUI(UI):
         """Add element to content panel after checking its existence."""
         if tab_idx < self.nb_tabs and tab_idx >= 0:
             self.tabs[tab_idx].add_element(element, coords, anchor)
+            if tab_idx == self.active_tab_idx:
+                element.set_visibility(True)
         else:
             raise IndexError('Tab with index ' '{} does not exist'.format(tab_idx))
 

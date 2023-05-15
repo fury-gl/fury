@@ -12,6 +12,8 @@ The mandatory dependencies are:
 - numpy >= 1.7.1
 - vtk >= 8.1.0
 - scipy >= 0.9
+- aiohttp
+- pygltflib
 
 The optional dependencies are:
 
@@ -75,7 +77,7 @@ You can check your installation via this command
 
     python -c "from fury import get_info; print(get_info())"
 
-This command will give you important information about FURY's installation. The next step will be to run a :doc:`tutorial <auto_tutorials/index>`.
+This command will give you important information about FURY's installation. The next step will be to run a :doc:`tutorial <auto_examples/index>`.
 
 Running the Tests
 -----------------
@@ -150,8 +152,7 @@ Let’s start by showcasing the ``docs`` folder structure:
 | │   ├── Makefile
 | │   ├── Readme.md
 | │   ├── upload_to_gh-pages.py
-| │   ├── demos
-| │   ├── tutorials
+| │   ├── examples
 | │   ├── experimental
 | │   └── source
 | ├── requirements.txt
@@ -166,9 +167,8 @@ Let’s start by showcasing the ``docs`` folder structure:
 In our ``docs`` folder structure above:
 
 - ``source`` is the folder that contains all ``*.rst`` files.
-- ``tutorials`` is the directory where we have all python scripts that describe how to use the api.
-- ``demos`` being the FURY app showcases.
-- ``experimental`` directory contains experimental Python scripts. The goal is to keep a trace of expermiental work.
+- ``examples`` is the directory where we have all python scripts that describe how to use the library.
+- ``experimental`` directory contains experimental Python scripts. The goal is to keep a trace of experimental work.
 
 Building the documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~

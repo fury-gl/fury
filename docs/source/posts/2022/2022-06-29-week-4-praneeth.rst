@@ -10,7 +10,7 @@ Week 4 - Fixing the Clamping Issue
 
 What did you do this week?
 --------------------------
-Phew!! This week was a tedious week for me as parallelly my End-Sem exams also started. So as usual I started from where I left off last week, *The Clamping Issue*. As per the discussion with the mentors, we decided to use the *AABB bounding box* method to calculate the bounding box around the shape and then reposition or transform respectively, as now we had a fixed reference point. So after doing some calculations with the mouse positions and the bounding box points at last, I was able to clamp all the shapes sucessfully.
+Phew!! This week was a tedious week for me as parallelly my End-Sem exams also started. So as usual I started from where I left off last week, *The Clamping Issue*. As per the discussion with the mentors, we decided to use the *AABB bounding box* method to calculate the bounding box around the shape and then reposition or transform respectively, as now we had a fixed reference point. So after doing some calculations with the mouse positions and the bounding box points at last, I was able to clamp all the shapes successfully.
 
 `DrawPanel UI <https://github.com/fury-gl/fury/pull/599>`_
 

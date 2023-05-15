@@ -32,7 +32,7 @@ jobs:
         coverage: [false]
         use-pre: [false]
         include:
-          - os: ubuntu-latest
+          - os: macos-latest # ubuntu-latest
             python-version: '3.10'
             install-type: pip
             depends: OPTIONAL_DEPS
@@ -42,8 +42,8 @@ jobs:
             python-version: '3.10'
             install-type: pip
             depends: OPTIONAL_DEPS
-            use-pre: true
             coverage: false
+            use-pre: true
     env:
       INSTALL_TYPE: ${{ matrix.install-type }}
       DEPENDS: ${{ matrix.depends }}
@@ -112,3 +112,15 @@ jobs:
         else
           ci/run_tests.sh
         fi
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      if: ${{ matrix.coverage }}
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        directory: for_testing
+        files: coverage.xml
+        fail_ci_if_error: true
+        env_vars: ${{ matrix.os }}, PYTHON_VERSION
+        flags: unittests
+        name: codecov-umbrella
+        verbose: true

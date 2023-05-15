@@ -69,7 +69,7 @@ class glTF:
         self.animation_channels = {}
         self.sampler_matrices = {}
 
-        # Skinning Informations
+        # Skinning Information
         self.bone_tranforms = {}
         self.keyframe_transforms = []
         self.joints_0 = []
@@ -325,7 +325,7 @@ class glTF:
         d_type : type
             Element data type
         byte_length : int
-            The lenght of the buffer data
+            The length of the buffer data
         byte_offset : int
             The offset into the buffer in bytes
         byte_stride : int

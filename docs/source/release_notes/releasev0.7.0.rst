@@ -67,7 +67,7 @@ Pull Requests (37):
 * :ghpull:`348`: Added center forwarding in billboard shaders.
 * :ghpull:`341`: Add Option to generate the documentation without examples
 * :ghpull:`342`: From Travis to Github Actions
-* :ghpull:`339`: Update Readme informations
+* :ghpull:`339`: Update Readme information
 * :ghpull:`340`: Pass OAuth token through header
 * :ghpull:`337`: Add support for clipping side in clip_overflow_text
 * :ghpull:`336`: Update UI tutorials.
@@ -121,7 +121,7 @@ Issues (61):
 * :ghissue:`341`: Add Option to generate the documentation without examples
 * :ghissue:`342`: From Travis to Github Actions
 * :ghissue:`338`: From travis (pricing model changed) to github Actions ?
-* :ghissue:`339`: Update Readme informations
+* :ghissue:`339`: Update Readme information
 * :ghissue:`340`: Pass OAuth token through header
 * :ghissue:`315`: Deprecation notice for authentication via URL query parameters
 * :ghissue:`337`: Add support for clipping side in clip_overflow_text

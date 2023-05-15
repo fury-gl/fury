@@ -151,7 +151,7 @@ def test_rtc_video_stream_whitout_cython(loop: asyncio.AbstractEventLoop):
 
     use_raw_array = True
     ms_stream = 0
-    # creates a context whithout cython
+    # creates a context without cython
     with mock.patch.dict(sys.modules, {'pyximport': None}):
         reload(sys.modules['fury.stream.server.main'])
         width_0 = 100
@@ -461,7 +461,7 @@ def test_stream_interaction_conditions():
 
         showm.render()
 
-        # ms should always be greather than 0
+        # ms should always be greater than 0
         with npt.assert_raises(ValueError):
             stream_interaction.start(-1)
 
@@ -609,7 +609,7 @@ def test_circular_queue():
         ok = queue.enqueue(arr + 1)
         ok = queue.enqueue(arr + 2)
         assert ok
-        # the ciruclar queue must be full (size 3)
+        # the circular queue must be full (size 3)
         ok = queue.enqueue(arr + 3)
         assert not ok
         assert queue.head == 0 and queue.tail == 2

@@ -62,5 +62,5 @@ jobs:
         ssh-key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
         repository-name: fury-gl/fury-website
         folder: ./docs/build/html-web-only
-        target-folder: v0.8.0
+        target-folder: v0.9.x
         clean: false
