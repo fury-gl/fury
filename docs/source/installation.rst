@@ -12,6 +12,8 @@ The mandatory dependencies are:
 - numpy >= 1.7.1
 - vtk >= 8.1.0
 - scipy >= 0.9
+- aiohttp
+- pygltflib
 
 The optional dependencies are:
 
@@ -75,7 +77,7 @@ You can check your installation via this command
 
     python -c "from fury import get_info; print(get_info())"
 
-This command will give you important information about FURY's installation. The next step will be to run a :doc:`tutorial <auto_tutorials/index>`.
+This command will give you important information about FURY's installation. The next step will be to run a :doc:`tutorial <auto_examples/index>`.
 
 Running the Tests
 -----------------
