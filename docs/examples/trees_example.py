@@ -11,12 +11,19 @@ npoints = 5
 points = np.random.rand(npoints, 2)
 
 tree = trees.Tree2d(br)
+
+points_dic = {}
 for i in range(npoints):
-    tree.add_point(trees.Point2d(points[i, 0], points[i, 1]))
+    points_dic[tree.add_point(points[i])] = points[i]
+
+print("Points and its ids")
+print(points_dic)
+print()
+
 
 actorslist = trees.actor_from_branch_2d(tree.root(), (1.0, 1.0, 1.0), 1.0)
 zeros = np.zeros((npoints, 1))
-actorPoints = actor.dots(np.hstack((points, zeros)), (1.0, 0.5, 0.4), 1, 5)
+actorPoints = actor.dots(np.hstack((tree.root().all_points_list(), zeros)), (1.0, 0.5, 0.4), 1, 5)
 
 scene = window.Scene()
 scene.set_camera(position=(-6, 5, -10),
@@ -51,9 +58,11 @@ interactor.Start()
 
 # TESTING THE UPDATE FUNCTION
 def divide(branch, div : float):
+    dic = branch.points_dic()
+    id_list = list(dic.keys())
     for i in range(branch.points_list().shape[0]):
-        update_coord = branch.points_list()[i]()/div
-        branch.points_list()[i].set_coord(update_coord[0], update_coord[1])
+        update_coord = branch.points_list()[i]/div
+        branch.points_dic()[id_list[i]] = update_coord
 
 div = 2.0
 tree.root().process_branch(divide, div)
@@ -63,6 +72,7 @@ print(tree)
 tree.root().update()
 print("After update")
 print(tree)
+
 actorslist = trees.actor_from_branch_2d(tree.root(), (1.0, 1.0, 1.0), 1.0)
 zeros = np.zeros((npoints, 1))
 actorPoints = actor.dots(np.hstack((points, zeros))/div, (1.0, 0.5, 0.4), 1, 5)
@@ -98,7 +108,6 @@ showmanager.render()
 interactor.Start()
 
 
-
 # TESTING AN OCTREE WITH RANDOM 3D POINTS
 xl = 1.0
 yl = 2.0
@@ -112,9 +121,12 @@ data[:, 0] = xl*data[:, 0]
 data[:, 1] = yl*data[:, 1]
 data[:, 2] = zl*data[:, 2]
 
+
 tree = trees.Tree3d(br)
+
+points_dic = {}
 for i in range(npoints):
-    tree.add_point(trees.Point3d(data[i, 0], data[i, 1], data[i, 2]))
+    points_dic[tree.add_point(data[i])] = data[i]
 
 print(tree)
 
@@ -166,9 +178,11 @@ interactor.Start()
 
 
 def divide(branch, div : float):
+    dic = branch.points_dic()
+    id_list = list(dic.keys())
     for i in range(branch.points_list().shape[0]):
-        update_coord = branch.points_list()[i]()/div
-        branch.points_list()[i].set_coord(update_coord[0], update_coord[1], update_coord[2])
+        update_coord = branch.points_list()[i]/div
+        branch.points_dic()[id_list[i]] = update_coord
 
         
 div = 2.0
@@ -178,7 +192,7 @@ tree.root().update()
 
 actorslist = trees.actor_from_branch_3d(tree.root(), (1.0, 1.0, 1.0), 1.0)
 zeros = np.zeros((npoints, 1))
-actorPoints = actor.dots(np.hstack((data, zeros))/div, (1.0, 0.5, 0.4), 1, 5)
+actorPoints = actor.dots(np.hstack((tree.root().all_points_list(), zeros))/div, (1.0, 0.5, 0.4), 1, 5)
 
 scene = window.Scene()
 scene.set_camera(position=(-6, 5, -10),
@@ -195,7 +209,7 @@ showmanager = window.ShowManager(
     order_transparent=True)
 
 
-actorPoints = actor.dots(data/div, (1.0, 0.5, 0.4), 1, 5)
+actorPoints = actor.dots(tree.root().all_points_list(), (1.0, 0.5, 0.4), 1, 5)
 scene.add(actorPoints)
 
 
@@ -207,6 +221,7 @@ if tree.root().is_divided():
         scene.add(actorslist[i])
 else:
     scene.add(actorslist)
+
 
 
 interactor = lib.RenderWindowInteractor()
