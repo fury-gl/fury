@@ -7,8 +7,7 @@ import time
 import numpy as np
 
 try:
-    from IPython.core.display import display
-    from IPython.display import IFrame
+    from IPython.display import IFrame, display
 
     IPYTHON_AVAILABLE = True
 except ImportError:
