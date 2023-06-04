@@ -4159,7 +4159,8 @@ class SpinBox(UI):
         self.panel = Panel2D(size=self.panel_size, color=self.panel_color)
 
         self.textbox = TextBox2D(width=self.textbox_width,
-                                 height=self.textbox_height)
+                                 height=self.textbox_height,
+                                 justification="center")
         self.textbox.set_message(str(self.value))
         self.increment_button = Button2D(
             icon_fnames=[("up", read_viz_icons(fname="circle-up.png"))])
