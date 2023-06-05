@@ -8,6 +8,7 @@ import numpy as np
 
 import fury.primitive as fp
 from fury import layout
+from fury.actors.ellipsoid import EllipsoidActor
 from fury.actors.odf_slicer import OdfSlicerActor
 from fury.actors.peak import PeakActor
 from fury.colormap import colormap_lookup_table
@@ -3795,3 +3796,71 @@ def markers(
     shader_to_actor(sq_actor, 'fragment', impl_code=fs_impl_code, block='light')
 
     return sq_actor
+
+
+def ellipsoid(
+    centers,
+    axes=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+    lengths=[2, 1, 1],
+    colors=(1, 0, 0),
+    scales=1,
+    opacity=None
+):
+    """
+    VTK actor for visualizing Ellipsoids.
+
+    Parameters
+    ----------
+    centers : ndarray(N, 3)
+        Ellipsoid positions
+    axes : ndarray (3, 3) or (N, 3, 3)
+        Axes of the ellipsoid
+    lengths : ndarray (3, ) or (N, 3)
+        Axes lengths
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    scales : int or ndarray (N, ), optional
+        Ellipsoid size, default(1)
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
+        If a value is given, each dot will have the same opacity otherwise
+        opacity is set to 1 by default, or is defined by Alpha parameter
+        in colors if given.
+    """
+
+    if not isinstance(centers, np.ndarray):
+        centers = np.array(centers)
+    if centers.ndim == 1:
+        centers = np.array([centers])
+
+    if not isinstance(axes, np.ndarray):
+        axes = np.array(axes)
+    if axes.ndim == 2:
+        axes = np.array([axes])
+    if axes.shape[0] != centers.shape[0]:
+        raise ValueError('number of axes defined does not match with number of'
+                         'centers')
+
+    if not isinstance(lengths, np.ndarray):
+        lengths = np.array(lengths)
+    if lengths.ndim == 1:
+        lengths = np.array([lengths])
+    if lengths.shape[0] != centers.shape[0]:
+        raise ValueError('number of lengths defined does not match with number'
+                         'of centers')
+
+    if not isinstance(scales, np.ndarray):
+        scales = np.array(scales)
+    if scales.size == 1:
+        scales = np.repeat(scales, centers.shape[0])
+    elif scales.size != centers.shape[0]:
+        scales = np.concatenate(
+            (scales, np.ones(centers.shape[0] - scales.shape[0])), axis=None)
+
+    if opacity is None:
+        opacity = 1
+    elif colors.shape[1] == 4:
+        colors = colors[:, :-1]
+
+    return EllipsoidActor(centers, axes, lengths, colors, scales, opacity)
+

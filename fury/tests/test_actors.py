@@ -6,6 +6,7 @@ import numpy as np
 import numpy.testing as npt
 import pytest
 from scipy.ndimage import center_of_mass
+from scipy.stats import ortho_group
 
 from fury import actor
 from fury import primitive as fp
@@ -734,7 +735,7 @@ def test_peak():
 
 
 # @pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
-def test_tensor_slicer(interactive=False):
+def test_tensor_slicer(interactive=True):
 
     evals = np.array([1.4, 0.35, 0.35]) * 10 ** (-3)
     evecs = np.eye(3)
@@ -1731,6 +1732,36 @@ def test_marker_actor(interactive=False):
     colors = np.array([[0, 1, 0] for i in range(12)])
     report = window.analyze_snapshot(arr, colors=colors)
     npt.assert_equal(report.objects, 12)
+
+
+def test_ellipsoid_actor(interactive=False):
+    scene = window.Scene()
+    scene.background((0, 0, 0))
+
+    axes = np.array([[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+                     [[-.6, .5, -.6], [-.8, -.4, .5], [-.1, -.7, -.7]],
+                     [[.1, .6, -.8], [.6, .5, .5], [-.8, .6, .3]],
+                     [[.7, .5, -.5], [0, -.7, -.7], [-.7, .6, -.5]],
+                     [[.7, -.3, -.6], [.2, -.8, .6], [.7, .6, .5]],
+                     [[1, 2, -2], [2, 1, 2], [2, -2, -1]]])
+    lengths = np.array([[1, 1, 1], [1, 1, .5], [1, .5, .5],
+                        [1, .5, .25], [1, 1, .3], [1, .3, .3]])
+    centers = np.array([[-1, 1, 0], [0, 1, 0], [1, 1, 0],
+                        [-1, 0, 0], [0, 0, 0], [1, 0, 0]])
+    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1],
+                       [1, 1, 0], [1, 0, 1], [0, 1, 1]])
+
+    ellipses = actor.ellipsoid(axes=axes, lengths=lengths, centers=centers,
+                               scales=1.0, colors=colors)
+    scene.add(ellipses)
+
+    if interactive:
+        window.show(scene)
+
+    arr = window.snapshot(scene, offscreen=True)
+    report = window.analyze_snapshot(arr, colors=colors*255)
+    npt.assert_equal(report.objects, 6)
+    npt.assert_equal(report.colors_found, [True]*6)
 
 
 def test_actors_primitives_count():
