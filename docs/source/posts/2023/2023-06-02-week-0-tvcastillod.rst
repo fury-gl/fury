@@ -19,7 +19,7 @@ During the community bonding period, I had the opportunity to get to know better
 What is coming up next?
 -----------------------
 
-Since the advances I managed to make are in their most basic stage, I will be working this week on making changes and adjusting details for the implementation to follow fury guidelines. In this way, I plan to submit my first PR for the project to start getting feedback and making improvements. I will also start working on the first tests for the ellipsoid actor I’m working on.
+Since the advances I managed to make are in their most basic stage, I will be working this week on making changes and adjusting details for the implementation to follow FURY guidelines. In this way, I plan to submit my first PR for the project to start getting feedback and making improvements. I will also start working on the first tests for the ellipsoid actor I’m working on.
 
 Did I get stuck anywhere?
 -------------------------
