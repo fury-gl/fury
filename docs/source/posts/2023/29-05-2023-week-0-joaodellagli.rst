@@ -6,9 +6,6 @@ The Beggining of Everything - Week 0
    :tags: google
    :category: gsoc
 
-GSoC 2023
------------------------------------
-
 So it begins...
 ---------------
 
