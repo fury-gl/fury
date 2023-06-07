@@ -34,7 +34,7 @@ gltf_obj = glTF(filename)
 timeline = gltf_obj.main_animation()
 
 ##############################################################################
-# Add the timeline to the scene (No need to add actors seperately).
+# Add the timeline to the scene (No need to add actors separately).
 
 scene.add(timeline)
 

@@ -4,7 +4,7 @@ Streaming FURY with WebRTC/MJPEG using the Widget Object
 ========================================================
 
 The Widget Object simplifies the process of streaming
-your data vizualization with WebRTC or MJPEG. Enconding.
+your data visualization with WebRTC or MJPEG. Encoding.
 Other users can view and interact with your data visualization
 in real-time using a web-browser.
 

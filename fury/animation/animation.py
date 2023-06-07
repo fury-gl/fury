@@ -218,7 +218,7 @@ class Animation:
         value: ndarray or float or bool
             Value of the keyframe at the given timestamp.
         update_interpolator: bool, optional
-            Interpolator will be reinitialized if Ture
+            Interpolator will be reinitialized if True
 
         Other Parameters
         ----------------
@@ -396,7 +396,7 @@ class Animation:
         else:
             interp_data['base'] = interpolator
             interp_data['args'] = kwargs
-            # Maintain interpolator base incase new keyframes are added.
+            # Maintain interpolator base in case new keyframes are added.
             if len(keyframes) == 0:
                 return
             new_interp = interpolator(keyframes, **kwargs)
@@ -460,7 +460,7 @@ class Animation:
         Parameters
         ----------
         interpolator: callable
-            TThe generator function of the interpolator that would handle
+            The generator function of the interpolator that would handle
             the scale keyframes.
         is_evaluator: bool, optional
             Specifies whether the `interpolator` is time-only based evaluation

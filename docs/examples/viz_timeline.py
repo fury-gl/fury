@@ -45,7 +45,7 @@ timeline = Timeline(playback_panel=True)
 anim = Animation()
 sphere = actor.sphere(np.zeros([1, 3]), np.ones([1, 3]))
 anim.add_actor(sphere)
-# Now that the actor is addd to the ``Animation``, setting keyframes to the
+# Now that the actor is add to the ``Animation``, setting keyframes to the
 # Animation will animate the actor accordingly.
 
 

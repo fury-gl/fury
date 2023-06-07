@@ -4,5 +4,5 @@ vtk>=9.1.0
 scipy>=1.4.0
 packaging
 pillow>=8.0.1
-aiohttp>=3.7.4
+aiohttp>=3.8.4
 pygltflib>=1.15.1

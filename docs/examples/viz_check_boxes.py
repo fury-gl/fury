@@ -64,7 +64,7 @@ def sym_diff(l1, l2):
     return list(set(l1).symmetric_difference(set(l2)))
 
 
-# Set Visiblity of the figures
+# Set Visibility of the figures
 def set_figure_visiblity(checkboxes):
     checked = checkboxes.checked_labels
     unchecked = sym_diff(list(figure_dict), checked)
@@ -101,7 +101,7 @@ def toggle_color(checkboxes):
 
 
 ###############################################################################
-# We define a dictionary to store the actors with thier names as keys.
+# We define a dictionary to store the actors with their names as keys.
 # A checkbox is created with actor names as it's options.
 
 figure_dict = {'cube': cube, 'sphere': sphere, 'cone': cone, 'arrow': arrow}

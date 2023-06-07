@@ -28,7 +28,7 @@ contributions in the past weeks
    of my project. Because I don’t have a computer with good specs in my
    house and I need to access a external computer to test the examples
    for large graphs.
--  Minor improvements into the `shader markers PR`_ and `fine tunning
+-  Minor improvements into the `shader markers PR`_ and `fine tuning
    open-gl state PR`_.
 
 Did I get stuck anywhere?
@@ -46,5 +46,5 @@ In this week I'll focus on finish the #432 and #422 pull-requests.
 
 .. _`A FURY/VTK webrtc stream system proposal:`: https://github.com/fury-gl/fury/pull/437
 .. _shader markers PR: https://github.com/fury-gl/fury/pull/422
-.. _fine tunning open-gl state PR: https://github.com/fury-gl/fury/pull/432/
+.. _fine tuning open-gl state PR: https://github.com/fury-gl/fury/pull/432/
 .. _commit: https://github.com/fury-gl/fury/pull/437/commits/b1b0caf30db762cc018fc99dd4e77ba0390b2f9e%20

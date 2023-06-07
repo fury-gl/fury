@@ -122,7 +122,7 @@ shader_apply_effects(
 )
 
 ###############################################################################
-# Finaly, just render and see the results
+# Finally, just render and see the results
 
 
 counter = itertools.count()
@@ -134,7 +134,7 @@ def timer_callback(obj, event):
     cnt = next(counter)
     showm.render()
     # we will rotate the visualization just to help you to see
-    # the results of each specifc opengl-state
+    # the results of each specific opengl-state
     showm.scene.azimuth(1)
     if cnt == 400:
         remove_observer_from_actor(actor_no_depth_test, id_observer)

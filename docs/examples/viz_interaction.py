@@ -6,7 +6,7 @@ Streaming FURY with user interaction
 In this tutorial, we show how to use the FURY Streaming system to
 serve an interactive visualization through a web browser.
 
-You can choose between two differnet encodings: WebRTC or MJPEG.
+You can choose between two different encodings: WebRTC or MJPEG.
 WebRTC is a more robust option and can be used to perform
 a live streaming with a low-latency connection for example using
 ngrok. However, to use webRTC you need to install the aiortc library.
@@ -40,7 +40,7 @@ from fury import actor, window
 from fury.stream.client import FuryStreamClient, FuryStreamInteraction
 
 # if this example it's not working for you and you're using MacOs
-# uncoment the following line
+# uncomment the following line
 # multiprocessing.set_start_method('spawn')
 from fury.stream.server.main import WEBRTC_AVAILABLE, web_server, web_server_raw_array
 
@@ -127,9 +127,9 @@ if __name__ == '__main__':
     )
     ###########################################################################
     # If you have aiortc in your system, you can see your live streaming
-    # through the following url: htttp://localhost:8000/?enconding=webrtc
+    # through the following url: htttp://localhost:8000/?encoding=webrtc
     # Other wise, you can use the following url:
-    # http://localhost:8000/?enconding=mjpeg
+    # http://localhost:8000/?encoding=mjpeg
 
     if interactive:
         showm.start()

@@ -4,7 +4,7 @@ Chain Simulation
 =====================
 
 This example simulation shows how to use pybullet to render physics simulations
-in fury. In this example we specifically render a Chain oscillating to and fro.
+in fury. In this example we specifically render a Chain oscillating to and from.
 
 First some imports.
 """
@@ -156,7 +156,7 @@ showm = window.ShowManager(
 )
 
 
-# Counter interator for tracking simulation steps.
+# Counter iterator for tracking simulation steps.
 counter = itertools.count()
 
 

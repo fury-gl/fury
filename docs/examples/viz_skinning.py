@@ -18,7 +18,7 @@ fetch_gltf('RiggedFigure', 'glTF')
 filename = read_viz_gltf('RiggedFigure')
 
 ##############################################################################
-# Initializing the glTF object, You can additionaly set `apply_normals=True`.
+# Initializing the glTF object, You can additionally set `apply_normals=True`.
 # Note: Normals might not work well as intended with skinning animations.
 
 gltf_obj = glTF(filename, apply_normals=False)
@@ -31,7 +31,7 @@ gltf_obj = glTF(filename, apply_normals=False)
 animation = gltf_obj.skin_animation()['anim_0']
 
 # After we get the timeline object, We want to initialise the skinning process.
-# You can set `bones=true` to visualize each bone transformation. Additionaly,
+# You can set `bones=true` to visualize each bone transformation. Additionally,
 # you can set `lenght` of bones in the `initialise_skin` method.
 # Note: Make sure to call this method before you initialize ShowManager, else
 # bones won't be added to the scene.
@@ -41,7 +41,7 @@ gltf_obj.initialize_skin(animation, bones=False)
 ##############################################################################
 # Create a scene, and show manager.
 # Initialize the show manager and add timeline to the scene (No need to add
-# actors to the scene seperately).
+# actors to the scene separately).
 
 scene = window.Scene()
 showm = window.ShowManager(

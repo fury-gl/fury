@@ -118,7 +118,7 @@ while 1:
     ux = amplitude_x * math.sin(2 * math.pi * freq * t)
     uy = amplitude_y * math.cos(2 * math.pi * freq * t)
 
-    # move base arround
+    # move base around
     pivot = [ux, uy, 2]
     orn = p.getQuaternionFromEuler([0, 0, 0])
     p.changeConstraint(root_robe_c, pivot, jointChildFrameOrientation=orn, maxForce=500)

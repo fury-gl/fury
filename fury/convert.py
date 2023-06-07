@@ -38,7 +38,7 @@ def matplotlib_figure_to_numpy(
     way found here http://www.icare.univ-lille1.fr/drupal/node/1141 where
     you can actually use fig.canvas.tostring_argb() to get the values directly
     without saving to the disk. However, this was not stable across different
-    machines and needed more investigation from what time permited.
+    machines and needed more investigation from what time permitted.
 
     """
     if fname is None:

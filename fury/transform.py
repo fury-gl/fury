@@ -358,7 +358,7 @@ def apply_transformation(vertices, transformation):
 
 
 def transform_from_matrix(matrix):
-    """Returns translation, roation and scale arrays from transformation
+    """Returns translation, rotation and scale arrays from transformation
     matrix.
 
     Parameters

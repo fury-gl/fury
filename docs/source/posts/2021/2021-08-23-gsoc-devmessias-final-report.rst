@@ -67,7 +67,7 @@ Objectives Completed
    system as an uncoupled module from the rendering pipeline. Therefore,
    I have chosen to employ the multiprocessing approach for that. The
    second and third property can be only achieved choosing a suitable
-   protocol for transfering the rendered results to the client. We have
+   protocol for transferring the rendered results to the client. We have
    opted to implement two streaming protocols: the MJPEG and the WebRTC.
    The latter is more suitable for low-bandwidth scenarios [1].
 
@@ -220,7 +220,7 @@ better.
 
 Because Helios was an project that begins in my GSoC project It was
 necessary to create the documentation, hosting and more. Now we have a
-online documentation available at https://heliosnetwork.io/ altough the
+online documentation available at https://heliosnetwork.io/ although the
 documentation still need some improvements.
 
 The Helios Logo which was developed by
