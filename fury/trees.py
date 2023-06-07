@@ -438,10 +438,10 @@ class Branch2d():
 
     def search(self, point, id):
         """Returns a string that encodes the requested point location inside the tree.
-           The enconding works as it follows:\n
+           The encoding works as it follows:\n
            * If the branch is divided, every character of the string is the sub-branch that point is located,
            until an 'f' character is reached, that means the point is located inside
-           the last acessed sub-branch. For example, the point at 031f is located at the second sub-branch,
+           the last accessed sub-branch. For example, the point at 031f is located at the second sub-branch,
            from the fourth sub-branch, from the first sub-branch.
            * If the branch is not divided, it will return 'f' if found, or '' if not found.\n
            Parameters
@@ -1034,10 +1034,10 @@ class Branch3d(Branch2d):
 
     def search(self, point, id):
         """Returns a string that encodes the requested point location inside the tree.
-           The enconding works as it follows:\n
+           The encoding works as it follows:\n
            * If the branch is divided, every character of the string is the sub-branch that point is located,
            until an 'f' character is reached, that means the point is located inside
-           the last acessed sub-branch. For example, the point at 031f is located at the second sub-branch,
+           the last accessed sub-branch. For example, the point at 031f is located at the second sub-branch,
            from the fourth sub-branch, from the first sub-branch.
            * If the branch is not divided, it will return 'f' if found, or '' if not found.\n
            Parameters
