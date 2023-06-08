@@ -21,15 +21,15 @@ My Current Problems
 The problems I am having with these FBO implementations is first something related to how a FBO works, and second related to how VTK works. 
 In OpenGL, a custom user's FBO needs some things to be complete (usable):
 
-1. At least one buffer should be attatched. This buffer can be the color, depth or stencil buffer.
-2. If no color buffer will be attatched then OpenGL needs to be warned no draw or read operations will be done to that buffer. Otherwise, there should be at least one color attachment.
+1. At least one buffer should be attached. This buffer can be the color, depth or stencil buffer.
+2. If no color buffer will be attached then OpenGL needs to be warned no draw or read operations will be done to that buffer. Otherwise, there should be at least one color attachment.
 3. All attachments should have their memory allocated.
 4. Each buffer should have the same number of samples. 
 
 My first problem relies on the third requirement. VTK's implementation of FBO requires a `vtkTextureObject <https://vtk.org/doc/nightly/html/classvtkTextureObject.html>`_
 as a texture attachment. I figured how to work with this class, however, I cannot allocate memory for it, as its methods for it, `Allocate2D <https://vtk.org/doc/nightly/html/classvtkTextureObject.html#abc91bbf9a3414bded7a132d366ca4951>`_, `Create2D <https://vtk.org/doc/nightly/html/classvtkTextureObject.html#a7e9dd67f377b7f91abd9df71e75a5f67>`_ and `Create2DFromRaw <https://vtk.org/doc/nightly/html/classvtkTextureObject.html#a0e56fe426cb0e6749cc6f2f8dbf53ed7>`_
 does not seem to work. Every time I try to use them, my program stops with no error message nor nothing. 
-For anyone interested in what is happening exacty, below is how I my tests are implemented:
+For anyone interested in what is happening exactly, below is how I my tests are implemented:
 
 ::
 
