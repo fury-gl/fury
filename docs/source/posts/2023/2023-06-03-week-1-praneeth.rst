@@ -12,7 +12,7 @@ This week, my focus was on reviewing pull requests (PRs) and issues related to t
 
 To resolve this issue, I started by investigating the root cause. I discovered that the alignment was initially based on the position of the parent UI, which caused the text to extend beyond the boundaries of the textbox. To rectify this, I devised a solution where I calculated the background size of the textbox and adjusted the text's position accordingly. By aligning the text with the calculated size, I ensured a proper and visually appealing alignment within the textbox.
 
-To provide a clear understanding of the improvement, I have prepared a comparison of the textbox alignment before and after the modifications:
+To provide a clear understanding of the improvement, I have prepared a comparison of the textbox alignment before and after the modifications.
 
 Before:
 
