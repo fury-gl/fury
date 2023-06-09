@@ -22,7 +22,7 @@ class EllipsoidActor(Actor):
         Axes lengths
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
-    scales : int or ndarray (N, ), optional
+    scales : float or ndarray (N, ), optional
         Ellipsoid size, default(1)
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
@@ -63,6 +63,8 @@ class EllipsoidActor(Actor):
         big_vectors_3 = np.repeat(evec3, 8, axis=0)
         attribute_to_actor(self, big_vectors_3, 'evec3')
 
+        # Start of shader implementation
+
         vs_dec = \
             """
             in vec3 center;
@@ -76,25 +78,41 @@ class EllipsoidActor(Actor):
             out vec3 centerMCVSOutput;
             out float scaleVSOutput;
             out vec3 evalsVSOutput;
-            out mat3 tensorMatrix;
+            out mat3 transformationMatrix;
             """
 
-        vs_impl = \
+        # Variables assignment
+        v_assign = \
             """
             vertexMCVSOutput = vertexMC;
             centerMCVSOutput = center;
             scaleVSOutput = scale;
+            """
+
+        # Transformation matrix calculation
+        t_matrix = \
+            """
+            // normalization
             evalsVSOutput = evals/(max(evals.x, max(evals.y, evals.z)));
+            
+            // values constraint to avoid incorrect visualizations
             evalsVSOutput = clamp(evalsVSOutput,0.05,1);
+            
+            // scaling matrix
             mat3 T = mat3(1/evalsVSOutput.x, 0.0, 0.0,
                           0.0, 1/evalsVSOutput.y, 0.0,
                           0.0, 0.0, 1/evalsVSOutput.z);
+            
+            // rotation matrix
             mat3 R = mat3(evec1, evec2, evec3);
-            tensorMatrix = inverse(R) * T * R;
+            
+            // transformation matrix
+            transformationMatrix = inverse(R) * T * R;
             """
 
-        shader_to_actor(self, 'vertex', decl_code=vs_dec,
-                        impl_code=vs_impl)
+        vs_impl = compose_shader([v_assign, t_matrix])
+
+        shader_to_actor(self, 'vertex', decl_code=vs_dec, impl_code=vs_impl)
 
         fs_vars_dec = \
             """
@@ -102,29 +120,48 @@ class EllipsoidActor(Actor):
             in vec3 centerMCVSOutput;
             in float scaleVSOutput;
             in vec3 evalsVSOutput;
-            in mat3 tensorMatrix;
+            in mat3 transformationMatrix;
 
             uniform mat4 MCVCMatrix;
             """
 
+        # Importing the sphere SDF
         sd_sphere = import_fury_shader(os.path.join('sdf', 'sd_sphere.frag'))
 
+        # SDF definition
         sdf_map = \
             """
             float map(in vec3 position)
             {
-                return sdSphere(tensorMatrix * (position - centerMCVSOutput), 
-                    scaleVSOutput*0.48) * min(evalsVSOutput.x,
-                    min(evalsVSOutput.y, evalsVSOutput.z));
+                /*
+                As the scaling is not a rigid body transformation, we multiply
+                by a factor to compensate for distortion and not overestimate
+                the distance.
+                */
+                float scFactor = min(evalsVSOutput.x, min(evalsVSOutput.y,
+                                         evalsVSOutput.z));
+                                         
+                /*
+                The approximation of distance is calculated by stretching the
+                space such that the ellipsoid becomes a sphere (multiplying by
+                the transformation matrix) and then computing the distance to
+                a sphere in that space (using the sphere SDF).
+                */
+                return sdSphere(
+                    transformationMatrix * (position - centerMCVSOutput), 
+                    scaleVSOutput*0.48) * scFactor;
             }
             """
 
+        # Importing central differences function for computing surface normals
         central_diffs_normal = import_fury_shader(os.path.join(
             'sdf', 'central_diffs.frag'))
 
+        # Importing raymarching function
         cast_ray = import_fury_shader(os.path.join(
             'ray_marching', 'cast_ray.frag'))
 
+        # Importing Blinn-Phong model for lighting
         blinn_phong_model = import_fury_shader(os.path.join(
             'lighting', 'blinn_phong_model.frag'))
 
@@ -168,5 +205,6 @@ class EllipsoidActor(Actor):
             }
             """
 
+        # Adding shader implementation to actor
         shader_to_actor(self, 'fragment', impl_code=sdf_frag_impl,
                         block='light')

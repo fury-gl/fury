@@ -3800,10 +3800,10 @@ def markers(
 
 def ellipsoid(
     centers,
-    axes=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
-    lengths=[2, 1, 1],
+    axes,
+    lengths,
     colors=(1, 0, 0),
-    scales=1,
+    scales=1.0,
     opacity=None
 ):
     """
@@ -3819,7 +3819,7 @@ def ellipsoid(
         Axes lengths
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
-    scales : int or ndarray (N, ), optional
+    scales : float or ndarray (N, ), optional
         Ellipsoid size, default(1)
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
