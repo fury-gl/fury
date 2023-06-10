@@ -50,6 +50,7 @@ extensions = [
     'IPython.sphinxext.ipython_console_highlighting',
     'matplotlib.sphinxext.plot_directive',
     'sphinx_copybutton',
+    'ext.prepare_gallery',
     'sphinx_gallery.gen_gallery',
     'ext.build_modref_templates',
     'ext.github',
@@ -68,11 +69,11 @@ autosummary_generate = []
 numpydoc_show_class_members = False
 
 # Add any paths that contain templates here, relative to this directory.
-import ablog
+# import ablog
 
 templates_path = [
     '_templates',
-    ablog.get_html_templates_path(),
+    # ablog.get_html_templates_path(),
 ]
 
 # The suffix(es) of source filenames.
@@ -203,7 +204,7 @@ html_css_files = ['css/custom.css', 'vendor/fonts.css']
 
 html_logo = '_static/images/logo.svg'
 
-html_favicon = "_static/images/logo.ico"
+html_favicon = '_static/images/logo.ico'
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
@@ -294,9 +295,9 @@ sc = ImageFileScraper()
 sphinx_gallery_conf = {
     'doc_module': ('fury',),
     # path to your examples scripts
-    'examples_dirs': ['../examples', '../tutorials'],
+    'examples_dirs': ['../examples_revamped'],
     # path where to save gallery generated examples
-    'gallery_dirs': ['auto_examples', 'auto_tutorials'],
+    'gallery_dirs': ['auto_examples'],
     'image_scrapers': (sc),
     'backreferences_dir': 'api',
     'reference_url': {

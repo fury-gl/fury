@@ -34,7 +34,7 @@ if [[ "${COVERAGE}" == "1" ]]; then
     done
   coverage combine .
   coverage report -m  # Generate test coverage report.
-  codecov  # Upload the report to codecov.
+  #codecov  # Upload the report to codecov.
 else
     # Threads issue so we run test on individual file
     # pytest -svv --pyargs fury

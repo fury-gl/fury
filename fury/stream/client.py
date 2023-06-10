@@ -74,7 +74,7 @@ class FuryStreamClient:
             Sometimes you can't initiate the vtkInteractor instance.
         num_buffers : int, optional
             Number of buffers to be used in the n-buffering
-            techinique.
+            technique.
 
         """
 
@@ -263,7 +263,7 @@ def interaction_callback(circular_queue, showm, iren, render_after):
             event_ids.right_btn_release: iren.RightButtonReleaseEvent,
         }
         mouse_actions[user_event_id]()
-    logging.info('Interaction: time to peform event ' + f'{ts-user_timestamp:.2f} ms')
+    logging.info('Interaction: time to perform event ' + f'{ts-user_timestamp:.2f} ms')
     if render_after:
         showm.window.Render()
         showm.iren.Render()
@@ -315,7 +315,7 @@ class FuryStreamInteraction:
         Parameters
         ----------
         ms : float, optional
-            positive number greather than zero.
+            positive number greater than zero.
         use_asyncio : bool, optional
             If False then the interaction will be performed in a
             separate thread.

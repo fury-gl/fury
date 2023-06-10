@@ -25,7 +25,7 @@ def colormap_lookup_table(
     Parameters
     ----------
     scale_range : tuple
-        It can be anything e.g. (0, 1) or (0, 255). Usually it is the mininum
+        It can be anything e.g. (0, 1) or (0, 255). Usually it is the minimum
         and maximum value of your data. Default is (0, 1).
     hue_range : tuple of floats
         HSV values (min 0 and max 1). Default is (0.8, 0).
@@ -302,7 +302,7 @@ def get_cmap(name):
             x, y0, _ = zip(*desc[color])
             # Matplotlib allows more complex colormaps, but for users who do
             # not have Matplotlib fury makes a few simple colormaps available.
-            # These colormaps are simple because y0 == y1, and therefor we
+            # These colormaps are simple because y0 == y1, and therefore we
             # ignore y1 here.
             rgba[:, i] = np.interp(v, x, y0)
         return rgba
@@ -607,7 +607,7 @@ def distinguishable_colormap(bg=(0, 0, 0), exclude=[], nb_colors=None):
 def hex_to_rgb(color):
     """Converts Hexadecimal color code to rgb()
 
-    color : string containting hexcode of color (can also start with a hash)
+    color : string containing hexcode of color (can also start with a hash)
 
     Returns
     -------

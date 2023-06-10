@@ -112,7 +112,7 @@ need to use the memoryview:
 
    memview(arr_buffer)[:] = new_data
 
-The memview is really good, but there it's a litle issue when we are
+The memview is really good, but there it's a little issue when we are
 dealing with uint8 RawArrays. The following code will cause an exception:
 
 ::
