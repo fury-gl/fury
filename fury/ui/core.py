@@ -747,6 +747,9 @@ class TextBlock2D(UI):
         self.shadow = shadow
         self.vertical_justification = vertical_justification
         self.message = text
+        lines = self.message.split("\n")
+        self.boundingbox = [self.position[0], self.position[1],
+                            len(lines[0])*font_size, len(lines)*font_size]
 
     def _setup(self):
         self.actor = TextActor()
@@ -784,6 +787,10 @@ class TextBlock2D(UI):
             self.actor.GetSize(scene, size)
             self.background.resize(size)
         scene.add(self.background, self.actor)
+
+        self.background.resize(
+            (self.boundingbox[2]-self.boundingbox[0], self.boundingbox[3]-self.boundingbox[1]))
+        self.background.position = [self.boundingbox[0], self.boundingbox[1]]
 
     @property
     def message(self):
