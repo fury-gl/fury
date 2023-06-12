@@ -786,9 +786,9 @@ class TextBlock2D(UI):
             self.background.resize(size)
         scene.add(self.background, self.actor)
 
-        self.background.resize(
-            (self.boundingbox[2]-self.boundingbox[0], self.boundingbox[3]-self.boundingbox[1]))
-        self.background.position = [self.boundingbox[0], self.boundingbox[1]]
+        # self.background.resize(
+        #     (self.boundingbox[2]-self.boundingbox[0], self.boundingbox[3]-self.boundingbox[1]))
+        # self.background.position = [self.boundingbox[0], self.boundingbox[1]]
 
     @property
     def message(self):
@@ -811,6 +811,7 @@ class TextBlock2D(UI):
             The message to be set.
         """
         self.actor.SetInput(text)
+        self.update_bounding_box()
 
     @property
     def font_size(self):
@@ -1088,6 +1089,8 @@ class TextBlock2D(UI):
         lines = self.message.split("\n")
         self.boundingbox = [self.position[0], self.position[1],
                             self.position[0]+len(lines[0])*self.font_size, self.position[1]+len(lines)*self.font_size]
+        self.background.resize(
+            (self.boundingbox[2]-self.boundingbox[0], self.boundingbox[3]-self.boundingbox[1]))
 
     def _set_position(self, position):
         """Set text actor position.
