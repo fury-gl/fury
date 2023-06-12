@@ -747,9 +747,7 @@ class TextBlock2D(UI):
         self.shadow = shadow
         self.vertical_justification = vertical_justification
         self.message = text
-        lines = self.message.split("\n")
-        self.boundingbox = [self.position[0], self.position[1],
-                            len(lines[0])*font_size, len(lines)*font_size]
+        self.update_bounding_box()
 
     def _setup(self):
         self.actor = TextActor()
@@ -1084,6 +1082,12 @@ class TextBlock2D(UI):
             self.have_bg = True
             self.background.set_visibility(True)
             self.background.color = color
+
+
+    def update_bounding_box(self):
+        lines = self.message.split("\n")
+        self.boundingbox = [self.position[0], self.position[1],
+                            self.position[0]+len(lines[0])*self.font_size, self.position[1]+len(lines)*self.font_size]
 
     def _set_position(self, position):
         """Set text actor position.
