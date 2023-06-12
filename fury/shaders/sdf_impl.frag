@@ -2,33 +2,33 @@
 
 //VKT::Light::Impl
 
-vec3 point = vertexMCVSOutput.xyz;
+vec3 pnt = vertexMCVSOutput.xyz;
 
-//ray origin
-vec4 ro = -MCVCMatrix[3] * MCVCMatrix;  // camera position in world space
+// Ray Origin
+// Camera position in world space
+vec3 ro = (-MCVCMatrix[3] * MCVCMatrix).xyz;
 
-vec3 col = vertexColorVSOutput.rgb;
+// Ray Direction
+vec3 rd = normalize(pnt - ro);
 
-//ray direction
-vec3 rd = normalize(point - ro.xyz);
+// Light Direction
+vec3 ld = normalize(ro - pnt);
 
-ro += vec4((point - ro.xyz),0.0);
+ro += pnt - ro;
 
-//light direction
-vec3 ld = vec3(1.0, 1.0, 0.0);
+float t = castRay(ro, rd);
 
-float t = castRay(ro.xyz, rd);
-
-if(t < 20.0)
+if(t < 20)
 {
-    vec3 position = ro.xyz + t * rd;
-    vec3 norm = calculateNormal(position);
-    float light = dot(ld, norm);
-
-    fragOutput0 = vec4(col * light, 1.0);
-
+    vec3 pos = ro + t * rd;
+    vec3 normal = centralDiffsNormals(pos, .0001);
+    // Light Attenuation
+    float la = dot(ld, normal);
+    vec3 color = blinnPhongIllumModel(la, lightColor0,
+        diffuseColor, specularPower, specularColor, ambientColor);
+    fragOutput0 = vec4(color, opacity);
 }
-else{
-
-    discard;
+else
+{
+  discard;
 }

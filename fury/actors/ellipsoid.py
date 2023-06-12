@@ -112,6 +112,7 @@ class EllipsoidActor(Actor):
 
         vs_impl = compose_shader([v_assign, t_matrix])
 
+        # Adding shader implementation to actor
         shader_to_actor(self, 'vertex', decl_code=vs_dec, impl_code=vs_impl)
 
         fs_vars_dec = \
@@ -171,40 +172,8 @@ class EllipsoidActor(Actor):
 
         shader_to_actor(self, 'fragment', decl_code=fs_dec)
 
-        sdf_frag_impl = \
-            """
-            vec3 pnt = vertexMCVSOutput.xyz;
+        # Importing SDF fragment shader implementation
+        sdf_frag_impl = import_fury_shader('sdf_impl.frag')
 
-            // Ray Origin
-            // Camera position in world space
-            vec3 ro = (-MCVCMatrix[3] * MCVCMatrix).xyz;
-
-            // Ray Direction
-            vec3 rd = normalize(pnt - ro);
-
-            // Light Direction
-            vec3 ld = normalize(ro - pnt);
-
-            ro += pnt - ro;
-
-            float t = castRay(ro, rd);
-
-            if(t < 20)
-            {
-                vec3 pos = ro + t * rd;
-                vec3 normal = centralDiffsNormals(pos, .0001);
-                // Light Attenuation
-                float la = dot(ld, normal);
-                vec3 color = blinnPhongIllumModel(la, lightColor0, 
-                    diffuseColor, specularPower, specularColor, ambientColor);
-                fragOutput0 = vec4(color, opacity);
-            }
-            else
-            {
-                discard;
-            }
-            """
-
-        # Adding shader implementation to actor
         shader_to_actor(self, 'fragment', impl_code=sdf_frag_impl,
                         block='light')
