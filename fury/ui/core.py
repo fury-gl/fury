@@ -786,10 +786,6 @@ class TextBlock2D(UI):
             self.background.resize(size)
         scene.add(self.background, self.actor)
 
-        # self.background.resize(
-        #     (self.boundingbox[2]-self.boundingbox[0], self.boundingbox[3]-self.boundingbox[1]))
-        # self.background.position = [self.boundingbox[0], self.boundingbox[1]]
-
     @property
     def message(self):
         """Get message from the text.
@@ -1083,7 +1079,6 @@ class TextBlock2D(UI):
             self.have_bg = True
             self.background.set_visibility(True)
             self.background.color = color
-
 
     def update_bounding_box(self):
         lines = self.message.split("\n")
