@@ -1098,6 +1098,46 @@ def test_ui_combobox_2d(interactive=False):
     npt.assert_equal((90, 90), combobox.drop_button_size)
     npt.assert_equal((450, 210), combobox.drop_menu_size)
 
+def test_ui_combobox_2d_dropdown_visibility(interactive=False):
+
+    values = ['An Item' + str(i) for i in range(0, 5)]
+
+    tab_ui = ui.TabUI(position=(49, 94), size=(400, 400), nb_tabs=1 , draggable=True)
+    combobox = ui.ComboBox2D(items=values, position=(400, 400), size=(300, 200))
+ 
+    tab_ui.add_element(0, combobox, (0.1, 0.3))
+
+    # Assign the counter callback to every possible event.
+    event_counter = EventCounter()
+    event_counter.monitor(combobox)
+    event_counter.monitor(tab_ui)
+
+    current_size = (800, 800)
+    show_manager = window.ShowManager(size=current_size, title='ComboBox UI Example')
+    show_manager.scene.add(tab_ui)
+
+    tab_ui.tabs[0].content_panel.set_visibility(True)
+    npt.assert_equal(False, combobox._menu_visibility)
+    npt.assert_equal(False, combobox.drop_down_menu.panel.actors[0].GetVisibility())
+    npt.assert_equal(0, combobox.drop_down_button.current_icon_id)
+    npt.assert_equal(True, combobox.drop_down_button.actors[0].GetVisibility())
+    npt.assert_equal(True, combobox.selection_box.actors[0].GetVisibility())
+
+    tab_ui.tabs[0].content_panel.set_visibility(False)
+    npt.assert_equal(False, combobox._menu_visibility)
+    npt.assert_equal(False, combobox.drop_down_menu.panel.actors[0].GetVisibility())
+    npt.assert_equal(0, combobox.drop_down_button.current_icon_id)
+    npt.assert_equal(False, combobox.drop_down_button.actors[0].GetVisibility())
+    npt.assert_equal(False, combobox.selection_box.actors[0].GetVisibility())
+
+    iren = show_manager.scene.GetRenderWindow().GetInteractor().GetInteractorStyle()
+    combobox.menu_toggle_callback(iren, None, None)
+    tab_ui.tabs[0].content_panel.set_visibility(True)
+    npt.assert_equal(True, combobox._menu_visibility)
+    npt.assert_equal(True, combobox.drop_down_menu.panel.actors[0].GetVisibility())
+    npt.assert_equal(1, combobox.drop_down_button.current_icon_id)
+    npt.assert_equal(True, combobox.drop_down_button.actors[0].GetVisibility())
+    npt.assert_equal(True, combobox.selection_box.actors[0].GetVisibility())
 
 @pytest.mark.skipif(
     skip_osx,
