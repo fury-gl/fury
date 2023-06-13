@@ -62,15 +62,6 @@
 
 # Installation
 
-## Dependencies
-
-FURY requires:
-
-- Numpy (>=1.7.1)
-- Vtk (>=8.1.2)
-- Scipy (>=1.2.0)
-- Pillow>=5.4.1
-
 ## Releases
 
 `pip install fury` or `conda install -c conda-forge fury`
