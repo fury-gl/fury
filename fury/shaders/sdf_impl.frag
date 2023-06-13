@@ -2,7 +2,7 @@
 
 //VKT::Light::Impl
 
-vec3 pnt = vertexMCVSOutput.xyz;
+vec3 point = vertexMCVSOutput.xyz;
 
 // Ray Origin
 // Camera position in world space

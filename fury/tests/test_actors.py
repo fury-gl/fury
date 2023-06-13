@@ -6,7 +6,6 @@ import numpy as np
 import numpy.testing as npt
 import pytest
 from scipy.ndimage import center_of_mass
-from scipy.stats import ortho_group
 
 from fury import actor
 from fury import primitive as fp
@@ -735,7 +734,7 @@ def test_peak():
 
 
 # @pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
-def test_tensor_slicer(interactive=True):
+def test_tensor_slicer(interactive=False):
 
     evals = np.array([1.4, 0.35, 0.35]) * 10 ** (-3)
     evecs = np.eye(3)

@@ -43,6 +43,11 @@ class EllipsoidActor(Actor):
         self.GetMapper().SetVBOShiftScaleMethod(False)
         self.GetProperty().SetOpacity(self.opacity)
 
+        '''
+        We associate the data to each of the 8 vertices that make up the box
+        since we handle the processing of individual vertices in the vertex
+        shader.
+        '''
         big_centers = np.repeat(self.centers, 8, axis=0)
         attribute_to_actor(self, big_centers, 'center')
 
