@@ -1,4 +1,4 @@
-The Importance of (good) Documentation - Week 2
+Week 2: The Importance of (good) Documentation
 =====================
 
 .. post:: June 12, 2023
@@ -33,11 +33,7 @@ My last week's code was:
 | color_texture.Allocate2D(width, height, 4, vtk.VTK_UNSIGNED_CHAR) # here is where the code stops
 
 But it turns out that to allocate the FBO's textures, of type vtkTextureObject, you need to also set the context where the texture object
-will be present, so it lacked the line:
-
-| color_texture.SetContext(manager.window) # set the context where the texture object will be present
-
-And with that line added after Bind():
+will be present, so it lacked a line, that should be added after Bind():
 
 | color_texture = vtk.vtkTextureObject() 
 | color_texture.Bind() 
@@ -52,6 +48,13 @@ And with that line added after Bind():
 
 The code worked fine. But as my last blogpost showed, Allocate3D() method worked just fine without a (visible) problem, why is that? 
 Well, in fact, it **didn't work**. If we check the code for the Allocate2D and Allocate3D, one difference can be spotted:
+
+
+
+.. image:: https://raw.githubusercontent.com/JoaoDell/gsoc_assets/main/images/allocate-2d-3d.png
+   :align: center
+   :alt: Image comparing Allocate2D and Allocate3D methos
+
 
 
 While in Allocate2D there is an ``assert(this->Context);``, in Allocate3D the assertion is translated into:
