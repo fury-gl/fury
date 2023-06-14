@@ -13,7 +13,7 @@ This Last Week's Effort
 -----------------------
 
 Last week, I was facing some issues with a VTK feature essential so I could move forward with my project: Framebuffer Objects. 
-As described in my `last blogpost <https://blogs.python-gsoc.org/en/joaodellaglis-blog/the-fbo-saga-week-1/>`_, for some reason the 2D allocation methods for it weren't working.
+As described in my `last blogpost <https://blogs.python-gsoc.org/en/joaodellaglis-blog/the-fbo-saga-week-1/>`_, for some reason the 2D allocation method for it weren't working.
 In a meeting with my mentors, while we were discussing and searching through VTK's FramebufferObject and TextureObject documentation, and the code itself for the problem, 
 one TextureObject method caught my attention: `vtkTextureObject.SetContext() <https://vtk.org/doc/nightly/html/classvtkTextureObject.html#a0988fa2a30b640c93392c2188030537e>`_.
 
@@ -65,7 +65,7 @@ While in Allocate2D there is an ``assert(this->Context);``, in Allocate3D the as
 |   return false;
 | }
 
-This slight difference is significant: while in Allocate2D the program immediatly fails, in Allocate3D the function is simply returned
+This slight difference is significant: while in Allocate2D the program immediately fails, in Allocate3D the function is simply returned
 **false**, with its error pushed to vtkErrorMacro. I could have realised that earlier if I were using vtkErrorMacro, but this contrastant
 implementation made it harder for me and my mentors to realise what was happening.
 
