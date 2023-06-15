@@ -768,6 +768,8 @@ class TextBlock2D(UI):
         self.actor.SetTextScaleModeToProp()
         self.actor.SetPosition2(*size)
 
+        self.update_bounding_box()
+
     def _get_actors(self):
         """Get the actors composing this UI component."""
         return [self.actor] + self.background.actors
