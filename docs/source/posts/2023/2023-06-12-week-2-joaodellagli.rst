@@ -72,7 +72,7 @@ While in Allocate2D there is an ``assert(this->Context);``, in Allocate3D the as
    }
 
 This slight difference is significant: while in Allocate2D the program immediately fails, in Allocate3D the function is simply returned
-**false**, with its error pushed to vtkErrorMacro. I could have realised that earlier if I were using vtkErrorMacro, but this contrastant
+**false**, with its error pushed to vtkErrorMacro. I could have realised that earlier if I were using vtkErrorMacro, but this difference in their
 implementation made it harder for me and my mentors to realise what was happening.
 
 
