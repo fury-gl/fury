@@ -58,7 +58,57 @@ def texture_to_actor(actor: lib.Actor, location : str, texture : np.array, textu
 
 
 
-# Don't mind these shader, I just set them up to focus first on the framebuffer, then after on the shaders themselves
+# Don't mind these shaders, I just set them up to focus first on the framebuffer, then after on the shaders themselves
+
+billboard_vert_decl =  "/* Billboard  vertex shader declaration */\
+                        in vec3 center;\
+                        in vec2 in_tex;\
+                        \
+                        out vec3 centerVertexMCVSOutput;\
+                        out vec3 normalizedVertexMCVSOutput;\
+                        varying vec2 out_tex;"
+
+billboard_vert_impl =  "/* Billboard  vertex shader implementation */\
+                        centerVertexMCVSOutput = center;\
+                        normalizedVertexMCVSOutput = vertexMC.xyz - center; // 1st Norm. [-scale, scale]\
+                        float scalingFactor = 1. / abs(normalizedVertexMCVSOutput.x);\
+                        float size = abs(normalizedVertexMCVSOutput.x) * 2;\
+                        normalizedVertexMCVSOutput *= scalingFactor; // 2nd Norm. [-1, 1]\
+                        vec2 billboardSize = vec2(size, size); // Fixes the scaling issue\
+                        vec3 cameraRightMC = vec3(MCVCMatrix[0][0], MCVCMatrix[1][0], MCVCMatrix[2][0]);\
+                        vec3 cameraUpMC = vec3(MCVCMatrix[0][1], MCVCMatrix[1][1], MCVCMatrix[2][1]);\
+                        vec3 vertexPositionMC = center +\
+                            cameraRightMC * billboardSize.x * normalizedVertexMCVSOutput.x +\
+                            cameraUpMC * billboardSize.y * normalizedVertexMCVSOutput.y;\
+                        out_tex = in_tex;\
+                        gl_Position = MCDCMatrix * vec4(vertexPositionMC, 1.);"
+
+billboard_frag =   "#ifdef GL_FRAGMENT_PRECISION_MEDIUM \
+                        precision mediump float;\
+                    #else\
+                        precision lowp float;\
+                        precision lowp int;\
+                    #endif\
+                    \
+                    varying vec2 out_tex;\
+                    \
+                    uniform float t;\
+                    uniform vec2 res;\
+                    uniform sampler2D textureSampler;\
+                    \
+                    \
+                    void main(){\
+                    \
+                        vec3 color = vec3(gl_FragCoord.xy/res, 1.0);\
+                        vec4 texture = texture(textureSampler, out_tex);\
+                    \
+                        // gl_FragColor = vec4(color, 1.0);\
+                        gl_FragColor = vec4(exp(-color.x*color.x), exp(-color.y*color.y), exp(-color.z*color.z), 1.0);\
+                        // gl_FragColor = vec4(abs(sin(t)), abs(cos(t)), 1.0, 1.0);\
+                    \
+                    \
+                    }"
+
 vert_decl = "/* Billboard  vertex shader declaration */ \
             in vec3 center; \
             in vec2 in_tex; \
@@ -137,11 +187,8 @@ scale = np.array([[width, height, 0.0]])
 
 # Actor setup
 billboard = actor.billboard(np.array([[0.0, 0.0, 0.0]]), (1.0, 0.0, 0.0), scales=scale)
-actor.shader_to_actor(billboard, "vertex", 
-                      shaders.import_fury_shader("C:\\Users\\Lampada\\Desktop\\GSoC\\GSoC\\shaders\\billboard\\billboard_imp.vert"),
-                      shaders.import_fury_shader("C:\\Users\\Lampada\\Desktop\\GSoC\\GSoC\\shaders\\billboard\\billboard_decl.vert"))
-actor.replace_shader_in_actor(billboard, "fragment", 
-                              shaders.import_fury_shader("C:\\Users\\Lampada\\Desktop\\GSoC\\GSoC\\shaders\\billboard\\billboard.frag"))
+actor.shader_to_actor(billboard, "vertex", billboard_vert_impl, billboard_vert_decl)
+actor.replace_shader_in_actor(billboard, "fragment", billboard_frag)
 shader_custom_uniforms(billboard, "fragment").SetUniform2f("res", [width, height])
 
 # billboard_tex = np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [1.0, 0.0]])
@@ -266,11 +313,8 @@ while True:
     FBO.ActivateBuffer(0)
     FBO.ActivateBuffer(0)
     for i in range(n_points):
-        actor.shader_to_actor(billboard, "vertex", 
-                      shaders.import_fury_shader("C:\\Users\\Lampada\\Desktop\\GSoC\\GSoC\\shaders\\billboard\\KDE\\kde_impl.vert"),
-                      shaders.import_fury_shader("C:\\Users\\Lampada\\Desktop\\GSoC\\GSoC\\shaders\\billboard\\KDE\\kde_decl.vert"))
-        actor.replace_shader_in_actor(billboard, "fragment", 
-                              shaders.import_fury_shader("C:\\Users\\Lampada\\Desktop\\GSoC\\GSoC\\shaders\\billboard\\KDE\\kde.frag"))
+        actor.shader_to_actor(billboard, "vertex", vert_impl, vert_decl)
+        actor.replace_shader_in_actor(billboard, "fragment", frag)
         shader_custom_uniforms(billboard, "fragment").SetUniform3f("point", points[i])
         FBO.AddColorAttachment(0, color_texture) # Attatches a color texture to this FBO
         FBO.Start(width, height)
@@ -285,11 +329,8 @@ while True:
 
     # Render the scene
     manager.window.MakeCurrent()
-    actor.shader_to_actor(billboard, "vertex", 
-                      shaders.import_fury_shader("C:\\Users\\Lampada\\Desktop\\GSoC\\GSoC\\shaders\\billboard\\billboard_imp.vert"),
-                      shaders.import_fury_shader("C:\\Users\\Lampada\\Desktop\\GSoC\\GSoC\\shaders\\billboard\\billboard_decl.vert"))
-    actor.replace_shader_in_actor(billboard, "fragment", 
-                                shaders.import_fury_shader("C:\\Users\\Lampada\\Desktop\\GSoC\\GSoC\\shaders\\billboard\\billboard.frag"))
+    actor.shader_to_actor(billboard, "vertex", billboard_vert_impl, billboard_vert_decl)
+    actor.replace_shader_in_actor(billboard, "fragment", billboard_frag)
     shader_custom_uniforms(billboard, "fragment").SetUniform2f("res", [width, height])
     manager.render()
 
