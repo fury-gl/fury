@@ -17,7 +17,7 @@ What is coming up next?
 As I receive feedback, I will continue to work on the `PR #791 <https://github.com/fury-gl/fury/pull/791>`_ and make adjustments and changes as needed. That said, I will start working on another part of the project, which is the visualization of uncertainty. Without going into details (for now) what I have to do is:
 
 - Create a double_cone or dti_uncertainty actor. I'm going to work on the double cone made also with raymarching and SDF, since the implementation is pretty much the same as the ellipsoid I already have.
-- Make a function that returns the level of the uncertainty given by the angle of the uncertainty cone we want to visualize. For this I need to double-check the maths behind the uncertainty calculation to make sure I’m getting the right results.
+- Make a function that returns the level of the uncertainty given by the angle of the uncertainty cone we want to visualize. For this I need to double-check the maths behind the uncertainty calculation to make sure I'm getting the right results.
 
 Did I get stuck anywhere?
 -------------------------
