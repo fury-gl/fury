@@ -53,6 +53,24 @@ button:focus {outline: none;}
 
 iframe {border: none;}
 
+.mobile-view, .non-mobile-view {
+	display: none;
+}
+
+/* For only mobile view */
+@media screen and (max-width: 450px) {
+	.mobile-view {
+		display: block;
+	}
+}
+
+/* For non mobile view*/
+@media screen and (min-width: 768px) {
+	.non-mobile-view {
+		display: block;
+	}
+}
+
 
 /*//////////////////////////////////////////////////////////////////
 [ FONT SIZE ]*/
@@ -2900,4 +2918,3 @@ iframe {border: none;}
 	right: 0px;
 	bottom: 0px;
 }
-

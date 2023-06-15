@@ -27,17 +27,21 @@ Richardson, J.S. The anatomy and taxonomy of protein structure
 Importing necessary modules
 """
 
-import urllib
 import os
-from fury import window, actor, ui, molecular as mol
+import urllib
+
 import numpy as np
+
+from fury import actor
+from fury import molecular as mol
+from fury import ui, window
 
 ###############################################################################
 # Downloading the PDB file of the protein to be rendered (the user can change
 # the pdb code depending on which protein they want to visualize).
 pdb_code = '4ury'
-downloadurl = "https://files.rcsb.org/download/"
-pdbfn = pdb_code + ".pdb"
+downloadurl = 'https://files.rcsb.org/download/'
+pdbfn = pdb_code + '.pdb'
 flag = 0
 if not os.path.isfile(pdbfn):
     flag = 1
@@ -46,7 +50,7 @@ if not os.path.isfile(pdbfn):
     try:
         urllib.request.urlretrieve(url, outfnm)
     except Exception:
-        print("Error in downloading the file!")
+        print('Error in downloading the file!')
 
 ###############################################################################
 # Creating a `PeriodicTable()` object to obtain atomic numbers from names of
@@ -78,8 +82,7 @@ for line in pdb_lines:
     try:
         if line[0] == 'ATOM' or line[0] == 'HETATM':
             if line[-1] != 'H':
-                coorX, coorY, coorZ = float(line[6]), float(line[7]), \
-                                      float(line[8])
+                coorX, coorY, coorZ = float(line[6]), float(line[7]), float(line[8])
                 resi = line[5]
                 current_chain = ord(line[4])
                 atom_coords += [[coorX, coorY, coorZ]]
@@ -89,7 +92,7 @@ for line in pdb_lines:
                 atom_types += [line[2]]
                 model += [current_model_number]
                 NumberOfAtoms += 1
-                if(line[0] == 'HETATM'):
+                if line[0] == 'HETATM':
                     is_hetatm += [1]
                 else:
                     is_hetatm += [0]
@@ -126,16 +129,24 @@ is_hetatm = np.array(is_hetatm)
 # 2. Configuring the camera's position.
 # 3. Creating and adding axes actor to the scene.
 # 4. Computing the bonding information for the molecule.
-# 5. Generating and adding various molecular representaions to the scene.
+# 5. Generating and adding various molecular representations to the scene.
 scene = window.Scene()
-scene.set_camera(position=(20, 10, 0), focal_point=(0, 0, 0),
-                 view_up=(0, 1, 0))
+scene.set_camera(position=(20, 10, 0), focal_point=(0, 0, 0), view_up=(0, 1, 0))
 scene.zoom(0.8)
 axes_actor = actor.axes()
 scene.add(axes_actor)
 
-molecule = mol.Molecule(atomic_numbers, atom_coords, atom_types, model,
-                        residue_seq, chain, sheets, helix, is_hetatm)
+molecule = mol.Molecule(
+    atomic_numbers,
+    atom_coords,
+    atom_types,
+    model,
+    residue_seq,
+    chain,
+    sheets,
+    helix,
+    is_hetatm,
+)
 mol.compute_bonding(molecule)
 
 # stick representation
@@ -162,11 +173,14 @@ dims = (screen_x_dim, screen_y_dim)
 
 ###############################################################################
 # creating a ShowManager object
-showm = window.ShowManager(scene, size=dims, reset_camera=True,
-                           order_transparent=True)
+showm = window.ShowManager(scene, size=dims, reset_camera=True, order_transparent=True)
 
-tb = ui.TextBlock2D(text=pdb_code.upper(), position=(screen_x_dim/2-40,
-                    screen_y_dim/12), font_size=30, color=(1, 1, 1))
+tb = ui.TextBlock2D(
+    text=pdb_code.upper(),
+    position=(screen_x_dim / 2 - 40, screen_y_dim / 12),
+    font_size=30,
+    color=(1, 1, 1),
+)
 scene.add(tb)
 
 ###############################################################################
@@ -177,4 +191,4 @@ if flag:
 interactive = False
 if interactive:
     window.show(scene, size=dims, title=pdb_code.upper())
-window.record(scene, size=dims, out_path=pdb_code.upper()+'.png')
+window.record(scene, size=dims, out_path=pdb_code.upper() + '.png')

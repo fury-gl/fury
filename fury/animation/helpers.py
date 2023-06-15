@@ -79,8 +79,9 @@ def get_values_from_keyframes(keyframes):
     ndarray
         Array of sorted values extracted from the keyframes.
     """
-    return np.asarray([keyframes.get(t, {}).get('value', None) for t in
-                       sorted(keyframes.keys())])
+    return np.asarray(
+        [keyframes.get(t, {}).get('value', None) for t in sorted(keyframes.keys())]
+    )
 
 
 def get_time_tau(t, t0, t1):

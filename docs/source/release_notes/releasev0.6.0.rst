@@ -7,7 +7,7 @@
 Quick Overview
 --------------
 
-* Added new features: Picking and DoubleClick callback.
+* Added new features: Picking and double-click callback.
 * Added Signed Distance Field actor.
 * Added a new UI ComboBox.
 * Added multiples primitives (Rhombocuboctahedron, ...).
@@ -96,8 +96,8 @@ Issues (35):
 * :ghissue:`254`: unexpected order transparent behavior [VTK9] [Ubuntu 18.04]
 * :ghissue:`259`: Updated Step 3 in README.rst
 * :ghissue:`251`: Developer installation instructions should describe -e option
-* :ghissue:`226`: Adding DoubleClick event
-* :ghissue:`231`: Adding Double Click Callback
+* :ghissue:`226`: Adding double-click event
+* :ghissue:`231`: Adding double-click Callback
 * :ghissue:`256`: Install ssl certificate for azure pipeline windows
 * :ghissue:`245`: [FIX]  Compatibility with VTK 9
 * :ghissue:`244`: Added new texture tutorial

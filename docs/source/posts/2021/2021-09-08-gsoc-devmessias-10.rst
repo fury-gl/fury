@@ -1,4 +1,4 @@
-Week #10: SDF Fonts 
+Week #10: SDF Fonts
 ===================
 
 .. post:: August 09 2021
@@ -23,11 +23,11 @@ FURY
 ^^^^
 
 -  `PR fury-gl/fury#484: I've found and fixed a bug in FURY time
-   managment system <https://github.com/fury-gl/fury/pull/484>`__
+   management system <https://github.com/fury-gl/fury/pull/484>`__
 -  `PR fury-gl/fury#437: <https://github.com/fury-gl/fury/pull/437>`__
 
    -  Fixed the tests on Windows
-   -  Improve the streaming memory managment system for IPC
+   -  Improve the streaming memory management system for IPC
       communication
 
 -  I've developing a feature that will allows FURY to draw hundreds

@@ -1,4 +1,4 @@
-SOLID, monkey patching  a python issue and  network vizualization through WebRTC
+SOLID, monkey patching  a python issue and  network visualization through WebRTC
 ================================================================================
 
 .. post:: July 05 2021
@@ -286,4 +286,3 @@ Refs:
    Request #21516 · python/cpython," GitHub.
    https://github.com/python/cpython/pull/21516 (accessed Jun. 28,
    2021).
-

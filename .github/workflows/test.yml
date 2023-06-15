@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.7, 3.8, 3.9]
+        python-version: [3.8, 3.9, '3.10', 3.11]
         os: [ubuntu-latest, macos-latest, windows-latest]
         platform: [x64]
         install-type: [pip, ]  # conda]
@@ -32,18 +32,18 @@ jobs:
         coverage: [false]
         use-pre: [false]
         include:
-          - os: ubuntu-latest
-            python-version: 3.9
+          - os: macos-latest # ubuntu-latest
+            python-version: '3.10'
             install-type: pip
             depends: OPTIONAL_DEPS
             coverage: true
             use-pre: false
           - os: ubuntu-latest
-            python-version: 3.9
+            python-version: '3.10'
             install-type: pip
             depends: OPTIONAL_DEPS
-            use-pre: true
             coverage: false
+            use-pre: true
     env:
       INSTALL_TYPE: ${{ matrix.install-type }}
       DEPENDS: ${{ matrix.depends }}
@@ -112,11 +112,15 @@ jobs:
         else
           ci/run_tests.sh
         fi
-    # Enable tmate debugging of manually-triggered workflows if the input option was provided
-    # - name: Setup tmate session
-    #   if: ${{ failure() }}
-    #   uses: mxschmitt/action-tmate@v3
-    - name: Deploy docs
-      if: success() && github.ref == 'refs/heads/master'
-      run: |
-        bash ci/travis/deploy_docs.sh
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      if: ${{ matrix.coverage }}
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        directory: for_testing
+        files: coverage.xml
+        fail_ci_if_error: true
+        env_vars: ${{ matrix.os }}, PYTHON_VERSION
+        flags: unittests
+        name: codecov-umbrella
+        verbose: true

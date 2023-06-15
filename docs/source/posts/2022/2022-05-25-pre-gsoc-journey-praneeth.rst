@@ -2,7 +2,7 @@ Pre-GSoC Journey
 =================
 
 .. post:: May 25 2022
-   :author: Praneeth Shetty 
+   :author: Praneeth Shetty
    :tags: google
    :category: gsoc
 
@@ -41,4 +41,4 @@ I was excited to participate in these events but wasn’t getting proper guidanc
 GSoC - 22
 ~~~~~~~~~~
 
-Again this year GSoC Started with new rules, new energy and with more enthusiasm I too prepared to participate in it. Five new ideas were posted for GSoC in which I again chose the UI improvement as I had a good understanding of the existing UI system in FURY. Last year's experience helped me a lot in creating the proposal. This time I was also prepared(compared to last time) as I had made some contributions and also had spent time on the code base to understand it. Days passed and lastly the result day arrived, anxiety was at its peak. I had set an alarm to remind me to keep checking the mail for the result, refreshing and changing tabs. Exactly at 11:32 PM IST, a mail dropped with the subject “Congratulations, your proposal with Python Software Foundation has been accepted!” and my happiness had no bound.
+Again this year GSoC Started with new rules, new energy and with more enthusiasm I too prepared to participate in it. Five new ideas were posted for GSoC in which I again chose the UI improvement as I had a good understanding of the existing UI system in FURY. Last year's experience helped me a lot in creating the proposal. This time I was also prepared(compared to last time) as I had made some contributions and also had spent time on the code base to understand it. Days passed and lastly the result day arrived, anxiety was at its peak. I had set an alarm to remind me to keep checking the mail for the result, refreshing and changing tabs. Exactly at 11:32 PM Indian Standard Time, a mail dropped with the subject “Congratulations, your proposal with Python Software Foundation has been accepted!” and my happiness had no bound.

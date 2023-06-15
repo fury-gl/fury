@@ -8,7 +8,7 @@ Spherical harmonics
 
 Make sure to check out Project `FURY <https://github.com/fury-gl/fury>`_
 
-Hey ! 
+Hey !
 This week, Spherical harmonics!
 
 What did you do this week?

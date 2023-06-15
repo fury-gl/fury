@@ -6,8 +6,9 @@ import numpy as np
 from fury.io import load_image
 
 
-def matplotlib_figure_to_numpy(fig, dpi=100, fname=None, flip_up_down=True,
-                               transparent=False):
+def matplotlib_figure_to_numpy(
+    fig, dpi=100, fname=None, flip_up_down=True, transparent=False
+):
     """Convert a Matplotlib figure to a 3D numpy array with RGBA channels.
 
     Parameters
@@ -37,18 +38,24 @@ def matplotlib_figure_to_numpy(fig, dpi=100, fname=None, flip_up_down=True,
     way found here http://www.icare.univ-lille1.fr/drupal/node/1141 where
     you can actually use fig.canvas.tostring_argb() to get the values directly
     without saving to the disk. However, this was not stable across different
-    machines and needed more investigation from what time permited.
+    machines and needed more investigation from what time permitted.
 
     """
     if fname is None:
         with TemporaryDirectory() as tmpdir:
             fname = os.path.join(tmpdir, 'tmp.png')
-            fig.savefig(fname, dpi=dpi, transparent=transparent,
-                        bbox_inches='tight', pad_inches=0)
+            fig.savefig(
+                fname,
+                dpi=dpi,
+                transparent=transparent,
+                bbox_inches='tight',
+                pad_inches=0,
+            )
             arr = load_image(fname)
     else:
-        fig.savefig(fname, dpi=dpi, transparent=transparent,
-                    bbox_inches='tight', pad_inches=0)
+        fig.savefig(
+            fname, dpi=dpi, transparent=transparent, bbox_inches='tight', pad_inches=0
+        )
         arr = load_image(fname)
 
     if flip_up_down:

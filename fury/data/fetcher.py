@@ -61,8 +61,11 @@ def update_progressbar(progress, total_length):
     """
     # Try to set the bar_length according to the console size
     try:
-        columns = os.popen('tput cols', 'r').read()
-        bar_length = int(columns) - 46
+        if os.name == 'nt':
+            bar_length = 20
+        else:
+            columns = os.popen('tput cols', 'r').read()
+            bar_length = int(columns) - 46
         if bar_length < 1:
             bar_length = 20
     except Exception:
@@ -70,7 +73,7 @@ def update_progressbar(progress, total_length):
         bar_length = 20
     block = int(round(bar_length * progress))
     size_string = "{0:.2f} MB".format(float(total_length) / (1024 * 1024))
-    text = "\rDownload Progress: [{0}] {1:.2f}%  of {2}".format(
+    text = "\rDownload Progress: [{0}] {1:.2f}%  of {2}\n".format(
         "#" * block + "-" * (bar_length - block), progress * 100, size_string)
     sys.stdout.write(text)
     sys.stdout.flush()
@@ -615,7 +618,7 @@ def read_viz_icons(style='icomoon', fname='infinity.png'):
         Default is infinity.png.
 
     Returns
-    --------
+    -------
     path : str
         Complete path of icon.
 
@@ -639,7 +642,7 @@ def read_viz_models(fname):
         This should be found in folder HOME/.fury/models/.
 
     Returns
-    --------
+    -------
     path : str
         Complete path of models.
 

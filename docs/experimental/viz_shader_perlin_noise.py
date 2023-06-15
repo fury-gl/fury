@@ -1,11 +1,9 @@
-from fury import window
+import numpy as np
+import vtk
 from scipy.spatial import Delaunay
 from viz_shader_canvas import surface
 
-
-import numpy as np
-import vtk
-
+from fury import window
 
 scene = window.Scene()
 
@@ -13,8 +11,8 @@ size = 11
 vertices = list()
 for i in range(-size, size):
     for j in range(-size, size):
-        fact1 = - np.sin(i) * np.cos(j)
-        fact2 = - np.exp(abs(1 - np.sqrt(i ** 2 + j ** 2) / np.pi))
+        fact1 = -np.sin(i) * np.cos(j)
+        fact2 = -np.exp(abs(1 - np.sqrt(i**2 + j**2) / np.pi))
         z_coord = -abs(fact1 * fact2)
         vertices.append([i, j, z_coord])
 
@@ -58,7 +56,7 @@ float noise(vec4 P) {
     vec4 iz1 = vec4(Pi1.zzzz);
     vec4 iw0 = vec4(Pi0.wwww);
     vec4 iw1 = vec4(Pi1.wwww);
-    
+
     vec4 ixy = permute(permute(ix) + iy);
     vec4 ixy0 = permute(ixy + iz0);
     vec4 ixy1 = permute(ixy + iz1);
@@ -66,7 +64,7 @@ float noise(vec4 P) {
     vec4 ixy01 = permute(ixy0 + iw1);
     vec4 ixy10 = permute(ixy1 + iw0);
     vec4 ixy11 = permute(ixy1 + iw1);
-    
+
     vec4 gx00 = ixy00 / 7.;
     vec4 gy00 = floor(gx00) / 7.;
     vec4 gz00 = floor(gy00) / 6.;
@@ -77,7 +75,7 @@ float noise(vec4 P) {
     vec4 sw00 = step(gw00, vec4(0.0));
     gx00 -= sw00 * (step(0.0, gx00) - .5);
     gy00 -= sw00 * (step(0.0, gy00) - .5);
-    
+
     vec4 gx01 = ixy01 / 7.;
     vec4 gy01 = floor(gx01) / 7.;
     vec4 gz01 = floor(gy01) / 6.;
@@ -88,7 +86,7 @@ float noise(vec4 P) {
     vec4 sw01 = step(gw01, vec4(0.0));
     gx01 -= sw01 * (step(0.0, gx01) - .5);
     gy01 -= sw01 * (step(0.0, gy01) - .5);
-    
+
     vec4 gx10 = ixy10 / 7.;
     vec4 gy10 = floor(gx10) / 7.;
     vec4 gz10 = floor(gy10) / 6.;
@@ -99,7 +97,7 @@ float noise(vec4 P) {
     vec4 sw10 = step(gw10, vec4(0.0));
     gx10 -= sw10 * (step(0.0, gx10) - .5);
     gy10 -= sw10 * (step(0.0, gy10) - .5);
-    
+
     vec4 gx11 = ixy11 / 7.;
     vec4 gy11 = floor(gx11) / 7.;
     vec4 gz11 = floor(gy11) / 6.;
@@ -110,7 +108,7 @@ float noise(vec4 P) {
     vec4 sw11 = step(gw11, vec4(0.0));
     gx11 -= sw11 * (step(0.0, gx11) - .5);
     gy11 -= sw11 * (step(0.0, gy11) - .5);
-    
+
     vec4 g0000 = vec4(gx00.x, gy00.x, gz00.x, gw00.x);
     vec4 g1000 = vec4(gx00.y, gy00.y, gz00.y, gw00.y);
     vec4 g0100 = vec4(gx00.z, gy00.z, gz00.z, gw00.z);
@@ -127,35 +125,35 @@ float noise(vec4 P) {
     vec4 g1011 = vec4(gx11.y, gy11.y, gz11.y, gw11.y);
     vec4 g0111 = vec4(gx11.z, gy11.z, gz11.z, gw11.z);
     vec4 g1111 = vec4(gx11.w, gy11.w, gz11.w, gw11.w);
-    
-    vec4 norm00 = taylorInvSqrt(vec4(dot(g0000, g0000), dot(g0100, g0100), 
+
+    vec4 norm00 = taylorInvSqrt(vec4(dot(g0000, g0000), dot(g0100, g0100),
         dot(g1000, g1000), dot(g1100, g1100)));
     g0000 *= norm00.x;
     g0100 *= norm00.y;
     g1000 *= norm00.z;
     g1100 *= norm00.w;
-    
-    vec4 norm01 = taylorInvSqrt(vec4(dot(g0001, g0001), dot(g0101, g0101), 
+
+    vec4 norm01 = taylorInvSqrt(vec4(dot(g0001, g0001), dot(g0101, g0101),
         dot(g1001, g1001), dot(g1101, g1101)));
     g0001 *= norm01.x;
     g0101 *= norm01.y;
     g1001 *= norm01.z;
     g1101 *= norm01.w;
-    
-    vec4 norm10 = taylorInvSqrt(vec4(dot(g0010, g0010), dot(g0110, g0110), 
+
+    vec4 norm10 = taylorInvSqrt(vec4(dot(g0010, g0010), dot(g0110, g0110),
         dot(g1010, g1010), dot(g1110, g1110)));
     g0010 *= norm10.x;
     g0110 *= norm10.y;
     g1010 *= norm10.z;
     g1110 *= norm10.w;
-    
-    vec4 norm11 = taylorInvSqrt(vec4(dot(g0011, g0011), dot(g0111, g0111), 
+
+    vec4 norm11 = taylorInvSqrt(vec4(dot(g0011, g0011), dot(g0111, g0111),
         dot(g1011, g1011), dot(g1111, g1111)));
     g0011 *= norm11.x;
     g0111 *= norm11.y;
     g1011 *= norm11.z;
     g1111 *= norm11.w;
-    
+
     float n0000 = dot(g0000, Pf0);
     float n1000 = dot(g1000, vec4(Pf1.x, Pf0.yzw));
     float n0100 = dot(g0100, vec4(Pf0.x, Pf1.y, Pf0.zw));
@@ -172,11 +170,11 @@ float noise(vec4 P) {
     float n1011 = dot(g1011, vec4(Pf1.x, Pf0.y, Pf1.zw));
     float n0111 = dot(g0111, vec4(Pf0.x, Pf1.yzw));
     float n1111 = dot(g1111, Pf1);
-    
+
     vec4 fade_xyzw = fade(Pf0);
-    vec4 n_0w = mix(vec4(n0000, n1000, n0100, n1100), 
+    vec4 n_0w = mix(vec4(n0000, n1000, n0100, n1100),
         vec4(n0001, n1001, n0101, n1101), fade_xyzw.w);
-    vec4 n_1w = mix(vec4(n0010, n1010, n0110, n1110), 
+    vec4 n_1w = mix(vec4(n0010, n1010, n0110, n1110),
         vec4(n0011, n1011, n0111, n1111), fade_xyzw.w);
     vec4 n_zw = mix(n_0w, n_1w, fade_xyzw.z);
     vec2 n_yzw = mix(n_zw.xy, n_zw.zw, fade_xyzw.y);
@@ -188,24 +186,24 @@ float noise(vec4 P) {
 # Modify the vertex shader to pass the position of the vertex
 mapper.AddShaderReplacement(
     vtk.vtkShader.Vertex,
-    "//VTK::Normal::Dec",  # replace the normal block
+    '//VTK::Normal::Dec',  # replace the normal block
     True,  # before the standard replacements
     """
     //VTK::Normal::Dec  // we still want the default
     out vec4 myVertexMC;
     """,
-    False
+    False,
 )
 
 mapper.AddShaderReplacement(
     vtk.vtkShader.Vertex,  # replace the normal block
-    "//VTK::Normal::Impl",  # before the standard replacements
+    '//VTK::Normal::Impl',  # before the standard replacements
     True,  # we still want the default
     """
     //VTK::Normal::Impl
     myVertexMC = vertexMC;
     """,
-    False
+    False,
 )
 
 # // Add the code to generate noise
@@ -213,28 +211,28 @@ mapper.AddShaderReplacement(
 #   // to declare and implement
 mapper.AddShaderReplacement(
     vtk.vtkShader.Fragment,
-    "//VTK::System::Dec",
+    '//VTK::System::Dec',
     False,  # before the standard replacements
     fragment_shader_functions,
-    False  # only do it once
+    False,  # only do it once
 )
 
 # // Define varying and uniforms for the fragment shader here
 mapper.AddShaderReplacement(
     vtk.vtkShader.Fragment,  # // in the fragment shader
-    "//VTK::Normal::Dec",  # // replace the normal block
+    '//VTK::Normal::Dec',  # // replace the normal block
     True,  # // before the standard replacements
     """
     //VTK::Normal::Dec  // we still want the default
     varying vec4 myVertexMC;
     uniform float k = 1.;
     """,
-    False  # // only do it once
+    False,  # // only do it once
 )
 
 mapper.AddShaderReplacement(
     vtk.vtkShader.Fragment,  # // in the fragment shader
-    "//VTK::Light::Impl",  # // replace the light block
+    '//VTK::Light::Impl',  # // replace the light block
     False,  # // after the standard replacements
     """
     //VTK::Light::Impl  // we still want the default calc
@@ -261,11 +259,11 @@ mapper.AddShaderReplacement(
             }
         }
     }
-    fragOutput0.rgb = opacity * 
+    fragOutput0.rgb = opacity *
         vec3(ambientColor + noisyColor * diffuse + specular);
     fragOutput0.a = opacity;
     """,
-    False
+    False,
 )
 
 window.show(scene)

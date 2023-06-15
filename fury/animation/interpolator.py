@@ -1,10 +1,17 @@
 import numpy as np
-from scipy.interpolate import splprep, splev
+from scipy.interpolate import splev, splprep
 from scipy.spatial import transform
-from fury.colormap import rgb2hsv, hsv2rgb, rgb2lab, lab2rgb, xyz2rgb, rgb2xyz
-from fury.animation.helpers import get_previous_timestamp, get_next_timestamp,\
-    get_time_tau, get_timestamps_from_keyframes, euclidean_distances,\
-    get_values_from_keyframes, lerp
+
+from fury.animation.helpers import (
+    euclidean_distances,
+    get_next_timestamp,
+    get_previous_timestamp,
+    get_time_tau,
+    get_timestamps_from_keyframes,
+    get_values_from_keyframes,
+    lerp,
+)
+from fury.colormap import hsv2rgb, lab2rgb, rgb2hsv, rgb2lab, rgb2xyz, xyz2rgb
 
 
 def spline_interpolator(keyframes, degree):
@@ -28,9 +35,11 @@ def spline_interpolator(keyframes, degree):
 
     """
     if len(keyframes) < (degree + 1):
-        raise ValueError(f"Minimum {degree + 1} "
-                         f"keyframes must be set in order to use "
-                         f"{degree}-degree spline")
+        raise ValueError(
+            f'Minimum {degree + 1} '
+            f'keyframes must be set in order to use '
+            f'{degree}-degree spline'
+        )
     timestamps = get_timestamps_from_keyframes(keyframes)
 
     values = get_values_from_keyframes(keyframes)
@@ -181,8 +190,12 @@ def cubic_bezier_interpolator(keyframes):
         p2 = k1.get('in_cp')
         p3 = k1.get('value')
         dt = get_time_tau(t, t0, t1)
-        val = (1 - dt) ** 3 * p0 + 3 * (1 - dt) ** 2 * dt * p1 + 3 * \
-              (1 - dt) * dt ** 2 * p2 + dt ** 3 * p3
+        val = (
+            (1 - dt) ** 3 * p0
+            + 3 * (1 - dt) ** 2 * dt * p1
+            + 3 * (1 - dt) * dt**2 * p2
+            + dt**3 * p3
+        )
         return val
 
     return interpolate
@@ -347,6 +360,11 @@ def tan_cubic_spline_interpolator(keyframes):
         # cubic spline equation using tangents
         t2 = dt * dt
         t3 = t2 * dt
-        return (2 * t3 - 3 * t2 + 1) * p0 + (t3 - 2 * t2 + dt) * tan_0 + (
-                -2 * t3 + 3 * t2) * p1 + (t3 - t2) * tan_1
+        return (
+            (2 * t3 - 3 * t2 + 1) * p0
+            + (t3 - 2 * t2 + dt) * tan_0
+            + (-2 * t3 + 3 * t2) * p1
+            + (t3 - t2) * tan_1
+        )
+
     return interpolate

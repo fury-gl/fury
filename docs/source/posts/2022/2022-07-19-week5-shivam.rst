@@ -20,7 +20,7 @@ What is coming up next week?
 
 This week I'll be working on the following:
 
-- Get the PR `#630`_. merged by this week. 
+- Get the PR `#630`_. merged by this week.
 - Loading the animations (simple, morph, and skeletal) data as dictionaries from the glTF model so that it can be sent to the timeline.
 - Try different examples on Mohamed's PR (`#626`_.) and try running glTF animations if time permits.
 

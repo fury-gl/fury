@@ -16,7 +16,7 @@ What did you do this week?
 	.. figure:: https://user-images.githubusercontent.com/65067354/129559593-baf201bf-720c-45f7-9269-3b31954efd5e.png
 	    :width: 300
 	    :height: 300
-	    
+
 	    Notice that it's rather rough
 
    Current implementation (this implementation was according to the paper):
@@ -25,7 +25,7 @@ What did you do this week?
 	    :width: 300
 	    :height: 300
 
-	    grid dimenstions = 256 × 256 × 256, used smoothing algorithms recommended by vtk
+	    grid dimensions = 256 × 256 × 256, used smoothing algorithms recommended by vtk
 
 I also understood how to go about rendering volumes. I think that the ability to render volumes with FURY will be a cool capability and I'll discuss my implementation and request the mentors for feedback and ideas in the weekly meeting. Example of volume rendering:
 
@@ -33,7 +33,7 @@ I also understood how to go about rendering volumes. I think that the ability to
 	    :width: 300
 	    :height: 300
 
-	    grid dimenstions = 256 × 256 × 256
+	    grid dimensions = 256 × 256 × 256
 
 What is coming up next week?
 ----------------------------

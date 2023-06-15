@@ -17,7 +17,6 @@ test
 
    installation
    getting_started
-   auto_tutorials/index
    auto_examples/index
    fury-pybullet
 

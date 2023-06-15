@@ -1,9 +1,7 @@
-from fury import window
+import vtk
 from viz_shader_canvas import cube
 
-
-import vtk
-
+from fury import window
 
 scene = window.Scene()
 showm = window.ShowManager(scene, order_transparent=True)
@@ -17,37 +15,37 @@ mapper = canvas_actor.GetMapper()
 # Modify the vertex shader to pass the position of the vertex
 mapper.AddShaderReplacement(
     vtk.vtkShader.Vertex,
-    "//VTK::Normal::Dec",  # replace the normal block
+    '//VTK::Normal::Dec',  # replace the normal block
     True,  # before the standard replacements
     """
     //VTK::Normal::Dec  // we still want the default
     out vec4 myVertexMC;
     """,
-    False
+    False,
 )
 
 mapper.AddShaderReplacement(
     vtk.vtkShader.Vertex,  # replace the normal block
-    "//VTK::Normal::Impl",  # before the standard replacements
+    '//VTK::Normal::Impl',  # before the standard replacements
     True,  # we still want the default
     """
     //VTK::Normal::Impl
     myVertexMC = vertexMC;
     """,
-    False
+    False,
 )
 
 # // Define varying and uniforms for the fragment shader here
 mapper.AddShaderReplacement(
     vtk.vtkShader.Fragment,  # // in the fragment shader
-    "//VTK::Normal::Dec",  # // replace the normal block
+    '//VTK::Normal::Dec',  # // replace the normal block
     True,  # // before the standard replacements
     """
     //VTK::Normal::Dec  // we still want the default
     varying vec4 myVertexMC;
     uniform float time;
     """,
-    False  # // only do it once
+    False,  # // only do it once
 )
 
 global timer
@@ -67,17 +65,16 @@ def vtk_shader_callback(caller, event, calldata=None):
     global timer
     if program is not None:
         try:
-            program.SetUniformf("time", timer)
+            program.SetUniformf('time', timer)
         except ValueError:
             pass
 
 
-mapper.AddObserver(window.vtk.vtkCommand.UpdateShaderEvent,
-                   vtk_shader_callback)
+mapper.AddObserver(window.vtk.vtkCommand.UpdateShaderEvent, vtk_shader_callback)
 
 mapper.AddShaderReplacement(
     vtk.vtkShader.Fragment,  # // in the fragment shader
-    "//VTK::Light::Impl",  # // replace the light block
+    '//VTK::Light::Impl',  # // replace the light block
     False,  # // after the standard replacements
     """
     //VTK::Light::Impl  // we still want the default calc
@@ -104,7 +101,7 @@ mapper.AddShaderReplacement(
 
     fragOutput0 = vec4(destColor, .75);
     """,
-    False
+    False,
 )
 
 

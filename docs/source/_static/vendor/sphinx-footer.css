@@ -14,10 +14,16 @@
 }
 
 
+/* Now with pyData 0.10.1 version the class name on footer changed to .bd-footer */
+.bd-footer {
+  background-color: rgb(153, 0, 0);
+  padding: 3rem 1.5rem 6rem;
+}
 
 .footer {
-    background-color: rgb(153, 0, 0);
-    padding: 3rem 1.5rem 6rem; }
+  background-color: rgb(153, 0, 0);
+  padding: 3rem 1.5rem 6rem;
+}
 
 .footer-column {
     display: block;

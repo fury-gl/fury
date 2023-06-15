@@ -16,10 +16,11 @@ helical path.
 Importing necessary modules
 """
 
-from fury import window, actor, utils, ui
-import numpy as np
 import itertools
 
+import numpy as np
+
+from fury import actor, ui, utils, window
 
 ###############################################################################
 # Let's define some variable and their description:
@@ -51,12 +52,12 @@ phase_angle = 0.002
 
 scene = window.Scene()
 scene.zoom(1.2)
-scene.set_camera(position=(10, 12.5, 19), focal_point=(3.0, 0.0, 0.0),
-                 view_up=(0.0, 0.0, 0.0))
-showm = window.ShowManager(scene,
-                           size=(800, 600), reset_camera=True,
-                           order_transparent=True)
-
+scene.set_camera(
+    position=(10, 12.5, 19), focal_point=(3.0, 0.0, 0.0), view_up=(0.0, 0.0, 0.0)
+)
+showm = window.ShowManager(
+    scene, size=(800, 600), reset_camera=True, order_transparent=True
+)
 
 
 ###############################################################################
@@ -67,17 +68,24 @@ color_arrow = window.colors.blue  # color of the arrow can be manipulated
 centers = np.array([[0, 0, 0]])
 directions = np.array([[1, 0, 0]])
 heights = np.array([8])
-arrow_actor = actor.arrow(centers, directions, color_arrow, heights,
-                          resolution=20, tip_length=0.06, tip_radius=0.012,
-                          shaft_radius=0.005)
+arrow_actor = actor.arrow(
+    centers,
+    directions,
+    color_arrow,
+    heights,
+    resolution=20,
+    tip_length=0.06,
+    tip_radius=0.012,
+    shaft_radius=0.005,
+)
 scene.add(arrow_actor)
 
 ###############################################################################
 # Initializing the initial coordinates of the particle
 
-x = initial_velocity*time + 0.5*acc*(time**2)
-y = np.sin(angular_frq*time + phase_angle)
-z = np.cos(angular_frq*time + phase_angle)
+x = initial_velocity * time + 0.5 * acc * (time**2)
+y = np.sin(angular_frq * time + phase_angle)
+z = np.cos(angular_frq * time + phase_angle)
 
 ###############################################################################
 # Initializing point actor which will represent the charged particle
@@ -90,16 +98,15 @@ scene.add(charge_actor)
 vertices = utils.vertices_from_actor(charge_actor)
 vcolors = utils.colors_from_actor(charge_actor, 'colors')
 no_vertices_per_point = len(vertices)
-initial_vertices = vertices.copy() - \
-    np.repeat(pts, no_vertices_per_point, axis=0)
+initial_vertices = vertices.copy() - np.repeat(pts, no_vertices_per_point, axis=0)
 
 
 ###############################################################################
 # Initializing text box to display the name of the animation
 
 tb = ui.TextBlock2D(bold=True, position=(100, 90))
-m1 = "Motion of a charged particle in a "
-m2 = "combined electric and magnetic field"
+m1 = 'Motion of a charged particle in a '
+m2 = 'combined electric and magnetic field'
 tb.message = m1 + m2
 scene.add(tb)
 
@@ -120,21 +127,21 @@ coor_1 = np.array([0, 0, 0])
 
 
 ###############################################################################
-# Coordinates to be plotted are changed everytime timer_callback is called by
+# Coordinates to be plotted are changed every time timer_callback is called by
 # using the update_coordinates function. The wave is rendered here.
+
 
 def timer_callback(_obj, _event):
     global pts, time, incre_time, coor_1
     time += incre_time
     cnt = next(counter)
 
-    x = initial_velocity*time + 0.5*acc*(time**2)
-    y = np.sin(10*angular_frq*time + phase_angle)
-    z = np.cos(10*angular_frq*time + phase_angle)
+    x = initial_velocity * time + 0.5 * acc * (time**2)
+    y = np.sin(10 * angular_frq * time + phase_angle)
+    z = np.cos(10 * angular_frq * time + phase_angle)
     pts = np.array([[x, y, z]])
 
-    vertices[:] = initial_vertices + \
-        np.repeat(pts, no_vertices_per_point, axis=0)
+    vertices[:] = initial_vertices + np.repeat(pts, no_vertices_per_point, axis=0)
 
     utils.update_actor(charge_actor)
 
@@ -152,10 +159,11 @@ def timer_callback(_obj, _event):
     if cnt == end:
         showm.exit()
 
+
 ###############################################################################
 # Run every 15 milliseconds
 
 
 showm.add_timer_callback(True, 15, timer_callback)
 showm.start()
-window.record(showm.scene, size=(800, 600), out_path="viz_helical_motion.png")
+window.record(showm.scene, size=(800, 600), out_path='viz_helical_motion.png')

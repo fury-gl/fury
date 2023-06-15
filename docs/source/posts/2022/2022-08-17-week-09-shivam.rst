@@ -33,4 +33,4 @@ No, I didn't get stuck this week.
 
 .. _`SimpleSkin`: https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/SimpleSkin
 .. _`example`: https://github.com/xtanion/fury/blob/gltf-skin-test/docs/tutorials/01_introductory/viz_skinning.py
-.. _`interpolator`: https://github.com/xtanion/fury/blob/gltf-skin-test/fury/gltf.py#L693
+.. _`interpolator`: https://github.com/xtanion/fury/blob/e5b2b9b4984f244fb4a8e8b410d494ba7d17cb49/fury/gltf.py#L684

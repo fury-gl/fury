@@ -1,8 +1,9 @@
 # Beads rendered in Pybullet
 
-import pybullet as p
 import time
+
 import numpy as np
+import pybullet as p
 
 p.connect(p.GUI)
 plane = p.createCollisionShape(p.GEOM_PLANE)
@@ -13,9 +14,9 @@ radius = 0.091
 mass = 0.1
 
 linkCol = p.createCollisionShape(p.GEOM_SPHERE, radius=radius)
-linkVis = p.createVisualShape(p.GEOM_SPHERE, radius=radius,
-                              rgbaColor=[1, 0, 0, 1],
-                              specularColor=[1, 1, 1, 1])
+linkVis = p.createVisualShape(
+    p.GEOM_SPHERE, radius=radius, rgbaColor=[1, 0, 0, 1], specularColor=[1, 1, 1, 1]
+)
 
 n = 50
 
@@ -55,25 +56,26 @@ jointTypes = jointTypes[:n]
 axis = axis[:n]
 
 p.createMultiBody(
-  baseMass=mass,
-  baseCollisionShapeIndex=linkCol,
-  baseVisualShapeIndex=linkVis,
-  basePosition=[-5.444793, 17.301618, 0],
-  baseOrientation=orientation,
-  linkMasses=link_Masses,
-  linkCollisionShapeIndices=linkCollisionShapeIndices,
-  linkVisualShapeIndices=linkVisualShapeIndices,
-  linkPositions=linkPos,
-  linkOrientations=linkOrientations,
-  linkInertialFramePositions=linkInertialFramePositions,
-  linkInertialFrameOrientations=linkInertialFrameOrientations,
-  linkParentIndices=indices,
-  linkJointTypes=jointTypes,
-  linkJointAxis=axis,
-  useMaximalCoordinates=True)
+    baseMass=mass,
+    baseCollisionShapeIndex=linkCol,
+    baseVisualShapeIndex=linkVis,
+    basePosition=[-5.444793, 17.301618, 0],
+    baseOrientation=orientation,
+    linkMasses=link_Masses,
+    linkCollisionShapeIndices=linkCollisionShapeIndices,
+    linkVisualShapeIndices=linkVisualShapeIndices,
+    linkPositions=linkPos,
+    linkOrientations=linkOrientations,
+    linkInertialFramePositions=linkInertialFramePositions,
+    linkInertialFrameOrientations=linkInertialFrameOrientations,
+    linkParentIndices=indices,
+    linkJointTypes=jointTypes,
+    linkJointAxis=axis,
+    useMaximalCoordinates=True,
+)
 
 p.setGravity(0, 0, -9.8)
-dt = 1./120.
+dt = 1.0 / 120.0
 p.setRealTimeSimulation(1)
 
 for i in range(1000000):

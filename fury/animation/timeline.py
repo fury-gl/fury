@@ -1,6 +1,11 @@
-from time import perf_counter
-from fury.ui.elements import PlaybackPanel
+import os
+import numpy as np
+from fury.lib import WindowToImageFilter, RenderWindow, numpy_support
+from fury import window
 from fury.animation.animation import Animation
+from fury.ui.elements import PlaybackPanel
+from PIL import Image
+from time import perf_counter
 
 
 class Timeline:
@@ -25,9 +30,9 @@ class Timeline:
         Whether loop playing the timeline or play once.
     """
 
-    def __init__(self, animations=None, playback_panel=False, loop=True,
-                 length=None):
+    def __init__(self, animations=None, playback_panel=False, loop=True, length=None):
 
+        self._scene = None
         self.playback_panel = None
         self._current_timestamp = 0
         self._speed = 1.0
@@ -39,6 +44,7 @@ class Timeline:
         self._duration = length if length is not None else 0.0
 
         if playback_panel:
+
             def set_loop(is_loop):
                 self._loop = is_loop
 
@@ -67,8 +73,9 @@ class Timeline:
         if self._length is not None:
             self._duration = self._length
         else:
-            self._duration = max([0.0] + [anim.update_duration() for anim
-                                          in self._animations])
+            self._duration = max(
+                [0.0] + [anim.update_duration() for anim in self._animations]
+            )
         if self.has_playback_panel:
             self.playback_panel.final_time = self.duration
         return self.duration
@@ -89,8 +96,9 @@ class Timeline:
         if not self.playing:
             if self.current_timestamp >= self.duration:
                 self.current_timestamp = 0
-            self._last_started_time = \
+            self._last_started_time = (
                 perf_counter() - self._current_timestamp / self.speed
+            )
             self._playing = True
 
     def pause(self):
@@ -121,8 +129,9 @@ class Timeline:
 
         """
         if self.playing:
-            self._current_timestamp = (perf_counter() -
-                                       self._last_started_time) * self.speed
+            self._current_timestamp = (
+                perf_counter() - self._last_started_time
+            ) * self.speed
         return self._current_timestamp
 
     @current_timestamp.setter
@@ -152,8 +161,7 @@ class Timeline:
         elif timestamp > self.duration:
             timestamp = self.duration
         if self.playing:
-            self._last_started_time = \
-                perf_counter() - timestamp / self.speed
+            self._last_started_time = perf_counter() - timestamp / self.speed
         else:
             self._current_timestamp = timestamp
             self.update(force=True)
@@ -268,6 +276,130 @@ class Timeline:
         """
         return self.playback_panel is not None
 
+    def record(self, fname=None, fps=30, speed=1.0, size=(900, 768),
+               order_transparent=True, multi_samples=8,
+               max_peels=4, show_panel=False):
+        """Record the animation
+
+        Parameters
+        -----------
+        fname : str, optional
+            The file name. Save a GIF file if name ends with '.gif', or mp4
+            video if name ends with'.mp4'.
+            If None, this method will only return an array of frames.
+        fps : int, optional
+            The number of frames per second of the record.
+        size : (int, int)
+            ``(width, height)`` of the window. Default is (900, 768).
+        speed : float, optional, default 1.0
+            The speed of the animation.
+        order_transparent : bool, optional
+            Default False. Use depth peeling to sort transparent objects.
+            If True also enables anti-aliasing.
+        multi_samples : int, optional
+            Number of samples for anti-aliasing (Default 8).
+            For no anti-aliasing use 0.
+        max_peels : int, optional
+            Maximum number of peels for depth peeling (Default 4).
+        show_panel : bool, optional, default False
+            Controls whether to show the playback (if True) panel of hide it
+            (if False)
+
+        Returns
+        -------
+        ndarray:
+            The recorded frames.
+
+        Notes
+        -----
+        It's recommended to use 50 or 30 FPS while recording to a GIF file.
+        """
+
+        ext = os.path.splitext(fname)[-1]
+
+        mp4 = ext == '.mp4'
+
+        if mp4:
+            try:
+                import cv2
+            except ImportError:
+                raise ImportError('OpenCV must be installed in order to '
+                                  'save as MP4 video.')
+            fourcc = cv2.VideoWriter.fourcc(*'mp4v')
+            out = cv2.VideoWriter(fname, fourcc, fps, size)
+
+        duration = self.duration
+        step = speed / fps
+        frames = []
+        t = 0
+        scene = self._scene
+        if not scene:
+            scene = window.Scene()
+            scene.add(self)
+
+        _hide_panel = False
+        if self.has_playback_panel and not show_panel:
+            self.playback_panel.hide()
+            _hide_panel = True
+        render_window = RenderWindow()
+        render_window.SetOffScreenRendering(1)
+        render_window.AddRenderer(scene)
+        render_window.SetSize(*size)
+
+        if order_transparent:
+            window.antialiasing(scene, render_window, multi_samples, max_peels,
+                                0)
+
+        render_window = RenderWindow()
+        render_window.SetOffScreenRendering(1)
+        render_window.AddRenderer(scene)
+        render_window.SetSize(*size)
+
+        if order_transparent:
+            window.antialiasing(scene, render_window, multi_samples, max_peels, 0)
+
+        window_to_image_filter = WindowToImageFilter()
+
+        print('Recording...')
+        while t < duration:
+            self.seek(t)
+            render_window.Render()
+            window_to_image_filter.SetInput(render_window)
+            window_to_image_filter.Update()
+            window_to_image_filter.Modified()
+            vtk_image = window_to_image_filter.GetOutput()
+            h, w, _ = vtk_image.GetDimensions()
+            vtk_array = vtk_image.GetPointData().GetScalars()
+            components = vtk_array.GetNumberOfComponents()
+            snap = numpy_support.vtk_to_numpy(vtk_array).reshape(w, h,
+                                                                 components)
+            corrected_snap = np.flipud(snap)
+
+            if mp4:
+                cv_img = cv2.cvtColor(corrected_snap, cv2.COLOR_RGB2BGR)
+                out.write(cv_img)
+            else:
+                pillow_snap = Image.fromarray(corrected_snap)
+                frames.append(pillow_snap)
+
+            t += step
+
+        print('Saving...')
+
+        if fname is None:
+            return frames
+
+        if mp4:
+            out.release()
+        else:
+            frames[0].save(fname, append_images=frames[1:], loop=0,
+                           duration=1000 / fps, save_all=True)
+
+        if _hide_panel:
+            self.playback_panel.show()
+
+        return frames
+
     def add_animation(self, animation):
         """Add Animation or list of Animations.
 
@@ -283,7 +415,7 @@ class Timeline:
             self._animations.append(animation)
             self.update_duration()
         else:
-            raise TypeError(f"Expected an Animation, a list or a tuple.")
+            raise TypeError('Expected an Animation, a list or a tuple.')
 
     @property
     def animations(self) -> 'list[Animation]':
@@ -325,8 +457,16 @@ class Timeline:
         if self.playing or force:
             [anim.update_animation(time) for anim in self._animations]
 
-    def add_to_scene(self, ren):
-        """Add this Timeline and all of its Animations to the scene"""
+    def add_to_scene(self, scene):
+        """Add Timeline and all of its Animations to the scene"""
+        self._scene = scene
         if self.has_playback_panel:
-            self.playback_panel.add_to_scene(ren)
-        [ren.add(animation) for animation in self._animations]
+            self.playback_panel.add_to_scene(scene)
+        [animation.add_to_scene(scene) for animation in self._animations]
+
+    def remove_from_scene(self, scene):
+        """Remove Timeline and all of its Animations to the scene"""
+        self._scene = None
+        if self.has_playback_panel:
+            scene.rm(*tuple(self.playback_panel.actors))
+        [animation.remove_from_scene(scene) for animation in self._animations]

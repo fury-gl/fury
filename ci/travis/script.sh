@@ -12,12 +12,10 @@ fi
 
 # Install and test FURY
 cd ${TRAVIS_BUILD_DIR}
-python3 setup.py install
+pip install .
 # Change folder
 mkdir for_testing
 cd for_testing
-# We need the setup.cfg for the pytest settings
-cp ../setup.cfg .
 python3 -c "import fury; print(fury.__version__)"
 error_code=0
 
@@ -36,7 +34,7 @@ if [[ "${COVERAGE}" == "1" ]]; then
     done
   coverage combine .
   coverage report -m  # Generate test coverage report.
-  codecov  # Upload the report to codecov.
+  #codecov  # Upload the report to codecov.
 else
     # Threads issue so we run test on individual file
     # pytest -svv --pyargs fury

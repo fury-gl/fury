@@ -50,4 +50,3 @@ class FuryVideoFrame(VideoFrame):
 
     def update_from_ndarray(self, array, components=3):
         copy_array_to_plane(array, self.planes[0], components)
-   

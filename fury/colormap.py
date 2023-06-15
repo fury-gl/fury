@@ -1,25 +1,31 @@
-from warnings import warn
 import json
 from os.path import join as pjoin
+from warnings import warn
 
 import numpy as np
 from scipy import linalg
 
 from fury.data import DATA_DIR
 from fury.lib import LookupTable
+
 # Allow import, but disable doctests if we don't have matplotlib
 from fury.optpkg import optional_package
+
 cm, have_matplotlib, _ = optional_package('matplotlib.cm')
 
 
-def colormap_lookup_table(scale_range=(0, 1), hue_range=(0.8, 0),
-                          saturation_range=(1, 1), value_range=(0.8, 0.8)):
+def colormap_lookup_table(
+    scale_range=(0, 1),
+    hue_range=(0.8, 0),
+    saturation_range=(1, 1),
+    value_range=(0.8, 0.8),
+):
     """Lookup table for the colormap.
 
     Parameters
     ----------
     scale_range : tuple
-        It can be anything e.g. (0, 1) or (0, 255). Usually it is the mininum
+        It can be anything e.g. (0, 1) or (0, 255). Usually it is the minimum
         and maximum value of your data. Default is (0, 1).
     hue_range : tuple of floats
         HSV values (min 0 and max 1). Default is (0.8, 0).
@@ -54,7 +60,7 @@ def ss(na, nd):
 
 
 def boys2rgb(v):
-    """ boys 2 rgb cool colormap
+    """boys 2 rgb cool colormap
 
     Maps a given field of undirected lines (line field) to rgb
     colors using Boy's Surface immersion of the real projective
@@ -101,9 +107,9 @@ def boys2rgb(v):
         y = v[:, 1]
         z = v[:, 2]
 
-    x2 = x ** 2
-    y2 = y ** 2
-    z2 = z ** 2
+    x2 = x**2
+    y2 = y**2
+    z2 = z**2
 
     x3 = x * x2
     y3 = y * y2
@@ -115,12 +121,12 @@ def boys2rgb(v):
     xz = x * z
     yz = y * z
 
-    hh1 = .5 * (3 * z2 - 1) / 1.58
+    hh1 = 0.5 * (3 * z2 - 1) / 1.58
     hh2 = 3 * xz / 2.745
     hh3 = 3 * yz / 2.745
     hh4 = 1.5 * (x2 - y2) / 2.745
     hh5 = 6 * xy / 5.5
-    hh6 = (1 / 1.176) * .125 * (35 * z4 - 30 * z2 + 3)
+    hh6 = (1 / 1.176) * 0.125 * (35 * z4 - 30 * z2 + 3)
     hh7 = 2.5 * x * (7 * z3 - 3 * z) / 3.737
     hh8 = 2.5 * y * (7 * z3 - 3 * z) / 3.737
     hh9 = ((x2 - y2) * 7.5 * (7 * z2 - 1)) / 15.85
@@ -137,10 +143,10 @@ def boys2rgb(v):
     cc23 = cc(2.71, s0)
     ss45 = ss(2.12, s1)
     cc45 = cc(2.12, s1)
-    ss67 = ss(.972, s2)
-    cc67 = cc(.972, s2)
-    ss89 = ss(.868, s3)
-    cc89 = cc(.868, s3)
+    ss67 = ss(0.972, s2)
+    cc67 = cc(0.972, s2)
+    ss89 = ss(0.868, s3)
+    cc89 = cc(0.868, s3)
 
     X = 0.0
 
@@ -232,8 +238,9 @@ def orient2rgb(v):
         orientn.shape = orientn.shape + (1,)
         orient = np.abs(np.divide(v, orientn, where=orientn != 0))
     else:
-        raise IOError("Wrong vector dimension, It should be an array"
-                      " with a shape (N, 3)")
+        raise IOError(
+            'Wrong vector dimension, It should be an array' ' with a shape (N, 3)'
+        )
 
     return orient
 
@@ -252,12 +259,14 @@ def line_colors(streamlines, cmap='rgb_standard'):
 
     """
     if cmap == 'rgb_standard':
-        col_list = [orient2rgb(streamline[-1] - streamline[0])
-                    for streamline in streamlines]
+        col_list = [
+            orient2rgb(streamline[-1] - streamline[0]) for streamline in streamlines
+        ]
 
     if cmap == 'boys_standard':
-        col_list = [boys2rgb(streamline[-1] - streamline[0])
-                    for streamline in streamlines]
+        col_list = [
+            boys2rgb(streamline[-1] - streamline[0]) for streamline in streamlines
+        ]
 
     return np.vstack(col_list)
 
@@ -268,15 +277,17 @@ dipy_cmaps = None
 
 def get_cmap(name):
     """Make a callable, similar to maptlotlib.pyplot.get_cmap."""
-    if name.lower() == "accent":
-        warn("The `Accent` colormap is deprecated as of version" +
-             " 0.2 of Fury and will be removed in a future " +
-             "version. Please use another colormap",
-             PendingDeprecationWarning)
+    if name.lower() == 'accent':
+        warn(
+            'The `Accent` colormap is deprecated as of version'
+            + ' 0.2 of Fury and will be removed in a future '
+            + 'version. Please use another colormap',
+            PendingDeprecationWarning,
+        )
 
     global dipy_cmaps
     if dipy_cmaps is None:
-        filename = pjoin(DATA_DIR, "dipy_colormaps.json")
+        filename = pjoin(DATA_DIR, 'dipy_colormaps.json')
         with open(filename) as f:
             dipy_cmaps = json.load(f)
 
@@ -291,7 +302,7 @@ def get_cmap(name):
             x, y0, _ = zip(*desc[color])
             # Matplotlib allows more complex colormaps, but for users who do
             # not have Matplotlib fury makes a few simple colormaps available.
-            # These colormaps are simple because y0 == y1, and therefor we
+            # These colormaps are simple because y0 == y1, and therefore we
             # ignore y1 here.
             rgba[:, i] = np.interp(v, x, y0)
         return rgba
@@ -325,8 +336,8 @@ def create_colormap(v, name='plasma', auto=True):
 
     """
     if not have_matplotlib:
-        msg = "You do not have Matplotlib installed. Some colormaps"
-        msg += " might not work for you. Consider downloading Matplotlib."
+        msg = 'You do not have Matplotlib installed. Some colormaps'
+        msg += ' might not work for you. Consider downloading Matplotlib.'
         warn(msg)
 
     if name.lower() == 'jet':
@@ -346,10 +357,9 @@ def create_colormap(v, name='plasma', auto=True):
     # For backwards compatibility with lowercase names
     newname = lowercase_cm_name.get(name) or name
 
-    get_colormap = cm.get_cmap if have_matplotlib else get_cmap
-    colormap = get_colormap(newname)
+    colormap = getattr(cm, newname) if have_matplotlib else get_cmap(newname)
     if colormap is None:
-        e_s = "Colormap {} is not yet implemented ".format(name)
+        e_s = 'Colormap {} is not yet implemented '.format(name)
         raise ValueError(e_s)
 
     rgba = colormap(v)
@@ -411,19 +421,19 @@ def _xyz2lab(xyz):
     var_Z = xyz[:, 2] / ref_Z
 
     idx = var_X > 0.008856
-    var_X[idx] = var_X[idx] ** (1/3)
+    var_X[idx] = var_X[idx] ** (1 / 3)
     idx = np.logical_not(idx)
-    var_X[idx] = (7.787 * var_X[idx]) + (16. / 116.)
+    var_X[idx] = (7.787 * var_X[idx]) + (16.0 / 116.0)
 
     idx = var_Y > 0.008856
-    var_Y[idx] = var_Y[idx] ** (1/3)
+    var_Y[idx] = var_Y[idx] ** (1 / 3)
     idx = np.logical_not(idx)
-    var_Y[idx] = (7.787 * var_Y[idx]) + (16. / 116.)
+    var_Y[idx] = (7.787 * var_Y[idx]) + (16.0 / 116.0)
 
     idx = var_Z > 0.008856
-    var_Z[idx] = var_Z[idx] ** (1/3)
+    var_Z[idx] = var_Z[idx] ** (1 / 3)
     idx = np.logical_not(idx)
-    var_Z[idx] = (7.787 * var_Z[idx]) + (16. / 116.)
+    var_Z[idx] = (7.787 * var_Z[idx]) + (16.0 / 116.0)
 
     L = (116 * var_Y) - 16
     A = 500 * (var_X - var_Y)
@@ -440,17 +450,17 @@ def _lab2xyz(lab):
     if var_Y**3 > 0.008856:
         var_Y = var_Y**3
     else:
-        var_Y = (var_Y - 16. / 116.) / 7.787
+        var_Y = (var_Y - 16.0 / 116.0) / 7.787
 
     if var_X**3 > 0.008856:
         var_X = var_X**3
     else:
-        var_X = (var_X - 16. / 116.) / 7.787
+        var_X = (var_X - 16.0 / 116.0) / 7.787
 
     if var_Z**3 > 0.008856:
         var_Z = var_Z**3
     else:
-        var_Z = (var_Z - 16. / 116.) / 7.787
+        var_Z = (var_Z - 16.0 / 116.0) / 7.787
 
     ref_X = 095.047
     ref_Y = 100.000
@@ -472,17 +482,17 @@ def _xyz2rgb(xyz):
     var_B = var_X * 00.0557 + var_Y * -0.2040 + var_Z * 01.0570
 
     if var_R > 0.0031308:
-        var_R = 1.055 * (var_R**(1/2.4)) - 0.055
+        var_R = 1.055 * (var_R ** (1 / 2.4)) - 0.055
     else:
         var_R = 12.92 * var_R
 
     if var_G > 0.0031308:
-        var_G = 1.055 * (var_G**(1/2.4)) - 0.055
+        var_G = 1.055 * (var_G ** (1 / 2.4)) - 0.055
     else:
         var_G = 12.92 * var_G
 
     if var_B > 0.0031308:
-        var_B = 1.055 * (var_B**(1/2.4)) - 0.055
+        var_B = 1.055 * (var_B ** (1 / 2.4)) - 0.055
     else:
         var_B = 12.92 * var_B
 
@@ -573,7 +583,7 @@ def distinguishable_colormap(bg=(0, 0, 0), exclude=[], nb_colors=None):
         lastlab = bglab[0]
         mindist2 = np.ones(len(rgb)) * np.inf
         for bglab_i in bglab[1:]:
-            dist2 = np.sum((lab-bglab_i)**2, axis=1)
+            dist2 = np.sum((lab - bglab_i) ** 2, axis=1)
             # Dist2 to closest previously-chosen color.
             mindist2 = np.minimum(dist2, mindist2)
 
@@ -597,7 +607,7 @@ def distinguishable_colormap(bg=(0, 0, 0), exclude=[], nb_colors=None):
 def hex_to_rgb(color):
     """Converts Hexadecimal color code to rgb()
 
-    color : string containting hexcode of color (can also start with a hash)
+    color : string containing hexcode of color (can also start with a hash)
 
     Returns
     -------
@@ -616,14 +626,14 @@ def hex_to_rgb(color):
     >>> c = colormap.hex_to_rgb(color)
 
     """
-    if color[0] == "#":
+    if color[0] == '#':
         color = color[1:]
 
-    r = int("0x" + color[0: 2], 0) / 255
-    g = int("0x" + color[2: 4], 0) / 255
-    b = int("0x" + color[4: 6], 0) / 255
+    r = int('0x' + color[0:2], 0) / 255
+    g = int('0x' + color[2:4], 0) / 255
+    b = int('0x' + color[4:6], 0) / 255
 
-    return(np.array([r, g, b]))
+    return np.array([r, g, b])
 
 
 def rgb2hsv(rgb):
@@ -660,22 +670,22 @@ def rgb2hsv(rgb):
     # Ignore warning for zero divided by zero
     old_settings = np.seterr(invalid='ignore')
     out_s = delta / out_v
-    out_s[delta == 0.] = 0.
+    out_s[delta == 0.0] = 0.0
 
     # -- H channel
     # red is max
-    idx = (rgb[..., 0] == out_v)
+    idx = rgb[..., 0] == out_v
     out[idx, 0] = (rgb[idx, 1] - rgb[idx, 2]) / delta[idx]
 
     # green is max
-    idx = (rgb[..., 1] == out_v)
-    out[idx, 0] = 2. + (rgb[idx, 2] - rgb[idx, 0]) / delta[idx]
+    idx = rgb[..., 1] == out_v
+    out[idx, 0] = 2.0 + (rgb[idx, 2] - rgb[idx, 0]) / delta[idx]
 
     # blue is max
-    idx = (rgb[..., 2] == out_v)
-    out[idx, 0] = 4. + (rgb[idx, 0] - rgb[idx, 1]) / delta[idx]
-    out_h = (out[..., 0] / 6.) % 1.
-    out_h[delta == 0.] = 0.
+    idx = rgb[..., 2] == out_v
+    out[idx, 0] = 4.0 + (rgb[idx, 0] - rgb[idx, 1]) / delta[idx]
+    out_h = (out[..., 0] / 6.0) % 1.0
+    out_h[delta == 0.0] = 0.0
 
     np.seterr(**old_settings)
 
@@ -725,19 +735,29 @@ def hsv2rgb(hsv):
 
     hi = np.stack([hi, hi, hi], axis=-1).astype(np.uint8) % 6
     out = np.choose(
-        hi, np.stack([np.stack((v, t, p), axis=-1),
-                      np.stack((q, v, p), axis=-1),
-                      np.stack((p, v, t), axis=-1),
-                      np.stack((p, q, v), axis=-1),
-                      np.stack((t, p, v), axis=-1),
-                      np.stack((v, p, q), axis=-1)]))
+        hi,
+        np.stack(
+            [
+                np.stack((v, t, p), axis=-1),
+                np.stack((q, v, p), axis=-1),
+                np.stack((p, v, t), axis=-1),
+                np.stack((p, q, v), axis=-1),
+                np.stack((t, p, v), axis=-1),
+                np.stack((v, p, q), axis=-1),
+            ]
+        ),
+    )
     return out
 
 
 # From sRGB specification
-xyz_from_rgb = np.array([[0.412453, 0.357580, 0.180423],
-                         [0.212671, 0.715160, 0.072169],
-                         [0.019334, 0.119193, 0.950227]])
+xyz_from_rgb = np.array(
+    [
+        [0.412453, 0.357580, 0.180423],
+        [0.212671, 0.715160, 0.072169],
+        [0.019334, 0.119193, 0.950227],
+    ]
+)
 
 rgb_from_xyz = linalg.inv(xyz_from_rgb)
 
@@ -805,31 +825,44 @@ def rgb2xyz(rgb):
 # Original Implementation of this object is from scikit-image package.
 # it can be found at:
 # https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
-illuminants = \
-    {"A": {'2': (1.098466069456375, 1, 0.3558228003436005),
-           '10': (1.111420406956693, 1, 0.3519978321919493),
-           'R': (1.098466069456375, 1, 0.3558228003436005)},
-     "B": {'2': (0.9909274480248003, 1, 0.8531327322886154),
-           '10': (0.9917777147717607, 1, 0.8434930535866175),
-           'R': (0.9909274480248003, 1, 0.8531327322886154)},
-     "C": {'2': (0.980705971659919, 1, 1.1822494939271255),
-           '10': (0.9728569189782166, 1, 1.1614480488951577),
-           'R': (0.980705971659919, 1, 1.1822494939271255)},
-     "D50": {'2': (0.9642119944211994, 1, 0.8251882845188288),
-             '10': (0.9672062750333777, 1, 0.8142801513128616),
-             'R': (0.9639501491621826, 1, 0.8241280285499208)},
-     "D55": {'2': (0.956797052643698, 1, 0.9214805860173273),
-             '10': (0.9579665682254781, 1, 0.9092525159847462),
-             'R': (0.9565317453467969, 1, 0.9202554587037198)},
-     "D65": {'2': (0.95047, 1., 1.08883),
-             '10': (0.94809667673716, 1, 1.0730513595166162),
-             'R': (0.9532057125493769, 1, 1.0853843816469158)},
-     "D75": {'2': (0.9497220898840717, 1, 1.226393520724154),
-             '10': (0.9441713925645873, 1, 1.2064272211720228),
-             'R': (0.9497220898840717, 1, 1.226393520724154)},
-     "E": {'2': (1.0, 1.0, 1.0),
-           '10': (1.0, 1.0, 1.0),
-           'R': (1.0, 1.0, 1.0)}}
+illuminants = {
+    'A': {
+        '2': (1.098466069456375, 1, 0.3558228003436005),
+        '10': (1.111420406956693, 1, 0.3519978321919493),
+        'R': (1.098466069456375, 1, 0.3558228003436005),
+    },
+    'B': {
+        '2': (0.9909274480248003, 1, 0.8531327322886154),
+        '10': (0.9917777147717607, 1, 0.8434930535866175),
+        'R': (0.9909274480248003, 1, 0.8531327322886154),
+    },
+    'C': {
+        '2': (0.980705971659919, 1, 1.1822494939271255),
+        '10': (0.9728569189782166, 1, 1.1614480488951577),
+        'R': (0.980705971659919, 1, 1.1822494939271255),
+    },
+    'D50': {
+        '2': (0.9642119944211994, 1, 0.8251882845188288),
+        '10': (0.9672062750333777, 1, 0.8142801513128616),
+        'R': (0.9639501491621826, 1, 0.8241280285499208),
+    },
+    'D55': {
+        '2': (0.956797052643698, 1, 0.9214805860173273),
+        '10': (0.9579665682254781, 1, 0.9092525159847462),
+        'R': (0.9565317453467969, 1, 0.9202554587037198),
+    },
+    'D65': {
+        '2': (0.95047, 1.0, 1.08883),
+        '10': (0.94809667673716, 1, 1.0730513595166162),
+        'R': (0.9532057125493769, 1, 1.0853843816469158),
+    },
+    'D75': {
+        '2': (0.9497220898840717, 1, 1.226393520724154),
+        '10': (0.9441713925645873, 1, 1.2064272211720228),
+        'R': (0.9497220898840717, 1, 1.226393520724154),
+    },
+    'E': {'2': (1.0, 1.0, 1.0), '10': (1.0, 1.0, 1.0), 'R': (1.0, 1.0, 1.0)},
+}
 
 
 def get_xyz_coords(illuminant, observer):
@@ -861,11 +894,13 @@ def get_xyz_coords(illuminant, observer):
     try:
         return np.asarray(illuminants[illuminant][observer], dtype=float)
     except KeyError:
-        raise ValueError(f'Unknown illuminant/observer combination '
-                         f'(`{illuminant}`, `{observer}`)')
+        raise ValueError(
+            f'Unknown illuminant/observer combination '
+            f'(`{illuminant}`, `{observer}`)'
+        )
 
 
-def xyz2lab(xyz, illuminant="D65", observer="2"):
+def xyz2lab(xyz, illuminant='D65', observer='2'):
     """XYZ to CIE-LAB color space conversion.
 
     Parameters
@@ -901,19 +936,19 @@ def xyz2lab(xyz, illuminant="D65", observer="2"):
     # Nonlinear distortion and linear transformation
     mask = arr > 0.008856
     arr[mask] = np.cbrt(arr[mask])
-    arr[~mask] = 7.787 * arr[~mask] + 16. / 116.
+    arr[~mask] = 7.787 * arr[~mask] + 16.0 / 116.0
 
     x, y, z = arr[..., 0], arr[..., 1], arr[..., 2]
 
     # Vector scaling
-    L = (116. * y) - 16.
+    L = (116.0 * y) - 16.0
     a = 500.0 * (x - y)
     b = 200.0 * (y - z)
 
     return np.concatenate([x[..., np.newaxis] for x in [L, a, b]], axis=-1)
 
 
-def lab2xyz(lab, illuminant="D65", observer="2"):
+def lab2xyz(lab, illuminant='D65', observer='2'):
     """CIE-LAB to XYZcolor space conversion.
 
     Parameters
@@ -939,21 +974,23 @@ def lab2xyz(lab, illuminant="D65", observer="2"):
 
     """
     L, a, b = lab[..., 0], lab[..., 1], lab[..., 2]
-    y = (L + 16.) / 116.
-    x = (a / 500.) + y
-    z = y - (b / 200.)
+    y = (L + 16.0) / 116.0
+    x = (a / 500.0) + y
+    z = y - (b / 200.0)
 
     if np.any(z < 0):
         invalid = np.nonzero(z < 0)
-        warn('Color data out of range: Z < 0 in %s pixels' % invalid[0].size,
-             stacklevel=2)
+        warn(
+            'Color data out of range: Z < 0 in %s pixels' % invalid[0].size,
+            stacklevel=2,
+        )
         z[invalid] = 0
 
     out = np.stack([x, y, z], axis=-1)
 
     mask = out > 0.2068966
-    out[mask] = np.power(out[mask], 3.)
-    out[~mask] = (out[~mask] - 16.0 / 116.) / 7.787
+    out[mask] = np.power(out[mask], 3.0)
+    out[~mask] = (out[~mask] - 16.0 / 116.0) / 7.787
 
     # rescale to the reference white (illuminant)
     xyz_ref_white = get_xyz_coords(illuminant, observer)
@@ -961,7 +998,7 @@ def lab2xyz(lab, illuminant="D65", observer="2"):
     return out
 
 
-def rgb2lab(rgb, illuminant="D65", observer="2"):
+def rgb2lab(rgb, illuminant='D65', observer='2'):
     """Conversion from the sRGB color space (IEC 61966-2-1:1999)
     to the CIE Lab colorspace under the given illuminant and observer.
 
@@ -991,7 +1028,7 @@ def rgb2lab(rgb, illuminant="D65", observer="2"):
     return xyz2lab(rgb2xyz(rgb), illuminant, observer)
 
 
-def lab2rgb(lab, illuminant="D65", observer="2"):
+def lab2rgb(lab, illuminant='D65', observer='2'):
     """Lab to RGB color space conversion.
 
     Parameters

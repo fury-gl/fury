@@ -1,6 +1,8 @@
-import numpy.testing as npt
 import numpy as np
-from fury import window, molecular as mol
+import numpy.testing as npt
+
+from fury import molecular as mol
+from fury import window
 
 
 def test_periodic_table():
@@ -14,49 +16,50 @@ def test_periodic_table():
     npt.assert_array_almost_equal(table.atom_color(1), np.array([1, 1, 1]))
 
     # Test errors
-    npt.assert_raises(ValueError, table.atomic_radius, 4, "test")
+    npt.assert_raises(ValueError, table.atomic_radius, 4, 'test')
 
 
 def get_default_molecular_info(all_info=False):
     atom_numbers = np.array([6, 6, 1, 1, 1, 1, 1, 1])
-    atom_coords = np.array([[0.5723949486E+01, 0.5974463617E+01,
-                             0.5898320525E+01],
-                            [0.6840181327E+01, 0.6678078649E+01,
-                             0.5159998484E+01],
-                            [0.4774278044E+01, 0.6499436628E+01,
-                             0.5782310182E+01],
-                            [0.5576295333E+01, 0.4957554302E+01,
-                             0.5530844713E+01],
-                            [0.5926818174E+01, 0.5907771848E+01,
-                             0.6968386044E+01],
-                            [0.6985130929E+01, 0.7695511362E+01,
-                             0.5526416671E+01],
-                            [0.7788135127E+01, 0.6150201159E+01,
-                             0.5277430519E+01],
-                            [0.6632858893E+01, 0.6740709254E+01,
-                             0.4090898288E+01]]
-                           )
+    atom_coords = np.array(
+        [
+            [0.5723949486e01, 0.5974463617e01, 0.5898320525e01],
+            [0.6840181327e01, 0.6678078649e01, 0.5159998484e01],
+            [0.4774278044e01, 0.6499436628e01, 0.5782310182e01],
+            [0.5576295333e01, 0.4957554302e01, 0.5530844713e01],
+            [0.5926818174e01, 0.5907771848e01, 0.6968386044e01],
+            [0.6985130929e01, 0.7695511362e01, 0.5526416671e01],
+            [0.7788135127e01, 0.6150201159e01, 0.5277430519e01],
+            [0.6632858893e01, 0.6740709254e01, 0.4090898288e01],
+        ]
+    )
     atom_names = np.array(['CA', 'CA', 'H', 'H', 'H', 'H', 'H', 'H'])
     model = np.ones(8)
     residue = np.ones(8)
-    chain = np.ones(8)*65
+    chain = np.ones(8) * 65
     is_hetatm = np.ones(8, dtype=bool)
     sheet = []
     helix = []
     if all_info:
-        return atom_numbers, atom_coords, atom_names, model, residue, chain, \
-            is_hetatm, sheet, helix
+        return (
+            atom_numbers,
+            atom_coords,
+            atom_names,
+            model,
+            residue,
+            chain,
+            is_hetatm,
+            sheet,
+            helix,
+        )
     return atom_numbers, atom_coords
 
 
 def test_molecule_creation():
     atomic_numbers, atom_coords = get_default_molecular_info()
-    molecule = mol.Molecule(atomic_numbers=atomic_numbers,
-                            coords=atom_coords)
-    npt.assert_array_almost_equal(mol.get_all_atomic_numbers(molecule),
-                                  atomic_numbers)
-    npt.assert_array_almost_equal(mol.get_all_atomic_positions(molecule),
-                                  atom_coords)
+    molecule = mol.Molecule(atomic_numbers=atomic_numbers, coords=atom_coords)
+    npt.assert_array_almost_equal(mol.get_all_atomic_numbers(molecule), atomic_numbers)
+    npt.assert_array_almost_equal(mol.get_all_atomic_positions(molecule), atom_coords)
     npt.assert_equal(molecule.total_num_atoms, 8)
     npt.assert_equal(molecule.total_num_bonds, 0)
 
@@ -96,13 +99,15 @@ def test_atomic_position():
     mol.add_atom(molecule, 4, 0, 0, 0)
 
     # Testing get_atomic_position
-    npt.assert_array_almost_equal(mol.get_atomic_position(molecule, 0),
-                                  np.array([0, 0, 0]))
+    npt.assert_array_almost_equal(
+        mol.get_atomic_position(molecule, 0), np.array([0, 0, 0])
+    )
 
     # Testing set_atomic_number
     mol.set_atomic_position(molecule, 0, 1, 1, 1)
-    npt.assert_array_almost_equal(mol.get_atomic_position(molecule, 0),
-                                  np.array([1, 1, 1]))
+    npt.assert_array_almost_equal(
+        mol.get_atomic_position(molecule, 0), np.array([1, 1, 1])
+    )
 
 
 def test_bond_order():
@@ -120,8 +125,7 @@ def test_bond_order():
     npt.assert_equal(mol.get_bond_order(molecule, 0), 2)
 
     # Testing get_all_bond_orders
-    npt.assert_array_almost_equal(mol.get_all_bond_orders(molecule),
-                                  np.array([2]))
+    npt.assert_array_almost_equal(mol.get_all_bond_orders(molecule), np.array([2]))
 
 
 def test_deep_copy_molecule():
@@ -147,8 +151,13 @@ def test_sphere_cpk(interactive=False):
     molecule = mol.Molecule(atomic_numbers, atom_coords)
     table = mol.PTable()
     colormodes = ['discrete', 'single']
-    colors = np.array([[table.atom_color(1), table.atom_color(6)],
-                       [[150/255, 250/255, 150/255]]], dtype=object)
+    colors = np.array(
+        [
+            [table.atom_color(1), table.atom_color(6)],
+            [[150 / 255, 250 / 255, 150 / 255]],
+        ],
+        dtype=object,
+    )
     scene = window.Scene()
     for i, colormode in enumerate(colormodes):
         test_actor = mol.sphere_cpk(molecule, colormode)
@@ -185,13 +194,22 @@ def test_bstick(interactive=False):
     bond_thickness = [0.1, 0.2]
     multiple_bonds = [True, False]
     table = mol.PTable()
-    colors = np.array([[table.atom_color(6)],
-                       [[150/255, 150/255, 150/255],
-                        [50/255, 50/255, 50/255]]], dtype=object)
+    colors = np.array(
+        [
+            [table.atom_color(6)],
+            [[150 / 255, 150 / 255, 150 / 255], [50 / 255, 50 / 255, 50 / 255]],
+        ],
+        dtype=object,
+    )
     scene = window.Scene()
     for i, colormode in enumerate(colormodes):
-        test_actor = mol.ball_stick(molecule, colormode, atom_scale_factor[i],
-                                    bond_thickness[i], multiple_bonds[i])
+        test_actor = mol.ball_stick(
+            molecule,
+            colormode,
+            atom_scale_factor[i],
+            bond_thickness[i],
+            multiple_bonds[i],
+        )
         scene.add(test_actor)
         scene.reset_camera()
         scene.reset_clipping_range()
@@ -222,9 +240,13 @@ def test_stick(interactive=False):
     colormodes = ['discrete', 'single']
     bond_thickness = [0.1, 0.12]
     table = mol.PTable()
-    colors = np.array([[table.atom_color(6)],
-                       [[150/255, 150/255, 150/255],
-                        [50/255, 50/255, 50/255]]], dtype=object)
+    colors = np.array(
+        [
+            [table.atom_color(6)],
+            [[150 / 255, 150 / 255, 150 / 255], [50 / 255, 50 / 255, 50 / 255]],
+        ],
+        dtype=object,
+    )
     scene = window.Scene()
     for i, colormode in enumerate(colormodes):
         test_actor = mol.stick(molecule, colormode, bond_thickness[i])
@@ -251,40 +273,64 @@ def test_ribbon(interactive=False):
     scene = window.Scene()
 
     # Testing if helices and sheets are rendered properly
-    atom_coords = np.array([[31.726, 105.084,  71.456],
-                            [31.477, 105.680,  70.156],
-                            [32.599, 106.655,  69.845],
-                            [32.634, 107.264,  68.776],
-                            [30.135, 106.407,  70.163],
-                            [29.053, 105.662,  70.913],
-                            [28.118, 106.591,  71.657],
-                            [28.461, 107.741,  71.938],
-                            [26.928, 106.097,  71.983],
-                            [33.507, 106.802,  70.804],
-                            [34.635, 107.689,  70.622],
-                            [35.687, 107.018,  69.765],
-                            [36.530, 107.689,  69.174],
-                            [35.631, 105.690,  69.688],
-                            [36.594, 104.921,  68.903],
-                            [36.061, 104.498,  67.534],
-                            [36.601, 103.580,  66.916],
-                            [37.047, 103.645,  69.660],
-                            [35.907, 102.828,  69.957],
-                            [37.751, 104.014,  70.958]])
-    elements = np.array([7, 6, 6, 8, 6, 6, 6, 8, 7, 7, 6, 6, 8, 7, 6, 6, 8, 6,
-                         8, 6])
-    atom_names = np.array(['N', 'CA', 'C', 'O', 'CB', 'CG', 'CD', 'OE1', 'NE2',
-                           'N', 'CA', 'C', 'O', 'N', 'CA', 'C', 'O', 'CB',
-                           'OG1', 'OG2'])
+    atom_coords = np.array(
+        [
+            [31.726, 105.084, 71.456],
+            [31.477, 105.680, 70.156],
+            [32.599, 106.655, 69.845],
+            [32.634, 107.264, 68.776],
+            [30.135, 106.407, 70.163],
+            [29.053, 105.662, 70.913],
+            [28.118, 106.591, 71.657],
+            [28.461, 107.741, 71.938],
+            [26.928, 106.097, 71.983],
+            [33.507, 106.802, 70.804],
+            [34.635, 107.689, 70.622],
+            [35.687, 107.018, 69.765],
+            [36.530, 107.689, 69.174],
+            [35.631, 105.690, 69.688],
+            [36.594, 104.921, 68.903],
+            [36.061, 104.498, 67.534],
+            [36.601, 103.580, 66.916],
+            [37.047, 103.645, 69.660],
+            [35.907, 102.828, 69.957],
+            [37.751, 104.014, 70.958],
+        ]
+    )
+    elements = np.array([7, 6, 6, 8, 6, 6, 6, 8, 7, 7, 6, 6, 8, 7, 6, 6, 8, 6, 8, 6])
+    atom_names = np.array(
+        [
+            'N',
+            'CA',
+            'C',
+            'O',
+            'CB',
+            'CG',
+            'CD',
+            'OE1',
+            'NE2',
+            'N',
+            'CA',
+            'C',
+            'O',
+            'N',
+            'CA',
+            'C',
+            'O',
+            'CB',
+            'OG1',
+            'OG2',
+        ]
+    )
     model = np.ones(20)
-    chain = np.ones(20)*65
+    chain = np.ones(20) * 65
     residue_seq = np.ones(20)
     residue_seq[9:13] = 2
     residue_seq[13:] = 3
     residue_seq[6] = 4
     is_hetatm = np.zeros(20, dtype=bool)
     secondary_structure = np.array([[65, 1, 65, 3]])
-    colors = np.array([[240/255, 0, 128/255], [1, 1, 0]])
+    colors = np.array([[240 / 255, 0, 128 / 255], [1, 1, 0]])
     for i, color in enumerate(colors):
         if i:
             helix = []
@@ -292,8 +338,17 @@ def test_ribbon(interactive=False):
         else:
             helix = secondary_structure
             sheet = []
-        molecule = mol.Molecule(elements, atom_coords, atom_names, model,
-                                residue_seq, chain, sheet, helix, is_hetatm)
+        molecule = mol.Molecule(
+            elements,
+            atom_coords,
+            atom_names,
+            model,
+            residue_seq,
+            chain,
+            sheet,
+            helix,
+            is_hetatm,
+        )
         test_actor = mol.ribbon(molecule)
         scene.set_camera((28, 113, 74), (34, 106, 70), (-0.37, 0.29, -0.88))
         scene.add(test_actor)

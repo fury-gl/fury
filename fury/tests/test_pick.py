@@ -1,11 +1,13 @@
-from os.path import join
-import numpy as np
-from fury import actor, window, ui, pick
-from fury.testing import assert_greater
-import numpy.testing as npt
 import itertools
-from fury.data import DATA_DIR
+from os.path import join
+
+import numpy as np
+import numpy.testing as npt
 import pytest
+
+from fury import actor, pick, ui, window
+from fury.data import DATA_DIR
+from fury.testing import assert_greater
 
 
 def test_fake():
@@ -19,9 +21,13 @@ def test_fake():
 #                                      " vs Azure macOS and an issue with"
 #                                      " vtkAssembly + actor opacity.")
 
-@pytest.mark.skipif(True, reason="Pytests triggers segfault here that "
-                                 "cannot be replicated by individual"
-                                 "tests")
+
+@pytest.mark.skipif(
+    True,
+    reason='Pytests triggers segfault here that '
+    'cannot be replicated by individual'
+    'tests',
+)
 def test_picking_manager():
 
     xyz = 10 * np.random.rand(100, 3)
@@ -30,17 +36,13 @@ def test_picking_manager():
 
     scene = window.Scene()
 
-    sphere_actor = actor.sphere(centers=xyz,
-                                colors=colors,
-                                radii=radii)
+    sphere_actor = actor.sphere(centers=xyz, colors=colors, radii=radii)
 
     scene.add(sphere_actor)
 
-    showm = window.ShowManager(scene,
-                               size=(900, 768), reset_camera=False,
-                               order_transparent=True)
-
-    
+    showm = window.ShowManager(
+        scene, size=(900, 768), reset_camera=False, order_transparent=True
+    )
 
     tb = ui.TextBlock2D(bold=True)
 
@@ -49,10 +51,7 @@ def test_picking_manager():
 
     pickm = pick.PickingManager()
 
-    record_indices = {'vertex_indices': [],
-                      'face_indices': [],
-                      'xyz': [],
-                      'actor': []}
+    record_indices = {'vertex_indices': [], 'face_indices': [], 'xyz': [], 'actor': []}
 
     def timer_callback(_obj, _event):
         cnt = next(counter)
@@ -61,7 +60,7 @@ def test_picking_manager():
         # sphere_actor.GetProperty().SetOpacity(cnt/100.)
         if cnt % 10 == 0:
             # pick at position
-            info = pickm.pick((900/2, 768/2), scene)
+            info = pickm.pick((900 / 2, 768 / 2), scene)
             record_indices['vertex_indices'].append(info['vertex'])
             record_indices['face_indices'].append(info['face'])
             record_indices['xyz'].append(info['xyz'])
@@ -84,30 +83,31 @@ def test_picking_manager():
         if ac is not None:
             npt.assert_equal(ac is sphere_actor, True)
 
-    assert_greater(np.sum(np.abs(np.diff(np.array(record_indices['xyz']),
-                                         axis=0))), 0)
+    assert_greater(np.sum(np.abs(np.diff(np.array(record_indices['xyz']), axis=0))), 0)
 
 
 def _get_three_cubes():
-    centers = 0.5 * np.array([[0, 0, 0], [100, 0, 0], [200, 0, 0.]])
+    centers = 0.5 * np.array([[0, 0, 0], [100, 0, 0], [200, 0, 0.0]])
     colors = np.array([[0.8, 0, 0], [0, 0.8, 0], [0, 0, 0.8]])
-    radii = 0.1 * np.array([50, 100, 150.])
+    radii = 0.1 * np.array([50, 100, 150.0])
     return centers, colors, radii
 
 
-@pytest.mark.skipif(True, reason="Pytests triggers segfault here that "
-                                 "cannot be replicated by individual"
-                                 "tests")
+@pytest.mark.skipif(
+    True,
+    reason='Pytests triggers segfault here that '
+    'cannot be replicated by individual'
+    'tests',
+)
 def test_selector_manager():
 
     centers, colors, radii = _get_three_cubes()
 
     scene = window.Scene()
 
-    cube_actor = actor.cube(centers, directions=(1, 0, 2),
-                            colors=colors, scales=radii)
+    cube_actor = actor.cube(centers, directions=(1, 0, 2), colors=colors, scales=radii)
 
-    pts = 100 * (np.random.rand(100, 3) - 0.5) + np.array([20, 0, 0.])
+    pts = 100 * (np.random.rand(100, 3) - 0.5) + np.array([20, 0, 0.0])
     pts_actor = actor.dots(pts, dot_size=10)
 
     rgb = 255 * np.ones((400, 400, 3), dtype=np.uint8)
@@ -117,11 +117,9 @@ def test_selector_manager():
     scene.add(pts_actor)
     scene.add(tex_actor)
 
-    showm = window.ShowManager(scene,
-                               size=(900, 768), reset_camera=False,
-                               order_transparent=True)
-
-    
+    showm = window.ShowManager(
+        scene, size=(900, 768), reset_camera=False, order_transparent=True
+    )
 
     tb = ui.TextBlock2D(bold=True)
 
@@ -139,14 +137,14 @@ def test_selector_manager():
         tb.message = "Let's count up to 15 and exit :" + str(cnt)
         if cnt % 10 == 0:
             # select large area
-            info_plus = selm.select((900//2, 768//2), scene, (30, 30))
+            info_plus = selm.select((900 // 2, 768 // 2), scene, (30, 30))
             for info in info_plus.keys():
                 if info_plus[info]['actor'] in [cube_actor, pts_actor]:
                     npt.assert_(True)
                 else:
                     npt.assert_(False)
             # select single pixel
-            info_ = selm.pick((900//2, 768//2), scene)
+            info_ = selm.pick((900 // 2, 768 // 2), scene)
             if info_['actor'] in [cube_actor, pts_actor]:
                 npt.assert_(True)
             else:
@@ -164,9 +162,12 @@ def test_selector_manager():
     showm.start()
 
 
-@pytest.mark.skipif(True, reason="Pytests triggers segfault here that "
-                                 "cannot be replicated by individual"
-                                 "tests")
+@pytest.mark.skipif(
+    True,
+    reason='Pytests triggers segfault here that '
+    'cannot be replicated by individual'
+    'tests',
+)
 def test_hover_selection_faces(recording=False):
     # simply hover going through blue, green, red
 
@@ -176,18 +177,16 @@ def test_hover_selection_faces(recording=False):
 
     scene = window.Scene()
 
-    cube_actor = actor.cube(centers, directions=(1, 0, 0),
-                            colors=colors, scales=radii)
+    cube_actor = actor.cube(centers, directions=(1, 0, 0), colors=colors, scales=radii)
 
     scene.add(cube_actor)
 
     selm = pick.SelectionManager(select='faces')
 
-    showm = window.ShowManager(scene,
-                               size=(900, 768), reset_camera=False,
-                               order_transparent=True)
+    showm = window.ShowManager(
+        scene, size=(900, 768), reset_camera=False, order_transparent=True
+    )
 
-    
     global track_objects
     track_objects = []
 
@@ -197,7 +196,7 @@ def test_hover_selection_faces(recording=False):
         info = selm.select(event_pos, showm.scene, (10, 10))
         selected_faces = info[0]['face']
         if selected_faces is not None:
-            track_objects.append(selected_faces[0]//12)
+            track_objects.append(selected_faces[0] // 12)
         showm.render()
 
     showm.add_iren_callback(hover_callback)
@@ -214,9 +213,12 @@ def test_hover_selection_faces(recording=False):
     del track_objects
 
 
-@pytest.mark.skipif(True, reason="Pytests triggers segfault here that "
-                                 "cannot be replicated by individual"
-                                 "tests")
+@pytest.mark.skipif(
+    True,
+    reason='Pytests triggers segfault here that '
+    'cannot be replicated by individual'
+    'tests',
+)
 def test_hover_selection_vertices(recording=False):
     # simply hover through blue, green, red cubes
     # close to any vertices of each of the cubes
@@ -227,18 +229,15 @@ def test_hover_selection_vertices(recording=False):
 
     scene = window.Scene()
 
-    cube_actor = actor.cube(centers, directions=(1, 0, 0),
-                            colors=colors, scales=radii)
+    cube_actor = actor.cube(centers, directions=(1, 0, 0), colors=colors, scales=radii)
 
     scene.add(cube_actor)
 
     selm = pick.SelectionManager(select='vertices')
 
-    showm = window.ShowManager(scene,
-                               size=(900, 768), reset_camera=False,
-                               order_transparent=True)
-
-    
+    showm = window.ShowManager(
+        scene, size=(900, 768), reset_camera=False, order_transparent=True
+    )
 
     global track_objects2
     track_objects2 = []
@@ -249,7 +248,7 @@ def test_hover_selection_vertices(recording=False):
         info = selm.select(event_pos, showm.scene, (100, 100))
         selected_triangles = info[0]['vertex']
         if selected_triangles is not None:
-            track_objects2.append(selected_triangles[0]//8)
+            track_objects2.append(selected_triangles[0] // 8)
         showm.render()
 
     showm.add_iren_callback(hover_callback)
@@ -266,9 +265,12 @@ def test_hover_selection_vertices(recording=False):
     del track_objects2
 
 
-@pytest.mark.skipif(True, reason="Pytests triggers segfault here that "
-                                 "cannot be replicated by individual"
-                                 "tests")
+@pytest.mark.skipif(
+    True,
+    reason='Pytests triggers segfault here that '
+    'cannot be replicated by individual'
+    'tests',
+)
 def test_hover_selection_actors_only(recording=False):
     # simply hover going through blue, green, red cubes
 
@@ -278,18 +280,15 @@ def test_hover_selection_actors_only(recording=False):
 
     scene = window.Scene()
 
-    cube_actor = actor.cube(centers, directions=(1, 0, 0),
-                            colors=colors, scales=radii)
+    cube_actor = actor.cube(centers, directions=(1, 0, 0), colors=colors, scales=radii)
 
     scene.add(cube_actor)
 
     selm = pick.SelectionManager(select='actors')
 
-    showm = window.ShowManager(scene,
-                               size=(900, 768), reset_camera=False,
-                               order_transparent=True)
-
-    
+    showm = window.ShowManager(
+        scene, size=(900, 768), reset_camera=False, order_transparent=True
+    )
 
     def hover_callback(_obj, _event):
         event_pos = selm.event_position(showm.iren)
@@ -309,5 +308,5 @@ def test_hover_selection_actors_only(recording=False):
         showm.play_events_from_file(recording_filename)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     npt.run_module_suite()

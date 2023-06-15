@@ -208,7 +208,7 @@ What is coming up next week?
 Did you get stuck anywhere?
 ---------------------------
 
-- To create a texture, we needed the RGB values, However ``.png`` images were returning a 2D array when read using PIL. It is fixed by 
+- To create a texture, we needed the RGB values, However ``.png`` images were returning a 2D array when read using PIL. It is fixed by
 
    .. code-block :: python
 
@@ -216,4 +216,4 @@ Did you get stuck anywhere?
             pil_image = pil_image.convert('RGB')
 
 
-- pygltflib's ``load`` method doesnot handle glb files very well. It does not contain the buffer ``uri``. I used ``glb2gltf`` method as of now.
+- pygltflib's ``load`` method does not handle glb files very well. It does not contain the buffer ``uri``. I used ``glb2gltf`` method as of now.

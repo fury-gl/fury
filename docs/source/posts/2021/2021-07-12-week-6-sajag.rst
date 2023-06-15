@@ -40,5 +40,5 @@ the code. I figured out most of the stuff courtesy the meeting.
 
 .. _PR #452: https://github.com/fury-gl/fury/pull/452
 .. _PR #362: https://github.com/fury-gl/fury/pull/362
-   
+
 ``Au Revoir!``
