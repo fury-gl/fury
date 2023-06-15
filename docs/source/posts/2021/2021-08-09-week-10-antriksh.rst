@@ -1,5 +1,5 @@
 Week#10: Accordion UI, Support for sprite sheet animations
-======================
+==========================================================
 
 .. post:: August 09 2021
    :author: Antriksh Misri

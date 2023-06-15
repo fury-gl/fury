@@ -267,7 +267,8 @@ def test_deprecated_argument_multi_deprecation():
         npt.assert_equal(test2(x=1, y=2, z=3), (1, 2, 3))
     npt.assert_equal(len(w), 6)
 
-    npt.assert_raises(TypeError, test, x=1, y=2, z=3, b=3)
+    with pytest.warns(ArgsDeprecationWarning) as w:
+        npt.assert_raises(TypeError, test, x=1, y=2, z=3, b=3)
     npt.assert_raises(TypeError, test, x=1, y=2, z=3, a=3)
 
 

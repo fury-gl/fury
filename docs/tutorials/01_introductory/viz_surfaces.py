@@ -4,10 +4,10 @@ Visualize surfaces
 ==================
 
 Here is a simple tutorial that shows how to visualize surfaces using DIPY. It
-also shows how to load/save, get/set and update ``vtkPolyData`` and show
+also shows how to load/save, get/set and update ``PolyData`` and show
 surfaces.
 
-``vtkPolyData`` is a structure used by VTK to represent surfaces and other data
+``PolyData`` is a structure used by VTK to represent surfaces and other data
 structures. Here we show how to visualize a simple cube but the same idea
 should apply for any surface.
 """
@@ -19,12 +19,12 @@ import numpy as np
 
 from fury import window, utils
 from fury.io import save_polydata, load_polydata
-from fury.utils import vtk
+from fury.lib import PolyData
 
 ###############################################################################
-# Create an empty ``vtkPolyData``
+# Create an empty ``PolyData``
 
-my_polydata = vtk.vtkPolyData()
+my_polydata = PolyData()
 
 ###############################################################################
 # Create a cube with vertices and triangles as numpy arrays
@@ -37,7 +37,7 @@ my_vertices = np.array([[0.0, 0.0, 0.0],
                        [1.0, 0.0, 1.0],
                        [1.0, 1.0, 0.0],
                        [1.0, 1.0, 1.0]])
-# the data type for vtk is needed to mention here, numpy.int64
+# the data type is needed to mention here, numpy.int64
 my_triangles = np.array([[0, 6, 4],
                          [0, 2, 6],
                          [0, 3, 2],
@@ -53,20 +53,20 @@ my_triangles = np.array([[0, 6, 4],
 
 
 ###############################################################################
-# Set vertices and triangles in the ``vtkPolyData``
+# Set vertices and triangles in the ``PolyData``
 
 utils.set_polydata_vertices(my_polydata, my_vertices)
 utils.set_polydata_triangles(my_polydata, my_triangles)
 
 ###############################################################################
-# Save the ``vtkPolyData``
+# Save the ``PolyData``
 
 file_name = "my_cube.vtk"
 save_polydata(my_polydata, file_name)
 print("Surface saved in " + file_name)
 
 ###############################################################################
-# Load the ``vtkPolyData``
+# Load the ``PolyData``
 
 cube_polydata = load_polydata(file_name)
 
@@ -83,7 +83,7 @@ print(utils.get_polydata_colors(cube_polydata))
 ###############################################################################
 # Visualize surfaces
 
-# get vtkActor
+# get Actor
 cube_actor = utils.get_actor_from_polydata(cube_polydata)
 
 # Create a scene

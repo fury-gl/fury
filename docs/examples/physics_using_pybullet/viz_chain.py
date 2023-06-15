@@ -141,7 +141,7 @@ showm = window.ShowManager(scene,
                            size=(900, 768), reset_camera=False,
                            order_transparent=True)
 
-showm.initialize()
+
 
 # Counter interator for tracking simulation steps.
 counter = itertools.count()
@@ -208,7 +208,7 @@ def timer_callback(_obj, _event):
     t += 1. / freq_sim
 
     if cnt % 1 == 0:
-        fps = scene.frame_rate
+        fps = showm.frame_rate
         fpss = np.append(fpss, fps)
         tb.message = "Avg. FPS: " + str(np.round(np.mean(fpss), 0)) + \
                      "\nSim Steps: " + str(cnt)

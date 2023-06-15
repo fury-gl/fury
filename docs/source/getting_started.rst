@@ -46,7 +46,7 @@ We set the window scene variables e.g. (width, height)::
 
 We add a text block to add some information::
 
-    tb = ui.TextBlock2D()
+    tb = ui.TextBlock2D(position=(450, 550), font_size=23)
     tb.message = "Hello Fury"
 
 The function :py:meth:`.Scene.add()` is used to add the created objects to the scene to be rendered::
@@ -58,3 +58,8 @@ The function :py:meth:`.Scene.add()` is used to add the created objects to the s
 Start the rendering of the scene::
 
     showm.start()
+
+
+.. image:: _static/images/suzanne.png
+    :alt: suzanne fury
+    :align: center

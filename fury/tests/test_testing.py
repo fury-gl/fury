@@ -3,12 +3,12 @@ import sys
 import warnings
 
 import numpy as np
-import vtk
+import numpy.testing as npt
 
-from fury.ui.core import UI
 from fury import window
 import fury.testing as ft
-import numpy.testing as npt
+from fury.ui.core import UI
+from fury.lib import Actor2D
 
 
 def test_callback():
@@ -23,7 +23,7 @@ def test_callback():
             super(SimplestUI, self).__init__()
 
         def _setup(self):
-            self.actor = vtk.vtkActor2D()
+            self.actor = Actor2D()
 
         def _set_position(self, coords):
             self.actor.SetPosition(*coords)
@@ -43,12 +43,12 @@ def test_callback():
     show_manager = window.ShowManager(scene,
                                       size=current_size,
                                       title="FURY GridUI")
-    show_manager.initialize()
     scene.add(simple_ui)
     event_counter = ft.EventCounter()
     event_counter.monitor(simple_ui)
     events_name = ["{0} 0 0 0 0 0 0 0".format(name) for name in events_name]
-    show_manager.play_events("\n".join(events_name))
+    events_str = "# StreamVersion 1\n" + "\n".join(events_name)
+    show_manager.play_events(events_str)
     npt.assert_equal(len(event_counter.events_counts), len(events_name))
 
 

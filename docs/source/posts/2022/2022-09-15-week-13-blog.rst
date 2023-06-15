@@ -1,0 +1,43 @@
+Week 13 - Multi-bone skeletal animation support 
+===============================================
+
+.. post:: September 15 2022
+   :author: Shivam Anand
+   :tags: google
+   :category: gsoc
+
+
+What did you do this week?
+--------------------------
+
+This week I fixed all the issues with skeletal animations, and we got to see our first render of skeletal animation :).
+
+- Implemented a hierarchical timeline system (i.e., one timeline for each bone, and the timeline will contain its parent timeline in a hierarchy).
+
+- I figured out that we don't need to apply the parent transform as we're applying it to the vertex data while forming the actor. So the skin matrix becomes
+``SkinMatrix = InverseBindPose * BoneDeform`` where ``BoneDeform = CurrentBoneTransform * ParentBonetransform``.
+
+Here's a preview using the ``CesiumMan`` model:
+
+    .. raw:: html
+
+        <iframe id="player" type="text/html"   width="1280" height="600" src="https://user-images.githubusercontent.com/74976752/190474528-9d66651b-032f-4c7d-9bb6-5ad140017d0c.mp4" frameborder="0"></iframe>
+
+
+What is coming up next week?
+----------------------------
+
+- Add tests for simple animation PR `#643`_.
+
+- Multiple actor support for skeletal animation.
+
+- Take a look at Morphing.
+
+
+Did you get stuck anywhere?
+---------------------------
+
+- No, I didn't get stuck this week.
+
+
+.. _`#643`: https://github.com/fury-gl/fury/pull/643/

@@ -1,19 +1,22 @@
 # -*- coding: utf-8 -*-
-
 import gzip
+import time
+from tempfile import TemporaryDirectory as InTemporaryDirectory
 from warnings import warn
 
 import numpy as np
 from scipy import ndimage
-import vtk
-from vtk.util import numpy_support, colors
-
-from tempfile import TemporaryDirectory as InTemporaryDirectory
 
 from fury import __version__ as fury_version
-from fury.decorators import is_osx
+from fury.decorators import is_osx, is_win
+
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image, save_image
+from fury.lib import (OpenGLRenderer, Skybox, Volume, Actor2D,
+                      InteractorEventRecorder, InteractorStyleImage,
+                      InteractorStyleTrackballCamera, RenderWindow,
+                      RenderWindowInteractor, RenderLargeImage,
+                      WindowToImageFilter, Command, numpy_support, colors)
 from fury.utils import asbytes
 from fury.shaders.base import GL_NUMBERS as _GL
 try:
@@ -22,7 +25,7 @@ except NameError:
     basestring = str
 
 
-class Scene(vtk.vtkRenderer):
+class Scene(OpenGLRenderer):
     """Your scene class.
 
     This is an important object that is responsible for preparing objects
@@ -31,17 +34,50 @@ class Scene(vtk.vtkRenderer):
     but also it provides access to all the functionality
     available in ``vtkRenderer`` if necessary.
     """
+    def __init__(self, background=(0, 0, 0), skybox=None):
+        self.__skybox = skybox
+        self.__skybox_actor = None
+        if skybox:
+            self.AutomaticLightCreationOff()
+            self.UseImageBasedLightingOn()
+            self.UseSphericalHarmonicsOff()
+            self.SetEnvironmentTexture(self.__skybox)
+            self.skybox()
 
     def background(self, color):
         """Set a background color."""
         self.SetBackground(color)
 
+    def skybox(self, visible=True, gamma_correct=True):
+        """Show or hide the skybox.
+
+        Parameters
+        ----------
+        visible : bool
+            Whether to show the skybox or not.
+        gamma_correct : bool
+            Whether to apply gamma correction to the skybox or not.
+
+        """
+        if self.__skybox:
+            if visible:
+                if self.__skybox_actor is None:
+                    self.__skybox_actor = Skybox()
+                    self.__skybox_actor.SetTexture(self.__skybox)
+                    if gamma_correct:
+                        self.__skybox_actor.GammaCorrectOn()
+                self.add(self.__skybox_actor)
+            else:
+                self.rm(self.__skybox_actor)
+        else:
+            warn('Scene created without a skybox. Nothing to show or hide.')
+
     def add(self, *actors):
         """Add an actor to the scene."""
         for actor in actors:
-            if isinstance(actor, vtk.vtkVolume):
+            if isinstance(actor, Volume):
                 self.AddVolume(actor)
-            elif isinstance(actor, vtk.vtkActor2D):
+            elif isinstance(actor, Actor2D):
                 self.AddActor2D(actor)
             elif hasattr(actor, 'add_to_scene'):
                 actor.add_to_scene(self)
@@ -225,10 +261,10 @@ class Scene(vtk.vtkRenderer):
         return self.GetActiveCamera().GetDirectionOfProjection()
 
     @property
-    def frame_rate(self):
-        rtis = self.GetLastRenderTimeInSeconds()
-        fps = 1.0 / rtis
-        return fps
+    def last_render_time(self):
+        """Returns the last render time in seconds."""
+
+        return self.GetLastRenderTimeInSeconds()
 
     def fxaa_on(self):
         self.SetUseFXAA(True)
@@ -298,20 +334,12 @@ class ShowManager(object):
         style : vtkInteractorStyle()
         window : vtkRenderWindow()
 
-        Methods
-        -------
-        initialize()
-        render()
-        start()
-        add_window_callback()
-
         Examples
         --------
         >>> from fury import actor, window
         >>> scene = window.Scene()
         >>> scene.add(actor.axes())
         >>> showm = window.ShowManager(scene)
-        >>> # showm.initialize()
         >>> # showm.render()
         >>> # showm.start()
 
@@ -327,11 +355,13 @@ class ShowManager(object):
         self.interactor_style = interactor_style
         self.stereo = stereo
         self.timers = []
+        self._fps = 0
+        self._last_render_time = 0
 
         if self.reset_camera:
             self.scene.ResetCamera()
 
-        self.window = vtk.vtkRenderWindow()
+        self.window = RenderWindow()
 
         if self.stereo.lower() != 'off':
             enable_stereo(self.window, self.stereo)
@@ -343,24 +373,27 @@ class ShowManager(object):
         if self.order_transparent:
             occlusion_ratio = occlusion_ratio or 0.1
             antialiasing(self.scene, self.window,
-                         multi_samples=0, max_peels=max_peels,
+                         multi_samples=multi_samples, max_peels=max_peels,
                          occlusion_ratio=occlusion_ratio)
 
         if self.interactor_style == 'image':
-            self.style = vtk.vtkInteractorStyleImage()
+            self.style = InteractorStyleImage()
         elif self.interactor_style == 'trackball':
-            self.style = vtk.vtkInteractorStyleTrackballCamera()
+            self.style = InteractorStyleTrackballCamera()
         elif self.interactor_style == 'custom':
             self.style = CustomInteractorStyle()
         else:
             self.style = interactor_style
 
-        self.iren = vtk.vtkRenderWindowInteractor()
+        self.iren = RenderWindowInteractor()
         self.style.SetCurrentRenderer(self.scene)
         # Hack: below, we explicitly call the Python version of SetInteractor.
         self.style.SetInteractor(self.iren)
         self.iren.SetInteractorStyle(self.style)
         self.iren.SetRenderWindow(self.window)
+
+        if is_win:
+            self.initialize()
 
     def initialize(self):
         """Initialize interaction."""
@@ -369,6 +402,9 @@ class ShowManager(object):
     def render(self):
         """Render only once."""
         self.window.Render()
+        # calculate the FPS
+        self._fps = 1.0 / (time.perf_counter() - self._last_render_time)
+        self._last_render_time = time.perf_counter()
 
     def start(self):
         """Start interaction."""
@@ -385,7 +421,6 @@ class ShowManager(object):
                           reset_camera=self.reset_camera,
                           order_transparent=self.order_transparent,
                           interactor_style=self.interactor_style)
-            self.initialize()
             self.render()
             if self.title.upper() == "FURY":
                 self.window.SetWindowName(self.title + " " + fury_version)
@@ -398,6 +433,11 @@ class ShowManager(object):
         self.window.Finalize()
         del self.iren
         del self.window
+
+    @property
+    def frame_rate(self):
+        """Returns number of frames per second."""
+        return self._fps
 
     def record_events(self):
         """Record events during the interaction.
@@ -418,7 +458,7 @@ class ShowManager(object):
         """
         with InTemporaryDirectory():
             filename = "recorded_events.log"
-            recorder = vtk.vtkInteractorEventRecorder()
+            recorder = InteractorEventRecorder()
             recorder.SetInteractor(self.iren)
             recorder.SetFileName(filename)
 
@@ -432,7 +472,6 @@ class ShowManager(object):
             recorder.EnabledOn()
             recorder.Record()
 
-            self.initialize()
             self.render()
             self.iren.Start()
             # Deleting this object is the unique way
@@ -478,15 +517,27 @@ class ShowManager(object):
             Recorded events (one per line).
 
         """
-        recorder = vtk.vtkInteractorEventRecorder()
+        recorder = InteractorEventRecorder()
         recorder.SetInteractor(self.iren)
 
         recorder.SetInputString(events)
         recorder.ReadFromInputStringOn()
-
         self.initialize()
-        self.render()
+        # self.render()
         recorder.Play()
+
+        # Finalize seems very important otherwise
+        # the recording window will not close.
+        self.window.RemoveRenderer(self.scene)
+        self.scene.SetRenderWindow(None)
+        self.window.Finalize()
+        self.exit()
+
+        # print('After Finalize and Exit')
+
+        # del self.iren
+        # del self.window
+
 
     def play_events_from_file(self, filename):
         """Play recorded events of a past interaction.
@@ -511,7 +562,7 @@ class ShowManager(object):
         self.play_events(events)
 
     def add_window_callback(self, win_callback,
-                            event=vtk.vtkCommand.ModifiedEvent):
+                            event=Command.ModifiedEvent):
         """Add window callbacks."""
         self.window.AddObserver(event, win_callback)
         self.window.Render()
@@ -524,6 +575,7 @@ class ShowManager(object):
         else:
             timer_id = self.iren.CreateOneShotTimer(duration)
         self.timers.append(timer_id)
+        return timer_id
 
     def add_iren_callback(self, iren_callback, event="MouseMoveEvent"):
         self.iren.AddObserver(event, iren_callback)
@@ -538,13 +590,53 @@ class ShowManager(object):
 
     def exit(self):
         """Close window and terminate interactor."""
-        if is_osx and self.timers:
+        # if is_osx and self.timers:
             # OSX seems to not destroy correctly timers
             # segfault 11 appears sometimes if we do not do it manually.
-            self.destroy_timers()
-        self.iren.GetRenderWindow().Finalize()
+
+        # self.iren.GetRenderWindow().Finalize()
         self.iren.TerminateApp()
+        self.destroy_timers()
         self.timers.clear()
+
+    def save_screenshot(self, fname, magnification=1, size=None, stereo=None):
+        """Save a screenshot of the current window in the specified filename.
+
+        Parameters
+        ----------
+        fname : str or None
+            File name where to save the screenshot.
+        magnification : int, optional
+            Applies a magnification factor to the scene before taking the
+            screenshot which improves the quality. A value greater than 1
+            increases the quality of the image. However, the output size will
+            be larger. For example, 200x200 image with magnification of 2 will
+            result in a 400x400 image. Default is 1.
+        size : tuple of 2 ints, optional
+            Size of the output image in pixels. If None, the size of the scene
+            will be used. If magnification > 1, then the size will be
+            determined by the magnification factor. Default is None.
+        stereo : str, optional
+            Set the type of stereo for the screenshot. Supported values are:
+
+                * 'opengl': OpenGL frame-sequential stereo. Referred to as
+                  'CrystalEyes' by VTK.
+                * 'anaglyph': For use with red/blue glasses. See VTK docs to
+                  use different colors.
+                * 'interlaced': Line interlaced.
+                * 'checkerboard': Checkerboard interlaced.
+                * 'left': Left eye only.
+                * 'right': Right eye only.
+                * 'horizontal': Side-by-side.
+
+        """
+        if size is None:
+            size = self.size
+        if stereo is None:
+            stereo = self.stereo.lower()
+
+        record(scene=self.scene, out_path=fname, magnification=magnification,
+               size=size, stereo=stereo)
 
 
 def show(scene, title='FURY', size=(300, 300), png_magnify=1,
@@ -617,7 +709,6 @@ def show(scene, title='FURY', size=(300, 300), png_magnify=1,
                                multi_samples=multi_samples,
                                max_peels=max_peels,
                                occlusion_ratio=occlusion_ratio)
-    show_manager.initialize()
     show_manager.render()
     show_manager.start()
 
@@ -652,11 +743,14 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
     az_ang : float, optional
         Azimuthal angle of camera rotation.
     magnification : int, optional
-        How much to magnify the saved frame. Default is 1.
+        How much to magnify the saved frame. Default is 1. A value greater
+        than 1 increases the quality of the image. However, the output
+        size will be larger. For example, 200x200 image with magnification
+        of 2 will be a 400x400 image.
     size : (int, int)
         ``(width, height)`` of the window. Default is (300, 300).
     screen_clip: bool
-        Clip the the png based on screen resolution. Default is False.
+        Clip the png based on screen resolution. Default is False.
     reset_camera : bool
         If True Call ``scene.reset_camera()``. Otherwise you need to set the
          camera before calling this function.
@@ -688,14 +782,14 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
 
     """
     if scene is None:
-        scene = vtk.vtkRenderer()
+        scene = Scene()
 
-    renWin = vtk.vtkRenderWindow()
+    renWin = RenderWindow()
+
+    renWin.SetOffScreenRendering(1)
     renWin.SetBorders(screen_clip)
     renWin.AddRenderer(scene)
     renWin.SetSize(size[0], size[1])
-    iren = vtk.vtkRenderWindowInteractor()
-    iren.SetRenderWindow(renWin)
 
     # scene.GetActiveCamera().Azimuth(180)
 
@@ -705,7 +799,7 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
     if stereo.lower() != 'off':
         enable_stereo(renWin, stereo)
 
-    renderLarge = vtk.vtkRenderLargeImage()
+    renderLarge = RenderLargeImage()
     renderLarge.SetInput(scene)
     renderLarge.SetMagnification(magnification)
     renderLarge.Update()
@@ -730,7 +824,7 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
 
     for i in range(n_frames):
         scene.GetActiveCamera().Azimuth(ang)
-        renderLarge = vtk.vtkRenderLargeImage()
+        renderLarge = RenderLargeImage()
         renderLarge.SetInput(scene)
         renderLarge.SetMagnification(magnification)
         renderLarge.Update()
@@ -750,10 +844,13 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
                                          .GetScalars())
         w, h, _ = renderLarge.GetOutput().GetDimensions()
         components = renderLarge.GetOutput().GetNumberOfScalarComponents()
-        arr = np.flipud(arr.reshape((h, w, components)))
+        arr = arr.reshape((h, w, components))
         save_image(arr, filename)
 
         ang = +az_ang
+
+    renWin.RemoveRenderer(scene)
+    renWin.Finalize()
 
 
 def antialiasing(scene, win, multi_samples=8, max_peels=4,
@@ -803,7 +900,7 @@ def antialiasing(scene, win, multi_samples=8, max_peels=4,
 def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
              order_transparent=False, stereo='off',
              multi_samples=8, max_peels=4,
-             occlusion_ratio=0.0):
+             occlusion_ratio=0.0, dpi=(72, 72)):
     """Save a snapshot of the scene in a file or in memory.
 
     Parameters
@@ -815,7 +912,7 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
     size : (int, int)
         ``(width, height)`` of the window. Default is (300, 300).
     offscreen : bool
-        Default True. Go stealthmode no window should appear.
+        Default True. Go stealth mode no window should appear.
     order_transparent : bool
         Default False. Use depth peeling to sort transparent objects.
         If True also enables anti-aliasing.
@@ -840,6 +937,9 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
         Maximum number of peels for depth peeling (Default 4).
     occlusion_ratio : float
         Occlusion ration for depth peeling (Default 0 - exact image).
+    dpi : float or (float, float)
+        Dots per inch (dpi) for saved image.
+        Single values are applied as dpi for both dimensions.
 
     Returns
     -------
@@ -850,7 +950,7 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
     """
     width, height = size
 
-    render_window = vtk.vtkRenderWindow()
+    render_window = RenderWindow()
     if offscreen:
         render_window.SetOffScreenRendering(1)
     if stereo.lower() != 'off':
@@ -864,7 +964,7 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
 
     render_window.Render()
 
-    window_to_image_filter = vtk.vtkWindowToImageFilter()
+    window_to_image_filter = WindowToImageFilter()
     window_to_image_filter.SetInput(render_window)
     window_to_image_filter.Update()
 
@@ -872,12 +972,16 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
     h, w, _ = vtk_image.GetDimensions()
     vtk_array = vtk_image.GetPointData().GetScalars()
     components = vtk_array.GetNumberOfComponents()
-    arr = numpy_support.vtk_to_numpy(vtk_array).reshape(w, h, components)
+    arr = numpy_support.vtk_to_numpy(vtk_array).reshape(w, h, components).copy()
 
     if fname is None:
         return arr
 
-    save_image(arr, fname)
+    save_image(arr, fname, dpi=dpi)
+
+    render_window.RemoveRenderer(scene)
+    render_window.Finalize()
+
     return arr
 
 

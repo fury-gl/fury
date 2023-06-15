@@ -1,0 +1,50 @@
+#banner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    min-height: 45px;
+    background-color: var(--colorPrimaryDark);
+    /* background-color: #fff; */
+    color: var(--colorSecondaryLight);
+    white-space: nowrap;
+    text-align: center;
+  }
+  #banner-title {
+    display: flex;
+    justify-content: center;
+    letter-spacing: 1px;
+    font-size: 27px;
+    font-weight: bold;
+    margin: 10px;
+    margin-right: 20px;
+    color: #fff;
+  }
+  @media screen and (min-width: 769px) {
+    #banner-title {
+      padding-top: 20px;
+      font-size: 27px;
+    }
+  }
+  #banner-start {
+    text-align: center;
+    padding: 40px 0;
+  }
+  @media screen and (min-width: 769px) {
+    #banner-start {
+      padding: 40px 0;
+      font-size: 18px;
+    }
+  }
+  #banner-start-command {
+    background: #a00;
+    font-family: "Source Code Pro", Monaco, Menlo, Consolas, monospace;
+    /* color: var(--colorPrimaryDark); */
+    display: inline-block;
+    padding: 15px 20px;
+  }
+  #banner-start-command:before {
+    content: "$";
+    opacity: 0.5;
+    padding-right: 10px;
+  }

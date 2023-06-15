@@ -53,7 +53,6 @@ class VideoPlayer:
                                                size=(900, 768),
                                                reset_camera=False,
                                                order_transparent=True)
-        self.show_manager.initialize()
 
     # Initialize the Scene with actors
     def initialize_scene(self):
@@ -73,6 +72,7 @@ class VideoPlayer:
             self.show_manager.scene.azimuth(1.5)  # to rotate the camera
         else:
             self.show_manager.exit()
+
         self.show_manager.render()
 
     def run(self):
@@ -88,4 +88,7 @@ class VideoPlayer:
 # Create VideoPlayer Object and run it
 video_url = "http://commondatastorage.googleapis.com/" +\
             "gtv-videos-bucket/sample/BigBuckBunny.mp4"
-VideoPlayer(video_url).run()
+vp = VideoPlayer(video_url)
+vp.run()
+window.record(vp.show_manager.scene, out_path='viz_play_video.png',
+              size=(600, 600))
