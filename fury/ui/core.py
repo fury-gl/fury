@@ -1080,12 +1080,42 @@ class TextBlock2D(UI):
             self.background.set_visibility(True)
             self.background.color = color
 
+    def update_alignment(self):
+
+        text_position = self.actor.GetPosition()
+        if self.justification == 'left':
+            self.actor.SetPosition((self.boundingbox[0], text_position[1]))
+        elif self.justification == 'center':
+            self.actor.SetPosition(
+                (self.boundingbox[0] + (self.boundingbox[2]-self.boundingbox[0])//2, text_position[1]))
+        elif self.justification == 'right':
+            self.actor.SetPosition(
+                (self.boundingbox[0] + self.boundingbox[2]-self.boundingbox[0], text_position[1]))
+        else:
+            msg = 'Text can only be justified left, right and center.'
+            raise ValueError(msg)
+
+        text_position = self.actor.GetPosition()
+        if self.vertical_justification == 'bottom':
+            self.actor.SetPosition((text_position[0], self.boundingbox[1]))
+        elif self.vertical_justification == 'middle':
+            self.actor.SetPosition(
+                (text_position[0], self.position[1] + (self.boundingbox[3]-self.boundingbox[1])//2))
+        elif self.vertical_justification == 'top':
+            self.actor.SetPosition(
+                (text_position[0], self.position[1] + self.boundingbox[3]-self.boundingbox[1]))
+        else:
+            msg = 'Vertical justification must be: bottom, middle or top.'
+            raise ValueError(msg)
+
     def update_bounding_box(self):
         lines = self.message.split("\n")
         self.boundingbox = [self.position[0], self.position[1],
                             self.position[0]+len(lines[0])*self.font_size, self.position[1]+len(lines)*self.font_size]
         self.background.resize(
             (self.boundingbox[2]-self.boundingbox[0], self.boundingbox[3]-self.boundingbox[1]))
+
+        self.update_alignment()
 
     def _set_position(self, position):
         """Set text actor position.
