@@ -11,7 +11,7 @@ import numpy.testing as npt
 import pytest
 
 from fury import window, actor, ui
-from fury.data import DATA_DIR
+from fury.data import DATA_DIR, fetch_viz_icons
 from fury.decorators import skip_win, skip_osx
 from fury.primitive import prim_sphere
 from fury.testing import assert_arrays_equal, assert_greater, EventCounter, \
