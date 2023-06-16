@@ -12,6 +12,7 @@ from fury import primitive as fp
 from fury import shaders, window
 from fury.actor import grid
 from fury.decorators import skip_linux, skip_osx, skip_win
+from fury.deprecator import ExpiredDeprecationError
 
 # Allow import, but disable doctests if we don't have dipy
 from fury.optpkg import optional_package
@@ -896,8 +897,8 @@ def test_points(interactive=False):
     npt.assert_equal(report.objects, 3)
 
 
-def test_labels(interactive=False):
-    npt.assert_warns(DeprecationWarning, actor.label, 'FURY Rocks')
+def test_vector_text(interactive=False):
+    npt.assert_raises(ExpiredDeprecationError, actor.label, 'FURY Rocks')
     text_actor = actor.vector_text('FURY Rocks', direction=None)
 
     scene = window.Scene()

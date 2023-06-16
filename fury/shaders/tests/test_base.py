@@ -6,6 +6,7 @@ import numpy.testing as npt
 import pytest
 
 from fury import actor, window
+from fury.deprecator import ExpiredDeprecationError
 from fury.lib import Actor, CellArray, Points, PolyData, PolyDataMapper, numpy_support
 from fury.shaders import (
     add_shader_callback,
@@ -351,7 +352,7 @@ def test_load():
     dummy_file.write(dummy_file_contents)
     dummy_file.close()
 
-    npt.assert_warns(DeprecationWarning, load, dummy_file_name)
+    npt.assert_raises(ExpiredDeprecationError, load, dummy_file_name)
     os.remove(os.path.join(SHADERS_DIR, dummy_file_name))
 
 
