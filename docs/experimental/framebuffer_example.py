@@ -6,7 +6,7 @@ import vtk
 
 def shader_custom_uniforms(actor : actor.Actor, shader_type : str):
     """Eases the passing of uniform values to the shaders by returning ``actor.GetShaderProperty().GetVertexCustomUniforms()``, 
-    that give acess to the ``SetUniform`` methods.
+    that give access to the ``SetUniform`` methods.
     Parameters
     ----------
     actor : actor.Actor
@@ -267,7 +267,7 @@ FBO.AddDepthAttachment(depth_texture) # Attaches a depth texture to this FBO
 # FBO.Bind() # Binding method
 print(FBO.GetFBOIndex()) # The problem can be verified here: it is outputting 0, so it means the FBO could not get generated
 print(FBO.GetNumberOfColorAttachments())
-FBO.RestorePreviousBindingsAndBuffers() # Restore to the previous bindins and buffers before that
+FBO.RestorePreviousBindingsAndBuffers() # Restore to the previous bindings and buffers before that
 # FBO.UnBind() # This is an important method because it sets the binding for the default FBO
 
 # Important feature because with this the OpenGL states can be kept track of
@@ -295,7 +295,7 @@ manager = window.ShowManager(
 # # Render
 # FBO.RestorePreviousBindingsAndBuffers()
 
-# Beggining of rendering
+# Beginning of rendering
 manager.initialize()
 t = 0
 while True:
@@ -316,7 +316,7 @@ while True:
         actor.shader_to_actor(billboard, "vertex", vert_impl, vert_decl)
         actor.replace_shader_in_actor(billboard, "fragment", frag)
         shader_custom_uniforms(billboard, "fragment").SetUniform3f("point", points[i])
-        FBO.AddColorAttachment(0, color_texture) # Attatches a color texture to this FBO
+        FBO.AddColorAttachment(0, color_texture) # Attaches a color texture to this FBO
         FBO.Start(width, height)
         print(i)
         manager.render()
