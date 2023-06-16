@@ -13,7 +13,7 @@ This Last Week's Effort
 -----------------------
 
 Last week, I was facing some issues with a VTK feature essential so I could move forward with my project: Framebuffer Objects. 
-As described in my `last blogpost <https://blogs.python-gsoc.org/en/joaodellaglis-blog/the-fbo-saga-week-1/>`_, for some reason the 2D allocation methods for it weren't working.
+As described in my `last blogpost <2023-06-05-week-1-joaodellagli.html>`_, for some reason the 2D allocation methods for it weren't working.
 In a meeting with my mentors, while we were discussing and searching through VTK's FramebufferObject and TextureObject documentation, and the code itself for the problem, 
 one TextureObject method caught my attention: `vtkTextureObject.SetContext() <https://vtk.org/doc/nightly/html/classvtkTextureObject.html#a0988fa2a30b640c93392c2188030537e>`_.
 
@@ -50,8 +50,8 @@ will be present, so it lacked a line, that should be added after ``Bind()``:
    color_texture.SetMinificationFilter(0) 
    color_texture.SetMagnificationFilter(0) 
 
-The code worked fine. But as my last blogpost showed, Allocate3D() method worked just fine without a (visible) problem, why is that? 
-Well, in fact, it **didn't work**. If we check the code for the Allocate2D and Allocate3D, one difference can be spotted:
+The code worked fine. But as my last blogpost showed, ``Allocate3D()`` method worked just fine without a (visible) problem, why is that? 
+Well, in fact, it **didn't work**. If we check the code for the ``Allocate2D()`` and ``Allocate3D()``, one difference can be spotted:
 
 
 
@@ -61,7 +61,7 @@ Well, in fact, it **didn't work**. If we check the code for the Allocate2D and A
 
 
 
-While in Allocate2D there is an ``assert(this->Context);``, in Allocate3D the assertion is translated into:
+While in ``Allocate2D()`` there is an ``assert(this->Context);``, in ``Allocate3D()`` the assertion is translated into:
 
 ::
 
@@ -71,7 +71,7 @@ While in Allocate2D there is an ``assert(this->Context);``, in Allocate3D the as
      return false;
    }
 
-This slight difference is significant: while in Allocate2D the program immediately fails, in Allocate3D the function is simply returned
+This slight difference is significant: while in ``Allocate2D()`` the program immediately fails, in ``Allocate3D()`` the function is simply returned
 **false**, with its error pushed to vtkErrorMacro. I could have realised that earlier if I were using vtkErrorMacro, but this difference in their
 implementation made it harder for me and my mentors to realise what was happening.
 
