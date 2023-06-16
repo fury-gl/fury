@@ -13,7 +13,7 @@ This Last Week's Effort
 -----------------------
 
 Last week, I was facing some issues with a VTK feature essential so I could move forward with my project: Framebuffer Objects. 
-As described in my `last blogpost <2023-06-05-week-1-joaodellagli.html>`_, for some reason the 2D allocation methods for it weren't working.
+As described in my :doc:`last blogpost <2023-06-05-week-1-joaodellagli>`, for some reason the 2D allocation methods for it weren't working.
 In a meeting with my mentors, while we were discussing and searching through VTK's FramebufferObject and TextureObject documentation, and the code itself for the problem, 
 one TextureObject method caught my attention: `vtkTextureObject.SetContext() <https://vtk.org/doc/nightly/html/classvtkTextureObject.html#a0988fa2a30b640c93392c2188030537e>`_.
 
