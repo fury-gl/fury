@@ -4,6 +4,7 @@ import sys
 
 import numpy as np
 import numpy.testing as npt
+import pytest
 from packaging.version import parse
 from PIL import Image
 from scipy.ndimage import center_of_mass
