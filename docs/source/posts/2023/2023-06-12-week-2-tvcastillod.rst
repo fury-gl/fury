@@ -9,7 +9,7 @@ Week 2: Making adjustments to the Ellipsoid Actor
 What did I do this week?
 ------------------------
 
-I made some minor adjustments to the last PR I submit. Last time it was a draft since I was waiting for the weekly meeting to know how to proceed, but now is ready. I am waiting for the review so I can make the necessary corrections and adjustments to merge this first PR soon.
+I made some minor adjustments to the last PR I submitted. Last time it was a draft since I was waiting for the weekly meeting to know how to proceed, but now it is ready. I am waiting for the review so I can make the necessary corrections and adjustments to merge this first PR soon.
 
 What is coming up next?
 -----------------------
