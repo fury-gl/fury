@@ -4120,8 +4120,8 @@ class Card2D(UI):
         Displays the body text.
     """
 
-    def __init__(self, image_path, body_text="Body", draggable=True,
-                 title_text="Title", padding=10, position=(0, 0),
+    def __init__(self, image_path, body_text="", draggable=True,
+                 title_text="", padding=10, position=(0, 0),
                  size=(400, 400), image_scale=0.5, bg_color=(0.5, 0.5, 0.5),
                  bg_opacity=1, title_color=(0., 0., 0.),
                  body_color=(0., 0., 0.), border_color=(1., 1., 1.),

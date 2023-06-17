@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-===============
+====
 Card
-===============
+====
 
 This example shows how to create a card and use a sprite
 sheet to update the image in the card.
@@ -90,7 +90,7 @@ sprite_to_vtk()
 show_manager.add_timer_callback(True, int(FRAME_TIME), timer_callback)
 
 # To interact with the UI, set interactive = True
-interactive = True
+interactive = False
 
 if interactive:
     show_manager.start()

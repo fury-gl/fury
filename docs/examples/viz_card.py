@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-===============
+====
 Card
-===============
+====
 
 This example shows how to create a card.
 
