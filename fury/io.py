@@ -125,27 +125,7 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
                 image = np.asarray(pil_image)
 
         if as_vtktype:
-            if image.ndim not in [2, 3]:
-                raise IOError('only 2D (L, RGB, RGBA) or 3D image available')
-
-            vtk_image = ImageData()
-            depth = 1 if image.ndim == 2 else image.shape[2]
-
-            # width, height
-            vtk_image.SetDimensions(image.shape[1], image.shape[0], depth)
-            vtk_image.SetExtent(0, image.shape[1] - 1, 0, image.shape[0] - 1, 0, 0)
-            vtk_image.SetSpacing(1.0, 1.0, 1.0)
-            vtk_image.SetOrigin(0.0, 0.0, 0.0)
-
-            image = np.flipud(image)
-            image = image.reshape(image.shape[1] * image.shape[0], depth)
-            image = np.ascontiguousarray(image, dtype=image.dtype)
-            vtk_array_type = numpy_support.get_vtk_array_type(image.dtype)
-            uchar_array = numpy_support.numpy_to_vtk(
-                image, deep=True, array_type=vtk_array_type
-            )
-            vtk_image.GetPointData().SetScalars(uchar_array)
-            image = vtk_image
+            image = numpy_to_vtk_image_data(image)
 
         if is_url:
             os.remove(filename)
