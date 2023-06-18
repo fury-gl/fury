@@ -11,7 +11,7 @@ from fury.animation import Animation, Timeline
 from fury.decorators import skip_linux, skip_osx, skip_win
 from fury.lib import ImageData, Texture, numpy_support
 from fury.testing import assert_greater, assert_less_equal, assert_true, captured_output
-from fury.utils import remove_observer_from_actor
+from fury.utils import remove_observer_from_actor, numpy_to_vtk_image_data
 
 
 def test_scene():
@@ -284,15 +284,11 @@ def test_skybox():
     test_tex.CubeMapOn()
     checker_arr = np.array([[1, 1], [1, 1]], dtype=np.uint8) * 255
     for i in range(6):
-        vtk_img = ImageData()
-        vtk_img.SetDimensions(2, 2, 1)
         img_arr = np.zeros((2, 2, 3), dtype=np.uint8)
         img_arr[:, :, i // 2] = checker_arr
-        vtk_arr = numpy_support.numpy_to_vtk(img_arr.reshape((-1, 3), order='F'))
-        vtk_arr.SetName('Image')
-        img_point_data = vtk_img.GetPointData()
-        img_point_data.AddArray(vtk_arr)
-        img_point_data.SetActiveScalars('Image')
+        vtk_img = numpy_to_vtk_image_data(img_arr)
+        vtk_img.GetPointData().GetScalars().SetName('Image')
+        vtk_img.GetPointData().Update()
         test_tex.SetInputDataObject(i, vtk_img)
     test_tex.InterpolateOn()
     test_tex.MipmapOn()
