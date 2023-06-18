@@ -1152,15 +1152,8 @@ def rgb_to_vtk(data):
     vtkImageData
 
     """
-    grid = ImageData()
-    grid.SetDimensions(data.shape[1], data.shape[0], 1)
-    nd = data.shape[-1]
-    vtkarr = numpy_support.numpy_to_vtk(
-        np.flip(data.swapaxes(0, 1), axis=1).reshape((-1, nd), order='F')
-    )
-    vtkarr.SetName('Image')
-    grid.GetPointData().AddArray(vtkarr)
-    grid.GetPointData().SetActiveScalars('Image')
+    grid = numpy_to_vtk_image_data(data)
+    grid.GetPointData().GetScalars().SetName('Image')
     grid.GetPointData().Update()
     return grid
 
