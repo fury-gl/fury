@@ -31,7 +31,7 @@ from fury.lib import (
     XMLPolyDataWriter,
     numpy_support,
 )
-from fury.utils import set_input
+from fury.utils import set_input, numpy_to_vtk_image_data
 
 
 def load_cubemap_texture(fnames, interpolate_on=True, mipmap_on=True):
@@ -251,27 +251,15 @@ def save_image(
         if arr.ndim == 2:
             arr = arr[..., None]
 
-        shape = arr.shape
-        arr = np.flipud(arr)
         if extension.lower() in [
             '.png',
         ]:
             arr = arr.astype(np.uint8)
-        arr = arr.reshape((shape[1] * shape[0], shape[2]))
-        arr = np.ascontiguousarray(arr, dtype=arr.dtype)
-        vtk_array_type = numpy_support.get_vtk_array_type(arr.dtype)
-        vtk_array = numpy_support.numpy_to_vtk(
-            num_array=arr, deep=True, array_type=vtk_array_type
-        )
 
         # Todo, look the following link for managing png 16bit
         # https://stackoverflow.com/questions/15667947/vtkpngwriter-printing-out-black-images
-        vtk_data = ImageData()
-        vtk_data.SetDimensions(shape[1], shape[0], shape[2])
-        vtk_data.SetExtent(0, shape[1] - 1, 0, shape[0] - 1, 0, 0)
-        vtk_data.SetSpacing(1.0, 1.0, 1.0)
-        vtk_data.SetOrigin(0.0, 0.0, 0.0)
-        vtk_data.GetPointData().SetScalars(vtk_array)
+
+        vtk_data = numpy_to_vtk_image_data(arr)
 
         writer = d_writer.get(extension)()
         writer.SetFileName(filename)
