@@ -8,7 +8,7 @@ import numpy as np
 
 import fury.primitive as fp
 from fury import layout
-from fury.actors.ellipsoid import EllipsoidActor
+from fury.actors.tensor import tensor_ellipsoid
 from fury.actors.odf_slicer import OdfSlicerActor
 from fury.actors.peak import PeakActor
 from fury.colormap import colormap_lookup_table
@@ -3798,7 +3798,7 @@ def markers(
     return sq_actor
 
 
-def ellipsoid(
+def tensor(
     centers,
     axes,
     lengths,
@@ -3807,12 +3807,12 @@ def ellipsoid(
     opacity=None
 ):
     """
-    VTK actor for visualizing Ellipsoids.
+    VTK actor for visualizing Tensor.
 
     Parameters
     ----------
     centers : ndarray(N, 3)
-        Ellipsoid positions
+        Tensor positions
     axes : ndarray (3, 3) or (N, 3, 3)
         Axes of the ellipsoid
     lengths : ndarray (3, ) or (N, 3)
@@ -3820,7 +3820,7 @@ def ellipsoid(
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
     scales : float or ndarray (N, ), optional
-        Ellipsoid size, default(1)
+        Tensor size, default(1)
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If a value is given, each dot will have the same opacity otherwise
@@ -3862,5 +3862,5 @@ def ellipsoid(
     elif colors.shape[1] == 4:
         colors = colors[:, :-1]
 
-    return EllipsoidActor(centers, axes, lengths, colors, scales, opacity)
+    return tensor_ellipsoid(centers, axes, lengths, colors, scales, opacity)
 
