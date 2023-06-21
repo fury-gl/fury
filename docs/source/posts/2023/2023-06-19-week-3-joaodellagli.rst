@@ -1,5 +1,5 @@
 Week 3: Watch Your Expectations
-==============================================
+===============================
 
 .. post:: June 19, 2023
    :author: João Victor Dell Agli Floriano
