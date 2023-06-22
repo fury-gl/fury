@@ -195,6 +195,8 @@ shader_custom_uniforms(billboard, "fragment").SetUniform2f("res", [width, height
 billboard_tex = np.array([[-1.0, -1.0], [-1.0, 1.0], [1.0, 1.0], [1.0, -1.0]])
 actor.attribute_to_actor(billboard, billboard_tex, "in_tex")
 
+scene.GetRenderWindow().DebugOn()
+scene.GetRenderWindow().GlobalWarningDisplayOn()
 
 # Actor adding
 scene.add(billboard)
@@ -252,9 +254,12 @@ FBO = vtk.vtkOpenGLFramebufferObject()
 # FBO.AddObserver(0, FBO.GetCommand(0)) # This may help?
 FBO.DebugOn()
 FBO.GlobalWarningDisplayOn()
-# print(manager.window.SupportsOpenGL()) # FOR SOME REASON THIS FUNCTION HERE MAKES SOME WORK
+# print(scene.GetRenderWindow().SupportsOpenGL()) # FOR SOME REASON THIS FUNCTION HERE MAKES SOME WORK
 
 
+# scene.GetRenderWindow().SetUseOffScreenBuffers(True)
+# print(scene.GetRenderWindow())
+print(FBO.IsSupported(scene.GetRenderWindow())) # the context supports the required extensions  
 FBO.SetContext(scene.GetRenderWindow()) # Sets the context for the FBO.  >>>>>>THE PROBLEM IS HERE<<<<<<<
 
 
