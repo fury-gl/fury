@@ -76,7 +76,9 @@ files = [
     "viz_layout.py",
     "viz_shapes.py",
     "viz_ui.py",
-    "viz_ui_slider.py"
+    "viz_ui_slider.py",
+    "viz_card.py",
+    "viz_card_sprite_sheet.py"
 ]
 
 [animation]

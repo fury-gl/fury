@@ -1322,3 +1322,58 @@ def test_playback_panel(interactive=False):
     playback.hide()
     ss = window.snapshot(show_manager.scene)
     assert_equal(np.max(ss), 0)
+
+
+def test_card_ui(interactive=False):
+    filename = 'test_card_ui'
+    recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
+
+    img_url = "https://raw.githubusercontent.com/fury-gl"\
+              "/fury-communication-assets/main/fury-logo.png"
+
+    title = "FURY"
+    body = "FURY - Free Unified Rendering in pYthon."\
+           "A software library for scientific visualization in Python."
+
+    card = ui.elements.Card2D(image_path=img_url, draggable=True,
+                              title_text=title, body_text=body,
+                              image_scale=0.5)
+
+    # Assign the counter callback to every possible event.
+
+    event_counter = EventCounter()
+    event_counter.monitor(card)
+
+    npt.assert_equal(card.size, (400.0, 400.0))
+    npt.assert_equal(card.image.size[1], 200.0)
+    npt.assert_equal(card.title, title)
+    npt.assert_equal(card.body, body)
+    npt.assert_equal(card.color, (0.5, 0.5, 0.5))
+    npt.assert_equal(card.panel.position, (0, 0))
+
+    card.title = 'Changed Title'
+    npt.assert_equal(card.title, 'Changed Title')
+
+    card.body = 'Changed Body'
+    npt.assert_equal(card.body, 'Changed Body')
+
+    card.title = title
+    card.body = body
+    card.color = (1.0, 1.0, 1.0)
+    npt.assert_equal(card.color, (1.0, 1.0, 1.0))
+
+    card.resize((300, 300))
+    npt.assert_equal(card.image.size[1], 150.0)
+    current_size = (600, 600)
+    show_manager = window.ShowManager(size=current_size, title='FURY Card')
+    show_manager.scene.add(card)
+
+    if interactive:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
