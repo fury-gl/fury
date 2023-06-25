@@ -19,15 +19,16 @@ def tensor_ellipsoid(centers, axes, lengths, colors, scales, opacity):
         Axes of the tensor ellipsoid
     lengths : ndarray (3, ) or (N, 3)
         Axes lengths
-    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    colors : ndarray (N,3) or tuple (3,), optional
+        Default red color. R, G and B should be at the range [0, 1]
     scales : float or ndarray (N, ), optional
         Tensor ellipsoid size, default(1)
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
-        If a value is given, each dot will have the same opacity otherwise
-        opacity is set to 1 by default, or is defined by Alpha parameter
-        in colors if given.
+
+    Returns
+    -------
+    box_actor: Actor
 
     """
 

@@ -3804,28 +3804,30 @@ def tensor(
     lengths,
     colors=(1, 0, 0),
     scales=1.0,
-    opacity=None
+    opacity=1.0
 ):
     """
-    VTK actor for visualizing Tensor.
+    VTK actor for visualizing tensor ellipsoids.
 
     Parameters
     ----------
     centers : ndarray(N, 3)
-        Tensor positions
+        Tensor positions.
     axes : ndarray (3, 3) or (N, 3, 3)
-        Axes of the ellipsoid
+        Axes of the ellipsoid.
     lengths : ndarray (3, ) or (N, 3)
-        Axes lengths
-    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+        Axes lengths.
+    colors : ndarray (N,3) or tuple (3,), optional
+        Default red color. R, G and B should be at the range [0, 1]
     scales : float or ndarray (N, ), optional
-        Tensor size, default(1)
+        Tensor size, default(1).
     opacity : float, optional
-        Takes values from 0 (fully transparent) to 1 (opaque).
-        If a value is given, each dot will have the same opacity otherwise
-        opacity is set to 1 by default, or is defined by Alpha parameter
-        in colors if given.
+        Takes values from 0 (fully transparent) to 1 (opaque). Default is 1.
+
+    Returns
+    -------
+    tensor_ellipsoid: Actor
+
     """
 
     if not isinstance(centers, np.ndarray):
@@ -3857,9 +3859,11 @@ def tensor(
         scales = np.concatenate(
             (scales, np.ones(centers.shape[0] - scales.shape[0])), axis=None)
 
-    if opacity is None:
-        opacity = 1
-    elif colors.shape[1] == 4:
+    if isinstance(colors, tuple):
+        colors = np.array([colors])
+    elif not isinstance(colors, np.ndarray):
+        colors = np.array(colors)
+    if colors.shape[1] == 4:
         colors = colors[:, :-1]
 
     return tensor_ellipsoid(centers, axes, lengths, colors, scales, opacity)
