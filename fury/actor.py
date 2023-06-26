@@ -10,6 +10,7 @@ import fury.primitive as fp
 from fury import layout
 from fury.actors.odf_slicer import OdfSlicerActor
 from fury.actors.peak import PeakActor
+from fury.actors.tensor import uncertainty_cone
 from fury.colormap import colormap_lookup_table
 from fury.deprecator import deprecate_with_version, deprecated_params
 from fury.io import load_image
@@ -3795,3 +3796,29 @@ def markers(
     shader_to_actor(sq_actor, 'fragment', impl_code=fs_impl_code, block='light')
 
     return sq_actor
+
+
+def dti_uncertainty(
+    data,
+    bvals,
+    bvecs,
+    scales=.6,
+    opacity=1.0
+):
+    """
+    VTK actor for visualizing tensor ellipsoids.
+
+    Parameters
+    ----------
+    scales : float or ndarray (N, ), optional
+        Tensor size, default(1).
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque). Default is 1.
+
+    Returns
+    -------
+    uncertainty_cone: Actor
+
+    """
+
+    return uncertainty_cone(data, bvals, bvecs, scales, opacity)
