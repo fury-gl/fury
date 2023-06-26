@@ -177,6 +177,8 @@ points = np.random.rand(10, 3)
 # https://fury.gl/latest/auto_examples/04_demos/viz_fine_tuning_gl_context.html#sphx-glr-auto-examples-04-demos-viz-fine-tuning-gl-context-py
 
 
+
+
 FBO = vtk.vtkOpenGLFramebufferObject()
 
 manager.window.SetOffScreenRendering(True)
@@ -186,7 +188,9 @@ FBO.DebugOn()
 FBO.GlobalWarningDisplayOn()
 
 FBO.SetContext(manager.window) # Sets the context for the FBO. 
-FBO.PopulateFramebuffer(width, height, True, 1, vtk.VTK_FLOAT, False, 24, 0)
+FBO.PopulateFramebuffer(width, height, True, 1, vtk.VTK_UNSIGNED_CHAR, False, 24, 0)
+
+
 
 
 # Checking FBO status
@@ -218,8 +222,8 @@ print("FBO Start:", FBO.Start(width, height))
 
 # Render every point existing inside loop
 for i in range(n_points):
-    shader_custom_uniforms(billboard, "fragment").SetUniform3f("point", points[i, :])
-    shader_custom_uniforms(billboard, "fragment").SetUniform2f("res", [width, height])
+    shader_custom_uniforms(billboard, "fragment").SetUniform3f("point0", points[i, :])
+    shader_custom_uniforms(billboard, "fragment").SetUniform2f("res0", [width, height])
     manager.render()
 FBO.RestorePreviousBindingsAndBuffers()
 
@@ -232,7 +236,7 @@ print()
 
 # WIP below
 manager.window.SetOffScreenRendering(False) # Then, after rendering everything in the offscreen FBO, time to render it to a simple billboard
-actor.shader_to_actor(billboard, "fragment", billboard_frag_impl, billboard_frag_decl) # attatch simple billboard texture rendering shaders
+actor.shader_to_actor(billboard, "fragment", billboard_frag_impl, billboard_frag_decl) # attach simple billboard texture rendering shaders
 
 shaders.shader_apply_effects(manager.window, billboard, window.gl_disable_blend)
 
