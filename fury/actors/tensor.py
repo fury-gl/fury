@@ -15,6 +15,20 @@ from fury.shaders import (attribute_to_actor, import_fury_shader,
 def uncertainty_cone(data, bvals, bvecs, scales, opacity):
     angles, centers, axes, lengths = main_dir_uncertainty(data, bvals, bvecs)
     colors = np.array([107, 107, 107])
+
+    if centers.ndim != 2:
+        centers = np.array([centers])
+        axes = np.array([axes])
+        lengths = np.array([lengths])
+        colors = np.array([colors])
+
+    x, y, z = axes.shape
+
+    if not isinstance(scales, np.ndarray):
+        scales = np.array(scales)
+    if scales.size == 1:
+        scales = np.repeat(scales, x)
+
     return double_cone(centers, axes, lengths, angles, colors, scales, opacity)
 
 
@@ -88,19 +102,27 @@ def double_cone(centers, axes, lengths, angles, colors, scales, opacity):
         out float angleVSOutput;
         """
 
-    vs_impl = \
+    # Variables assignment
+    v_assign = \
         """
         vertexMCVSOutput = vertexMC;
         centerMCVSOutput = center;
         scaleVSOutput = scale;
+        angleVSOutput = angle;
+        """
+
+    # Rotation matrix
+    rot_matrix = \
+        """
         mat3 R = mat3(normalize(evec1), normalize(evec2), normalize(evec3));
         float a = radians(90);
         mat3 rot = mat3(cos(a),-sin(a),0,
                         sin(a),cos(a), 0, 
                         0,     0,      1);
         rotationMatrix = transpose(R) * rot;
-        angleVSOutput = angle;
         """
+
+    vs_impl = compose_shader([v_assign, rot_matrix])
 
     shader_to_actor(box_actor, 'vertex', decl_code=vs_dec,
                     impl_code=vs_impl)
@@ -117,41 +139,23 @@ def double_cone(centers, axes, lengths, angles, colors, scales, opacity):
         uniform mat4 MCVCMatrix;
         """
 
-    sd_sphere = import_fury_shader(os.path.join('sdf', 'sd_sphere.frag'))
+    # Importing the cone SDF
+    sd_cone = import_fury_shader(os.path.join('sdf', 'sd_cone.frag'))
 
+    # Importing the union operation SDF
+    sd_union = import_fury_shader(os.path.join('sdf', 'sd_union.frag'))
+
+    # SDF definition
     sdf_map = \
         """
-        float opUnion( float d1, float d2 ) { return min(d1,d2); }
-
-        float sdCone( vec3 p, vec2 c, float h )
-        {
-            // c is the sin/cos of the angle, h is height
-            // Alternatively pass q instead of (c,h),
-            // which is the point at the base in 2D
-            vec2 q = h*vec2(c.x/c.y,-1.0);
-
-            vec2 w = vec2( length(p.xz), p.y );
-            vec2 a = w - q*clamp( dot(w,q)/dot(q,q), 0.0, 1.0 );
-            vec2 b = w - q*vec2( clamp( w.x/q.x, 0.0, 1.0 ), 1.0 );
-            float k = sign( q.y );
-            float d = min(dot( a, a ),dot(b, b));
-            float s = max( k*(w.x*q.y-w.y*q.x),k*(w.y-q.y)  );
-            return sqrt(d)*sign(s);
-        }
-
-        float sdDoubleCone( vec3 p, vec2 c, float h )
-        {
-            return opUnion(sdCone(p,c,h),sdCone(-p,c,h));
-        }
-
         float map(in vec3 position)
         {
-            float a = clamp(angleVSOutput, 0, 6.283);
-            //float a = angleVSOutput;
-            vec2 angle = vec2(sin(a), cos(a));
-            return sdDoubleCone((position - centerMCVSOutput)/scaleVSOutput
-                *rotationMatrix, angle, .5*angle.y) * scaleVSOutput;
-
+            vec3 p = (position - centerMCVSOutput)/scaleVSOutput
+                *rotationMatrix;
+            float angle = clamp(angleVSOutput, 0, 6.283);
+            vec2 a = vec2(sin(angle), cos(angle));
+            float h = .5 * a.y;
+            return opUnion(sdCone(p,a,h), sdCone(-p,a,h)) * scaleVSOutput;
         }
         """
 
@@ -168,7 +172,7 @@ def double_cone(centers, axes, lengths, angles, colors, scales, opacity):
         'lighting', 'blinn_phong_model.frag'))
 
     # Full fragment shader declaration
-    fs_dec = compose_shader([fs_vars_dec, sdf_map,
+    fs_dec = compose_shader([fs_vars_dec, sd_cone, sd_union, sdf_map,
                              central_diffs_normal, cast_ray,
                              blinn_phong_model])
 
