@@ -1,17 +1,34 @@
 .comp-soft-wrapper {
-  width: 100vw;
-  background-color: var(--colorPrimaryDark);
-  padding: 50px;
-  
   display:flex;
-  --s: 100px;  /* size  */
+  justify-content: center;
+
+  --s: 150px;  /* size  */
   --m: 4px;    /* margin */
   --f: calc(1.732 * var(--s) + 4 * var(--m)  - 1px);
 }
 
+.comp-soft-section {
+  width: 100vw;
+  background-color: var(--colorPrimaryDark);
+  padding: 30px 0 90px;
+}
+
+.comp-soft-title {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 20px;
+  margin-left: -23px;
+
+  letter-spacing: 1.5px;
+  font-size: 27px;
+  font-weight: bold;
+
+  color: white;
+}
+
 .comp-soft-container {
-  font-size: 0;
-  width: 600px;
+  width: 700px;
 }
 
 .comp-soft-container .comp-soft {
@@ -22,18 +39,26 @@
   font-size:initial;
   clip-path: polygon(0% 25%, 0% 75%, 50% 100%, 100% 75%, 100% 25%, 50% 0%);
   background: white;
-  margin-bottom: calc(var(--m) - var(--s)*0.2885); 
+  margin-bottom: calc(var(--m) - var(--s)*0.2485); 
 }
 
-.comp-soft-shadow {
-  filter: drop-shadow(-1px 6px 3px rgba(50, 50, 0, 0.5));
+.comp-soft-image-holder {
+  display: flex;
+  align-items: center;
+  height: calc(var(--s)*1.1547);
+  justify-content: center;
+}
+
+.comp-soft-image-holder img {
+  width: 120px;
+  height: 75px;
 }
 
 .comp-soft-container::before {
   content: "";
   width: calc(var(--s)/2 + var(--m));
   float: left;
-  height: 120%;
+  height: 100%;
   shape-outside: repeating-linear-gradient(     
                    #0000 0 calc(var(--f) - 3px),      
                    #000  0 var(--f));
