@@ -1733,17 +1733,17 @@ def test_marker_actor(interactive=False):
     npt.assert_equal(report.objects, 12)
 
 
-def test_tensor_actor(interactive=False):
+def test_ellipsoid_actor(interactive=False):
     # number of axes does not match with number of centers
     centers = [-1, 1, 0]
     axes = [[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
             [[1, 2, -2], [2, 1, 2], [2, -2, -1]]]
     lengths = [[1, 1, 1]]
-    npt.assert_raises(ValueError, actor.tensor, centers, axes, lengths)
+    npt.assert_raises(ValueError, actor.ellipsoid, centers, axes, lengths)
 
     # number of lengths does not match with number of centers
     lengths = [[1, 1, 1], [1, 1, .5]]
-    npt.assert_raises(ValueError, actor.tensor, centers, axes, lengths)
+    npt.assert_raises(ValueError, actor.ellipsoid, centers, axes, lengths)
 
     scene = window.Scene()
     scene.background((0, 0, 0))
@@ -1761,14 +1761,14 @@ def test_tensor_actor(interactive=False):
     colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1],
                        [1, 1, 0], [1, 0, 1], [0, 1, 1]])
 
-    tensors = actor.tensor(axes=axes, lengths=lengths, centers=centers,
-                           scales=1.0, colors=colors)
+    tensors = actor.ellipsoid(axes=axes, lengths=lengths, centers=centers,
+                              scales=1.0, colors=colors)
     scene.add(tensors)
 
     if interactive:
         window.show(scene)
 
-    arr = window.snapshot(scene, offscreen=True)
+    arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=colors*255)
     npt.assert_equal(report.objects, 6)
     npt.assert_equal(report.colors_found, [True]*6)

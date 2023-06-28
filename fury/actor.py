@@ -3798,7 +3798,7 @@ def markers(
     return sq_actor
 
 
-def tensor(
+def ellipsoid(
     centers,
     axes,
     lengths,
@@ -3807,12 +3807,12 @@ def tensor(
     opacity=1.0
 ):
     """
-    VTK actor for visualizing tensor ellipsoids.
+    VTK actor for visualizing ellipsoids.
 
     Parameters
     ----------
     centers : ndarray(N, 3)
-        Tensor positions.
+        Ellipsoid positions.
     axes : ndarray (3, 3) or (N, 3, 3)
         Axes of the ellipsoid.
     lengths : ndarray (3, ) or (N, 3)
@@ -3820,7 +3820,7 @@ def tensor(
     colors : ndarray (N,3) or tuple (3,), optional
         Default red color. R, G and B should be at the range [0, 1]
     scales : float or ndarray (N, ), optional
-        Tensor size, default(1).
+        Ellipsoid size, default(1).
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque). Default is 1.
 
