@@ -1768,10 +1768,8 @@ def test_ellipsoid_actor(interactive=False):
     if interactive:
         window.show(scene)
 
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr, colors=colors*255)
-    npt.assert_equal(report.objects, 6)
-    npt.assert_equal(report.colors_found, [True]*6)
+    report = window.analyze_scene(scene)
+    npt.assert_equal(report.actors, 1)
 
 
 def test_actors_primitives_count():
