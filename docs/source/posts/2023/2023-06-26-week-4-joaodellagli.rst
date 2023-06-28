@@ -9,7 +9,7 @@ Week 4: Nothing is Ever Lost
 
 Welcome again to another weekly blogpost! Today, let's talk about the importance of guidance throughout a project.
 
-This Last Week's Effort
+Last Week's Effort
 -----------------------
 So, last week my project was struggling with some supposedly simple in concept, yet intricate in execution issues. If you recall from
 my :doc:`last blogpost <2023-06-19-week-3-joaodellagli>`, I could not manage to make the Framebuffer Object setup work, as its method, 
@@ -26,7 +26,7 @@ Apparently, for the FBO generation to work, it is first needed to initialize the
 
    FBO = vtk.vtkOpenGLFramebufferObject()
 
-   manager.window.SetOffScreenRendering(True) # so the window don't show up, but important for later as well
+   manager.window.SetOffScreenRendering(True) # so the window doesn't show up, but important for later as well
    manager.initialize() # missing part that made everything work
 
    FBO.SetContext(manager.window) # Sets the context for the FBO. Finally, it works
@@ -54,7 +54,7 @@ way more experienced than I, someone designated for that, was my way out of this
 This Week's Goals
 -----------------
 Now, with the FBO working, I plan to finally *render* something to it. For this week, I plan to come back to my original plan and
-experiment with simple shaders just as a a proof of concept that the FBO will be really useful for this project. I hope the road is less
+experiment with simple shaders just as a proof of concept that the FBO will be really useful for this project. I hope the road is less
 bumpier by now and I don't step on any other complicated problem. 
 
 Wish me luck!
