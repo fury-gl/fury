@@ -122,12 +122,12 @@ actor.attribute_to_actor(billboard, billboard_tex, "in_tex")
 
 
 # Actor adding
-scene.add(billboard)
+manager.scene.add(billboard)
 
 
 
-scene.GetRenderWindow().DebugOn()
-scene.GetRenderWindow().GlobalWarningDisplayOn()
+manager.scene.GetRenderWindow().DebugOn()
+manager.scene.GetRenderWindow().GlobalWarningDisplayOn()
 
 
 
@@ -143,6 +143,8 @@ scene.GetRenderWindow().GlobalWarningDisplayOn()
 # https://github.com/Kitware/VTK/blob/8f88edb91d2efea2d9cef1a1399d7a856c47f3be/Rendering/OpenGL2/vtkOpenGLFramebufferObject.cxx 
 # https://fury.gl/latest/auto_examples/04_demos/viz_fine_tuning_gl_context.html#sphx-glr-auto-examples-04-demos-viz-fine-tuning-gl-context-py
 
+
+
 FBO = vtk.vtkOpenGLFramebufferObject()
 
 manager.window.SetOffScreenRendering(True)
@@ -154,17 +156,20 @@ FBO.GlobalWarningDisplayOn()
 FBO.SetContext(manager.window) # Sets the context for the FBO. 
 FBO.SaveCurrentBindingsAndBuffers()
 FBO.PopulateFramebuffer(width, height, True, 1, vtk.VTK_UNSIGNED_CHAR, False, 24, 0)
+FBO.RestorePreviousBindingsAndBuffers()
+
+
+
+
 
 # Checking FBO status
 print("FBO of index:", FBO.GetFBOIndex()) 
 print("Number of color attachments:", FBO.GetNumberOfColorAttachments())
 FBO.RestorePreviousBindingsAndBuffers()
 
-
-
 # RENDER TIME
-# shaders.shader_apply_effects(manager.window, billboard, window.gl_disable_depth)
-# shaders.shader_apply_effects(manager.window, billboard, window.gl_set_normal_blending)
+shaders.shader_apply_effects(manager.window, billboard, window.gl_disable_depth)
+shaders.shader_apply_effects(manager.window, billboard, window.gl_set_normal_blending)
 
 FBO.SaveCurrentBindingsAndBuffers()
 FBO.Bind()
@@ -172,12 +177,17 @@ FBO.ActivateBuffer(0)
 
 manager.render()
 
+color_texture = FBO.GetColorAttachmentAsTextureObject(0)
+
+print("Color texture")
+print(color_texture)
+
+
+print("Color texture handle:", color_texture.GetHandle()) # corresponds to the value generated when we call glGenTextures()
+print("Color texture unit:", color_texture.GetTextureUnit()) # corresponds to the texture unit the texture is currently bound (GL_TEXTURE0, etc)
+print("Color texture target:", color_texture.GetTarget())
+
 FBO.RestorePreviousBindingsAndBuffers()
-
-
-
-color_texture = FBO.GetColorAttachmentAsTextureObject(0) # Gets the color texture for further rendering
-
 
 
 # WIP below
@@ -186,8 +196,6 @@ actor.replace_shader_in_actor(billboard, "fragment", frag_2)
 shaders.shader_apply_effects(manager.window, billboard, window.gl_disable_blend)
 
 color_texture.Activate()
-
-
 
 interactive = True
 
