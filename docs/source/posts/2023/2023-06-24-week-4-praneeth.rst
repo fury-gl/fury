@@ -15,7 +15,7 @@ This week, amidst end-semester exams, I managed to accomplish a few notable task
 
 2. Revisiting PR `#540 <https://github.com/fury-gl/fury/pull/540>`_: I restarted working on PR `#540 <https://github.com/fury-gl/fury/pull/540>`_ as I wasn't satisfied with the previous approach when I checked it for rebasing. I took the opportunity to update the code and ensure that the unit tests passed successfully. Although there are a few issues remaining in the tests, I am determined to resolve them and move forward with the implementation. This PR aims to improve the usage of the **numpy_to_vtk_image_data** utility function.
 
-3. Independent Scrollbar Consideration: We are currently evaluating the necessity of making the Scrollbar an independent element. While currently, it is primarily used by the **ListBox2D**, we are exploring various use cases to determine if there are other scenarios where the Scrollbar can be employed independently. This evaluation will help us make an informed decision about its future implementation.
+3. Independent Scrollbar Consideration: We are currently evaluating the necessity of making the Scrollbar an independent element. Currently it is only used by the **ListBox2D**, we are exploring various use cases to determine if there are other scenarios where the Scrollbar can be employed independently. This evaluation will help us make an informed decision about its future implementation.
 
 4. PR Reviews: In the brief intervals between exams, I utilized the time to review two PRs: `#446 <https://github.com/fury-gl/fury/pull/446>`_ - Resize panel and `#460 <https://github.com/fury-gl/fury/pull/460>`_ - Tree UI.
 
