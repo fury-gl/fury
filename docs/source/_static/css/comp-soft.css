@@ -19,7 +19,7 @@
 .comp-soft-section {
   width: 100vw;
   background-color: var(--colorPrimaryDark);
-  padding: 30px 0 90px;
+  padding: 50px 0;
 }
 
 .comp-soft-title {
