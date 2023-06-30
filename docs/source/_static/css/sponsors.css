@@ -1,0 +1,38 @@
+.sponsors-wrapper {
+  margin: 50px 0;
+  width: 100%;
+}
+
+.sponsors-title {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 20px;
+
+  letter-spacing: 1.5px;
+  font-size: 27px;
+  font-weight: bold;
+}
+
+.sponsors {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+@media (max-width: 767px) {
+  .sponsors {
+    flex-direction: column;
+  }
+}
+
+.sponsors-logo {
+  width: 220px;
+  height: 200px;
+
+  padding: 0 10px;
+
+  display: flex;
+  align-items: center;
+}
