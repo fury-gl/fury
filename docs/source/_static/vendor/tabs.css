@@ -21,6 +21,10 @@
     margin: 30px 0;
 }
 
+.tabs-info {
+    font-size: 20px;
+}
+
 .visualization, .data-science, .scientific-domains, .machine-learning, .array-libraries {
     max-width: 900px;
     margin: 15px auto;
@@ -125,21 +129,48 @@
 }
 
 /* Visualization */
-.visualization-images > img {
+.visualization-images img,
+.visualization-images a {
     border-radius: 10px;
 }
 
 .image-grid {
     display: grid;
-    grid-template-columns: auto auto auto;
-    grid-gap: 10px;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    grid-gap: 2em;
+}
+
+@media only screen and (max-width: 600px) {
+    .image-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 .image-grid > div {
-    background-color: rgb(238, 238, 238);
-    border: 2px solid rgb(255, 255, 255);
+    background-color: rgb(0, 0, 0);
     border-radius: 10px;
-    padding: 10px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+@media only screen and (max-width: 600px) {
+    .image-grid > div {
+        min-height: 150px;
+    }
+}
+
+.image-description {
+    color: black;
+}
+
+.image-grid > div:hover {
+    box-shadow: rgba(255, 255, 255, 0.1) 0px 1px 1px 0px inset, rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px;
 }
 
 /* Scientific Domains */
