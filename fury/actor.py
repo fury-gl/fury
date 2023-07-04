@@ -3806,18 +3806,41 @@ def dti_uncertainty(
     opacity=1.0
 ):
     """
-    VTK actor for visualizing tensor ellipsoids.
+    VTK actor for visualizing the cone of uncertainty representing the
+    variance of the main direction of diffusion.
 
     Parameters
     ----------
+    data : 3D or 4D ndarray
+        Diffusion data.
+    bvals : array, (N,) or None
+        Array containing the b-values.
+    bvecs : array, (N, 3) or None
+        Array containing the b-vectors.
     scales : float or ndarray (N, ), optional
-        Tensor size, default(1).
+        Cones of uncertainty size, default(1.0).
     opacity : float, optional
-        Takes values from 0 (fully transparent) to 1 (opaque). Default is 1.
+        Takes values from 0 (fully transparent) to 1 (opaque), default(1.0).
 
     Returns
     -------
     uncertainty_cone: Actor
+
+    Examples
+    --------
+    >>> from fury import actor, window
+    >>> from dipy.io.image import load_nifti
+    >>> from dipy.io.gradients import read_bvals_bvecs
+    >>> from dipy.data import get_fnames
+    >>> scene = window.Scene()
+    >>> hardi_fname, hardi_bval_fname, hardi_bvec_fname =\
+    >>>     get_fnames("stanford_hardi")
+    >>> data, _ = load_nifti(hardi_fname)
+    >>> bvals, bvecs = read_bvals_bvecs(hardi_bval_fname, hardi_bvec_fname)
+    >>> uncertainty_cones = actor.dti_uncertainty(
+    >>>     data=data[13:43, 44:74, 28:29], bvals=bvals, bvecs=bvecs)
+    >>> scene.add(uncertainty_cones)
+    >>> #window.show(scene)
 
     """
 

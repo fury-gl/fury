@@ -1734,6 +1734,24 @@ def test_marker_actor(interactive=False):
     npt.assert_equal(report.objects, 12)
 
 
+def test_uncertainty_actor(interactive=False):
+    scene = window.Scene()
+    scene.background((0, 0, 0))
+
+    data = np.array([0, 0, 0])
+    bvals = np.array([0, 0, 0])
+    bvecs = np.array([0, 0, 0])
+
+    uncert_cones = actor.dti_uncertainty(data=data, bvals=bvals, bvecs=bvecs,
+                                         scales=1.0, opacity=1.0)
+    scene.add(uncert_cones)
+
+    if interactive:
+        window.show(scene)
+
+    report = window.analyze_scene(scene)
+    npt.assert_equal(report.actors, 1)
+
 def test_actors_primitives_count():
     centers = np.array([[1, 1, 1], [2, 2, 2]])
     directions = np.array([[1, 0, 0], [1, 0, 0]])

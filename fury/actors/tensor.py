@@ -13,13 +13,33 @@ from fury.shaders import (attribute_to_actor, import_fury_shader,
 
 
 def uncertainty_cone(data, bvals, bvecs, scales, opacity):
-    angles, centers, axes, lengths = main_dir_uncertainty(data, bvals, bvecs)
+    """
+    Visualize the cones of uncertainty for DTI.
+
+    Parameters
+    ----------
+    data : 3D or 4D ndarray
+        Diffusion data.
+    bvals : array, (N,) or None
+        Array containing the b-values.
+    bvecs : array, (N, 3) or None
+        Array containing the b-vectors.
+    scales : float or ndarray (N, )
+        Cones of uncertainty size.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
+
+    Returns
+    -------
+    box_actor: Actor
+
+    """
+    angles, centers, axes = main_dir_uncertainty(data, bvals, bvecs)
     colors = np.array([107, 107, 107])
 
     if centers.ndim != 2:
         centers = np.array([centers])
         axes = np.array([axes])
-        lengths = np.array([lengths])
         colors = np.array([colors])
 
     x, y, z = axes.shape
@@ -29,22 +49,27 @@ def uncertainty_cone(data, bvals, bvecs, scales, opacity):
     if scales.size == 1:
         scales = np.repeat(scales, x)
 
-    return double_cone(centers, axes, lengths, angles, colors, scales, opacity)
+    return double_cone(centers, axes, angles, colors, scales, opacity)
 
 
-def double_cone(centers, axes, lengths, angles, colors, scales, opacity):
+def double_cone(centers, axes, angles, colors, scales, opacity):
     """
     Visualize one or many Double Cones with different features.
 
     Parameters
     ----------
     centers : ndarray(N, 3)
+        Cone positions.
     axes : ndarray (3, 3) or (N, 3, 3)
-    lengths : ndarray (3, ) or (N, 3)
+        Axes of the cone.
     angles : float or ndarray (N, )
-    colors : ndarray (N,3) or tuple (3,), optional
-    scales : float or ndarray (N, ), optional
-    opacity : float, optional
+        Angles of the cone.
+    colors : ndarray (N, 3) or tuple (3,)
+        R, G and B should be in the range [0, 1].
+    scales : float or ndarray (N, )
+        Cone size.
+    opacity : float
+        Takes values from 0 (fully transparent) to 1 (opaque).
 
     Returns
     -------
@@ -64,9 +89,6 @@ def double_cone(centers, axes, lengths, angles, colors, scales, opacity):
 
     big_scales = np.repeat(scales, n_verts, axis=0)
     attribute_to_actor(box_actor, big_scales, 'scale')
-
-    big_values = np.repeat(np.array(lengths, dtype=float), n_verts, axis=0)
-    attribute_to_actor(box_actor, big_values, 'evals')
 
     evec1 = np.array([item[0] for item in axes])
     evec2 = np.array([item[1] for item in axes])
@@ -88,7 +110,6 @@ def double_cone(centers, axes, lengths, angles, colors, scales, opacity):
         """
         in vec3 center;
         in float scale;
-        in vec3 evals;
         in vec3 evec1;
         in vec3 evec2;
         in vec3 evec3;
@@ -97,7 +118,6 @@ def double_cone(centers, axes, lengths, angles, colors, scales, opacity):
         out vec4 vertexMCVSOutput;
         out vec3 centerMCVSOutput;
         out float scaleVSOutput;
-        out vec3 evalsVSOutput;
         out mat3 rotationMatrix;
         out float angleVSOutput;
         """
@@ -116,9 +136,9 @@ def double_cone(centers, axes, lengths, angles, colors, scales, opacity):
         """
         mat3 R = mat3(normalize(evec1), normalize(evec2), normalize(evec3));
         float a = radians(90);
-        mat3 rot = mat3(cos(a),-sin(a),0,
-                        sin(a),cos(a), 0, 
-                        0,     0,      1);
+        mat3 rot = mat3(cos(a),-sin(a), 0,
+                        sin(a), cos(a), 0, 
+                            0 ,      0, 1);
         rotationMatrix = transpose(R) * rot;
         """
 
@@ -132,7 +152,6 @@ def double_cone(centers, axes, lengths, angles, colors, scales, opacity):
         in vec4 vertexMCVSOutput;
         in vec3 centerMCVSOutput;
         in float scaleVSOutput;
-        in vec3 evalsVSOutput;
         in mat3 rotationMatrix;
         in float angleVSOutput;
 
@@ -225,34 +244,81 @@ def double_cone(centers, axes, lengths, angles, colors, scales, opacity):
 
 
 def main_dir_uncertainty(data, bvals, bvecs):
+    """
+    Calculates the angle of the cone of uncertainty that represents the
+    perturbation of the main eigenvector of the diffusion tensor matrix.
+    Additionally, it gives information needed for the cone visualization.
+
+    Parameters
+    ----------
+    data : 3D or 4D ndarray
+        Diffusion data.
+    bvals : array, (N,) or None
+        Array containing the b-values.
+    bvecs : array, (N, 3) or None
+        Array containing the b-vectors.
+
+    Returns
+    -------
+    angles, centers, evecs
+
+    Notes
+    -----
+    The uncertainty calculation is based on first-order matrix perturbation
+    analysis described in [1]_. The idea is to estimate the variance of the
+    main eigenvector which corresponds to the main direction of diffusion,
+    directly from estimated D and its estimated covariance matrix \Delta D (see
+    [2]_, equation 4). The subtended angle, $\Delta\theta_i$, between the ith
+    perturbed eigenvector of D, $\varepsilon_i+\Delta\varepsilon_i$, and the
+    estimated eigenvector $\varepsilon_i$, measures the angular deviation of
+    the fiber direction, $\Delta\theta_i$:
+
+    .. math::
+        \theta=\tan^{-1}(\|\Delta\varepsilon_1\|)
+
+    Giving way to a graphical construct for displaying both the main
+    eigenvector of D and its associated uncertainty, with the so-called
+    "uncertainty cone".
+
+    References
+    ----------
+    .. [1] Basser, P. J. (1997). Quantifying errors in fiber direction and
+    diffusion tensor field maps resulting from MR noise. In 5th Scientific
+    Meeting of the ISMRM (Vol. 1740).
+
+    .. [2] Chang, L. C., Koay, C. G., Pierpaoli, C., & Basser, P. J. (2007).
+    Variance of estimated DTI‐derived parameters via first‐order perturbation
+    methods. Magnetic Resonance in Medicine: An Official Journal of the
+    International Society for Magnetic Resonance in Medicine, 57(1), 141-149.
+    """
+
     gtab = gradient_table(bvals, bvecs)
 
     tenmodel = dti.TensorModel(gtab)
     tenfit = tenmodel.fit(data)
-    evals = tenfit.evals
-    evecs = tenfit.evecs
+    fevals = tenfit.evals
+    fevecs = tenfit.evecs
 
     tensor_vals = dti.lower_triangular(tenfit.quadratic_form)
     dti_params = dti.eig_from_lo_tri(tensor_vals)
 
-    signalOI = dti.tensor_prediction(dti_params, gtab, 1.0)
+    fsignal = dti.tensor_prediction(dti_params, gtab, 1.0)
     b_matrix = dti.design_matrix(gtab)
 
-    valid_mask = np.abs(evecs).max(axis=(-2, -1)) > 0
+    valid_mask = np.abs(fevecs).max(axis=(-2, -1)) > 0
     indices = np.nonzero(valid_mask)
 
-    dofs_vecs = evecs[indices]
-    dofs_vals = evals[indices]
-    signal = signalOI[indices]
+    evecs = fevecs[indices]
+    evals = fevals[indices]
+    signal = fsignal[indices]
 
-    # Uncertainty calculations ------------------------------------------------
+    # Uncertainty calculations
 
     sigma = ne.estimate_sigma(data)  # standard deviation of the noise
 
-    # Angles for cone of uncertainty ------------------------------------------
-
-    angles = np.ones(dofs_vecs.shape[0])
-    for i in range(dofs_vecs.shape[0]):
+    # Angles for cone of uncertainty
+    angles = np.ones(evecs.shape[0])
+    for i in range(evecs.shape[0]):
         sigma_e = np.diag(signal[i] / sigma ** 2)
         k = np.dot(np.transpose(b_matrix), sigma_e)
         sigma_ = np.dot(k, b_matrix)
@@ -261,13 +327,14 @@ def main_dir_uncertainty(data, bvals, bvecs):
         delta_DD = dti.from_lower_triangular(
             np.array([dd[0], dd[3], dd[1], dd[4], dd[5], dd[2]]))
 
+        # perturbation matrix of tensor D
         try:
             delta_D = np.linalg.inv(delta_DD)
         except:
             delta_D = delta_DD
 
-        D_ = dofs_vecs
-        eigen_vals = dofs_vals[i]
+        D_ = evecs
+        eigen_vals = evals[i]
 
         e1, e2, e3 = np.array(D_[i, :, 0]), np.array(D_[i, :, 1]), \
                      np.array(D_[i, :, 2])
@@ -286,7 +353,7 @@ def main_dir_uncertainty(data, bvals, bvecs):
             theta = np.arctan(np.linalg.norm(delta_e1))
             angles[i] = theta
         else:
-            theta = 0.0872665
+            theta = 1.39626
 
     centers = np.asarray(indices).T
-    return angles, centers, dofs_vecs, dofs_vals
+    return angles, centers, evecs

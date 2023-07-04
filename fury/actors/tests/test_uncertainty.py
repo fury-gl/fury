@@ -1,6 +1,7 @@
 """
-This spript includes the implementation of cone of uncertainty using matrix
-perturbation analysis
+This spript includes the implementation of dti_uncertainty actor for the
+visualization of the cones of uncertainty which uses matrix perturbation
+analysis for its calculation
 """
 from fury import actor, window
 
@@ -11,11 +12,16 @@ from dipy.data import get_fnames
 
 
 def test_uncertainty():
-    hardi_fname, hardi_bval_fname, hardi_bvec_fname = get_fnames('stanford_hardi')
+    hardi_fname, hardi_bval_fname, hardi_bvec_fname =\
+        get_fnames('stanford_hardi')
 
     data, affine = load_nifti(hardi_fname)
+    data_ = data[20:24, 68:72, 28:29]
+    print(data_)
+    print(data_.shape)
 
     bvals, bvecs = read_bvals_bvecs(hardi_bval_fname, hardi_bvec_fname)
+    print(bvals, bvecs)
 
     from dipy.segment.mask import median_otsu
 
@@ -23,7 +29,7 @@ def test_uncertainty():
                                  numpass=1, autocrop=True, dilate=2)
 
     uncertainty_cones = actor.dti_uncertainty(
-        data=maskdata[13:43, 44:74, 28:29], bvals=bvals, bvecs=bvecs)
+        data=maskdata[20:24, 68:72, 28:29], bvals=bvals, bvecs=bvecs)
 
     scene = window.Scene()
     scene.background([255, 255, 255])
