@@ -560,4 +560,3 @@ def manifest_standard(actor, ambient_level=0, ambient_color=(1, 1, 1),
         warnings.warn('Actor does not have the attribute property. This '
                       'material will not be applied.')
         return
-
