@@ -701,6 +701,7 @@ class TextBlock2D(UI):
         color=(1, 1, 1),
         bg_color=None,
         position=(0, 0),
+        auto_font_scale=False
     ):
         """Init class instance.
 
@@ -730,6 +731,8 @@ class TextBlock2D(UI):
             Adds text shadow.
         size : (int, int)
             Size (width, height) in pixels of the text bounding box.
+        auto_font_scale : bool, optional
+            Automatically scale font according to the text bounding box.
         """
         super(TextBlock2D, self).__init__(position=position)
         self.scene = None
@@ -742,6 +745,9 @@ class TextBlock2D(UI):
         self.italic = italic
         self.shadow = shadow
         self._vertical_justification = vertical_justification
+        self.auto_font_scale = auto_font_scale
+        if self.auto_font_scale:
+            self.actor.SetTextScaleModeToProp()
         self.message = text
         if size is not None:
             self.resize(size)
@@ -820,8 +826,9 @@ class TextBlock2D(UI):
         size : int
             Text font size.
         """
-        self.actor.SetTextScaleModeToNone()
-        self.actor.GetTextProperty().SetFontSize(size)
+        if not self.auto_font_scale:
+            self.actor.SetTextScaleModeToNone()
+            self.actor.GetTextProperty().SetFontSize(size)
 
         self.update_bounding_box()
 
@@ -1080,7 +1087,11 @@ class TextBlock2D(UI):
             self.background.resize(
                 (self.boundingbox[2]-self.boundingbox[0], self.boundingbox[3]-self.boundingbox[1]))
 
-        self.update_alignment()
+        if self.auto_font_scale:
+            self.actor.SetPosition2(
+                self.boundingbox[2]-self.boundingbox[0], self.boundingbox[3]-self.boundingbox[1])
+        else:
+            self.update_alignment()
 
     def _set_position(self, position):
         """Set text actor position.
@@ -1095,22 +1106,7 @@ class TextBlock2D(UI):
         self.background.position = position
 
     def _get_size(self):
-        if self.have_bg:
-            return self.background.size
-
-        if not self.actor.GetTextScaleMode():
-            if self.scene is not None:
-                size = np.zeros(2)
-                self.actor.GetSize(self.scene, size)
-                return size
-            else:
-                warn(
-                    'TextBlock2D must be added to the scene before '
-                    'querying its size while TextScaleMode is set to None.',
-                    RuntimeWarning,
-                )
-
-        return self.actor.GetPosition2()
+        return (self.boundingbox[2]-self.boundingbox[0], self.boundingbox[3]-self.boundingbox[1])
 
 
 class Button2D(UI):
