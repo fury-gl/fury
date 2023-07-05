@@ -222,6 +222,7 @@ def test_text_block_2d():
     _check_property(text_block, 'bold', [True, False])
     _check_property(text_block, 'italic', [True, False])
     _check_property(text_block, 'shadow', [True, False])
+    _check_property(text_block, 'auto_font_scale', [True, False])
     _check_property(text_block, 'font_size', range(100))
     _check_property(text_block, 'message', ['', 'Hello World', 'Line\nBreak'])
     _check_property(text_block, 'justification', ['left', 'center', 'right'])
@@ -384,57 +385,46 @@ def test_text_block_2d_justification():
 
 
 def test_text_block_2d_size():
-    text_block_1 = ui.TextBlock2D(position=(50, 50), size=(100, 100))
 
-    npt.assert_equal(text_block_1.actor.GetTextScaleMode(), 1)
-    npt.assert_equal(text_block_1.size, (100, 100))
-
-    text_block_1.font_size = 50
+    text_block_1 = ui.TextBlock2D()
 
     npt.assert_equal(text_block_1.actor.GetTextScaleMode(), 0)
-    npt.assert_equal(text_block_1.font_size, 50)
+    npt.assert_equal(text_block_1.size, (len("Text Block") *
+                     text_block_1.font_size, text_block_1.font_size))
 
-    text_block_2 = ui.TextBlock2D(position=(50, 50), font_size=50)
+    text_block_1.font_size = 50
+    npt.assert_equal(text_block_1.size, (len("Text Block") *
+                     text_block_1.font_size, text_block_1.font_size))
 
-    npt.assert_equal(text_block_2.actor.GetTextScaleMode(), 0)
-    npt.assert_equal(text_block_2.font_size, 50)
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter('always', RuntimeWarning)
-        text_block_2.size
-        npt.assert_equal(len(w), 1)
-        npt.assert_(issubclass(w[-1].category, RuntimeWarning))
+    text_block_1.resize((500, 200))
+    npt.assert_equal(text_block_1.actor.GetTextScaleMode(), 0)
+    npt.assert_equal(text_block_1.size, (500, 200))
 
-    text_block_2.resize((100, 100))
+    text_block_2 = ui.TextBlock2D(text="Just Another Text Block",auto_font_scale=True)
 
     npt.assert_equal(text_block_2.actor.GetTextScaleMode(), 1)
-    npt.assert_equal(text_block_2.size, (100, 100))
+    npt.assert_equal(text_block_2.size, (len("Just Another Text Block") *
+                     text_block_2.font_size, text_block_2.font_size))
+
+    text_block_2.resize((500, 200))
+    npt.assert_equal(text_block_2.actor.GetTextScaleMode(), 1)
+    npt.assert_equal(text_block_2.size, (500, 200))
 
     text_block_2.position = (100, 100)
     npt.assert_equal(text_block_2.position, (100, 100))
 
-    window_size = (700, 700)
-    show_manager = window.ShowManager(size=window_size)
+    text_block_3 = ui.TextBlock2D(size=(200, 200))
 
-    text_block_3 = ui.TextBlock2D(
-        text='FURY\nFURY\nFURY\nHello',
-        position=(150, 100),
-        bg_color=(1, 0, 0),
-        color=(0, 1, 0),
-        size=(100, 100),
-    )
+    npt.assert_equal(text_block_3.actor.GetTextScaleMode(), 0)
+    npt.assert_equal(text_block_3.size, (200, 200))
 
-    show_manager.scene.add(text_block_3)
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter('always', RuntimeWarning)
-        text_block_3.font_size = 100
-        npt.assert_equal(len(w), 1)
-        npt.assert_(issubclass(w[-1].category, RuntimeWarning))
-        npt.assert_equal(text_block_3.size, (100, 100))
+    text_block_3.resize((500, 200))
+    npt.assert_equal(text_block_3.actor.GetTextScaleMode(), 0)
+    npt.assert_equal(text_block_3.size, (500, 200))
 
-        text_block_3.font_size = 12
-        npt.assert_equal(len(w), 1)
-        npt.assert_(issubclass(w[-1].category, RuntimeWarning))
-        npt.assert_equal(text_block_3.font_size, 12)
+    text_block_3.message = "Hey Trying\nBig Text"
+    npt.assert_equal(text_block_3.size, (10 *
+                     text_block_3.font_size, 2 * text_block_3.font_size))
 
 
 # test_ui_button_panel(recording=True)
