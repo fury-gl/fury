@@ -1082,8 +1082,9 @@ class TextBlock2D(UI):
             self.background.resize(size)
         else:
             lines = self.message.split("\n")
+            max_length = max(len(line) for line in lines)
             self.boundingbox = [self.position[0], self.position[1],
-                                self.position[0]+len(lines[0])*self.font_size, self.position[1]+len(lines)*self.font_size]
+                                self.position[0]+max_length*self.font_size, self.position[1]+len(lines)*self.font_size]
             self.background.resize(
                 (self.boundingbox[2]-self.boundingbox[0], self.boundingbox[3]-self.boundingbox[1]))
 
