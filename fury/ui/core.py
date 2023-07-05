@@ -1039,6 +1039,9 @@ class TextBlock2D(UI):
             self.background.color = color
 
     def update_alignment(self):
+        """Update Text Alignment.
+
+        """
         text_property = self.actor.GetTextProperty()
         text_position = self.actor.GetPosition()
         updated_text_position = [0, 0]
@@ -1076,6 +1079,15 @@ class TextBlock2D(UI):
         self.actor.SetPosition(updated_text_position)
 
     def update_bounding_box(self, size=None):
+        """Update Text Bounding Box.
+
+        Parameters
+        ----------
+        size : (int, int) or None
+            If None, calculates bounding box.
+            Otherwise, uses the given size.
+
+        """
         if size is not None:
             self.boundingbox = [self.position[0], self.position[1],
                                 self.position[0]+size[0], self.position[1]+size[1]]
