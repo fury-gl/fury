@@ -22,7 +22,15 @@
 }
 
 .tabs-info {
-    font-size: 20px;
+    font-size: 16px;
+    color: #4a4a4a;
+}
+
+@media screen and (max-width: 600px) {
+    .tabs-info {
+        font-size: 12.8px;
+        font-weight: bold;
+    }
 }
 
 .visualization, .data-science, .scientific-domains, .machine-learning, .array-libraries {
