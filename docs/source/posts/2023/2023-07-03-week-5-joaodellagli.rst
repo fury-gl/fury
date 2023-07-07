@@ -11,7 +11,7 @@ Hello everyone, time for another weekly blogpost! Today, we will talk about taki
 
 Last Week's Effort
 ------------------
-After having the FBO properly set up, the plan was to finally *render* something to it. Well, I wished for a less bumpier road
+After having the FBO properly set up, the plan was to finally *render* something to it. Well, I wished for a less bumpy road
 at my :doc:`last blogpost <2023-06-26-week-4-joaodellagli>` but as in this project things apparently tend to go wrong, 
 of course the same happened with this step. 
 
@@ -22,7 +22,7 @@ Days passed without anything being rendered to the FBO. The setup I was working 
 an FBO:
 
 1. Setup the FBO
-2. Attach a texture to its color attachment
+2. Attach a texture to it's color attachment
 3. Setup the shader to be used in the FBO render and the shader to render the FBO's Color Attachment
 4. Render to the FBO
 5. Use the color attachment as texture attached to a billboard to render what was on the screen
@@ -46,7 +46,7 @@ job of doing exactly what I described above. Below, the steps to do it:
    # Bind the framebuffer texture to the desired actor
    actor.SetTexture(texture)
 
-This is enough to bind to the desired actor a texture that corresponds to was prior rendered to the screen.
+This is enough to bind to the desired actor a texture that corresponds to what was prior rendered to the screen.
 
 
 This Week's Goals
@@ -70,7 +70,7 @@ This complicated sentence can be translated into the below image:
    :align: center
    :alt: KDE plot of 100 random points
 
-That is what a KDE plot of 100 random points look like. The greener the area, the greater the density of points. The plan is to implement 
+That is what a KDE plot of 100 random points looks like. The greener the area, the greater the density of points. The plan is to implement 
 something like that with the tools we now have available.
 
 Let's get to work!
