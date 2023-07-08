@@ -2918,3 +2918,47 @@ iframe {border: none;}
 	right: 0px;
 	bottom: 0px;
 }
+
+/* Grid */
+.grid {
+	display: grid;
+}
+
+/* Gaps */
+.g-gap-2 {
+	grid-gap: 2em;
+}
+
+/* Columns */
+.g-col-3 {
+	grid-template-columns: repeat(3, 1fr);
+}
+.g-col-2 {
+	grid-template-columns: repeat(2, 1fr);
+}
+
+/* Rows */
+.g-row-2 {
+	grid-template-rows: repeat(2, 1fr);
+}
+
+/* Spans */
+.g-span-2 {
+	grid-column: span 2;
+}
+
+/* Mobile section */
+@media only screen and (max-width: 600px) {
+	/* Columns */
+	.g-m-col-2 {
+		grid-template-columns: repeat(2, 1fr);
+	}
+	.g-m-col-1 {
+		grid-template-columns: repeat(1, 1fr);
+	}
+
+	/* Rows */
+	.g-m-rows-3 {
+		grid-template-rows: repeat(3, 1fr);
+	}
+}

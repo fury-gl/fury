@@ -55,6 +55,10 @@
     font-weight: 500;
     color: rgb(108, 122, 137);
 }
+.uk-tab > .uk-active > a {
+    color: var(--colorPrimaryDark) !important;
+    border-color: var(--colorPrimaryDark) !important;
+}
 
 @media screen and (max-width: 600px) {
 
@@ -62,7 +66,7 @@
         margin-left: 0 !important;
     }
 
-    .uk-tab> .uk-active > a {
+    .uk-tab > .uk-active > a {
         border-color: var(--colorPrimaryDark) !important;
         color: var(--colorPrimaryDark) !important;
     }
@@ -118,41 +122,10 @@
     }
 }
 
-.grid-container {
-    display: grid;
-    grid-template-columns: auto auto;
-    grid-gap: 20px;
-}
-
-.grid-container > div {
-    /* White, with 80% opacity */
-    background-color: rgba(255, 255, 255, 0.8);
-    text-align: middle;
-}
-
-@media only screen and (max-width: 600px) {
-    .grid-container {
-        display: block;
-    }
-}
-
 /* Visualization */
 .visualization-images img,
 .visualization-images a {
     border-radius: 10px;
-}
-
-.image-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    grid-gap: 2em;
-}
-
-@media only screen and (max-width: 600px) {
-    .image-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
 }
 
 .image-grid > div {
@@ -171,6 +144,11 @@
     .image-grid > div {
         min-height: 150px;
     }
+}
+
+.molecular-band {
+    padding: 30px;
+    background-color: white !important;
 }
 
 .image-description {
