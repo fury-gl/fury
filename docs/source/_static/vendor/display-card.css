@@ -56,12 +56,28 @@
   margin-right: 12px;
 }
 
+@media only screen and (max-width: 600px) {
+  .h-card__title-icon {
+    width: 15px;
+    height: 15px;
+    filter: brightness(0) invert(1);
+    margin-right: 8px;
+  }
+}
+
 .h-card__title {
   font-weight: 600;
   color: var(--colorPrimaryDark);
 
   margin: 0;
   margin-bottom: 10px;
+}
+
+@media only screen and (max-width: 600px) {
+  .h-card__title {
+    font-size: 12px;
+    color: white;
+  }
 }
 
 .h-card__data {
