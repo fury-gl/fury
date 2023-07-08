@@ -1761,9 +1761,9 @@ def test_ellipsoid_actor(interactive=False):
     colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1],
                        [1, 1, 0], [1, 0, 1], [0, 1, 1]])
 
-    tensors = actor.ellipsoid(axes=axes, lengths=lengths, centers=centers,
+    ellipsoids = actor.ellipsoid(axes=axes, lengths=lengths, centers=centers,
                               scales=1.0, colors=colors)
-    scene.add(tensors)
+    scene.add(ellipsoids)
 
     if interactive:
         window.show(scene)

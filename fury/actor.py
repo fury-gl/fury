@@ -8,9 +8,9 @@ import numpy as np
 
 import fury.primitive as fp
 from fury import layout
-from fury.actors.tensor import tensor_ellipsoid
 from fury.actors.odf_slicer import OdfSlicerActor
 from fury.actors.peak import PeakActor
+from fury.actors.tensor import tensor_ellipsoid
 from fury.colormap import colormap_lookup_table
 from fury.deprecator import deprecate_with_version, deprecated_params
 from fury.io import load_image
@@ -3818,11 +3818,11 @@ def ellipsoid(
     lengths : ndarray (3, ) or (N, 3)
         Axes lengths.
     colors : ndarray (N,3) or tuple (3,), optional
-        Default red color. R, G and B should be at the range [0, 1]
+        Default red color. R, G and B should be in the range [0, 1].
     scales : float or ndarray (N, ), optional
-        Ellipsoid size, default(1).
+        Ellipsoid size, default(1.0).
     opacity : float, optional
-        Takes values from 0 (fully transparent) to 1 (opaque). Default is 1.
+        Takes values from 0 (fully transparent) to 1 (opaque), default(1.0).
 
     Returns
     -------

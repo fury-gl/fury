@@ -3,9 +3,8 @@ import os
 import numpy as np
 
 from fury import actor
-from fury.shaders import (attribute_to_actor, import_fury_shader,
-                          shader_to_actor, compose_shader)
-
+from fury.shaders import (attribute_to_actor, compose_shader,
+                          import_fury_shader, shader_to_actor)
 
 def tensor_ellipsoid(centers, axes, lengths, colors, scales, opacity):
     """
@@ -14,16 +13,16 @@ def tensor_ellipsoid(centers, axes, lengths, colors, scales, opacity):
     Parameters
     ----------
     centers : ndarray(N, 3)
-        Tensor ellipsoid positions
+        Tensor ellipsoid positions.
     axes : ndarray (3, 3) or (N, 3, 3)
-        Axes of the tensor ellipsoid
+        Axes of the tensor ellipsoid.
     lengths : ndarray (3, ) or (N, 3)
-        Axes lengths
-    colors : ndarray (N,3) or tuple (3,), optional
-        Default red color. R, G and B should be at the range [0, 1]
-    scales : float or ndarray (N, ), optional
-        Tensor ellipsoid size, default(1)
-    opacity : float, optional
+        Axes lengths.
+    colors : ndarray (N,3) or tuple (3,)
+        R, G and B should be in the range [0, 1].
+    scales : float or ndarray (N, )
+        Tensor ellipsoid size.
+    opacity : float
         Takes values from 0 (fully transparent) to 1 (opaque).
 
     Returns
