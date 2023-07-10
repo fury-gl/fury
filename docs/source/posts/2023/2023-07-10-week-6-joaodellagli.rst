@@ -46,8 +46,15 @@ I will see what is better talking with my mentors.
 Another problem I faced (that is already fixed) relied on shaders. I didn't fully understood how shaders are dealt inside FURY so I was 
 using my own fragment shader implementation, replacing the already existing one completely. That was working, but I was having an issue 
 with the texture coordinates of the rendering texture. As I compeltely replaced the fragment shader, I had to pass custom texture coordinates
-to the 
+to it, resulting in distorted textures that ruined the calculations. Those issues motivated me to learn the shaders API, which allowed me 
+to use the right texture coordinates and finally render the results you see above.
 
 
 This Week's Goals
 -----------------
+For this week, I plan to try a different approach Filipi, one of my mentors, told me to do. This approach was supposed to be the original 
+one, but a communication failure lead to this path I am currently in. This approach renders each KDE calculation into its own billboard,  
+and those are rendered together with additive blending. After this first pass, this render is captured into a texture and then rendered to 
+another big billboard. 
+
+Wish me luck!
