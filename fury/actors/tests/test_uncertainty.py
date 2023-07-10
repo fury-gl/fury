@@ -67,7 +67,7 @@ def diffusion_tensors():
     sphere.vertices = vertices
     sphere.faces = faces
 
-    from dipy.data import get_sphere
-    sphere = get_sphere('symmetric724')
+    #from dipy.data import get_sphere
+    #sphere = get_sphere('symmetric724')
 
     return actor.tensor_slicer(evals, evecs, sphere=sphere, scale=0.3)
