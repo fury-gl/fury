@@ -154,6 +154,7 @@ points = normalize(points, -1, 1)
 
 
 # Render the scene and capture the framebuffer after each mixing step
+manager.window.SetOffScreenRendering(True)
 for i in range(0, n_points - 1): 
     shader_custom_uniforms(billboard, "fragment").SetUniformi("i", i)
     shader_custom_uniforms(billboard, "fragment").SetUniform3f("p", points[i, :].tolist())
@@ -166,6 +167,8 @@ shader_custom_uniforms(billboard, "fragment").SetUniformi("i", i)
 shader_custom_uniforms(billboard, "fragment").SetUniform3f("p", points[n_points - 1, :].tolist())
     
 manager.render()
+
+manager.window.SetOffScreenRendering(False)
 
 capture_and_bind_texture(billboard, manager.scene, textured_billboard)
 
