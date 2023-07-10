@@ -1736,14 +1736,16 @@ def test_marker_actor(interactive=False):
 
 def test_uncertainty_actor(interactive=False):
     scene = window.Scene()
-    scene.background((0, 0, 0))
 
-    data = np.array([0, 0, 0])
-    bvals = np.array([0, 0, 0])
-    bvecs = np.array([0, 0, 0])
+    from dipy.data import get_fnames
+    from dipy.io import read_bvals_bvecs
+    _, fbvals, fbvecs = get_fnames('small_101D')
+    bvals, bvecs = read_bvals_bvecs(fbvals, fbvecs)
 
-    uncert_cones = actor.dti_uncertainty(data=data, bvals=bvals, bvecs=bvecs,
-                                         scales=1.0, opacity=1.0)
+    n = bvals.shape[0]
+    data = np.ones((10, 10, 1, n)) * 0.1
+
+    uncert_cones = actor.dti_uncertainty(data=data, bvals=bvals, bvecs=bvecs)
     scene.add(uncert_cones)
 
     if interactive:
@@ -1751,6 +1753,23 @@ def test_uncertainty_actor(interactive=False):
 
     report = window.analyze_scene(scene)
     npt.assert_equal(report.actors, 1)
+    arr = window.snapshot(scene, offscreen=True)
+    report = window.analyze_snapshot(arr)
+    npt.assert_equal(report.objects, 100)
+    scene.clear()
+
+    n = bvals.shape[0]
+    data = np.ones((5, 5, 5, n)) * 0.5
+    uncert_cones = actor.dti_uncertainty(data=data, bvals=bvals, bvecs=bvecs)
+    scene.add(uncert_cones)
+
+    if interactive:
+        window.show(scene)
+
+    report = window.analyze_scene(scene)
+    npt.assert_equal(report.actors, 1)
+    scene.clear()
+
 
 def test_actors_primitives_count():
     centers = np.array([[1, 1, 1], [2, 2, 2]])
