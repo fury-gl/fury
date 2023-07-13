@@ -11,7 +11,7 @@ Hello everyone, time for a other weekly blogpost! Today, I will show you my curr
 
 What I did Last Week
 --------------------
-Last week I had the goal to implement KDE rendering to the screen (if you want to understand what this is, check my :doc:`last blogpost <2023-07-03-week-5-joaodellagli>`). 
+Last week I had the goal to implement KDE rendering to the screen (if you want to understand what this is, check my :doc:`last blogpost <2023-07-03-week-5-joaodellagli>`_). 
 After some days diving into the code, I finally managed to do it:
 
 .. image:: https://raw.githubusercontent.com/JoaoDell/gsoc_assets/main/images/buffer_compose.png
