@@ -1,8 +1,7 @@
 import numpy as np
 from fury import window, actor
-from vtk import vtkWindowToImageFilter
 from fury.shaders import compose_shader, shader_apply_effects
-from fury.lib import Texture
+from fury.lib import Texture, WindowToImageFilter
 from fury.io import load_image
 from fury.utils import rgb_to_vtk
 from matplotlib import colormaps
@@ -64,7 +63,7 @@ def window_to_texture(
 
     r, g, b, a = border_color
 
-    windowToImageFilter = vtkWindowToImageFilter()
+    windowToImageFilter = WindowToImageFilter()
     windowToImageFilter.SetInput(window)
 
     windowToImageFilter.Update()
