@@ -3,8 +3,11 @@ This spript includes the implementation of dti_uncertainty actor for the
 visualization of the cones of uncertainty along with the diffusion tensors for
 comparison
 """
+from dipy.core.gradients import gradient_table
 from dipy.reconst import dti
 from dipy.segment.mask import median_otsu
+
+import dipy.denoise.noise_estimate as ne
 
 from fury import actor, window
 
@@ -30,8 +33,30 @@ def test_uncertainty():
     maskdata, mask = median_otsu(data, vol_idx=range(10, 50), median_radius=3,
                                  numpass=1, autocrop=True, dilate=2)
 
-    uncertainty_cones = actor.dti_uncertainty(
-        data=maskdata[13:43, 44:74, 28:29], bvals=bvals, bvecs=bvecs)
+    gtab = gradient_table(bvals, bvecs)
+
+    tenmodel = dti.TensorModel(gtab)
+    tenfit = tenmodel.fit(maskdata[13:43, 44:74, 28:29])
+
+    # Eigenvalues and eigenvectors
+    fevals = tenfit.evals
+    fevecs = tenfit.evecs
+
+    tensor_vals = dti.lower_triangular(tenfit.quadratic_form)
+    dti_params = dti.eig_from_lo_tri(tensor_vals)
+
+    # Predicted signal given tensor parameters
+    fsignal = dti.tensor_prediction(dti_params, gtab, 1.0)
+
+    # Design matrix or B matrix
+    b_matrix = dti.design_matrix(gtab)
+
+    # Standard deviation of the noise
+    sigma = ne.estimate_sigma(maskdata[13:43, 44:74, 28:29])
+
+    uncertainty_cones = actor.uncertainty_cone(evecs=fevecs, evals=fevals,
+                                               signal=fsignal, sigma=sigma,
+                                               b_matrix=b_matrix)
 
     scene = window.Scene()
     scene.background([255, 255, 255])

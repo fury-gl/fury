@@ -10,7 +10,7 @@ import fury.primitive as fp
 from fury import layout
 from fury.actors.odf_slicer import OdfSlicerActor
 from fury.actors.peak import PeakActor
-from fury.actors.tensor import uncertainty_cone
+from fury.actors.tensor import double_cone, main_dir_uncertainty
 from fury.colormap import colormap_lookup_table
 from fury.deprecator import deprecate_with_version, deprecated_params
 from fury.io import load_image
@@ -3798,10 +3798,12 @@ def markers(
     return sq_actor
 
 
-def dti_uncertainty(
-    data,
-    bvals,
-    bvecs,
+def uncertainty_cone(
+    evals,
+    evecs,
+    signal,
+    sigma,
+    b_matrix,
     scales=.6,
     opacity=1.0
 ):
@@ -3811,12 +3813,16 @@ def dti_uncertainty(
 
     Parameters
     ----------
-    data : 3D or 4D ndarray
-        Diffusion data.
-    bvals : array, (N,) or None
-        Array containing the b-values.
-    bvecs : array, (N, 3) or None
-        Array containing the b-vectors.
+    evals : ndarray (3, ) or (N, 3)
+        Eigenvalues.
+    evecs : ndarray (3, 3) or (N, 3, 3)
+        Eigenvectors.
+    signal : 3D or 4D ndarray
+        Predicted signal.
+    sigma : ndarray
+        Standard deviation of the noise.
+    b_matrix : array (N, 7)
+        Design matrix for DTI.
     scales : float or ndarray (N, ), optional
         Cones of uncertainty size, default(1.0).
     opacity : float, optional
@@ -3824,24 +3830,26 @@ def dti_uncertainty(
 
     Returns
     -------
-    uncertainty_cone: Actor
-
-    Examples
-    --------
-    >>> from fury import actor, window
-    >>> from dipy.io.image import load_nifti
-    >>> from dipy.io.gradients import read_bvals_bvecs
-    >>> from dipy.data import get_fnames
-    >>> scene = window.Scene()
-    >>> hardi_fname, hardi_bval_fname, hardi_bvec_fname =\
-    >>>     get_fnames("stanford_hardi")
-    >>> data, _ = load_nifti(hardi_fname)
-    >>> bvals, bvecs = read_bvals_bvecs(hardi_bval_fname, hardi_bvec_fname)
-    >>> uncertainty_cones = actor.dti_uncertainty(
-    >>>     data=data[13:43, 44:74, 28:29], bvals=bvals, bvecs=bvecs)
-    >>> scene.add(uncertainty_cones)
-    >>> #window.show(scene)
+    double_cone: Actor
 
     """
 
-    return uncertainty_cone(data, bvals, bvecs, scales, opacity)
+    valid_mask = np.abs(evecs).max(axis=(-2, -1)) > 0
+    indices = np.nonzero(valid_mask)
+
+    evecs = evecs[indices]
+    evals = evals[indices]
+    signal = signal[indices]
+
+    centers = np.asarray(indices).T
+    colors = np.array([107, 107, 107])
+
+    x, y, z = evecs.shape
+    if not isinstance(scales, np.ndarray):
+        scales = np.array(scales)
+    if scales.size == 1:
+        scales = np.repeat(scales, x)
+
+    angles = main_dir_uncertainty(evals, evecs, signal, sigma, b_matrix)
+
+    return double_cone(centers, evecs, angles, colors, scales, opacity)
