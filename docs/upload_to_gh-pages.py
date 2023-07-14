@@ -15,12 +15,10 @@ import shutil
 import sys
 from os import chdir as cd
 from os.path import join as pjoin
-
-from subprocess import Popen, PIPE, CalledProcessError, check_call
+from subprocess import PIPE, CalledProcessError, Popen, check_call
 
 if sys.version_info < (3, 4):
-    raise RuntimeError("Python 3.4 and above is required"
-                       " for running this script")
+    raise RuntimeError('Python 3.4 and above is required' ' for running this script')
 else:
     from pathlib import Path
 
@@ -85,37 +83,43 @@ if __name__ == '__main__':
     cd(pkg_path)
     mod = __import__(pkg_name)
 
-    if pjoin(pkg_path, pkg_name).lower() != \
-       os.path.dirname(mod.__file__).lower():
+    if pjoin(pkg_path, pkg_name).lower() != os.path.dirname(mod.__file__).lower():
 
         print(pjoin(pkg_path, pkg_name))
         print(mod.__file__)
-        raise RuntimeError("You should work with the source and not the "
-                           "installed package")
+        raise RuntimeError(
+            'You should work with the source and not the ' 'installed package'
+        )
 
     # find the version number
-    tag = "dev"
+    tag = 'dev'
     if any(t in mod.__version__.lower() for t in ['dev', 'post']):
         tag = mod.__version__
+
+    if len(sys.argv) == 2:
+        tag = sys.argv[1]
 
     intro_msg = """
 ##############################################
 #  Documentation version {}
 #
 #  using tag '{}'
-##############################################""".format(mod.__version__, tag)
+##############################################""".format(
+        mod.__version__, tag
+    )
 
     print(intro_msg)
 
     if not os.path.exists(html_dir):
-        raise RuntimeError("Documentation build folder not found! You should "
-                           "generate the documentation first via this "
-                           "command: 'make -C docs html')"
-                           )
+        raise RuntimeError(
+            'Documentation build folder not found! You should '
+            'generate the documentation first via this '
+            "command: 'make -C docs html')"
+        )
 
     if not os.path.exists(pages_dir):
         # clone the gh-pages repo if we haven't already.
-        sh("git clone {0} {1}".format(pages_repo, pages_dir))
+        sh('git clone {0} {1}'.format(pages_repo, pages_dir))
 
     # ensure up-to-date before operating
     cd(pages_dir)
@@ -123,23 +127,22 @@ if __name__ == '__main__':
         sh('git checkout gh-pages')
         sh('git pull')
     except BaseException:
-        print("\nLooks like gh-pages branch does not exist!")
-        print("Do you want to create a new one? (y/n)")
+        print('\nLooks like gh-pages branch does not exist!')
+        print('Do you want to create a new one? (y/n)')
         while 1:
             choice = str(input()).lower()
             if choice == 'y':
-                sh("git checkout -b gh-pages")
-                sh("rm -rf *")
-                sh("git add .")
+                sh('git checkout -b gh-pages')
+                sh('rm -rf *')
+                sh('git add .')
                 sh("git commit -m 'cleaning gh-pages branch'")
-                sh("git push origin gh-pages")
+                sh('git push origin gh-pages')
                 break
             elif choice == 'n':
-                print("Please manually create a new gh-pages branch"
-                      " and try again.")
+                print('Please manually create a new gh-pages branch' ' and try again.')
                 sys.exit(0)
             else:
-                print("Please enter valid choice ..")
+                print('Please enter valid choice ..')
 
     # delete tag version and copy the doc
     dest = os.path.join(pages_dir, tag)
@@ -148,11 +151,10 @@ if __name__ == '__main__':
 
     try:
         cd(pages_dir)
-        status = sh2('git status | head -1')
+        status = sh2('LANG=en_US git status | head -1')
         branch = re.match(b'On branch (.*)$', status).group(1)
         if branch != b'gh-pages':
-            e = 'On %r, git branch is %r, MUST be "gh-pages"' % (pages_dir,
-                                                                 branch)
+            e = 'On %r, git branch is %r, MUST be "gh-pages"' % (pages_dir, branch)
             raise RuntimeError(e)
 
         # Add no jekyll file
@@ -162,7 +164,7 @@ if __name__ == '__main__':
 
         sh('git add --all {}'.format(tag))
 
-        status = sh2('git status | tail -1')
+        status = sh2('LANG=en_US git status | tail -1')
         if not re.match(b'nothing to commit', status):
             sh2('git commit -m "Updated doc release: {}"'.format(tag))
         else:
@@ -174,6 +176,7 @@ if __name__ == '__main__':
         # update stable symlink
         # latest_tag = sh2('git describe --exact-match --abbrev=0')
         # os.symlink()
+        #  ln -nsf 1.2 latest
     finally:
         cd(current_dir)
 

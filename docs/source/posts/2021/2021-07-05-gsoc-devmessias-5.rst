@@ -17,7 +17,7 @@ What did you do this week?
    time researching to found a cause for this. Fortunately, I could found
    the cause and the solution. This troublesome MacOs was falling in a
    silent bug because the SharedMemory Object was creating a memory
-   resource with at least 4086 bytes indepedent if I've requested less
+   resource with at least 4086 bytes independent if I've requested less
    than that. If we look into the MultiDimensionalBuffer Object
    (stream/tools.py) before the 8c670c2 commit we can see that Object
    has max_size parameter which needs to be updated if the SharedMemory
@@ -27,19 +27,19 @@ What did you do this week?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In the past week I've made a lot of improvements in this PR, from
-performance improvements to visual effects. Bellow are the list of the
+performance improvements to visual effects. Below are the list of the
 tasks related with this PR:
 
--  - Code refactoring.
--  - Visual improvements: Using the UniformTools from my pull request
+-  Code refactoring.
+-  Visual improvements: Using the UniformTools from my pull request
    `#424`_ now is possible to control all the visual characteristics at
    runtime.
--  - 2D Layout: Meanwhile 3d network representations are very usefully
+-  2D Layout: Meanwhile 3d network representations are very usefully
    for exploring a dataset is hard to convice a group of network
-   scientists to use a visualization system which dosen't allow 2d
+   scientists to use a visualization system which doesn't allow 2d
    representations. Because of that I started to coding the 2d behavior
    in the network visualization system.
--  - Minimum Distortion Embeddings examples: I've created some examples
+-  Minimum Distortion Embeddings examples: I've created some examples
    which shows how integrate pymde (Python Minimum Distortion
    Embeddings) with fury/helios. The image below shows the result of
    this integration: a "perfect" graph embedding
@@ -61,4 +61,4 @@ I did not get stuck this week.
 .. _8c670c2: https://github.com/fury-gl/fury/pull/437/commits/8c670c284368029cdb5b54c178a792ec615e4d4d
 .. _`fury-gl/helios PR 1: Network Layout and SuperActors`: https://github.com/fury-gl/helios/pull/1
 .. _#424: https://github.com/fury-gl/fury/pull/424
-.. _heliosPR#1: 
+.. _heliosPR#1:

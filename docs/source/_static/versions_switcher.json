@@ -1,0 +1,52 @@
+[
+  {
+    "name": "dev",
+    "version": "latest",
+    "url": "https://fury.gl/dev/index.html"
+  },
+  {
+    "name": "v0.9.x (stable)",
+    "version": "stable",
+    "url": "https://fury.gl/v0.9.x/index.html"
+  },
+  {
+    "name": "v0.8.x",
+    "version": "v0.8.x",
+    "url": "https://fury.gl/v0.8.x/index.html"
+  },
+  {
+    "name": "v0.7.x",
+    "version": "v0.7.x",
+    "url": "https://fury.gl/v0.7.x/index.html"
+  },
+  {
+    "name": "v0.6.x",
+    "version": "v0.6.x",
+    "url": "https://fury.gl/v0.6.x/index.html"
+  },
+  {
+    "name": "v0.5.x",
+    "version": "v0.5.x",
+    "url": "https://fury.gl/v0.5.x/index.html"
+  },
+  {
+    "name": "v0.4.x",
+    "version": "v0.4.x",
+    "url": "https://fury.gl/v0.4.x/index.html"
+  },
+  {
+    "name": "v0.3.x",
+    "version": "v0.3.x",
+    "url": "https://fury.gl/v0.3.x/index.html"
+  },
+  {
+    "name": "v0.2.x",
+    "version": "v0.2.x",
+    "url": "https://fury.gl/v0.2.x/index.html"
+  },
+  {
+    "name": "v0.1.x",
+    "version": "v0.1.x",
+    "url": "https://fury.gl/v0.1.x/index.html"
+  }
+]

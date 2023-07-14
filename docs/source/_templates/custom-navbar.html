@@ -1,0 +1,29 @@
+<ul id="navbar-main-elements" class="navbar-nav">
+    <li class="nav-item">
+        <a class="nav-link" href="{{ pathto('installation') }}">Installation</a>
+    </li>
+    <li class="nav-item ">
+        <a class="nav-link" href="{{ pathto('introduction') }}">About</a>
+    </li>
+
+    <li class="nav-item ">
+        <a class="nav-link" href="{{ pathto('reference/index') }}">API reference</a>
+    </li>
+
+    <li class="nav-item ">
+        <a class="nav-link" href="{{ pathto('blog') }}">Blog</a>
+    </li>
+
+    <li class="nav-item ">
+        <a class="nav-link" href="{{ pathto('community') }}">Community</a>
+    </li>
+    {% for external_link in theme_external_links %}e
+    <li class="nav-item">
+        <a class="nav-link nav-external" href="{{ external_link.url }}">{{ _(external_link.name) }}<i class="fas fa-external-link-alt"></i></a>
+    </li>
+    {% endfor %}
+</ul>
+
+{%- block icon_links -%}
+{%- include "icon-links.html" with context -%}
+{%- endblock %}

@@ -1,15 +1,28 @@
 """UI core module that describe UI abstract class."""
 
-__all__ = ["Rectangle2D", "Disk2D", "TextBlock2D", "Button2D"]
+__all__ = ['Rectangle2D', 'Disk2D', 'TextBlock2D', 'Button2D']
 
 import abc
 from warnings import warn
 
 import numpy as np
-import vtk
 
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image
+from fury.lib import (
+    Actor2D,
+    CellArray,
+    DiskSource,
+    FloatArray,
+    Points,
+    PolyData,
+    PolyDataMapper2D,
+    Polygon,
+    Property2D,
+    TextActor,
+    Texture,
+    TexturedActor2D,
+)
 from fury.utils import set_input
 
 
@@ -86,9 +99,9 @@ class UI(object, metaclass=abc.ABCMeta):
         self._setup()  # Setup needed actors and sub UI components.
         self.position = position
 
-        self.left_button_state = "released"
-        self.right_button_state = "released"
-        self.middle_button_state = "released"
+        self.left_button_state = 'released'
+        self.right_button_state = 'released'
+        self.middle_button_state = 'released'
 
         self.on_left_mouse_button_pressed = lambda i_ren, obj, element: None
         self.on_left_mouse_button_dragged = lambda i_ren, obj, element: None
@@ -115,13 +128,13 @@ class UI(object, metaclass=abc.ABCMeta):
         components.
 
         """
-        msg = "Subclasses of UI must implement `_setup(self)`."
+        msg = 'Subclasses of UI must implement `_setup(self)`.'
         raise NotImplementedError(msg)
 
     @abc.abstractmethod
     def _get_actors(self):
         """Get the actors composing this UI component."""
-        msg = "Subclasses of UI must implement `_get_actors(self)`."
+        msg = 'Subclasses of UI must implement `_get_actors(self)`.'
         raise NotImplementedError(msg)
 
     @property
@@ -138,7 +151,7 @@ class UI(object, metaclass=abc.ABCMeta):
         _scene : Scene
 
         """
-        msg = "Subclasses of UI must implement `_add_to_scene(self, scene)`."
+        msg = 'Subclasses of UI must implement `_add_to_scene(self, scene)`.'
         raise NotImplementedError(msg)
 
     def add_to_scene(self, scene):
@@ -156,8 +169,10 @@ class UI(object, metaclass=abc.ABCMeta):
 
         for callback in self._callbacks:
             if not isinstance(iren, CustomInteractorStyle):
-                msg = ("The ShowManager requires `CustomInteractorStyle` in"
-                       " order to use callbacks.")
+                msg = (
+                    'The ShowManager requires `CustomInteractorStyle` in'
+                    ' order to use callbacks.'
+                )
                 raise TypeError(msg)
 
             if callback[0] == self._scene:
@@ -205,7 +220,7 @@ class UI(object, metaclass=abc.ABCMeta):
             Absolute pixel coordinates (x, y).
 
         """
-        msg = "Subclasses of UI must implement `_set_position(self, coords)`."
+        msg = 'Subclasses of UI must implement `_set_position(self, coords)`.'
         raise NotImplementedError(msg)
 
     @property
@@ -214,12 +229,12 @@ class UI(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def _get_size(self):
-        msg = "Subclasses of UI must implement property `size`."
+        msg = 'Subclasses of UI must implement property `size`.'
         raise NotImplementedError(msg)
 
     @property
     def center(self):
-        return self.position + self.size / 2.
+        return self.position + self.size / 2.0
 
     @center.setter
     def center(self, coords):
@@ -231,13 +246,13 @@ class UI(object, metaclass=abc.ABCMeta):
             Absolute pixel coordinates (x, y).
 
         """
-        if not hasattr(self, "size"):
-            msg = "Subclasses of UI must implement the `size` property."
+        if not hasattr(self, 'size'):
+            msg = 'Subclasses of UI must implement the `size` property.'
             raise NotImplementedError(msg)
 
         new_center = np.array(coords)
         size = np.array(self.size)
-        new_lower_left_corner = new_center - size / 2.
+        new_lower_left_corner = new_center - size / 2.0
         self.position = new_lower_left_corner
 
     def set_visibility(self, visibility):
@@ -246,80 +261,90 @@ class UI(object, metaclass=abc.ABCMeta):
             actor.SetVisibility(visibility)
 
     def handle_events(self, actor):
-        self.add_callback(actor, "LeftButtonPressEvent",
-                          self.left_button_click_callback)
-        self.add_callback(actor, "LeftButtonReleaseEvent",
-                          self.left_button_release_callback)
-        self.add_callback(actor, "RightButtonPressEvent",
-                          self.right_button_click_callback)
-        self.add_callback(actor, "RightButtonReleaseEvent",
-                          self.right_button_release_callback)
-        self.add_callback(actor, "MiddleButtonPressEvent",
-                          self.middle_button_click_callback)
-        self.add_callback(actor, "MiddleButtonReleaseEvent",
-                          self.middle_button_release_callback)
-        self.add_callback(actor, "MouseMoveEvent", self.mouse_move_callback)
-        self.add_callback(actor, "KeyPressEvent", self.key_press_callback)
+        self.add_callback(
+            actor, 'LeftButtonPressEvent', self.left_button_click_callback
+        )
+        self.add_callback(
+            actor, 'LeftButtonReleaseEvent', self.left_button_release_callback
+        )
+        self.add_callback(
+            actor, 'RightButtonPressEvent', self.right_button_click_callback
+        )
+        self.add_callback(
+            actor, 'RightButtonReleaseEvent', self.right_button_release_callback
+        )
+        self.add_callback(
+            actor, 'MiddleButtonPressEvent', self.middle_button_click_callback
+        )
+        self.add_callback(
+            actor, 'MiddleButtonReleaseEvent', self.middle_button_release_callback
+        )
+        self.add_callback(actor, 'MouseMoveEvent', self.mouse_move_callback)
+        self.add_callback(actor, 'KeyPressEvent', self.key_press_callback)
 
     @staticmethod
     def left_button_click_callback(i_ren, obj, self):
-        self.left_button_state = "pressing"
+        self.left_button_state = 'pressing'
         self.on_left_mouse_button_pressed(i_ren, obj, self)
         i_ren.event.abort()
 
     @staticmethod
     def left_button_release_callback(i_ren, obj, self):
-        if self.left_button_state == "pressing":
+        if self.left_button_state == 'pressing':
             self.on_left_mouse_button_clicked(i_ren, obj, self)
-        self.left_button_state = "released"
+        self.left_button_state = 'released'
         self.on_left_mouse_button_released(i_ren, obj, self)
 
     @staticmethod
     def right_button_click_callback(i_ren, obj, self):
-        self.right_button_state = "pressing"
+        self.right_button_state = 'pressing'
         self.on_right_mouse_button_pressed(i_ren, obj, self)
         i_ren.event.abort()
 
     @staticmethod
     def right_button_release_callback(i_ren, obj, self):
-        if self.right_button_state == "pressing":
+        if self.right_button_state == 'pressing':
             self.on_right_mouse_button_clicked(i_ren, obj, self)
-        self.right_button_state = "released"
+        self.right_button_state = 'released'
         self.on_right_mouse_button_released(i_ren, obj, self)
 
     @staticmethod
     def middle_button_click_callback(i_ren, obj, self):
-        self.middle_button_state = "pressing"
+        self.middle_button_state = 'pressing'
         self.on_middle_mouse_button_pressed(i_ren, obj, self)
         i_ren.event.abort()
 
     @staticmethod
     def middle_button_release_callback(i_ren, obj, self):
-        if self.middle_button_state == "pressing":
+        if self.middle_button_state == 'pressing':
             self.on_middle_mouse_button_clicked(i_ren, obj, self)
-        self.middle_button_state = "released"
+        self.middle_button_state = 'released'
         self.on_middle_mouse_button_released(i_ren, obj, self)
 
     @staticmethod
     def mouse_move_callback(i_ren, obj, self):
-        left_pressing_or_dragging = (self.left_button_state == "pressing" or
-                                     self.left_button_state == "dragging")
+        left_pressing_or_dragging = (
+            self.left_button_state == 'pressing' or self.left_button_state == 'dragging'
+        )
 
-        right_pressing_or_dragging = (self.right_button_state == "pressing" or
-                                      self.right_button_state == "dragging")
+        right_pressing_or_dragging = (
+            self.right_button_state == 'pressing'
+            or self.right_button_state == 'dragging'
+        )
 
-        middle_pressing_or_dragging = \
-            (self.middle_button_state == "pressing" or
-             self.middle_button_state == "dragging")
+        middle_pressing_or_dragging = (
+            self.middle_button_state == 'pressing'
+            or self.middle_button_state == 'dragging'
+        )
 
         if left_pressing_or_dragging:
-            self.left_button_state = "dragging"
+            self.left_button_state = 'dragging'
             self.on_left_mouse_button_dragged(i_ren, obj, self)
         elif right_pressing_or_dragging:
-            self.right_button_state = "dragging"
+            self.right_button_state = 'dragging'
             self.on_right_mouse_button_dragged(i_ren, obj, self)
         elif middle_pressing_or_dragging:
-            self.middle_button_state = "dragging"
+            self.middle_button_state = 'dragging'
             self.on_middle_mouse_button_dragged(i_ren, obj, self)
 
     @staticmethod
@@ -330,8 +355,7 @@ class UI(object, metaclass=abc.ABCMeta):
 class Rectangle2D(UI):
     """A 2D rectangle sub-classed from UI."""
 
-    def __init__(self, size=(0, 0), position=(0, 0), color=(1, 1, 1),
-                 opacity=1.0):
+    def __init__(self, size=(0, 0), position=(0, 0), color=(1, 1, 1), opacity=1.0):
         """Initialize a rectangle.
 
         Parameters
@@ -351,20 +375,20 @@ class Rectangle2D(UI):
         self.resize(size)
 
     def _setup(self):
-        """Setup this UI component.
+        """Set up this UI component.
 
         Creating the polygon actor used internally.
         """
         # Setup four points
         size = (1, 1)
-        self._points = vtk.vtkPoints()
+        self._points = Points()
         self._points.InsertNextPoint(0, 0, 0)
         self._points.InsertNextPoint(size[0], 0, 0)
         self._points.InsertNextPoint(size[0], size[1], 0)
         self._points.InsertNextPoint(0, size[1], 0)
 
         # Create the polygon
-        polygon = vtk.vtkPolygon()
+        polygon = Polygon()
         polygon.GetPointIds().SetNumberOfIds(4)  # make a quad
         polygon.GetPointIds().SetId(0, 0)
         polygon.GetPointIds().SetId(1, 1)
@@ -372,19 +396,19 @@ class Rectangle2D(UI):
         polygon.GetPointIds().SetId(3, 3)
 
         # Add the polygon to a list of polygons
-        polygons = vtk.vtkCellArray()
+        polygons = CellArray()
         polygons.InsertNextCell(polygon)
 
         # Create a PolyData
-        self._polygonPolyData = vtk.vtkPolyData()
+        self._polygonPolyData = PolyData()
         self._polygonPolyData.SetPoints(self._points)
         self._polygonPolyData.SetPolys(polygons)
 
         # Create a mapper and actor
-        mapper = vtk.vtkPolyDataMapper2D()
+        mapper = PolyDataMapper2D()
         mapper = set_input(mapper, self._polygonPolyData)
 
-        self.actor = vtk.vtkActor2D()
+        self.actor = Actor2D()
         self.actor.SetMapper(mapper)
 
         # Add default events listener to the VTK actor.
@@ -440,7 +464,7 @@ class Rectangle2D(UI):
         self._points.SetPoint(2, size[0], size[1], 0.0)
         self._points.SetPoint(3, 0, size[1], 0.0)
         self._polygonPolyData.SetPoints(self._points)
-        mapper = vtk.vtkPolyDataMapper2D()
+        mapper = PolyDataMapper2D()
         mapper = set_input(mapper, self._polygonPolyData)
 
         self.actor.SetMapper(mapper)
@@ -495,8 +519,9 @@ class Rectangle2D(UI):
 class Disk2D(UI):
     """A 2D disk UI component."""
 
-    def __init__(self, outer_radius, inner_radius=0, center=(0, 0),
-                 color=(1, 1, 1), opacity=1.0):
+    def __init__(
+        self, outer_radius, inner_radius=0, center=(0, 0), color=(1, 1, 1), opacity=1.0
+    ):
         """Initialize a 2D Disk.
 
         Parameters
@@ -527,17 +552,17 @@ class Disk2D(UI):
 
         """
         # Setting up disk actor.
-        self._disk = vtk.vtkDiskSource()
+        self._disk = DiskSource()
         self._disk.SetRadialResolution(10)
         self._disk.SetCircumferentialResolution(50)
         self._disk.Update()
 
         # Mapper
-        mapper = vtk.vtkPolyDataMapper2D()
+        mapper = PolyDataMapper2D()
         mapper = set_input(mapper, self._disk.GetOutputPort())
 
         # Actor
-        self.actor = vtk.vtkActor2D()
+        self.actor = Actor2D()
         self.actor.SetMapper(mapper)
 
         # Add default events listener to the VTK actor.
@@ -662,10 +687,21 @@ class TextBlock2D(UI):
         Size (width, height) in pixels of the text bounding box.
     """
 
-    def __init__(self, text="Text Block", font_size=18, font_family='Arial',
-                 justification='left', vertical_justification="bottom",
-                 bold=False, italic=False, shadow=False, size=None,
-                 color=(1, 1, 1), bg_color=None, position=(0, 0)):
+    def __init__(
+        self,
+        text='Text Block',
+        font_size=18,
+        font_family='Arial',
+        justification='left',
+        vertical_justification='bottom',
+        bold=False,
+        italic=False,
+        shadow=False,
+        size=None,
+        color=(1, 1, 1),
+        bg_color=None,
+        position=(0, 0),
+    ):
         """Init class instance.
 
         Parameters
@@ -713,7 +749,7 @@ class TextBlock2D(UI):
         self.message = text
 
     def _setup(self):
-        self.actor = vtk.vtkTextActor()
+        self.actor = TextActor()
         self.actor.GetPosition2Coordinate().SetCoordinateSystemToViewport()
         self.background = Rectangle2D()
         self.handle_events(self.actor)
@@ -799,8 +835,11 @@ class TextBlock2D(UI):
             self.actor.GetSize(self.scene, bb_size)
             bg_size = self.background.size
             if bb_size[0] > bg_size[0] or bb_size[1] > bg_size[1]:
-                warn("Font size exceeds background bounding box."
-                     " Font Size will not be updated.", RuntimeWarning)
+                warn(
+                    'Font size exceeds background bounding box.'
+                    ' Font Size will not be updated.',
+                    RuntimeWarning,
+                )
                 self.actor.SetTextScaleModeToProp()
                 self.actor.SetPosition2(*bg_size)
 
@@ -831,7 +870,7 @@ class TextBlock2D(UI):
         elif family == 'Courier':
             self.actor.GetTextProperty().SetFontFamilyToCourier()
         else:
-            raise ValueError("Font not supported yet: {}.".format(family))
+            raise ValueError('Font not supported yet: {}.'.format(family))
 
     @property
     def justification(self):
@@ -844,11 +883,11 @@ class TextBlock2D(UI):
         """
         justification = self.actor.GetTextProperty().GetJustificationAsString()
         if justification == 'Left':
-            return "left"
+            return 'left'
         elif justification == 'Centered':
-            return "center"
+            return 'center'
         elif justification == 'Right':
-            return "right"
+            return 'right'
 
     @justification.setter
     def justification(self, justification):
@@ -868,7 +907,7 @@ class TextBlock2D(UI):
         elif justification == 'right':
             text_property.SetJustificationToRight()
         else:
-            msg = "Text can only be justified left, right and center."
+            msg = 'Text can only be justified left, right and center.'
             raise ValueError(msg)
 
     @property
@@ -884,11 +923,11 @@ class TextBlock2D(UI):
         text_property = self.actor.GetTextProperty()
         vjustification = text_property.GetVerticalJustificationAsString()
         if vjustification == 'Bottom':
-            return "bottom"
+            return 'bottom'
         elif vjustification == 'Centered':
-            return "middle"
+            return 'middle'
         elif vjustification == 'Top':
-            return "top"
+            return 'top'
 
     @vertical_justification.setter
     def vertical_justification(self, vertical_justification):
@@ -908,7 +947,7 @@ class TextBlock2D(UI):
         elif vertical_justification == 'top':
             text_property.SetVerticalJustificationToTop()
         else:
-            msg = "Vertical justification must be: bottom, middle or top."
+            msg = 'Vertical justification must be: bottom, middle or top.'
             raise ValueError(msg)
 
     @property
@@ -1061,9 +1100,11 @@ class TextBlock2D(UI):
                 self.actor.GetSize(self.scene, size)
                 return size
             else:
-                warn("TextBlock2D must be added to the scene before "
-                     "querying its size while TextScaleMode is set to None.",
-                     RuntimeWarning)
+                warn(
+                    'TextBlock2D must be added to the scene before '
+                    'querying its size while TextScaleMode is set to None.',
+                    RuntimeWarning,
+                )
 
         return self.actor.GetPosition2()
 
@@ -1108,7 +1149,7 @@ class Button2D(UI):
         return abs(size[:2])
 
     def _build_icons(self, icon_fnames):
-        """Convert file names to vtkImageDataGeometryFilters.
+        """Convert file names to ImageData.
 
         A pre-processing step to prevent re-read of file names during every
         state change.
@@ -1121,7 +1162,7 @@ class Button2D(UI):
         Returns
         -------
         icons : List
-            A list of corresponding vtkImageDataGeometryFilters.
+            A list of corresponding ImageData.
 
         """
         icons = []
@@ -1139,11 +1180,11 @@ class Button2D(UI):
         # This is highly inspired by
         # https://github.com/Kitware/VTK/blob/c3ec2495b183e3327820e927af7f8f90d34c3474/Interaction/Widgets/vtkBalloonRepresentation.cxx#L47
 
-        self.texture_polydata = vtk.vtkPolyData()
-        self.texture_points = vtk.vtkPoints()
+        self.texture_polydata = PolyData()
+        self.texture_points = Points()
         self.texture_points.SetNumberOfPoints(4)
 
-        polys = vtk.vtkCellArray()
+        polys = CellArray()
         polys.InsertNextCell(4)
         polys.InsertCellPoint(0)
         polys.InsertCellPoint(1)
@@ -1151,7 +1192,7 @@ class Button2D(UI):
         polys.InsertCellPoint(3)
         self.texture_polydata.SetPolys(polys)
 
-        tc = vtk.vtkFloatArray()
+        tc = FloatArray()
         tc.SetNumberOfComponents(2)
         tc.SetNumberOfTuples(4)
         tc.InsertComponent(0, 0, 0.0)
@@ -1164,16 +1205,16 @@ class Button2D(UI):
         tc.InsertComponent(3, 1, 1.0)
         self.texture_polydata.GetPointData().SetTCoords(tc)
 
-        texture_mapper = vtk.vtkPolyDataMapper2D()
+        texture_mapper = PolyDataMapper2D()
         texture_mapper = set_input(texture_mapper, self.texture_polydata)
 
-        button = vtk.vtkTexturedActor2D()
+        button = TexturedActor2D()
         button.SetMapper(texture_mapper)
 
-        self.texture = vtk.vtkTexture()
+        self.texture = Texture()
         button.SetTexture(self.texture)
 
-        button_property = vtk.vtkProperty2D()
+        button_property = Property2D()
         button_property.SetOpacity(1.0)
         button.SetProperty(button_property)
         self.actor = button
@@ -1266,7 +1307,7 @@ class Button2D(UI):
 
         Parameters
         ----------
-        icon : imageDataGeometryFilter
+        icon : imageData
 
         """
         self.texture = set_input(self.texture, icon)

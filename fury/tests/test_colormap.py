@@ -5,14 +5,18 @@ import numpy.testing as npt
 
 from fury import colormap
 from fury.optpkg import optional_package
+
 cm, have_matplotlib, _ = optional_package('matplotlib.cm')
 
 
 def test_boys2rgb():
-    expected = np.array([[0.23171663, 0.34383397, 0.6950296],
-                         [0.74520645, 0.58600913, 0.6950296],
-                         [0.48846154, 0.46492155, 0.05164146]]
-                        )
+    expected = np.array(
+        [
+            [0.23171663, 0.34383397, 0.6950296],
+            [0.74520645, 0.58600913, 0.6950296],
+            [0.48846154, 0.46492155, 0.05164146],
+        ]
+    )
     v1 = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
     v2 = np.array([1, 0, 0, 0, 1, 0])
 
@@ -34,13 +38,20 @@ def test_get_cmap():
     npt.assert_equal(colormap.get_cmap(''), None)
     npt.assert_equal(colormap.get_cmap('blues'), None)
 
-    expected = np.array([[0.03137255, 0.1882353, 0.41960785, 1],
-                         [0.96862745, 0.98431373, 1, 1],
-                         [0.96862745, 0.98431373, 1, 1]]
-                        )
-    expected2 = np.array([[0.4, 0.4, 0.4, 1.],
-                          [0.498039, 0.788235, 0.498039, 1],
-                          [0.498039, 0.788235, 0.498039, 1]])
+    expected = np.array(
+        [
+            [0.03137255, 0.1882353, 0.41960785, 1],
+            [0.96862745, 0.98431373, 1, 1],
+            [0.96862745, 0.98431373, 1, 1],
+        ]
+    )
+    expected2 = np.array(
+        [
+            [0.4, 0.4, 0.4, 1.0],
+            [0.498039, 0.788235, 0.498039, 1],
+            [0.498039, 0.788235, 0.498039, 1],
+        ]
+    )
     cmap = colormap.get_cmap('Blues')
     npt.assert_array_almost_equal(cmap((1, 0, 0)), expected)
 
@@ -50,8 +61,8 @@ def test_get_cmap():
 
 
 def test_line_colors():
-    s1 = np.array([np.arange(10)]*3).T  # 10x3
-    s2 = np.array([np.arange(5)]*4)  # 5x4
+    s1 = np.array([np.arange(10)] * 3).T  # 10x3
+    s2 = np.array([np.arange(5)] * 4)  # 5x4
     streamlines = [s1, s2]
 
     s_color = colormap.line_colors(streamlines, cmap='boys_standard')
@@ -60,12 +71,15 @@ def test_line_colors():
 
 def test_create_colormap():
     value = np.arange(25)
-    npt.assert_raises(ValueError, colormap.create_colormap,
-                      value.reshape((5, 5)))
-    npt.assert_raises(ValueError, colormap.create_colormap,
-                      value, name='fake')
-    npt.assert_warns(PendingDeprecationWarning, colormap.create_colormap,
-                     value, name='jet', auto=False)
+    npt.assert_raises(ValueError, colormap.create_colormap, value.reshape((5, 5)))
+    npt.assert_raises(AttributeError, colormap.create_colormap, value, name='fake')
+    npt.assert_warns(
+        PendingDeprecationWarning,
+        colormap.create_colormap,
+        value,
+        name='jet',
+        auto=False,
+    )
 
     if not have_matplotlib:
         with npt.assert_warns(UserWarning):
@@ -119,11 +133,55 @@ def test_lab2rgb():
 
 def test_hex_to_rgb():
     expected = np.array([1, 1, 1])
-    
-    hexcode = "#FFFFFF"
+
+    hexcode = '#FFFFFF'
     res = colormap.hex_to_rgb(hexcode)
     npt.assert_array_almost_equal(res, expected)
-    
-    hashed_hexcode = "FFFFFF"
+
+    hashed_hexcode = 'FFFFFF'
     res = colormap.hex_to_rgb(hashed_hexcode)
     npt.assert_array_almost_equal(res, expected)
+
+
+def test_color_converters():
+
+    color = np.array([1, 1, 1])
+    colors = np.array([[1, 1, 1], [0, 0, 0], [0.2, 0.3, 0.4]])
+
+    # testing rgb2xyz and xyz2rgb
+    expected_xyz = np.array([0.950456, 1.0, 1.088754])
+    xyz_color = colormap.rgb2xyz(color)
+    rgb_color = colormap.xyz2rgb(expected_xyz)
+    npt.assert_almost_equal(xyz_color, expected_xyz)
+    npt.assert_almost_equal(rgb_color, color)
+
+    for color in colors:
+        xyz_color = colormap.rgb2xyz(color)
+        rgb_from_xyz_color = colormap.xyz2rgb(xyz_color)
+        npt.assert_almost_equal(rgb_from_xyz_color, color)
+
+    # testing rgb2lab and lab2rgb
+    illuminant = 'D65'
+    observer = '2'
+    expected_lab = np.array([31.57976662, -1.86550104, -17.84845331])
+    lab_color = colormap.rgb2lab(color, illuminant, observer)
+    rgb_color = colormap.lab2rgb(expected_lab, illuminant, observer)
+    npt.assert_almost_equal(lab_color, expected_lab)
+    npt.assert_almost_equal(rgb_color, color)
+
+    for color in colors:
+        lab_color = colormap.rgb2lab(color, illuminant, observer)
+        rgb_from_lab_color = colormap.lab2rgb(lab_color, illuminant, observer)
+        npt.assert_almost_equal(rgb_from_lab_color, color)
+
+    # testing rgb2hsv and hsv2rgb
+    expected_hsv = np.array([0.58333333, 0.5, 0.4])
+    hsv_color = colormap.rgb2hsv(color)
+    rgb_color = colormap.hsv2rgb(expected_hsv)
+    npt.assert_almost_equal(hsv_color, expected_hsv)
+    npt.assert_almost_equal(rgb_color, color)
+
+    for color in colors:
+        hsv_color = colormap.rgb2hsv(color)
+        rgb_from_hsv_color = colormap.hsv2rgb(hsv_color)
+        npt.assert_almost_equal(rgb_from_hsv_color, color)

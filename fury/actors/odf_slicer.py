@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 import numpy as np
-import vtk
 
-from fury.utils import (set_polydata_vertices, set_polydata_triangles,
-                        set_polydata_colors, apply_affine)
 from fury.colormap import create_colormap
+from fury.lib import Actor, PolyData, PolyDataMapper
+from fury.utils import (
+    apply_affine,
+    set_polydata_colors,
+    set_polydata_triangles,
+    set_polydata_vertices,
+)
 
 
-class OdfSlicerActor(vtk.vtkActor):
+class OdfSlicerActor(Actor):
     """
     VTK actor for visualizing slices of ODF field.
 
@@ -43,12 +47,26 @@ class OdfSlicerActor(vtk.vtkActor):
         coordinates to world coordinates.
     B : ndarray (n_coeffs, n_vertices)
         Optional SH to SF matrix for projecting `odfs` given in SH
-        coefficents on the `sphere`. If None, then the input is assumed
+        coefficients on the `sphere`. If None, then the input is assumed
         to be expressed in SF coefficients.
     """
-    def __init__(self, odfs, vertices, faces, indices, scale, norm,
-                 radial_scale, shape, global_cm, colormap, opacity,
-                 affine=None, B=None):
+
+    def __init__(
+        self,
+        odfs,
+        vertices,
+        faces,
+        indices,
+        scale,
+        norm,
+        radial_scale,
+        shape,
+        global_cm,
+        colormap,
+        opacity,
+        affine=None,
+        B=None,
+    ):
         self.vertices = vertices
         self.faces = faces
         self.odfs = odfs
@@ -84,9 +102,9 @@ class OdfSlicerActor(vtk.vtkActor):
 
         # Initialize mapper and slice to the
         # middle of the volume along Z axis
-        self.mapper = vtk.vtkPolyDataMapper()
+        self.mapper = PolyDataMapper()
         self.SetMapper(self.mapper)
-        self.slice_along_axis(self.grid_shape[-1]//2)
+        self.slice_along_axis(self.grid_shape[-1] // 2)
         self.set_opacity(opacity)
 
     def set_opacity(self, opacity):
@@ -102,7 +120,7 @@ class OdfSlicerActor(vtk.vtkActor):
         (inclusive).
         """
         mask = np.zeros(self.grid_shape, dtype=bool)
-        mask[x1:x2 + 1, y1:y2 + 1, z1:z2 + 1] = True
+        mask[x1 : x2 + 1, y1 : y2 + 1, z1 : z2 + 1] = True
         self.mask = mask
 
         self._update_mapper()
@@ -113,17 +131,32 @@ class OdfSlicerActor(vtk.vtkActor):
         in ['xaxis', 'yaxis', zaxis'].
         """
         if axis == 'xaxis':
-            self.display_extent(slice_index, slice_index,
-                                0, self.grid_shape[1] - 1,
-                                0, self.grid_shape[2] - 1)
+            self.display_extent(
+                slice_index,
+                slice_index,
+                0,
+                self.grid_shape[1] - 1,
+                0,
+                self.grid_shape[2] - 1,
+            )
         elif axis == 'yaxis':
-            self.display_extent(0, self.grid_shape[0] - 1,
-                                slice_index, slice_index,
-                                0, self.grid_shape[2] - 1)
+            self.display_extent(
+                0,
+                self.grid_shape[0] - 1,
+                slice_index,
+                slice_index,
+                0,
+                self.grid_shape[2] - 1,
+            )
         elif axis == 'zaxis':
-            self.display_extent(0, self.grid_shape[0] - 1,
-                                0, self.grid_shape[1] - 1,
-                                slice_index, slice_index)
+            self.display_extent(
+                0,
+                self.grid_shape[0] - 1,
+                0,
+                self.grid_shape[1] - 1,
+                slice_index,
+                slice_index,
+            )
         else:
             raise ValueError('Invalid axis name {0}.'.format(axis))
 
@@ -132,7 +165,7 @@ class OdfSlicerActor(vtk.vtkActor):
         Display a slice along x, y, or z axis.
         """
         if x is None and y is None and z is None:
-            self.slice_along_axis(self.grid_shape[2]//2)
+            self.slice_along_axis(self.grid_shape[2] // 2)
         elif x is not None:
             self.slice_along_axis(x, 'xaxis')
         elif y is not None:
@@ -145,8 +178,7 @@ class OdfSlicerActor(vtk.vtkActor):
         Dynamically change the sphere used for SH to SF projection.
         """
         if self.B is None:
-            raise ValueError('Can\'t update sphere when using '
-                             'SF coefficients.')
+            raise ValueError("Can't update sphere when using " 'SF coefficients.')
         self.vertices = vertices
         if self.affine is not None:
             self.w_verts = self.vertices.dot(self.affine[:3, :3])
@@ -160,7 +192,7 @@ class OdfSlicerActor(vtk.vtkActor):
         """
         Map vtkPolyData to the actor.
         """
-        polydata = vtk.vtkPolyData()
+        polydata = PolyData()
 
         offsets = self._get_odf_offsets(self.mask)
         if len(offsets) == 0:
@@ -220,19 +252,21 @@ class OdfSlicerActor(vtk.vtkActor):
         if self.radial_scale:
             # apply SF amplitudes to all sphere
             # directions and offset each voxel
-            return np.tile(sph_dirs, (len(offsets), 1)) * sf.reshape(-1, 1) +\
-                   np.repeat(offsets, len(sph_dirs), axis=0)
+            return np.tile(sph_dirs, (len(offsets), 1)) * sf.reshape(-1, 1) + np.repeat(
+                offsets, len(sph_dirs), axis=0
+            )
         # return scaled spheres offsetted by `offsets`
-        return np.tile(sph_dirs, (len(offsets), 1)) * self.scale +\
-            np.repeat(offsets, len(sph_dirs), axis=0)
+        return np.tile(sph_dirs, (len(offsets), 1)) * self.scale + np.repeat(
+            offsets, len(sph_dirs), axis=0
+        )
 
     def _get_all_faces(self, nb_odfs, nb_dirs):
         """
         Get array of all the faces of the ODFs to display.
         """
-        return np.tile(self.faces, (nb_odfs, 1)) +\
-            np.repeat(np.arange(nb_odfs) * nb_dirs, len(self.faces))\
-            .reshape(-1, 1)
+        return np.tile(self.faces, (nb_odfs, 1)) + np.repeat(
+            np.arange(nb_odfs) * nb_dirs, len(self.faces)
+        ).reshape(-1, 1)
 
     def _generate_color_for_vertices(self, sf):
         """
@@ -240,7 +274,7 @@ class OdfSlicerActor(vtk.vtkActor):
         """
         if self.global_cm:
             if self.colormap is None:
-                raise IOError("if global_cm=True, colormap must be defined.")
+                raise IOError('if global_cm=True, colormap must be defined.')
             else:
                 all_colors = create_colormap(sf.ravel(), self.colormap) * 255
         elif self.colormap is not None:
@@ -249,11 +283,12 @@ class OdfSlicerActor(vtk.vtkActor):
                 range_sf = sf.max(axis=-1) - sf.min(axis=-1)
                 rescaled = sf - sf.min(axis=-1, keepdims=True)
                 rescaled[range_sf > 0] /= range_sf[range_sf > 0][..., None]
-                all_colors =\
-                    create_colormap(rescaled.ravel(), self.colormap) * 255
+                all_colors = create_colormap(rescaled.ravel(), self.colormap) * 255
             else:
-                all_colors = np.tile(np.array(self.colormap).reshape(1, 3),
-                                     (sf.shape[0]*sf.shape[1], 1))
+                all_colors = np.tile(
+                    np.array(self.colormap).reshape(1, 3),
+                    (sf.shape[0] * sf.shape[1], 1),
+                )
         else:
-            all_colors = np.tile(np.abs(self.vertices)*255, (len(sf), 1))
+            all_colors = np.tile(np.abs(self.vertices) * 255, (len(sf), 1))
         return all_colors.astype(np.uint8)

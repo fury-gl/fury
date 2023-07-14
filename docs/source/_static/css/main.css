@@ -1,0 +1,13 @@
+#footer h5 {
+	padding-left: 10px;
+	border-left: 3px solid white;
+	color: white;
+}
+
+#footer ul {
+	padding-left: 0px;
+}
+
+.footer-link {
+	font-size: smaller;
+}

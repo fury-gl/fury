@@ -7,11 +7,9 @@ def rstjinja(app, _docname, source):
     if app.builder.format != 'html':
         return
     src = source[0]
-    rendered = app.builder.templates.render_string(
-        src, app.config.html_context
-    )
+    rendered = app.builder.templates.render_string(src, app.config.html_context)
     source[0] = rendered
 
 
 def setup(app):
-    app.connect("source-read", rstjinja)
+    app.connect('source-read', rstjinja)

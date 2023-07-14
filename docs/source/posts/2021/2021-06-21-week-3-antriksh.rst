@@ -28,4 +28,3 @@ What is coming up next?
 Next week I would probably continue to work on GridLayout and possibly other layouts as well, other tasks will be decided in the next meeting.
 
 **See you guys next week!**
-
