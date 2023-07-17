@@ -1734,18 +1734,36 @@ def test_marker_actor(interactive=False):
     npt.assert_equal(report.objects, 12)
 
 
-def test_uncertainty_actor(interactive=False):
+def test_uncertainty_cone_actor(interactive=False):
     scene = window.Scene()
 
-    from dipy.data import get_fnames
-    from dipy.io import read_bvals_bvecs
-    _, fbvals, fbvecs = get_fnames('small_101D')
-    bvals, bvecs = read_bvals_bvecs(fbvals, fbvecs)
+    evals = np.array([1.4, 0.5, 0.35])
+    evecs = np.eye(3)
 
-    n = bvals.shape[0]
-    data = np.ones((10, 10, 1, n)) * 0.1
+    mevals = np.zeros((10, 10, 1, 3))
+    mevecs = np.zeros((10, 10, 1, 3, 3))
 
-    uncert_cones = actor.dti_uncertainty(data=data, bvals=bvals, bvecs=bvecs)
+    mevals[..., :] = evals
+    mevecs[..., :, :] = evecs
+
+    signal = np.ones((10, 10, 1, 10))
+    sigma = np.array([14.791911, 14.999622, 14.880976, 14.933881, 14.392784,
+                      14.132468, 14.334953, 14.409375, 14.514647, 14.409275])
+
+    b_matrix = np.array([[-1.8, -1.9, -4.8, -4.4, -2.3, -1.2, -1.0],
+                         [-5.4, -1.8, -1.6, -1.7, -6.1, -1.3, -1.0],
+                         [-6.2, -5.1, -1.0, -1.9, -9.3, -2.2, -1.0],
+                         [-2.8, -1.9, -4.8, -1.4, -2.1, -3.6, -1.0],
+                         [-5.6, -1.3, -7.8, -2.4, -5.2, -4.2, -1.0],
+                         [-1.8, -2.5, -1.8, -1.2, -2.3, -4.8, -1.0],
+                         [-2.3, -1.9, -6.8, -4.4, -6.4, -1.9, -1.0],
+                         [-1.8, -2.6, -4.8, -6.5, -7.7, -3.1, -1.0],
+                         [-6.2, -1.9, -5.6, -4.6, -1.5, -2.0, -1.0],
+                         [-2.4, -1.9, -4.5, -3.6, -2.5, -1.2, -1.0]])
+
+    uncert_cones = actor.uncertainty_cone(evecs=mevecs, evals=mevals,
+                                          signal=signal, sigma=sigma,
+                                          b_matrix=b_matrix)
     scene.add(uncert_cones)
 
     if interactive:
@@ -1758,9 +1776,19 @@ def test_uncertainty_actor(interactive=False):
     npt.assert_equal(report.objects, 100)
     scene.clear()
 
-    n = bvals.shape[0]
-    data = np.ones((5, 5, 5, n)) * 0.5
-    uncert_cones = actor.dti_uncertainty(data=data, bvals=bvals, bvecs=bvecs)
+    evals = np.array([1.4, 0.5, 0.35])
+    evecs = np.eye(3)
+
+    mevals = np.zeros((4, 4, 4, 3))
+    mevecs = np.zeros((4, 4, 4, 3, 3))
+
+    mevals[..., :] = evals
+    mevecs[..., :, :] = evecs
+
+    signal = np.ones((4, 4, 4, 10))
+    uncert_cones = actor.uncertainty_cone(evecs=mevecs, evals=mevals,
+                                          signal=signal, sigma=sigma,
+                                          b_matrix=b_matrix)
     scene.add(uncert_cones)
 
     if interactive:
