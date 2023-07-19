@@ -60,6 +60,6 @@ This Week's Goals
 -----------------
 After finishing the first iteration of my experimental program, the next step is to work on an API for KDE rendering. I plan to meet 
 with my mentors and talk about the details of this API, so expect an update next week. Also, I plan to take a better look on my fellow GSoC FURY
-contributors work so when their PRs are ready for review, I will have be better prepared for it.
+contributors work so when their PRs are ready for review, I will have to be better prepared for it.
 
 Let's get to work!
