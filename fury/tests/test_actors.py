@@ -1734,6 +1734,45 @@ def test_marker_actor(interactive=False):
     npt.assert_equal(report.objects, 12)
 
 
+def test_ellipsoid_actor(interactive=False):
+    # number of axes does not match with number of centers
+    centers = [-1, 1, 0]
+    axes = [[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+            [[1, 2, -2], [2, 1, 2], [2, -2, -1]]]
+    lengths = [[1, 1, 1]]
+    npt.assert_raises(ValueError, actor.ellipsoid, centers, axes, lengths)
+
+    # number of lengths does not match with number of centers
+    lengths = [[1, 1, 1], [1, 1, .5]]
+    npt.assert_raises(ValueError, actor.ellipsoid, centers, axes, lengths)
+
+    scene = window.Scene()
+    scene.background((0, 0, 0))
+
+    axes = np.array([[[-.6, .5, -.6], [-.8, -.4, .5], [-.1, -.7, -.7]],
+                     [[.1, .6, -.8], [.6, .5, .5], [-.8, .6, .3]],
+                     [[.7, .5, -.5], [0, -.7, -.7], [-.7, .6, -.5]],
+                     [[.7, -.3, -.6], [.2, -.8, .6], [.7, .6, .5]],
+                     [[1, 2, -2], [2, 1, 2], [2, -2, -1]],
+                     [[1, 0, 0], [0, 1, 0], [0, 0, 1]]])
+    lengths = np.array([[1, 1, 1], [1, 1, .5], [1, .5, .5],
+                        [1, .5, .25], [1, 1, .3], [1, .3, .3]])
+    centers = np.array([[-1, 1, 0], [0, 1, 0], [1, 1, 0],
+                        [-1, 0, 0], [0, 0, 0], [1, 0, 0]])
+    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1],
+                       [1, 1, 0], [1, 0, 1], [0, 1, 1]])
+
+    ellipsoids = actor.ellipsoid(axes=axes, lengths=lengths, centers=centers,
+                              scales=1.0, colors=colors)
+    scene.add(ellipsoids)
+
+    if interactive:
+        window.show(scene)
+
+    report = window.analyze_scene(scene)
+    npt.assert_equal(report.actors, 1)
+
+
 def test_uncertainty_cone_actor(interactive=False):
     scene = window.Scene()
 
