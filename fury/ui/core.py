@@ -749,10 +749,9 @@ class TextBlock2D(UI):
         if self.auto_font_scale:
             self.actor.SetTextScaleModeToProp()
         self.message = text
+        self.font_size = font_size
         if size is not None:
             self.resize(size)
-        else:
-            self.font_size = font_size
 
     def _setup(self):
         self.actor = TextActor()
@@ -1075,6 +1074,11 @@ class TextBlock2D(UI):
 
         self.actor.SetPosition(updated_text_position)
 
+    def cal_size_from_message(self):
+        lines = self.message.split("\n")
+        max_length = max(len(line) for line in lines)
+        return [max_length*self.font_size, len(lines)*self.font_size]
+
     def update_bounding_box(self, size=None):
         """Update Text Bounding Box.
 
@@ -1085,17 +1089,12 @@ class TextBlock2D(UI):
             Otherwise, uses the given size.
 
         """
-        if size is not None:
-            self.boundingbox = [self.position[0], self.position[1],
-                                self.position[0]+size[0], self.position[1]+size[1]]
-            self.background.resize(size)
-        else:
-            lines = self.message.split("\n")
-            max_length = max(len(line) for line in lines)
-            self.boundingbox = [self.position[0], self.position[1],
-                                self.position[0]+max_length*self.font_size, self.position[1]+len(lines)*self.font_size]
-            self.background.resize(
-                (self.boundingbox[2]-self.boundingbox[0], self.boundingbox[3]-self.boundingbox[1]))
+        if size is None:
+            size = self.cal_size_from_message()
+
+        self.boundingbox = [self.position[0], self.position[1],
+                            self.position[0]+size[0], self.position[1]+size[1]]
+        self.background.resize(size)
 
         if self.auto_font_scale:
             self.actor.SetPosition2(
