@@ -131,7 +131,7 @@ class TextBox2D(UI):
 
         Create the TextBlock2D component used for the textbox.
         """
-        self.text = TextBlock2D()
+        self.text = TextBlock2D(auto_font_scale=1)
 
         # Add default events listener for this UI component.
         self.text.on_left_mouse_button_pressed = self.left_button_press

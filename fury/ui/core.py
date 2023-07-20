@@ -1043,7 +1043,6 @@ class TextBlock2D(UI):
 
         """
         text_property = self.actor.GetTextProperty()
-        text_position = self.actor.GetPosition()
         updated_text_position = [0, 0]
 
         if self.justification == 'left':
@@ -1055,8 +1054,7 @@ class TextBlock2D(UI):
                 (self.boundingbox[2]-self.boundingbox[0])//2
         elif self.justification == 'right':
             text_property.SetJustificationToRight()
-            updated_text_position[0] = self.boundingbox[0] + \
-                self.boundingbox[2]-self.boundingbox[0]
+            updated_text_position[0] = self.boundingbox[2]
         else:
             msg = 'Text can only be justified left, right and center.'
             raise ValueError(msg)
@@ -1066,12 +1064,11 @@ class TextBlock2D(UI):
             updated_text_position[1] = self.boundingbox[1]
         elif self.vertical_justification == 'middle':
             text_property.SetVerticalJustificationToCentered()
-            updated_text_position[1] = self.position[1] + \
+            updated_text_position[1] = self.boundingbox[1] + \
                 (self.boundingbox[3]-self.boundingbox[1])//2
         elif self.vertical_justification == 'top':
             text_property.SetVerticalJustificationToTop()
-            updated_text_position[1] = self.position[1] + \
-                self.boundingbox[3]-self.boundingbox[1]
+            updated_text_position[1] = self.boundingbox[3]
         else:
             msg = 'Vertical justification must be: bottom, middle or top.'
             raise ValueError(msg)
