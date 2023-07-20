@@ -34,7 +34,7 @@ class EffectManager():
 
     
 
-    def kde(self, center, points : np.ndarray, sigmas, scale = 1, colormap = "viridis", custom_colormap : np.array = None):
+    def kde(self, center, points : np.ndarray, sigmas, scale = 1, opacity = 1.0, colormap = "viridis", custom_colormap : np.array = None):
         if not isinstance(sigmas, np.ndarray):
             sigmas = np.array(sigmas)
         if sigmas.shape[0] != 1 and sigmas.shape[0] != points.shape[0]:
@@ -79,7 +79,7 @@ class EffectManager():
         if(intensity<=0.0){
             discard;
         }else{
-            fragOutput0 = vec4(color, 1.0);
+            fragOutput0 = vec4(color, opacity);
         }
         """
 
@@ -117,6 +117,7 @@ class EffectManager():
         # Render to second billboard for color map post-processing.
         textured_billboard = billboard(center, scales=scale, fs_dec=tex_dec, fs_impl=tex_impl)
         shader_custom_uniforms(textured_billboard, "fragment").SetUniform2f("res", self.off_manager.size)
+        shader_custom_uniforms(textured_billboard, "fragment").SetUniformf("opacity", opacity)
 
         # Disables the texture warnings
         textured_billboard.GetProperty().GlobalWarningDisplayOff() 
