@@ -13,6 +13,7 @@ This week, I worked on improving the **TextBlock2D** component in the UI system.
 
 .. image:: https://github.com/fury-gl/fury/assets/64432063/94212105-7259-48da-8fdc-41ee987bda84
    :align: center
+   :alt: TextBlock2D will different justifications
 
 As discussed last week, we also made a decision regarding the scrollbar. After exploring different use cases, we concluded that creating an independent scrollbar is not necessary at the moment. Therefore, we will close the related pull requests. You can find out more about it in the discussion `here <https://github.com/fury-gl/fury/discussions/816>`_.
 

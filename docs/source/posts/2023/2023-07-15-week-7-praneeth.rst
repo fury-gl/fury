@@ -15,11 +15,13 @@ Text background greater than the actual maximum size:
 
 .. image:: https://github.com/fury-gl/fury/assets/64432063/aaf4a764-4480-4f96-9adf-29d9e28135a6
    :align: center
+   :alt: Text background greater than the actual maximum size in ComboBox2D
 
 Text offset from center: 
 
 .. image:: https://github.com/fury-gl/fury/assets/64432063/0a3bc1e6-a566-4c08-9ca4-a191525b9c97
    :align: center
+   :alt: Text offset from center in RingSlider2D
 
 Additionally, I reviewed PR `#814 <https://github.com/fury-gl/fury/pull/814>`_ and noticed that after PR `#769 <https://github.com/fury-gl/fury/pull/769>`_, all demos and examples were merged into a single folder, which affected the paths used in the Scientific Domain Section. To address this, I created PR `#820 <https://github.com/fury-gl/fury/pull/820>`_ to redirect the links to the correct path.
 
