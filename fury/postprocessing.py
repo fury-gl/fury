@@ -1,15 +1,15 @@
 import numpy as np
-from fury import window, actor
-from vtk import vtkWindowToImageFilter
-from fury.lib import Texture
+from fury.window import RenderWindow
+from fury.actor import Actor
+from fury.lib import Texture, WindowToImageFilter
 from fury.io import load_image
 from fury.utils import rgb_to_vtk
 
 
 def window_to_texture(
-        window : window.RenderWindow,
+        window : RenderWindow,
         texture_name : str,
-        target_actor : actor.Actor,
+        target_actor : Actor,
         blending_mode : str = "None",
         wrap_mode : str = "ClampToBorder",
         border_color : tuple = (
@@ -25,7 +25,7 @@ def window_to_texture(
         Window to be captured.
     texture_name : str
         Name of the texture to be passed to the actor.
-    target_actor : actor.Actor
+    target_actor : Actor
         Target actor to receive the texture.
     blending_mode : str, optional
         Texture blending mode. The options are:
@@ -59,7 +59,7 @@ def window_to_texture(
 
     r, g, b, a = border_color
 
-    windowToImageFilter = vtkWindowToImageFilter()
+    windowToImageFilter = WindowToImageFilter()
     windowToImageFilter.SetInput(window)
 
     windowToImageFilter.Update()
@@ -78,7 +78,7 @@ def window_to_texture(
 def texture_to_actor(
         path_to_texture : str,
         texture_name : str,
-        target_actor : actor.Actor,
+        target_actor : Actor,
         blending_mode : str = "None",
         wrap_mode : str = "ClampToBorder",
         border_color : tuple = (
@@ -94,7 +94,7 @@ def texture_to_actor(
         Texture image path.
     texture_name : str
         Name of the texture to be passed to the actor.
-    target_actor : actor.Actor
+    target_actor : Actor
         Target actor to receive the texture.
     blending_mode : str
         Texture blending mode. The options are:
@@ -146,7 +146,7 @@ def texture_to_actor(
 def colormap_to_texture(
         colormap : np.array,
         texture_name : str,
-        target_actor : actor.Actor,
+        target_actor : Actor,
         interpolate : bool = True):
     """Converts a colormap to a texture and pass it to an actor.
     Parameters
@@ -155,7 +155,7 @@ def colormap_to_texture(
         RGBA color map array. The array can be two dimensional, although a three dimensional one is preferred.
     texture_name : str
         Name of the color map texture to be passed to the actor.
-    target_actor : actor.Actor
+    target_actor : Actor
         Target actor to receive the color map texture.
     interpolate : bool
         Color map texture interpolation."""
