@@ -1,10 +1,10 @@
-import numpy as np
-from fury import window, actor
-from fury.shaders import compose_shader, shader_apply_effects
-from fury.lib import Texture, WindowToImageFilter
-from fury.io import load_image
-from fury.utils import rgb_to_vtk
 from matplotlib import colormaps
+import numpy as np
+
+from fury import actor, window
+from fury.lib import Texture, WindowToImageFilter
+from fury.shaders import shader_apply_effects
+from fury.utils import rgb_to_vtk
 
 
 def window_to_texture(
@@ -19,7 +19,7 @@ def window_to_texture(
             0.0,
             1.0),
         interpolate : bool = True):
-    """Captures a rendered window and pass it as a texture to the given actor.
+    """Capture a rendered window and pass it as a texture to the given actor.
 
     Parameters
     ----------
@@ -31,37 +31,36 @@ def window_to_texture(
         Target actor to receive the texture.
     blending_mode : str, optional
         Texture blending mode. The options are:
-    1. None
-    2. Replace
-    3. Modulate
-    4. Add
-    5. AddSigned
-    6. Interpolate
-    7. Subtract
+
+        1. None
+        2. Replace
+        3. Modulate
+        4. Add
+        5. AddSigned
+        6. Interpolate
+        7. Subtract
 
     wrap_mode : str, optional
         Texture wrapping mode. The options are:
-    1. ClampToEdge
-    2. Repeat
-    3. MirroredRepeat
-    4. ClampToBorder
+        1. ClampToEdge
+        2. Repeat
+        3. MirroredRepeat
+        4. ClampToBorder
 
     border_color : tuple (4, ), optional
         Texture RGBA border color.
     interpolate : bool, optional
         Texture interpolation."""
 
-    wrap_mode_dic = {"ClampToEdge" : Texture.ClampToEdge,
-                     "Repeat" : Texture.Repeat,
-                     "MirroredRepeat" : Texture.MirroredRepeat,
-                     "ClampToBorder" : Texture.ClampToBorder}
+    wrap_mode_dic = {"clamptoedge" : Texture.ClampToEdge,
+                     "repeat" : Texture.Repeat,
+                     "mirroredrepeat" : Texture.MirroredRepeat,
+                     "clamptoborder" : Texture.ClampToBorder}
 
-    blending_mode_dic = {"None" : 0, "Replace" : 1,
-                         "Modulate" : 2, "Add" : 3,
-                         "AddSigned" : 4, "Interpolate" : 5,
-                         "Subtract" : 6}
-
-    r, g, b, a = border_color
+    blending_mode_dic = {"none" : 0, "replace" : 1,
+                         "modulate" : 2, "add" : 3,
+                         "addsigned" : 4, "interpolate" : 5,
+                         "subtract" : 6}
 
     windowToImageFilter = WindowToImageFilter()
     windowToImageFilter.SetInput(window)
@@ -70,11 +69,11 @@ def window_to_texture(
 
     texture = Texture()
     texture.SetInputConnection(windowToImageFilter.GetOutputPort())
-    texture.SetBorderColor(r, g, b, a)
-    texture.SetWrap(wrap_mode_dic[wrap_mode])
+    texture.SetBorderColor(*border_color)
+    texture.SetWrap(wrap_mode_dic[wrap_mode.lower()])
     texture.SetInterpolate(interpolate)
     texture.MipmapOn()
-    texture.SetBlendingMode(blending_mode_dic[blending_mode])
+    texture.SetBlendingMode(blending_mode_dic[blending_mode.lower()])
 
     target_actor.GetProperty().SetTexture(texture_name, texture)
 
@@ -84,7 +83,7 @@ def colormap_to_texture(
         texture_name : str,
         target_actor : actor.Actor,
         interpolate : bool = True):
-    """Converts a colormap to a texture and pass it to an actor.
+    """Convert a colormap to a texture and pass it to an actor.
 
     Parameters
     ----------
@@ -94,7 +93,7 @@ def colormap_to_texture(
         Name of the color map texture to be passed to the actor.
     target_actor : actor.Actor
         Target actor to receive the color map texture.
-    interpolate : bool
+    interpolate : bool, optional
         Color map texture interpolation."""
 
     if len(colormap.shape) == 2:
@@ -115,7 +114,7 @@ def colormap_to_texture(
 
 
 def shader_custom_uniforms(actor : actor.Actor, shader_type : str):
-    """Eases the passing of uniform values to the shaders by returning ``actor.GetShaderProperty().GetVertexCustomUniforms()``,
+    """Ease the passing of uniform values to the shaders by returning ``actor.GetShaderProperty().GetVertexCustomUniforms()``,
     that give access to the ``SetUniform`` methods.
     Parameters
     ----------
@@ -127,33 +126,32 @@ def shader_custom_uniforms(actor : actor.Actor, shader_type : str):
           * "fragment"
           * "geometry"
     """
-    if shader_type == "vertex":
+    if shader_type.lower() == "vertex":
         return actor.GetShaderProperty().GetVertexCustomUniforms()
-    elif shader_type == "fragment":
+    elif shader_type.lower() == "fragment":
         return actor.GetShaderProperty().GetFragmentCustomUniforms()
-    elif shader_type == "geometry":
+    elif shader_type.lower() == "geometry":
         return actor.GetShaderProperty().GetGeometryCustomUniforms()
     else:
         raise ValueError("Shader type unknown.")
 
 
 def normalize(array : np.array, min : float = 0.0, max : float = 1.0):
-    """Converts an array to a given desired range.
+    """Convert an array to a given desired range.
 
     Parameters
     ----------
     array : np.ndarray
-    Array to be normalized.
-    min : float
-    Bottom value of the interval of normalization. If no value is given, it is passed as 0.0.
-    max : float
-    Upper value of the interval of normalization. If no value is given, it is passed as 1.0.
+        Array to be normalized.
+    min : float, optional
+        Bottom value of the interval of normalization. If no value is given, it is passed as 0.0.
+    max : float, optional
+        Upper value of the interval of normalization. If no value is given, it is passed as 1.0.
 
     Returns
     -------
-
     array : np.array
-    Array converted to the given desired range.
+        Array converted to the given desired range.
     """
     if np.max(array) != np.min(array):
         return ((array - np.min(array))/(np.max(array) - np.min(array)))*(max - min) + min
@@ -274,4 +272,9 @@ window_to_texture(
 
 manager.scene.add(textured_billboard)
 
-manager.start()
+interactive = False
+
+if interactive:
+    manager.start()
+
+window.record(scene, size = (800, 800), out_path = "points_kde.png")
