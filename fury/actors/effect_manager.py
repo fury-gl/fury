@@ -20,7 +20,7 @@ class EffectManager():
     Parameters
     ----------
     manager : ShowManager
-        Target manager that wil render post processed actors."""
+        Target manager that will render post processed actors."""
     def __init__(self, manager : ShowManager):
         self.scene = Scene()
         pos, focal, vu = manager.scene.get_camera()
@@ -48,7 +48,7 @@ class EffectManager():
         kde_dec = import_fury_shader(os.path.join("utils", "normal_distribution.glsl"))
 
         kde_impl = """
-        float current_kde = kde(normalizedVertexMCVSOutput/out_scale, out_sigma);
+        float current_kde = kde(normalizedVertexMCVSOutput*out_scale, out_sigma);
         color = vec3(current_kde);
         fragOutput0 = vec4(color, 1.0);
         """
@@ -86,10 +86,10 @@ class EffectManager():
         fs_dec = compose_shader([varying_dec, kde_dec])
 
         # Scales parameter will be defined by the empirical rule:
-        # 1*sima  = 68.27% of data inside the curve
-        # 2*sigma = 95.45% of data inside the curve
-        # 3*sigma = 99.73% of data inside the curve
-        scales = 3.0*np.copy(sigmas)
+        # 2*1*sima  = 68.27% of data inside the curve
+        # 2*2*sigma = 95.45% of data inside the curve
+        # 2*3*sigma = 99.73% of data inside the curve
+        scales = 2*3.0*np.copy(sigmas)
 
         bill = billboard(
         points,
