@@ -131,7 +131,7 @@ class TextBox2D(UI):
 
         Create the TextBlock2D component used for the textbox.
         """
-        self.text = TextBlock2D()
+        self.text = TextBlock2D(dynamic_bbox=True)
 
         # Add default events listener for this UI component.
         self.text.on_left_mouse_button_pressed = self.left_button_press
@@ -1445,7 +1445,8 @@ class RingSlider2D(UI):
         self.handle.color = self.default_color
 
         # Slider Text
-        self.text = TextBlock2D(justification='center', vertical_justification='middle')
+        self.text = TextBlock2D(justification='center',
+                                vertical_justification='middle', size=(0, 0))
 
         # Add default events listener for this UI component.
         self.track.on_left_mouse_button_pressed = self.track_click_callback
@@ -2908,7 +2909,7 @@ class ListBoxItem2D(UI):
         """
         self.background = Rectangle2D()
         self.textblock = TextBlock2D(
-            justification='left', vertical_justification='middle'
+            justification='left', vertical_justification='middle', size=(0, 0)
         )
 
         # Add default events listener for this UI component.
@@ -3554,7 +3555,7 @@ class DrawPanel(UI):
         self.canvas.add_element(self.mode_panel, (0, -mode_panel_size[1]))
 
         self.mode_text = TextBlock2D(
-            text='Select appropriate drawing mode using below icon'
+            text='Select appropriate drawing mode using below icon', size=(0, 0)
         )
         self.canvas.add_element(self.mode_text, (0.0, 1.0))
 

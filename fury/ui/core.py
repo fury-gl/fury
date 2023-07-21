@@ -701,7 +701,8 @@ class TextBlock2D(UI):
         color=(1, 1, 1),
         bg_color=None,
         position=(0, 0),
-        auto_font_scale=False
+        auto_font_scale=False,
+        dynamic_bbox=False
     ):
         """Init class instance.
 
@@ -733,6 +734,8 @@ class TextBlock2D(UI):
             Size (width, height) in pixels of the text bounding box.
         auto_font_scale : bool, optional
             Automatically scale font according to the text bounding box.
+        dynamic_bbox : bool, optional
+            Automatically reisize the bounding box according to the content.
         """
         super(TextBlock2D, self).__init__(position=position)
         self.scene = None
@@ -748,10 +751,13 @@ class TextBlock2D(UI):
         self.auto_font_scale = auto_font_scale
         if self.auto_font_scale:
             self.actor.SetTextScaleModeToProp()
+        self.dynamic_bbox = dynamic_bbox
         self.message = text
         self.font_size = font_size
         if size is not None:
             self.resize(size)
+        elif not self.dynamic_bbox:
+            raise ValueError("TextBlock size is required as it is not dynamic.")
 
     def _setup(self):
         self.actor = TextActor()
@@ -803,7 +809,8 @@ class TextBlock2D(UI):
             The message to be set.
         """
         self.actor.SetInput(text)
-        self.update_bounding_box()
+        if self.dynamic_bbox:
+            self.update_bounding_box()
 
     @property
     def font_size(self):
@@ -829,7 +836,8 @@ class TextBlock2D(UI):
             self.actor.SetTextScaleModeToNone()
             self.actor.GetTextProperty().SetFontSize(size)
 
-        self.update_bounding_box()
+        if self.dynamic_bbox:
+            self.update_bounding_box()
 
     @property
     def font_family(self):
