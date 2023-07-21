@@ -56,9 +56,14 @@ kde_actor = effects.kde(np.array([[0.0, 0.0, 0.0]]), points, sigmas, scale = 20.
 
 manager.scene.add(kde_actor)
 
-interactive = True
+interactive = False
 
 if interactive:
     manager.start()
 
-record(scene, out_path = "kde_points.png", size = (800, 800))
+effects.remove_effect(kde_actor)
+
+# record(scene, out_path = "kde_points.png", size = (800, 800))
+
+if interactive:
+    manager.start()

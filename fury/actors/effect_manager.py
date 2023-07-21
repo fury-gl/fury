@@ -31,6 +31,8 @@ class EffectManager():
                                    size=manager.size)
         self.off_manager.window.SetOffScreenRendering(True)
         self.off_manager.initialize()
+        self._n_active_effects = 0
+        self._active_effects = {}
 
     
 
@@ -104,9 +106,9 @@ class EffectManager():
 
         # Blending and uniforms setup
         window = self.off_manager.window
+
         shader_apply_effects(window, bill, gl_disable_depth)
         shader_apply_effects(window, bill, gl_set_additive_blending)
-
         attribute_to_actor(bill, np.repeat(sigmas, 4), "in_sigma")
         attribute_to_actor(bill, np.repeat(scales, 4), "in_scale")
 
@@ -129,10 +131,12 @@ class EffectManager():
 
         colormap_to_texture(cmap, "colormapTexture", textured_billboard)
 
-        def event_callback(obj, event):
+        def kde_callback(obj, event):
             pos, focal, vu = self.on_manager.scene.get_camera()
             self.off_manager.scene.set_camera(pos, focal, vu)
             self.off_manager.scene.Modified()
+            shader_apply_effects(window, bill, gl_disable_depth)
+            shader_apply_effects(window, bill, gl_set_additive_blending)
             self.off_manager.render()
 
             window_to_texture(
@@ -141,13 +145,27 @@ class EffectManager():
             textured_billboard,
             blending_mode="Interpolate")
 
+        # Initialization
         window_to_texture(
             self.off_manager.window,
             "screenTexture",
             textured_billboard,
             blending_mode="Interpolate")
         
-        self.on_manager.add_iren_callback(event_callback, "RenderEvent")
+        callback_id = self.on_manager.add_iren_callback(kde_callback, "RenderEvent")
+
+        self._active_effects[textured_billboard] = callback_id
+        self._n_active_effects += 1
 
         return textured_billboard
+    
+    def remove_effect(self, effect_actor):
+        if self._n_active_effects > 0:
+            self.on_manager.scene.RemoveObserver(self._active_effects[effect_actor])
+            self.on_manager.scene.RemoveActor(effect_actor)
+            self.off_manager.scene.RemoveActor(effect_actor)
+            self._active_effects.pop(effect_actor)
+            self._n_active_effects -= 1
+        else:
+            raise IndexError("Manager has no active effects.")
     

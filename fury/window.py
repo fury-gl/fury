@@ -740,8 +740,9 @@ class ShowManager:
 
     def add_window_callback(self, win_callback, event=Command.ModifiedEvent):
         """Add window callbacks."""
-        self.window.AddObserver(event, win_callback)
+        window_id = self.window.AddObserver(event, win_callback)
         self.window.Render()
+        return window_id
 
     def add_timer_callback(self, repeat, duration, timer_callback):
         if not self.iren.GetInitialized():
@@ -758,7 +759,8 @@ class ShowManager:
     def add_iren_callback(self, iren_callback, event='MouseMoveEvent'):
         if not self.iren.GetInitialized():
             self.initialize()
-        self.iren.AddObserver(event, iren_callback)
+        iren_id = self.iren.AddObserver(event, iren_callback)
+        return iren_id
 
     def destroy_timer(self, timer_id):
         self.iren.DestroyTimer(timer_id)
