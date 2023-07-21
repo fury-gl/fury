@@ -1,6 +1,7 @@
 import os
 import numpy as np
 from fury.actor import billboard
+from fury.colormap import create_colormap
 from fury.postprocessing import (colormap_to_texture, 
                                  window_to_texture)
 from fury.shaders import (import_fury_shader,
@@ -12,7 +13,6 @@ from fury.window import (ShowManager,
                          Scene, 
                          gl_disable_depth, 
                          gl_set_additive_blending)
-from matplotlib import colormaps
 
 class EffectManager():
     """Class that manages the application of post-processing effects on actors.
@@ -123,8 +123,7 @@ class EffectManager():
         textured_billboard.GetProperty().GlobalWarningDisplayOff() 
 
         if custom_colormap == None:
-            cmap = colormaps[colormap]
-            cmap = np.array([cmap(i) for i in np.arange(0.0, 1.0, 1/256)])
+            cmap = create_colormap(np.arange(0.0, 1.0, 1/256), colormap)
         else:
             cmap = custom_colormap
 

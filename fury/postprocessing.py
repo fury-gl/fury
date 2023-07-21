@@ -1,10 +1,20 @@
 import numpy as np
-from fury.window import RenderWindow
 from fury.actor import Actor
-from fury.lib import Texture, WindowToImageFilter
 from fury.io import load_image
+from fury.lib import Texture, WindowToImageFilter
 from fury.utils import rgb_to_vtk
+from fury.window import RenderWindow
 
+
+WRAP_MODE_DIC = {"clamptoedge" : Texture.ClampToEdge,
+                 "repeat" : Texture.Repeat,
+                 "mirroredrepeat" : Texture.MirroredRepeat,
+                 "clamptoborder" : Texture.ClampToBorder}
+
+BLENDING_MODE_DIC = {"none" : 0, "replace" : 1,
+                     "modulate" : 2, "add" : 3,
+                     "addsigned" : 4, "interpolate" : 5,
+                     "subtract" : 6}
 
 def window_to_texture(
         window : RenderWindow,
@@ -18,7 +28,7 @@ def window_to_texture(
             0.0,
             1.0),
         interpolate : bool = True):
-    """Captures a rendered window and pass it as a texture to the given actor.
+    """Capture a rendered window and pass it as a texture to the given actor.
     Parameters
     ----------
     window : window.RenderWindow
@@ -29,35 +39,23 @@ def window_to_texture(
         Target actor to receive the texture.
     blending_mode : str, optional
         Texture blending mode. The options are:
-    1. None
-    2. Replace
-    3. Modulate
-    4. Add
-    5. AddSigned
-    6. Interpolate
-    7. Subtract
+        1. None
+        2. Replace
+        3. Modulate
+        4. Add
+        5. AddSigned
+        6. Interpolate
+        7. Subtract
     wrap_mode : str, optional
         Texture wrapping mode. The options are:
-    1. ClampToEdge
-    2. Repeat
-    3. MirroredRepeat
-    4. ClampToBorder
+        1. ClampToEdge
+        2. Repeat
+        3. MirroredRepeat
+        4. ClampToBorder
     border_color : tuple (4, ), optional
         Texture RGBA border color.
     interpolate : bool, optional
         Texture interpolation."""
-
-    wrap_mode_dic = {"ClampToEdge" : Texture.ClampToEdge,
-                     "Repeat" : Texture.Repeat,
-                     "MirroredRepeat" : Texture.MirroredRepeat,
-                     "ClampToBorder" : Texture.ClampToBorder}
-
-    blending_mode_dic = {"None" : 0, "Replace" : 1,
-                         "Modulate" : 2, "Add" : 3,
-                         "AddSigned" : 4, "Interpolate" : 5,
-                         "Subtract" : 6}
-
-    r, g, b, a = border_color
 
     windowToImageFilter = WindowToImageFilter()
     windowToImageFilter.SetInput(window)
@@ -66,11 +64,11 @@ def window_to_texture(
 
     texture = Texture()
     texture.SetInputConnection(windowToImageFilter.GetOutputPort())
-    texture.SetBorderColor(r, g, b, a)
-    texture.SetWrap(wrap_mode_dic[wrap_mode])
+    texture.SetBorderColor(*border_color)
+    texture.SetWrap(WRAP_MODE_DIC[wrap_mode.lower()])
     texture.SetInterpolate(interpolate)
     texture.MipmapOn()
-    texture.SetBlendingMode(blending_mode_dic[blending_mode])
+    texture.SetBlendingMode(BLENDING_MODE_DIC[blending_mode.lower()])
 
     target_actor.GetProperty().SetTexture(texture_name, texture)
 
@@ -87,7 +85,7 @@ def texture_to_actor(
             0.0,
             1.0),
         interpolate : bool = True):
-    """Passes an imported texture to an actor.
+    """Pass an imported texture to an actor.
     Parameters
     ----------
     path_to_texture : str
@@ -98,47 +96,35 @@ def texture_to_actor(
         Target actor to receive the texture.
     blending_mode : str
         Texture blending mode. The options are:
-    1. None
-    2. Replace
-    3. Modulate
-    4. Add
-    5. AddSigned
-    6. Interpolate
-    7. Subtract
+        1. None
+        2. Replace
+        3. Modulate
+        4. Add
+        5. AddSigned
+        6. Interpolate
+        7. Subtract
     wrap_mode : str
         Texture wrapping mode. The options are:
-    1. ClampToEdge
-    2. Repeat
-    3. MirroredRepeat
-    4. ClampToBorder
+        1. ClampToEdge
+        2. Repeat
+        3. MirroredRepeat
+        4. ClampToBorder
     border_color : tuple (4, )
         Texture RGBA border color.
     interpolate : bool
         Texture interpolation."""
-
-    wrap_mode_dic = {"ClampToEdge" : Texture.ClampToEdge,
-                     "Repeat" : Texture.Repeat,
-                     "MirroredRepeat" : Texture.MirroredRepeat,
-                     "ClampToBorder" : Texture.ClampToBorder}
-
-    blending_mode_dic = {"None" : 0, "Replace" : 1,
-                         "Modulate" : 2, "Add" : 3,
-                         "AddSigned" : 4, "Interpolate" : 5,
-                         "Subtract" : 6}
-
-    r, g, b, a = border_color
-
+    
     texture = Texture()
 
     colormapArray = load_image(path_to_texture)
     colormapData = rgb_to_vtk(colormapArray)
 
     texture.SetInputDataObject(colormapData)
-    texture.SetBorderColor(r, g, b, a)
-    texture.SetWrap(wrap_mode_dic[wrap_mode])
+    texture.SetBorderColor(*border_color)
+    texture.SetWrap(WRAP_MODE_DIC[wrap_mode.lower()])
     texture.SetInterpolate(interpolate)
     texture.MipmapOn()
-    texture.SetBlendingMode(blending_mode_dic[blending_mode])
+    texture.SetBlendingMode(BLENDING_MODE_DIC[blending_mode.lower()])
 
     target_actor.GetProperty().SetTexture(texture_name, texture)
 
@@ -148,7 +134,7 @@ def colormap_to_texture(
         texture_name : str,
         target_actor : Actor,
         interpolate : bool = True):
-    """Converts a colormap to a texture and pass it to an actor.
+    """Convert a colormap to a texture and pass it to an actor.
     Parameters
     ----------
     colormap : np.array (N, 4) or (1, N, 4)

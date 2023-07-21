@@ -1,24 +1,24 @@
-from fury.actors.effect_manager import EffectManager
-from fury.window import Scene, ShowManager
 import numpy as np
 
+from fury.actors.effect_manager import EffectManager
+from fury.window import Scene, ShowManager, record
+
 def normalize(array : np.array, min : float = 0.0, max : float = 1.0, axis : int = 0):
-    """Converts an array to a given desired range.
+    """Convert an array to a given desired range.
 
     Parameters
     ----------
     array : np.ndarray
-    Array to be normalized.
+        Array to be normalized.
     min : float
-    Bottom value of the interval of normalization. If no value is given, it is passed as 0.0.
+        Bottom value of the interval of normalization. If no value is given, it is passed as 0.0.
     max : float
-    Upper value of the interval of normalization. If no value is given, it is passed as 1.0.
+        Upper value of the interval of normalization. If no value is given, it is passed as 1.0.
 
     Returns
     -------
-
     array : np.array
-    Array converted to the given desired range.
+        Array converted to the given desired range.
     """
     if np.max(array) != np.min(array):
         return ((array - np.min(array))/(np.max(array) - np.min(array)))*(max - min) + min
@@ -27,7 +27,7 @@ def normalize(array : np.array, min : float = 0.0, max : float = 1.0, axis : int
             "Can't normalize an array which maximum and minimum value are the same.")
 
 
-width, height = (1920, 1080)
+width, height = (800, 800)
 
 scene = Scene()
 scene.set_camera(position=(-6, 5, -10),
@@ -49,13 +49,16 @@ n_points = 500
 points = np.random.rand(n_points, 3)
 points = normalize(points, -5, 5)
 sigmas = normalize(np.random.rand(n_points, 1), 0.1, 0.3)
-print(sigmas.shape[0])
-print(points.shape[0])
 
 effects = EffectManager(manager)
 
-kde_actor = effects.kde(np.array([[0.0, 0.0, 0.0]]), points, sigmas, scale = 20.0, colormap = "inferno")
+kde_actor = effects.kde(np.array([[0.0, 0.0, 0.0]]), points, sigmas, scale = 20.0, colormap = "viridis")
 
 manager.scene.add(kde_actor)
 
-manager.start()
+interactive = True
+
+if interactive:
+    manager.start()
+
+record(scene, out_path = "kde_points.png", size = (800, 800))
