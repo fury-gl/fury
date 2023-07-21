@@ -1,7 +1,7 @@
-from matplotlib import colormaps
 import numpy as np
 
 from fury import actor, window
+from fury.colormap import create_colormap
 from fury.lib import Texture, WindowToImageFilter
 from fury.shaders import shader_apply_effects
 from fury.utils import rgb_to_vtk
@@ -257,9 +257,7 @@ off_manager.render()
 textured_billboard = actor.billboard(np.array([[0.0, 0.0, 0.0]]), (1.0, 1.0, 1.0),
                                      scales=3.0, fs_dec=tex_dec, fs_impl=tex_impl)
 
-cmap = colormaps["viridis"]
-cmap = np.array([cmap(i) for i in np.arange(0.0, 1.0, 1/256)])
-
+cmap = create_colormap(np.arange(0.0, 1.0, 1/256), "viridis")
 
 colormap_to_texture(cmap, "colormapTexture", textured_billboard)
 
