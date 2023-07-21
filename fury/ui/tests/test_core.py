@@ -386,11 +386,23 @@ def test_text_block_2d_justification():
 
 def test_text_block_2d_size():
 
-    text_block_1 = ui.TextBlock2D()
+    text_block_0 = ui.TextBlock2D()
+
+    npt.assert_equal(text_block_0.actor.GetTextScaleMode(), 0)
+    npt.assert_equal(text_block_0.size, (0, 0))
+
+    text_block_0.font_size = 50
+    npt.assert_equal(text_block_0.size, (0, 0))
+
+    text_block_0.resize((500, 200))
+    npt.assert_equal(text_block_0.actor.GetTextScaleMode(), 0)
+    npt.assert_equal(text_block_0.size, (500, 200))
+
+    text_block_1 = ui.TextBlock2D(dynamic_bbox=True)
 
     npt.assert_equal(text_block_1.actor.GetTextScaleMode(), 0)
-    npt.assert_equal(text_block_1.size, (len("Text Block") *
-                     text_block_1.font_size, text_block_1.font_size))
+    npt.assert_equal(text_block_1.size, ((len("Text Block") *
+                     text_block_1.font_size, text_block_1.font_size)))
 
     text_block_1.font_size = 50
     npt.assert_equal(text_block_1.size, (len("Text Block") *
@@ -400,7 +412,8 @@ def test_text_block_2d_size():
     npt.assert_equal(text_block_1.actor.GetTextScaleMode(), 0)
     npt.assert_equal(text_block_1.size, (500, 200))
 
-    text_block_2 = ui.TextBlock2D(text="Just Another Text Block",auto_font_scale=True)
+    text_block_2 = ui.TextBlock2D(
+        text="Just Another Text Block", dynamic_bbox=True, auto_font_scale=True)
 
     npt.assert_equal(text_block_2.actor.GetTextScaleMode(), 1)
     npt.assert_equal(text_block_2.size, (len("Just Another Text Block") *
@@ -423,8 +436,7 @@ def test_text_block_2d_size():
     npt.assert_equal(text_block_3.size, (500, 200))
 
     text_block_3.message = "Hey Trying\nBig Text"
-    npt.assert_equal(text_block_3.size, (10 *
-                     text_block_3.font_size, 2 * text_block_3.font_size))
+    npt.assert_equal(text_block_3.size, (500, 200))
 
 
 # test_ui_button_panel(recording=True)
