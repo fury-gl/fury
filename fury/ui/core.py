@@ -757,7 +757,8 @@ class TextBlock2D(UI):
         if size is not None:
             self.resize(size)
         elif not self.dynamic_bbox:
-            raise ValueError("TextBlock size is required as it is not dynamic.")
+            # raise ValueError("TextBlock size is required as it is not dynamic.")
+            self.resize((0, 0))
 
     def _setup(self):
         self.actor = TextActor()
