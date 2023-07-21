@@ -11,7 +11,7 @@ What did I do this week?
 
 `#PR 818: Tutorial on using ellipsoid actor to visualize tensor ellipsoids for DTI <https://github.com/fury-gl/fury/pull/818>`_
 
-I created the PR for the tutorial that will show the use that can be made of the ellipsoid actor in the visualization of diffusion tensor ellipsoids. It is still in its most basic stage, but the structure that I have thought of for now consists of: displaying a slice using tensor_slicer with spheres of 100, 200, and 724 vertices, and using ellipsoid actor, and show a comparison of the visual quality of the tensor ellipsoids. Then, display a ROI using both actors and a whole brain using the ellipsoid actor, to show that this new actor gives the possibility to display more data.
+I created the PR for the tutorial that will show the use that can be made of the *ellipsoid* actor in the visualization of diffusion tensor ellipsoids. It is still in its most basic stage, but the structure that I have thought of for now consists of: displaying a slice using *tensor_slicer* with spheres of 100, 200, and 724 vertices, and using *ellipsoid* actor, and show a comparison of the visual quality of the tensor ellipsoids. Then, display a ROI using both actors and a whole brain using the *ellipsoid* actor, to show that this new actor gives the possibility to display more data.
 
 I also submitted the `uncertainty PR <https://github.com/fury-gl/fury/pull/810>`_ for review, in order to start making the necessary corrections.
 

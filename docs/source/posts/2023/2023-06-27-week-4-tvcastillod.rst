@@ -17,7 +17,7 @@ I made a second PR with the implementation of DTI uncertainty calculation and vi
     :width: 530
     :align: center
 
-I had to use some dipy functions, specifically: `estimate_sigma <https://dipy.org/documentation/1.4.1./reference/dipy.denoise/#estimate-sigma>`_ for the noise variance calculation, `design_matrix <https://dipy.org/documentation/1.4.0./reference/dipy.reconst/#design-matrix>`_ to get the b-matrix, and `tensor_prediction <https://dipy.org/documentation/1.4.0./reference/dipy.reconst/#tensor-prediction>`_ for the signal estimation. The details of this calculations can be found `here <https://onlinelibrary.wiley.com/doi/full/10.1002/mrm.21111>`_.
+I had to use some **dipy** functions, specifically: `estimate_sigma <https://dipy.org/documentation/1.4.1./reference/dipy.denoise/#estimate-sigma>`_ for the noise variance calculation, `design_matrix <https://dipy.org/documentation/1.4.0./reference/dipy.reconst/#design-matrix>`_ to get the b-matrix, and `tensor_prediction <https://dipy.org/documentation/1.4.0./reference/dipy.reconst/#tensor-prediction>`_ for the signal estimation. The details of this calculations can be found `here <https://onlinelibrary.wiley.com/doi/full/10.1002/mrm.21111>`_.
 
 What is coming up next?
 -----------------------
