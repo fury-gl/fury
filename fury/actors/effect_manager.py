@@ -158,7 +158,174 @@ class EffectManager():
         self._n_active_effects += 1
 
         return textured_billboard
+        
+    def laplacian(self, center, actor, scale, opacity):
+
+
+        laplacian_operator = """
+        const float laplacian_mat[3*3] = {0.0, 1.0, 0.0,
+                                          1.0,-4.0, 1.0,
+                                          0.0, 1.0, 0.0};
+
+        const float x_offsets[3*3] = {-1.0, 0.0, 1.0, 
+                                      -1.0, 0.0, 1.0,
+                                      -1.0, 0.0, 1.0};
+        
+        const float y_offsets[3*3] = {-1.0, -1.0, -1.0, 
+                                       0.0,  0.0,  0.0,
+                                       1.0,  1.0,  1.0};
+        """
+
+        lapl_dec = """
+        float laplacian_calculator(sampler2D screenTexture, vec2 tex_coords, vec2 res){
+            float value = 0.0;
+            for(int i = 0; i < 9; i++){
+                vec3 col = texture(screenTexture, tex_coords + vec2(1/res.x, 1/res.y)*vec2(x_offsets[i], y_offsets[i])).rgb;
+                float bw = 0.2126*col.r + 0.7152*col.g + 0.0722*col.b;
+                value += laplacian_mat[i]*bw;
+            }
+            return value;
+        }
+        """
+
+        tex_impl = """
+        // Turning screen coordinates to texture coordinates
+        vec2 res_factor = vec2(res.y/res.x, 1.0);
+        vec2 renorm_tex = res_factor*normalizedVertexMCVSOutput.xy*0.5 + 0.5;
+        color = vec3(laplacian_calculator(screenTexture, renorm_tex, res));
+
+        //color = vec3(1.0, 0.0, 0.0);
+        fragOutput0 = vec4(color, opacity);
+        """
+        tex_dec = compose_shader([laplacian_operator, lapl_dec])
+
+        self.off_manager.scene.add(actor)
+
+        self.off_manager.render()
+
+        # Render to second billboard for color map post-processing.
+        textured_billboard = billboard(center, scales=scale, fs_dec=tex_dec, fs_impl=tex_impl)
+        shader_custom_uniforms(textured_billboard, "fragment").SetUniform2f("res", self.off_manager.size)
+        shader_custom_uniforms(textured_billboard, "fragment").SetUniformf("opacity", opacity)
+
+        # Disables the texture warnings
+        textured_billboard.GetProperty().GlobalWarningDisplayOff() 
+
+        def laplacian_callback(obj, event):
+            actor.SetVisibility(True)
+            pos, focal, vu = self.on_manager.scene.get_camera()
+            self.off_manager.scene.set_camera(pos, focal, vu)
+            self.off_manager.scene.Modified()
+            self.off_manager.render()
+
+            window_to_texture(
+            self.off_manager.window,
+            "screenTexture",
+            textured_billboard,
+            blending_mode="Interpolate")
+
+            actor.SetVisibility(False)
+            actor.Modified()
+
+        # Initialization
+        window_to_texture(
+            self.off_manager.window,
+            "screenTexture",
+            textured_billboard,
+            blending_mode="Interpolate")
+        
+        callback_id = self.on_manager.add_iren_callback(laplacian_callback, "RenderEvent")
+
+        self._active_effects[textured_billboard] = callback_id
+        self._n_active_effects += 1
+
+        return textured_billboard
     
+
+    def gaussian_blur(self, center, actor, scale, opacity):
+
+
+        gaussian_kernel = """
+        const float gauss_kernel[3*3] = {1/16.0, 1/8, 1/16.0,
+                                          1/8.0, 1/4.0, 1/8.0,
+                                          1/16.0, 1/8.0, 1/16.0};
+
+        const float x_offsets[3*3] = {-1.0, 0.0, 1.0, 
+                                      -1.0, 0.0, 1.0,
+                                      -1.0, 0.0, 1.0};
+        
+        const float y_offsets[3*3] = {-1.0, -1.0, -1.0, 
+                                       0.0,  0.0,  0.0,
+                                       1.0,  1.0,  1.0};
+        """
+
+        gauss_dec = """
+        float kernel_calculator(sampler2D screenTexture, vec2 tex_coords, vec2 res){
+            float value = 0.0;
+            for(int i = 0; i < 9; i++){
+                vec3 col = texture(screenTexture, tex_coords + vec2(1/res.x, 1/res.y)*vec2(x_offsets[i], y_offsets[i])).rgb;
+                float bw = 0.2126*col.r + 0.7152*col.g + 0.0722*col.b;
+                value += gauss_kernel[i]*bw;
+            }
+            return value;
+        }
+        """
+
+        tex_impl = """
+        // Turning screen coordinates to texture coordinates
+        vec2 res_factor = vec2(res.y/res.x, 1.0);
+        vec2 renorm_tex = res_factor*normalizedVertexMCVSOutput.xy*0.5 + 0.5;
+        color = vec3(kernel_calculator(screenTexture, renorm_tex, res));
+
+        //color = vec3(1.0, 0.0, 0.0);
+        fragOutput0 = vec4(color, opacity);
+        """
+        tex_dec = compose_shader([gaussian_kernel, gauss_dec])
+
+        self.off_manager.scene.add(actor)
+
+        self.off_manager.render()
+
+        # Render to second billboard for color map post-processing.
+        textured_billboard = billboard(center, scales=scale, fs_dec=tex_dec, fs_impl=tex_impl)
+        shader_custom_uniforms(textured_billboard, "fragment").SetUniform2f("res", self.off_manager.size)
+        shader_custom_uniforms(textured_billboard, "fragment").SetUniformf("opacity", opacity)
+
+        # Disables the texture warnings
+        textured_billboard.GetProperty().GlobalWarningDisplayOff() 
+
+        def kernel_callback(obj, event):
+            actor.SetVisibility(True)
+            pos, focal, vu = self.on_manager.scene.get_camera()
+            self.off_manager.scene.set_camera(pos, focal, vu)
+            self.off_manager.scene.Modified()
+            self.off_manager.render()
+
+            window_to_texture(
+            self.off_manager.window,
+            "screenTexture",
+            textured_billboard,
+            blending_mode="Interpolate")
+
+            actor.SetVisibility(False)
+            actor.Modified()
+            
+
+        # Initialization
+        window_to_texture(
+            self.off_manager.window,
+            "screenTexture",
+            textured_billboard,
+            blending_mode="Interpolate")
+        
+        callback_id = self.on_manager.add_iren_callback(kernel_callback, "RenderEvent")
+
+        self._active_effects[textured_billboard] = callback_id
+        self._n_active_effects += 1
+
+        return textured_billboard
+    
+
     def remove_effect(self, effect_actor):
         if self._n_active_effects > 0:
             self.on_manager.scene.RemoveObserver(self._active_effects[effect_actor])
@@ -168,4 +335,5 @@ class EffectManager():
             self._n_active_effects -= 1
         else:
             raise IndexError("Manager has no active effects.")
+
     
