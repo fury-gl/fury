@@ -1048,7 +1048,6 @@ class TextBlock2D(UI):
 
     def update_alignment(self):
         """Update Text Alignment.
-
         """
         text_property = self.actor.GetTextProperty()
         updated_text_position = [0, 0]
@@ -1084,6 +1083,7 @@ class TextBlock2D(UI):
         self.actor.SetPosition(updated_text_position)
 
     def cal_size_from_message(self):
+        "Calculate size of background according to the message it contains."
         lines = self.message.split("\n")
         max_length = max(len(line) for line in lines)
         return [max_length*self.font_size, len(lines)*self.font_size]
