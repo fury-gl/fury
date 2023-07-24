@@ -98,6 +98,13 @@ after another? Well, the example below shows that is possible as well:
 It still need some tweaks and suffers from some bugs, but it works! Those represent important progress as it shows the versatility this 
 API may present. I have also already implemented `grayscale` and `3x3 gaussian blur` as well:
 
+.. image:: https://raw.githubusercontent.com/JoaoDell/gsoc_assets/main/images/gaussian_blur.png
+   :align: center
+   :alt: 3x3 Gaussian Blur filter applied to a cube.
+
+.. image:: https://raw.githubusercontent.com/JoaoDell/gsoc_assets/main/images/grayscale.png
+   :align: center
+   :alt: Grayscale filter applied to a cube.
 
 This Week's Goals
 -----------------
