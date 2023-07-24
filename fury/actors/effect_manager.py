@@ -314,11 +314,12 @@ class EffectManager():
         """
 
         gauss_dec = """
-        vec3 kernel_calculator(sampler2D screenTexture, vec2 tex_coords, vec2 res){
-            vec3 value = vec3(0.0);
+        vec4 kernel_calculator(sampler2D screenTexture, vec2 tex_coords, vec2 res){
+            vec4 value = vec4(0.0);
             for(int i = 0; i < 9; i++){
-                vec3 col = texture(screenTexture, tex_coords + vec2(1/res.x, 1/res.y)*vec2(x_offsets[i], y_offsets[i])).rgb;
-                value += gauss_kernel[i]*bw;
+                vec4 col = texture(screenTexture, tex_coords + vec2(1/res.x, 1/res.y)*vec2(x_offsets[i], y_offsets[i]));
+                col.a = col.a*int(vec3(0.0) != col.rgb) + 0.0*int(vec3(0.0) == col.rgb); 
+                value += gauss_kernel[i]*col;
             }
             return value;
         }
@@ -328,10 +329,10 @@ class EffectManager():
         // Turning screen coordinates to texture coordinates
         vec2 res_factor = vec2(res.y/res.x, 1.0);
         vec2 renorm_tex = res_factor*normalizedVertexMCVSOutput.xy*0.5 + 0.5;
-        color = kernel_calculator(screenTexture, renorm_tex, res);
+        vec4 kernel_color = kernel_calculator(screenTexture, renorm_tex, res);
 
-        //color = vec3(1.0, 0.0, 0.0);
-        fragOutput0 = vec4(color, opacity);
+        fragOutput0 = vec4(kernel_color.rgb, u_opacity*kernel_color.a);
+
         """
         tex_dec = compose_shader([gaussian_kernel, gauss_dec])
 
@@ -342,7 +343,8 @@ class EffectManager():
         # Render to second billboard for color map post-processing.
         textured_billboard = billboard(center, scales=scale, fs_dec=tex_dec, fs_impl=tex_impl)
         shader_custom_uniforms(textured_billboard, "fragment").SetUniform2f("res", self.off_manager.size)
-        shader_custom_uniforms(textured_billboard, "fragment").SetUniformf("opacity", opacity)
+        shader_custom_uniforms(textured_billboard, "fragment").SetUniformf("u_opacity", opacity)
+
 
         # Disables the texture warnings
         textured_billboard.GetProperty().GlobalWarningDisplayOff() 
@@ -357,7 +359,9 @@ class EffectManager():
             self.off_manager.window,
             "screenTexture",
             textured_billboard,
-            blending_mode="Interpolate")
+            blending_mode="Interpolate",
+            border_color=(0.0, 0.0, 0.0, 0.0))
+
 
             actor.SetVisibility(False)
             actor.Modified()
@@ -368,7 +372,9 @@ class EffectManager():
             self.off_manager.window,
             "screenTexture",
             textured_billboard,
-            blending_mode="Interpolate")
+            blending_mode="Interpolate",
+            border_color=(0.0, 0.0, 0.0, 0.0))
+        
         
         callback_id = self.on_manager.add_iren_callback(kernel_callback, "RenderEvent")
 

@@ -63,6 +63,7 @@ def window_to_texture(
     windowToImageFilter.Update()
 
     texture = Texture()
+    texture.SetMipmap(True)
     texture.SetInputConnection(windowToImageFilter.GetOutputPort())
     texture.SetBorderColor(*border_color)
     texture.SetWrap(WRAP_MODE_DIC[wrap_mode.lower()])
