@@ -685,6 +685,10 @@ class TextBlock2D(UI):
         Adds text shadow.
     size : (int, int)
         Size (width, height) in pixels of the text bounding box.
+    auto_font_scale : bool
+        Automatically scale font according to the text bounding box.
+    dynamic_bbox : bool
+        Automatically resize the bounding box according to the content.
     """
 
     def __init__(
@@ -735,8 +739,9 @@ class TextBlock2D(UI):
         auto_font_scale : bool, optional
             Automatically scale font according to the text bounding box.
         dynamic_bbox : bool, optional
-            Automatically reisize the bounding box according to the content.
+            Automatically resize the bounding box according to the content.
         """
+        self.boundingbox = [0, 0, 0, 0]
         super(TextBlock2D, self).__init__(position=position)
         self.scene = None
         self.have_bg = bool(bg_color)
