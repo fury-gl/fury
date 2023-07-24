@@ -158,6 +158,62 @@ class EffectManager():
         self._n_active_effects += 1
 
         return textured_billboard
+    
+    def grayscale(self, center, actor, scale, opacity):
+
+
+        tex_impl = """
+        // Turning screen coordinates to texture coordinates
+        vec2 res_factor = vec2(res.y/res.x, 1.0);
+        vec2 renorm_tex = res_factor*normalizedVertexMCVSOutput.xy*0.5 + 0.5;
+        vec3 col = texture(screenTexture, renorm_tex).rgb;
+        float bw = 0.2126*col.r + 0.7152*col.g + 0.0722*col.b;
+        color = vec3(bw);
+
+        fragOutput0 = vec4(color, opacity);
+        """
+
+        self.off_manager.scene.add(actor)
+
+        self.off_manager.render()
+
+        # Render to second billboard for color map post-processing.
+        textured_billboard = billboard(center, scales=scale, fs_impl=tex_impl)
+        shader_custom_uniforms(textured_billboard, "fragment").SetUniform2f("res", self.off_manager.size)
+        shader_custom_uniforms(textured_billboard, "fragment").SetUniformf("opacity", opacity)
+
+        # Disables the texture warnings
+        textured_billboard.GetProperty().GlobalWarningDisplayOff() 
+
+        def gray_callback(obj, event):
+            actor.SetVisibility(True)
+            pos, focal, vu = self.on_manager.scene.get_camera()
+            self.off_manager.scene.set_camera(pos, focal, vu)
+            self.off_manager.render()
+
+            window_to_texture(
+            self.off_manager.window,
+            "screenTexture",
+            textured_billboard,
+            blending_mode="Interpolate")
+
+            actor.SetVisibility(False)
+            actor.Modified()
+            
+
+        # Initialization
+        window_to_texture(
+            self.off_manager.window,
+            "screenTexture",
+            textured_billboard,
+            blending_mode="Interpolate")
+        
+        callback_id = self.on_manager.add_iren_callback(gray_callback, "RenderEvent")
+
+        self._active_effects[textured_billboard] = callback_id
+        self._n_active_effects += 1
+
+        return textured_billboard
         
     def laplacian(self, center, actor, scale, opacity):
 
@@ -177,12 +233,11 @@ class EffectManager():
         """
 
         lapl_dec = """
-        float laplacian_calculator(sampler2D screenTexture, vec2 tex_coords, vec2 res){
-            float value = 0.0;
+        vec3 laplacian_calculator(sampler2D screenTexture, vec2 tex_coords, vec2 res){
+            vec3 value = vec3(0.0);
             for(int i = 0; i < 9; i++){
                 vec3 col = texture(screenTexture, tex_coords + vec2(1/res.x, 1/res.y)*vec2(x_offsets[i], y_offsets[i])).rgb;
-                float bw = 0.2126*col.r + 0.7152*col.g + 0.0722*col.b;
-                value += laplacian_mat[i]*bw;
+                value += vec3(laplacian_mat[i])*col;
             }
             return value;
         }
@@ -192,7 +247,7 @@ class EffectManager():
         // Turning screen coordinates to texture coordinates
         vec2 res_factor = vec2(res.y/res.x, 1.0);
         vec2 renorm_tex = res_factor*normalizedVertexMCVSOutput.xy*0.5 + 0.5;
-        color = vec3(laplacian_calculator(screenTexture, renorm_tex, res));
+        color = laplacian_calculator(screenTexture, renorm_tex, res);
 
         //color = vec3(1.0, 0.0, 0.0);
         fragOutput0 = vec4(color, opacity);
@@ -215,7 +270,6 @@ class EffectManager():
             actor.SetVisibility(True)
             pos, focal, vu = self.on_manager.scene.get_camera()
             self.off_manager.scene.set_camera(pos, focal, vu)
-            self.off_manager.scene.Modified()
             self.off_manager.render()
 
             window_to_texture(
@@ -260,11 +314,10 @@ class EffectManager():
         """
 
         gauss_dec = """
-        float kernel_calculator(sampler2D screenTexture, vec2 tex_coords, vec2 res){
-            float value = 0.0;
+        vec3 kernel_calculator(sampler2D screenTexture, vec2 tex_coords, vec2 res){
+            vec3 value = vec3(0.0);
             for(int i = 0; i < 9; i++){
                 vec3 col = texture(screenTexture, tex_coords + vec2(1/res.x, 1/res.y)*vec2(x_offsets[i], y_offsets[i])).rgb;
-                float bw = 0.2126*col.r + 0.7152*col.g + 0.0722*col.b;
                 value += gauss_kernel[i]*bw;
             }
             return value;
@@ -275,7 +328,7 @@ class EffectManager():
         // Turning screen coordinates to texture coordinates
         vec2 res_factor = vec2(res.y/res.x, 1.0);
         vec2 renorm_tex = res_factor*normalizedVertexMCVSOutput.xy*0.5 + 0.5;
-        color = vec3(kernel_calculator(screenTexture, renorm_tex, res));
+        color = kernel_calculator(screenTexture, renorm_tex, res);
 
         //color = vec3(1.0, 0.0, 0.0);
         fragOutput0 = vec4(color, opacity);
@@ -298,7 +351,6 @@ class EffectManager():
             actor.SetVisibility(True)
             pos, focal, vu = self.on_manager.scene.get_camera()
             self.off_manager.scene.set_camera(pos, focal, vu)
-            self.off_manager.scene.Modified()
             self.off_manager.render()
 
             window_to_texture(
