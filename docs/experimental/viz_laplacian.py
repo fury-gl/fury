@@ -32,7 +32,7 @@ def normalize(array : np.array, min : float = 0.0, max : float = 1.0, axis : int
 width, height = (800, 800)
 
 scene = Scene()
-scene.set_camera(position=(-6, 5, -10),
+scene.set_camera(position=(0, 0, -10),
                  focal_point=(0.0,
                               0.0,
                               0.0),

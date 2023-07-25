@@ -203,7 +203,7 @@ class EffectManager():
 
         fragOutput0 = vec4(vec3(bw), u_opacity*col.a);
         """
-        actor_pos = np.array([actor.GetPosition()])
+        actor_pos = np.array([actor.GetCenter()])
         
         if self._n_active_effects > 0:
             self.off_manager.scene.GetActors().GetLastActor().SetVisibility(False)
@@ -295,7 +295,7 @@ class EffectManager():
         self.off_manager.scene.add(actor)
         self.off_manager.render()
 
-        actor_pos = np.array([actor.GetPosition()])
+        actor_pos = np.array([actor.GetCenter()])
 
         # Render to second billboard for color map post-processing.
         textured_billboard = billboard(actor_pos, scales=scale, fs_dec=tex_dec, fs_impl=tex_impl)
@@ -383,7 +383,7 @@ class EffectManager():
         self.off_manager.scene.add(actor)
         self.off_manager.render()
 
-        actor_pos = np.array([actor.GetPosition()])
+        actor_pos = np.array([actor.GetCenter()])
 
         # Render to second billboard for color map post-processing.
         textured_billboard = billboard(actor_pos, scales=scale, fs_dec=tex_dec, fs_impl=tex_impl)
