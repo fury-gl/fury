@@ -27,7 +27,8 @@ def window_to_texture(
             0.0,
             0.0,
             1.0),
-        interpolate : bool = True):
+        interpolate : bool = True,
+        d_type : str = "rgb"):
     """Capture a rendered window and pass it as a texture to the given actor.
     Parameters
     ----------
@@ -55,11 +56,15 @@ def window_to_texture(
     border_color : tuple (4, ), optional
         Texture RGBA border color.
     interpolate : bool, optional
-        Texture interpolation."""
+        Texture interpolation.
+    d_type : str, optional
+        Texture pixel type, "rgb" or "rgba". Default is "rgb" 
+    """
 
     windowToImageFilter = WindowToImageFilter()
     windowToImageFilter.SetInput(window)
-
+    type_dic = {"rgb" : windowToImageFilter.SetInputBufferTypeToRGB, "rgba" : windowToImageFilter.SetInputBufferTypeToRGBA}
+    type_dic[d_type.lower()]()
     windowToImageFilter.Update()
 
     texture = Texture()

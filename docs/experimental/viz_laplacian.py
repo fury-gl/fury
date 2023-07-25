@@ -1,13 +1,9 @@
 import numpy as np
 
-from fury.actor import cube
+from fury.actor import cube, sphere
 from fury.actors.effect_manager import EffectManager
 from fury.shaders import shader_apply_effects, shader_custom_uniforms
-from fury.window import (Scene, ShowManager, record, 
-                        gl_set_normal_blending, 
-                        gl_set_additive_blending, 
-                        gl_disable_depth,
-                        gl_enable_blend)
+from fury.window import (Scene, ShowManager, record)
 
 def normalize(array : np.array, min : float = 0.0, max : float = 1.0, axis : int = 0):
     """Convert an array to a given desired range.
@@ -50,27 +46,22 @@ manager = ShowManager(
 
 manager.initialize()
 
-cube_actor = cube(np.array([[0.0, 0.0, 0.0]]), colors = (1.0, 0.5, 0.0))
-cube_actor_2 = cube(np.array([[-1.0, 0.0, 0.0]]), colors = (1.0, 1.0, 0.0))
+cube_actor = cube(np.array([[0.0, 0.0, -3.0]]), colors = (1.0, 0.5, 0.0))
+sphere_actor = sphere(np.array([[0.0, 0.0, 3.0]]), (0.0, 1.0, 1.0), radii = 2.0)
 
 effects = EffectManager(manager)
 
-lapl_actor = effects.gaussian_blur(np.array([[1.0, 0.0, 0.0]]), cube_actor, 4.0, 1.0)
+lapl_actor = effects.gaussian_blur(cube_actor, 4.0, 1.0)
+lapl_sphere = effects.grayscale(sphere_actor, 4.0, 1.0)
 
-# lapl2 = effects.laplacian(np.array([[0.0, 0.0, 0.0]]), lapl_actor, 4.0, 1.0)
-
+manager.scene.add(lapl_sphere)
 manager.scene.add(lapl_actor)
-manager.scene.add(cube_actor_2)
 
 interactive = True
 
 if interactive:
     manager.start()
 
-effects.remove_effect(lapl_actor)
-# effects.remove_effect(lapl2)
+# effects.remove_effect(lapl_actor)
 
 # record(scene, out_path = "kde_points.png", size = (800, 800))
-
-if interactive:
-    manager.start()
