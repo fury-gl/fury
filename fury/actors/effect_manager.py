@@ -239,6 +239,8 @@ class EffectManager():
             sigmas = np.array(sigmas)
         if sigmas.shape[0] != 1 and sigmas.shape[0] != points.shape[0]:
             raise IndexError("sigmas size must be one or points size.")
+        if np.min(sigmas) <= 0:
+            raise ValueError("sigmas can't have zero or negative values.")
 
         varying_dec = """
         varying float out_sigma;
