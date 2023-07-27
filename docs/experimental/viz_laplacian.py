@@ -46,22 +46,22 @@ manager = ShowManager(
 
 manager.initialize()
 
-cube_actor = cube(np.array([[0.0, 0.0, -3.0]]), colors = (1.0, 0.5, 0.0))
-sphere_actor = sphere(np.array([[0.0, 0.0, 3.0]]), (0.0, 1.0, 1.0), radii = 2.0)
+offset = 1.0
+cube_actor = cube(np.array([[0.0, 0.0, -1.0 + offset]]), colors = (1.0, 0.5, 0.0))
+sphere_actor = sphere(np.array([[0.0, 0.0, 1.0 + offset], [1.0, 0.5, 1.0 + offset]]), (0.0, 1.0, 1.0), radii = 0.5)
 
 effects = EffectManager(manager)
+gauss_cube = effects.gaussian_blur(cube_actor, 1.0)
+gray_sphere = effects.grayscale(sphere_actor, 1.0)
 
-lapl_actor = effects.gaussian_blur(cube_actor, 4.0, 1.0)
-lapl_sphere = effects.grayscale(sphere_actor, 4.0, 1.0)
+manager.scene.add(gray_sphere)
+manager.scene.add(gauss_cube)
 
-manager.scene.add(lapl_sphere)
-manager.scene.add(lapl_actor)
+# effects.remove_effect(gauss_cube)
 
-interactive = True
+interactive = False
 
 if interactive:
     manager.start()
 
-# effects.remove_effect(lapl_actor)
-
-# record(scene, out_path = "kde_points.png", size = (800, 800))
+record(scene, out_path = "post_process.png", size = (800, 800))

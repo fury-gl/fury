@@ -54,7 +54,7 @@ points = points + np.tile(offset, points.shape[0]).reshape(points.shape)
 
 effects = EffectManager(manager)
 
-kde_actor = effects.kde(points, sigmas, scale = 20.0, colormap = "inferno")
+kde_actor = effects.kde(points, sigmas, colormap = "inferno")
 
 manager.scene.add(kde_actor)
 # effects.remove_effect(kde_actor)

@@ -37,7 +37,7 @@ class EffectManager():
 
     def kde(self, 
             points : np.ndarray, 
-            sigmas, scale = 1.0, 
+            sigmas, 
             opacity = 1.0, 
             colormap = "viridis", 
             custom_colormap : np.array = None):
@@ -49,8 +49,6 @@ class EffectManager():
             Array of points to be displayed.
         sigmas : np.ndarray (1, ) or (N, 1)
             Array of sigmas to be used in the KDE calculations. Must be one or one for each point.
-        scale : float, optional
-            Scale of the actor.
         opacity : float, optional
             Opacity of the actor.
         colormap : str, optional.
@@ -103,7 +101,7 @@ class EffectManager():
         vec2 res_factor = vec2(res.y/res.x, 1.0);
         vec2 renorm_tex = res_factor*normalizedVertexMCVSOutput.xy*0.5 + 0.5;
         float intensity = texture(screenTexture, renorm_tex).r;
-        color = color_mapping(intensity, colormapTexture).rgb;
+        color = color_mapping(intensity, colormapTexture);
 
         if(intensity<=0.0){
             discard;
@@ -144,6 +142,14 @@ class EffectManager():
             self.off_manager.scene.GetActors().GetLastActor().SetVisibility(False)
         self.off_manager.scene.add(bill)
         self.off_manager.render()
+
+        bill_bounds = bill.GetBounds()
+        max_sigma = 2*4.0*np.max(sigmas)
+
+        scale = np.array([[bill_bounds[1] - bill_bounds[0] + center_of_mass[0] + max_sigma, 
+                           bill_bounds[3] - bill_bounds[2] + center_of_mass[1] + max_sigma,
+                           0.0]])
+        
 
         # Render to second billboard for color map post-processing.
         textured_billboard = billboard(np.array([center_of_mass]), scales=scale, fs_dec=tex_dec, fs_impl=tex_impl)
@@ -190,30 +196,41 @@ class EffectManager():
 
         return textured_billboard
     
-    def grayscale(self, actor, scale, opacity):
+    def grayscale(self, actor, opacity):
 
 
         tex_impl = """
         // Turning screen coordinates to texture coordinates
         vec2 res_factor = vec2(res.y/res.x, 1.0);
-        vec2 renorm_tex = res_factor*normalizedVertexMCVSOutput.xy*0.5 + 0.5;
+        vec2 scale_factor = vec2(u_scale);
+        vec2 renorm_tex = scale_factor*res_factor*normalizedVertexMCVSOutput.xy*0.5 + 0.5;
         vec4 col = texture(screenTexture, renorm_tex);
-        col.a = col.a*int(vec3(0.0) != col.rgb) + 0.0*int(vec3(0.0) == col.rgb);
         float bw = 0.2126*col.r + 0.7152*col.g + 0.0722*col.b;
 
         fragOutput0 = vec4(vec3(bw), u_opacity*col.a);
         """
-        actor_pos = np.array([actor.GetCenter()])
         
         if self._n_active_effects > 0:
             self.off_manager.scene.GetActors().GetLastActor().SetVisibility(False)
         self.off_manager.scene.add(actor)
         self.off_manager.render()
 
+        actor_pos = np.array([actor.GetCenter()])
+        actor_bounds = actor.GetBounds()
+
+        actor_scales = np.array([actor_bounds[1] - actor_bounds[0], 
+                                 actor_bounds[3] - actor_bounds[2],
+                                 0.0])
+        
+        scale = np.array([[actor_scales.max(), 
+                           actor_scales.max(),
+                           0.0]])
+
         # Render to second billboard for color map post-processing.
         textured_billboard = billboard(actor_pos, scales=scale, fs_impl=tex_impl)
         shader_custom_uniforms(textured_billboard, "fragment").SetUniform2f("res", self.off_manager.size)
         shader_custom_uniforms(textured_billboard, "fragment").SetUniformf("u_opacity", opacity)
+        shader_custom_uniforms(textured_billboard, "fragment").SetUniform2f("u_scale", scale[0, :2])
 
         # Disables the texture warnings
         textured_billboard.GetProperty().GlobalWarningDisplayOff() 
@@ -250,7 +267,7 @@ class EffectManager():
 
         return textured_billboard
         
-    def laplacian(self, actor, scale, opacity):
+    def laplacian(self, actor, opacity):
 
 
         laplacian_operator = """
@@ -273,7 +290,6 @@ class EffectManager():
             vec4 col = vec4(0.0);
             for(int i = 0; i < 9; i++){
                 col = texture(screenTexture, tex_coords + vec2(1/res.x, 1/res.y)*vec2(x_offsets[i], y_offsets[i]));
-                col.a = col.a*int(vec3(0.0) != col.rgb) + 0.0*int(vec3(0.0) == col.rgb); 
                 value += vec4(laplacian_mat[i])*col;
             }
             return value;
@@ -296,7 +312,16 @@ class EffectManager():
         self.off_manager.render()
 
         actor_pos = np.array([actor.GetCenter()])
+        actor_bounds = actor.GetBounds()
 
+        actor_scales = np.array([actor_bounds[1] - actor_bounds[0], 
+                                 actor_bounds[3] - actor_bounds[2],
+                                 0.0])
+        
+        scale = np.array([[actor_scales.max(), 
+                           actor_scales.max(),
+                           0.0]])
+        
         # Render to second billboard for color map post-processing.
         textured_billboard = billboard(actor_pos, scales=scale, fs_dec=tex_dec, fs_impl=tex_impl)
         shader_custom_uniforms(textured_billboard, "fragment").SetUniform2f("res", self.off_manager.size)
@@ -337,7 +362,7 @@ class EffectManager():
         return textured_billboard
     
 
-    def gaussian_blur(self, actor, scale, opacity):
+    def gaussian_blur(self, actor, opacity):
 
 
         gaussian_kernel = """
@@ -360,7 +385,6 @@ class EffectManager():
             vec4 col = vec4(0.0);
             for(int i = 0; i < 9; i++){
                 col = texture(screenTexture, tex_coords + vec2(1/res.x, 1/res.y)*vec2(x_offsets[i], y_offsets[i]));
-                col.a = col.a*int(vec3(0.0) != col.rgb) + 0.0*int(vec3(0.0) == col.rgb); 
                 value += gauss_kernel[i]*col;
             }
             return value;
@@ -373,7 +397,6 @@ class EffectManager():
         vec2 renorm_tex = res_factor*normalizedVertexMCVSOutput.xy*0.5 + 0.5;
         vec4 kernel_color = kernel_calculator(screenTexture, renorm_tex, res);
 
-        
         fragOutput0 = vec4(kernel_color.rgb, u_opacity*kernel_color.a);
         """
         tex_dec = compose_shader([gaussian_kernel, gauss_dec])
@@ -384,7 +407,16 @@ class EffectManager():
         self.off_manager.render()
 
         actor_pos = np.array([actor.GetCenter()])
+        actor_bounds = actor.GetBounds()
 
+        actor_scales = np.array([actor_bounds[1] - actor_bounds[0], 
+                                 actor_bounds[3] - actor_bounds[2],
+                                 0.0])
+        
+        scale = np.array([[actor_scales.max(), 
+                           actor_scales.max(),
+                           0.0]])
+        
         # Render to second billboard for color map post-processing.
         textured_billboard = billboard(actor_pos, scales=scale, fs_dec=tex_dec, fs_impl=tex_impl)
         shader_custom_uniforms(textured_billboard, "fragment").SetUniform2f("res", self.off_manager.size)
