@@ -1,11 +1,11 @@
 // This assumes the center of the normal distribution is the center of the screen
-#define PI 3.1415926
 float kde(vec3 point, float sigma){
-    return (1/(sigma*sqrt(2.0*PI)))*exp(-1.0*pow(length(point), 2.0)/(2.0*sigma*sigma) );
+    float norm = (3.0/(4.0*sigma)); 
+    return norm*(1.0 - (length(point)*length(point))/(sigma*sigma));
 }
 
 
 // This requires a center to be passed
 // float kde(vec3 point, vec3 center, float sigma){
-//     return (1/(sigma*sqrt(2.0*PI)))*exp(-1.0*pow(length(center - point), 2.0)/(2.0*sigma*sigma) );
+//     return 1.0 - (length(center - point)*length(center - point))/(sigma*sigma);
 // }

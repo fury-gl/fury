@@ -27,7 +27,7 @@ def normalize(array : np.array, min : float = 0.0, max : float = 1.0, axis : int
             "Can't normalize an array which maximum and minimum value are the same.")
 
 
-width, height = (800, 800)
+width, height = (800, 600)
 
 scene = Scene()
 scene.set_camera(position=(-6, 5, -10),
@@ -49,12 +49,13 @@ n_points = 500
 points = np.random.rand(n_points, 3)
 points = normalize(points, -5, 5)
 sigmas = normalize(np.random.rand(n_points, 1), 0.1, 0.3)
-offset = np.array([3.0, 0.0, 0.0])
+offset = np.array([0.0, 0.0, 0.0])
 points = points + np.tile(offset, points.shape[0]).reshape(points.shape)
 
 effects = EffectManager(manager)
 
-kde_actor = effects.kde(points, sigmas, colormap = "inferno")
+kde_actor = effects.kde(points, sigmas, kernel = "exponential", colormap = "inferno")
+
 
 manager.scene.add(kde_actor)
 # effects.remove_effect(kde_actor)

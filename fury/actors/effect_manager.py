@@ -201,8 +201,9 @@ class EffectManager():
     def kde(self, 
             points : np.ndarray, 
             sigmas, 
-            opacity = 1.0, 
-            colormap = "viridis", 
+            kernel : str = "gaussian",
+            opacity : float = 1.0, 
+            colormap : str = "viridis", 
             custom_colormap : np.array = None):
         """Actor that displays the Kernel Density Estimation of a given set of points.
         
@@ -212,6 +213,15 @@ class EffectManager():
             Array of points to be displayed.
         sigmas : np.ndarray (1, ) or (N, 1)
             Array of sigmas to be used in the KDE calculations. Must be one or one for each point.
+        kernel : str, optional
+            Kernel to be used for the distribution calculation. The available options are:
+            * "cosine"
+            * "epanechnikov"
+            * "exponential"
+            * "gaussian"
+            * "linear"
+            * "tophat"
+
         opacity : float, optional
             Opacity of the actor.
         colormap : str, optional.
@@ -235,7 +245,7 @@ class EffectManager():
         varying float out_scale;
         """
 
-        kde_dec = import_fury_shader(os.path.join("utils", "normal_distribution.glsl"))
+        kde_dec = import_fury_shader(os.path.join("utils", f"{kernel.lower()}_distribution.glsl"))
 
         kde_impl = """
         float current_kde = kde(normalizedVertexMCVSOutput*out_scale, out_sigma);
@@ -264,12 +274,12 @@ class EffectManager():
         vec2 res_factor = vec2(res.y/res.x, 1.0);
         vec2 renorm_tex = res_factor*normalizedVertexMCVSOutput.xy*0.5 + 0.5;
         float intensity = texture(screenTexture, renorm_tex).r;
-        color = color_mapping(intensity, colormapTexture);
 
         if(intensity<=0.0){
             discard;
-        }else{
-            fragOutput0 = vec4(color, u_opacity);
+        }else{     
+            vec4 final_color = color_mapping(intensity, colormapTexture);
+            fragOutput0 = vec4(final_color.rgb, u_opacity*final_color.a);
         }
         """
 
@@ -309,10 +319,13 @@ class EffectManager():
         bill_bounds = bill.GetBounds()
         max_sigma = 2*4.0*np.max(sigmas)
 
-        scale = np.array([[bill_bounds[1] - bill_bounds[0] + center_of_mass[0] + max_sigma, 
-                           bill_bounds[3] - bill_bounds[2] + center_of_mass[1] + max_sigma,
-                           0.0]])
+        actor_scales = np.array([[bill_bounds[1] - bill_bounds[0] + center_of_mass[0] + max_sigma, 
+                                 bill_bounds[3] - bill_bounds[2] + center_of_mass[1] + max_sigma,
+                                 0.0]])
         
+        scale = np.array([[actor_scales.max(), 
+                           actor_scales.max(),
+                           0.0]])
 
         # Render to second billboard for color map post-processing.
         textured_billboard = billboard(np.array([center_of_mass]), scales=scale, fs_dec=tex_dec, fs_impl=tex_impl)
