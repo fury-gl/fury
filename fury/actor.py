@@ -10,6 +10,7 @@ import fury.primitive as fp
 from fury import layout
 from fury.actors.odf_slicer import OdfSlicerActor
 from fury.actors.peak import PeakActor
+from fury.actors.tensor import tensor_ellipsoid
 from fury.colormap import colormap_lookup_table
 from fury.deprecator import deprecate_with_version, deprecated_params
 from fury.io import load_image
@@ -3795,3 +3796,75 @@ def markers(
     shader_to_actor(sq_actor, 'fragment', impl_code=fs_impl_code, block='light')
 
     return sq_actor
+
+
+def ellipsoid(
+    centers,
+    axes,
+    lengths,
+    colors=(1, 0, 0),
+    scales=1.0,
+    opacity=1.0
+):
+    """
+    VTK actor for visualizing ellipsoids.
+
+    Parameters
+    ----------
+    centers : ndarray(N, 3)
+        Ellipsoid positions.
+    axes : ndarray (3, 3) or (N, 3, 3)
+        Axes of the ellipsoid.
+    lengths : ndarray (3, ) or (N, 3)
+        Axes lengths.
+    colors : ndarray (N,3) or tuple (3,), optional
+        Default red color. R, G and B should be in the range [0, 1].
+    scales : float or ndarray (N, ), optional
+        Ellipsoid size, default(1.0).
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque), default(1.0).
+
+    Returns
+    -------
+    tensor_ellipsoid: Actor
+
+    """
+
+    if not isinstance(centers, np.ndarray):
+        centers = np.array(centers)
+    if centers.ndim == 1:
+        centers = np.array([centers])
+
+    if not isinstance(axes, np.ndarray):
+        axes = np.array(axes)
+    if axes.ndim == 2:
+        axes = np.array([axes])
+    if axes.shape[0] != centers.shape[0]:
+        raise ValueError('number of axes defined does not match with number of'
+                         'centers')
+
+    if not isinstance(lengths, np.ndarray):
+        lengths = np.array(lengths)
+    if lengths.ndim == 1:
+        lengths = np.array([lengths])
+    if lengths.shape[0] != centers.shape[0]:
+        raise ValueError('number of lengths defined does not match with number'
+                         'of centers')
+
+    if not isinstance(scales, np.ndarray):
+        scales = np.array(scales)
+    if scales.size == 1:
+        scales = np.repeat(scales, centers.shape[0])
+    elif scales.size != centers.shape[0]:
+        scales = np.concatenate(
+            (scales, np.ones(centers.shape[0] - scales.shape[0])), axis=None)
+
+    if isinstance(colors, tuple):
+        colors = np.array([colors])
+    elif not isinstance(colors, np.ndarray):
+        colors = np.array(colors)
+    if colors.shape[1] == 4:
+        colors = colors[:, :-1]
+
+    return tensor_ellipsoid(centers, axes, lengths, colors, scales, opacity)
+
