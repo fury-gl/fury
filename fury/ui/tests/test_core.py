@@ -389,10 +389,10 @@ def test_text_block_2d_size():
     text_block_0 = ui.TextBlock2D()
 
     npt.assert_equal(text_block_0.actor.GetTextScaleMode(), 0)
-    npt.assert_equal(text_block_0.size, (0, 0))
+    npt.assert_equal(text_block_0.size, (180,18))
 
     text_block_0.font_size = 50
-    npt.assert_equal(text_block_0.size, (0, 0))
+    npt.assert_equal(text_block_0.size, (500, 50))
 
     text_block_0.resize((500, 200))
     npt.assert_equal(text_block_0.actor.GetTextScaleMode(), 0)
