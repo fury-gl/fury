@@ -1129,7 +1129,11 @@ class TextBlock2D(UI):
         self.background.position = position
 
     def _get_size(self):
-        return (self.boundingbox[2]-self.boundingbox[0], self.boundingbox[3]-self.boundingbox[1])
+        bb_size = (self.boundingbox[2]-self.boundingbox[0],
+                   self.boundingbox[3]-self.boundingbox[1])
+        if self.dynamic_bbox or self.auto_font_scale or sum(bb_size):
+            return bb_size
+        return self.cal_size_from_message()
 
 
 class Button2D(UI):
