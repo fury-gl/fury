@@ -51,7 +51,6 @@ def wrap_overflow(textblock, wrap_width, side='right'):
     """
     original_str = textblock.message
     str_copy = textblock.message
-    prev_bg = textblock.have_bg
     wrap_idxs = []
 
     wrap_idx = check_overflow(textblock, wrap_width, '', side)
@@ -72,7 +71,6 @@ def wrap_overflow(textblock, wrap_width, side='right'):
         original_str = original_str[:idx] + '\n' + original_str[idx:]
 
     textblock.message = original_str
-    textblock.have_bg = prev_bg
     return textblock.message
 
 
@@ -99,26 +97,23 @@ def check_overflow(textblock, width, overflow_postfix='', side='right'):
     start_ptr = 0
     mid_ptr = 0
     end_ptr = len(original_str)
-    prev_bg = textblock.have_bg
-    textblock.have_bg = False
 
     if side == 'left':
         original_str = original_str[::-1]
 
-    if textblock.size[0] <= width:
-        textblock.have_bg = prev_bg
+    if textblock.cal_size_from_message()[0] <= width:
         return 0
 
     while start_ptr < end_ptr:
         mid_ptr = (start_ptr + end_ptr) // 2
         textblock.message = original_str[:mid_ptr] + overflow_postfix
 
-        if textblock.size[0] < width:
+        if textblock.cal_size_from_message()[0] < width:
             start_ptr = mid_ptr
-        elif textblock.size[0] > width:
+        elif textblock.cal_size_from_message()[0] > width:
             end_ptr = mid_ptr
 
-        if mid_ptr == (start_ptr + end_ptr) // 2 or textblock.size[0] == width:
+        if mid_ptr == (start_ptr + end_ptr) // 2 or textblock.cal_size_from_message()[0] == width:
             if side == 'left':
                 textblock.message = textblock.message[::-1]
             return mid_ptr
