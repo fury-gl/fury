@@ -1,6 +1,6 @@
 import numpy as np
 
-from fury.actors.effect_manager import EffectManager
+from fury.actors.effect_manager_alt import EffectManager
 from fury.window import Scene, ShowManager, record
 
 def normalize(array : np.array, min : float = 0.0, max : float = 1.0, axis : int = 0):
@@ -45,16 +45,16 @@ manager = ShowManager(
 manager.initialize()
 
 
-n_points = 500
+n_points = 1000
 points = np.random.rand(n_points, 3)
-points = normalize(points, -5, 5)
-sigmas = normalize(np.random.rand(n_points, 1), 0.1, 0.3)
+points = normalize(points, -5.0, 5.0)
+sigmas = normalize(np.random.rand(n_points, 1), 0.1, 0.5)
 offset = np.array([0.0, 0.0, 0.0])
 points = points + np.tile(offset, points.shape[0]).reshape(points.shape)
 
 effects = EffectManager(manager)
 
-kde_actor = effects.kde(points, sigmas, kernel = "exponential", colormap = "inferno")
+kde_actor = effects.kde(points, sigmas, kernel = "gaussian", colormap = "inferno")
 
 
 manager.scene.add(kde_actor)
