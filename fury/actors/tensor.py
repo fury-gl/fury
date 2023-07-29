@@ -6,6 +6,7 @@ from fury import actor
 from fury.shaders import (attribute_to_actor, compose_shader,
                           import_fury_shader, shader_to_actor)
 
+
 def tensor_ellipsoid(centers, axes, lengths, colors, scales, opacity):
     """
     Visualize one or many Tensor Ellipsoids with different features.
@@ -136,7 +137,7 @@ def tensor_ellipsoid(centers, axes, lengths, colors, scales, opacity):
             */
             float scFactor = min(evalsVSOutput.x, min(evalsVSOutput.y,
                                      evalsVSOutput.z));
-                                     
+
             /*
             The approximation of distance is calculated by stretching the
             space such that the ellipsoid becomes a sphere (multiplying by
@@ -192,7 +193,7 @@ def tensor_ellipsoid(centers, axes, lengths, colors, scales, opacity):
             vec3 normal = centralDiffsNormals(pos, .0001);
             // Light Attenuation
             float la = dot(ld, normal);
-            vec3 color = blinnPhongIllumModel(la, lightColor0, 
+            vec3 color = blinnPhongIllumModel(la, lightColor0,
                 diffuseColor, specularPower, specularColor, ambientColor);
             fragOutput0 = vec4(color, opacity);
         }
@@ -298,7 +299,7 @@ def double_cone(centers, axes, angles, colors, scales, opacity):
         mat3 R = mat3(normalize(evec1), normalize(evec2), normalize(evec3));
         float a = radians(90);
         mat3 rot = mat3(cos(a),-sin(a), 0,
-                        sin(a), cos(a), 0, 
+                        sin(a), cos(a), 0,
                             0 ,      0, 1);
         rotationMatrix = transpose(R) * rot;
         """
@@ -383,7 +384,7 @@ def double_cone(centers, axes, angles, colors, scales, opacity):
             vec3 normal = centralDiffsNormals(pos, .0001);
             // Light Attenuation
             float la = dot(ld, normal);
-            vec3 color = blinnPhongIllumModel(la, lightColor0, 
+            vec3 color = blinnPhongIllumModel(la, lightColor0,
                 diffuseColor, specularPower, specularColor, ambientColor);
             fragOutput0 = vec4(color, opacity);
         }
@@ -470,7 +471,7 @@ def main_dir_uncertainty(evals, evecs, signal, sigma, b_matrix):
         # perturbation matrix of tensor D
         try:
             delta_D = np.linalg.inv(delta_DD)
-        except:
+        except np.linalg.LinAlgError:
             delta_D = delta_DD
 
         D_ = evecs
@@ -480,7 +481,7 @@ def main_dir_uncertainty(evals, evecs, signal, sigma, b_matrix):
                      np.array(D_[i, :, 2])
         lambda1, lambda2, lambda3 = eigen_vals[0], eigen_vals[1], eigen_vals[2]
 
-        if (lambda1 > lambda2 and lambda1 > lambda3):
+        if lambda1 > lambda2 and lambda1 > lambda3:
             # The perturbation of the eigenvector associated with the largest
             # eigenvalue is given by
             a = np.dot(np.outer(np.dot(e1, delta_D), np.transpose(e2)) /

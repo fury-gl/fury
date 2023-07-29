@@ -3896,7 +3896,7 @@ def uncertainty_cone(
     b_matrix : array (N, 7)
         Design matrix for DTI.
     scales : float or ndarray (N, ), optional
-        Cones of uncertainty size, default(1.0).
+        Cones of uncertainty size.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque), default(1.0).
 
