@@ -21,6 +21,18 @@
     margin: 30px 0;
 }
 
+.tabs-info {
+    font-size: 16px;
+    color: #4a4a4a;
+}
+
+@media screen and (max-width: 600px) {
+    .tabs-info {
+        font-size: 12.8px;
+        font-weight: bold;
+    }
+}
+
 .visualization, .data-science, .scientific-domains, .machine-learning, .array-libraries {
     max-width: 900px;
     margin: 15px auto;
@@ -43,6 +55,10 @@
     font-weight: 500;
     color: rgb(108, 122, 137);
 }
+.uk-tab > .uk-active > a {
+    color: var(--colorPrimaryDark) !important;
+    border-color: var(--colorPrimaryDark) !important;
+}
 
 @media screen and (max-width: 600px) {
 
@@ -50,7 +66,7 @@
         margin-left: 0 !important;
     }
 
-    .uk-tab> .uk-active > a {
+    .uk-tab > .uk-active > a {
         border-color: var(--colorPrimaryDark) !important;
         color: var(--colorPrimaryDark) !important;
     }
@@ -106,40 +122,41 @@
     }
 }
 
-.grid-container {
-    display: grid;
-    grid-template-columns: auto auto;
-    grid-gap: 20px;
-}
-
-.grid-container > div {
-    /* White, with 80% opacity */
-    background-color: rgba(255, 255, 255, 0.8);
-    text-align: middle;
-}
-
-@media only screen and (max-width: 600px) {
-    .grid-container {
-        display: block;
-    }
-}
-
 /* Visualization */
-.visualization-images > img {
+.visualization-images img,
+.visualization-images a {
     border-radius: 10px;
-}
-
-.image-grid {
-    display: grid;
-    grid-template-columns: auto auto auto;
-    grid-gap: 10px;
 }
 
 .image-grid > div {
-    background-color: rgb(238, 238, 238);
-    border: 2px solid rgb(255, 255, 255);
+    background-color: rgb(0, 0, 0);
     border-radius: 10px;
-    padding: 10px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+@media only screen and (max-width: 600px) {
+    .image-grid > div {
+        min-height: 150px;
+    }
+}
+
+.molecular-band {
+    padding: 30px;
+    background-color: white !important;
+}
+
+.image-description {
+    color: black;
+}
+
+.image-grid > div:hover {
+    box-shadow: rgba(255, 255, 255, 0.1) 0px 1px 1px 0px inset, rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px;
 }
 
 /* Scientific Domains */
