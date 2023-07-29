@@ -701,6 +701,8 @@ class TextBlock2D(UI):
         color=(1, 1, 1),
         bg_color=None,
         position=(0, 0),
+        auto_font_scale=False,
+        dynamic_bbox=False
     ):
         """Init class instance.
 
@@ -730,23 +732,34 @@ class TextBlock2D(UI):
             Adds text shadow.
         size : (int, int)
             Size (width, height) in pixels of the text bounding box.
+        auto_font_scale : bool, optional
+            Automatically scale font according to the text bounding box.
+        dynamic_bbox : bool, optional
+            Automatically resize the bounding box according to the content.
         """
+        self.boundingbox = [0, 0, 0, 0]
         super(TextBlock2D, self).__init__(position=position)
         self.scene = None
         self.have_bg = bool(bg_color)
-        if size is not None:
-            self.resize(size)
-        else:
-            self.font_size = font_size
         self.color = color
         self.background_color = bg_color
         self.font_family = font_family
-        self.justification = justification
+        self._justification = justification
         self.bold = bold
         self.italic = italic
         self.shadow = shadow
-        self.vertical_justification = vertical_justification
+        self._vertical_justification = vertical_justification
+        self.auto_font_scale = auto_font_scale
+        if self.auto_font_scale:
+            self.actor.SetTextScaleModeToProp()
+        self.dynamic_bbox = dynamic_bbox
         self.message = text
+        self.font_size = font_size
+        if size is not None:
+            self.resize(size)
+        elif not self.dynamic_bbox:
+            # raise ValueError("TextBlock size is required as it is not dynamic.")
+            self.resize((0, 0))
 
     def _setup(self):
         self.actor = TextActor()
@@ -762,10 +775,7 @@ class TextBlock2D(UI):
         size : (int, int)
             Text bounding box size(width, height) in pixels.
         """
-        if self.have_bg:
-            self.background.resize(size)
-        self.actor.SetTextScaleModeToProp()
-        self.actor.SetPosition2(*size)
+        self.update_bounding_box(size)
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -778,11 +788,6 @@ class TextBlock2D(UI):
         ----------
         scene : scene
         """
-        self.scene = scene
-        if self.have_bg and not self.actor.GetTextScaleMode():
-            size = np.zeros(2)
-            self.actor.GetSize(scene, size)
-            self.background.resize(size)
         scene.add(self.background, self.actor)
 
     @property
@@ -806,6 +811,8 @@ class TextBlock2D(UI):
             The message to be set.
         """
         self.actor.SetInput(text)
+        if self.dynamic_bbox:
+            self.update_bounding_box()
 
     @property
     def font_size(self):
@@ -827,21 +834,12 @@ class TextBlock2D(UI):
         size : int
             Text font size.
         """
-        self.actor.SetTextScaleModeToNone()
-        self.actor.GetTextProperty().SetFontSize(size)
+        if not self.auto_font_scale:
+            self.actor.SetTextScaleModeToNone()
+            self.actor.GetTextProperty().SetFontSize(size)
 
-        if self.scene is not None and self.have_bg:
-            bb_size = np.zeros(2)
-            self.actor.GetSize(self.scene, bb_size)
-            bg_size = self.background.size
-            if bb_size[0] > bg_size[0] or bb_size[1] > bg_size[1]:
-                warn(
-                    'Font size exceeds background bounding box.'
-                    ' Font Size will not be updated.',
-                    RuntimeWarning,
-                )
-                self.actor.SetTextScaleModeToProp()
-                self.actor.SetPosition2(*bg_size)
+        if self.dynamic_bbox:
+            self.update_bounding_box()
 
     @property
     def font_family(self):
@@ -881,13 +879,7 @@ class TextBlock2D(UI):
         str
             Text justification.
         """
-        justification = self.actor.GetTextProperty().GetJustificationAsString()
-        if justification == 'Left':
-            return 'left'
-        elif justification == 'Centered':
-            return 'center'
-        elif justification == 'Right':
-            return 'right'
+        return self._justification
 
     @justification.setter
     def justification(self, justification):
@@ -899,16 +891,8 @@ class TextBlock2D(UI):
             Possible values are left, right, center.
 
         """
-        text_property = self.actor.GetTextProperty()
-        if justification == 'left':
-            text_property.SetJustificationToLeft()
-        elif justification == 'center':
-            text_property.SetJustificationToCentered()
-        elif justification == 'right':
-            text_property.SetJustificationToRight()
-        else:
-            msg = 'Text can only be justified left, right and center.'
-            raise ValueError(msg)
+        self._justification = justification
+        self.update_alignment()
 
     @property
     def vertical_justification(self):
@@ -920,14 +904,7 @@ class TextBlock2D(UI):
             Text vertical justification.
 
         """
-        text_property = self.actor.GetTextProperty()
-        vjustification = text_property.GetVerticalJustificationAsString()
-        if vjustification == 'Bottom':
-            return 'bottom'
-        elif vjustification == 'Centered':
-            return 'middle'
-        elif vjustification == 'Top':
-            return 'top'
+        return self._vertical_justification
 
     @vertical_justification.setter
     def vertical_justification(self, vertical_justification):
@@ -939,16 +916,8 @@ class TextBlock2D(UI):
             Possible values are bottom, middle, top.
 
         """
-        text_property = self.actor.GetTextProperty()
-        if vertical_justification == 'bottom':
-            text_property.SetVerticalJustificationToBottom()
-        elif vertical_justification == 'middle':
-            text_property.SetVerticalJustificationToCentered()
-        elif vertical_justification == 'top':
-            text_property.SetVerticalJustificationToTop()
-        else:
-            msg = 'Vertical justification must be: bottom, middle or top.'
-            raise ValueError(msg)
+        self._vertical_justification = vertical_justification
+        self.update_alignment()
 
     @property
     def bold(self):
@@ -1078,6 +1047,71 @@ class TextBlock2D(UI):
             self.background.set_visibility(True)
             self.background.color = color
 
+    def update_alignment(self):
+        """Update Text Alignment.
+        """
+        text_property = self.actor.GetTextProperty()
+        updated_text_position = [0, 0]
+
+        if self.justification.lower() == 'left':
+            text_property.SetJustificationToLeft()
+            updated_text_position[0] = self.boundingbox[0]
+        elif self.justification.lower() == 'center':
+            text_property.SetJustificationToCentered()
+            updated_text_position[0] = self.boundingbox[0] + \
+                (self.boundingbox[2]-self.boundingbox[0])//2
+        elif self.justification.lower() == 'right':
+            text_property.SetJustificationToRight()
+            updated_text_position[0] = self.boundingbox[2]
+        else:
+            msg = 'Text can only be justified left, right and center.'
+            raise ValueError(msg)
+
+        if self.vertical_justification.lower() == 'bottom':
+            text_property.SetVerticalJustificationToBottom()
+            updated_text_position[1] = self.boundingbox[1]
+        elif self.vertical_justification.lower() == 'middle':
+            text_property.SetVerticalJustificationToCentered()
+            updated_text_position[1] = self.boundingbox[1] + \
+                (self.boundingbox[3]-self.boundingbox[1])//2
+        elif self.vertical_justification.lower() == 'top':
+            text_property.SetVerticalJustificationToTop()
+            updated_text_position[1] = self.boundingbox[3]
+        else:
+            msg = 'Vertical justification must be: bottom, middle or top.'
+            raise ValueError(msg)
+
+        self.actor.SetPosition(updated_text_position)
+
+    def cal_size_from_message(self):
+        "Calculate size of background according to the message it contains."
+        lines = self.message.split("\n")
+        max_length = max(len(line) for line in lines)
+        return [max_length*self.font_size, len(lines)*self.font_size]
+
+    def update_bounding_box(self, size=None):
+        """Update Text Bounding Box.
+
+        Parameters
+        ----------
+        size : (int, int) or None
+            If None, calculates bounding box.
+            Otherwise, uses the given size.
+
+        """
+        if size is None:
+            size = self.cal_size_from_message()
+
+        self.boundingbox = [self.position[0], self.position[1],
+                            self.position[0]+size[0], self.position[1]+size[1]]
+        self.background.resize(size)
+
+        if self.auto_font_scale:
+            self.actor.SetPosition2(
+                self.boundingbox[2]-self.boundingbox[0], self.boundingbox[3]-self.boundingbox[1])
+        else:
+            self.update_alignment()
+
     def _set_position(self, position):
         """Set text actor position.
 
@@ -1091,22 +1125,11 @@ class TextBlock2D(UI):
         self.background.position = position
 
     def _get_size(self):
-        if self.have_bg:
-            return self.background.size
-
-        if not self.actor.GetTextScaleMode():
-            if self.scene is not None:
-                size = np.zeros(2)
-                self.actor.GetSize(self.scene, size)
-                return size
-            else:
-                warn(
-                    'TextBlock2D must be added to the scene before '
-                    'querying its size while TextScaleMode is set to None.',
-                    RuntimeWarning,
-                )
-
-        return self.actor.GetPosition2()
+        bb_size = (self.boundingbox[2]-self.boundingbox[0],
+                   self.boundingbox[3]-self.boundingbox[1])
+        if self.dynamic_bbox or self.auto_font_scale or sum(bb_size):
+            return bb_size
+        return self.cal_size_from_message()
 
 
 class Button2D(UI):

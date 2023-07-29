@@ -285,9 +285,9 @@ def test_ui_tab_ui(interactive=False):
     npt.assert_equal(tab_ui.tabs[1].title_color, (.0, 1., .0))
     npt.assert_equal(tab_ui.tabs[2].title_color, (.0, .0, 1.))
     
-    npt.assert_equal(tab_ui.tabs[0].title_font_size, 12)
-    npt.assert_equal(tab_ui.tabs[1].title_font_size, 12)
-    npt.assert_equal(tab_ui.tabs[2].title_font_size, 12)
+    npt.assert_equal(tab_ui.tabs[0].title_font_size, 18)
+    npt.assert_equal(tab_ui.tabs[1].title_font_size, 18)
+    npt.assert_equal(tab_ui.tabs[2].title_font_size, 18)
     
     tab_ui.tabs[0].title_font_size = 10
     tab_ui.tabs[1].title_font_size = 20
