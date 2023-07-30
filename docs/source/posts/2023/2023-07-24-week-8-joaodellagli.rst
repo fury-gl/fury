@@ -49,9 +49,17 @@ commits by prefixes, so I did that as well.
 So how did it go?
 -----------------
 
-Well, the implemented manager class is named ``EffectManager()`` and to initialize it you only need to pass the onscreen manager:
+Well, the implemented manager class is named ``EffectManager()`` and to initialize it you only need to pass the onscreen manager. 
+The onscreen manager is the standard FURY window manager you would use in a normal FURY-based program:
 
 .. code-block:: python
+   
+   # Onscreen manager setup
+   from fury import window
+
+   scene = window.Scene()
+
+   onscreen_manager = window.ShowManager(scene, "demo", (width, height))
 
    effects = EffectManager(onscreen_manager)
 
