@@ -181,6 +181,10 @@ class Panel2D(UI):
         for element, offset in self.element_offsets:
             element.position = coords + offset
 
+    def set_visibility(self, visibility):
+        for element in self._elements:
+            element.set_visibility(visibility)
+
     @property
     def color(self):
         return self.background.color

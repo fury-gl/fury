@@ -1099,6 +1099,48 @@ def test_ui_combobox_2d(interactive=False):
     npt.assert_equal((450, 210), combobox.drop_menu_size)
 
 
+def test_ui_combobox_2d_dropdown_visibility(interactive=False):
+
+    values = ['An Item' + str(i) for i in range(0, 5)]
+
+    tab_ui = ui.TabUI(position=(49, 94), size=(400, 400), nb_tabs=1 , draggable=True)
+    combobox = ui.ComboBox2D(items=values, position=(400, 400), size=(300, 200))
+
+    tab_ui.add_element(0, combobox, (0.1, 0.3))
+
+    # Assign the counter callback to every possible event.
+    event_counter = EventCounter()
+    event_counter.monitor(combobox)
+    event_counter.monitor(tab_ui)
+
+    current_size = (800, 800)
+    show_manager = window.ShowManager(size=current_size, title='ComboBox UI Example')
+    show_manager.scene.add(tab_ui)
+
+    tab_ui.tabs[0].content_panel.set_visibility(True)
+    npt.assert_equal(False, combobox._menu_visibility)
+    npt.assert_equal(False, combobox.drop_down_menu.panel.actors[0].GetVisibility())
+    npt.assert_equal(0, combobox.drop_down_button.current_icon_id)
+    npt.assert_equal(True, combobox.drop_down_button.actors[0].GetVisibility())
+    npt.assert_equal(True, combobox.selection_box.actors[0].GetVisibility())
+
+    tab_ui.tabs[0].content_panel.set_visibility(False)
+    npt.assert_equal(False, combobox._menu_visibility)
+    npt.assert_equal(False, combobox.drop_down_menu.panel.actors[0].GetVisibility())
+    npt.assert_equal(0, combobox.drop_down_button.current_icon_id)
+    npt.assert_equal(False, combobox.drop_down_button.actors[0].GetVisibility())
+    npt.assert_equal(False, combobox.selection_box.actors[0].GetVisibility())
+
+    iren = show_manager.scene.GetRenderWindow().GetInteractor().GetInteractorStyle()
+    combobox.menu_toggle_callback(iren, None, None)
+    tab_ui.tabs[0].content_panel.set_visibility(True)
+    npt.assert_equal(True, combobox._menu_visibility)
+    npt.assert_equal(True, combobox.drop_down_menu.panel.actors[0].GetVisibility())
+    npt.assert_equal(1, combobox.drop_down_button.current_icon_id)
+    npt.assert_equal(True, combobox.drop_down_button.actors[0].GetVisibility())
+    npt.assert_equal(True, combobox.selection_box.actors[0].GetVisibility())
+
+
 @pytest.mark.skipif(
     skip_osx,
     reason='This test does not work on macOS.'
@@ -1284,6 +1326,61 @@ def test_playback_panel(interactive=False):
     assert_equal(np.max(ss), 0)
 
 
+def test_card_ui(interactive=False):
+    filename = 'test_card_ui'
+    recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
+
+    img_url = "https://raw.githubusercontent.com/fury-gl"\
+              "/fury-communication-assets/main/fury-logo.png"
+
+    title = "FURY"
+    body = "FURY - Free Unified Rendering in pYthon."\
+           "A software library for scientific visualization in Python."
+
+    card = ui.elements.Card2D(image_path=img_url, draggable=True,
+                              title_text=title, body_text=body,
+                              image_scale=0.5)
+
+    # Assign the counter callback to every possible event.
+
+    event_counter = EventCounter()
+    event_counter.monitor(card)
+
+    npt.assert_equal(card.size, (400.0, 400.0))
+    npt.assert_equal(card.image.size[1], 200.0)
+    npt.assert_equal(card.title, title)
+    npt.assert_equal(card.body, body)
+    npt.assert_equal(card.color, (0.5, 0.5, 0.5))
+    npt.assert_equal(card.panel.position, (0, 0))
+
+    card.title = 'Changed Title'
+    npt.assert_equal(card.title, 'Changed Title')
+
+    card.body = 'Changed Body'
+    npt.assert_equal(card.body, 'Changed Body')
+
+    card.title = title
+    card.body = body
+    card.color = (1.0, 1.0, 1.0)
+    npt.assert_equal(card.color, (1.0, 1.0, 1.0))
+
+    card.resize((300, 300))
+    npt.assert_equal(card.image.size[1], 150.0)
+    current_size = (600, 600)
+    show_manager = window.ShowManager(size=current_size, title='FURY Card')
+    show_manager.scene.add(card)
+
+    if interactive:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+
 def test_ui_spinbox(interactive=False):
     filename = "test_ui_spinbox"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
@@ -1303,7 +1400,6 @@ def test_ui_spinbox(interactive=False):
         show_manager.record_events_to_file(recording_filename)
         print(list(event_counter.events_counts.items()))
         event_counter.save(expected_events_counts_filename)
-
     else:
         show_manager.play_events_from_file(recording_filename)
         expected = EventCounter.load(expected_events_counts_filename)
