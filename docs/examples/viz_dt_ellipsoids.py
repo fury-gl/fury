@@ -77,16 +77,19 @@ tensor_slice = actor.tensor_slicer(evals=slice_evals, evecs=slice_evecs,
 # created.
 
 scene = window.Scene()
+scene.background([255, 255, 255])
 scene.add(tensor_slice)
+
+# Create show manager
+showm = window.ShowManager(scene, size=(500, 500))
 
 # Enables/disables interactive visualization
 interactive = True
 
 if interactive:
-    window.show(scene)
+    showm.start()
 
-window.record(scene, size=(600, 600), out_path='tensor_slice_100.png')
-window.record(scene)
+window.record(showm.scene, size=(600, 600), out_path='tensor_slice_100.png')
 
 ###############################################################################
 # To render the same tensor slice using a different sphere we redefine the
@@ -97,10 +100,12 @@ window.record(scene)
 # with the different spheres, we get the following results.
 #
 
+showm.z
+
 ###############################################################################
 # We clear the scene for the next visualization.
 
-scene.clear()
+showm.scene.clear()
 
 
 ###############################################################################
@@ -143,15 +148,14 @@ centers, evecs, evals, colors = get_params(slice_evecs, slice_evals)
 
 tensors = actor.ellipsoid(centers=centers, colors=colors, axes=evecs,
                           lengths=evals, scales=.6)
-scene.add(tensors)
+showm.scene.add(tensors)
 
 if interactive:
-    window.show(scene)
+    showm.start()
 
 window.record(scene, size=(600, 600), out_path='tensor_slice_sdf.png')
-window.record(scene)
 
-scene.clear()
+showm.scene.clear()
 
 ###############################################################################
 # Thus, one can see that the same result is obtained, however there is a
@@ -175,16 +179,15 @@ data_shape = roi_evals.shape[:3]
 tensor_roi.display_extent(
     0, data_shape[0], 0, data_shape[1], 0, data_shape[2])
 
-scene.add(tensor_roi)
-scene.azimuth(87)
+showm.scene.add(tensor_roi)
+showm.scene.azimuth(87)
 
 if interactive:
-    window.show(scene)
+    showm.start()
 
-window.record(scene, size=(600, 600), out_path='tensor_roi_100.png')
-window.record(scene)
+window.record(showm.scene, size=(600, 600), out_path='tensor_roi_100.png')
 
-scene.clear()
+showm.scene.clear()
 
 ###############################################################################
 # We can do it also with a sphere of 200 vertices, but if we try to do it with
@@ -196,15 +199,14 @@ centers, evecs, evals, colors = get_params(roi_evecs, roi_evals)
 
 tensors = actor.ellipsoid(centers=centers, colors=colors, axes=evecs,
                           lengths=evals, scales=.6)
-scene.add(tensors)
+showm.scene.add(tensors)
 
 if interactive:
-    window.show(scene)
+    showm.start()
 
-window.record(scene, size=(600, 600), out_path='tensor_roi_sdf.png')
-window.record(scene)
+window.record(showm.scene, size=(600, 600), out_path='tensor_roi_sdf.png')
 
-scene.clear()
+showm.scene.clear()
 
 ###############################################################################
 # In fact, although with a low performance, this actor allows us to visualize
@@ -215,13 +217,12 @@ centers, evecs, evals, colors = get_params(whole_brain_evecs,
 
 tensors = actor.ellipsoid(centers=centers, colors=colors, axes=evecs,
                           lengths=evals, scales=.6)
-scene.add(tensors)
-scene.azimuth(-89)
+showm.scene.add(tensors)
+showm.scene.azimuth(-89)
 
 if interactive:
-    window.show(scene)
+    showm.start()
 
-window.record(scene, size=(600, 600), out_path='tensor_whole_brain_sdf.png')
-window.record(scene)
+window.record(showm.scene, size=(600, 600), out_path='tensor_whole_brain_sdf.png')
 
-scene.clear()
+showm.scene.clear()
