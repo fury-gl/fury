@@ -3,7 +3,7 @@ import numpy as np
 from fury.actor import Actor, billboard
 from fury.colormap import create_colormap
 from fury.io import load_image
-from fury.lib import Texture, WindowToImageFilter
+from fury.lib import Texture, WindowToImageFilter, numpy_support
 from fury.shaders import (attribute_to_actor,
                           compose_shader,
                           import_fury_shader,
@@ -26,6 +26,8 @@ BLENDING_MODE_DIC = {"none" : 0, "replace" : 1,
                      "modulate" : 2, "add" : 3,
                      "addsigned" : 4, "interpolate" : 5,
                      "subtract" : 6}
+
+
 
 def window_to_texture(
         window : RenderWindow,
@@ -90,6 +92,11 @@ def window_to_texture(
     texture.SetBlendingMode(BLENDING_MODE_DIC[blending_mode.lower()])
 
     target_actor.GetProperty().SetTexture(texture_name, texture)
+
+    img = numpy_support.vtk_to_numpy(texture.GetInput().GetPointData().GetScalars())
+
+    return img
+
 
 
 def texture_to_actor(
@@ -181,6 +188,9 @@ def colormap_to_texture(
 
     target_actor.GetProperty().SetTexture(texture_name, texture)
 
+def back_converter(h : np.ndarray):
+    return ((h[:, 0] + h[:, 1]/255. + h[:, 2]/65025. + h[:, 3]/16581375.)/256.0).astype(np.float32)
+
 class EffectManager():
     """Class that manages the application of post-processing effects on actors.
 
@@ -249,12 +259,39 @@ class EffectManager():
         varying float out_scale;
         """
 
+
+        # converter = """
+        # vec4 float_to_rgba(float value){
+        #     float ival = floor( value*4294967295.0 );
+        #     float r =  floor( mod(ival, 256.0) );
+        #     float g =  floor( ( mod(ival, 65536.0) - r ) / 256.0 );
+        #     float b =  floor( ( mod(ival, 16777216.0) - g - r ) / 65536.0 );
+        #     float a =  floor( ( mod(ival, 4294967296.0) - b - g - r ) / 16777216.0 );
+
+        #     vec4 rgba = vec4(r, g, b, a)/255.0;
+        #     return rgba;
+        # }
+        # """
+
+        converter = """
+        vec4 float_to_rgba(float value) {
+            vec4 bitEnc = vec4(1.,255.,65025.,16581375.);
+            vec4 enc = bitEnc * value;
+            enc = fract(enc);
+            enc -= enc.yzww * vec2(1./255., 0.).xxxy;
+            return enc;
+        }
+        """
+
         kde_dec = import_fury_shader(os.path.join("utils", f"{kernel.lower()}_distribution.glsl"))
 
+        kde_dec = compose_shader([kde_dec, converter])
+
         kde_impl = """
-        float current_kde = kde(normalizedVertexMCVSOutput*out_scale, out_sigma);
-        color = vec3(current_kde);
-        fragOutput0 = vec4(color, 1.0);
+        float current_kde = kde(normalizedVertexMCVSOutput*out_scale, out_sigma)/n_points;
+        // color = vec3(current_kde);
+        vec4 final_color = float_to_rgba(current_kde);
+        fragOutput0 = vec4(final_color);
         """
 
         kde_vs_dec = """
@@ -271,7 +308,74 @@ class EffectManager():
         out_scale = in_scale;
         """
 
+        # de_converter = """
+        # float rgba_to_float(vec4 value){
+        #     return (255.0* (value.r*1.0 + value.g*256.0 + value.b*65536.0 + value.a*16777216.0) ) / 4294967295.0;
+        # }
+        # """
+
+        de_converter = """
+        float rgba_to_float(vec4 v) {
+            vec4 bitEnc = vec4(1.,255.,65025.,16581375.);
+            vec4 bitDec = 1./bitEnc;
+            return dot(v, bitDec);
+        }
+        """
+
+        gaussian_kernel = """
+        const float gauss_kernel[81] = {
+                        0.000123, 0.000365, 0.000839, 0.001504, 0.002179, 0.002429, 0.002179, 0.001504, 0.000839,
+                        0.000365, 0.001093, 0.002503, 0.004494, 0.006515, 0.007273, 0.006515, 0.004494, 0.002503,
+                        0.000839, 0.002503, 0.005737, 0.010263, 0.014888, 0.016590, 0.014888, 0.010263, 0.005737,
+                        0.001504, 0.004494, 0.010263, 0.018428, 0.026753, 0.029880, 0.026753, 0.018428, 0.010263,
+                        0.002179, 0.006515, 0.014888, 0.026753, 0.038898, 0.043441, 0.038898, 0.026753, 0.014888,
+                        0.002429, 0.007273, 0.016590, 0.029880, 0.043441, 0.048489, 0.043441, 0.029880, 0.016590,
+                        0.002179, 0.006515, 0.014888, 0.026753, 0.038898, 0.043441, 0.038898, 0.026753, 0.014888,
+                        0.001504, 0.004494, 0.010263, 0.018428, 0.026753, 0.029880, 0.026753, 0.018428, 0.010263,
+                        0.000839, 0.002503, 0.005737, 0.010263, 0.014888, 0.016590, 0.014888, 0.010263, 0.005737};
+
+        const float x_offsets[81] = {-4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0,
+                                    -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0,
+                                    -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0,
+                                    -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0,
+                                    -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0,
+                                    -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0,
+                                    -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0,
+                                    -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0,
+                                    -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0};
+        
+        const float y_offsets[81] = {-4.0, -4.0, -4.0, -4.0, -4.0, -4.0, -4.0, -4.0, -4.0,
+                                    -3.0, -3.0, -3.0, -3.0, -3.0, -3.0, -3.0, -3.0, -3.0,
+                                    -2.0, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0,
+                                    -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0,
+                                     0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                     1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,
+                                     2.0,  2.0,  2.0,  2.0,  2.0,  2.0,  2.0,  2.0,  2.0,
+                                     3.0,  3.0,  3.0,  3.0,  3.0,  3.0,  3.0,  3.0,  3.0,
+                                     4.0,  4.0,  4.0,  4.0,  4.0,  4.0,  4.0,  4.0,  4.0};
+        """
+
+        gauss_dec = """
+        vec4 kernel_calculator(sampler2D screenTexture, vec2 tex_coords, vec2 res){
+            vec4 value = vec4(0.0);
+            vec4 col = vec4(0.0);
+            for(int i = 0; i < 81; i++){
+                col = texture(screenTexture, tex_coords + vec2(1/res.x, 1/res.y)*vec2(x_offsets[i], y_offsets[i]));
+                value += gauss_kernel[i]*col;
+            }
+            return value;
+        }
+        """
+
+        map_func = """
+        float map(float value, float o_min, float o_max, float new_min, float new_max) {
+            return new_min + (value - o_min) * (new_max - new_min) / (o_max - o_min);
+        }
+        """
+
         tex_dec = import_fury_shader(os.path.join("effects", "color_mapping.glsl"))
+
+        tex_dec = compose_shader([tex_dec, map_func])
 
         tex_impl = """
         // Turning screen coordinates to texture coordinates
@@ -279,12 +383,61 @@ class EffectManager():
         vec2 renorm_tex = res_factor*normalizedVertexMCVSOutput.xy*0.5 + 0.5;
         float intensity = texture(screenTexture, renorm_tex).r;
 
+        intensity = map(intensity, min_value, max_value, 0.0, 1.0);
+
         if(intensity<=0.0){
             discard;
         }else{     
             vec4 final_color = color_mapping(intensity, colormapTexture);
             fragOutput0 = vec4(final_color.rgb, u_opacity*final_color.a);
         }
+        """
+
+        gaussian_kernel_3x3 = """
+        const float gauss_kernel[3*3] = {1/16.0, 1/8, 1/16.0,
+                                          1/8.0, 1/4.0, 1/8.0,
+                                          1/16.0, 1/8.0, 1/16.0};
+
+        const float x_offsets[3*3] = {-1.0, 0.0, 1.0, 
+                                      -1.0, 0.0, 1.0,
+                                      -1.0, 0.0, 1.0};
+        
+        const float y_offsets[3*3] = {-1.0, -1.0, -1.0, 
+                                       0.0,  0.0,  0.0,
+                                       1.0,  1.0,  1.0};
+        """
+
+        gauss_dec_3x3 = """
+        vec4 kernel_calculator(sampler2D screenTexture, vec2 tex_coords, vec2 res){
+            vec4 value = vec4(0.0);
+            vec4 col = vec4(0.0);
+            for(int i = 0; i < 3*3; i++){
+                col = texture(screenTexture, tex_coords + vec2(1/res.x, 1/res.y)*vec2(x_offsets[i], y_offsets[i]));
+                value += gauss_kernel[i]*col;
+            }
+            return value;
+        }
+        """
+
+        inter_dec = compose_shader([de_converter, gaussian_kernel_3x3, gauss_dec_3x3])
+
+        inter_impl = """
+        vec2 res_factor = vec2(res.y/res.x, 1.0);
+        vec2 renorm_tex = res_factor*normalizedVertexMCVSOutput.xy*0.5 + 0.5;
+
+        vec4 pass_color = vec4(0.0);
+
+        if(f != 0){
+            pass_color = kernel_calculator(screenTexture, renorm_tex, res);
+        }
+        else{
+            pass_color = texture(screenTexture, renorm_tex);
+            float fintensity = rgba_to_float(pass_color);
+
+            pass_color = vec4(vec3(fintensity), 1.0);
+        }
+
+        fragOutput0 = vec4(pass_color);
         """
 
         fs_dec = compose_shader([varying_dec, kde_dec])
@@ -314,6 +467,8 @@ class EffectManager():
         shader_apply_effects(window, bill, gl_set_additive_blending)
         attribute_to_actor(bill, np.repeat(sigmas, 4), "in_sigma")
         attribute_to_actor(bill, np.repeat(scales, 4), "in_scale")
+        shader_custom_uniforms(bill, "fragment").SetUniformf("n_points", points.shape[0])
+
 
         if self._n_active_effects > 0:
             self.off_manager.scene.GetActors().GetLastActor().SetVisibility(False)
@@ -327,26 +482,40 @@ class EffectManager():
                                  bill_bounds[3] - bill_bounds[2] + center_of_mass[1] + max_sigma,
                                  0.0]])
         
-        scale = np.array([[actor_scales.max(), 
-                           actor_scales.max(),
-                           0.0]])
+        res = self.off_manager.size
+        
+        scale = actor_scales.max()*np.array([[res[0]/res[1], 
+                                              1.0,
+                                              0.0]])
 
         # Render to second billboard for color map post-processing.
         textured_billboard = billboard(np.array([center_of_mass]), scales=scale, fs_dec=tex_dec, fs_impl=tex_impl)
-        shader_custom_uniforms(textured_billboard, "fragment").SetUniform2f("res", self.off_manager.size)
+        shader_custom_uniforms(textured_billboard, "fragment").SetUniform2f("res", res)
         shader_custom_uniforms(textured_billboard, "fragment").SetUniformf("u_opacity", opacity)
+
+        inter_scale = 3.4*np.array([[res[0]/res[1], 1.0, 0.0]]) # hardcoded hack to make billboards occupy the whole screen
+        inter_billboard = billboard(np.array([center_of_mass]), scales=inter_scale, fs_dec=inter_dec, fs_impl=inter_impl)
+        shader_custom_uniforms(inter_billboard, "fragment").SetUniform2f("res", res)
+        inter_billboard.SetVisibility(False)
+        inter_billboard.Modified()
+        inter_billboard.GetProperty().GlobalWarningDisplayOff() 
+        self.off_manager.scene.add(inter_billboard)
+        
 
         # Disables the texture warnings
         textured_billboard.GetProperty().GlobalWarningDisplayOff() 
 
         if custom_colormap == None:
-            cmap = create_colormap(np.arange(0.0, 1.0, 1/256), colormap)
+            cmap = create_colormap(np.arange(0.0, 1.0, (1/points.shape[0])), colormap)
         else:
             cmap = custom_colormap
 
         colormap_to_texture(cmap, "colormapTexture", textured_billboard)
 
+        n_passes = 2
         def kde_callback(obj, event):
+            # 1° STEP: RENDER ALL KDE RENDERS 
+            bill.SetVisibility(True)
             cam_params = self.on_manager.scene.get_camera()
             self.off_manager.scene.set_camera(*cam_params)
             self.off_manager.scene.Modified()
@@ -354,20 +523,96 @@ class EffectManager():
             shader_apply_effects(window, bill, gl_set_additive_blending)
             self.off_manager.render()
 
+            # 2° STEP: PASS THIS RENDER AS A TEXTURE TO POST PROCESSING BILLBOARD 
             window_to_texture(
             self.off_manager.window,
             "screenTexture",
-            textured_billboard,
+            inter_billboard,
+            border_color = (0.0, 0.0, 0.0, 0.0),
             blending_mode="Interpolate",
             d_type = "rgba")
 
-        # Initialization
-        window_to_texture(
+            # 3° STEP: GAUSSIAN BLUR APPLICATION
+            bill.SetVisibility(False)
+            bill.Modified()
+
+            inter_billboard.SetVisibility(True)
+            for i in range(n_passes):
+                shader_custom_uniforms(inter_billboard, "fragment").SetUniformi("f", i)
+                self.off_manager.render()
+
+                window_to_texture(
+                self.off_manager.window,
+                "screenTexture",
+                inter_billboard,
+                border_color = (0.0, 0.0, 0.0, 0.0),
+                blending_mode="Interpolate",
+                d_type = "rgba")
+
+            img = window_to_texture(
             self.off_manager.window,
             "screenTexture",
             textured_billboard,
+            border_color = (0.0, 0.0, 0.0, 0.0),
             blending_mode="Interpolate",
             d_type = "rgba")
+
+            inter_billboard.SetVisibility(False)
+            inter_billboard.Modified()
+
+            # 4° STEP: RENORMALIZE THE RENDERING
+            converted_img = back_converter(img)
+            
+            max_value = np.max(converted_img)
+            min_value = np.min(converted_img)
+            print(min_value, max_value)
+            shader_custom_uniforms(textured_billboard, "fragment").SetUniformf("min_value", min_value)
+            shader_custom_uniforms(textured_billboard, "fragment").SetUniformf("max_value", max_value)
+
+        # Initialization
+        window_to_texture(
+        self.off_manager.window,
+        "screenTexture",
+        inter_billboard,
+        border_color = (0.0, 0.0, 0.0, 0.0),
+        blending_mode="Interpolate",
+        d_type = "rgba")
+
+        bill.SetVisibility(False)
+        bill.Modified()
+
+        inter_billboard.SetVisibility(True)
+        for i in range(n_passes):
+            shader_custom_uniforms(inter_billboard, "fragment").SetUniformi("f", i)
+            self.off_manager.render()
+
+            window_to_texture(
+            self.off_manager.window,
+            "screenTexture",
+            inter_billboard,
+            border_color = (0.0, 0.0, 0.0, 0.0),
+            blending_mode="Interpolate",
+            d_type = "rgba")
+
+
+        img = window_to_texture(
+            self.off_manager.window,
+            "screenTexture",
+            textured_billboard,
+            border_color = (0.0, 0.0, 0.0, 0.0),
+            blending_mode="Interpolate",
+            d_type = "rgba")
+
+        inter_billboard.SetVisibility(False)
+        inter_billboard.Modified()
+        
+        converted_img = back_converter(img)
+        
+        max_value = np.max(converted_img)
+        min_value = np.min(converted_img)
+        print(min_value, max_value)
+        shader_custom_uniforms(textured_billboard, "fragment").SetUniformf("min_value", min_value)
+        shader_custom_uniforms(textured_billboard, "fragment").SetUniformf("max_value", max_value)
         
         callback_id = self.on_manager.add_iren_callback(kde_callback, "RenderEvent")
 
@@ -408,7 +653,7 @@ class EffectManager():
 
         # Render to second billboard for color map post-processing.
         textured_billboard = billboard(actor_pos, scales=scale, fs_impl=tex_impl)
-        shader_custom_uniforms(textured_billboard, "fragment").SetUniform2f("res", self.off_manager.size)
+        shader_custom_uniforms(textured_billboard, "fragment").SetUniform2f("res", self.on_manager.size)
         shader_custom_uniforms(textured_billboard, "fragment").SetUniformf("u_opacity", opacity)
         shader_custom_uniforms(textured_billboard, "fragment").SetUniform2f("u_scale", scale[0, :2])
 

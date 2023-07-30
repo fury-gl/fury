@@ -383,6 +383,23 @@ class EffectManager():
         }
         """
 
+        avg_filter = """
+        vec4 avg_calculator(sampler2D screenTexture, vec2 tex_coords, vec2 res){
+            float x_median_offsets[5] = {-1.0, 0.0, 1.0, 
+                                      0.0, 0.0};
+        
+            const float y_median_offsets[5] = {0.0, -1.0, 0.0, 
+                                        1.0,  0.0};
+            vec4 value = vec4(0.0);
+            vec4 col = vec4(0.0);
+            for(int i = 0; i < 5; i++){
+                col = texture(screenTexture, tex_coords + vec2(1/res.x, 1/res.y)*vec2(x_median_offsets[i], y_median_offsets[i]));
+                value += col;
+            }
+            return value/5.0;
+        }
+        """
+
         map_func = """
         float map(float value, float o_min, float o_max, float new_min, float new_max) {
             return new_min + (value - o_min) * (new_max - new_min) / (o_max - o_min);
@@ -391,7 +408,7 @@ class EffectManager():
 
         tex_dec = import_fury_shader(os.path.join("effects", "color_mapping.glsl"))
 
-        tex_dec = compose_shader([tex_dec, de_converter, map_func, gaussian_kernel, gauss_dec])
+        tex_dec = compose_shader([tex_dec, de_converter, map_func, gaussian_kernel, gauss_dec, avg_filter])
 
         tex_impl = """
         // Turning screen coordinates to texture coordinates
@@ -493,12 +510,19 @@ class EffectManager():
             d_type = "rgba")
 
             converted_img = back_converter(img)
+            converted_img = converted_img[converted_img != 0.0]
             
-            max_value = np.max(converted_img)
+            avg = np.average(converted_img)
             min_value = np.min(converted_img)
-            print(min_value, max_value)
+            low_v = converted_img[converted_img <= avg].shape[0]
+            high_v = converted_img[converted_img > avg].shape[0]
+            max_value_2 = avg + (avg - min_value)*(high_v/low_v)
+            # print(min_value, max_value)
+            # max_value = np.max(converted_img)
+            # print(min_value, max_value, max_value_2)
+            # print(converted_img[converted_img <= max_value_2].shape[0], converted_img[converted_img > max_value_2].shape[0])
             shader_custom_uniforms(textured_billboard, "fragment").SetUniformf("min_value", min_value)
-            shader_custom_uniforms(textured_billboard, "fragment").SetUniformf("max_value", max_value)
+            shader_custom_uniforms(textured_billboard, "fragment").SetUniformf("max_value", max_value_2)
 
         # Initialization
         img = window_to_texture(
