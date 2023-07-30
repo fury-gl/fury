@@ -15,8 +15,10 @@ import numpy as np
 
 from dipy.io.image import load_nifti
 
-from fury import window, actor
+from fury import window, actor, ui
 from fury.actor import _fa, _color_fa
+from fury.animation import CameraAnimation, Timeline
+from fury.animation.interpolator import cubic_spline_interpolator
 from fury.data import fetch_viz_dmri, read_viz_dmri
 from fury.primitive import prim_sphere
 
@@ -56,13 +58,12 @@ vertices, faces = prim_sphere('repulsion100', True)
 # assign the values obtained from vertices and faces.
 
 class Sphere:
-    vertices = None
-    faces = None
+    def __init__(self, vertices, faces):
+        self.vertices = vertices
+        self.faces = faces
 
 
-sphere = Sphere()
-sphere.vertices = vertices
-sphere.faces = faces
+sphere100 = Sphere(vertices, faces)
 
 ###############################################################################
 # Now we are ready to create the ``tensor_slicer`` actor with the values of a
@@ -70,7 +71,7 @@ sphere.faces = faces
 # and overlap each other.
 
 tensor_slice = actor.tensor_slicer(evals=slice_evals, evecs=slice_evecs,
-                                   sphere=sphere, scale=.3)
+                                   sphere=sphere100, scale=.3)
 
 ###############################################################################
 # Next, we set up a new scene to add and visualize the tensor ellipsoids
@@ -81,7 +82,7 @@ scene.background([255, 255, 255])
 scene.add(tensor_slice)
 
 # Create show manager
-showm = window.ShowManager(scene, size=(500, 500))
+showm = window.ShowManager(scene, size=(600, 600))
 
 # Enables/disables interactive visualization
 interactive = True
@@ -92,20 +93,32 @@ if interactive:
 window.record(showm.scene, size=(600, 600), out_path='tensor_slice_100.png')
 
 ###############################################################################
-# To render the same tensor slice using a different sphere we redefine the
-# vertices and faces of the sphere using prim_sphere with other sphere
-# specification, let's say 'repulsion200' and 'repulsion724'.
-#
 # If we zoom in at the scene to see with detail the tensor ellipsoids displayed
 # with the different spheres, we get the following results.
-#
 
-showm.z
+scene.roll(10)
+scene.pitch(90)
+showm = window.ShowManager(scene, size=(600, 600), order_transparent=True)
+showm.scene.zoom(30)
+showm.render()
+
+if interactive:
+    showm.start()
+
+window.record(showm.scene, out_path='tensor_slice_100_zoom.png',
+              size=(600, 600))
 
 ###############################################################################
-# We clear the scene for the next visualization.
+# To render the same tensor slice using a different sphere we redefine the
+# vertices and faces of the sphere using prim_sphere with other sphere
+# specification, as 'repulsion200' or 'repulsion724'.
+#
+# Now we clear the scene for the next visualization, and revert the scene
+# rotations.
 
 showm.scene.clear()
+showm.scene.pitch(-90)
+showm.scene.roll(-10)
 
 
 ###############################################################################
@@ -136,6 +149,7 @@ def get_params(evecs, evals):
 
     return centers, fevecs, fevals, colors
 
+
 ###############################################################################
 # With this we now have the values we need to define the centers, axes,
 # lengths, and colors of the ellipsoids.
@@ -155,15 +169,77 @@ if interactive:
 
 window.record(scene, size=(600, 600), out_path='tensor_slice_sdf.png')
 
-showm.scene.clear()
-
 ###############################################################################
 # Thus, one can see that the same result is obtained, however there is a
 # difference in the visual quality and this is because the ``ellipsoid`` actor
 # uses raymarching technique, so the objects that are generated are smoother
 # since they are not made with polygons but defined by an SDF function. Next we
 # can see in more detail the tensor ellipsoids generated.
-#
+
+scene.roll(10)
+scene.pitch(90)
+showm = window.ShowManager(scene, size=(600, 600), order_transparent=True)
+showm.scene.zoom(30)
+showm.render()
+
+if interactive:
+    showm.start()
+
+window.record(showm.scene, out_path='tensor_slice_100_zoom.png',
+              size=(600, 600))
+
+showm.scene.clear()
+showm.scene.pitch(-90)
+showm.scene.roll(-10)
+
+###############################################################################
+# Visual quality comparison
+# =========================
+# We saw there is a different on the visual quality of both ways of displaying
+# tensors, this is because ``tensor_slicer`` uses polygons while ``ellipsoid``
+# uses raymarching.
+
+mevals = np.array([1.4, 0.35, 0.35]) * 10 ** (-3)
+mevecs = np.eye(3)
+
+evals = np.zeros((1, 1, 1, 3))
+evecs = np.zeros((1, 1, 1, 3, 3))
+
+evals[..., :] = mevals
+evecs[..., :, :] = mevecs
+
+vertices, faces = prim_sphere('repulsion200', True)
+sphere200 = Sphere(vertices, faces)
+vertices, faces = prim_sphere('repulsion724', True)
+sphere724 = Sphere(vertices, faces)
+
+tensor_100 = actor.tensor_slicer(evals=evals, evecs=evecs,
+                                 sphere=sphere100, scale=.3)
+tensor_200 = actor.tensor_slicer(evals=evals, evecs=evecs,
+                                 sphere=sphere200, scale=.3)
+tensor_724 = actor.tensor_slicer(evals=evals, evecs=evecs,
+                                 sphere=sphere724, scale=.3)
+
+centers, evecs, evals, colors = get_params(evecs=evecs, evals=evals)
+tensor_sdf = actor.ellipsoid(centers=centers, axes=evecs, lengths=evals,
+                             colors=colors)
+
+objects = [tensor_100, tensor_200, tensor_724, tensor_sdf]
+grid_ui = ui.GridUI(
+    actors=objects,
+    dim=(1, 4),
+    cell_padding=2,
+    aspect_ratio=1,
+    rotation_axis=(0, 1, 0),
+)
+
+showm.scene.add(grid_ui)
+
+if interactive:
+    showm.start()
+
+window.record(showm.scene, out_path='tensor_comparison.png',
+              size=(600, 600))
 
 ###############################################################################
 # Visualize a larger amount of data
@@ -223,6 +299,7 @@ showm.scene.azimuth(-89)
 if interactive:
     showm.start()
 
-window.record(showm.scene, size=(600, 600), out_path='tensor_whole_brain_sdf.png')
+window.record(showm.scene, size=(600, 600),
+              out_path='tensor_whole_brain_sdf.png')
 
 showm.scene.clear()
