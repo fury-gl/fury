@@ -753,8 +753,8 @@ class TextBlock2D(UI):
         self.italic = italic
         self.shadow = shadow
         self._vertical_justification = vertical_justification
+        self._dynamic_bbox = dynamic_bbox
         self.auto_font_scale = auto_font_scale
-        self.dynamic_bbox = dynamic_bbox
         self.message = text
         self.font_size = font_size
         if size is not None:
@@ -1072,6 +1072,7 @@ class TextBlock2D(UI):
         self._auto_font_scale = flag
         if flag:
             self.actor.SetTextScaleModeToProp()
+            self.update_bounding_box(self.size)
         else:
             self.actor.SetTextScaleModeToNone()
 
