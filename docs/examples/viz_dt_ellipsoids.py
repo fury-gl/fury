@@ -17,8 +17,6 @@ from dipy.io.image import load_nifti
 
 from fury import window, actor, ui
 from fury.actor import _fa, _color_fa
-from fury.animation import CameraAnimation, Timeline
-from fury.animation.interpolator import cubic_spline_interpolator
 from fury.data import fetch_viz_dmri, read_viz_dmri
 from fury.primitive import prim_sphere
 
@@ -99,14 +97,14 @@ window.record(showm.scene, size=(600, 600), out_path='tensor_slice_100.png')
 scene.roll(10)
 scene.pitch(90)
 showm = window.ShowManager(scene, size=(600, 600), order_transparent=True)
-showm.scene.zoom(30)
-showm.render()
+showm.scene.zoom(50)
 
 if interactive:
+    showm.render()
     showm.start()
 
 window.record(showm.scene, out_path='tensor_slice_100_zoom.png',
-              size=(600, 600))
+              size=(600, 300), reset_camera=False)
 
 ###############################################################################
 # To render the same tensor slice using a different sphere we redefine the
@@ -179,14 +177,14 @@ window.record(scene, size=(600, 600), out_path='tensor_slice_sdf.png')
 scene.roll(10)
 scene.pitch(90)
 showm = window.ShowManager(scene, size=(600, 600), order_transparent=True)
-showm.scene.zoom(30)
-showm.render()
+showm.scene.zoom(50)
 
 if interactive:
+    showm.render()
     showm.start()
 
-window.record(showm.scene, out_path='tensor_slice_100_zoom.png',
-              size=(600, 600))
+window.record(showm.scene, out_path='tensor_slice_sdf_zoom.png',
+              size=(600, 300), reset_camera=False)
 
 showm.scene.clear()
 showm.scene.pitch(-90)
@@ -195,12 +193,15 @@ showm.scene.roll(-10)
 ###############################################################################
 # Visual quality comparison
 # =========================
-# We saw there is a different on the visual quality of both ways of displaying
-# tensors, this is because ``tensor_slicer`` uses polygons while ``ellipsoid``
-# uses raymarching.
+# One can see that there is a different on the visual quality of both ways of
+# displaying tensors and this is because ``tensor_slicer`` uses polygons while
+# ``ellipsoid`` uses raymarching. Let's display both implementations at the
+# same time, so we can see this in more detail.
+#
+# We first set up the required data and create the actors.
 
-mevals = np.array([1.4, 0.35, 0.35]) * 10 ** (-3)
-mevecs = np.eye(3)
+mevals = np.array([1.4, 1.0, 0.35]) * 10 ** (-3)
+mevecs = np.array([[2/3, -2/3, 1/3], [1/3, 2/3, 2/3], [2/3, 1/3, -2/3]])
 
 evals = np.zeros((1, 1, 1, 3))
 evecs = np.zeros((1, 1, 1, 3, 3))
@@ -214,32 +215,40 @@ vertices, faces = prim_sphere('repulsion724', True)
 sphere724 = Sphere(vertices, faces)
 
 tensor_100 = actor.tensor_slicer(evals=evals, evecs=evecs,
-                                 sphere=sphere100, scale=.3)
+                                 sphere=sphere100, scale=1.0)
 tensor_200 = actor.tensor_slicer(evals=evals, evecs=evecs,
-                                 sphere=sphere200, scale=.3)
+                                 sphere=sphere200, scale=1.0)
 tensor_724 = actor.tensor_slicer(evals=evals, evecs=evecs,
-                                 sphere=sphere724, scale=.3)
+                                 sphere=sphere724, scale=1.0)
 
 centers, evecs, evals, colors = get_params(evecs=evecs, evals=evals)
 tensor_sdf = actor.ellipsoid(centers=centers, axes=evecs, lengths=evals,
-                             colors=colors)
+                             colors=colors, scales=2.0)
+
+###############################################################################
+# Next, we made use of `GridUI` which allows us to add the actors in a grid and
+# interact with them individually.
 
 objects = [tensor_100, tensor_200, tensor_724, tensor_sdf]
-grid_ui = ui.GridUI(
-    actors=objects,
-    dim=(1, 4),
-    cell_padding=2,
-    aspect_ratio=1,
-    rotation_axis=(0, 1, 0),
-)
+text = [actor.vector_text('Tensor 100'), actor.vector_text('Tensor 100'),
+        actor.vector_text('Tensor 724'), actor.vector_text('Tensor SDF')]
 
+grid_ui = ui.GridUI(actors=objects, captions=text, cell_padding=.1,
+                    caption_offset=(-0.7, -2.5, 0), dim=(1, 4))
+
+scene = window.Scene()
+scene.zoom(3.5)
+scene.set_camera(position=(3.2, -20, 12), focal_point=(3.2, 0.0, 0.0))
+showm = window.ShowManager(scene, size=(560, 200))
 showm.scene.add(grid_ui)
 
 if interactive:
     showm.start()
 
-window.record(showm.scene, out_path='tensor_comparison.png',
-              size=(600, 600))
+window.record(showm.scene, size=(560, 200), out_path='tensor_comparison.png',
+              reset_camera=False, magnification=2)
+
+showm.scene.clear()
 
 ###############################################################################
 # Visualize a larger amount of data
@@ -249,12 +258,13 @@ window.record(showm.scene, out_path='tensor_comparison.png',
 # (ROI) using a sphere of 100 vertices.
 
 tensor_roi = actor.tensor_slicer(evals=roi_evals, evecs=roi_evecs,
-                                 sphere=sphere, scale=.3)
+                                 sphere=sphere100, scale=.3)
 
 data_shape = roi_evals.shape[:3]
 tensor_roi.display_extent(
     0, data_shape[0], 0, data_shape[1], 0, data_shape[2])
 
+showm.size = (600, 600)
 showm.scene.add(tensor_roi)
 showm.scene.azimuth(87)
 
@@ -299,7 +309,7 @@ showm.scene.azimuth(-89)
 if interactive:
     showm.start()
 
-window.record(showm.scene, size=(600, 600),
+window.record(showm.scene, size=(600, 600), reset_camera=False,
               out_path='tensor_whole_brain_sdf.png')
 
 showm.scene.clear()
