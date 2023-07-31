@@ -231,7 +231,7 @@ tensor_sdf = actor.ellipsoid(centers=centers, axes=evecs, lengths=evals,
 # interact with them individually.
 
 objects = [tensor_100, tensor_200, tensor_724, tensor_sdf]
-text = [actor.vector_text('Tensor 100'), actor.vector_text('Tensor 100'),
+text = [actor.vector_text('Tensor 100'), actor.vector_text('Tensor 200'),
         actor.vector_text('Tensor 724'), actor.vector_text('Tensor SDF')]
 
 grid_ui = ui.GridUI(actors=objects, captions=text, cell_padding=.1,
