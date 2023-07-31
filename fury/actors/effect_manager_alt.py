@@ -462,7 +462,6 @@ class EffectManager():
         if self._n_active_effects > 0:
             self.off_manager.scene.GetActors().GetLastActor().SetVisibility(False)
         self.off_manager.scene.add(bill)
-        self.off_manager.render()
 
         bill_bounds = bill.GetBounds()
         max_sigma = 2*4.0*np.max(sigmas)
@@ -481,8 +480,7 @@ class EffectManager():
         textured_billboard = billboard(np.array([center_of_mass]), scales=scale, fs_dec=tex_dec, fs_impl=tex_impl)
         shader_custom_uniforms(textured_billboard, "fragment").SetUniform2f("res", res)
         shader_custom_uniforms(textured_billboard, "fragment").SetUniformf("u_opacity", opacity)
-        
-
+    
         # Disables the texture warnings
         textured_billboard.GetProperty().GlobalWarningDisplayOff() 
 
@@ -493,7 +491,7 @@ class EffectManager():
 
         colormap_to_texture(cmap, "colormapTexture", textured_billboard)
 
-        def kde_callback(obj, event):
+        def kde_callback(obj = None, event = None):
             cam_params = self.on_manager.scene.get_camera()
             self.off_manager.scene.set_camera(*cam_params)
             self.off_manager.scene.Modified()
@@ -517,7 +515,6 @@ class EffectManager():
             low_v = converted_img[converted_img <= avg].shape[0]
             high_v = converted_img[converted_img > avg].shape[0]
             max_value_2 = avg + (avg - min_value)*(high_v/low_v)
-            # print(min_value, max_value)
             # max_value = np.max(converted_img)
             # print(min_value, max_value, max_value_2)
             # print(converted_img[converted_img <= max_value_2].shape[0], converted_img[converted_img > max_value_2].shape[0])
@@ -525,21 +522,7 @@ class EffectManager():
             shader_custom_uniforms(textured_billboard, "fragment").SetUniformf("max_value", max_value_2)
 
         # Initialization
-        img = window_to_texture(
-            self.off_manager.window,
-            "screenTexture",
-            textured_billboard,
-            border_color = (0.0, 0.0, 0.0, 0.0),
-            blending_mode="Interpolate",
-            d_type = "rgba")
-        
-        converted_img = back_converter(img)
-        
-        max_value = np.max(converted_img)
-        min_value = np.min(converted_img)
-        # print(min_value, max_value)
-        shader_custom_uniforms(textured_billboard, "fragment").SetUniformf("min_value", min_value)
-        shader_custom_uniforms(textured_billboard, "fragment").SetUniformf("max_value", max_value)
+        kde_callback()
         
         callback_id = self.on_manager.add_iren_callback(kde_callback, "RenderEvent")
 
@@ -587,7 +570,7 @@ class EffectManager():
         # Disables the texture warnings
         textured_billboard.GetProperty().GlobalWarningDisplayOff() 
 
-        def gray_callback(obj, event):
+        def gray_callback(obj = None, event = None):
             actor.SetVisibility(True)
             pos, focal, vu = self.on_manager.scene.get_camera()
             self.off_manager.scene.set_camera(pos, focal, vu)
