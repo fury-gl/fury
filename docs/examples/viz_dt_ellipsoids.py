@@ -10,6 +10,7 @@ amount of ellipsoids.
 
 We start by importing the necessary modules:
 """
+import itertools
 
 import numpy as np
 
@@ -83,7 +84,7 @@ scene.add(tensor_slice)
 showm = window.ShowManager(scene, size=(600, 600))
 
 # Enables/disables interactive visualization
-interactive = True
+interactive = False
 
 if interactive:
     showm.start()
@@ -237,6 +238,7 @@ grid_ui = ui.GridUI(actors=objects, captions=text, cell_padding=.1,
                     caption_offset=(-0.7, -2.5, 0), dim=(1, 4))
 
 scene = window.Scene()
+scene.background([255, 255, 255])
 scene.zoom(3.5)
 scene.set_camera(position=(3.2, -20, 12), focal_point=(3.2, 0.0, 0.0))
 showm = window.ShowManager(scene, size=(560, 200))
@@ -265,6 +267,7 @@ tensor_roi.display_extent(
     0, data_shape[0], 0, data_shape[1], 0, data_shape[2])
 
 showm.size = (600, 600)
+showm.scene.background([0, 0, 0])
 showm.scene.add(tensor_roi)
 showm.scene.azimuth(87)
 
@@ -296,15 +299,26 @@ showm.scene.clear()
 
 ###############################################################################
 # In fact, although with a low performance, this actor allows us to visualize
-# the whole brain, which contains a much larger amount of data.
+# the whole brain, which contains a much larger amount of data, to be exact
+# 184512 tensor ellipsoids are displayed at the same time.
 
 centers, evecs, evals, colors = get_params(whole_brain_evecs,
                                            whole_brain_evals)
 
+# We remove all the noise around the brain to have a better visualization.
+fil = [len(set(elem)) != 1 for elem in evals]
+centers = np.array(list(itertools.compress(centers, fil)))
+colors = np.array(list(itertools.compress(colors, fil)))
+evecs = np.array(list(itertools.compress(evecs, fil)))
+evals = np.array(list(itertools.compress(evals, fil)))
+
 tensors = actor.ellipsoid(centers=centers, colors=colors, axes=evecs,
                           lengths=evals, scales=.6)
-showm.scene.add(tensors)
-showm.scene.azimuth(-89)
+
+scene = window.Scene()
+scene.add(tensors)
+scene.pitch(180)
+showm = window.ShowManager(scene, size=(600, 600))
 
 if interactive:
     showm.start()
