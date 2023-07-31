@@ -1072,6 +1072,7 @@ class TextBlock2D(UI):
         self._auto_font_scale = flag
         if flag:
             self.actor.SetTextScaleModeToProp()
+            self._justification = "left"
             self.update_bounding_box(self.size)
         else:
             self.actor.SetTextScaleModeToNone()
