@@ -13,6 +13,7 @@ __all__ = [
     'ListBox2D',
     'ListBoxItem2D',
     'FileMenu2D',
+    'FileDialog2D',
     'DrawShape',
     'DrawPanel',
     'PlaybackPanel',
