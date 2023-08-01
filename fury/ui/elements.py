@@ -133,7 +133,7 @@ class TextBox2D(UI):
 
         Create the TextBlock2D component used for the textbox.
         """
-        self.text = TextBlock2D()
+        self.text = TextBlock2D(dynamic_bbox=True)
 
         # Add default events listener for this UI component.
         self.text.on_left_mouse_button_pressed = self.left_button_press
@@ -1447,7 +1447,8 @@ class RingSlider2D(UI):
         self.handle.color = self.default_color
 
         # Slider Text
-        self.text = TextBlock2D(justification='center', vertical_justification='middle')
+        self.text = TextBlock2D(justification='center',
+                                vertical_justification='middle')
 
         # Add default events listener for this UI component.
         self.track.on_left_mouse_button_pressed = self.track_click_callback
