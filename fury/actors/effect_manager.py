@@ -200,6 +200,7 @@ class EffectManager():
         self.off_manager.initialize()
         self._n_active_effects = 0
         self._active_effects = {}
+        self._active_ui = {}
         self._intensity = 1.0
 
     def kde(self, 
@@ -381,7 +382,6 @@ class EffectManager():
                                    orientation = 'horizontal',
                                    text_template = text_template)
         
-        line_slider.size
         text_block = TextBlock2D("Intensity")
         panel_size = (line_slider.size[0] + text_block.size[0], 2*line_slider.size[1] + text_block.size[1])
         panel = Panel2D(size = (line_slider.size[0] + text_block.size[0], 2*line_slider.size[1] + text_block.size[1]), 
@@ -401,6 +401,7 @@ class EffectManager():
         callback_id = self.on_manager.add_iren_callback(kde_callback, "RenderEvent")
 
         self._active_effects[textured_billboard] = callback_id
+        self._active_ui[textured_billboard] = panel.actors
         self._n_active_effects += 1
 
         return textured_billboard
@@ -418,6 +419,9 @@ class EffectManager():
         if self._n_active_effects > 0:
             self.on_manager.iren.RemoveObserver(self._active_effects[effect_actor])
             self.on_manager.scene.RemoveActor(effect_actor)
+            ui_actors = self._active_ui[effect_actor]
+            for i in range(len(ui_actors)):
+                self.on_manager.scene.RemoveActor(ui_actors[i])
             self.off_manager.scene.RemoveActor(effect_actor)
             self._active_effects.pop(effect_actor)
             self._n_active_effects -= 1
