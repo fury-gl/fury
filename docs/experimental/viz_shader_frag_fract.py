@@ -21,27 +21,36 @@ from fury.utils import vtk
 
 my_polydata = vtk.vtkPolyData()
 
-my_vertices = np.array([[0.0,  0.0,  0.0],
-                        [0.0,  0.0,  1.0],
-                        [0.0,  1.0,  0.0],
-                        [0.0,  1.0,  1.0],
-                        [1.0,  0.0,  0.0],
-                        [1.0,  0.0,  1.0],
-                        [1.0,  1.0,  0.0],
-                        [1.0, 1.0, 1.0]])
+my_vertices = np.array(
+    [
+        [0.0, 0.0, 0.0],
+        [0.0, 0.0, 1.0],
+        [0.0, 1.0, 0.0],
+        [0.0, 1.0, 1.0],
+        [1.0, 0.0, 0.0],
+        [1.0, 0.0, 1.0],
+        [1.0, 1.0, 0.0],
+        [1.0, 1.0, 1.0],
+    ]
+)
 
-my_triangles = np.array([[0,  6,  4],
-                         [0,  2,  6],
-                         [0,  3,  2],
-                         [0,  1,  3],
-                         [2,  7,  6],
-                         [2,  3,  7],
-                         [4,  6,  7],
-                         [4,  7,  5],
-                         [0,  4,  5],
-                         [0,  5,  1],
-                         [1,  5,  7],
-                         [1, 7, 3]], dtype='i8')
+my_triangles = np.array(
+    [
+        [0, 6, 4],
+        [0, 2, 6],
+        [0, 3, 2],
+        [0, 1, 3],
+        [2, 7, 6],
+        [2, 3, 7],
+        [4, 6, 7],
+        [4, 7, 5],
+        [0, 4, 5],
+        [0, 5, 1],
+        [1, 5, 7],
+        [1, 7, 3],
+    ],
+    dtype='i8',
+)
 
 my_colors = my_vertices * 255  # transform from [0, 1] to [0, 255]
 
@@ -79,7 +88,7 @@ def vtkShaderCallback(caller, event, calldata=None):
     window_size = scene.GetRenderWindow().GetSize()
     program = calldata
     if program is not None:
-        program.SetUniform2f("windowSize", [window_size[0], window_size[1]])
+        program.SetUniform2f('windowSize', [window_size[0], window_size[1]])
 
 
 # now register the event listener
@@ -92,7 +101,7 @@ mapper.AddShaderReplacement(
     vtk.vtkShader.Fragment,
     '//VTK::Color::Dec',  # target the Color block
     True,
-    '''
+    """
     // include the default
     //VTK::Color::Dec
 
@@ -106,8 +115,8 @@ mapper.AddShaderReplacement(
                                _radius+(_radius*0.01),
                                dot(l,l)*4.0);
     }
-    ''',
-    False
+    """,
+    False,
 )
 
 # now calculate the fragment color
@@ -115,12 +124,12 @@ mapper.AddShaderReplacement(
     vtk.vtkShader.Fragment,
     '//VTK::Color::Impl',  # target the Color block
     True,
-    '''
+    """
     // include the default
     //VTK::Color::Impl
-    
+
     // calculate values needed for circle rendering
-    
+
     // normalized window coordinates
     vec2 st = vertexVCVSOutput.xy; //gl_FragCoord.xy / windowSize;
     st *= 20; // 50 = number circles in a row
@@ -130,8 +139,8 @@ mapper.AddShaderReplacement(
     if (vertexVCVSOutput.z > -100) {
         diffuseColor *= vec3(circle(st, 0.25));
     }
-    ''',
-    False
+    """,
+    False,
 )
 
 # debug block

@@ -1,16 +1,17 @@
 """Utilities for testing."""
 
-import sys
 import io
-import warnings
+import json
 import operator
-from functools import partial
+import sys
+import warnings
 from contextlib import contextmanager
-
-from numpy.testing import assert_array_equal
-import numpy as np
-import scipy
 from distutils.version import LooseVersion
+from functools import partial
+
+import numpy as np
+import scipy  # type: ignore
+from numpy.testing import assert_array_equal
 
 
 @contextmanager
@@ -36,25 +37,24 @@ def captured_output():
         sys.stdout, sys.stderr = old_out, old_err
 
 
-def assert_operator(value1, value2, msg="", op=operator.eq):
+def assert_operator(value1, value2, msg='', op=operator.eq):
     """Check Boolean statement."""
     if not op(value1, value2):
         raise AssertionError(msg.format(str(value2), str(value1)))
 
 
-assert_greater_equal = partial(assert_operator, op=operator.ge,
-                               msg="{0} >= {1}")
-assert_greater = partial(assert_operator, op=operator.gt,
-                         msg="{0} > {1}")
-assert_less_equal = partial(assert_operator, op=operator.le,
-                            msg="{0} =< {1}")
-assert_less = partial(assert_operator, op=operator.lt,
-                      msg="{0} < {1}")
-assert_true = partial(assert_operator, value2=True, op=operator.eq,
-                      msg="False is not true")
-assert_false = partial(assert_operator, value2=False, op=operator.eq,
-                       msg="True is not false")
+assert_greater_equal = partial(assert_operator, op=operator.ge, msg='{0} >= {1}')
+assert_greater = partial(assert_operator, op=operator.gt, msg='{0} > {1}')
+assert_less_equal = partial(assert_operator, op=operator.le, msg='{0} =< {1}')
+assert_less = partial(assert_operator, op=operator.lt, msg='{0} < {1}')
+assert_true = partial(
+    assert_operator, value2=True, op=operator.eq, msg='False is not true'
+)
+assert_false = partial(
+    assert_operator, value2=False, op=operator.eq, msg='True is not false'
+)
 assert_not_equal = partial(assert_operator, op=operator.ne)
+assert_equal = partial(assert_operator, op=operator.eq)
 
 
 def assert_arrays_equal(arrays1, arrays2):
@@ -62,8 +62,62 @@ def assert_arrays_equal(arrays1, arrays2):
         assert_array_equal(arr1, arr2)
 
 
+class EventCounter:
+    def __init__(
+        self,
+        events_names=[
+            'CharEvent',
+            'MouseMoveEvent',
+            'KeyPressEvent',
+            'KeyReleaseEvent',
+            'LeftButtonPressEvent',
+            'LeftButtonReleaseEvent',
+            'RightButtonPressEvent',
+            'RightButtonReleaseEvent',
+            'MiddleButtonPressEvent',
+            'MiddleButtonReleaseEvent',
+        ],
+    ):
+        # Events to count
+        self.events_counts = {name: 0 for name in events_names}
+
+    def count(self, i_ren, _obj, _element):
+        """Count events occurrences."""
+        self.events_counts[i_ren.event.name] += 1
+
+    def monitor(self, ui_component):
+        for event in self.events_counts:
+            for obj_actor in ui_component.actors:
+                ui_component.add_callback(obj_actor, event, self.count)
+
+    def save(self, filename):
+        with open(filename, 'w') as f:
+            json.dump(self.events_counts, f)
+
+    @classmethod
+    def load(cls, filename):
+        event_counter = cls()
+        with open(filename, 'r') as f:
+            event_counter.events_counts = json.load(f)
+
+        return event_counter
+
+    def check_counts(self, expected):
+        assert_equal(len(self.events_counts), len(expected.events_counts))
+
+        # Useful loop for debugging.
+        msg = '{}: {} vs. {} (expected)'
+        for event, count in expected.events_counts.items():
+            if self.events_counts[event] != count:
+                print(msg.format(event, self.events_counts[event], count))
+
+        msg = "Wrong count for '{}'."
+        for event, count in expected.events_counts.items():
+            assert_equal(self.events_counts[event], count, msg=msg.format(event))
+
+
 class clear_and_catch_warnings(warnings.catch_warnings):
-    """ Context manager that resets warning registry for catching warnings
+    """Context manager that resets warning registry for catching warnings
     Warnings can be slippery, because, whenever a warning is triggered, Python
     adds a ``__warningregistry__`` member to the *calling* module.  This makes
     it impossible to retrigger the warning in this module, whatever you put in
@@ -104,6 +158,7 @@ class clear_and_catch_warnings(warnings.catch_warnings):
     the Nibabel package for the copyright and license terms.
 
     """
+
     class_modules = ()
 
     def __init__(self, record=True, modules=()):
@@ -129,7 +184,7 @@ class clear_and_catch_warnings(warnings.catch_warnings):
 
 
 def setup_test():
-    """ Set numpy print options to "legacy" for new versions of numpy
+    """Set numpy print options to "legacy" for new versions of numpy
     If imported into a file, nosetest will run this before any doctests.
 
     References
@@ -145,6 +200,8 @@ def setup_test():
     # must be removed after that
     # print the first occurrence of matching warnings for each location
     # (module + line number) where the warning is issued
-    if LooseVersion(np.__version__) >= LooseVersion('1.15') and \
-            LooseVersion(scipy.version.short_version) <= '1.1.0':
-        warnings.simplefilter("default")
+    if (
+        LooseVersion(np.__version__) >= LooseVersion('1.15')
+        and LooseVersion(scipy.version.short_version) <= '1.1.0'
+    ):
+        warnings.simplefilter('default')

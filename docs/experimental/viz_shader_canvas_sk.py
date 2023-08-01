@@ -1,17 +1,16 @@
-from fury import actor, window
-from viz_shader_canvas import cube, disk, rectangle, rectangle2, square
-
-
 import numpy as np
 import vtk
+from viz_shader_canvas import cube, disk, rectangle, rectangle2, square
 
+from fury import actor, window
 
 scene = window.Scene()
 # scene.projection('parallel')
 scene.add(actor.axes())
 # scene.background((1, 1, 1))
-showm = window.ShowManager(scene, size=(1920, 1080), order_transparent=True,
-                           interactor_style='custom')
+showm = window.ShowManager(
+    scene, size=(1920, 1080), order_transparent=True, interactor_style='custom'
+)
 
 obj = 'square'
 
@@ -32,19 +31,14 @@ if obj == 'rectangle2':
     n_points = 3
     # centers = np.random.rand(n_points, 3)
     # print(centers)
-    centers = np.array([[1., 0, 0],
-                        [0, 1, 0],
-                        [0, 0, 1],
-                        [1, 2, 0]])
+    centers = np.array([[1.0, 0, 0], [0, 1, 0], [0, 0, 1], [1, 2, 0]])
     colors = 255 * np.random.rand(n_points, 3)
     canvas_actor = rectangle2(centers=centers, colors=colors)
     scene.add(canvas_actor)
     mapper = canvas_actor.GetMapper()
     mapper.MapDataArrayToVertexAttribute(
-        'my_centers',
-        'Points',
-        vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS,
-        -1)
+        'my_centers', 'Points', vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, -1
+    )
 
 if obj == 'cube':
 
@@ -66,11 +60,11 @@ mapper.AddShaderReplacement(
     vtk.vtkShader.Fragment,
     '//VTK::Light::Dec',
     True,
-    '''
+    """
     //VTK::Light::Dec
     uniform float time;
-    ''',
-    False
+    """,
+    False,
 )
 
 global timer
@@ -92,17 +86,16 @@ def vtk_shader_callback(caller, event, calldata=None):
     global timer
     if program is not None:
         try:
-            program.SetUniformf("time", timer)
+            program.SetUniformf('time', timer)
         except ValueError:
             pass
 
 
-mapper.AddObserver(window.vtk.vtkCommand.UpdateShaderEvent,
-                   vtk_shader_callback)
+mapper.AddObserver(window.vtk.vtkCommand.UpdateShaderEvent, vtk_shader_callback)
 
 mapper.AddShaderReplacement(
     vtk.vtkShader.Vertex,
-    "//VTK::Normal::Dec",
+    '//VTK::Normal::Dec',
     True,
     """
     //VTK::Normal::Dec
@@ -110,31 +103,31 @@ mapper.AddShaderReplacement(
     in vec3 my_centers[3]; // now declare our attribute
     out vec3 my_centers_out[3];
     """,
-    False
+    False,
 )
 
 mapper.AddShaderReplacement(
     vtk.vtkShader.Vertex,
-    "//VTK::Normal::Impl",
+    '//VTK::Normal::Impl',
     True,
     """
     //VTK::Normal::Impl
     myVertexMC = vertexMC;
     my_centers_out = my_centers;
     """,
-    False
+    False,
 )
 
 mapper.AddShaderReplacement(
     vtk.vtkShader.Fragment,
-    "//VTK::Normal::Dec",
+    '//VTK::Normal::Dec',
     True,
     """
     //VTK::Normal::Dec
     varying vec4 myVertexMC;
     varying vec3  my_centers_out[3];
     """,
-    False
+    False,
 )
 
 mapper.AddShaderReplacement(
@@ -186,11 +179,11 @@ mapper.AddShaderReplacement(
         fragOutput0 = vec4(1, 0., 0., 1.);
     }
     """,
-    False
+    False,
 )
 
-showm.initialize()
+
 # showm.add_timer_callback(True, 100, timer_callback)
 
-showm.initialize()
+
 showm.start()

@@ -1,0 +1,35 @@
+Fourth week of coding!
+======================
+
+.. post:: July 5 2021
+   :author: Sajag Swami
+   :tags: google
+   :category: gsoc
+
+Welcome to the fifth weekly check-in. I'll be sharing my progress for the fourth week of coding.
+
+What did you do this week?
+--------------------------
+
+Created a `PR`_ for the molecular module. Enables the ability to create
+three types of molecular representations:
+
+#. Space-filling model aka calotte model and CPK model.
+#. Stick model.
+#. Ball and Stick model.
+
+What is coming up next week?
+----------------------------
+
+Mentors suggested changes to be made to the molecular module which I
+shall make. Other goals to be decided post mid-week meeting.
+
+Did you get stuck anywhere?
+---------------------------
+
+Sending protein data to ProteinRibbonFilter via a vtkPolyData has been
+unsuccessful so far.
+
+.. _PR: https://github.com/fury-gl/fury/pull/452
+
+``Au Revoir!``

@@ -6,20 +6,23 @@ Visualize Interdisciplinary map of the journals network
 The goal of this app is to show an overview of the journals network structure
 as a complex network. Each journal is shown as a node and their connections
 indicates a citation between two of them.
-
 """
 
 ###############################################################################
 # First, let's import some useful functions
 
 from os.path import join as pjoin
-from fury import actor, window, colormap as cmap
+
 import numpy as np
+
+from fury import actor
+from fury import colormap as cmap
+from fury import window
+from fury.data import fetch_viz_wiki_nw
 
 ###############################################################################
 # Then let's download some available datasets.
 
-from fury.data.fetcher import fetch_viz_wiki_nw
 
 files, folder = fetch_viz_wiki_nw()
 categories_file, edges_file, positions_file = sorted(files.keys())
@@ -35,15 +38,13 @@ edges = np.loadtxt(pjoin(folder, edges_file), dtype=int)
 # We attribute a color to each category of our dataset which correspond to our
 # nodes colors.
 
-category2index = {category: i
-                  for i, category in enumerate(np.unique(categories))}
+category2index = {category: i for i, category in enumerate(np.unique(categories))}
 
 index2category = np.unique(categories)
 
 categoryColors = cmap.distinguishable_colormap(nb_colors=len(index2category))
 
-colors = np.array([categoryColors[category2index[category]]
-                   for category in categories])
+colors = np.array([categoryColors[category2index[category]] for category in categories])
 
 ###############################################################################
 # We define our node size
@@ -69,17 +70,19 @@ edgesColors = np.average(np.array(edgesColors), axis=1)
 # build 2 actors that we represent our data : sphere_actor for the nodes and
 # lines_actor for the edges.
 
-sphere_actor = actor.sphere(centers=positions,
-                            colors=colors,
-                            radii=radii*0.5,
-                            theta=8,
-                            phi=8,
-                            )
+sphere_actor = actor.sphere(
+    centers=positions,
+    colors=colors,
+    radii=radii * 0.5,
+    theta=8,
+    phi=8,
+)
 
-lines_actor = actor.line(edgesPositions,
-                         colors=edgesColors,
-                         opacity=0.1,
-                         )
+lines_actor = actor.line(
+    edgesPositions,
+    colors=edgesColors,
+    opacity=0.1,
+)
 
 ###############################################################################
 # All actors need to be added in a scene, so we build one and add our

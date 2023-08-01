@@ -1,9 +1,7 @@
-from fury import actor, window
+import vtk
 from viz_shader_canvas import cube, disk, rectangle, square
 
-
-import vtk
-
+from fury import actor, window
 
 scene = window.Scene()
 scene.add(actor.axes())
@@ -47,7 +45,7 @@ mapper.AddShaderReplacement(
     //VTK::Light::Dec
     uniform float time;
     """,
-    False
+    False,
 )
 
 global timer
@@ -70,13 +68,12 @@ def vtk_shader_callback(caller, event, calldata=None):
     global timer
     if program is not None:
         try:
-            program.SetUniformf("time", timer)
+            program.SetUniformf('time', timer)
         except ValueError:
             pass
 
 
-mapper.AddObserver(window.vtk.vtkCommand.UpdateShaderEvent,
-                   vtk_shader_callback)
+mapper.AddObserver(window.vtk.vtkCommand.UpdateShaderEvent, vtk_shader_callback)
 
 mapper.AddShaderReplacement(
     vtk.vtkShader.Fragment,
@@ -110,11 +107,11 @@ mapper.AddShaderReplacement(
     //fragOutput0 = vec4(normalVCVSOutput.x, normalVCVSOutput.y, 0, 1.);
     fragOutput0 = vec4(gl_FragCoord.x, 0, 0, 1.);
     """,
-    False
+    False,
 )
 
-showm.initialize()
+
 showm.add_timer_callback(True, 100, timer_callback)
 
-showm.initialize()
+
 showm.start()

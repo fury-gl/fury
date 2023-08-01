@@ -1,0 +1,135 @@
+[main]
+readme = """
+.. _ref_examples:
+
+Tutorials
+=========
+
+How to use widgets, ui, actor and windows module. Below some examples and apps to go in details.
+"""
+position = 0   # it should always be 0
+enable = true  # it should always be true
+files = []
+
+[introductory]
+readme = "file: _introductory.rst"
+position = 1
+enable = true
+files = [
+    "viz_earth_coordinates.py",
+    "viz_morphing.py",
+    "viz_slice.py",
+    "viz_surfaces.py",
+    "viz_arrow.py",
+    "viz_gltf.py",
+    "viz_picking.py",
+    "viz_solar_system.py",
+    "viz_texture.py",
+    "viz_cone.py",
+    "viz_gltf_animated.py",
+    "viz_selection.py",
+    "viz_sphere.py",
+    "viz_timers.py",
+    "viz_multithread.py",
+    "viz_earth_animation.py",
+    "viz_gltf_export.py",
+    "viz_skinning.py",
+    "viz_spiky.py"
+]
+
+[demos]
+readme = "file: _demos.rst"
+position = 4
+enable = true
+files = [
+    "viz_advanced.py",
+    "viz_fiber_odf.py",
+    "viz_roi_contour.py",
+    "viz_animated_surfaces.py",
+    "viz_markers.py",
+    "viz_tesseract.py",
+    "collision-particles.py",
+    "viz_fine_tuning_gl_context.py",
+    "viz_network.py",
+    "viz_brownian_motion.py",
+    "viz_fractals.py",
+    "viz_network_animated.py",
+    "viz_bundles.py",
+    "viz_pbr_interactive.py",
+    "viz_emwave_animation.py",
+    "viz_helical_motion.py",
+    "viz_play_video.py"
+]
+
+[ui]
+readme = "file: _ui.rst"
+position = 7
+enable = true
+files = [
+    "viz_check_boxes.py",
+    "viz_drawpanel.py",
+    "viz_radio_buttons.py",
+    "viz_tab.py",
+    "viz_ui_listbox.py",
+    "viz_buttons.py",
+    "viz_combobox.py",
+    "viz_layout.py",
+    "viz_shapes.py",
+    "viz_ui.py",
+    "viz_ui_slider.py",
+    "viz_card.py",
+    "viz_card_sprite_sheet.py"
+]
+
+[animation]
+readme = "file: _animation.rst"
+position = 10
+enable = true
+files = [
+    "viz_interpolators.py",
+    "viz_bezier_interpolator.py",
+    "viz_introduction.py",
+    "viz_camera.py",
+    "viz_robot_arm_animation.py",
+    "viz_color_interpolators.py",
+    "viz_spline_interpolator.py",
+    "viz_custom_interpolator.py",
+    "viz_timeline.py",
+    "viz_hierarchical_animation.py",
+    "viz_using_time_equations.py"
+]
+
+[shaders]
+readme = "file: _shaders.rst"
+position = 13
+enable = true
+files = [
+    "viz_billboard_sdf_spheres.py",
+    "viz_sdf_cylinder.py",
+    "viz_pbr_spheres.py",
+    "viz_principled_spheres.py",
+    "viz_sdfactor.py",
+    "viz_shader.py"
+]
+
+[pybullet]
+readme = "file: _bullet.rst"
+position = 17
+enable = true
+files = [
+    "viz_ball_collide.py",
+    "viz_brick_wall.py",
+    "viz_chain.py",
+    "viz_domino.py",
+    "viz_wrecking_ball.py"
+]
+
+[stream]
+readme = "file:_stream.rst"
+position = 20
+enable = true
+files = [
+    "viz_interaction.py",
+    "viz_no_interaction.py",
+    "viz_widget.py"
+]

@@ -1,0 +1,48 @@
+Third week of coding!
+=====================
+
+.. post:: June 28 2021
+   :author: Sajag Swami
+   :tags: google
+   :category: gsoc
+
+Welcome to the fourth weekly check-in. I'll be sharing my progress for the third week of coding.
+
+What did you do this week?
+--------------------------
+
+I made a document with code snippets and visuals to show how one can use
+some vtk classes in python for molecular visualization. Classes of
+interest:
+
+-  vtkMolecule (store atomic information about the molecule).
+-  vtkSimpleBondPerceiver (calculate bonding info for a vtkMolecule).
+-  vtkMoleculeMapper (mapper to draw vtkMolecule object).
+-  vtkPeriodicTable (stores chemical data sourced from the Blue Obelisk
+   Data).
+
+Link to the document: `Molecular_viz_vtk`_. In addition to the
+document, I read some research papers recommended by my mentors to
+understand some other (and potentially better) methods of ribbon
+visualization. Tried to implement vtkProteinRibbonFilter usage without
+using vtkPDBReader but was unsuccessful in this endeavor.
+
+What is coming up next week?
+----------------------------
+
+Three goals for next week:
+
+#. Implement vtkProteinRibbonFilter usage without using vtkPDBReader.
+#. Make a class for vtkMolecule which can store molecular data and pass
+   it on to different function for rendering purposes.
+#. Read papers on surface model.
+
+Did you get stuck anywhere?
+---------------------------
+
+Implementing vtkProteinRibbonFilter usage via vtkPolyData without using
+vtkPDBReader has confounded me for some time now.
+
+.. _Molecular_viz_vtk: https://docs.google.com/document/d/1LC2MgT9mUQK0Yo9hsI4lWqaTXHWAkSNxyBKWGAqHqe8/edit
+
+``Au Revoir!``

@@ -1,0 +1,134 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name =  "fury"
+description = "FURY - Free Unified Rendering in pYthon. A free and open-source software library for Scientific Visualization and 3D animations"
+readme = "README.md"
+requires-python = ">=3.8"
+license.file="LICENSE"
+keywords = ["Scientific Visualization", "shaders", "animation", "simulation",
+            "Physically based rendering", "3D", "3D rendering", "networks",
+            "physics engine", "physics", "simulation", "visualization"]
+authors = [
+    {name = "Eleftherios Garyfallidis", email = "fury@python.org"},
+    {name = "Serge Koudoro", email = "fury@python.org"},
+    {name = "Javier Guaje", email = "fury@python.org"},
+    {name = "Marc-Alexandre Côté", email = "fury@python.org"},
+    {name = "Soham Biswas", email = "fury@python.org"},
+    {name = "David Reagan", email = "fury@python.org"},
+    {name = "Nasim Anousheh", email = "fury@python.org"},
+    {name = "Filipi Silva", email = "fury@python.org"},
+    {name = "Geoffrey Fox", email = "fury@python.org"},
+]
+maintainers = [
+    {name = "FURY Developers", email = "fury@python.org"},
+    ]
+
+classifiers = [
+	"Natural Language :: English",
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering",
+]
+
+dependencies = [
+    "numpy >=1.15",
+	"scipy>=1.0",
+    "vtk>=9.1.0",
+    "pillow>=5.4.1",
+    "packaging >=17.0",
+    "pygltflib>=1.15.3",
+    "aiohttp>=3.8.4",
+]
+
+dynamic = ["version"]
+
+[project.urls]
+Documentation = "https://fury.gl"
+Source = "https://github.com/fury-gl/fury"
+Tracker = "https://github.com/fury-gl/fury/issues"
+
+[project.optional-dependencies]
+
+all = ["fury[plot, dev, doc, medical, style, test, typing]"]
+plot = ["matplotlib>=1.5.3", ]
+medical = ["dipy", "nibabel"]
+dev = [
+    "gitpython",
+    "twine",
+    ]
+doc = [
+    "matplotlib >= 1.5.3",
+    "numpydoc",
+    "sphinx >=6.1.2",
+    "texext",
+    "tomli; python_version < \"3.11\"",
+    ]
+style = ["flake8", "blue", "isort", "pre-commit"]
+typing = ["mypy", "types-Pillow", "data-science-types"]
+test = [
+    "coverage",
+    "pytest !=5.3.4",
+    "pytest-cov",
+    "pytest-doctestplus",
+    ]
+
+[tool.hatch.build.targets.sdist]
+exclude = [".git_archival.txt"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["fury",]
+exclude = []
+
+[tool.hatch.version]
+source = "vcs"
+raw-options = { version_scheme = "release-branch-semver" }
+
+[tool.hatch.build.hooks.vcs]
+version-file = "fury/_version.py"
+
+[tool.blue]
+line_length = 88
+target-version = ["py38"]
+force-exclude = """
+(
+  _version.py
+  *docs/experimental/*
+)
+"""
+
+[tool.isort]
+profile = "black"
+line_length = 88
+extend_skip = ["_version.py", "externals", "*docs/experimental*"]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = "True"
+exclude = [
+  "/tests",
+]
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+fail_under = 100
+
+# [tool.pytest.ini_options]
+# addopts = "--cov --cov-report html --cov-report term-missing --cov-fail-under 95"
+
+[tool.codespell]
+skip = '*.po,*.ts,*.html,./docs/build,./.mypy_cache,./build,./dist,.git,*.pdf,*.svg,*.bib'
+count = ''
+quiet-level = 3

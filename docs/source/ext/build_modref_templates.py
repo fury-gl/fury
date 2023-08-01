@@ -9,7 +9,7 @@ from os.path import join as pjoin
 from apigen import ApiDocWriter
 
 # version comparison
-from distutils.version import LooseVersion
+from packaging.version import parse
 
 # *****************************************************************************
 
@@ -19,29 +19,31 @@ def abort(error):
     exit()
 
 
-def generate_api_reference_rst(app=None, package='fury', outdir='reference',
-                               defines=True):
+def generate_api_reference_rst(
+    app=None, package='fury', outdir='reference', defines=True
+):
     try:
         __import__(package)
     except ImportError:
-        abort("Can not import " + package)
+        abort('Can not import ' + package)
 
     module = sys.modules[package]
-    installed_version = LooseVersion(module.__version__)
-    print("Generation API for {} v{}".format(package, installed_version))
+    installed_version = parse(module.__version__)
+    print('Generation API for {} v{}'.format(package, installed_version))
 
-    docwriter = ApiDocWriter(package, rst_extension='.rst',
-                             other_defines=defines)
-    docwriter.package_skip_patterns += [r'.*test.*$',
-                                        # r'^\.utils.*',
-                                        r'\._version.*$',
-                                        r'\.interactor.*$',
-                                        r'\.optpkg.*$',
-                                        ]
-    docwriter.object_skip_patterns += [r'.*FetcherError.*$',
-                                       r'.*urlopen.*',
-                                       r'.*add_callback.*',
-                                       ]
+    docwriter = ApiDocWriter(package, rst_extension='.rst', other_defines=defines)
+    docwriter.package_skip_patterns += [
+        r'.*test.*$',
+        # r'^\.utils.*',
+        r'\._version.*$',
+        r'\.interactor.*$',
+        r'\.optpkg.*$',
+    ]
+    docwriter.object_skip_patterns += [
+        r'.*FetcherError.*$',
+        r'.*urlopen.*',
+        r'.*add_callback.*',
+    ]
     if app is not None:
         outdir = pjoin(app.builder.srcdir, outdir)
 
@@ -56,8 +58,7 @@ def setup(app):
     app.connect('builder-inited', generate_api_reference_rst)
     # app.connect('build-finished', summarize_failing_examples)
 
-    metadata = {'parallel_read_safe': True,
-                'version': app.config.version}
+    metadata = {'parallel_read_safe': True, 'version': app.config.version}
 
     return metadata
 
@@ -72,5 +73,6 @@ if __name__ == '__main__':
     else:
         other_defines = other_defines in ('True', 'true', '1')
 
-    generate_api_reference_rst(app=None, package=package, outdir=outdir,
-                               defines=other_defines)
+    generate_api_reference_rst(
+        app=None, package=package, outdir=outdir, defines=other_defines
+    )

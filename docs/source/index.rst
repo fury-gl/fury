@@ -3,7 +3,7 @@ test
 
 .. toctree::
    :maxdepth: 2
-   :caption: About Fury
+   :caption: About FURY
    :hidden:
 
    introduction
@@ -12,12 +12,11 @@ test
 
 .. toctree::
    :maxdepth: 2
-   :caption: Programming with Fury
+   :caption: Programming with FURY
    :hidden:
 
    installation
    getting_started
-   auto_tutorials/index
    auto_examples/index
    fury-pybullet
 

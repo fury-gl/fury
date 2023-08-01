@@ -7,14 +7,16 @@ This example demonstrate how to create a simple viewer for fiber
 orientation distribution functions (ODF) using fury's odf_slicer.
 """
 
+import nibabel as nib
+
 # First, we import some useful modules and methods.
 import numpy as np
-import nibabel as nib
-from fury import actor, window, ui
-from fury.data import read_viz_dmri, fetch_viz_dmri, fetch_viz_icons
-from fury.utils import fix_winding_order
-from dipy.reconst.shm import sh_to_sf_matrix
 from dipy.data import get_sphere
+from dipy.reconst.shm import sh_to_sf_matrix
+
+from fury import actor, ui, window
+from fury.data import fetch_viz_dmri, fetch_viz_icons, read_viz_dmri
+from fury.utils import fix_winding_order
 
 ###############################################################################
 # Here, we fetch and load the fiber ODF volume to display. The ODF are
@@ -47,29 +49,52 @@ opacity = 1.0
 global_cm = False
 
 # ODF slicer for axial slice
-odf_actor_z = actor.odf_slicer(sh, affine=affine, sphere=sphere_low,
-                               scale=scale, norm=norm,
-                               radial_scale=radial_scale, opacity=opacity,
-                               colormap=colormap, global_cm=global_cm,
-                               B_matrix=B_low)
+odf_actor_z = actor.odf_slicer(
+    sh,
+    affine=affine,
+    sphere=sphere_low,
+    scale=scale,
+    norm=norm,
+    radial_scale=radial_scale,
+    opacity=opacity,
+    colormap=colormap,
+    global_cm=global_cm,
+    B_matrix=B_low,
+)
 
 # ODF slicer for coronal slice
-odf_actor_y = actor.odf_slicer(sh, affine=affine, sphere=sphere_low,
-                               scale=scale, norm=norm,
-                               radial_scale=radial_scale, opacity=opacity,
-                               colormap=colormap, global_cm=global_cm,
-                               B_matrix=B_low)
-odf_actor_y.display_extent(0, grid_shape[0] - 1, grid_shape[1]//2,
-                           grid_shape[1]//2, 0, grid_shape[2] - 1)
+odf_actor_y = actor.odf_slicer(
+    sh,
+    affine=affine,
+    sphere=sphere_low,
+    scale=scale,
+    norm=norm,
+    radial_scale=radial_scale,
+    opacity=opacity,
+    colormap=colormap,
+    global_cm=global_cm,
+    B_matrix=B_low,
+)
+odf_actor_y.display_extent(
+    0, grid_shape[0] - 1, grid_shape[1] // 2, grid_shape[1] // 2, 0, grid_shape[2] - 1
+)
 
 # ODF slicer for sagittal slice
-odf_actor_x = actor.odf_slicer(sh, affine=affine, sphere=sphere_low,
-                               scale=scale, norm=norm,
-                               radial_scale=radial_scale, opacity=opacity,
-                               colormap=colormap, global_cm=global_cm,
-                               B_matrix=B_low)
-odf_actor_x.display_extent(grid_shape[0]//2, grid_shape[0]//2, 0,
-                           grid_shape[1] - 1, 0, grid_shape[2] - 1)
+odf_actor_x = actor.odf_slicer(
+    sh,
+    affine=affine,
+    sphere=sphere_low,
+    scale=scale,
+    norm=norm,
+    radial_scale=radial_scale,
+    opacity=opacity,
+    colormap=colormap,
+    global_cm=global_cm,
+    B_matrix=B_low,
+)
+odf_actor_x.display_extent(
+    grid_shape[0] // 2, grid_shape[0] // 2, 0, grid_shape[1] - 1, 0, grid_shape[2] - 1
+)
 
 scene = window.Scene()
 scene.add(odf_actor_z)
@@ -77,28 +102,34 @@ scene.add(odf_actor_y)
 scene.add(odf_actor_x)
 
 show_m = window.ShowManager(scene, reset_camera=True, size=(1200, 900))
-show_m.initialize()
+
 
 ###############################################################################
 # Now that we have a `ShowManager` containing our slicer, we can go on and
 # configure our UI for changing the slices to visualize.
-line_slider_z = ui.LineSlider2D(min_value=0,
-                                max_value=grid_shape[2] - 1,
-                                initial_value=grid_shape[2] / 2,
-                                text_template="{value:.0f}",
-                                length=140)
+line_slider_z = ui.LineSlider2D(
+    min_value=0,
+    max_value=grid_shape[2] - 1,
+    initial_value=grid_shape[2] / 2,
+    text_template='{value:.0f}',
+    length=140,
+)
 
-line_slider_y = ui.LineSlider2D(min_value=0,
-                                max_value=grid_shape[1] - 1,
-                                initial_value=grid_shape[1] / 2,
-                                text_template="{value:.0f}",
-                                length=140)
+line_slider_y = ui.LineSlider2D(
+    min_value=0,
+    max_value=grid_shape[1] - 1,
+    initial_value=grid_shape[1] / 2,
+    text_template='{value:.0f}',
+    length=140,
+)
 
-line_slider_x = ui.LineSlider2D(min_value=0,
-                                max_value=grid_shape[0] - 1,
-                                initial_value=grid_shape[0] / 2,
-                                text_template="{value:.0f}",
-                                length=140)
+line_slider_x = ui.LineSlider2D(
+    min_value=0,
+    max_value=grid_shape[0] - 1,
+    initial_value=grid_shape[0] / 2,
+    text_template='{value:.0f}',
+    length=140,
+)
 
 ###############################################################################
 # We also define a high resolution sphere to demonstrate the capability to
@@ -107,14 +138,15 @@ sphere_high = get_sphere('symmetric362')
 
 # We fix the order of the faces' three vertices to a clockwise winding. This
 # ensures all faces have a normal going away from the center of the sphere.
-sphere_high.faces = fix_winding_order(sphere_high.vertices,
-                                      sphere_high.faces, True)
+sphere_high.faces = fix_winding_order(sphere_high.vertices, sphere_high.faces, True)
 B_high = sh_to_sf_matrix(sphere_high, 8, return_inv=False)
 
 ###############################################################################
 # We add a combobox for choosing the sphere resolution during execution.
-sphere_dict = {'Low resolution': (sphere_low, B_low),
-               'High resolution': (sphere_high, B_high)}
+sphere_dict = {
+    'Low resolution': (sphere_low, B_low),
+    'High resolution': (sphere_high, B_high),
+}
 combobox = ui.ComboBox2D(items=list(sphere_dict))
 scene.add(combobox)
 
@@ -168,14 +200,11 @@ def build_label(text):
     return label
 
 
-line_slider_label_z = build_label(text="Z Slice")
-line_slider_label_y = build_label(text="Y Slice")
-line_slider_label_x = build_label(text="X Slice")
+line_slider_label_z = build_label(text='Z Slice')
+line_slider_label_y = build_label(text='Y Slice')
+line_slider_label_x = build_label(text='X Slice')
 
-panel = ui.Panel2D(size=(300, 200),
-                   color=(1, 1, 1),
-                   opacity=0.1,
-                   align="right")
+panel = ui.Panel2D(size=(300, 200), color=(1, 1, 1), opacity=0.1, align='right')
 panel.center = (1030, 120)
 
 panel.add_element(line_slider_label_x, (0.1, 0.75))
@@ -206,8 +235,6 @@ def win_callback(obj, _event):
         panel.re_align(size_change)
 
 
-show_m.initialize()
-
 ###############################################################################
 # Finally, please set the following variable to ``True`` to interact with the
 # datasets in 3D.
@@ -218,7 +245,8 @@ if interactive:
     show_m.render()
     show_m.start()
 else:
-    window.record(scene, out_path='odf_slicer_3D.png', size=(1200, 900),
-                  reset_camera=False)
+    window.record(
+        scene, out_path='odf_slicer_3D.png', size=(1200, 900), reset_camera=False
+    )
 
 del show_m

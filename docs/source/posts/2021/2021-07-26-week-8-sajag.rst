@@ -1,0 +1,47 @@
+Seventh week of coding!
+=======================
+
+.. post:: July 26 2021
+   :author: Sajag Swami
+   :tags: google
+   :category: gsoc
+
+Welcome to the eighth weekly check-in. I'll be sharing my progress for the seventh week of coding.
+
+What did you do this week?
+--------------------------
+
+#. Updated `PR #452`_:
+
+   -  Added ribbon actor to the molecular module.
+   -  Added tests for all functions in the molecular module.
+
+#. Updated `PR #462`_: Addressed the reviews of team members and
+   mentors, added new features.
+
+   |image1|
+
+#. Updated `PR #362`_: Addressed the feedbacks of team members and
+   mentors.
+
+What is coming up next week?
+----------------------------
+
+#. Work more on molecular module, meeting with mentors and core team on
+   Thursday to optimize the module and merge `PR #452`_.
+#. Start working upon molecular surface model.
+
+Did you get stuck anywhere?
+---------------------------
+
+No.
+
+.. _PR #452: https://github.com/fury-gl/fury/pull/452
+.. _PR #462: https://github.com/fury-gl/fury/pull/462
+.. _PR #362: https://github.com/fury-gl/fury/pull/362
+
+.. |image1| image:: https://user-images.githubusercontent.com/65067354/126382288-b755c01d-8010-43ab-87db-2f1a4fb5b015.png
+   :width: 300px
+   :height: 300px
+
+``Au Revoir!``

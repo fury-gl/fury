@@ -21,9 +21,9 @@ if(t < 20.0)
 {
     vec3 position = ro.xyz + t * rd;
     vec3 norm = calcNormal(position);
-    
+
     fragOutput0 = vec4( norm, 1.0);
-    	
+
 }
 else{
    discard;

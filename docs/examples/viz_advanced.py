@@ -12,7 +12,7 @@ the main functions using the following modules.
 """
 
 import numpy as np
-from fury import actor, window, ui
+from dipy.data.fetcher import fetch_bundles_2_subjects, read_bundles_2_subjects
 
 ###############################################################################
 # In ``window`` we have all the objects that connect what needs to be rendered
@@ -36,7 +36,8 @@ from fury import actor, window, ui
 #
 # First we need to fetch and load some datasets.
 from dipy.tracking.streamline import Streamlines
-from dipy.data.fetcher import fetch_bundles_2_subjects, read_bundles_2_subjects
+
+from fury import actor, ui, window
 
 fetch_bundles_2_subjects()
 
@@ -45,8 +46,7 @@ fetch_bundles_2_subjects()
 # ``af left`` (left arcuate fasciculus) and maps, e.g. FA for a specific
 # subject.
 
-res = read_bundles_2_subjects('subj_1', ['t1', 'fa'],
-                              ['af.left', 'cst.right', 'cc_1'])
+res = read_bundles_2_subjects('subj_1', ['t1', 'fa'], ['af.left', 'cst.right', 'cc_1'])
 
 ###############################################################################
 # We will use 3 bundles, FA and the affine transformation that brings the voxel
@@ -75,6 +75,7 @@ world_coords = True
 
 if not world_coords:
     from dipy.tracking.streamline import transform_streamlines
+
     streamlines = transform_streamlines(streamlines, np.linalg.inv(affine))
 
 ###############################################################################
@@ -96,25 +97,16 @@ slicer_opacity = 0.6
 image_actor_z.opacity(slicer_opacity)
 
 ###############################################################################
-# We can add additonal slicers by copying the original and adjusting the
+# We can add additional slicers by copying the original and adjusting the
 # ``display_extent``.
 
 image_actor_x = image_actor_z.copy()
 x_midpoint = int(np.round(shape[0] / 2))
-image_actor_x.display_extent(x_midpoint,
-                             x_midpoint, 0,
-                             shape[1] - 1,
-                             0,
-                             shape[2] - 1)
+image_actor_x.display_extent(x_midpoint, x_midpoint, 0, shape[1] - 1, 0, shape[2] - 1)
 
 image_actor_y = image_actor_z.copy()
 y_midpoint = int(np.round(shape[1] / 2))
-image_actor_y.display_extent(0,
-                             shape[0] - 1,
-                             y_midpoint,
-                             y_midpoint,
-                             0,
-                             shape[2] - 1)
+image_actor_y.display_extent(0, shape[0] - 1, y_midpoint, y_midpoint, 0, shape[2] - 1)
 
 ###############################################################################
 # Connect the actors with the Scene.
@@ -132,34 +124,39 @@ scene.add(image_actor_y)
 # object which allows accessing the pipeline in different areas. Here is how:
 
 show_m = window.ShowManager(scene, size=(1200, 900))
-show_m.initialize()
+
 
 ###############################################################################
 # After we have initialized the ``ShowManager`` we can go ahead and create
 # sliders to move the slices and change their opacity.
 
-line_slider_z = ui.LineSlider2D(min_value=0,
-                                max_value=shape[2] - 1,
-                                initial_value=shape[2] / 2,
-                                text_template="{value:.0f}",
-                                length=140)
+line_slider_z = ui.LineSlider2D(
+    min_value=0,
+    max_value=shape[2] - 1,
+    initial_value=shape[2] / 2,
+    text_template='{value:.0f}',
+    length=140,
+)
 
-line_slider_x = ui.LineSlider2D(min_value=0,
-                                max_value=shape[0] - 1,
-                                initial_value=shape[0] / 2,
-                                text_template="{value:.0f}",
-                                length=140)
+line_slider_x = ui.LineSlider2D(
+    min_value=0,
+    max_value=shape[0] - 1,
+    initial_value=shape[0] / 2,
+    text_template='{value:.0f}',
+    length=140,
+)
 
-line_slider_y = ui.LineSlider2D(min_value=0,
-                                max_value=shape[1] - 1,
-                                initial_value=shape[1] / 2,
-                                text_template="{value:.0f}",
-                                length=140)
+line_slider_y = ui.LineSlider2D(
+    min_value=0,
+    max_value=shape[1] - 1,
+    initial_value=shape[1] / 2,
+    text_template='{value:.0f}',
+    length=140,
+)
 
-opacity_slider = ui.LineSlider2D(min_value=0.0,
-                                 max_value=1.0,
-                                 initial_value=slicer_opacity,
-                                 length=140)
+opacity_slider = ui.LineSlider2D(
+    min_value=0.0, max_value=1.0, initial_value=slicer_opacity, length=140
+)
 
 ###############################################################################
 # Now we will write callbacks for the sliders and register them.
@@ -211,18 +208,15 @@ def build_label(text):
     return label
 
 
-line_slider_label_z = build_label(text="Z Slice")
-line_slider_label_x = build_label(text="X Slice")
-line_slider_label_y = build_label(text="Y Slice")
-opacity_slider_label = build_label(text="Opacity")
+line_slider_label_z = build_label(text='Z Slice')
+line_slider_label_x = build_label(text='X Slice')
+line_slider_label_y = build_label(text='Y Slice')
+opacity_slider_label = build_label(text='Opacity')
 
 ###############################################################################
 # Now we will create a ``panel`` to contain the sliders and labels.
 
-panel = ui.Panel2D(size=(300, 200),
-                   color=(1, 1, 1),
-                   opacity=0.1,
-                   align="right")
+panel = ui.Panel2D(size=(300, 200), color=(1, 1, 1), opacity=0.1, align='right')
 panel.center = (1030, 120)
 
 panel.add_element(line_slider_label_x, (0.1, 0.75))
@@ -258,8 +252,6 @@ def win_callback(obj, _event):
         panel.re_align(size_change)
 
 
-show_m.initialize()
-
 ###############################################################################
 # Finally, please set the following variable to ``True`` to interact with the
 # datasets in 3D.
@@ -277,7 +269,8 @@ if interactive:
 
 else:
 
-    window.record(scene, out_path='bundles_and_3_slices.png', size=(1200, 900),
-                  reset_camera=False)
+    window.record(
+        scene, out_path='bundles_and_3_slices.png', size=(1200, 900), reset_camera=False
+    )
 
 del show_m

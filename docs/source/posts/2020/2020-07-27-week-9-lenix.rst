@@ -8,7 +8,7 @@ Merging SDF primitives.
 
 Make sure to check out Project `FURY <https://github.com/fury-gl/fury>`_
 
-Hey Everyone! 
+Hey Everyone!
 This week, Merging SDF primitives.
 
 What did you do this week?
@@ -32,4 +32,4 @@ Now that the SDF actor is merged , the next step is to focus on spherical harmon
 
 Did you get stuck anywhere?
 ---------------------------
-This week involved alot of work , including making tests, tutorial and looking for bugs but everything went smoothly .
+This week involved a lot of work , including making tests, tutorial and looking for bugs but everything went smoothly .

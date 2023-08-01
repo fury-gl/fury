@@ -24,7 +24,6 @@ venv/
 *.egg-info/
 .installed.cfg
 *.egg
-*.png
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -64,6 +63,7 @@ docs/source/reference
 docs/examples/*.png
 docs/examples/*.vtk
 docs/examples/*.gif
+docs/examples_revamped
 docs/tutorials/*.png
 docs/tutorials/*.vtk
 docs/tutorials/*.gif
@@ -100,5 +100,13 @@ target/
 *.nii.gz
 *.npy
 *.vtk
-*.jpeg
-*.jpg
+*.png
+*.bin
+*.gltf
+
+tmp/
+temp/
+
+_version.py
+
+.mypy_cache
