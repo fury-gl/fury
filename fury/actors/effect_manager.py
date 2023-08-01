@@ -9,6 +9,7 @@ from fury.shaders import (attribute_to_actor,
                           import_fury_shader,
                           shader_apply_effects,
                           shader_custom_uniforms)
+from fury.ui import LineSlider2D
 from fury.utils import rgb_to_vtk
 from fury.window import (gl_disable_depth,
                          gl_set_additive_blending,
@@ -318,7 +319,6 @@ class EffectManager():
         if self._n_active_effects > 0:
             self.off_manager.scene.GetActors().GetLastActor().SetVisibility(False)
         self.off_manager.scene.add(bill)
-        self.off_manager.render()
 
         bill_bounds = bill.GetBounds()
         max_sigma = 2*4.0*np.max(sigmas)
@@ -330,10 +330,12 @@ class EffectManager():
         scale = np.array([[actor_scales.max(), 
                            actor_scales.max(),
                            0.0]])
+        
+        res = self.off_manager.size
 
         # Render to second billboard for color map post-processing.
         textured_billboard = billboard(np.array([center_of_mass]), scales=scale, fs_dec=tex_dec, fs_impl=tex_impl)
-        shader_custom_uniforms(textured_billboard, "fragment").SetUniform2f("res", self.off_manager.size)
+        shader_custom_uniforms(textured_billboard, "fragment").SetUniform2f("res", res)
         shader_custom_uniforms(textured_billboard, "fragment").SetUniformf("u_opacity", opacity)
 
         # Disables the texture warnings
@@ -344,9 +346,9 @@ class EffectManager():
         else:
             cmap = custom_colormap
 
-        colormap_to_texture(cmap, "colormapTexture", textured_billboard)
+        colormap_to_texture(cmap, "colormapTexture", textured_billboard)        
 
-        def kde_callback(obj, event):
+        def kde_callback(obj = None, event = None):
             cam_params = self.on_manager.scene.get_camera()
             self.off_manager.scene.set_camera(*cam_params)
             self.off_manager.scene.Modified()
@@ -362,12 +364,27 @@ class EffectManager():
             d_type = "rgba")
 
         # Initialization
-        window_to_texture(
-            self.off_manager.window,
-            "screenTexture",
-            textured_billboard,
-            blending_mode="Interpolate",
-            d_type = "rgba")
+        kde_callback()
+
+        minv = 1
+        initv = 1000
+        maxv = 2000
+        offset = 150
+        line_slider = LineSlider2D(center = (res[0] - offset, 0 + (res[1]/res[0])*offset), 
+                                   initial_value = initv, 
+                                   min_value = minv, max_value = maxv, 
+                                   text_alignment='bottom',
+                                   orientation = 'horizontal')
+
+        def intensity_change(slider):
+            intensity = slider.value/initv
+            attribute_to_actor(bill, intensity*np.repeat(sigmas, 4), "in_sigma")
+            bill.Modified()
+            kde_callback()
+     
+        line_slider.on_moving_slider = intensity_change
+
+        self.on_manager.scene.add(line_slider)
         
         callback_id = self.on_manager.add_iren_callback(kde_callback, "RenderEvent")
 
