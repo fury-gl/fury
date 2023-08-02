@@ -30,12 +30,12 @@ probably, rethink the way the api was implemented. As this general post-processi
 my main one, I decided to leave that investment to another time, as I would need to guarantee the quality of the second.
 
 The second was an easy and rather interesting part of my week, as I just needed to setup new kernel shaders. Based on 
-`scikit-learn <https://scikit-learn.org/stable/modules/density.html> KDE documentation`_, I could sucessfully implement the following kernels:
+`scikit-learn KDE documentation <https://scikit-learn.org/stable/modules/density.html>`_, I could sucessfully implement the following kernels:
 
 * Gaussian 
 
 .. math::
-   K(x, y) = e^{\frac{-(x^2 + y^2)}{2\sigma}}
+   K(x, y) = e^{\frac{-(x^2 + y^2)}{2\sigma^2}}
 
 * Tophat
 
@@ -64,14 +64,14 @@ The second was an easy and rather interesting part of my week, as I just needed 
 
 That outputted the following (beautiful) results for a set of 1000 random points with random sigmas:
 
-.. image::
+.. image:: https://raw.githubusercontent.com/JoaoDell/gsoc_assets/main/images/kernels.png
    :align: center
    :alt: Different kernel approaches
 
 
 The third one is still being a trickier challenge. If you recall from my first blogposts, I spent something around *one month* trying to setup
 float framebuffer objects to FURY with VTK so I could use them in my project. After spending all of that time with no results, 
-me and Bruno, my mentor, :doc:`found a way <2023-07-03-week-5-joaodellagli.rst>`_ to do what we wanted to do, but using a different VTK class, 
+me and Bruno, my mentor, :doc:`found a way <2023-07-03-week-5-joaodellagli.rst>` to do what we wanted to do, but using a different VTK class, 
 `vtkWindowToImageFilter <https://vtk.org/doc/nightly/html/classvtkWindowToImageFilter.html>`_. Well, it was a good workaround back then and 
 it lead me all the way here, however now it is costing a price. The float framebuffers were an important part of the project because they 
 would allow us to pass *32-bit float information* from one shader to another, which would be important as they would allow the densities to 
@@ -87,24 +87,24 @@ densities, I was retrieving the texture to the CPU, calculating its minimum and 
 for the renormalization, which didn't work if the maximum values calculated were zero.
 
 One solution I thought to solve that was a really heavy workaround: if an unsigned float is 32-bit and I have exactly 4 8-bit 
-unsigned chars, why not try to pack this float into these 4 chars? Well, this is an interesting approach which I figured is already an 
+unsigned chars, why not try to pack this float into these 4 chars? Well, this is an interesting approach which I figured out is already an 
 old one, being reported in `GPU Gems's chapter 12 <https://developer.nvidia.com/gpugems/gpugems/part-ii-lighting-and-shadows/chapter-12-omnidirectional-shadow-mapping>`_.
 Unfortunately I haven't tried yet this implementation yet, and went for one I thought myself, which haven't exactly worked. I also tried 
 this implementation from `Aras Pranckevičius' website <https://aras-p.info/blog/2009/07/30/encoding-floats-to-rgba-the-final/>`_, which seems
 to be working, even though not perfectly:
 
-.. image::
+.. image:: https://raw.githubusercontent.com/JoaoDell/gsoc_assets/main/images/noisy%20kde.png
    :align: center
    :alt: Noisy float to RGBA enconding
 
 As you can see, this implementation is *really noisy*. I think this has to deal with floating point rounding errors, so to try to mitigate 
-that, I experimented applying a *13x13 gaussian blur* to it. Below, what I got from that: **WARNING: FLASHING LIGHTS**
+that, I experimented applying a *13x13 gaussian blur* to it. Below, what I got from that:
 
-.. image::
+.. image:: https://raw.githubusercontent.com/JoaoDell/gsoc_assets/main/images/blurred_kde.png
    :align: center
    :alt: Blurred KDE result
 
-That looks wa better, even though not ideal yet.
+That looks way better, even though not ideal yet.
 
 This Week's Goals
 -----------------
