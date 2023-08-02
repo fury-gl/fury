@@ -25,12 +25,12 @@ So how did it go?
 -----------------
 The first one I did on monday-tuesday, and I had to deal with some issues regarding scaling and repositioning. Due to implementation 
 choices, the final post-processed effects were rendered whether bigger than they were in reality, or out of their original place. 
-After some time dedicated to finding the root of thoses problems, I could fix the scaling issue, however I realised I would need to, 
+After some time dedicated to finding the root of  problems, I could fix the scaling issue, however I realised I would need to, 
 probably, rethink the way the api was implemented. As this general post-processing effects is a side-project that comes as a consequence of 
 my main one, I decided to leave that investment to another time, as I would need to guarantee the quality of the second.
 
 The second was an easy and rather interesting part of my week, as I just needed to setup new kernel shaders. Based on 
-`scikit-learn KDE documentation <https://scikit-learn.org/stable/modules/density.html>`_, I could sucessfully implement the following kernels:
+`scikit-learn KDE documentation <https://scikit-learn.org/stable/modules/density.html>`_, I could successfully implement the following kernels:
 
 * Gaussian 
 
@@ -80,7 +80,7 @@ have higher precision and more fidelity to the calculations. When rendering a KD
 .. math::
    KDE(x, y) = \frac{1}{n} \sum_{i = 0}^n K(x, y)
 
-If the number of points :math:`n` is big enough, some KDE results will be really low. This presents a real problem to our implementation beacuse, without 
+If the number of points :math:`n` is big enough, some KDE results will be really low. This presents a real problem to our implementation because, without 
 the float framebuffers, it is currently only being possible to pass *8-bit unsigned char* information, that only allows 256 values. 
 This is far from ideal, as low values would have alone densities low enough to disappear. This presented a problem as to renormalize the
 densities, I was retrieving the texture to the CPU, calculating its minimum and maximum values, and passing to the fragment shader as uniforms
@@ -95,7 +95,7 @@ to be working, even though not perfectly:
 
 .. image:: https://raw.githubusercontent.com/JoaoDell/gsoc_assets/main/images/noisy%20kde.png
    :align: center
-   :alt: Noisy float to RGBA enconding
+   :alt: Noisy float to RGBA encoding
 
 As you can see, this implementation is *really noisy*. I think this has to deal with floating point rounding errors, so to try to mitigate 
 that, I experimented applying a *13x13 gaussian blur* to it. Below, what I got from that:
