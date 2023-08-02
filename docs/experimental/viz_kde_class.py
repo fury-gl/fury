@@ -3,6 +3,7 @@ import numpy as np
 from fury.actors.effect_manager import EffectManager
 from fury.window import Scene, ShowManager, record
 
+
 def normalize(array : np.array, min : float = 0.0, max : float = 1.0, axis : int = 0):
     """Convert an array to a given desired range.
 
@@ -48,21 +49,20 @@ manager.initialize()
 n_points = 1000
 points = np.random.rand(n_points, 3)
 points = normalize(points, -5, 5)
-sigmas = normalize(np.random.rand(n_points, 1), 0.1, 0.6)
+sigmas = normalize(np.random.rand(n_points, 1), 0.05, 0.2)
 offset = np.array([0.0, 0.0, 0.0])
 points = points + np.tile(offset, points.shape[0]).reshape(points.shape)
 
 effects = EffectManager(manager)
 
-kde_actor = effects.kde(points, sigmas, kernel = "exponential", colormap = "inferno")
+kde_actor = effects.kde(points, sigmas, kernel="gaussian", colormap="inferno")
 
 
 manager.scene.add(kde_actor)
-# effects.remove_effect(kde_actor)
 
 interactive = True
 
 if interactive:
     manager.start()
-    
-record(scene, out_path = "kde_points.png", size = (800, 800))
+
+record(scene, out_path="kde_points.png", size=(800, 800))
