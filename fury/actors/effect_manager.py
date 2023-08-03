@@ -93,7 +93,6 @@ def window_to_texture(
 
     target_actor.GetProperty().SetTexture(texture_name, texture)
 
-
 def texture_to_actor(
         path_to_texture : str,
         texture_name : str,
@@ -135,13 +134,13 @@ def texture_to_actor(
         Texture RGBA border color.
     interpolate : bool
         Texture interpolation."""
-    
+
     texture = Texture()
 
-    colormapArray = load_image(path_to_texture)
-    colormapData = rgb_to_vtk(colormapArray)
+    textureArray = load_image(path_to_texture)
+    textureData = rgb_to_vtk(textureArray)
 
-    texture.SetInputDataObject(colormapData)
+    texture.SetInputDataObject(textureData)
     texture.SetBorderColor(*border_color)
     texture.SetWrap(WRAP_MODE_DIC[wrap_mode.lower()])
     texture.SetInterpolate(interpolate)
@@ -149,7 +148,6 @@ def texture_to_actor(
     texture.SetBlendingMode(BLENDING_MODE_DIC[blending_mode.lower()])
 
     target_actor.GetProperty().SetTexture(texture_name, texture)
-
 
 def colormap_to_texture(
         colormap : np.array,
@@ -403,7 +401,7 @@ class EffectManager():
         
         callback_id = self.on_manager.add_iren_callback(kde_callback, "RenderEvent")
 
-        self._active_effects[textured_billboard] = callback_id
+        self._active_effects[textured_billboard] = (callback_id, bill)
         self._active_ui[textured_billboard] = panel.actors
         self._n_active_effects += 1
 
@@ -420,12 +418,12 @@ class EffectManager():
             Actor of effect to be removed.
         """
         if self._n_active_effects > 0:
-            self.on_manager.iren.RemoveObserver(self._active_effects[effect_actor])
+            self.on_manager.iren.RemoveObserver(self._active_effects[effect_actor][0])
+            self.off_manager.scene.RemoveActor(self._active_effects[effect_actor][1])
             self.on_manager.scene.RemoveActor(effect_actor)
             ui_actors = self._active_ui[effect_actor]
             for i in range(len(ui_actors)):
                 self.on_manager.scene.RemoveActor(ui_actors[i])
-            self.off_manager.scene.RemoveActor(effect_actor)
             self._active_effects.pop(effect_actor)
             self._n_active_effects -= 1
         else:
