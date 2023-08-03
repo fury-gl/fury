@@ -430,6 +430,4 @@ def shader_custom_uniforms(actor, shader_type):
                         "fragment" : actor.GetShaderProperty().GetFragmentCustomUniforms(),
                         "geometry" : actor.GetShaderProperty().GetGeometryCustomUniforms()}
     
-    
-    
-    return SHADER_FUNCTIONS[shader_type]
+    return SHADER_FUNCTIONS[shader_type.lower()]

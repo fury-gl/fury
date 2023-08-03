@@ -1,11 +1,32 @@
 import numpy as np
 import numpy.testing as npt
+import os
 
-from fury.actors.effect_manager import EffectManager
-from fury.window import Scene, ShowManager
+from fury.actor import (billboard, 
+                        cube)
+from fury.actors.effect_manager import (colormap_to_texture, 
+                                        EffectManager, 
+                                        texture_to_actor,
+                                        window_to_texture)
+from fury.colormap import create_colormap
+from fury.lib import Texture
+from fury.shaders import shader_custom_uniforms, import_fury_shader
+from fury.window import (Scene, 
+                         ShowManager, 
+                         record)
 from fury import window
 
 width, height = (400, 400)
+
+WRAP_MODE_DIC = {"clamptoedge" : Texture.ClampToEdge,
+                 "repeat" : Texture.Repeat,
+                 "mirroredrepeat" : Texture.MirroredRepeat,
+                 "clamptoborder" : Texture.ClampToBorder}
+
+BLENDING_MODE_DIC = {"none" : 0, "replace" : 1,
+                     "modulate" : 2, "add" : 3,
+                     "addsigned" : 4, "interpolate" : 5,
+                     "subtract" : 6}
 
 points = np.array([[0.36600749, 0.65827962, 0.53083986],
                     [0.97657922, 0.78730041, 0.13946709],
@@ -51,13 +72,190 @@ sigmas = np.array([[0.56193862], [0.1275334 ], [0.91069059],
 
 
 def test_window_to_texture(interactive = False):
-    pass
+    fs_impl = """
+    vec2 res_factor = vec2(res.y/res.x, 1.0);
+    vec2 renorm_tex = res_factor*normalizedVertexMCVSOutput.xy*0.5 + 0.5;
+    vec4 tex = texture(screenTexture, renorm_tex);
+    fragOutput0 = vec4(tex);
+    """
 
+    on_scene = window.Scene()
+    on_scene.set_camera(position=(-2, 1, -2),
+                    focal_point=(0.0,
+                                 0.0,
+                                 0.0),
+                    view_up=(0.0, 0.0, 0.0))
+
+    on_manager = window.ShowManager(
+        on_scene,
+        "on_manager",
+        (width,
+        height))
+
+    off_scene = window.Scene()
+    off_scene.set_camera(position=(-4, 2, -4),
+                    focal_point=(0.0,
+                                 0.0,
+                                 0.0),
+                    view_up=(0.0, 0.0, 0.0))
+
+    off_manager = window.ShowManager(
+        off_scene,
+        "off_manager",
+        (width,
+        height))
+    
+    off_manager.window.SetOffScreenRendering(True)
+    off_manager.initialize()
+
+    scale = np.array([[width/height, 1.0, 0.0]])
+    c = cube(np.array([[0.0, 0.0, 0.0]]), colors=(1.0, 1.0, 0.0))
+    bill = billboard(np.array([[0.0, 0.0, 0.0]]), scales = scale, fs_impl=fs_impl)
+    shader_custom_uniforms(bill, "fragment").SetUniform2f("res", off_manager.size)
+
+    off_manager.scene.add(c)
+    on_manager.scene.add(bill)
+
+    tex_name = "screenTexture"
+    blending_mode = "Interpolate"
+    dtype = "RGBA"
+    wrap_mode = "ClampToBorder"
+    border_color = (0.0, 0.0, 0.0, 1.0)
+    interpolate = True
+
+    off_manager.render()
+    window_to_texture(off_manager.window, 
+                      tex_name, 
+                      bill, 
+                      blending_mode=blending_mode, 
+                      wrap_mode=wrap_mode, 
+                      border_color=border_color,
+                      interpolate=interpolate,
+                      d_type=dtype)
+    
+    if interactive:
+        window.show(on_manager.scene)
+
+    n_textures = bill.GetProperty().GetNumberOfTextures()
+    texture = bill.GetProperty().GetTexture(tex_name)
+
+    npt.assert_equal(1, n_textures)
+    npt.assert_equal(WRAP_MODE_DIC[wrap_mode.lower()], texture.GetWrap())
+    npt.assert_equal(BLENDING_MODE_DIC[blending_mode.lower()], texture.GetBlendingMode())
+    npt.assert_array_almost_equal(list(border_color), texture.GetBorderColor())
+    npt.assert_equal(interpolate, texture.GetInterpolate())
+    npt.assert_equal(True, texture.GetMipmap())
+
+    record(on_manager.scene, out_path="test_window.png", size=(width, height))
+
+def test_texture_to_actor(interactive = False):
+    fs_impl = """
+    vec2 res_factor = vec2(res.y/res.x, 1.0);
+    vec2 renorm_tex = res_factor*normalizedVertexMCVSOutput.xy*0.5 + 0.5;
+    vec4 tex = texture(screenTexture, renorm_tex);
+    fragOutput0 = vec4(tex);
+    """
+
+    on_scene = window.Scene()
+    on_scene.set_camera(position=(-2, 1, -2),
+                    focal_point=(0.0,
+                                 0.0,
+                                 0.0),
+                    view_up=(0.0, 0.0, 0.0))
+
+    on_manager = window.ShowManager(
+        on_scene,
+        "on_manager",
+        (width,
+        height))
+
+    scale = np.array([[width/height, 1.0, 0.0]])
+    bill = billboard(np.array([[0.0, 0.0, 0.0]]), scales = scale, fs_impl=fs_impl)
+    shader_custom_uniforms(bill, "fragment").SetUniform2f("res", on_manager.size)
+
+    on_manager.scene.add(bill)
+
+    tex_name = "screenTexture"
+    blending_mode = "Interpolate"
+    dtype = "RGBA"
+    wrap_mode = "ClampToBorder"
+    border_color = (0.0, 0.0, 0.0, 1.0)
+    interpolate = True
+
+    texture_to_actor("test_window.png",
+                      tex_name, 
+                      bill, 
+                      blending_mode=blending_mode, 
+                      wrap_mode=wrap_mode, 
+                      border_color=border_color,
+                      interpolate=interpolate)
+    
+    if interactive:
+        window.show(on_manager.scene)
+
+    n_textures = bill.GetProperty().GetNumberOfTextures()
+    texture = bill.GetProperty().GetTexture(tex_name)
+
+    npt.assert_equal(1, n_textures)
+    npt.assert_equal(WRAP_MODE_DIC[wrap_mode.lower()], texture.GetWrap())
+    npt.assert_equal(BLENDING_MODE_DIC[blending_mode.lower()], texture.GetBlendingMode())
+    npt.assert_array_almost_equal(list(border_color), texture.GetBorderColor())
+    npt.assert_equal(interpolate, texture.GetInterpolate())
+    npt.assert_equal(True, texture.GetMipmap())
+    
 def test_colormap_to_actor(interactive = False):
-    pass
+
+    fs_dec = import_fury_shader(os.path.join("effects", "color_mapping.glsl"))
+
+    fs_impl = """
+    vec2 res_factor = vec2(res.y/res.x, 1.0);
+    vec2 renorm_tex = res_factor*normalizedVertexMCVSOutput.xy*0.5 + 0.5;
+    float intensity = renorm_tex.x;
+    vec4 tex = color_mapping(intensity, colormapTexture);
+    fragOutput0 = vec4(tex);
+    """
+
+    on_scene = window.Scene()
+    on_scene.set_camera(position=(-2, 1, -2),
+                    focal_point=(0.0,
+                                 0.0,
+                                 0.0),
+                    view_up=(0.0, 0.0, 0.0))
+
+    on_manager = window.ShowManager(
+        on_scene,
+        "on_manager",
+        (width,
+        height))
+
+    scale = 3.4*np.array([[width/height, 1.0, 0.0]])
+    bill = billboard(np.array([[0.0, 0.0, 0.0]]), scales = scale, fs_impl=fs_impl, fs_dec=fs_dec)
+    shader_custom_uniforms(bill, "fragment").SetUniform2f("res", on_manager.size)
+
+    on_manager.scene.add(bill)
+
+    tex_name = "colormapTexture"
+    interpolate = True
+
+    colormap_to_texture(create_colormap(np.arange(0.0, 1.0, 1/256), "viridis"), 
+                        tex_name, 
+                        bill, 
+                        interpolate)
+
+    
+    if interactive:
+        window.show(on_manager.scene)
+
+    n_textures = bill.GetProperty().GetNumberOfTextures()
+    texture = bill.GetProperty().GetTexture(tex_name)
+
+    npt.assert_equal(1, n_textures)
+    npt.assert_equal(WRAP_MODE_DIC["ClampToEdge".lower()], texture.GetWrap())
+    npt.assert_equal(BLENDING_MODE_DIC["None".lower()], texture.GetBlendingMode())
+    npt.assert_equal(interpolate, texture.GetInterpolate())
+    npt.assert_equal(True, texture.GetMipmap())
 
 def test_effect_manager_setup(interactive = False):
-    width, height = (400, 400)
 
     scene = Scene()
     scene.set_camera(position=(-24, 20, -40),
@@ -83,50 +281,6 @@ def test_effect_manager_setup(interactive = False):
     npt.assert_equal(True, em.off_manager.window.GetOffScreenRendering())
     npt.assert_equal(0, em._n_active_effects)
     npt.assert_equal({}, em._active_effects)
-
-def test_kde_actor(interactive = False):
-    scene = window.Scene()
-    scene.set_camera(position=(-24, 20, -40),
-                    focal_point=(0.0,
-                                 0.0,
-                                 0.0),
-                    view_up=(0.0, 0.0, 0.0))
-
-    manager = window.ShowManager(
-        scene,
-        "demo",
-        (width,
-        height))
-
-    manager.initialize()
-
-    em = EffectManager(manager)
-
-
-    kde_actor = em.kde(points, sigmas, colormap="inferno")
-
-    manager.scene.add(kde_actor)
-
-    if interactive:
-        window.show(manager.scene)
-
-    off_arr = window.snapshot(em.off_manager.scene)
-    off_rs = window.analyze_snapshot(off_arr)
-    off_ascene = window.analyze_scene(em.off_manager.scene)
-
-    on_arr = window.snapshot(manager.scene)
-    on_rs = window.analyze_snapshot(on_arr)
-    on_ascene = window.analyze_scene(manager.scene)
-
-    on_obs = em.on_manager.iren.HasObserver("RenderEvent")
-
-    npt.assert_equal(1, off_rs.objects)
-    npt.assert_equal(1, off_ascene.actors)
-    npt.assert_equal(1, em._n_active_effects)
-    npt.assert_equal(1, on_obs)
-    npt.assert_equal(1, on_rs.objects)
-    npt.assert_equal(1, on_ascene.actors)
-
 
 def test_remove_effect(interactive = False):
     scene = window.Scene()

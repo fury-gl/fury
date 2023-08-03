@@ -2,6 +2,7 @@ import os
 import numpy as np
 from fury.actor import Actor, billboard
 from fury.colormap import create_colormap
+from fury.io import load_image
 from fury.lib import Texture, WindowToImageFilter
 from fury.shaders import (attribute_to_actor,
                           compose_shader,
@@ -84,6 +85,62 @@ def window_to_texture(
     texture = Texture()
     texture.SetMipmap(True)
     texture.SetInputConnection(windowToImageFilter.GetOutputPort())
+    texture.SetBorderColor(*border_color)
+    texture.SetWrap(WRAP_MODE_DIC[wrap_mode.lower()])
+    texture.SetInterpolate(interpolate)
+    texture.SetBlendingMode(BLENDING_MODE_DIC[blending_mode.lower()])
+
+    target_actor.GetProperty().SetTexture(texture_name, texture)
+
+
+def texture_to_actor(
+        path_to_texture : str,
+        texture_name : str,
+        target_actor : Actor,
+        blending_mode : str = "None",
+        wrap_mode : str = "ClampToBorder",
+        border_color : tuple = (
+            0.0,
+            0.0,
+            0.0,
+            1.0),
+        interpolate : bool = True):
+    """Pass an imported texture to an actor.
+
+    Parameters
+    ----------
+    path_to_texture : str
+        Texture image path.
+    texture_name : str
+        Name of the texture to be passed to the actor.
+    target_actor : Actor
+        Target actor to receive the texture.
+    blending_mode : str
+        Texture blending mode. The options are:
+        1. None
+        2. Replace
+        3. Modulate
+        4. Add
+        5. AddSigned
+        6. Interpolate
+        7. Subtract
+    wrap_mode : str
+        Texture wrapping mode. The options are:
+        1. ClampToEdge
+        2. Repeat
+        3. MirroredRepeat
+        4. ClampToBorder
+    border_color : tuple (4, )
+        Texture RGBA border color.
+    interpolate : bool
+        Texture interpolation."""
+
+    texture = Texture()
+
+    textureArray = load_image(path_to_texture)
+    textureData = rgb_to_vtk(textureArray)
+
+    texture.SetInputDataObject(textureData)
     texture.SetBorderColor(*border_color)
     texture.SetWrap(WRAP_MODE_DIC[wrap_mode.lower()])
     texture.SetInterpolate(interpolate)
