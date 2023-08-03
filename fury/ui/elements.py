@@ -3392,7 +3392,12 @@ class FileDialog2D(UI):
         self.parent_panel.add_element(self.reject_button, (0.75, 0.05))
 
         if self.dialog_type == "save":
+            padding = 10
+            textbox_size = (self.dialog_size[0] - self.accept_button.size[0] - self.reject_button.size[0] - 5*padding,
+                            self.dialog_size[1] - self.dir_block.size[1] - self.file_menu.size[1] - 2*padding)
             self.save_box = TextBox2D(15, 1, text="Enter filename")
+            self.save_box.text.dynamic_bbox = False
+            self.save_box.text.resize(textbox_size)
             self.parent_panel.add_element(self.save_box, (0.01, 0.05))
 
         for slot in self.file_menu.listbox.slots:
