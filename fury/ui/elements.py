@@ -3270,9 +3270,6 @@ class FileMenu2D(UI):
             new_directory_path = os.path.normpath(os.path.join(self.current_directory,
                                                                listboxitem.element))
             if os.access(new_directory_path, os.R_OK):
-                new_directory_path =\
-                    os.path.normpath(os.path.join(self.current_directory,
-                                                  listboxitem.element))
                 self.current_directory = new_directory_path
                 self.directory_contents = self.get_all_file_names()
                 content_names = [x[0] for x in self.directory_contents]
