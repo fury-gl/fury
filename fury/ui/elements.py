@@ -3323,7 +3323,7 @@ class FileDialog2D(UI):
         multiselection: bool, optional
             {True, False}
             Whether multiple values can be selected at once.
-        reverse_scrolling: bool
+        reverse_scrolling: bool, optional
             {True, False}
             If True, scrolling up will move the list of files down.
         font_size: int, optional
