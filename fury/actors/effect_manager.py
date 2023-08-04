@@ -254,9 +254,7 @@ class EffectManager():
         """
 
         kde_dec = import_fury_shader(
-            os.path.join(
-                "utils",
-                f"{kernel.lower()}_distribution.glsl"))
+            os.path.join("utils", f"{kernel.lower()}_distribution.glsl"))
 
         kde_impl = """
         float current_kde = kde(normalizedVertexMCVSOutput*out_scale, out_sigma);

@@ -62,9 +62,9 @@ manager = ShowManager(
 manager.initialize()
 
 ####################################################################
-# `numpy.random.rand` will be used to generate random points, which
+# ``numpy.random.rand`` will be used to generate random points, which
 # will be then relocated with the function we declared below to the 
-# range of [-5.0, 5.0], so they get more space between them. In case
+# range of ``[-5.0, 5.0]``, so they get more space between them. In case
 # offsetted points are wanted, it can be done just as below.
 
 n_points = 1000
@@ -75,28 +75,28 @@ points = points + np.tile(offset, points.shape[0]).reshape(points.shape)
 
 ###################################################################
 # For this KDE render, we will use a set of random sigmas as well, 
-# generated with `numpy.random.rand` as well, which are also 
-# remapped to the range of [0.05, 0.2].
+# generated with ``numpy.random.rand`` as well, which are also 
+# remapped to the range of ``[0.05, 0.2]``.
 
 sigmas = normalize(np.random.rand(n_points, 1), 0.05, 0.2)
 
 
 ###################################################################
 # Now, for the KDE render, a special class is needed, the 
-# EffectManager. This class is needed to manage the post-processing
+# ``EffectManager``. This class is needed to manage the post-processing
 # aspect of this kind of render, as it will need to first be 
 # rendered to an offscreen buffer, retrieved and then processed 
 # by the final actor that will render it to the screen, but don't
 # worry, none of this will need to be setup by you! Just call the 
-# EffectManager like below, passing the manager to it:
+# ``EffectManager`` like below, passing the manager to it:
 
 effects = EffectManager(manager)
 
 ###################################################################
-# After having the `effects` setup, just call the kde actor method 
+# After having the ``effects`` setup, just call the kde actor method 
 # from it, passing the points, sigma, and other optional options
-# if wished, like the kernel to be used or the colormap desirred.
-# The colormaps are by default taken from matplotlib, but a
+# if wished, like the kernel to be used or the colormap desired.
+# The colormaps are by default taken from *matplotlib*, but a
 # custom one can be passed. After calling it, just pass the actor
 # to the scene, and start it as usual.
 
