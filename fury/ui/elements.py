@@ -3270,6 +3270,7 @@ class FileMenu2D(UI):
             new_directory_path = os.path.normpath(os.path.join(self.current_directory,
                                                                listboxitem.element))
             if os.access(new_directory_path, os.R_OK):
+                self.current_file = ""
                 self.current_directory = new_directory_path
                 self.directory_contents = self.get_all_file_names()
                 content_names = [x[0] for x in self.directory_contents]
@@ -3279,12 +3280,12 @@ class FileMenu2D(UI):
                 self.listbox.update()
                 self.listbox.update_scrollbar()
                 self.set_slot_colors()
-            else:
-                new_file_path = os.path.normpath(os.path.join(
-                                                self.current_directory,
-                                                listboxitem.element))
-                if os.access(new_file_path, os.R_OK):
-                    self.current_file = new_file_path
+        else:
+            new_file_path = os.path.normpath(os.path.join(
+                                            self.current_directory,
+                                            listboxitem.element))
+            if os.access(new_file_path, os.R_OK):
+                self.current_file = new_file_path
         i_ren.force_render()
         i_ren.event.abort()
 
