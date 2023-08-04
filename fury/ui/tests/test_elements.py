@@ -1050,6 +1050,8 @@ def test_ui_file_dialog_2d(interactive=False):
         open(os.path.join(os.getcwd(), "tempdir", "test" + str(i) + ".txt"),
              'wt').close()
     open("testfile.txt", 'wt').close()
+    open("testfile2.txt", 'wt').close()
+    open("testfile3.txt", 'wt').close()
 
     file_dialog = ui.FileDialog2D(os.getcwd(), size=(300, 200),
                                   position=(50, 50), dialog_type="Save")
@@ -1099,6 +1101,8 @@ def test_ui_file_dialog_2d(interactive=False):
 
     # Remove temporary directory and files
     os.remove("testfile.txt")
+    os.remove("testfile2.txt")
+    os.remove("testfile3.txt")
     for i in range(5):
         os.remove(os.path.join(os.getcwd(), "tempdir",
                                "test" + str(i) + ".txt"))
