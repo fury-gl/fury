@@ -1,6 +1,6 @@
 import numpy as np
 
-from fury.actors.effect_manager import EffectManager
+from fury.actors.effect_manager_alt import EffectManager
 from fury.window import Scene, ShowManager, record
 
 def normalize(array : np.array, min : float = 0.0, max : float = 1.0, axis : int = 0):

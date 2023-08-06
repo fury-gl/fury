@@ -281,6 +281,19 @@ class EffectManager():
         }
         """
 
+
+        # converter = """
+        # vec4 float_to_rgba(float value) {
+        #     const float max = 4294967295.0;
+        #     float fval = max*value;
+        #     float a = fval/16777216.0 - fract(fval/16777216.0);
+        #     float b = (fval - a)/65536.0 - fract((fval - a)/65536.0);
+        #     float g = (fval - a - b)/256.0 - fract((fval - a - b)/256.0);
+        #     float r = fval - a - b - g - fract(fval - a - b - g);
+        #     return vec4(r, g, b, a)/255.0;
+        # }
+        # """
+
         kde_dec = import_fury_shader(os.path.join("utils", f"{kernel.lower()}_distribution.glsl"))
 
         kde_dec = compose_shader([kde_dec, converter])
@@ -337,6 +350,15 @@ class EffectManager():
             return dot(v, bitDec);
         }
         """
+
+
+        # de_converter = """
+        # float rgba_to_float(vec4 v) {
+        #     const float max = 4294967295.0;
+        #     vec4 bitEnc = vec4(1.,256.,65536.0,16777216.0);
+        #     return 255.0*dot(v, bitEnc)/max;
+        # }
+        # """
 
         gaussian_kernel = """
         const float gauss_kernel[169] = {0.00583209, 0.00585322, 0.00587056, 0.00588409, 0.00589377, 0.00589958
@@ -445,8 +467,8 @@ class EffectManager():
         // Turning screen coordinates to texture coordinates
         vec2 res_factor = vec2(res.y/res.x, 1.0);
         vec2 renorm_tex = res_factor*normalizedVertexMCVSOutput.xy*0.5 + 0.5;
-        //vec4 intensity = texture(screenTexture, renorm_tex);
-        vec4 intensity = kernel_calculator(screenTexture, renorm_tex, res);
+        vec4 intensity = texture(screenTexture, renorm_tex);
+        //vec4 intensity = kernel_calculator(screenTexture, renorm_tex, res);
         //float intensity = texture(screenTexture, renorm_tex).r;
 
         //float fintensity = intensity.r;
