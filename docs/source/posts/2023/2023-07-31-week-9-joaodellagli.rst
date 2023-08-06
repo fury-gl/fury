@@ -24,9 +24,9 @@ Both three turned out more complicated than it initially seemed, as I will show 
 So how did it go?
 -----------------
 The first one I did on monday-tuesday, and I had to deal with some issues regarding scaling and repositioning. Due to implementation 
-choices, the final post-processed effects were rendered whether bigger than they were in reality, or out of their original place. 
-After some time dedicated to finding the root of  problems, I could fix the scaling issue, however I realised I would need to, 
-probably, rethink the way the api was implemented. As this general post-processing effects is a side-project that comes as a consequence of 
+choices, the final post-processed effects were rendered either bigger than they were in reality, or out of their original place. 
+After some time dedicated to finding the root of the problems, I could fix the scaling issue, however I realised I would need to, 
+probably, rethink the way the API was implemented. As this general post-processing effects is a side-project that comes as a consequence of 
 my main one, I decided to leave that investment to another time, as I would need to guarantee the quality of the second.
 
 The second was an easy and rather interesting part of my week, as I just needed to setup new kernel shaders. Based on 
