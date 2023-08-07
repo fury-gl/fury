@@ -4549,7 +4549,7 @@ class SpinBox(UI):
         self.on_change(self)
 
     def textbox_update_value(self, textbox):
-        self.value = int(textbox.text.message)
+        self.value = int(textbox.text.message.replace('\n', ''))
 
         self.textbox.set_message(str(self.value))
         self.on_change(self)
