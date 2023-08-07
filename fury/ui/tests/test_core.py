@@ -389,7 +389,7 @@ def test_text_block_2d_size():
     text_block_0 = ui.TextBlock2D()
 
     npt.assert_equal(text_block_0.actor.GetTextScaleMode(), 0)
-    npt.assert_equal(text_block_0.size, (180,18))
+    npt.assert_equal(text_block_0.size, (180, 18))
 
     text_block_0.font_size = 50
     npt.assert_equal(text_block_0.size, (500, 50))
@@ -437,6 +437,20 @@ def test_text_block_2d_size():
 
     text_block_3.message = "Hey Trying\nBig Text"
     npt.assert_equal(text_block_3.size, (500, 200))
+    text_block_3.dynamic_bbox = True
+    npt.assert_equal(text_block_3.size, text_block_3.cal_size_from_message())
+    text_block_3.message = "Hello\nLine 1\nLine 2\nLine 3\nLine 4"
+    npt.assert_equal(text_block_3.size, text_block_3.cal_size_from_message())
+
+    bb_size = text_block_3.size
+    text_block_3.dynamic_bbox = False
+    text_block_3.message = "Hey Trying\nBig Text"
+    npt.assert_equal(text_block_3.size, bb_size)
+
+    text_block_3.auto_font_scale = True
+    npt.assert_equal(text_block_3.actor.GetTextScaleMode(), 1)
+    npt.assert_equal(text_block_3.justification, "left")
+    npt.assert_equal(text_block_3.size, bb_size)
 
 
 # test_ui_button_panel(recording=True)

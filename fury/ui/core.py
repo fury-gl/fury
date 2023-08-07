@@ -685,6 +685,10 @@ class TextBlock2D(UI):
         Adds text shadow.
     size : (int, int)
         Size (width, height) in pixels of the text bounding box.
+    auto_font_scale : bool
+        Automatically scale font according to the text bounding box.
+    dynamic_bbox : bool
+        Automatically resize the bounding box according to the content.
     """
 
     def __init__(
@@ -749,10 +753,8 @@ class TextBlock2D(UI):
         self.italic = italic
         self.shadow = shadow
         self._vertical_justification = vertical_justification
+        self._dynamic_bbox = dynamic_bbox
         self.auto_font_scale = auto_font_scale
-        if self.auto_font_scale:
-            self.actor.SetTextScaleModeToProp()
-        self.dynamic_bbox = dynamic_bbox
         self.message = text
         self.font_size = font_size
         if size is not None:
@@ -1046,6 +1048,58 @@ class TextBlock2D(UI):
             self.have_bg = True
             self.background.set_visibility(True)
             self.background.color = color
+
+    @property
+    def auto_font_scale(self):
+        """Return whether text font is automatically scaled.
+
+        Returns
+        -------
+        bool
+            Text is auto_font_scaled if True.
+        """
+        return self._auto_font_scale
+
+    @auto_font_scale.setter
+    def auto_font_scale(self, flag):
+        """Add/remove text auto_font_scale.
+
+        Parameters
+        ----------
+        flag : bool
+            Automatically scales the text font if True.
+        """
+        self._auto_font_scale = flag
+        if flag:
+            self.actor.SetTextScaleModeToProp()
+            self._justification = "left"
+            self.update_bounding_box(self.size)
+        else:
+            self.actor.SetTextScaleModeToNone()
+
+    @property
+    def dynamic_bbox(self):
+        """Automatically resize the bounding box according to the content.
+
+        Returns
+        -------
+        bool
+            Bounding box is dynamic if True.
+        """
+        return self._dynamic_bbox
+
+    @dynamic_bbox.setter
+    def dynamic_bbox(self, flag):
+        """Add/remove dynamic_bbox.
+
+        Parameters
+        ----------
+        flag : bool
+            The text bounding box is dynamic if True.
+        """
+        self._dynamic_bbox = flag
+        if flag:
+            self.update_bounding_box()
 
     def update_alignment(self):
         """Update Text Alignment.
