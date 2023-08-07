@@ -51,7 +51,7 @@ scene.set_camera(position=(-24, 20, -40),
                  focal_point=(0.0,
                               0.0,
                               0.0),
-                 view_up=(0.0, 0.0, 0.0))
+                 view_up=(0.0, 0.0, 1.0))
 
 manager = ShowManager(
     scene,
