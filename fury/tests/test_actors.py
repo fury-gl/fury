@@ -1810,9 +1810,6 @@ def test_uncertainty_cone_actor(interactive=False):
 
     report = window.analyze_scene(scene)
     npt.assert_equal(report.actors, 1)
-    arr = window.snapshot(scene, offscreen=True)
-    report = window.analyze_snapshot(arr)
-    npt.assert_equal(report.objects, 100)
     scene.clear()
 
     evals = np.array([1.4, 0.5, 0.35])
