@@ -4378,7 +4378,7 @@ class SpinBox(UI):
 
     def __init__(self, position=(350, 400), size=(300, 100), padding=10,
                  panel_color=(1, 1, 1), min_val=0, max_val=100,
-                 initial_val=50, step=1, textbox_width=10, textbox_height=2):
+                 initial_val=50, step=1, text_width=10, text_height=2):
         """Init this UI element.
 
         Parameters
@@ -4389,7 +4389,7 @@ class SpinBox(UI):
         size : (int, int), optional
             Width and height in pixels of this UI component.
         padding : int, optional
-            Distance between  and background.
+            Distance between TextBox and Buttons.
         panel_color : (float, float, float), optional
             Panel color of SpinBoxUI.
         min_val: int, optional
@@ -4400,9 +4400,9 @@ class SpinBox(UI):
             Initial value of SpinBoxUI.
         step: int, optional
             Step value of SpinBoxUI.
-        textbox_width: int, optional
+        text_width: int, optional
             Width of Textbox.
-        textbox_height: int, optional
+        text_height: int, optional
             Height of Textbox.
         """
         self.panel_size = size
@@ -4412,8 +4412,8 @@ class SpinBox(UI):
         self.max_val = max_val
         self.value = initial_val
         self.step = step
-        self.textbox_width = textbox_width
-        self.textbox_height = textbox_height
+        self.text_width = text_width
+        self.text_height = text_height
 
         super(SpinBox, self).__init__(position)
 
@@ -4429,8 +4429,8 @@ class SpinBox(UI):
         """
         self.panel = Panel2D(size=self.panel_size, color=self.panel_color)
 
-        self.textbox = TextBox2D(width=self.textbox_width,
-                                 height=self.textbox_height)
+        self.textbox = TextBox2D(width=self.text_width,
+                                 height=self.text_height)
         self.textbox.text.dynamic_bbox = False
         self.textbox.text.auto_font_scale = True
         self.textbox.set_message(str(self.value))
@@ -4549,7 +4549,7 @@ class SpinBox(UI):
         self.on_change(self)
 
     def textbox_update_value(self, textbox):
-        self.value = int(textbox.text.message.replace('\n', ''))
+        self.value = int(textbox.text.message)
 
         self.textbox.set_message(str(self.value))
         self.on_change(self)
