@@ -1,7 +1,7 @@
 """
 This spript includes the basic implementation of Spherical Harmonics
 """
-'''
+
 import numpy as np
 import os
 
@@ -317,40 +317,3 @@ if __name__ == '__main__':
     show_manager.scene.add(slider_l)
 
     show_manager.start()
-'''
-
-import numpy as np
-from dipy.io.image import load_nifti, save_nifti
-from dipy.io.gradients import read_bvals_bvecs
-from dipy.core.gradients import gradient_table
-
-import dipy.reconst.dti as dti
-
-from dipy.data import get_fnames
-
-hardi_fname, hardi_bval_fname, hardi_bvec_fname = get_fnames('stanford_hardi')
-
-data, affine = load_nifti(hardi_fname)
-
-bvals, bvecs = read_bvals_bvecs(hardi_bval_fname, hardi_bvec_fname)
-gtab = gradient_table(bvals, bvecs)
-
-tenmodel = dti.TensorModel(gtab)
-
-from dipy.data import get_sphere
-sphere = get_sphere('repulsion724')
-
-interactive = True
-from fury import actor, window
-scene = window.Scene()
-
-tensor_odfs = tenmodel.fit(data[45:50, 73:78, 38:39]).odf(sphere)
-print(tensor_odfs)
-print(tensor_odfs.shape)
-
-odf_actor = actor.odf_slicer(tensor_odfs, sphere=sphere, scale=0.5,
-                             colormap=None)
-scene.add(odf_actor)
-
-if interactive:
-    window.show(scene)
