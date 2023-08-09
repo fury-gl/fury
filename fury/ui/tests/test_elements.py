@@ -1387,6 +1387,24 @@ def test_ui_spinbox(interactive=False):
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     spinbox = ui.SpinBox(size=(300, 200), min_val=-20, max_val=10, step=2)
+    npt.assert_equal(spinbox.value, 10)
+
+    spinbox.value = 5
+    npt.assert_equal(spinbox.value, 5)
+    spinbox.value = 50
+    npt.assert_equal(spinbox.value, 10)
+    spinbox.value = -50
+    npt.assert_equal(spinbox.value, -20)
+
+    spinbox.min_val = -100
+    spinbox.max_val = 100
+
+    spinbox.value = 5
+    npt.assert_equal(spinbox.value, 5)
+    spinbox.value = 50
+    npt.assert_equal(spinbox.value, 50)
+    spinbox.value = -50
+    npt.assert_equal(spinbox.value, -50)
 
     # Assign the counter callback to every possible event.
     event_counter = EventCounter()
