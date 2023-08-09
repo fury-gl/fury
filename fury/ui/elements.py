@@ -4410,13 +4410,12 @@ class SpinBox(UI):
         self.panel_color = panel_color
         self.min_val = min_val
         self.max_val = max_val
-        self.value = initial_val
         self.step = step
         self.max_column = max_column
         self.max_line = max_line
 
         super(SpinBox, self).__init__(position)
-
+        self.value = initial_val
         self.resize(size)
 
         self.on_change = lambda ui: None
@@ -4433,7 +4432,6 @@ class SpinBox(UI):
                                  height=self.max_line)
         self.textbox.text.dynamic_bbox = False
         self.textbox.text.auto_font_scale = True
-        self.textbox.set_message(str(self.value))
         self.increment_button = Button2D(
             icon_fnames=[("up", read_viz_icons(fname="circle-up.png"))])
         self.decrement_button = Button2D(
@@ -4521,35 +4519,45 @@ class SpinBox(UI):
 
     @value.setter
     def value(self, value):
-        if value > self.max_val:
+        if value >= self.max_val:
             self._value = self.max_val
-        elif value < self.min_val:
+        elif value <= self.min_val:
             self._value = self.min_val
         else:
             self._value = value
 
+        self.textbox.set_message(str(self._value))
+
+    def validate_value(self, value):
+        """Validate and convert the given value into integer.
+
+        Parameters
+        ----------
+        value : str
+            Input value recived from the textbox.
+
+        Returns
+        -------
+        int
+            If valid return converted integer else the previous value.
+        """
+        if value.isnumeric():
+            return int(value)
+
+        return self.value
+
     def increment(self):
         """Increment the current value by the step."""
-        current_val = int(self.textbox.message)
-        if current_val == self.max_val:
-            return
+        current_val = self.validate_value(self.textbox.message)
         self.value = current_val + self.step
-
-        self.textbox.set_message(str(self.value))
         self.on_change(self)
 
     def decrement(self):
         """Decrement the current value by the step."""
-        current_val = int(self.textbox.message)
-        if current_val == self.min_val:
-            return
+        current_val = self.validate_value(self.textbox.message)
         self.value = current_val - self.step
-
-        self.textbox.set_message(str(self.value))
         self.on_change(self)
 
     def textbox_update_value(self, textbox):
-        self.value = int(textbox.text.message)
-
-        self.textbox.set_message(str(self.value))
+        self.value = self.validate_value(textbox.message)
         self.on_change(self)
