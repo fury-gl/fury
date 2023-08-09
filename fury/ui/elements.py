@@ -4378,7 +4378,7 @@ class SpinBox(UI):
 
     def __init__(self, position=(350, 400), size=(300, 100), padding=10,
                  panel_color=(1, 1, 1), min_val=0, max_val=100,
-                 initial_val=50, step=1, text_width=10, text_height=2):
+                 initial_val=50, step=1, max_column=10, max_line=2):
         """Init this UI element.
 
         Parameters
@@ -4400,10 +4400,10 @@ class SpinBox(UI):
             Initial value of SpinBoxUI.
         step: int, optional
             Step value of SpinBoxUI.
-        text_width: int, optional
-            Width of Textbox.
-        text_height: int, optional
-            Height of Textbox.
+        max_column: int, optional
+            Max number of characters in a line.
+        max_line: int, optional
+            Max number of lines in the textbox.
         """
         self.panel_size = size
         self.padding = padding
@@ -4412,8 +4412,8 @@ class SpinBox(UI):
         self.max_val = max_val
         self.value = initial_val
         self.step = step
-        self.text_width = text_width
-        self.text_height = text_height
+        self.max_column = max_column
+        self.max_line = max_line
 
         super(SpinBox, self).__init__(position)
 
@@ -4429,8 +4429,8 @@ class SpinBox(UI):
         """
         self.panel = Panel2D(size=self.panel_size, color=self.panel_color)
 
-        self.textbox = TextBox2D(width=self.text_width,
-                                 height=self.text_height)
+        self.textbox = TextBox2D(width=self.max_column,
+                                 height=self.max_line)
         self.textbox.text.dynamic_bbox = False
         self.textbox.text.auto_font_scale = True
         self.textbox.set_message(str(self.value))
