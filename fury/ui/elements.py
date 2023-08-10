@@ -4534,7 +4534,7 @@ class SpinBox(UI):
         Parameters
         ----------
         value : str
-            Input value recived from the textbox.
+            Input value received from the textbox.
 
         Returns
         -------
