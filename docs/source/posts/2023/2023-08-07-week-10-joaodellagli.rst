@@ -1,7 +1,7 @@
 Week 10: Ready for Review!
-====================================
+==========================
 
-.. post:: July 24, 2023
+.. post:: August 07, 2023
    :author: João Victor Dell Agli Floriano
    :tags: google
    :category: gsoc
