@@ -248,20 +248,6 @@ class EffectManager():
         if np.min(sigmas) <= 0:
             raise ValueError("sigmas can't have zero or negative values.")
 
-        varying_dec = """
-        varying float out_sigma;
-        varying float out_scale;
-        """
-
-        kde_dec = import_fury_shader(
-            os.path.join("utils", f"{kernel.lower()}_distribution.glsl"))
-
-        kde_impl = """
-        float current_kde = kde(normalizedVertexMCVSOutput*out_scale, out_sigma);
-        color = vec3(current_kde);
-        fragOutput0 = vec4(color, 1.0);
-        """
-
         kde_vs_dec = """
         in float in_sigma;
         varying float out_sigma;
@@ -275,23 +261,23 @@ class EffectManager():
         out_scale = in_scale;
         """
 
-        tex_dec = import_fury_shader(os.path.join("effects", "color_mapping.glsl"))
 
-        tex_impl = """
-        // Turning screen coordinates to texture coordinates
-        vec2 res_factor = vec2(res.y/res.x, 1.0);
-        vec2 renorm_tex = res_factor*normalizedVertexMCVSOutput.xy*0.5 + 0.5;
-        float intensity = texture(screenTexture, renorm_tex).r;
-
-        if(intensity<=0.0){
-            discard;
-        }else{
-            vec4 final_color = color_mapping(intensity, colormapTexture);
-            fragOutput0 = vec4(final_color.rgb, u_opacity*final_color.a);
-        }
+        varying_fs_dec = """
+        varying float out_sigma;
+        varying float out_scale;
         """
 
-        fs_dec = compose_shader([varying_dec, kde_dec])
+        kde_fs_dec = import_fury_shader(
+            os.path.join("utils", f"{kernel.lower()}_distribution.glsl"))
+
+        kde_fs_impl = """
+        float current_kde = kde(normalizedVertexMCVSOutput*out_scale, out_sigma);
+        color = vec3(current_kde);
+        fragOutput0 = vec4(color, 1.0);
+        """
+
+
+        fs_dec = compose_shader([varying_fs_dec, kde_fs_dec])
 
         """Scales parameter will be defined by the empirical rule:
         1*sima radius = 68.27% of data inside the curve
@@ -307,7 +293,7 @@ class EffectManager():
              1.0),
             scales=scales,
             fs_dec=fs_dec,
-            fs_impl=kde_impl,
+            fs_impl=kde_fs_impl,
             vs_dec=kde_vs_dec,
             vs_impl=kde_vs_impl)
 
@@ -338,6 +324,21 @@ class EffectManager():
         res = self.off_manager.size
 
         # Render to second billboard for color map post-processing.
+        tex_dec = import_fury_shader(os.path.join("effects", "color_mapping.glsl"))
+
+        tex_impl = """
+        // Turning screen coordinates to texture coordinates
+        vec2 res_factor = vec2(res.y/res.x, 1.0);
+        vec2 renorm_tex = res_factor*normalizedVertexMCVSOutput.xy*0.5 + 0.5;
+        float intensity = texture(screenTexture, renorm_tex).r;
+
+        if(intensity<=0.0){
+            discard;
+        }else{
+            vec4 final_color = color_mapping(intensity, colormapTexture);
+            fragOutput0 = vec4(final_color.rgb, u_opacity*final_color.a);
+        }
+        """
         textured_billboard = billboard(
             np.array([center_of_mass]),
             scales=scale,

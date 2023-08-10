@@ -1821,7 +1821,7 @@ def test_actors_primitives_count():
         act = act_func(**args)
         npt.assert_equal(primitives_count_from_actor(act), primitives_count)
 
-def test_kde_actor(interactive = True):
+def test_kde_actor(interactive = False):
     width, height = (400, 400)
     scene = window.Scene()
     scene.set_camera(position=(-24, 20, -40),
