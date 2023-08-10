@@ -1,4 +1,4 @@
-Week 10: 
+Week 10: Ready for Review!
 ====================================
 
 .. post:: July 24, 2023
@@ -19,8 +19,8 @@ I had a little problem I will talk about below.
 
 So how did it go?
 -----------------
-Fortunately, for the cleaning part, I didn't have any trouble. The most complicated part was to write the tests, as this is something that
-requires attention to understand what I needs to be testes, exactly. As for the UI part, I managed to have a slider working for the 
+Fortunately, for the cleaning part, I didn't have any trouble, and my PR is finally ready for review! The most complicated part was to write the tests, as this is something that
+requires attention to understand what needs to be tested, exactly. As for the UI part, I managed to have a slider working for the 
 intensity, however, it was crashing the whole program for a reason, so I decided to leave this idea behind for now. 
 Below, an example of how this should work:
 
