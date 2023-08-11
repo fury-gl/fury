@@ -742,6 +742,7 @@ class TextBlock2D(UI):
             Automatically resize the bounding box according to the content.
         """
         self.boundingbox = [0, 0, 0, 0]
+        self.text_offset = 0
         super(TextBlock2D, self).__init__(position=position)
         self.scene = None
         self.have_bg = bool(bg_color)
@@ -1073,6 +1074,7 @@ class TextBlock2D(UI):
         if flag:
             self.actor.SetTextScaleModeToProp()
             self._justification = "left"
+            self.update_alignment()
             self.update_bounding_box(self.size)
         else:
             self.actor.SetTextScaleModeToNone()
@@ -1135,7 +1137,8 @@ class TextBlock2D(UI):
             msg = 'Vertical justification must be: bottom, middle or top.'
             raise ValueError(msg)
 
-        self.actor.SetPosition(updated_text_position)
+        self.actor.SetPosition(
+            updated_text_position[0], updated_text_position[1] - self.text_offset)
 
     def cal_size_from_message(self):
         "Calculate size of background according to the message it contains."
@@ -1160,9 +1163,11 @@ class TextBlock2D(UI):
                             self.position[0]+size[0], self.position[1]+size[1]]
         self.background.resize(size)
 
+        self.text_offset = size[1] * 0.005
+
         if self.auto_font_scale:
             self.actor.SetPosition2(
-                self.boundingbox[2]-self.boundingbox[0], self.boundingbox[3]-self.boundingbox[1])
+                self.boundingbox[2]-self.boundingbox[0], self.boundingbox[3]-self.boundingbox[1] - self.text_offset)
         else:
             self.update_alignment()
 
@@ -1175,7 +1180,7 @@ class TextBlock2D(UI):
             The new position. (x, y) in pixels.
 
         """
-        self.actor.SetPosition(*position)
+        self.actor.SetPosition(position[0], position[1] - self.text_offset)
         self.background.position = position
 
     def _get_size(self):
