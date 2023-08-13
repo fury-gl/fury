@@ -157,31 +157,26 @@ def tensor_ellipsoid(centers, axes, lengths, colors, scales, opacity):
     cast_ray = import_fury_shader(os.path.join(
         'ray_marching', 'cast_ray.frag'))
 
+    # Importing the function that generates the ray components
+    ray_generation = import_fury_shader(os.path.join(
+        'ray_marching', 'gen_ray.frag'))
+
     # Importing Blinn-Phong model for lighting
     blinn_phong_model = import_fury_shader(os.path.join(
         'lighting', 'blinn_phong_model.frag'))
 
     # Full fragment shader declaration
     fs_dec = compose_shader([fs_vars_dec, sd_sphere, sdf_map,
-                             central_diffs_normal, cast_ray,
+                             central_diffs_normal, cast_ray, ray_generation,
                              blinn_phong_model])
 
     shader_to_actor(box_actor, 'fragment', decl_code=fs_dec)
 
-    # Vertex in Model Coordinates.
-    point = "vec3 point = vertexMCVSOutput.xyz;"
-
-    # Camera position in world space
-    ray_origin = "vec3 ro = (-MCVCMatrix[3] * MCVCMatrix).xyz;"
-
-    ray_direction = "vec3 rd = normalize(point - ro);"
-
-    light_direction = "vec3 ld = normalize(ro - point);"
-
-    ray_origin_update = "ro += point - ro;"
-
-    # Total distance traversed along the ray
-    distance = "float t = castRay(ro, rd);"
+    ray_components = \
+        """
+        vec3 ro; vec3 rd; float t;
+        gen_ray(ro, rd, t);
+        """
 
     # Fragment shader output definition
     # If surface is detected, color is assigned, otherwise, nothing is painted
@@ -191,6 +186,8 @@ def tensor_ellipsoid(centers, axes, lengths, colors, scales, opacity):
         {
             vec3 pos = ro + t * rd;
             vec3 normal = centralDiffsNormals(pos, .0001);
+            // Light Direction
+            vec3 ld = normalize(ro - pos);
             // Light Attenuation
             float la = dot(ld, normal);
             vec3 color = blinnPhongIllumModel(la, lightColor0,
@@ -204,9 +201,7 @@ def tensor_ellipsoid(centers, axes, lengths, colors, scales, opacity):
         """
 
     # Full fragment shader implementation
-    sdf_frag_impl = compose_shader([point, ray_origin, ray_direction,
-                                    light_direction, ray_origin_update,
-                                    distance, frag_output_def])
+    sdf_frag_impl = compose_shader([ray_components, frag_output_def])
 
     shader_to_actor(box_actor, 'fragment', impl_code=sdf_frag_impl,
                     block='light')
@@ -348,31 +343,26 @@ def double_cone(centers, axes, angles, colors, scales, opacity):
     cast_ray = import_fury_shader(os.path.join(
         'ray_marching', 'cast_ray.frag'))
 
+    # Importing the function that generates the ray components
+    ray_generation = import_fury_shader(os.path.join(
+        'ray_marching', 'gen_ray.frag'))
+
     # Importing Blinn-Phong model for lighting
     blinn_phong_model = import_fury_shader(os.path.join(
         'lighting', 'blinn_phong_model.frag'))
 
     # Full fragment shader declaration
     fs_dec = compose_shader([fs_vars_dec, sd_cone, sd_union, sdf_map,
-                             central_diffs_normal, cast_ray,
+                             central_diffs_normal, cast_ray, ray_generation,
                              blinn_phong_model])
 
     shader_to_actor(box_actor, 'fragment', decl_code=fs_dec)
 
-    # Vertex in Model Coordinates.
-    point = "vec3 point = vertexMCVSOutput.xyz;"
-
-    # Camera position in world space
-    ray_origin = "vec3 ro = (-MCVCMatrix[3] * MCVCMatrix).xyz;"
-
-    ray_direction = "vec3 rd = normalize(point - ro);"
-
-    light_direction = "vec3 ld = normalize(ro - point);"
-
-    ray_origin_update = "ro += point - ro;"
-
-    # Total distance traversed along the ray
-    distance = "float t = castRay(ro, rd);"
+    ray_components = \
+        """
+        vec3 ro; vec3 rd; float t;
+        gen_ray(ro, rd, t);
+        """
 
     # Fragment shader output definition
     # If surface is detected, color is assigned, otherwise, nothing is painted
@@ -382,6 +372,8 @@ def double_cone(centers, axes, angles, colors, scales, opacity):
         {
             vec3 pos = ro + t * rd;
             vec3 normal = centralDiffsNormals(pos, .0001);
+            // Light Direction
+            vec3 ld = normalize(ro - pos);
             // Light Attenuation
             float la = dot(ld, normal);
             vec3 color = blinnPhongIllumModel(la, lightColor0,
@@ -395,9 +387,7 @@ def double_cone(centers, axes, angles, colors, scales, opacity):
         """
 
     # Full fragment shader implementation
-    sdf_frag_impl = compose_shader([point, ray_origin, ray_direction,
-                                    light_direction, ray_origin_update,
-                                    distance, frag_output_def])
+    sdf_frag_impl = compose_shader([ray_components, frag_output_def])
 
     shader_to_actor(box_actor, 'fragment', impl_code=sdf_frag_impl,
                     block='light')
@@ -407,7 +397,7 @@ def double_cone(centers, axes, angles, colors, scales, opacity):
 
 def main_dir_uncertainty(evals, evecs, signal, sigma, b_matrix):
     """
-    Calculates the angle of the cone of uncertainty that represents the
+    Calculate the angle of the cone of uncertainty that represents the
     perturbation of the main eigenvector of the diffusion tensor matrix.
 
     Parameters
