@@ -76,7 +76,8 @@ def window_to_texture(
 
     windowToImageFilter = WindowToImageFilter()
     windowToImageFilter.SetInput(window)
-    type_dic = {"rgb" : windowToImageFilter.SetInputBufferTypeToRGB, "rgba" : windowToImageFilter.SetInputBufferTypeToRGBA}
+    type_dic = {"rgb" : windowToImageFilter.SetInputBufferTypeToRGB, "rgba" : windowToImageFilter.SetInputBufferTypeToRGBA,
+                "zbuffer" : windowToImageFilter.SetInputBufferTypeToZBuffer}
     type_dic[d_type.lower()]()
     windowToImageFilter.Update()
 
