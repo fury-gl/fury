@@ -44,7 +44,7 @@ def normalize(array : np.array, min : float = 0.0, max : float = 1.0, axis : int
 ##################################################################
 # First, we need to setup the screen we will render the points to.
 
-width, height = (1200, 1000)
+size = (1200, 1000)
 
 scene = Scene()
 scene.set_camera(position=(-24, 20, -40),
@@ -55,9 +55,9 @@ scene.set_camera(position=(-24, 20, -40),
 
 manager = ShowManager(
     scene,
-    "demo",
-    (width,
-     height))
+    "KDE Render",
+    (size[0],
+     size[1]))
 
 manager.initialize()
 
@@ -74,11 +74,11 @@ offset = np.array([0.0, 0.0, 0.0])
 points = points + np.tile(offset, points.shape[0]).reshape(points.shape)
 
 ###################################################################
-# For this KDE render, we will use a set of random sigmas as well, 
+# For this KDE render, we will use a set of random bandwidths, 
 # generated with ``numpy.random.rand`` as well, which are also 
 # remapped to the range of ``[0.05, 0.2]``.
 
-sigmas = normalize(np.random.rand(n_points, 1), 0.05, 0.2)
+bandwidths = normalize(np.random.rand(n_points, 1), 0.05, 0.2)
 
 
 ###################################################################
@@ -94,17 +94,17 @@ effects = EffectManager(manager)
 
 ###################################################################
 # After having the ``effects`` setup, just call the kde actor method 
-# from it, passing the points, sigma, and other optional options
+# from it, passing the points, bandwidth, and other optional options
 # if wished, like the kernel to be used or the colormap desired.
 # The colormaps are by default taken from *matplotlib*, but a
 # custom one can be passed. After calling it, just pass the actor
 # to the scene, and start it as usual.
 
-kde_actor = effects.kde(points, sigmas, kernel="gaussian", colormap="inferno")
+kde_actor = effects.kde(points, bandwidths, kernel="gaussian", colormap="inferno")
 
 manager.scene.add(kde_actor)
 
-interactive = True
+interactive = False
 
 if interactive:
     manager.start()

@@ -414,7 +414,7 @@ def attribute_to_actor(actor, arr, attr_name, deep=True):
     )
 
 def shader_custom_uniforms(actor, shader_type):
-    """Eases the passing of uniform values to the shaders by returning ``actor.GetShaderProperty().GetVertexCustomUniforms()``,
+    """Ease the passing of uniform values to the shaders by returning ``actor.GetShaderProperty().GetVertexCustomUniforms()``,
     that give access to the ``SetUniform`` methods.
     Parameters
     ----------
@@ -429,7 +429,7 @@ def shader_custom_uniforms(actor, shader_type):
     SHADER_FUNCTIONS = {"vertex" : actor.GetShaderProperty().GetVertexCustomUniforms(), 
                         "fragment" : actor.GetShaderProperty().GetFragmentCustomUniforms(),
                         "geometry" : actor.GetShaderProperty().GetGeometryCustomUniforms()}
-    if shader_type not in SHADER_FUNCTIONS:
+    if shader_type.lower() not in SHADER_FUNCTIONS:
         raise ValueError("Shader type should be of type 'vertex', 'fragment' or 'geometry'.")
     
     return SHADER_FUNCTIONS[shader_type.lower()]

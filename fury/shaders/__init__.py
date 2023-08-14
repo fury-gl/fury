@@ -21,4 +21,5 @@ __all__ = [
     'replace_shader_in_actor',
     'shader_apply_effects',
     'shader_to_actor',
+    'shader_custom_uniforms'
 ]

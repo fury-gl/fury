@@ -60,7 +60,7 @@ points = np.array([[0.36600749, 0.65827962, 0.53083986],
                    [0.01784785, 0.24857252, 0.89913317],
                    [0.8458996,  0.51551657, 0.69597985]])
 
-sigmas = np.array([[0.56193862], [0.1275334], [0.91069059],
+bandwidths = np.array([[0.56193862], [0.1275334], [0.91069059],
                    [0.01177131], [0.67799239], [0.95772282],
                    [0.55834784], [0.60151661], [0.25946789],
                    [0.88343075], [0.24011991], [0.05879632],
@@ -148,7 +148,6 @@ def test_window_to_texture(interactive=False):
     npt.assert_equal(interpolate, texture.GetInterpolate())
     npt.assert_equal(True, texture.GetMipmap())
 
-    record(on_manager.scene, out_path="test_window.png", size=(width, height))
 
 
 def test_texture_to_actor(interactive=False):
@@ -272,7 +271,7 @@ def test_effect_manager_setup(interactive=False):
 
     manager = ShowManager(
         scene,
-        "demo",
+        "Test EffectManager",
         (width,
          height))
 
@@ -299,7 +298,7 @@ def test_remove_effect(interactive=False):
 
     manager = window.ShowManager(
         scene,
-        "demo",
+        "Test remove_effect",
         (width,
          height))
 
@@ -307,7 +306,7 @@ def test_remove_effect(interactive=False):
 
     em = EffectManager(manager)
 
-    kde_actor = em.kde(points, sigmas, colormap="inferno")
+    kde_actor = em.kde(points, bandwidths, colormap="inferno")
 
     manager.scene.add(kde_actor)
     em.remove_effect(kde_actor)

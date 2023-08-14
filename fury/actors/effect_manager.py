@@ -80,7 +80,6 @@ def window_to_texture(
                 "rgba" : windowToImageFilter.SetInputBufferTypeToRGBA,
                 "zbuffer" : windowToImageFilter.SetInputBufferTypeToZBuffer}
     type_dic[d_type.lower()]()
-    windowToImageFilter.Update()
 
     texture = Texture()
     texture.SetMipmap(True)
@@ -115,7 +114,7 @@ def texture_to_actor(
         Name of the texture to be passed to the actor.
     target_actor : Actor
         Target actor to receive the texture.
-    blending_mode : str
+    blending_mode : str, optional
         Texture blending mode. The options are:
         1. None
         2. Replace
@@ -124,15 +123,15 @@ def texture_to_actor(
         5. AddSigned
         6. Interpolate
         7. Subtract
-    wrap_mode : str
+    wrap_mode : str, optional
         Texture wrapping mode. The options are:
         1. ClampToEdge
         2. Repeat
         3. MirroredRepeat
         4. ClampToBorder
-    border_color : tuple (4, )
+    border_color : tuple (4, ), optional
         Texture RGBA border color.
-    interpolate : bool
+    interpolate : bool, optional
         Texture interpolation."""
 
     texture = Texture()
@@ -164,7 +163,7 @@ def colormap_to_texture(
         Name of the color map texture to be passed to the actor.
     target_actor : Actor
         Target actor to receive the color map texture.
-    interpolate : bool
+    interpolate : bool, optional
         Color map texture interpolation."""
 
     if len(colormap.shape) == 2:
@@ -206,7 +205,7 @@ class EffectManager():
 
     def kde(self,
             points : np.ndarray,
-            sigmas,
+            bandwidths,
             kernel : str = "gaussian",
             opacity : float = 1.0,
             colormap : str = "viridis",
@@ -217,8 +216,8 @@ class EffectManager():
         ----------
         points : np.ndarray (N, 3)
             Array of points to be displayed.
-        sigmas : np.ndarray (1, ) or (N, 1)
-            Array of sigmas to be used in the KDE calculations. Must be one or one for each point.
+        bandwidths : np.ndarray (1, ) or (N, 1)
+            Array of bandwidths to be used in the KDE calculations. Must be one or one for each point.
         kernel : str, optional
             Kernel to be used for the distribution calculation. The available options are:
             * "cosine"
@@ -241,29 +240,31 @@ class EffectManager():
         -------
         textured_billboard : actor.Actor
             KDE rendering actor."""
-        if not isinstance(sigmas, np.ndarray):
-            sigmas = np.array(sigmas)
-        if sigmas.shape[0] != 1 and sigmas.shape[0] != points.shape[0]:
-            raise IndexError("sigmas size must be one or points size.")
-        if np.min(sigmas) <= 0:
-            raise ValueError("sigmas can't have zero or negative values.")
+        if not isinstance(bandwidths, np.ndarray):
+            bandwidths = np.array([bandwidths])
+        if bandwidths.shape[0] != 1 and bandwidths.shape[0] != points.shape[0]:
+            raise IndexError("bandwidths size must be one or points size.")
+        elif bandwidths.shape[0] == 1:
+            bandwidths = np.repeat(bandwidths[0], points.shape[0])
+        if np.min(bandwidths) <= 0:
+            raise ValueError("bandwidths can't have zero or negative values.")
 
         kde_vs_dec = """
-        in float in_sigma;
-        varying float out_sigma;
+        in float in_bandwidth;
+        varying float out_bandwidth;
 
         in float in_scale;
         varying float out_scale;
         """
 
         kde_vs_impl = """
-        out_sigma = in_sigma;
+        out_bandwidth = in_bandwidth;
         out_scale = in_scale;
         """
 
 
         varying_fs_dec = """
-        varying float out_sigma;
+        varying float out_bandwidth;
         varying float out_scale;
         """
 
@@ -271,7 +272,7 @@ class EffectManager():
             os.path.join("utils", f"{kernel.lower()}_distribution.glsl"))
 
         kde_fs_impl = """
-        float current_kde = kde(normalizedVertexMCVSOutput*out_scale, out_sigma);
+        float current_kde = kde(normalizedVertexMCVSOutput*out_scale, out_bandwidth);
         color = vec3(current_kde);
         fragOutput0 = vec4(color, 1.0);
         """
@@ -281,9 +282,9 @@ class EffectManager():
 
         """Scales parameter will be defined by the empirical rule:
         1*sima radius = 68.27% of data inside the curve
-        2*sigma radius = 95.45% of data inside the curve
-        3*sigma radius = 99.73% of data inside the curve"""
-        scales = 2*3.0*np.copy(sigmas)
+        2*bandwidth radius = 95.45% of data inside the curve
+        3*bandwidth radius = 99.73% of data inside the curve"""
+        scales = 2*3.0*np.copy(bandwidths)
 
         center_of_mass = np.average(points, axis=0)
         bill = billboard(
@@ -302,7 +303,7 @@ class EffectManager():
 
         shader_apply_effects(window, bill, gl_disable_depth)
         shader_apply_effects(window, bill, gl_set_additive_blending)
-        attribute_to_actor(bill, np.repeat(sigmas, 4), "in_sigma")
+        attribute_to_actor(bill, np.repeat(bandwidths, 4), "in_bandwidth")
         attribute_to_actor(bill, np.repeat(scales, 4), "in_scale")
 
         if self._n_active_effects > 0:
@@ -310,27 +311,26 @@ class EffectManager():
         self.off_manager.scene.add(bill)
 
         bill_bounds = bill.GetBounds()
-        max_sigma = 2*4.0*np.max(sigmas)
+        max_bandwidth = 2*4.0*np.max(bandwidths)
 
         actor_scales = np.array([[bill_bounds[1] - bill_bounds[0] +
-                                  center_of_mass[0] + max_sigma, 
+                                  center_of_mass[0] + max_bandwidth, 
                                   bill_bounds[3] - bill_bounds[2] +
-                                  center_of_mass[1] + max_sigma, 0.0]])
+                                  center_of_mass[1] + max_bandwidth, 0.0]])
 
         scale = np.array([[actor_scales.max(),
                            actor_scales.max(),
                            0.0]])
 
-        res = self.off_manager.size
+        res = np.array(self.off_manager.size)
 
         # Render to second billboard for color map post-processing.
         tex_dec = import_fury_shader(os.path.join("effects", "color_mapping.glsl"))
 
         tex_impl = """
         // Turning screen coordinates to texture coordinates
-        vec2 res_factor = vec2(res.y/res.x, 1.0);
-        vec2 renorm_tex = res_factor*normalizedVertexMCVSOutput.xy*0.5 + 0.5;
-        float intensity = texture(screenTexture, renorm_tex).r;
+        vec2 tex_coords = gl_FragCoord.xy/res;
+        float intensity = texture(screenTexture, tex_coords).r;
 
         if(intensity<=0.0){
             discard;
@@ -360,6 +360,9 @@ class EffectManager():
         def kde_callback(obj=None, event=None):
             cam_params = self.on_manager.scene.get_camera()
             self.off_manager.scene.set_camera(*cam_params)
+            res[0], res[1]= self.on_manager.window.GetSize()
+            self.off_manager.window.SetSize(res[0], res[1])
+            shader_custom_uniforms(textured_billboard, "fragment").SetUniform2f("res", res)
             self.off_manager.scene.Modified()
             shader_apply_effects(window, bill, gl_disable_depth)
             shader_apply_effects(window, bill, gl_set_additive_blending)

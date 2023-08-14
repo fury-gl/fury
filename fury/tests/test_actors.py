@@ -11,9 +11,9 @@ from fury import actor
 from fury import primitive as fp
 from fury import shaders, window
 from fury.actor import grid
+from fury.actors.effect_manager import EffectManager
 from fury.decorators import skip_linux, skip_osx, skip_win
 from fury.deprecator import ExpiredDeprecationError
-from fury.actors.effect_manager import EffectManager
 
 # Allow import, but disable doctests if we don't have dipy
 from fury.optpkg import optional_package
@@ -1822,7 +1822,7 @@ def test_actors_primitives_count():
         npt.assert_equal(primitives_count_from_actor(act), primitives_count)
 
 def test_kde_actor(interactive = False):
-    width, height = (400, 400)
+    size = (400, 400)
     scene = window.Scene()
     scene.set_camera(position=(-24, 20, -40),
                     focal_point=(0.0,
@@ -1832,9 +1832,8 @@ def test_kde_actor(interactive = False):
 
     manager = window.ShowManager(
         scene,
-        "demo",
-        (width,
-        height))
+        "Test KDE",
+        size)
 
     manager.initialize()
 
@@ -1871,7 +1870,7 @@ def test_kde_actor(interactive = False):
                     [0.01784785, 0.24857252, 0.89913317],
                     [0.8458996,  0.51551657, 0.69597985]])
 
-    sigmas = np.array([[0.56193862], [0.1275334 ], [0.91069059],
+    bandwidths = np.array([[0.56193862], [0.1275334 ], [0.91069059],
                     [0.01177131], [0.67799239], [0.95772282],
                     [0.55834784], [0.60151661], [0.25946789],
                     [0.88343075], [0.24011991], [0.05879632],
@@ -1882,17 +1881,15 @@ def test_kde_actor(interactive = False):
                     [0.60157791], [0.84737657], [0.36433019],
                     [0.13263502], [0.30937519], [0.88979053]])
 
-    kde_actor = em.kde(points, sigmas, colormap="inferno")
+    kde_actor = em.kde(points, bandwidths, colormap="inferno")
 
     manager.scene.add(kde_actor)
 
     if interactive:
         window.show(manager.scene)
 
-    off_arr = window.snapshot(em.off_manager.scene)
     off_ascene = window.analyze_scene(em.off_manager.scene)
 
-    on_arr = window.snapshot(manager.scene)
     on_ascene = window.analyze_scene(manager.scene)
 
     on_obs = em.on_manager.iren.HasObserver("RenderEvent")
