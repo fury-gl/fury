@@ -2638,8 +2638,6 @@ class ListBox2D(UI):
 
         """
         self.panel.add_to_scene(scene)
-        for slot in self.slots:
-            clip_overflow(slot.textblock, self.slot_width)
 
     def _get_size(self):
         return self.panel.size
