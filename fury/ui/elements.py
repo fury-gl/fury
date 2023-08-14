@@ -2815,9 +2815,12 @@ class ListBox2D(UI):
             self.nb_slots * (self.panel_size[1] - 2 * self.margin) / len(self.values)
         )
 
+        denom = len(self.values) - self.nb_slots
+        if not denom:
+            denom += 1
         self.scroll_step_size = (
             self.slot_height * self.nb_slots - self.scroll_bar.height
-        ) / (len(self.values) - self.nb_slots)
+        ) / denom
 
         self.panel.update_element(
             self.scroll_bar, self.panel_size - self.scroll_bar.size - self.margin
