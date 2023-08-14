@@ -2789,8 +2789,7 @@ class ListBox2D(UI):
         for i, choice in enumerate(values_to_show):
             slot = self.slots[i]
             slot.element = choice
-            if slot.textblock.scene is not None:
-                clip_overflow(slot.textblock, self.slot_width)
+            clip_overflow(slot.textblock, self.slot_width)
             slot.set_visibility(True)
             if slot.size[1] != self.slot_height:
                 slot.resize((self.slot_width, self.slot_height))
