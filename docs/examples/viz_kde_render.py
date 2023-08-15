@@ -2,16 +2,16 @@
 ======================================================================
 Fury Kernel Density Estimation rendering Actor
 ======================================================================
-This example shows how to use the KDE actor. This is a special actor in Fury that works 
-with post-processing effects to render kernel density estimations of a given set of points 
-in real-time to the screen. For better understanding on KDEs, check this 
+This example shows how to use the KDE actor. This is a special actor in Fury that works
+with post-processing effects to render kernel density estimations of a given set of points
+in real-time to the screen. For better understanding on KDEs, check this
 `Wikipedia page <https://en.wikipedia.org/wiki/Kernel_density_estimation>`_ about it.
 
 For this example, you will only need the modules below:
 """
 import numpy as np
 
-from fury.actors.effect_manager import EffectManager
+from fury.actors.effect_manager import EffectManager, KDE
 from fury.window import Scene, ShowManager, record
 
 #####################################################################################
@@ -63,7 +63,7 @@ manager.initialize()
 
 ####################################################################
 # ``numpy.random.rand`` will be used to generate random points, which
-# will be then relocated with the function we declared below to the 
+# will be then relocated with the function we declared below to the
 # range of ``[-5.0, 5.0]``, so they get more space between them. In case
 # offsetted points are wanted, it can be done just as below.
 
@@ -74,37 +74,38 @@ offset = np.array([0.0, 0.0, 0.0])
 points = points + np.tile(offset, points.shape[0]).reshape(points.shape)
 
 ###################################################################
-# For this KDE render, we will use a set of random bandwidths, 
-# generated with ``numpy.random.rand`` as well, which are also 
+# For this KDE render, we will use a set of random bandwidths,
+# generated with ``numpy.random.rand`` as well, which are also
 # remapped to the range of ``[0.05, 0.2]``.
 
 bandwidths = normalize(np.random.rand(n_points, 1), 0.05, 0.2)
 
 
 ###################################################################
-# Now, for the KDE render, a special class is needed, the 
+# Now, for the KDE render, a special class is needed, the
 # ``EffectManager``. This class is needed to manage the post-processing
-# aspect of this kind of render, as it will need to first be 
-# rendered to an offscreen buffer, retrieved and then processed 
+# aspect of this kind of render, as it will need to first be
+# rendered to an offscreen buffer, retrieved and then processed
 # by the final actor that will render it to the screen, but don't
-# worry, none of this will need to be setup by you! Just call the 
+# worry, none of this will need to be setup by you! Just call the
 # ``EffectManager`` like below, passing the manager to it:
 
 effects = EffectManager(manager)
 
 ###################################################################
-# After having the ``effects`` setup, just call the kde actor method 
+# After having the ``effects`` setup, just call the kde actor method
 # from it, passing the points, bandwidth, and other optional options
 # if wished, like the kernel to be used or the colormap desired.
 # The colormaps are by default taken from *matplotlib*, but a
 # custom one can be passed. After calling it, just pass the actor
 # to the scene, and start it as usual.
 
-kde_actor = effects.kde(points, bandwidths, kernel="gaussian", colormap="inferno")
+#kde_actor = effects.kde(points, bandwidths, kernel="gaussian", colormap="inferno")
+kde_effect = KDE(points, bandwidths, kernel="gaussian", colormap="inferno")
+effects.add(kde_effect)
+#manager.scene.add(kde_actor)
 
-manager.scene.add(kde_actor)
-
-interactive = False
+interactive = True
 
 if interactive:
     manager.start()
