@@ -281,7 +281,7 @@ class EffectManager():
         fs_dec = compose_shader([varying_fs_dec, kde_fs_dec])
 
         """Scales parameter will be defined by the empirical rule:
-        1*sima radius = 68.27% of data inside the curve
+        1*bandwidth radius = 68.27% of data inside the curve
         2*bandwidth radius = 95.45% of data inside the curve
         3*bandwidth radius = 99.73% of data inside the curve"""
         scales = 2*3.0*np.copy(bandwidths)
