@@ -2800,7 +2800,6 @@ class ListBox2D(UI):
         for slot in self.slots[len(values_to_show) :]:
             slot.element = None
             slot.set_visibility(False)
-            slot.resize((self.slot_width, 0))
             slot.deselect()
 
     def update_scrollbar(self):
