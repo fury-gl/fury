@@ -1,6 +1,5 @@
 import os
 from typing import Any
-from functools import partial
 
 import numpy as np
 from fury.actor import Actor, billboard
@@ -16,8 +15,8 @@ from fury.utils import rgb_to_vtk
 from fury.window import (gl_disable_depth,
                          gl_set_additive_blending,
                          RenderWindow,
-                         Scene,
                          ShowManager)
+
 
 
 WRAP_MODE_DIC = {"clamptoedge" : Texture.ClampToEdge,
@@ -29,6 +28,7 @@ BLENDING_MODE_DIC = {"none" : 0, "replace" : 1,
                      "modulate" : 2, "add" : 3,
                      "addsigned" : 4, "interpolate" : 5,
                      "subtract" : 6}
+
 
 
 def window_to_texture(
@@ -186,61 +186,6 @@ def colormap_to_texture(
     target_actor.GetProperty().SetTexture(texture_name, texture)
 
 
-
-class EffectManager():
-    """Class that manages the application of post-processing effects on actors.
-
-    Parameters
-    ----------
-    manager : ShowManager
-        Target manager that will render post processed actors."""
-
-    def __init__(self, manager : ShowManager):
-        self.scene = Scene()
-        cam_params = manager.scene.get_camera()
-        self.scene.set_camera(*cam_params)
-        self.on_manager = manager
-        self.off_manager = ShowManager(self.scene,
-                                       size=manager.size)
-        self.off_manager.window.SetOffScreenRendering(True)
-        self.off_manager.initialize()
-        self._n_active_effects = 0
-        self._active_effects = {}
-
-    def add(self, effect):
-        callback = partial(effect, effect_manager=self)
-        if hasattr(effect, "apply"):
-            effect.apply(self)
-
-        callback()
-        callback_id = self.on_manager.add_iren_callback(callback, "RenderEvent")
-
-
-        self._active_effects[effect.textured_billboard] = (callback_id, effect.bill)
-        self._n_active_effects += 1
-        self.on_manager.scene.add(effect.textured_billboard)
-
-        return effect.textured_billboard
-
-    def remove_effect(self, effect_actor):
-        """Remove an existing effect from the effects manager.
-        Beware that the effect and the actor will be removed from the rendering pipeline
-        and shall not work after this action.
-
-        Parameters
-        ----------
-        effect_actor : actor.Actor
-            Actor of effect to be removed.
-        """
-        if self._n_active_effects > 0:
-            self.on_manager.iren.RemoveObserver(self._active_effects[effect_actor][0])
-            self.off_manager.scene.RemoveActor(self._active_effects[effect_actor][1])
-            self.on_manager.scene.RemoveActor(effect_actor)
-            self._active_effects.pop(effect_actor)
-            self._n_active_effects -= 1
-        else:
-            raise IndexError("Manager has no active effects.")
-
 class KDE():
     def __init__(self,
             points : np.ndarray,
@@ -314,9 +259,19 @@ class KDE():
             vs_impl=kde_vs_impl)
         self.scales = scales
         # Blending and uniforms setup
+    def apply(self, off_manager: ShowManager,  n_active_effects : int = 0):
+        """
+        Apply the KDE effect to the given manager.
 
-    def apply(self, effect_manager : EffectManager):
-        self.effect_manager = effect_manager
+        Parameters
+        ----------
+        off_manager : ShowManager
+            Manager to apply the KDE effect (OFF SCREEN RENDERING ONLY).
+        n_active_effects : int, optional
+            Number of active effects in the manager. Default is 0.
+            TODO: EXPLICAR AQUI O PORQUE
+
+        """
         bandwidths = self.bandwidths
         opacity = self.opacity
         colormap = self.colormap
@@ -325,15 +280,15 @@ class KDE():
         scales = self.scales
         center_of_mass = self.center_of_mass
 
-        off_window = effect_manager.off_manager.window
+        off_window = off_manager.window
         shader_apply_effects(off_window, bill, gl_disable_depth)
         shader_apply_effects(off_window, bill, gl_set_additive_blending)
         attribute_to_actor(bill, np.repeat(bandwidths, 4), "in_bandwidth")
         attribute_to_actor(bill, np.repeat(scales, 4), "in_scale")
 
-        if effect_manager._n_active_effects > 0:
-            effect_manager.off_manager.scene.GetActors().GetLastActor().SetVisibility(False)
-        effect_manager.off_manager.scene.add(self.bill)
+        if n_active_effects > 0:
+            off_manager.scene.GetActors().GetLastActor().SetVisibility(False)
+        off_manager.scene.add(self.bill)
 
         bill_bounds = self.bill.GetBounds()
         max_bandwidth = 2*4.0*np.max(bandwidths)
@@ -347,7 +302,7 @@ class KDE():
                            actor_scales.max(),
                            0.0]])
 
-        self.res = np.array(effect_manager.off_manager.size)
+        self.res = np.array(off_manager.size)
 
         # Render to second billboard for color map post-processing.
         tex_dec = import_fury_shader(os.path.join("effects", "color_mapping.glsl"))
@@ -383,16 +338,16 @@ class KDE():
 
         colormap_to_texture(cmap, "colormapTexture", textured_billboard)
 
-    def __call__(self,  obj=None, event=None, effect_manager=None) -> Any:
-
-        off_manager = effect_manager.off_manager
-        on_manager = effect_manager.on_manager
+    def __call__(
+            self,  obj=None, event=None,
+            off_manager: ShowManager=None, on_manager: ShowManager = None) -> Any:
 
         on_window = on_manager.window
         off_window = off_manager.window
 
-        cam_params = effect_manager.on_manager.scene.get_camera()
+        cam_params = on_manager.scene.get_camera()
         off_manager.scene.set_camera(*cam_params)
+
         self.res[0], self.res[1] = on_window.GetSize()
         off_window.SetSize(self.res[0], self.res[1])
         shader_custom_uniforms(self.textured_billboard, "fragment").SetUniform2f("res", self.res)

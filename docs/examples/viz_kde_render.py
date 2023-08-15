@@ -11,7 +11,7 @@ For this example, you will only need the modules below:
 """
 import numpy as np
 
-from fury.actors.effect_manager import EffectManager, KDE
+from fury.effects import EffectManager, KDE
 from fury.window import Scene, ShowManager, record
 
 #####################################################################################
@@ -103,7 +103,6 @@ effects = EffectManager(manager)
 #kde_actor = effects.kde(points, bandwidths, kernel="gaussian", colormap="inferno")
 kde_effect = KDE(points, bandwidths, kernel="gaussian", colormap="inferno")
 effects.add(kde_effect)
-#manager.scene.add(kde_actor)
 
 interactive = True
 
