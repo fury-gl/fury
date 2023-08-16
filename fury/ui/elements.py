@@ -16,6 +16,8 @@ __all__ = [
     'DrawShape',
     'DrawPanel',
     'PlaybackPanel',
+    'Card2D',
+    'SpinBox'
 ]
 
 import os
@@ -133,7 +135,7 @@ class TextBox2D(UI):
 
         Create the TextBlock2D component used for the textbox.
         """
-        self.text = TextBlock2D()
+        self.text = TextBlock2D(dynamic_bbox=True)
 
         # Add default events listener for this UI component.
         self.text.on_left_mouse_button_pressed = self.left_button_press
@@ -1447,7 +1449,8 @@ class RingSlider2D(UI):
         self.handle.color = self.default_color
 
         # Slider Text
-        self.text = TextBlock2D(justification='center', vertical_justification='middle')
+        self.text = TextBlock2D(justification='center',
+                                vertical_justification='middle')
 
         # Add default events listener for this UI component.
         self.track.on_left_mouse_button_pressed = self.track_click_callback
@@ -4367,3 +4370,194 @@ class Card2D(UI):
         self.panel.position += change
         self._click_position = click_position
         i_ren.force_render()
+
+
+class SpinBox(UI):
+    """SpinBox UI.
+    """
+
+    def __init__(self, position=(350, 400), size=(300, 100), padding=10,
+                 panel_color=(1, 1, 1), min_val=0, max_val=100,
+                 initial_val=50, step=1, max_column=10, max_line=2):
+        """Init this UI element.
+
+        Parameters
+        ----------
+        position : (int, int), optional
+            Absolute coordinates (x, y) of the lower-left corner of this
+            UI component.
+        size : (int, int), optional
+            Width and height in pixels of this UI component.
+        padding : int, optional
+            Distance between TextBox and Buttons.
+        panel_color : (float, float, float), optional
+            Panel color of SpinBoxUI.
+        min_val: int, optional
+            Minimum value of SpinBoxUI.
+        max_val: int, optional
+            Maximum value of SpinBoxUI.
+        initial_val: int, optional
+            Initial value of SpinBoxUI.
+        step: int, optional
+            Step value of SpinBoxUI.
+        max_column: int, optional
+            Max number of characters in a line.
+        max_line: int, optional
+            Max number of lines in the textbox.
+        """
+        self.panel_size = size
+        self.padding = padding
+        self.panel_color = panel_color
+        self.min_val = min_val
+        self.max_val = max_val
+        self.step = step
+        self.max_column = max_column
+        self.max_line = max_line
+
+        super(SpinBox, self).__init__(position)
+        self.value = initial_val
+        self.resize(size)
+
+        self.on_change = lambda ui: None
+
+    def _setup(self):
+        """Setup this UI component.
+
+        Create the SpinBoxUI with Background (Panel2D) and InputBox (TextBox2D)
+        and Increment,Decrement Button (Button2D).
+        """
+        self.panel = Panel2D(size=self.panel_size, color=self.panel_color)
+
+        self.textbox = TextBox2D(width=self.max_column,
+                                 height=self.max_line)
+        self.textbox.text.dynamic_bbox = False
+        self.textbox.text.auto_font_scale = True
+        self.increment_button = Button2D(
+            icon_fnames=[("up", read_viz_icons(fname="circle-up.png"))])
+        self.decrement_button = Button2D(
+            icon_fnames=[("down", read_viz_icons(fname="circle-down.png"))])
+
+        self.panel.add_element(self.textbox, (0, 0))
+        self.panel.add_element(self.increment_button, (0, 0))
+        self.panel.add_element(self.decrement_button, (0, 0))
+
+        # Adding button click callbacks
+        self.increment_button.on_left_mouse_button_pressed = \
+            self.increment_callback
+        self.decrement_button.on_left_mouse_button_pressed = \
+            self.decrement_callback
+        self.textbox.off_focus = self.textbox_update_value
+
+    def resize(self, size):
+        """Resize SpinBox.
+
+        Parameters
+        ----------
+        size : (float, float)
+            SpinBox size(width, height) in pixels.
+        """
+        self.panel_size = size
+        self.textbox_size = (int(0.7 * size[0]), int(0.8 * size[1]))
+        self.button_size = (int(0.2 * size[0]), int(0.3 * size[1]))
+        self.padding = int(0.03 * self.panel_size[0])
+
+        self.panel.resize(size)
+        self.textbox.text.resize(self.textbox_size)
+        self.increment_button.resize(self.button_size)
+        self.decrement_button.resize(self.button_size)
+
+        textbox_pos = (self.padding, int((size[1] - self.textbox_size[1])/2))
+        inc_btn_pos = (size[0] - self.padding - self.button_size[0],
+                       int((1.5*size[1] - self.button_size[1])/2))
+        dec_btn_pos = (size[0] - self.padding - self.button_size[0],
+                       int((0.5*size[1] - self.button_size[1])/2))
+
+        self.panel.update_element(self.textbox, textbox_pos)
+        self.panel.update_element(self.increment_button, inc_btn_pos)
+        self.panel.update_element(self.decrement_button, dec_btn_pos)
+
+    def _get_actors(self):
+        """Get the actors composing this UI component."""
+        return self.panel.actors
+
+    def _add_to_scene(self, scene):
+        """Add all subcomponents or VTK props that compose this UI component.
+
+        Parameters
+        ----------
+        scene : Scene
+
+        """
+        self.panel.add_to_scene(scene)
+
+    def _get_size(self):
+        return self.panel.size
+
+    def _set_position(self, coords):
+        """Set the lower-left corner position of this UI component.
+
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+        """
+        self.panel.center = coords
+
+    def increment_callback(self, i_ren, _obj, _button):
+        self.increment()
+        i_ren.force_render()
+        i_ren.event.abort()
+
+    def decrement_callback(self, i_ren, _obj, _button):
+        self.decrement()
+        i_ren.force_render()
+        i_ren.event.abort()
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, value):
+        if value >= self.max_val:
+            self._value = self.max_val
+        elif value <= self.min_val:
+            self._value = self.min_val
+        else:
+            self._value = value
+
+        self.textbox.set_message(str(self._value))
+
+    def validate_value(self, value):
+        """Validate and convert the given value into integer.
+
+        Parameters
+        ----------
+        value : str
+            Input value received from the textbox.
+
+        Returns
+        -------
+        int
+            If valid return converted integer else the previous value.
+        """
+        if value.isnumeric():
+            return int(value)
+
+        return self.value
+
+    def increment(self):
+        """Increment the current value by the step."""
+        current_val = self.validate_value(self.textbox.message)
+        self.value = current_val + self.step
+        self.on_change(self)
+
+    def decrement(self):
+        """Decrement the current value by the step."""
+        current_val = self.validate_value(self.textbox.message)
+        self.value = current_val - self.step
+        self.on_change(self)
+
+    def textbox_update_value(self, textbox):
+        self.value = self.validate_value(textbox.message)
+        self.on_change(self)
