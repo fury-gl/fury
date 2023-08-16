@@ -1381,6 +1381,53 @@ def test_card_ui(interactive=False):
         event_counter.check_counts(expected)
 
 
+def test_ui_spinbox(interactive=False):
+    filename = "test_ui_spinbox"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    spinbox = ui.SpinBox(size=(300, 200), min_val=-20, max_val=10, step=2)
+    npt.assert_equal(spinbox.value, 10)
+
+    spinbox.value = 5
+    npt.assert_equal(spinbox.value, 5)
+    spinbox.value = 50
+    npt.assert_equal(spinbox.value, 10)
+    spinbox.value = -50
+    npt.assert_equal(spinbox.value, -20)
+
+    spinbox.min_val = -100
+    spinbox.max_val = 100
+
+    spinbox.value = 5
+    npt.assert_equal(spinbox.value, 5)
+    spinbox.value = 50
+    npt.assert_equal(spinbox.value, 50)
+    spinbox.value = -50
+    npt.assert_equal(spinbox.value, -50)
+
+    # Assign the counter callback to every possible event.
+    event_counter = EventCounter()
+    event_counter.monitor(spinbox)
+
+    current_size = (800, 800)
+    show_manager = window.ShowManager(size=current_size, title="SpinBox UI Example")
+    show_manager.scene.add(spinbox)
+
+    if interactive:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+    spinbox.resize((450, 200))
+    npt.assert_equal((315, 160), spinbox.textbox_size)
+    npt.assert_equal((90, 60), spinbox.button_size)
+
+
 def test_ui_tree_2d(interactive=False):
     filename = "test_ui_tree_ed"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
