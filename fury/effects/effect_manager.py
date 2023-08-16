@@ -23,26 +23,26 @@ class EffectManager():
         self._active_effects = {}
 
     def add(self, effect):
+        """Add an effect to the EffectManager.
+        
+        Parameters
+        ----------
+        effect : callable
+        """
         callback = partial(
             effect,
             off_manager=self.off_manager,
             on_manager=self.on_manager
         )
         if hasattr(effect, "apply"):
-            effect.apply(
-                off_manager = self.off_manager,
-                n_active_effects = self._n_active_effects
-            )
+            effect.apply(self)
 
         callback()
         callback_id = self.on_manager.add_iren_callback(callback, "RenderEvent")
 
-
-        self._active_effects[effect.textured_billboard] = (callback_id, effect.bill)
+        self._active_effects[effect._onscreen_actor] = (callback_id, effect._offscreen_actor)
         self._n_active_effects += 1
-        self.on_manager.scene.add(effect.textured_billboard)
-
-        return effect.textured_billboard
+        self.on_manager.scene.add(effect._onscreen_actor)
 
     def remove_effect(self, effect_actor):
         """Remove an existing effect from the effects manager.

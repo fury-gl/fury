@@ -4,6 +4,7 @@ from typing import Any
 import numpy as np
 from fury.actor import Actor, billboard
 from fury.colormap import create_colormap
+from fury.effects import EffectManager
 from fury.io import load_image
 from fury.lib import Texture, WindowToImageFilter
 from fury.shaders import (attribute_to_actor,
@@ -184,9 +185,35 @@ def colormap_to_texture(
     texture.SetBlendingMode(0)
 
     target_actor.GetProperty().SetTexture(texture_name, texture)
-
+       
 
 class KDE():
+    """
+    Class that implements the Kernel Density Estimation effect of a given set of points.
+
+    Parameters
+    ----------
+    points : np.ndarray (N, 3)
+        Array of points to be displayed.
+    bandwidths : np.ndarray (1, ) or (N, 1)
+        Array of bandwidths to be used in the KDE calculations. Must be one or one for each point.
+    kernel : str, optional
+        Kernel to be used for the distribution calculation. The available options are:
+        * "cosine"
+        * "epanechnikov"
+        * "exponential"
+        * "gaussian"
+        * "linear"
+        * "tophat"
+    opacity : float, optional
+        Opacity of the effect.
+    colormap : str, optional.
+        Colormap matplotlib name for the KDE rendering. Default is "viridis".
+    custom_colormap : np.ndarray (N, 4), optional
+        Custom colormap for the KDE rendering. Default is none which means no
+        custom colormap is desired. If passed, will overwrite matplotlib colormap
+        chosen in the previous parameter.
+    """
     def __init__(self,
             points : np.ndarray,
             bandwidths,
@@ -194,6 +221,11 @@ class KDE():
             opacity : float = 1.0,
             colormap : str = "viridis",
             custom_colormap : np.array = None):
+        
+        self._offscreen_actor = None
+        self._onscreen_actor = None
+        self.res = None
+
         self.points = points
         self.bandwidths = bandwidths
         self.kernel = kernel
@@ -222,7 +254,6 @@ class KDE():
         out_scale = in_scale;
         """
 
-
         varying_fs_dec = """
         varying float out_bandwidth;
         varying float out_scale;
@@ -237,7 +268,6 @@ class KDE():
         fragOutput0 = vec4(color, 1.0);
         """
 
-
         fs_dec = compose_shader([varying_fs_dec, kde_fs_dec])
 
         """Scales parameter will be defined by the empirical rule:
@@ -247,7 +277,7 @@ class KDE():
         scales = 2*3.0*np.copy(bandwidths)
 
         self.center_of_mass = np.average(points, axis=0)
-        self.bill = billboard(
+        self._offscreen_actor = billboard(
             points,
             (0.0,
              0.0,
@@ -257,40 +287,38 @@ class KDE():
             fs_impl=kde_fs_impl,
             vs_dec=kde_vs_dec,
             vs_impl=kde_vs_impl)
+        
         self.scales = scales
-        # Blending and uniforms setup
-    def apply(self, off_manager: ShowManager,  n_active_effects : int = 0):
+
+    def apply(self, effect_manager : EffectManager):
         """
-        Apply the KDE effect to the given manager.
+        Apply the KDE effect to the given EffectManager.
 
         Parameters
         ----------
-        off_manager : ShowManager
-            Manager to apply the KDE effect (OFF SCREEN RENDERING ONLY).
-        n_active_effects : int, optional
-            Number of active effects in the manager. Default is 0.
-            TODO: EXPLICAR AQUI O PORQUE
-
+        effect_manager : EffectManager.
         """
         bandwidths = self.bandwidths
         opacity = self.opacity
         colormap = self.colormap
         custom_colormap = self.custom_colormap
-        bill = self.bill
+        bill = self._offscreen_actor
         scales = self.scales
         center_of_mass = self.center_of_mass
 
-        off_window = off_manager.window
+        off_window = effect_manager.off_manager.window
+
+        # Blending and uniforms setup
         shader_apply_effects(off_window, bill, gl_disable_depth)
         shader_apply_effects(off_window, bill, gl_set_additive_blending)
         attribute_to_actor(bill, np.repeat(bandwidths, 4), "in_bandwidth")
         attribute_to_actor(bill, np.repeat(scales, 4), "in_scale")
 
-        if n_active_effects > 0:
-            off_manager.scene.GetActors().GetLastActor().SetVisibility(False)
-        off_manager.scene.add(self.bill)
+        if effect_manager._n_active_effects > 0:
+            effect_manager.off_manager.scene.GetActors().GetLastActor().SetVisibility(False)
+        effect_manager.off_manager.scene.add(bill)
 
-        bill_bounds = self.bill.GetBounds()
+        bill_bounds = bill.GetBounds()
         max_bandwidth = 2*4.0*np.max(bandwidths)
 
         actor_scales = np.array([[bill_bounds[1] - bill_bounds[0] +
@@ -302,9 +330,9 @@ class KDE():
                            actor_scales.max(),
                            0.0]])
 
-        self.res = np.array(off_manager.size)
+        self.res = np.array(effect_manager.off_manager.size)
 
-        # Render to second billboard for color map post-processing.
+        # Shaders for the onscreen textured billboard.
         tex_dec = import_fury_shader(os.path.join("effects", "color_mapping.glsl"))
 
         tex_impl = """
@@ -324,7 +352,7 @@ class KDE():
             scales=scale,
             fs_dec=tex_dec,
             fs_impl=tex_impl)
-        self.textured_billboard = textured_billboard
+        self._onscreen_actor = textured_billboard
         shader_custom_uniforms(textured_billboard, "fragment").SetUniform2f("res", self.res)
         shader_custom_uniforms(textured_billboard, "fragment").SetUniformf("u_opacity", opacity)
 
@@ -338,27 +366,32 @@ class KDE():
 
         colormap_to_texture(cmap, "colormapTexture", textured_billboard)
 
-    def __call__(
-            self,  obj=None, event=None,
-            off_manager: ShowManager=None, on_manager: ShowManager = None) -> Any:
+    def __call__(self,  obj=None, event=None,
+                 off_manager: ShowManager=None, on_manager: ShowManager = None) -> Any:
+        """Callback of the KDE effect."""
 
         on_window = on_manager.window
         off_window = off_manager.window
 
+        # 1. Updating offscreen renderer.
         cam_params = on_manager.scene.get_camera()
         off_manager.scene.set_camera(*cam_params)
-
         self.res[0], self.res[1] = on_window.GetSize()
-        off_window.SetSize(self.res[0], self.res[1])
-        shader_custom_uniforms(self.textured_billboard, "fragment").SetUniform2f("res", self.res)
+        off_window.SetSize(*self.res)
+
+        # 2. Updating variables.
+        shader_custom_uniforms(self._onscreen_actor, "fragment").SetUniform2f("res", self.res)
+        shader_apply_effects(off_window, self._offscreen_actor, gl_disable_depth)
+        shader_apply_effects(off_window, self._offscreen_actor, gl_set_additive_blending)
+
+        # 3. Renders the offscreen scene.
         off_manager.scene.Modified()
-        shader_apply_effects(off_window, self.bill, gl_disable_depth)
-        shader_apply_effects(off_window, self.bill, gl_set_additive_blending)
         off_manager.render()
 
+        # 4. Passes the offscreen as a texture to the post-processing actor
         window_to_texture(
             off_manager.window,
             "screenTexture",
-            self.textured_billboard,
+            self._onscreen_actor,
             blending_mode="Interpolate",
             d_type="rgba")

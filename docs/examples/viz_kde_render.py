@@ -56,8 +56,7 @@ scene.set_camera(position=(-24, 20, -40),
 manager = ShowManager(
     scene,
     "KDE Render",
-    (size[0],
-     size[1]))
+    size)
 
 manager.initialize()
 
@@ -101,7 +100,7 @@ effects = EffectManager(manager)
 # to the scene, and start it as usual.
 
 #kde_actor = effects.kde(points, bandwidths, kernel="gaussian", colormap="inferno")
-kde_effect = KDE(points, bandwidths, kernel="gaussian", colormap="inferno")
+kde_effect = KDE(points, bandwidths, kernel="exponential", colormap="inferno")
 effects.add(kde_effect)
 
 interactive = True
