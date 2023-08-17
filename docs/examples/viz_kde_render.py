@@ -2,10 +2,11 @@
 ======================================================================
 Fury Kernel Density Estimation rendering Actor
 ======================================================================
-This example shows how to use the KDE actor. This is a special actor in Fury that works
-with post-processing effects to render kernel density estimations of a given set of points
-in real-time to the screen. For better understanding on KDEs, check this
-`Wikipedia page <https://en.wikipedia.org/wiki/Kernel_density_estimation>`_ about it.
+This example shows how to use the KDE effect. This is a feature in Fury
+that uses a post-processing stage to render kernel density estimations of a 
+given set of points in real-time to the screen. For better understanding 
+on KDEs, check this `Wikipedia page <https://en.wikipedia.org/wiki/Kernel_density_estimation>`_ 
+about it.
 
 For this example, you will only need the modules below:
 """
@@ -58,7 +59,6 @@ manager = ShowManager(
     "KDE Render",
     size)
 
-manager.initialize()
 
 ####################################################################
 # ``numpy.random.rand`` will be used to generate random points, which
@@ -79,7 +79,6 @@ points = points + np.tile(offset, points.shape[0]).reshape(points.shape)
 
 bandwidths = normalize(np.random.rand(n_points, 1), 0.05, 0.2)
 
-
 ###################################################################
 # Now, for the KDE render, a special class is needed, the
 # ``EffectManager``. This class is needed to manage the post-processing
@@ -89,19 +88,22 @@ bandwidths = normalize(np.random.rand(n_points, 1), 0.05, 0.2)
 # worry, none of this will need to be setup by you! Just call the
 # ``EffectManager`` like below, passing the manager to it:
 
-effects = EffectManager(manager)
+effects_m = EffectManager(manager)
 
 ###################################################################
-# After having the ``effects`` setup, just call the kde actor method
-# from it, passing the points, bandwidth, and other optional options
-# if wished, like the kernel to be used or the colormap desired.
-# The colormaps are by default taken from *matplotlib*, but a
-# custom one can be passed. After calling it, just pass the actor
-# to the scene, and start it as usual.
+# After having the ``effects_m`` setup, we can add effects to it.
+# Here, we will use the ``KDE`` effect, that comes from ``fury.effects.effects``
+# module. When we call it, we pass the points, bandwidth, and other optional options
+# if wished, like the kernel to be used or the colormap desired. The available kernels
+# can be found inside KDE's description. The colormaps are by default taken from *matplotlib*, 
+# but a custom one can be passed. After calling it, it returns the KDE class, that will
+# then need to be added to the ``EffectManager`` with the ``add()`` method.
 
-#kde_actor = effects.kde(points, bandwidths, kernel="gaussian", colormap="inferno")
 kde_effect = KDE(points, bandwidths, kernel="exponential", colormap="inferno")
-effects.add(kde_effect)
+effects_m.add(kde_effect)
+
+####################################################################
+# Having that setup, just start the rendering process to see the results, and we are done here!
 
 interactive = True
 

@@ -19,7 +19,6 @@ from fury.window import (gl_disable_depth,
                          ShowManager)
 
 
-
 WRAP_MODE_DIC = {"clamptoedge" : Texture.ClampToEdge,
                  "repeat" : Texture.Repeat,
                  "mirroredrepeat" : Texture.MirroredRepeat,
@@ -29,7 +28,6 @@ BLENDING_MODE_DIC = {"none" : 0, "replace" : 1,
                      "modulate" : 2, "add" : 3,
                      "addsigned" : 4, "interpolate" : 5,
                      "subtract" : 6}
-
 
 
 def window_to_texture(
@@ -84,6 +82,7 @@ def window_to_texture(
                 "rgba" : windowToImageFilter.SetInputBufferTypeToRGBA,
                 "zbuffer" : windowToImageFilter.SetInputBufferTypeToZBuffer}
     type_dic[d_type.lower()]()
+    windowToImageFilter.Update()
 
     texture = Texture()
     texture.SetMipmap(True)
@@ -152,6 +151,7 @@ def texture_to_actor(
 
     target_actor.GetProperty().SetTexture(texture_name, texture)
 
+
 def colormap_to_texture(
         colormap : np.array,
         texture_name : str,
@@ -185,7 +185,7 @@ def colormap_to_texture(
     texture.SetBlendingMode(0)
 
     target_actor.GetProperty().SetTexture(texture_name, texture)
-       
+
 
 class KDE():
     """
@@ -206,7 +206,7 @@ class KDE():
         * "linear"
         * "tophat"
     opacity : float, optional
-        Opacity of the effect.
+        Opacity of the effect, defined between [0.0, 1.0].
     colormap : str, optional.
         Colormap matplotlib name for the KDE rendering. Default is "viridis".
     custom_colormap : np.ndarray (N, 4), optional
@@ -214,19 +214,24 @@ class KDE():
         custom colormap is desired. If passed, will overwrite matplotlib colormap
         chosen in the previous parameter.
     """
+
     def __init__(self,
-            points : np.ndarray,
-            bandwidths,
-            kernel : str = "gaussian",
-            opacity : float = 1.0,
-            colormap : str = "viridis",
-            custom_colormap : np.array = None):
-        
+                 points : np.ndarray,
+                 bandwidths,
+                 kernel : str = "gaussian",
+                 opacity : float = 1.0,
+                 colormap : str = "viridis",
+                 custom_colormap : np.array = None):
+
+        # Effect required variables
         self._offscreen_actor = None
         self._onscreen_actor = None
         self.res = None
 
-        self.points = points
+        # Unmutable variables
+        self._points = points
+
+        # Mutable variables
         self.bandwidths = bandwidths
         self.kernel = kernel
         self.opacity = opacity
@@ -287,8 +292,11 @@ class KDE():
             fs_impl=kde_fs_impl,
             vs_dec=kde_vs_dec,
             vs_impl=kde_vs_impl)
-        
-        self.scales = scales
+
+        attribute_to_actor(
+            self._offscreen_actor, np.repeat(
+                bandwidths, 4), "in_bandwidth")
+        attribute_to_actor(self._offscreen_actor, np.repeat(scales, 4), "in_scale")
 
     def apply(self, effect_manager : EffectManager):
         """
@@ -303,17 +311,15 @@ class KDE():
         colormap = self.colormap
         custom_colormap = self.custom_colormap
         bill = self._offscreen_actor
-        scales = self.scales
         center_of_mass = self.center_of_mass
 
         off_window = effect_manager.off_manager.window
 
-        # Blending and uniforms setup
+        # Blending setup
         shader_apply_effects(off_window, bill, gl_disable_depth)
         shader_apply_effects(off_window, bill, gl_set_additive_blending)
-        attribute_to_actor(bill, np.repeat(bandwidths, 4), "in_bandwidth")
-        attribute_to_actor(bill, np.repeat(scales, 4), "in_scale")
 
+        # Important step to guarantee API handles multiple effects
         if effect_manager._n_active_effects > 0:
             effect_manager.off_manager.scene.GetActors().GetLastActor().SetVisibility(False)
         effect_manager.off_manager.scene.add(bill)
@@ -352,9 +358,17 @@ class KDE():
             scales=scale,
             fs_dec=tex_dec,
             fs_impl=tex_impl)
+        shader_custom_uniforms(
+            textured_billboard,
+            "fragment").SetUniform2f(
+            "res",
+            self.res)
+        shader_custom_uniforms(
+            textured_billboard,
+            "fragment").SetUniformf(
+            "u_opacity",
+            opacity)
         self._onscreen_actor = textured_billboard
-        shader_custom_uniforms(textured_billboard, "fragment").SetUniform2f("res", self.res)
-        shader_custom_uniforms(textured_billboard, "fragment").SetUniformf("u_opacity", opacity)
 
         # Disables the texture warnings
         textured_billboard.GetProperty().GlobalWarningDisplayOff()
@@ -366,32 +380,52 @@ class KDE():
 
         colormap_to_texture(cmap, "colormapTexture", textured_billboard)
 
+        self.res[0], self.res[1] = effect_manager.on_manager.window.GetSize()
+
     def __call__(self,  obj=None, event=None,
-                 off_manager: ShowManager=None, on_manager: ShowManager = None) -> Any:
-        """Callback of the KDE effect."""
+                 off_manager: ShowManager = None, on_manager: ShowManager = None) -> Any:
+        """Callback of the KDE effect.
+        obj : Any
+            This parameter is passed by VTK.
+        event : str
+            This parameter is passed by VTK.
+        off_manager : ShowManager
+            Offscreen manager.
+        on_manager : Show Manager
+            Onscreen manager."""
 
         on_window = on_manager.window
         off_window = off_manager.window
 
         # 1. Updating offscreen renderer.
-        cam_params = on_manager.scene.get_camera()
-        off_manager.scene.set_camera(*cam_params)
+        camera = on_manager.scene.camera()
+        camera.SetClippingRange(0.01, 1000.01)
+        off_manager.scene.SetActiveCamera(camera)
         self.res[0], self.res[1] = on_window.GetSize()
         off_window.SetSize(*self.res)
 
         # 2. Updating variables.
-        shader_custom_uniforms(self._onscreen_actor, "fragment").SetUniform2f("res", self.res)
-        shader_apply_effects(off_window, self._offscreen_actor, gl_disable_depth)
-        shader_apply_effects(off_window, self._offscreen_actor, gl_set_additive_blending)
+        shader_custom_uniforms(
+            self._onscreen_actor,
+            "fragment").SetUniform2f(
+            "res",
+            self.res)
 
-        # 3. Renders the offscreen scene.
+        # 3. Sets the visibility of the current actor to True
+        self._offscreen_actor.SetVisibility(True)
+
+        # 4. Renders the offscreen scene.
         off_manager.scene.Modified()
         off_manager.render()
 
-        # 4. Passes the offscreen as a texture to the post-processing actor
+        # 5. Passes the offscreen as a texture to the post-processing actor
         window_to_texture(
             off_manager.window,
             "screenTexture",
             self._onscreen_actor,
             blending_mode="Interpolate",
             d_type="rgba")
+
+        # 6. Sets visibility of the current actor to False
+        self._offscreen_actor.SetVisibility(False)
+        self._offscreen_actor.Modified()
