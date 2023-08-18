@@ -58,7 +58,8 @@ files = [
     "viz_pbr_interactive.py",
     "viz_emwave_animation.py",
     "viz_helical_motion.py",
-    "viz_play_video.py"
+    "viz_play_video.py",
+    "viz_dt_ellipsoids.py"
 ]
 
 [ui]
@@ -78,7 +79,8 @@ files = [
     "viz_ui.py",
     "viz_ui_slider.py",
     "viz_card.py",
-    "viz_card_sprite_sheet.py"
+    "viz_card_sprite_sheet.py",
+    "viz_spinbox.py"
 ]
 
 [animation]

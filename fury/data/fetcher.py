@@ -514,9 +514,19 @@ fetch_viz_dmri = _make_fetcher(
     "fetch_viz_dmri",
     pjoin(fury_home, "dmri"),
     DMRI_DATA_URL,
-    ['fodf.nii.gz'],
-    ['fodf.nii.gz'],
-    ['767ca3e4cd296e78421d83c32201b30be2d859c332210812140caac1b93d492b']
+    ['fodf.nii.gz', 'slice_evecs.nii.gz', 'slice_evals.nii.gz',
+     'roi_evecs.nii.gz', 'roi_evals.nii.gz', 'whole_brain_evecs.nii.gz',
+     'whole_brain_evals.nii.gz'],
+    ['fodf.nii.gz', 'slice_evecs.nii.gz', 'slice_evals.nii.gz',
+     'roi_evecs.nii.gz', 'roi_evals.nii.gz', 'whole_brain_evecs.nii.gz',
+     'whole_brain_evals.nii.gz'],
+    ['767ca3e4cd296e78421d83c32201b30be2d859c332210812140caac1b93d492b',
+     '8843ECF3224CB8E3315B7251D1E303409A17D7137D3498A8833853C4603C6CC2',
+     '3096B190B1146DD0EADDFECC0B4FBBD901F4933692ADD46A83F637F28B22122D',
+     '89E569858A897E72C852A8F05BBCE0B21C1CA726E55508087A2DA5A38C212A17',
+     'F53C68CCCABF97F1326E93840A8B5CE2E767D66D692FFD955CA747FFF14EC781',
+     '8A894F6AB404240E65451FA6D10FB5D74E2D0BDCB2A56AD6BEA38215BF787248',
+     '47A73BBE68196381ED790F80F48E46AC07B699B506973FFA45A95A33023C7A77']
 )
 
 fetch_viz_textures = _make_fetcher(
