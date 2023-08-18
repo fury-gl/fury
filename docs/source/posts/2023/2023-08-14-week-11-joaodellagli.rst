@@ -11,7 +11,7 @@ I was working on with my mentors.
 
 Last Week's Effort
 ------------------
-As I shared with you :doc:`last week <2023-08-07-week-10-joaodellagli>`_, the first draft of my API was finally ready for review, as 
+As I shared with you :doc:`last week <2023-08-07-week-10-joaodellagli>`, the first draft of my API was finally ready for review, as 
 I finished tweaking some remaining details missing. I was tasked with finding a goode example of usage of the tools we proposed,
 and I started to do that, however after testing it with some examples, I figured out some significant bugs were to be fixed. Also, 
 after some reviews and hints from some of my mentors and other GSoC contributors, we realised that some refactoring should be done, 
