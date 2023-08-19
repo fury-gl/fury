@@ -274,7 +274,7 @@ class EffectManager():
 
         converter = """
         vec4 float_to_rgba(float value) {
-            vec4 bitEnc = vec4(1.,255.,65025.,16581375.);
+            vec4 bitEnc = vec4(1.,256.,65536.0,16777216.0);
             vec4 enc = bitEnc * value;
             enc = fract(enc);
             enc -= enc.yzww * vec2(1./255., 0.).xxxy;
@@ -346,7 +346,7 @@ class EffectManager():
 
         de_converter = """
         float rgba_to_float(vec4 v) {
-            vec4 bitEnc = vec4(1.,255.,65025.,16581375.);
+            vec4 bitEnc = vec4(1.,256.,65536.0,16777216.0);
             vec4 bitDec = 1./bitEnc;
             return dot(v, bitDec);
         }
@@ -425,6 +425,39 @@ class EffectManager():
         };
         """
 
+
+        offsets = """
+        const float x_offsets[3*3] = {-1.0, 0.0, 1.0, 
+                                      -1.0, 0.0, 1.0,
+                                      -1.0, 0.0, 1.0};
+        
+        const float y_offsets[3*3] = {-1.0, -1.0, -1.0, 
+                                       0.0,  0.0,  0.0,
+                                       1.0,  1.0,  1.0};
+        """
+
+
+        median_filter = """
+        float median_filter(sampler2D screenTexture, vec2 tex_coords, vec2 res){
+            float sorted[9] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; 
+
+            for(int i = 0; i < 9; i++)
+                sorted[i] = rgba_to_float(texture(screenTexture, tex_coords + vec2(1/res.x, 1/res.y)*vec2(x_offsets[i], y_offsets[i])));
+            
+            for (int i = 0; i < 9; i++) {
+                for (int j = 0; j < 8 - i; j++) {
+                    if (sorted[j] > sorted[j + 1]) {
+                        float temp = sorted[j];
+                        sorted[j] = sorted[j + 1];
+                        sorted[j + 1] = temp;
+                    }
+                }
+            }
+
+            return sorted[4];
+        }
+        """
+
         gauss_dec = """
         vec4 kernel_calculator(sampler2D screenTexture, vec2 tex_coords, vec2 res){
             vec4 value = vec4(0.0);
@@ -462,18 +495,20 @@ class EffectManager():
 
         tex_dec = import_fury_shader(os.path.join("effects", "color_mapping.glsl"))
 
-        tex_dec = compose_shader([tex_dec, de_converter, map_func, gaussian_kernel, gauss_dec, avg_filter])
+        tex_dec = compose_shader([tex_dec, de_converter, 
+                                  map_func, gaussian_kernel, gauss_dec])
 
         tex_impl = """
         // Turning screen coordinates to texture coordinates
         vec2 res_factor = vec2(res.y/res.x, 1.0);
         vec2 renorm_tex = res_factor*normalizedVertexMCVSOutput.xy*0.5 + 0.5;
-        vec4 intensity = texture(screenTexture, renorm_tex);
-        //vec4 intensity = kernel_calculator(screenTexture, renorm_tex, res);
+        //vec4 intensity = texture(screenTexture, renorm_tex);
+        vec4 intensity = kernel_calculator(screenTexture, renorm_tex, res);
         //float intensity = texture(screenTexture, renorm_tex).r;
 
         //float fintensity = intensity.r;
         float fintensity = rgba_to_float(intensity);
+        //float fintensity = median_filter(screenTexture, renorm_tex, res);
         fintensity = map(fintensity, min_value, max_value, 0.0, 1.0);
 
         if(fintensity<=0.0){
@@ -558,7 +593,7 @@ class EffectManager():
             "screenTexture",
             textured_billboard,
             border_color = (0.0, 0.0, 0.0, 0.0),
-            blending_mode="Interpolate",
+            blending_mode="None",
             d_type = "rgba")
 
             converted_img = back_converter(img)
