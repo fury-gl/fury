@@ -105,7 +105,7 @@ effects_m.add(kde_effect)
 ####################################################################
 # Having that setup, just start the rendering process to see the results, and we are done here!
 
-interactive = True
+interactive = False
 
 if interactive:
     manager.start()

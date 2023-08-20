@@ -11,7 +11,6 @@ from fury import actor
 from fury import primitive as fp
 from fury import shaders, window
 from fury.actor import grid
-from fury.effects.effect_manager import EffectManager
 from fury.decorators import skip_linux, skip_osx, skip_win
 from fury.deprecator import ExpiredDeprecationError
 
@@ -1820,4 +1819,3 @@ def test_actors_primitives_count():
         primitives_count = test_case[2]
         act = act_func(**args)
         npt.assert_equal(primitives_count_from_actor(act), primitives_count)
-

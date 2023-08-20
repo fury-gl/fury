@@ -195,7 +195,7 @@ class KDE():
     ----------
     points : np.ndarray (N, 3)
         Array of points to be displayed.
-    bandwidths : np.ndarray (1, ) or (N, 1)
+    bandwidths : float, np.ndarray (1, ) or (N, 1)
         Array of bandwidths to be used in the KDE calculations. Must be one or one for each point.
     kernel : str, optional
         Kernel to be used for the distribution calculation. The available options are:
