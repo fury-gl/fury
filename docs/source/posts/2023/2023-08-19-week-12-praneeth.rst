@@ -9,7 +9,7 @@ Week 12: FileDialog Quest Begins!
 
 What did you do this week?
 --------------------------
-During this week, I initiated my work on the ``FileDialog`` PR, which had been started by Soham. The initial version of the ``FileDialog`` can be found at #294. To start, I focused on rebasing the PR. Since this PR was based on an older version, there were some updates to the overall UI structure that needed to be addressed for compatibility. While handling this, I identified a set of issues that I documented in the current PR #832. These mainly revolved around:
+During this week, I initiated my work on the ``FileDialog`` PR, which had been started by Soham. The initial version of the ``FileDialog`` can be found at `#294 <https://github.com/fury-gl/fury/pull/294>`_. To start, I focused on rebasing the PR. Since this PR was based on an older version, there were some updates to the overall UI structure that needed to be addressed for compatibility. While handling this, I identified a set of issues that I documented in the current PR `#832 <https://github.com/fury-gl/fury/pull/832>`_. These mainly revolved around:
 
 1. Resizing ``FileDialog`` and realted components.
 2. Rectifying the text overflow problem.
@@ -20,7 +20,7 @@ I systematically approached each of these challenges:
 
 **Resizing FileMenu and Related Components:** This was a fairly complex task since it involved intricate dependencies, such as the ``FileDialog`` relying on the ``FileMenu``, which, in turn, was dependent on ``ListBox2D`` and ``Panel2D`` resizing. To make the process manageable, I decided to progress incrementally in a seperate PR a bit later.
 
-**Text Overflow Issue:** The problem with text overflow was rooted in our previous approach, which involved executing these actions only when the ``TextBlock2D`` had a scene property. Although this approach suited the previous version of ``TextBlock2D``, the recent refactoring led to the removal of this property. The scene was previously utilized to determine the text actor's size. However, we had new methodologies to calculate these sizes, which are detailed in #803.
+**Text Overflow Issue:** The problem with text overflow was rooted in our previous approach, which involved executing these actions only when the ``TextBlock2D`` had a scene property. Although this approach suited the previous version of ``TextBlock2D``, the recent refactoring led to the removal of this property. The scene was previously utilized to determine the text actor's size. However, we had new methodologies to calculate these sizes, which are detailed in `#803 <https://github.com/fury-gl/fury/pull/803>`_.
 
 **Addressing ZeroDivisionError:** The ``ZeroDivisionError`` emerged when the total number of values were same as the number of slots. The issue lay in the separation of these values for calculating the scrollbar's height parameter. Unfortunately, this calculation error occurred when this would return us zero while updating the scrollbar. To counter this, I implemented a conditional check to ascertain whether the value is zero or not.
 
