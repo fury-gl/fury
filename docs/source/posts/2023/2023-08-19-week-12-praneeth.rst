@@ -29,7 +29,7 @@ I systematically approached each of these challenges:
 
 Did you get stuck anywhere?
 ---------------------------
-Among the challenges I faced, one notable instance involved addressing the visibility issue in ``TreeUi``. Despite my attempts at various solutions, none yielded the desired outcome. The ``TreeUi`` exhibited either full visibility or no visibility at all. In this situation, I sought guidance from my mentor to find a viable solution.
+Among the challenges I faced, one notable instance involved addressing the visibility issue in ``TreeUI``. Despite my attempts at various solutions, none yielded the desired outcome. The ``TreeUI`` exhibited either full visibility or no visibility at all. In this situation, I sought guidance from my mentor to find a viable solution.
 
 
 What is coming up next?
