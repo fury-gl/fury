@@ -12,7 +12,7 @@ I was working on with my mentors.
 Last Week's Effort
 ------------------
 As I shared with you :doc:`last week <2023-08-07-week-10-joaodellagli>`, the first draft of my API was finally ready for review, as 
-I finished tweaking some remaining details missing. I was tasked with finding a goode example of usage of the tools we proposed,
+I finished tweaking some remaining details missing. I was tasked with finding a good example of the usage of the tools we proposed,
 and I started to do that, however after testing it with some examples, I figured out some significant bugs were to be fixed. Also, 
 after some reviews and hints from some of my mentors and other GSoC contributors, we realised that some refactoring should be done, 
 mainly focused on avoiding bad API usage from the user. 
@@ -47,15 +47,15 @@ This change worked initially, although with some problems, that later revealed t
 updated inside the callback function as well. Fixing that, it was perfectly aligned and scaled!
 
 The second bug was related with the handling of the bandwidth, former sigma parameter. I realised I wasn't dealing properly with the option of the user passing only
-one single bandiwidth value being passed, so when trying that, only the first point was being rendered. I also fixed that and it worked, 
+one single bandwidth value being passed, so when trying that, only the first point was being rendered. I also fixed that and it worked, 
 so cheers!
 
 As I previously said, the bugs were not the only details I spent my time on last week. Being reviewed, the API design, even 
-though simple, showed itself vulnerable to bad usage from the user side, requiring some changes. The changes suggested by mentors was, 
+though simple, showed itself vulnerable to bad usage from the user side, requiring some changes. The changes suggested by mentors were, 
 to, basically, take the ``kde`` method out of the ``EffectManager`` class, and create a new class from it inside an ``effects`` module, 
 like it was a special effects class. With this change, the KDE setup would go from:
 
-.. code-block:: pyton
+.. code-block:: python
 
     em = EffectManager(show_manager)
 
