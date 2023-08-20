@@ -22,10 +22,25 @@ I systematically approached each of these challenges:
 
 **Text Overflow Issue:** The problem with text overflow was rooted in our previous approach, which involved executing these actions only when the ``TextBlock2D`` had a scene property. Although this approach suited the previous version of ``TextBlock2D``, the recent refactoring led to the removal of this property. The scene was previously utilized to determine the text actor's size. However, we had new methodologies to calculate these sizes, which are detailed in `#803 <https://github.com/fury-gl/fury/pull/803>`_.
 
+.. image:: https://github.com/fury-gl/fury/assets/64432063/b001f9d3-a5e8-45ad-8605-85df595b5654
+   :align: center
+   :alt: Text Overflow Before
+
+.. image:: https://github.com/fury-gl/fury/assets/64432063/d3c9c3a3-e601-45ab-8975-2b1e98acf1d3
+   :align: center
+   :alt: Text Overflow After
+
 **Addressing ZeroDivisionError:** The ``ZeroDivisionError`` emerged when the total number of values were same as the number of slots. The issue lay in the separation of these values for calculating the scrollbar's height parameter. Unfortunately, this calculation error occurred when this would return us zero while updating the scrollbar. To counter this, I implemented a conditional check to ascertain whether the value is zero or not.
 
 **Correcting ``ListBox2D`` Item Positioning:** Another challenge I encountered related to the improper positioning of ``ListBox2D`` item's background. When a slot was not visible, its background was resized to zero, and visibility was set to off. Consequently, during the calculation of updated positions, the height was considered zero, leading to mispositioning. I resolved this by refraining from resizing and solely toggling visibility, achieving the desired result.
 
+.. image:: https://github.com/fury-gl/fury/assets/64432063/e2805934-b037-47fd-872c-0b284b298d3c
+   :align: center
+   :alt: ListBox2D mispositioning Before
+
+.. image:: https://github.com/fury-gl/fury/assets/64432063/3bc1aabb-bb79-4e26-817d-a2a2ddd20ea3
+   :align: center
+   :alt: Fixed ListBox2D mispositioning
 
 Did you get stuck anywhere?
 ---------------------------
