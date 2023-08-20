@@ -3377,6 +3377,7 @@ class FileDialog2D(UI):
             background_opacity=self.background_opacity)
         self.dir_block = TextBlock2D(text=self.current_directory,
                                      size=self.dir_block_size)
+        clip_overflow(self.dir_block, self.dir_block_size[0])
         self.accept_button = TextBlock2D(size=self.accept_button_size,
                                          text=self.dialog_type.title(),
                                          color=(1, 1, 1))
@@ -3465,6 +3466,7 @@ class FileDialog2D(UI):
 
     def dir_click_callback(self, i_ren, _obj, listboxitem):
         self.dir_block.message = self.current_directory
+        clip_overflow(self.dir_block, self.size[0])
         i_ren.force_render()
         i_ren.event.abort()
 
