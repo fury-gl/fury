@@ -1044,80 +1044,66 @@ def test_ui_file_dialog_2d(interactive=False):
     npt.assert_array_equal((100, 100), file_dialog_open.size)
     npt.assert_equal("", file_dialog_open.save_filename)
 
-    # Create temporary directory and files
-    os.mkdir(os.path.join(os.getcwd(), "testdir"))
-    os.chdir("testdir")
-    os.mkdir(os.path.join(os.getcwd(), "tempdir"))
-    for i in range(5):
-        open(os.path.join(os.getcwd(), "tempdir", "test" + str(i) + ".txt"),
-             'wt').close()
-    open("testfile.txt", 'wt').close()
-    open("testfile2.txt", 'wt').close()
-    open("testfile3.txt", 'wt').close()
+    with InTemporaryDirectory() as tmpdir:
+        # Create temporary directory and files
+        test_dir = os.path.join(tmpdir, "testdir")
+        os.makedirs(os.path.join(test_dir, "tempdir"))
+        for i in range(5):
+            open(os.path.join(test_dir, "tempdir", "test" + str(i) + ".txt"),
+                 'wt').close()
+        open(os.path.join(test_dir, 'testfile.txt'), 'wt').close()
 
-    file_dialog = ui.FileDialog2D(os.getcwd(), size=(300, 200),
-                                  position=(50, 50), dialog_type="Save")
+        file_dialog = ui.FileDialog2D(test_dir, size=(300, 200),
+                                      position=(50, 50), dialog_type="Save")
 
-    accepts = itertools.count()
-    rejects = itertools.count()
-    current_dirs = []
-    current_files = []
-    save_files = []
+        accepts = itertools.count()
+        rejects = itertools.count()
+        current_dirs = []
+        current_files = []
+        save_files = []
 
-    def accept_(file_dialog):
-        next(accepts)
-        current_dirs.append(file_dialog.current_directory.split(os.sep)[-1])
-        current_files.append(file_dialog.current_file.split(os.sep)[-1])
-        save_files.append(file_dialog.save_filename.split(os.sep)[-1])
+        def accept_(file_dialog):
+            next(accepts)
+            current_dirs.append(file_dialog.current_directory.split(os.sep)[-1])
+            current_files.append(file_dialog.current_file.split(os.sep)[-1])
+            save_files.append(file_dialog.save_filename.split(os.sep)[-1])
 
-    def reject_(file_dialog):
-        next(rejects)
+        def reject_(file_dialog):
+            next(rejects)
 
-    file_dialog.on_accept = accept_
-    file_dialog.on_reject = reject_
+        file_dialog.on_accept = accept_
+        file_dialog.on_reject = reject_
 
-    event_counter = EventCounter()
-    event_counter.monitor(file_dialog)
+        event_counter = EventCounter()
+        event_counter.monitor(file_dialog)
 
-    current_size = (800, 800)
-    show_manager = window.ShowManager(
-        size=current_size, title="File Dialog Test")
-    show_manager.scene.add(file_dialog)
+        current_size = (800, 800)
+        show_manager = window.ShowManager(
+            size=current_size, title="File Dialog Test")
+        show_manager.scene.add(file_dialog)
 
-    if interactive:
-        show_manager.record_events_to_file(recording_filename)
-        print(list(event_counter.events_counts.items()))
-        event_counter.save(expected_events_counts_filename)
+        if interactive:
+            show_manager.record_events_to_file(recording_filename)
+            print(list(event_counter.events_counts.items()))
+            event_counter.save(expected_events_counts_filename)
 
-    else:
-        show_manager.play_events_from_file(recording_filename)
-        expected = EventCounter.load(expected_events_counts_filename)
-        event_counter.check_counts(expected)
+        else:
+            show_manager.play_events_from_file(recording_filename)
+            expected = EventCounter.load(expected_events_counts_filename)
+            event_counter.check_counts(expected)
 
-    exp_dirs = ['testdir', 'testdir', 'testdir', 'testdir', 'tempdir',
-                'tempdir', 'tempdir', 'tempdir']
-    exp_files = ['', 'testfile.txt', 'testfile.txt', 'testfile.txt',
-                 'test1.txt', 'test2.txt', 'test2.txt', 'test0.txt']
-    exp_saves = ['Enter filename', 'Enter filename', 'ttt', 'tttyyy',
-                 'tttyyy', 'tttyyy', 'tttyyytt', 'tttyyytt']
+        exp_dirs = ['testdir', 'testdir', 'testdir', 'testdir', 'tempdir',
+                    'tempdir', 'tempdir', 'tempdir']
+        exp_files = ['', 'testfile.txt', 'testfile.txt', 'testfile.txt',
+                     'test1.txt', 'test2.txt', 'test2.txt', 'test0.txt']
+        exp_saves = ['Enter filename', 'Enter filename', 'ttt', 'tttyyy',
+                     'tttyyy', 'tttyyy', 'tttyyytt', 'tttyyytt']
 
-    # Remove temporary directory and files
-    os.remove("testfile.txt")
-    os.remove("testfile2.txt")
-    os.remove("testfile3.txt")
-    for i in range(5):
-        os.remove(os.path.join(os.getcwd(), "tempdir",
-                               "test" + str(i) + ".txt"))
-    os.rmdir(os.path.join(os.getcwd(), "tempdir"))
-    os.chdir("..")
-    # Remove this line when re-recording test.
-    os.rmdir("testdir")
-
-    npt.assert_equal(8, next(accepts))
-    npt.assert_equal(1, next(rejects))
-    npt.assert_array_equal(exp_dirs, current_dirs)
-    npt.assert_array_equal(exp_files, current_files)
-    npt.assert_array_equal(exp_saves, save_files)
+        npt.assert_equal(8, next(accepts))
+        npt.assert_equal(1, next(rejects))
+        npt.assert_array_equal(exp_dirs, current_dirs)
+        npt.assert_array_equal(exp_files, current_files)
+        npt.assert_array_equal(exp_saves, save_files)
 
 
 def test_ui_combobox_2d(interactive=False):
