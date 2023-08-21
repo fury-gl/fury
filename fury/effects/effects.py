@@ -1,5 +1,5 @@
 import os
-from typing import Any
+from typing import Any, Union as tUnion
 
 import numpy as np
 from fury.actor import Actor, billboard
@@ -217,7 +217,7 @@ class KDE():
 
     def __init__(self,
                  points : np.ndarray,
-                 bandwidths,
+                 bandwidths : tUnion[float, np.ndarray],
                  kernel : str = "gaussian",
                  opacity : float = 1.0,
                  colormap : str = "viridis",
