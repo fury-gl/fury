@@ -1,11 +1,11 @@
 .. image:: https://developers.google.com/open-source/gsoc/resources/downloads/GSoC-logo-horizontal.svg
    :height: 50
    :align: center
-   :target: https://summerofcode.withgoogle.com/programs/2022/projects/a47CQL2Z
+   :target: https://summerofcode.withgoogle.com/programs/2023/projects/ED0203De
 
 .. image:: https://www.python.org/static/community_logos/python-logo.png
    :width: 40%
-   :target: https://summerofcode.withgoogle.com/programs/2022/organizations/python-software-foundation
+   :target: https://summerofcode.withgoogle.com/programs/2023/organizations/python-software-foundation
 
 .. image:: https://python-gsoc.org/logos/FURY.png
    :width: 25%
