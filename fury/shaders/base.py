@@ -426,10 +426,10 @@ def shader_custom_uniforms(actor, shader_type):
           * "fragment"
           * "geometry"
     """
-    SHADER_FUNCTIONS = {"vertex" : actor.GetShaderProperty().GetVertexCustomUniforms(), 
+    shader_functions = {"vertex" : actor.GetShaderProperty().GetVertexCustomUniforms(), 
                         "fragment" : actor.GetShaderProperty().GetFragmentCustomUniforms(),
                         "geometry" : actor.GetShaderProperty().GetGeometryCustomUniforms()}
-    if shader_type.lower() not in SHADER_FUNCTIONS:
+    if shader_type.lower() not in shader_functions:
         raise ValueError("Shader type should be of type 'vertex', 'fragment' or 'geometry'.")
     
-    return SHADER_FUNCTIONS[shader_type.lower()]
+    return shader_functions[shader_type.lower()]
