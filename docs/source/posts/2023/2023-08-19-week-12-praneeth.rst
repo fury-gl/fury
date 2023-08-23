@@ -30,7 +30,7 @@ I systematically approached each of these challenges:
    :align: center
    :alt: Text Overflow After
 
-**Addressing ZeroDivisionError:** The ``ZeroDivisionError`` emerged when the total number of values were same as the number of slots. The issue lay in the separation of these values for calculating the scrollbar's height parameter. Unfortunately, this calculation error occurred when this would return us zero while updating the scrollbar. To counter this, I implemented a conditional check to ascertain whether the value is zero or not.
+**Addressing ZeroDivisionError:** The ``ZeroDivisionError`` emerged when the total number of values was the same as the number of slots. The issue lay in the separation of these values for calculating the scrollbar's height parameter. Unfortunately, this calculation error occurred when this would return us zero while updating the scrollbar. To counter this, I implemented a conditional check to ascertain whether the value is zero or not.
 
 **Correcting ``ListBox2D`` Item Positioning:** Another challenge I encountered related to the improper positioning of ``ListBox2D`` item's background. When a slot was not visible, its background was resized to zero, and visibility was set to off. Consequently, during the calculation of updated positions, the height was considered zero, leading to mispositioning. I resolved this by refraining from resizing and solely toggling visibility, achieving the desired result.
 
