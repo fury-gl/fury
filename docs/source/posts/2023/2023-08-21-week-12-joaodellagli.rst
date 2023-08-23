@@ -15,7 +15,7 @@ style, as there were some minor details my GSoC contributors pointed out that ne
 with the `typed hint` of one of my functions. Filipi, my mentor, showed me there is a way to have more than one typed hint in the same parameter, 
 all I needed to do was to use the `Union` class from the `typing` module, as shown below:
 
-.. code-block::python
+.. code-block:: python
 
    from typing import Union as tUnion
    from numpy import ndarray
