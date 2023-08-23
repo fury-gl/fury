@@ -1,7 +1,7 @@
 Week 12: Now That is (almost) a Wrap!
 ==========================
 
-.. post:: August 28, 2023
+.. post:: August 21, 2023
    :author: João Victor Dell Agli Floriano
    :tags: google
    :category: gsoc
