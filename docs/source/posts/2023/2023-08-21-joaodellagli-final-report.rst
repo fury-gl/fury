@@ -54,8 +54,8 @@ Objectives Completed
 --------------------
 
 - **Implement framebuffer usage in FURY** (partially)
-    The first phase, adressed from *May/29* to *July/07*, took longer than expected and could not be totally completed. The project started with the investigation of
-    `VTK's Frambuffer Object <https://vtk.org/doc/nightly/html/classvtkOpenGLFramebufferObject.html#details>`_, a vital part of this project, to understand 
+    The first phase, addressed from *May/29* to *July/07*, took longer than expected and could not be totally completed. The project started with the investigation of
+    `VTK's Framebuffer Object <https://vtk.org/doc/nightly/html/classvtkOpenGLFramebufferObject.html#details>`_, a vital part of this project, to understand 
     how to use it properly. 
 
     Framebuffer Objects, abbreviated as FBOs, are the key to post-processing effects in OpenGL, as they are used to render things offscreen and save it to a texture
@@ -86,7 +86,7 @@ Objectives Completed
     how to develop features in Fury with the used tools, and it shall be done soon.
 
 - **Shader-framebuffer integration**
-    The second phase, which initially was tought as "Implement a shader that uses a colormap to render framebuffers" and "Escalate this 
+    The second phase, which initially was thought as "Implement a shader that uses a colormap to render framebuffers" and "Escalate this 
     rendering for composing multiple framebuffers" was actually a pretty simple phase that could be addressed in one week, *July/10* 
     to *July/17*, done at the same time as the third phase goal, documented in this 
     `blogpost <https://fury.gl/latest/posts/2023/2023-07-17-week-7-joaodellagli.html>`_. As Fury already had a tool for generating and 
@@ -148,7 +148,7 @@ Objectives Completed
     charge its cost. As it can be seen above, just calculating each point's density isn't the whole part, as I also need to divide 
     everyone by the total number of points :math:`n`, and then sum them all. The problem is that, if the number of points its big enough, 
     the individual densities will be really low, and that would not be a problem for a 32-bit precision float framebuffer, but that is 
-    *definetely* a problem for a 8-bit integer framebuffer, as small enough values will simply underflow and disappear. That issue is 
+    *definitely* a problem for a 8-bit integer framebuffer, as small enough values will simply underflow and disappear. That issue is 
     currently under investigation, and some solutions have already being presented, as I will show in the **Objectives in Progress** 
     section.
 
@@ -222,7 +222,7 @@ Objectives Completed
     Which outputted the same results as shown above. It may have cost some simplicity as we are now one line farther from having it 
     working, but it is more explicit in telling the user this is not just a normal actor.
 
-    Another detail I worked on was the kernel variaty. The Gaussian Kernel isn't the only one available to model density distributions, 
+    Another detail I worked on was the kernel variety. The Gaussian Kernel isn't the only one available to model density distributions, 
     there are several others that can do that job, as it can be seen in this `scikit-learn piece of documentation <https://scikit-learn.org/stable/modules/density.html>`_ 
     and this `Wikipedia page on kernels <https://en.wikipedia.org/wiki/Kernel_(statistics)>`_. Based off the scikit-learn KDE 
     implementation, I worked on implementing the following kernels inside our API, that can be chosen as a parameter when calling the 
@@ -302,7 +302,7 @@ Objectives in Progress
 
     Another detail that would be a good addition to the API is UI controls. Filipi, one of my mentors, told me it would be a good feature 
     if the user could control the intensities of the bandwidths for a better structural visualization of the render, and knowing Fury already 
-    have a good set of `UI elements <https://fury.gl/latest/auto_examples/index.html#user-interface-elements>`_, I just neeeded to integrate 
+    have a good set of `UI elements <https://fury.gl/latest/auto_examples/index.html#user-interface-elements>`_, I just needed to integrate 
     that into my program via callbacks. I tried implementing an intensity slider, however, for some reason, it is making the program crash 
     randomly, for reasons I still don't know, so that is another issue under investigation. Below, how a first version of that was working 
     before the crashes:
