@@ -107,23 +107,6 @@ if __name__ == '__main__':
         in float scaleVSOutput;
 
         uniform mat4 MCVCMatrix;
-
-        layout(std140) uniform MyBlock
-        {
-          float coeffss[15];
-        };
-
-        """
-
-    vec_to_vec_rot_mat = import_fury_shader(os.path.join(
-        'utils', 'vec_to_vec_rot_mat.glsl'))
-
-    sd_cylinder = \
-        """
-        float sdSphere(vec3 p, float r)
-        {
-            return length(p) - r;
-        }
         """
 
     sdf_map = \
@@ -268,9 +251,8 @@ if __name__ == '__main__':
     blinn_phong_model = import_fury_shader(os.path.join(
         'lighting', 'blinn_phong_model.frag'))
 
-    fs_dec = compose_shader([fs_vars_dec, vec_to_vec_rot_mat, sd_cylinder,
-                             sdf_map, central_diffs_normal, cast_ray,
-                             blinn_phong_model])
+    fs_dec = compose_shader([fs_vars_dec, sdf_map, central_diffs_normal,
+                             cast_ray, blinn_phong_model])
 
     shader_to_actor(box_sd_stg_actor, 'fragment', decl_code=fs_dec)
     shader_to_actor(box_sd_stg_actor2, 'fragment', decl_code=fs_dec)
