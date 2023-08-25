@@ -1,7 +1,7 @@
 .. image:: https://developers.google.com/open-source/gsoc/resources/downloads/GSoC-logo-horizontal.svg
    :height: 50
    :align: center
-   :target: https://summerofcode.withgoogle.com/programs/2023
+   :target: https://summerofcode.withgoogle.com/programs/2023/projects/ymwnLwtT
 
 .. image:: https://www.python.org/static/community_logos/python-logo.png
    :width: 40%
@@ -46,22 +46,28 @@ Ellipsoid actor implemented with SDF
 A first approach for tensor glyph generation has been made, using raymarching and SDF applied to a box. The current implementation with tensor slicer requires a sphere with a specific number of vertices to be deformed based on this model, to get a higher resolution a sphere with more vertices is needed. Because the raymarching technique does not use polygonal meshes it is possible to define perfectly smooth surfaces and still obtain a fast rendering.
 
 Details of the implementation:
-- The are some minor calculations done in the vertex shader, corresponding to the tensor matrix calculation, and data normalization.
-- The implementation of the raymarching algorithm and the definition of the SDF is done in the fragment shader. We define the SDF in a simpler way by transforming a sphere into an ellipsoid, considering that the SDF of a sphere is easily computed and the definition of a tensor gives us a linear transformation of a given geometry. Also, as scaling is not a rigid body transformation, we multiply the final result by a factor to compensate for the difference.
-- The central differences method was used to compute the normals necessary for the scene’s illumination. In addition, we used the Blinn-Phong lighting technique which is high-quality and computationally cheap.
+
+- *Vertex shader pre-calculations*: Some minor calculations are done in the vertex shader. One corresponding to the eigenvalues constraining and min-max normalization to avoid incorrect visualizations when the difference between the eigenvalues is too large. And the other related to the tensor matrix calculation given by the diffusion tensor definition :math:`T = R^{−1}\Lambda R` where :math:`R` is a rotation matrix that transforms the standard basis onto the eigenvector basis, and :math:`\Lambda` is the diagonal matrix of eigenvalues [4]_.
+- *Ellipsoid SDF definition*: The definition of the SDF is done in the fragment shader inside the ``map`` function which is used later for the raymarching algorithm and the normals calculation. We define the SDF in a simpler way by transforming a sphere into an ellipsoid, considering that the SDF of a sphere is easily computed and the definition of a tensor gives us a linear transformation of a given geometry. Also, as scaling is not a rigid body transformation, we multiply the final result by a factor to compensate for the difference, which gave us the SDF of the ellipsoid defined as ``sdSphere(tensorMatrix * (position - centerMCVSOutput), scaleVSOutput*0.48) * scFactor``.
+- *Raymarching algorithm and lighting*: For the raymarching algorithm a small value of 20 was taken as the maximum distance since we apply the technique to each individual object and not all at the same time, additionally, we set the convergence precision to 0.001. We use the central differences method to compute the normals necessary for the scene’s illumination, besides the Blinn-Phong lighting technique which is high-quality and computationally cheap.
+- *Visualization example*: Below is a detailed visualization of the ellipsoids created from this new implementation.
 
 .. image:: https://user-images.githubusercontent.com/31288525/244503195-a626718f-4a13-4275-a2b7-6773823e553c.png
     :width: 376
     :align: center
 
-This implementation does show a better quality in the displayed glyphs, and support the display of a large amount of data, as seen in the image below. For this reason a tutorial was made to justify in more detail the value of this new implementation.
+This implementation does show a better quality in the displayed glyphs, and support the display of a large amount of data, as seen in the image below. For this reason a tutorial was made to justify in more detail the value of this new implementation. Below are some images generated for the tutorial.
 
-**Future work:** In line with one of the initial objectives, it is expected to implement billboards later on, to improve the performance, i.e., higher frame rate and less memory usage for the tensor ellipsoid creation. In addition to looking for ways to optimize the naive raymarching algorithm and the definition of SDFs.
+.. image:: https://user-images.githubusercontent.com/31288525/260906510-d422e7b4-3ba3-4de6-bfd0-09c04bec8876.png
+    :width: 600
+    :align: center
 
 *Pull Requests:*
 
 -  **Ellipsoid actor implemented with SDF (Merged)** https://github.com/fury-gl/fury/pull/791
 -  **Tutorial on using ellipsoid actor to visualize tensor ellipsoids for DTI (Merged)** https://github.com/fury-gl/fury/pull/818
+
+**Future work:** In line with one of the initial objectives, it is expected to implement billboards later on, to improve the performance, i.e., higher frame rate and less memory usage for the tensor ellipsoid creation. In addition to looking for ways to optimize the naive raymarching algorithm and the definition of SDFs.
 
 Objectives in Progress
 ----------------------
@@ -69,27 +75,36 @@ Objectives in Progress
 DTI uncertainty visualization
 *****************************
 
-The DTI visualization pipeline is fairly complex, a level of uncertainty arises, which, if visualized, helps to assess the accuracy of the model. This measure is not currently implemented, and even though the are several methods to calculate a visualize the uncertainty in the DTI model, because of its simplicity and visual representation, we considered Matrix Perturbation Analysis (MPA) proposed by Basser [Bas97]. This measurement is visualized as double cones representing the variance of the main direction of diffusion, for which raymarching tecnique was also used in the creation of these objects.
+The DTI visualization pipeline is fairly complex, a level of uncertainty arises, which, if visualized, helps to assess the accuracy of the model. This measure is not currently implemented, and even though the are several methods to calculate a visualize the uncertainty in the DTI model, because of its simplicity and visual representation, we considered Matrix Perturbation Analysis (MPA) proposed by Basser [1]_. This measurement is visualized as double cones representing the variance of the main direction of diffusion, for which raymarching tecnique was also used in the creation of these objects.
 
 Below is a demo of how this new feature is intended to be used, an image of diffusion tensor ellipsoids and their associated uncertainty cones.
 
+Details of the implementation:
+
+- *Source of uncertainty*: The method of MPA arises from the susceptibility of DTI to dMRI noise present in diffusion-weighted images (DWIs), and also because the model is inherently statistical, making the tensor estimation and other derived quantities to be random variables [1]_. For this reason, this method focus on the premise that image noise produces a random perturbation in the diffusion tensor estimation, and therefore in the calculation of eigenvalues and eigenvectors, particularly in the first eigenvector associated with the main diffusion direction.
+- *Mathematical equation*: The description of the perturbation of the principal eigenvector is given by math formula where :math:`\Delta D` corresponds to the estimated perturbation matrix of :math:`D` given by the diagonal elements of the covariance matrix :math:`\Sigma_{\alpha} \approx (B^T\Sigma^{−1}_{e}B)^{−1}`, where :math:`\Sigma_{e}` is the covariance matrix of the error e, defined as a diagonal matrix made with the diagonal elements of :math:`(\Sigma^{−1}_{e}) = ⟨S(b)⟩^2 / \sigma^{2}_{\eta}`. Then, to get the angle :math:`\theta` between the perturbed principal eigenvector of :math:`D`, :math:`\varepsilon_1 + \Delta\varepsilon_1`, and the estimated eigenvector :math:`\varepsilon_1`, can be approximated by :math:`\theta = \tan^{−1}( \| \Delta\varepsilon_1 \|)` [2]_. Taking into account the above, we define the function ``main_dir_uncertainty(evals, evecs, signal, sigma, b_matrix)`` that calculates the uncertainty of the eigenvector associated to the main direction of diffusion.
+- *Double cone SDF definition*: The final SDF is composed by the union of 2 separately cones using the definition taken from this list of `distance functions <https://iquilezles.org/articles/distfunctions/#:~:text=Cone%20%2D%20exact,sign(s)%3B%0A%7D>`_, in this way we have the SDF for the double cone defined as ``opUnion(sdCone(p,a,h), sdCone(-p,a,h)) * scaleVSOutput``
+- *Visualization example*: Below is a demo of how this new feature is intended to be used, an image of diffusion tensor ellipsoids and their associated uncertainty cones.
+
 .. image:: https://user-images.githubusercontent.com/31288525/254747296-09a8674e-bfc0-4b3f-820f-8a1b1ad8c5c9.png
-    :width: 530
+    :width: 610
     :align: center
 
-The implementation is almost complete, but as it is a new addition that includes mathematical calculations and for which there is no direct reference for comparison, it requires a more detail review before it can be incorporated. For this reason, a tutorial explaining in more detail how to use this feature will be added later.
+The implementation is almost complete, but as it is a new addition that includes mathematical calculations and for which there is no direct reference for comparison, it requires a more detail review before it can be incorporated.
 
 *Pull Request:*
 
 -  **DTI uncertainty visualization (Under Review)** https://github.com/fury-gl/fury/pull/810
 
-**Future work:** When ODF implementation is complete, uncertainty for this other reconstruction model is expected to be added, using semitransparent glyphs representing the mean directional information proposed by Tournier [TCGC04].
+**Future work:** A tutorial will be made explaining in more detail how to calculate the parameters needed for the uncertainty cones using **dipy** functions, specifically: `estimate_sigma <https://github.com/dipy/dipy/blob/321e06722ef42b5add3a7f570f6422845177eafa/dipy/denoise/noise_estimate.py#L272>`_ for the noise variance calculation, `design_matrix <https://github.com/dipy/dipy/blob/321e06722ef42b5add3a7f570f6422845177eafa/dipy/reconst/dti.py#L2112>`_ to get the b-matrix, and `tensor_prediction <https://github.com/dipy/dipy/blob/321e06722ef42b5add3a7f570f6422845177eafa/dipy/reconst/dti.py#L639>`_ for the signal estimation. Additionally, when ODF implementation is complete, uncertainty for this other reconstruction model is expected to be added, using semitransparent glyphs representing the mean directional information proposed by Tournier [3]_.
 
 ODF actor implemented with SDF
 ******************************
 
+
+
 .. image:: https://user-images.githubusercontent.com/31288525/260909561-fd90033c-018a-465b-bd16-3586bb31ca36.png
-    :width: 600
+    :width: 580
     :align: center
 
 *Working branch:*
@@ -140,3 +155,8 @@ Timeline
 
 References
 ~~~~~~~~~~
+
+.. [1] Basser, P. J. (1997). Quantifying errors in fiber direction and diffusion tensor field maps resulting from MR noise. In 5th Scientific Meeting of the ISMRM (Vol. 1740).
+.. [2] Chang, L. C., Koay, C. G., Pierpaoli, C., & Basser, P. J. (2007). Variance of estimated DTI‐derived parameters via first‐order perturbation methods. Magnetic Resonance in Medicine: An Official Journal of the International Society for Magnetic Resonance in Medicine, 57(1), 141-149.
+.. [3] J-Donald Tournier, Fernando Calamante, David G Gadian, and Alan Connelly. Direct estimation of the fiber orientation density function from diffusion-weighted mri data using spherical deconvolution. Neuroimage, 23(3):1176–1185, 2004.
+.. [4] Gordon Kindlmann. Superquadric tensor glyphs. In Proceedings of the Sixth Joint Eurographics-IEEE TCVG conference on Visualization, pages 147–154, 2004.
