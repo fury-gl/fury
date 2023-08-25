@@ -28,7 +28,7 @@ Google Summer of Code Final Work Product
 
 Abstract
 --------
-This project had the goal to implement 3D Kernel Density Estimation rendering to Fury. Kernel Density Estimation, or KDE, is a 
+This project had the goal to implement 3D Kernel Density Estimation rendering to FURY. Kernel Density Estimation, or KDE, is a 
 statistical method that uses kernel smoothing for modelling and estimating the density distribution of a set of points defined 
 inside a given region. For its graphical implementation, it was used post-processing techniques such as offscreen rendering to 
 framebuffers and colormap post-processing as tools to achieve the desired results. A first stage of this goal was completed with a 
@@ -72,8 +72,8 @@ Objectives Completed
     themselves to make it work, they decided it was better if another path was taken, using 
     `VTK's WindowToImageFilter <https://vtk.org/doc/nightly/html/classvtkWindowToImageFilter.html>`_ method as a workaround, described 
     in this `blogpost <https://fury.gl/latest/posts/2023/2023-07-03-week-5-joaodellagli.html>`_. This method helped the development of 
-    three new functions to Fury, *window_to_texture()*, *texture_to_actor()* and *colormap_to_texture()*, that allows the passing of 
-    different kinds of textures to Fury's actor's shaders, the first one to capture a window and pass it as a texture to an actor, 
+    three new functions to FURY, *window_to_texture()*, *texture_to_actor()* and *colormap_to_texture()*, that allows the passing of 
+    different kinds of textures to FURY's actor's shaders, the first one to capture a window and pass it as a texture to an actor, 
     the second one to pass an external texture to an actor, and the third one to specifically pass a colormap as a texture to an 
     actor. It is important to say that *WindowToImageFilter()* is not the ideal way to make it work, as this method does not seem to 
     support float textures, however, a workaround to that is currently being worked on, as I will describe later on.
@@ -83,13 +83,13 @@ Objectives Completed
     The result of this whole FBO and WindowToImageFilter experimentation is well documented in PR 
     `#804 <https://github.com/fury-gl/fury/pull/804>`_ that implements an experimental version of a KDE rendering program. 
     The future of this PR, as discussed with my mentors, is to be better documented to be used as an example for developers on 
-    how to develop features in Fury with the used tools, and it shall be done soon.
+    how to develop features in FURY with the used tools, and it shall be done soon.
 
 - **Shader-framebuffer integration**
     The second phase, which initially was thought as "Implement a shader that uses a colormap to render framebuffers" and "Escalate this 
     rendering for composing multiple framebuffers" was actually a pretty simple phase that could be addressed in one week, *July/10* 
     to *July/17*, done at the same time as the third phase goal, documented in this 
-    `blogpost <https://fury.gl/latest/posts/2023/2023-07-17-week-7-joaodellagli.html>`_. As Fury already had a tool for generating and 
+    `blogpost <https://fury.gl/latest/posts/2023/2023-07-17-week-7-joaodellagli.html>`_. As FURY already had a tool for generating and 
     using colormaps, they were simply connected to the shader part of the program as textures, with the functions explained above. 
     Below, the result of the *matplotlib viridis* colormap passed to a simple gaussian KDE render:
 
@@ -179,7 +179,7 @@ Objectives Completed
        :alt: API 3D KDE plot
 
     And this was not the only feature I had implemented for this API, as the use of *WindowToImageFilter* method opened doors for a 
-    whole new world for Fury: The world of post-processing effects. With this features setup, I managed to implement a *gaussian blur* 
+    whole new world for FURY: The world of post-processing effects. With this features setup, I managed to implement a *gaussian blur* 
     effect, a *grayscale* effect and a *laplacian* effect for calculating "borders":
 
     .. image:: https://raw.githubusercontent.com/JoaoDell/gsoc_assets/main/images/gaussian_blur.png
@@ -198,7 +198,7 @@ Objectives Completed
     future addition.
 
     Talking with my mentors, we realised that the first KDE API, even though simple, could lead to bad usage from users, as the 
-    *em.kde()* method, that outputted a *Fury actor*, had dependencies different from any other object of its kind, making it a new 
+    *em.kde()* method, that outputted a *FURY actor*, had dependencies different from any other object of its kind, making it a new 
     class of actors, which could lead to confusion and bad handling. After some pair programming sessions, they instructed me to take 
     a similar, but different road from what I was doing, turning the kde actor into a new class, the *KDE* class. This class would 
     have almost the same set of instructions present in the prior method, but it would break them in a way it would only be completely 
@@ -245,8 +245,8 @@ Objectives Completed
     *Pull Requests*:
     - `First Stage of the KDE Rendering API <https://github.com/fury-gl/fury/pull/826>`_:
     All of this work culminated in PR `#826 <https://github.com/fury-gl/fury/pull/826/>`_, that proposes to add the first stage of 
-    this API (there are some details yet to be completed, like the :math:`n` division) to Fury. This PR added the described API, and also 
-    proposed some minor changes to some already existing Fury functions related to callbacks, changes necessary for this and other 
+    this API (there are some details yet to be completed, like the :math:`n` division) to FURY. This PR added the described API, and also 
+    proposed some minor changes to some already existing FURY functions related to callbacks, changes necessary for this and other 
     future applications that would use it to work. It also added the six kernels described, and a simple documented example on how 
     to use this feature.  
 
@@ -301,7 +301,7 @@ Objectives in Progress
     work.
 
     Another detail that would be a good addition to the API is UI controls. Filipi, one of my mentors, told me it would be a good feature 
-    if the user could control the intensities of the bandwidths for a better structural visualization of the render, and knowing Fury already 
+    if the user could control the intensities of the bandwidths for a better structural visualization of the render, and knowing FURY already 
     have a good set of `UI elements <https://fury.gl/latest/auto_examples/index.html#user-interface-elements>`_, I just needed to integrate 
     that into my program via callbacks. I tried implementing an intensity slider, however, for some reason, it is making the program crash 
     randomly, for reasons I still don't know, so that is another issue under investigation. Below, how a first version of that was working 
@@ -346,5 +346,5 @@ Timeline
 +---------------------+----------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Week 11 (14-08-2022)| A Refactor is Sometimes Needed                     | `FURY <https://fury.gl/latest/posts/2023/2023-08-14-week-11-joaodellagli.html>`__ - `Python <https://blogs.python-gsoc.org/en/joaodellaglis-blog/a-refactor-is-sometimes-needed/>`__                      |
 +---------------------+----------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Week 12 (21-08-2022)| Now That is (almost) a Wrap!                       | `FURY <https://fury.gl/latest/posts/2023/2023-08-21-week-12-joaodellagli.html>`__ - `Python <https://blogs.python-gsoc.org/en/joaodellaglis-blog/week-12-now-that-is-almost-a-wrap/>`__                                                                                         |
+| Week 12 (21-08-2022)| Now That is (almost) a Wrap!                       | `FURY <https://fury.gl/latest/posts/2023/2023-08-21-week-12-joaodellagli.html>`__ - `Python <https://blogs.python-gsoc.org/en/joaodellaglis-blog/week-12-now-that-is-almost-a-wrap/>`__                   |                                                                      
 +---------------------+----------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
