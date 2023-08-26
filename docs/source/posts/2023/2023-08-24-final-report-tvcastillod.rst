@@ -43,7 +43,7 @@ Objectives Completed
 Ellipsoid actor implemented with SDF
 ************************************
 
-A first approach for tensor glyph generation has been made, using raymarching and SDF applied to a box. The current implementation with tensor slicer requires a sphere with a specific number of vertices to be deformed based on this model, to get a higher resolution a sphere with more vertices is needed. Because the raymarching technique does not use polygonal meshes it is possible to define perfectly smooth surfaces and still obtain a fast rendering.
+A first approach for tensor glyph generation has been made, using raymarching and SDF applied to a box. The current implementation with ``tensor_slicer`` requires a sphere with a specific number of vertices to be deformed based on this model, to get a higher resolution a sphere with more vertices is needed. Because the raymarching technique does not use polygonal meshes it is possible to define perfectly smooth surfaces and still obtain a fast rendering.
 
 Details of the implementation:
 
@@ -77,8 +77,6 @@ DTI uncertainty visualization
 
 The DTI visualization pipeline is fairly complex, a level of uncertainty arises, which, if visualized, helps to assess the accuracy of the model. This measure is not currently implemented, and even though the are several methods to calculate a visualize the uncertainty in the DTI model, because of its simplicity and visual representation, we considered Matrix Perturbation Analysis (MPA) proposed by Basser [1]_. This measurement is visualized as double cones representing the variance of the main direction of diffusion, for which raymarching tecnique was also used in the creation of these objects.
 
-Below is a demo of how this new feature is intended to be used, an image of diffusion tensor ellipsoids and their associated uncertainty cones.
-
 Details of the implementation:
 
 - *Source of uncertainty*: The method of MPA arises from the susceptibility of DTI to dMRI noise present in diffusion-weighted images (DWIs), and also because the model is inherently statistical, making the tensor estimation and other derived quantities to be random variables [1]_. For this reason, this method focus on the premise that image noise produces a random perturbation in the diffusion tensor estimation, and therefore in the calculation of eigenvalues and eigenvectors, particularly in the first eigenvector associated with the main diffusion direction.
@@ -101,11 +99,23 @@ The implementation is almost complete, but as it is a new addition that includes
 ODF actor implemented with SDF
 ******************************
 
+HARDI-based techniques require more images than DTI, however, they model the diffusion directions as probability distribution functions (PDFs), and the fitted values are returned in the form of orientation distribution functions (ODFs). ODFs are more diffusion sensitive than the diffusion tensor and, therefore, can determine the structure of multi-directional voxels very common in the white matter regions of the brain [5]_. The current actor to display this kind of glyphs is the ``odf_slicer`` which given an array of spherical harmonics (SH) coefficients render a grid of ODFs, which are created from a sphere with a specific number of vertices that fit the data.
 
+For the application of this model using the same SDF raymarching techniques, we need the data of the SH coefficients, which are used to calculate the orientation distribution function (ODF) described `here <https://dipy.org/documentation/1.7.0/theory/sh_basis/>`_. There are different SH bases that can be used, but for this first approach we focus on ``descoteaux07`` (as labeled in dipy). After performing the necessary calculations, we obtain an approximate result to the current implementation of FURY as seen below.
 
 .. image:: https://user-images.githubusercontent.com/31288525/260909561-fd90033c-018a-465b-bd16-3586bb31ca36.png
     :width: 580
     :align: center
+
+Already with a first implementation we start to solve some issues related to direction, color and data handling, in order to obtain exactly the same results of the current implementation.
+
+Details on the issues:
+
+- *The direction and the scaling*: When the shape of the ODF is more sphere-like the size of the glyph is smaller, so right now I had to adjust it manually but the idea is to find a relationship between the coefficients and the final object size so it can be automatically scaled. Additionally, as seen in the image the direction does not match, for this you can make an adjustment in the calculation of the spherical coordinates, or pass the direction information directly.
+- *Pass the coefficients data efficiently*: Right now I'm creating one actor per glyph since I'm using a *uniform* array to pass the coefficients, but the idea is to pass all the data at once. A first idea is to encode the coefficients data through a texture and retrieve them in the fragment shader.
+- *The colormapping and the lighting*: As these objects present curvatures with quite a bit of detail in some cases, this is something that requires more specific lighting work, in addition to having now not only one color but a color map. This can be also done with texture but it is necessary to see in more detail how to adjust the texture to the shape of the glyph.
+
+More details on current progress can be seen in blogpost of `week 11 <https://fury.gl/latest/posts/2023/2023-08-16-week-11-tvcastillod.html>`_ and `week 12 <https://fury.gl/latest/posts/2023/2023-08-24-week-12-tvcastillod.html>`_.
 
 *Working branch:*
 
@@ -127,7 +137,7 @@ Timeline
 +=====================+========================================================================+==========================================================================================================================================================================+
 | Week 0(02-06-2022)  | Community Bounding Period                                              | `FURY <https://fury.gl/latest/posts/2023/2023-06-02-week-0-tvcastillod.html>`__ - `Python <https://blogs.python-gsoc.org/en/tvcastillods-blog/weekly-check-in-0-2>`__    |
 +---------------------+------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Week 1(05-06-2022)  | Ellipsoid actor implemented with SDF                                   | `FURY <https://fury.gl/latest/posts/2023/2023-06-15-week-1-tvcastillod.html>`__ - `Python <https://blogs.python-gsoc.org/en/tvcastillods-blog/weekly-check-in-1-23>`__   |
+| Week 1(05-06-2022)  | Ellipsoid actor implemented with SDF                                   | `FURY <https://fury.gl/latest/posts/2023/2023-06-05-week-1-tvcastillod.html>`__ - `Python <https://blogs.python-gsoc.org/en/tvcastillods-blog/weekly-check-in-1-23>`__   |
 +---------------------+------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Week 2(12-06-2022)  | Making adjustments to the Ellipsoid Actor                              | `FURY <https://fury.gl/latest/posts/2023/2023-06-12-week-2-tvcastillod.html>`__ - `Python <https://blogs.python-gsoc.org/en/tvcastillods-blog/weekly-check-in-2-18>`__   |
 +---------------------+------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -160,3 +170,4 @@ References
 .. [2] Chang, L. C., Koay, C. G., Pierpaoli, C., & Basser, P. J. (2007). Variance of estimated DTI‐derived parameters via first‐order perturbation methods. Magnetic Resonance in Medicine: An Official Journal of the International Society for Magnetic Resonance in Medicine, 57(1), 141-149.
 .. [3] J-Donald Tournier, Fernando Calamante, David G Gadian, and Alan Connelly. Direct estimation of the fiber orientation density function from diffusion-weighted mri data using spherical deconvolution. Neuroimage, 23(3):1176–1185, 2004.
 .. [4] Gordon Kindlmann. Superquadric tensor glyphs. In Proceedings of the Sixth Joint Eurographics-IEEE TCVG conference on Visualization, pages 147–154, 2004.
+.. [5] Peeters, T. H., Prckovska, V., van Almsick, M., Vilanova, A., & ter Haar Romeny, B. M. (2009, April). Fast and sleek glyph rendering for interactive HARDI data exploration. In 2009 IEEE Pacific Visualization Symposium (pp. 153-160). IEEE.
