@@ -25,6 +25,11 @@ Google Summer of Code Final Work Product
 -  **Project:** `SDF-based uncertainty representation for dMRI glyphs <https://github.com/fury-gl/fury/wiki/Google-Summer-of-Code-2023-(GSOC2023)#project-3-sdf-based-uncertainty-representation-for-dmri-glyphs>`_
 
 
+Abstract
+--------------------
+Diffusion Magnetic Resonance Imaging (dMRI) is a non-invasive imaging technique used by neuroscientists to measure the diffusion of water molecules in biological tissue. The directional information is reconstructed using either a Diffusion Tensor Imaging (DTI) or High Angular Resolution Diffusion Imaging (HARDI) based model, which is graphically represented as tensors and Orientation Distribution Functions (ODF). Traditional rendering engines discretize Tensor and ODF surfaces using triangles or quadrilateral polygons, making their visual quality depending on the number of polygons used to build the 3D mesh which might compromise real-time display performance. This project proposes a methodological approach to further improve the visualization of DTI tensors and HARDI ODFs glyphs by using well-established techniques in the field of computer graphics such as geometry amplification, billboarding, signed distance functions (SDFs), and ray marching.
+
+
 Proposed Objectives
 -------------------
 
@@ -33,9 +38,6 @@ Proposed Objectives
 - Model the mathematical functions that express the geometry of ODF glyphs and implement them using Ray Marching techniques.
 - Use SDF properties and techniques to represent the uncertainty of dMRI reconstruction models.
 
-Abstract
---------------------
-Diffusion Magnetic Resonance Imaging (dMRI) is a non-invasive imaging technique used by neuroscientists to measure the diffusion of water molecules in biological tissue. The directional information is reconstructed using either a Diffusion Tensor Imaging (DTI) or High Angular Resolution Diffusion Imaging (HARDI) based model, which is graphically represented as tensors and Orientation Distribution Functions (ODF). Traditional rendering engines discretize Tensor and ODF surfaces using triangles or quadrilateral polygons, making their visual quality depending on the number of polygons used to build the 3D mesh which might compromise real-time display performance. This project proposes a methodological approach to further improve the visualization of DTI tensors and HARDI ODFs glyphs by using well-established techniques in the field of computer graphics such as geometry amplification, billboarding, signed distance functions (SDFs), and ray marching.
 
 Objectives Completed
 --------------------
@@ -164,7 +166,7 @@ Timeline
 
 
 References
-~~~~~~~~~~
+----------
 
 .. [1] Basser, P. J. (1997). Quantifying errors in fiber direction and diffusion tensor field maps resulting from MR noise. In 5th Scientific Meeting of the ISMRM (Vol. 1740).
 .. [2] Chang, L. C., Koay, C. G., Pierpaoli, C., & Basser, P. J. (2007). Variance of estimated DTI‐derived parameters via first‐order perturbation methods. Magnetic Resonance in Medicine: An Official Journal of the International Society for Magnetic Resonance in Medicine, 57(1), 141-149.
