@@ -317,8 +317,8 @@ Objectives in Progress
 
     *Pull Requests*
 
-    - **UI intensity slider for the KDE rendering API (draft)**: `https://github.com/fury-gl/fury/pull/849 <https://github.com/fury-gl/fury/pull/849>`__
-
+    - **UI intensity slider for the KDE rendering API (draft)**: `https://github.com/fury-gl/fury/pull/849 <https://github.com/fury-gl/fury/pull/849>`_
+    - **Post-processing effects for FURY Effects API (draft)**: `https://github.com/fury-gl/fury/pull/850 <https://github.com/fury-gl/fury/pull/850>`_
 
 
 GSoC Weekly Blogs
