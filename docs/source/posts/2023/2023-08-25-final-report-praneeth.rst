@@ -133,7 +133,7 @@ Objectives in Progress
 ----------------------
 
 - **FileDialogUI:**
-	An existing ``FileDialog`` PR by Soham (`#294 <https://github.com/fury-gl/fury/pull/294`_`) was worked upon. The primary task was to rebase the PR to match the current UI structure, resolving compatibility concerns with the older base. In PR `#832 <https://github.com/fury-gl/fury/pull/832>`_, we detailed issues encompassing resizing ``FileDialog`` and components, addressing text overflow, fixing ZeroDivisionError, and correcting ``ListBox2D`` item positioning. The PR is complete with comprehensive testing and documentation. Presently, it's undergoing review, and upon approval, it will be prepared for integration.
+	An existing ``FileDialog`` PR by Soham (`#294 <https://github.com/fury-gl/fury/pull/294>`_) was worked upon. The primary task was to rebase the PR to match the current UI structure, resolving compatibility concerns with the older base. In PR `#832 <https://github.com/fury-gl/fury/pull/832>`_, we detailed issues encompassing resizing ``FileDialog`` and components, addressing text overflow, fixing ``ZeroDivisionError``, and correcting ``ListBox2D`` item positioning. The PR is complete with comprehensive testing and documentation. Presently, it's undergoing review, and upon approval, it will be prepared for integration.
 	
 	**Pull Requests:**
   - **Soham's FileDialog (Closed)** - https://github.com/fury-gl/fury/pull/294
