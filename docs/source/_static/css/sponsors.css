@@ -36,3 +36,23 @@
   display: flex;
   align-items: center;
 }
+
+.cite {
+  color:  var(--colorPrimaryDark);
+  font-weight: 600;
+}
+
+.cite-wrapper {
+  padding: 20px;
+  max-width: 1152px;
+  margin: 40px auto 0;
+  border-radius: 10px;
+  border: 3px solid var(--colorPrimaryDark);
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
+
+@media (max-width: 767px) {
+  .cite-wrapper {
+    margin: 20px 20px 0;
+  }
+}
