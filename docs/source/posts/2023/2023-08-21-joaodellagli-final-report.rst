@@ -315,6 +315,12 @@ Objectives in Progress
        :align: center
        :alt: Slider for bandwidths
 
+    *Pull Requests*
+
+    - **UI intensity slider for the KDE rendering API (draft)**: `https://github.com/fury-gl/fury/pull/849 <https://github.com/fury-gl/fury/pull/849>`__
+
+
+
 GSoC Weekly Blogs
 -----------------
 
