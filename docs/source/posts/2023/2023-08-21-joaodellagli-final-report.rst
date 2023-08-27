@@ -53,7 +53,7 @@ Proposed Objectives
 Objectives Completed
 --------------------
 
-- **Implement framebuffer usage in FURY** (partially)
+- **Implement framebuffer usage in FURY**
     The first phase, addressed from *May/29* to *July/07*, started with the investigation of
     `VTK's Framebuffer Object <https://vtk.org/doc/nightly/html/classvtkOpenGLFramebufferObject.html#details>`_, a vital part of this project, to understand 
     how to use it properly. 
@@ -79,7 +79,9 @@ Objectives Completed
     support float textures. However, a workaround to that is currently being worked on, as I will describe later on.
 
     *Pull Requests:*
-    - `KDE Rendering Experimental Program: <https://github.com/fury-gl/fury/pull/804>`_ (Needs major revision)
+
+    - **KDE Rendering Experimental Program (Needs major revision):** `https://github.com/fury-gl/fury/pull/804 <https://github.com/fury-gl/fury/pull/804>`_
+    
     The result of this whole FBO and WindowToImageFilter experimentation is well documented in PR 
     `#804 <https://github.com/fury-gl/fury/pull/804>`_ that implements an experimental version of a KDE rendering program. 
     The future of this PR, as discussed with my mentors, is to be better documented to be used as an example for developers on 
@@ -243,7 +245,9 @@ Objectives Completed
 
 
     *Pull Requests*:
-    - `First Stage of the KDE Rendering API <https://github.com/fury-gl/fury/pull/826>`_ (will merge soon):
+
+    - **First Stage of the KDE Rendering API (will be merged soon)**: `https://github.com/fury-gl/fury/pull/826 <https://github.com/fury-gl/fury/pull/826>`_
+    
     All of this work culminated in PR `#826 <https://github.com/fury-gl/fury/pull/826/>`_, that proposes to add the first stage of 
     this API (there are some details yet to be completed, like the :math:`n` division) to FURY. This PR added the described API, and also 
     proposed some minor changes to some already existing FURY functions related to callbacks, changes necessary for this and other 
