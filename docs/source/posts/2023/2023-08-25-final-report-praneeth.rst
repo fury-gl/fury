@@ -64,6 +64,7 @@ Objectives Completed
 	To overcome these challenges, we devised a solution involving the creation of a bounding box around the ``TextBlock2D``. This bounding box would encapsulate the size information, enabling proper text alignment. This endeavor spanned several weeks of development, culminating in a finalized solution that underwent rigorous testing before being merged.
 	
 	As a result of this refactoring effort, the ``TextBlock2D`` now offers three distinct modes:
+  
 	1. **Fully Static Background:** This mode requires background setup during initialization.
 	2. **Dynamic Background:** The background dynamically scales based on the text content.
 	3. **Auto Font Scale Mode:** The font within the background box automatically scales to fill the available space.
