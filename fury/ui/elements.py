@@ -5022,7 +5022,7 @@ class TreeNode2D(UI):
                                - self.label_image.size[0], self.child_height))
 
         self.title_panel.update_element(self.label_text,
-                                        (self.label_image.size[0], -(size[1]//100)))
+                                        (self.label_image.size[0], 0))
 
         self.title_panel.update_element(self.button,
                                         (self.title_panel.size -
