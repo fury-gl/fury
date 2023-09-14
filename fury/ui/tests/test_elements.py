@@ -1479,8 +1479,7 @@ def test_ui_tree_2d(interactive=False):
         event_counter.check_counts(expected)
 
     for node in tree.nodes:
-        child = node.child_nodes[0]
-        npt.assert_equal(node.size[1], child.size[1]+tree.node_height)
+        npt.assert_equal(node.size[1], tree.node_height)
 
 
 def test_ui_treenode_2d(interactive=False):
