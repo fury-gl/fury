@@ -4641,7 +4641,10 @@ class Tree2D(UI):
                                     multiselect=self.multiselect)
 
         for node in self.nodes_dict.values():
-            node.set_visibility(False)
+            if node.parent != self.base_node:
+                node.set_visibility(False)
+            else:
+                node.set_content_visibility(False)
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
@@ -4824,7 +4827,6 @@ class TreeNode2D(UI):
         multiselect: bool, optional
             If multiple nodes can be selected.
         """
-        self.children = children
         self.children = children or []
         self._icon = icon or read_viz_icons(fname='stop2.png')
 
@@ -4971,7 +4973,6 @@ class TreeNode2D(UI):
 
             node.parent = self
             node.expanded = False
-            node.title_panel.set_visibility(False)
             node.child_height = self.child_height
 
             _node_coords = (self.indent+self.child_indent,
@@ -5081,7 +5082,7 @@ class TreeNode2D(UI):
                                   recursive=False)
                 else:
                     parent.resize((parent.size[0], parent.content_size[1]),
-                                  recursive=False)
+                                  recursive=True)
 
             parent = parent.parent
 
@@ -5114,13 +5115,13 @@ class TreeNode2D(UI):
         """Returns the size occupied by the children vertically."""
         return sum([child.size[1] for child in self._child_nodes])
 
-    def set_visibility(self, visibility):
-        """Set visibility of this UI component."""
+    def set_content_visibility(self, visibility):
+        """Set content's visibility of this UI component."""
         self.content_panel.set_visibility(visibility)
 
-        for child_node in self._child_nodes:
-            if isinstance(child_node, type(self)):
-                child_node.set_visibility(False)
+        for element in self.content_panel._elements:
+            if isinstance(element, type(self)):
+                element.set_content_visibility(element.expanded)
 
     def select_child(self, child_label):
         """Get the instance of a particular child node.
@@ -5247,13 +5248,12 @@ class TreeNode2D(UI):
             True if the node is to be expanded, False otherwise
         """
         self._expanded = expanded
-        self.set_visibility(expanded)
 
         if expanded:
-            self.set_visibility(True)
+            self.set_content_visibility(True)
             self.button.set_icon_by_name('expand')
         else:
-            self.set_visibility(False)
+            self.set_content_visibility(False)
             self.button.set_icon_by_name('collapse')
             for child in self.child_nodes:
                 child.expanded = False
