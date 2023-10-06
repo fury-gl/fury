@@ -10,7 +10,7 @@ from fury.shaders import (
     import_fury_shader,
     shader_to_actor,
 )
-from fury.utils import set_polydata_tcoords
+from fury.utils import set_polydata_tcoords, numpy_to_vtk_image_data
 
 
 def np_array_to_vtk_img(data):
@@ -110,7 +110,7 @@ if __name__ == "__main__":
         * 255
     )
     # grid = rgb_to_vtk(arr.astype(np.uint8))
-    grid = np_array_to_vtk_img(arr.astype(np.uint8))
+    grid = numpy_to_vtk_image_data(arr.astype(np.uint8))
 
     texture = Texture()
     texture.SetInputDataObject(grid)

@@ -4,43 +4,23 @@ This spript includes TEXTURE experimentation for passing SH coeffients
 import numpy as np
 import os
 
-from fury.lib import Texture
+from fury.lib import Texture, FloatArray
 
 from fury import actor, window
 from fury.shaders import (attribute_to_actor, compose_shader,
                           import_fury_shader, shader_to_actor)
-from fury.utils import rgb_to_vtk
-
-
-# =============================================================================
-def get_cubemap_from_ndarrays(array):
-    texture = Texture()
-    texture.CubeMapOn()
-    arr = np.ones((4, 15, 3))
-    arr[:, :, 0] = array
-    arr[:, :, 1] = array
-    arr[:, :, 2] = array
-    print(arr)
-    grid = rgb_to_vtk(arr.astype(np.uint8))
-    for i in range(6):
-        texture.SetInputDataObject(i, grid)
-    return texture
-# =============================================================================
+from fury.utils import numpy_to_vtk_image_data, set_polydata_tcoords
 
 
 if __name__ == '__main__':
-    centers = np.array([[0, -1, 0], [1.0, -1, 0], [2.0, -1, 0], [3.0, -1, 0]])
-    vecs = np.array([[0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0]])
-    colors = np.array([[0, 0, 1], [0, 1, 0], [1, 0, 0], [0, 1, 0]])
-    vals = np.array([1.0, 4.2, 1.5, 2.0])
+    centers = np.array([[0, -1, 0], [1.0, -1, 0], [2.0, -1, 0]])
+    vecs = np.array([[0, 1, 0], [0, 1, 0], [0, 1, 0]])
+    colors = np.array([[0, 0, 1], [0, 1, 0], [1, 0, 0]])
+    vals = np.array([.2, .4, .3])
     coeffs = np.array(
         [[0.2820735, 0.15236554, -0.04038717, -0.11270988, -0.04532376,
           0.14921817, 0.00257928, 0.0040734, -0.05313807, 0.03486542,
           0.04083064, 0.02105767, -0.04389586, -0.04302812, 0.1048641],
-         [2.82094529e-01, 7.05702620e-03, 3.20326265e-02, -2.88333917e-02,
-          5.33638381e-03, 1.18306258e-02, -2.21964945e-04, 5.54136434e-04,
-          1.25108672e-03, -4.69248914e-03, 4.30155475e-04, -1.15585609e-03,
-          -4.69016480e-04, 1.44523500e-03, 3.96346915e-04],
          [0.28549338, 0.0978267, -0.11544838, 0.12525354, -0.00126003,
           0.00320594, 0.04744155, -0.07141446, 0.03211689, 0.04711322,
           0.08064896, 0.00154299, 0.00086506, 0.00162543, -0.00444893],
@@ -48,29 +28,58 @@ if __name__ == '__main__':
           0.02348355, 0.03991898, 0.02587433, 0.02645416, 0.00668765,
           0.00890633, 0.02189304, 0.00387415, 0.01665629, -0.01427194]])
 
-    # coeffs = coeffs / np.max(coeffs)
+    box_sd_stg_actor = actor.box(centers=centers, scales=1.0)
 
-    box_sd_stg_actor = actor.box(centers=np.array([centers[0]]), scales=1.0)
-
-    big_centers = np.repeat(np.array([centers[0]]), 8, axis=0)
+    big_centers = np.repeat(centers, 8, axis=0)
     attribute_to_actor(box_sd_stg_actor, big_centers, 'center')
 
-    big_scales = np.repeat(np.array([vals[2]]), 8, axis=0)
+    big_scales = np.repeat(vals, 8, axis=0)
     attribute_to_actor(box_sd_stg_actor, big_scales, 'scale')
 
-    box_sd_stg_actor.GetShaderProperty().GetFragmentCustomUniforms(). \
-        SetUniform1fv("coeffs", 15, coeffs[2])
-
     # =========================================================================
-    data_tex = np.array(
-        [[.5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5],
-         [.5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5],
-         [.5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5],
-         [.5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5, .5]])  # *200
 
-    data = get_cubemap_from_ndarrays(np.array(data_tex))
+    actor_box = box_sd_stg_actor.GetMapper().GetInput()
 
-    box_sd_stg_actor.SetTexture(data)
+    uv_vals = np.array(
+        [
+            [0, 2 / 3], [0, 1], [1, 1], [1, 2 / 3], [0, 2 / 3], [0, 1], [1, 1], [1, 2 / 3], #glyph1
+            [0, 1 / 3], [0, 2 / 3], [1, 2 / 3], [1, 1 / 3], [0, 1 / 3], [0, 2 / 3], [1, 2 / 3], [1, 1 / 3], #glyph2
+            [0, 0], [0, 1 / 3], [1, 1 / 3], [1, 0], [0, 0], [0, 1 / 3], [1, 1 / 3], [1, 0], #glyph3
+        ]
+    )
+
+    num_pnts = uv_vals.shape[0]
+
+    t_coords = FloatArray()
+    t_coords.SetNumberOfComponents(2)
+    t_coords.SetNumberOfTuples(num_pnts)
+    [t_coords.SetTuple(i, uv_vals[i]) for i in range(num_pnts)]
+
+    set_polydata_tcoords(actor_box, t_coords)
+
+    arr = (
+            np.array(
+                [[0.2820735, 0.15236554, -0.04038717, -0.11270988, -0.04532376,
+                  0.14921817, 0.00257928, 0.0040734, -0.05313807, 0.03486542,
+                  0.04083064, 0.02105767, -0.04389586, -0.04302812, 0.1048641],
+                 [0.28549338, 0.0978267, -0.11544838, 0.12525354, -0.00126003,
+                  0.00320594, 0.04744155, -0.07141446, 0.03211689, 0.04711322,
+                  0.08064896, 0.00154299, 0.00086506, 0.00162543, -0.00444893],
+                 [0.28208936, -0.13133252, -0.04701012, -0.06303016,
+                  -0.0468775, 0.02348355, 0.03991898, 0.02587433, 0.02645416,
+                  0.00668765, 0.00890633, 0.02189304, 0.00387415, 0.01665629,
+                  -0.01427194]])
+            * 255
+    )
+    grid = numpy_to_vtk_image_data(arr.astype(np.uint8))
+
+    texture = Texture()
+    texture.SetInputDataObject(grid)
+    texture.Update()
+
+    box_sd_stg_actor.GetProperty().SetTexture("texture0", texture)
+    box_sd_stg_actor.GetShaderProperty().GetFragmentCustomUniforms()\
+        .SetUniformf("k", 15) # number of coefficients per glyph
     # =========================================================================
 
     vs_dec = \
@@ -186,22 +195,24 @@ if __name__ == '__main__':
             d=length(p00);
             n=p00/d; 
             float sc = scaleVSOutput;            
-            r = coeffs[0]*SH(0, 0, n)*sc;
-            r += coeffs[1]*SH(2, -2, n)*sc;
-            r += coeffs[2]*SH(2, -1, n)*sc;
-            r += coeffs[3]*SH(2, 0, n)*sc;
-            r += coeffs[4]*SH(2, 1, n)*sc;
-            r += coeffs[5]*SH(2, 2, n)*sc;
-            r += coeffs[6]*SH(4, -4, n)*sc;
-            r += coeffs[7]*SH(4, -3, n)*sc;
-            r += coeffs[8]*SH(4, -2, n)*sc;
-            r += coeffs[9]*SH(4, -1, n)*sc;
-            r += coeffs[10]*SH(4, 0, n)*sc;
-            r += coeffs[11]*SH(4, 1, n)*sc;
-            r += coeffs[12]*SH(4, 2, n)*sc;
-            r += coeffs[13]*SH(4, 3, n)*sc;
-            r += coeffs[14]*SH(4, 4, n)*sc;
-
+            // ================================================================
+            float i = 1/(k*2);
+            r = texture(texture0, vec2(i, tcoordVCVSOutput.y)).x*SH(0, 0, n)*sc;
+            r += texture(texture0, vec2(i+1/k, tcoordVCVSOutput.y)).x*SH(2, -2, n)*sc;
+            r += texture(texture0, vec2(i+2/k, tcoordVCVSOutput.y)).x*SH(2, -1, n)*sc;
+            r += texture(texture0, vec2(i+3/k, tcoordVCVSOutput.y)).x*SH(2, 0, n)*sc;
+            r += texture(texture0, vec2(i+4/k, tcoordVCVSOutput.y)).x*SH(2, 1, n)*sc;
+            r += texture(texture0, vec2(i+5/k, tcoordVCVSOutput.y)).x*SH(2, 2, n)*sc;
+            r += texture(texture0, vec2(i+6/k, tcoordVCVSOutput.y)).x*SH(4, -4, n)*sc;
+            r += texture(texture0, vec2(i+7/k, tcoordVCVSOutput.y)).x*SH(4, -3, n)*sc;
+            r += texture(texture0, vec2(i+8/k, tcoordVCVSOutput.y)).x*SH(4, -2, n)*sc;
+            r += texture(texture0, vec2(i+9/k, tcoordVCVSOutput.y)).x*SH(4, -1, n)*sc;
+            r += texture(texture0, vec2(i+10/k, tcoordVCVSOutput.y)).x*SH(4, 0, n)*sc;
+            r += texture(texture0, vec2(i+11/k, tcoordVCVSOutput.y)).x*SH(4, 1, n)*sc;
+            r += texture(texture0, vec2(i+12/k, tcoordVCVSOutput.y)).x*SH(4, 2, n)*sc;
+            r += texture(texture0, vec2(i+13/k, tcoordVCVSOutput.y)).x*SH(4, 3, n)*sc;
+            r += texture(texture0, vec2(i+14/k, tcoordVCVSOutput.y)).x*SH(4, 4, n)*sc;
+            // ================================================================
             s = SHAPE; res = s;
             return vec3( res.x, 0.5+0.5*res.y, res.z );
         }
@@ -251,7 +262,7 @@ if __name__ == '__main__':
     fs_dec = compose_shader([fs_vars_dec, sdf_map, central_diffs_normal,
                              cast_ray, blinn_phong_model])
 
-    shader_to_actor(box_sd_stg_actor, 'fragment', decl_code=fs_dec)
+    shader_to_actor(box_sd_stg_actor, 'fragment', decl_code=fs_dec, debug=False)
 
     sdf_frag_impl = \
         """
@@ -287,9 +298,7 @@ if __name__ == '__main__':
             vec3 mater = 0.5*mix( vec3(1.0,1.0,0.0), vec3(1.0,1.0,1.0), t.y); 	
 
             // ================================================================
-            // get random coefficient from texture
-            vec4 texData1 = texture(texture_0, vec3(.5, .5, .5));
-            fragOutput0 = vec4( texData1.xyz, 1.0);
+            fragOutput0 = vec4( mater, 1.0);
             // ================================================================
         }
         else
@@ -301,7 +310,7 @@ if __name__ == '__main__':
         """
 
     shader_to_actor(box_sd_stg_actor, 'fragment', impl_code=sdf_frag_impl,
-                    block='light')
+                    block='picking')
 
     show_manager = window.ShowManager(size=(700, 500))
     show_manager.scene.background([255, 255, 255])
@@ -315,9 +324,15 @@ if __name__ == '__main__':
     sh_basis = 'descoteaux07'
     sh_order = 4
     tensor_sh = coeffs = np.array(
-        [[[[0.28549338, 0.0978267, -0.11544838, 0.12525354, -0.00126003,
+        [[[[0.2820735, 0.15236554, -0.04038717, -0.11270988, -0.04532376,
+            0.14921817, 0.00257928, 0.0040734, -0.05313807, 0.03486542,
+            0.04083064, 0.02105767, -0.04389586, -0.04302812, 0.1048641]]],
+         [[[0.28549338, 0.0978267, -0.11544838, 0.12525354, -0.00126003,
             0.00320594, 0.04744155, -0.07141446, 0.03211689, 0.04711322,
-            0.08064896, 0.00154299, 0.00086506, 0.00162543, -0.00444893]]]])
+            0.08064896, 0.00154299, 0.00086506, 0.00162543, -0.00444893]]],
+         [[[0.28208936, -0.13133252, -0.04701012, -0.06303016, -0.0468775,
+            0.02348355, 0.03991898, 0.02587433, 0.02645416, 0.00668765,
+            0.00890633, 0.02189304, 0.00387415, 0.01665629, -0.01427194]]]])
     tensor_sf = sh_to_sf(tensor_sh, sh_order=4, basis_type='descoteaux07',
                          sphere=sphere)
 
