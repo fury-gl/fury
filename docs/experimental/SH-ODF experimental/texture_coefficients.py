@@ -16,7 +16,7 @@ if __name__ == '__main__':
     centers = np.array([[0, -1, 0], [1.0, -1, 0], [2.0, -1, 0]])
     vecs = np.array([[0, 1, 0], [0, 1, 0], [0, 1, 0]])
     colors = np.array([[0, 0, 1], [0, 1, 0], [1, 0, 0]])
-    vals = np.array([.2, .4, .3])
+    vals = np.array([1.0, 2.0, 2.0])
     coeffs = np.array(
         [[0.2820735, 0.15236554, -0.04038717, -0.11270988, -0.04532376,
           0.14921817, 0.00257928, 0.0040734, -0.05313807, 0.03486542,
@@ -69,8 +69,14 @@ if __name__ == '__main__':
                   -0.0468775, 0.02348355, 0.03991898, 0.02587433, 0.02645416,
                   0.00668765, 0.00890633, 0.02189304, 0.00387415, 0.01665629,
                   -0.01427194]])
-            * 255
     )
+    min = -1
+    max = 1
+    newmin = 0
+    newmax = 1
+    arr = (arr - min)*((newmax - newmin) / (max - min)) + newmin
+    print(arr)
+    arr *= 255
     grid = numpy_to_vtk_image_data(arr.astype(np.uint8))
 
     texture = Texture()
@@ -182,6 +188,15 @@ if __name__ == '__main__':
             }
             return r;
         }
+        
+        float coef_norm( in float coef)
+        {
+            float min = 0;
+            float max = 1;
+            float newmin = -1;
+            float newmax = 1;
+            return (coef - min) * ((newmax - newmin) / (max - min)) + newmin;
+        }
 
         vec3 map( in vec3 p )
         {
@@ -193,25 +208,55 @@ if __name__ == '__main__':
             #define SHAPE (vec3(d-abs(r), sign(r),d))
             //#define SHAPE (vec3(d-0.35, -1.0+2.0*clamp(0.5 + 16.0*r,0.0,1.0),d))
             d=length(p00);
-            n=p00/d; 
-            float sc = scaleVSOutput;            
+            n=p00/d;     
             // ================================================================
             float i = 1/(k*2);
-            r = texture(texture0, vec2(i, tcoordVCVSOutput.y)).x*SH(0, 0, n)*sc;
-            r += texture(texture0, vec2(i+1/k, tcoordVCVSOutput.y)).x*SH(2, -2, n)*sc;
-            r += texture(texture0, vec2(i+2/k, tcoordVCVSOutput.y)).x*SH(2, -1, n)*sc;
-            r += texture(texture0, vec2(i+3/k, tcoordVCVSOutput.y)).x*SH(2, 0, n)*sc;
-            r += texture(texture0, vec2(i+4/k, tcoordVCVSOutput.y)).x*SH(2, 1, n)*sc;
-            r += texture(texture0, vec2(i+5/k, tcoordVCVSOutput.y)).x*SH(2, 2, n)*sc;
-            r += texture(texture0, vec2(i+6/k, tcoordVCVSOutput.y)).x*SH(4, -4, n)*sc;
-            r += texture(texture0, vec2(i+7/k, tcoordVCVSOutput.y)).x*SH(4, -3, n)*sc;
-            r += texture(texture0, vec2(i+8/k, tcoordVCVSOutput.y)).x*SH(4, -2, n)*sc;
-            r += texture(texture0, vec2(i+9/k, tcoordVCVSOutput.y)).x*SH(4, -1, n)*sc;
-            r += texture(texture0, vec2(i+10/k, tcoordVCVSOutput.y)).x*SH(4, 0, n)*sc;
-            r += texture(texture0, vec2(i+11/k, tcoordVCVSOutput.y)).x*SH(4, 1, n)*sc;
-            r += texture(texture0, vec2(i+12/k, tcoordVCVSOutput.y)).x*SH(4, 2, n)*sc;
-            r += texture(texture0, vec2(i+13/k, tcoordVCVSOutput.y)).x*SH(4, 3, n)*sc;
-            r += texture(texture0, vec2(i+14/k, tcoordVCVSOutput.y)).x*SH(4, 4, n)*sc;
+            float c = texture(texture0, vec2(i, tcoordVCVSOutput.y)).x;
+            r = coef_norm(c)*SH(0, 0, n);
+            
+            c = texture(texture0, vec2(i+1/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(2, -2, n);
+            
+            c = texture(texture0, vec2(i+2/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(2, -1, n);
+            
+            c = texture(texture0, vec2(i+3/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(2, 0, n);
+            
+            c = texture(texture0, vec2(i+4/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(2, 1, n);
+            
+            c = texture(texture0, vec2(i+5/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(2, 2, n);
+            
+            c = texture(texture0, vec2(i+6/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(4, -4, n);
+            
+            c = texture(texture0, vec2(i+7/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(4, -3, n);
+            
+            c = texture(texture0, vec2(i+8/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(4, -2, n);
+            
+            c = texture(texture0, vec2(i+9/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(4, -1, n);
+            
+            c = texture(texture0, vec2(i+10/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(4, 0, n);
+            
+            c = texture(texture0, vec2(i+11/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(4, 1, n);
+            
+            c = texture(texture0, vec2(i+12/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(4, 2, n);
+            
+            c = texture(texture0, vec2(i+13/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(4, 3, n);
+            
+            c = texture(texture0, vec2(i+14/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(4, 4, n);
+            
+            r *= scaleVSOutput;
             // ================================================================
             s = SHAPE; res = s;
             return vec3( res.x, 0.5+0.5*res.y, res.z );
@@ -298,7 +343,7 @@ if __name__ == '__main__':
             vec3 mater = 0.5*mix( vec3(1.0,1.0,0.0), vec3(1.0,1.0,1.0), t.y); 	
 
             // ================================================================
-            fragOutput0 = vec4( mater, 1.0);
+            fragOutput0 = vec4( vec3(1,0,0)*lin, 1.0);
             // ================================================================
         }
         else
