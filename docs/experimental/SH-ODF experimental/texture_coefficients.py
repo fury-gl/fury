@@ -41,20 +41,18 @@ if __name__ == "__main__":
     ])
     # fmt: on
 
-    centers = np.array([[0, -1, 0], [1.0, -1, 0], [2.0, -1, 0]])
-    vecs = np.array([[0, 1, 0], [0, 1, 0], [0, 1, 0]])
-    colors = np.array([[0, 0, 1], [0, 1, 0], [1, 0, 0]])
-    vals = np.array([1.0, 2.0, 2.0])
+    centers = np.array([[0, -1, 0], [1, -1, 0], [2, -1, 0]])
+    scales = np.array([1, 2, 2])
 
-    box_sd_stg_actor = actor.box(centers=centers, scales=1.0)
+    odf_actor = actor.box(centers=centers, scales=1.0)
 
     big_centers = np.repeat(centers, 8, axis=0)
-    attribute_to_actor(box_sd_stg_actor, big_centers, "center")
+    attribute_to_actor(odf_actor, big_centers, "center")
 
-    big_scales = np.repeat(vals, 8, axis=0)
-    attribute_to_actor(box_sd_stg_actor, big_scales, "scale")
+    big_scales = np.repeat(scales, 8, axis=0)
+    attribute_to_actor(odf_actor, big_scales, "scale")
 
-    actor_box = box_sd_stg_actor.GetMapper().GetInput()
+    odf_actor_pd = odf_actor.GetMapper().GetInput()
 
     # fmt: off
     uv_vals = np.array(
@@ -76,43 +74,22 @@ if __name__ == "__main__":
     t_coords.SetNumberOfTuples(num_pnts)
     [t_coords.SetTuple(i, uv_vals[i]) for i in range(num_pnts)]
 
-    set_polydata_tcoords(actor_box, t_coords)
-
-    # fmt: off
-    arr = np.array([
-        [
-            0.2820735, 0.15236554, -0.04038717, -0.11270988, -0.04532376,
-            0.14921817, 0.00257928, 0.0040734, -0.05313807, 0.03486542,
-            0.04083064, 0.02105767, -0.04389586, -0.04302812, 0.1048641
-        ],
-        [
-            0.28549338, 0.0978267, -0.11544838, 0.12525354, -0.00126003,
-            0.00320594, 0.04744155, -0.07141446, 0.03211689, 0.04711322,
-            0.08064896, 0.00154299, 0.00086506, 0.00162543, -0.00444893
-        ],
-        [
-            0.28208936, -0.13133252, -0.04701012, -0.06303016, -0.0468775,
-            0.02348355, 0.03991898, 0.02587433, 0.02645416, 0.00668765,
-            0.00890633, 0.02189304, 0.00387415, 0.01665629, -0.01427194
-        ]
-    ])
-    # fmt: on
+    set_polydata_tcoords(odf_actor_pd, t_coords)
 
     min = -1
     max = 1
     newmin = 0
-    newmax = 1
-    arr = (arr - min) * ((newmax - newmin) / (max - min)) + newmin
-    print(arr)
-    arr *= 255
+    newmax = 255
+    arr = (coeffs - min) * ((newmax - newmin) / (max - min)) + newmin
     grid = numpy_to_vtk_image_data(arr.astype(np.uint8))
 
     texture = Texture()
     texture.SetInputDataObject(grid)
     texture.Update()
 
-    box_sd_stg_actor.GetProperty().SetTexture("texture0", texture)
-    box_sd_stg_actor.GetShaderProperty().GetFragmentCustomUniforms().SetUniformf(
+    odf_actor.GetProperty().SetTexture("texture0", texture)
+
+    odf_actor.GetShaderProperty().GetFragmentCustomUniforms().SetUniformf(
         "k", 15
     )
 
@@ -132,22 +109,22 @@ if __name__ == "__main__":
     vec3 camPos = -MCVCMatrix[3].xyz * mat3(MCVCMatrix);
     """
 
-    shader_to_actor(
-        box_sd_stg_actor, "vertex", decl_code=vs_dec, impl_code=vs_impl
-    )
+    shader_to_actor(odf_actor, "vertex", decl_code=vs_dec, impl_code=vs_impl)
 
-    fs_vars_dec = """
+    fs_defs = "#define PI 3.1415926535898"
+
+    fs_uniforms = """
+    uniform mat4 MCVCMatrix;
+    uniform samplerCube texture_0;
+    """
+
+    fs_vs_vars = """
     in vec4 vertexMCVSOutput;
     in vec3 centerMCVSOutput;
     in float scaleVSOutput;
-    uniform samplerCube texture_0;
-
-    uniform mat4 MCVCMatrix;
     """
 
     sdf_map = """
-    #define PI 3.1415926535898
-
     // Clenshaw Legendre normalized
     float Pgn(int l, int m, float x)
     {
@@ -328,14 +305,12 @@ if __name__ == "__main__":
 
     # fmt: off
     fs_dec = compose_shader([
-        fs_vars_dec, sdf_map, central_diffs_normal, cast_ray,
-        blinn_phong_model
+        fs_defs, fs_uniforms, fs_vs_vars, sdf_map, central_diffs_normal,
+        cast_ray, blinn_phong_model
     ])
     # fmt: on
 
-    shader_to_actor(
-        box_sd_stg_actor, "fragment", decl_code=fs_dec, debug=False
-    )
+    shader_to_actor(odf_actor, "fragment", decl_code=fs_dec, debug=False)
 
     sdf_frag_impl = """
         vec3 pnt = vertexMCVSOutput.xyz;
@@ -380,10 +355,10 @@ if __name__ == "__main__":
     """
 
     shader_to_actor(
-        box_sd_stg_actor, "fragment", impl_code=sdf_frag_impl, block="picking"
+        odf_actor, "fragment", impl_code=sdf_frag_impl, block="picking"
     )
 
-    show_man.scene.add(box_sd_stg_actor)
+    show_man.scene.add(odf_actor)
 
     sphere = get_sphere("repulsion724")
 
@@ -399,9 +374,10 @@ if __name__ == "__main__":
         sh, sh_order=4, basis_type="descoteaux07", sphere=sphere
     )
 
-    odf_actor = actor.odf_slicer(
+    odf_slicer_actor = actor.odf_slicer(
         tensor_sf, sphere=sphere, scale=0.5, colormap="plasma"
     )
-    show_man.scene.add(odf_actor)
+
+    show_man.scene.add(odf_slicer_actor)
 
     show_man.start()
