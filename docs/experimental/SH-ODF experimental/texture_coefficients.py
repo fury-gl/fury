@@ -14,9 +14,11 @@ from fury.utils import numpy_to_vtk_image_data, set_polydata_tcoords
 
 if __name__ == '__main__':
     centers = np.array([[0, -1, 0], [1.0, -1, 0], [2.0, -1, 0]])
+    centers_2 = np.array([[0, -2, 0], [1.0, -2, 0], [2.0, -2, 0]])
+    centers_3 = np.array([[0, -3, 0], [1.0, -3, 0], [2.0, -3, 0]])
     vecs = np.array([[0, 1, 0], [0, 1, 0], [0, 1, 0]])
     colors = np.array([[0, 0, 1], [0, 1, 0], [1, 0, 0]])
-    vals = np.array([1.0, 2.0, 2.0])
+    scales = np.array([1.0, 2.0, 2.0])
     coeffs = np.array(
         [[0.2820735, 0.15236554, -0.04038717, -0.11270988, -0.04532376,
           0.14921817, 0.00257928, 0.0040734, -0.05313807, 0.03486542,
@@ -28,17 +30,34 @@ if __name__ == '__main__':
           0.02348355, 0.03991898, 0.02587433, 0.02645416, 0.00668765,
           0.00890633, 0.02189304, 0.00387415, 0.01665629, -0.01427194]])
 
-    box_sd_stg_actor = actor.box(centers=centers, scales=1.0)
+    box_actor_texture = actor.box(centers=centers, scales=1.0)
+    box_actor_uniform_1 = actor.box(centers=np.array([centers_2[0]]), scales=1.0)
+    box_actor_uniform_2 = actor.box(centers=np.array([centers_2[1]]), scales=1.0)
+    box_actor_uniform_3 = actor.box(centers=np.array([centers_2[2]]), scales=1.0)
+    box_actor_template = actor.box(centers=centers_3, scales=1.0)
 
     big_centers = np.repeat(centers, 8, axis=0)
-    attribute_to_actor(box_sd_stg_actor, big_centers, 'center')
+    attribute_to_actor(box_actor_texture, big_centers, 'center')
+    attribute_to_actor(box_actor_template, np.repeat(centers_3, 8, axis=0), 'center')
+    attribute_to_actor(box_actor_uniform_1, np.repeat(np.array([centers_2[0]]), 8, axis=0), 'center')
+    attribute_to_actor(box_actor_uniform_2, np.repeat(np.array([centers_2[1]]), 8, axis=0), 'center')
+    attribute_to_actor(box_actor_uniform_3, np.repeat(np.array([centers_2[2]]), 8, axis=0), 'center')
 
-    big_scales = np.repeat(vals, 8, axis=0)
-    attribute_to_actor(box_sd_stg_actor, big_scales, 'scale')
+    big_scales = np.repeat(scales, 8, axis=0)
+    attribute_to_actor(box_actor_texture, big_scales, 'scale')
+    attribute_to_actor(box_actor_template, big_scales, 'scale')
+    attribute_to_actor(box_actor_uniform_1, np.repeat(np.array([scales[0]]), 8, axis=0), 'scale')
+    attribute_to_actor(box_actor_uniform_2, np.repeat(np.array([scales[1]]), 8, axis=0), 'scale')
+    attribute_to_actor(box_actor_uniform_3, np.repeat(np.array([scales[2]]), 8, axis=0), 'scale')
 
-    # =========================================================================
+    box_actor_uniform_1.GetShaderProperty().GetFragmentCustomUniforms(). \
+        SetUniform1fv("coeffs", 15, coeffs[0])
+    box_actor_uniform_2.GetShaderProperty().GetFragmentCustomUniforms(). \
+        SetUniform1fv("coeffs", 15, coeffs[1])
+    box_actor_uniform_3.GetShaderProperty().GetFragmentCustomUniforms(). \
+        SetUniform1fv("coeffs", 15, coeffs[2])
 
-    actor_box = box_sd_stg_actor.GetMapper().GetInput()
+    actor_box = box_actor_texture.GetMapper().GetInput()
 
     uv_vals = np.array(
         [
@@ -70,32 +89,39 @@ if __name__ == '__main__':
                   0.00668765, 0.00890633, 0.02189304, 0.00387415, 0.01665629,
                   -0.01427194]])
     )
-    min = -1
-    max = 1
+
+    minmax = np.array([arr.min(axis=1), arr.max(axis=1)]).T
+    big_minmax = np.repeat(minmax, 8, axis=0)
+    attribute_to_actor(box_actor_texture, big_minmax, 'minmax')
+
+    min = arr.min(axis=1)
+    max = arr.max(axis=1)
     newmin = 0
     newmax = 1
-    arr = (arr - min)*((newmax - newmin) / (max - min)) + newmin
-    print(arr)
+    arr = np.array([(arr[i] - min[i])*((newmax - newmin) / (max[i] - min[i])) + newmin for i in range(arr.shape[0])])
     arr *= 255
+    print(arr.astype(np.uint8))
     grid = numpy_to_vtk_image_data(arr.astype(np.uint8))
 
     texture = Texture()
     texture.SetInputDataObject(grid)
     texture.Update()
 
-    box_sd_stg_actor.GetProperty().SetTexture("texture0", texture)
-    box_sd_stg_actor.GetShaderProperty().GetFragmentCustomUniforms()\
-        .SetUniformf("k", 15) # number of coefficients per glyph
+    box_actor_texture.GetProperty().SetTexture("texture0", texture)
+    box_actor_texture.GetShaderProperty().GetFragmentCustomUniforms()\
+        .SetUniformf("k", 15)  # number of coefficients per glyph
     # =========================================================================
 
     vs_dec = \
         """
         in vec3 center;
         in float scale;
+        in vec2 minmax;
 
         out vec4 vertexMCVSOutput;
         out vec3 centerMCVSOutput;
         out float scaleVSOutput;
+        out vec2 minmaxVSOutput;
         """
 
     vs_impl = \
@@ -103,17 +129,22 @@ if __name__ == '__main__':
         vertexMCVSOutput = vertexMC;
         centerMCVSOutput = center;
         scaleVSOutput = scale;
+        minmaxVSOutput = minmax;
         vec3 camPos = -MCVCMatrix[3].xyz * mat3(MCVCMatrix);
         """
 
-    shader_to_actor(box_sd_stg_actor, 'vertex', decl_code=vs_dec,
-                    impl_code=vs_impl)
+    shader_to_actor(box_actor_texture, 'vertex', decl_code=vs_dec, impl_code=vs_impl)
+    shader_to_actor(box_actor_template, 'vertex', decl_code=vs_dec, impl_code=vs_impl)
+    shader_to_actor(box_actor_uniform_1, 'vertex', decl_code=vs_dec, impl_code=vs_impl)
+    shader_to_actor(box_actor_uniform_2, 'vertex', decl_code=vs_dec, impl_code=vs_impl)
+    shader_to_actor(box_actor_uniform_3, 'vertex', decl_code=vs_dec, impl_code=vs_impl)
 
     fs_vars_dec = \
         """
         in vec4 vertexMCVSOutput;
         in vec3 centerMCVSOutput;
         in float scaleVSOutput;
+        in vec2 minmaxVSOutput;
         uniform samplerCube texture_0;
 
         uniform mat4 MCVCMatrix;
@@ -193,11 +224,14 @@ if __name__ == '__main__':
         {
             float min = 0;
             float max = 1;
-            float newmin = -1;
-            float newmax = 1;
+            float newmin = minmaxVSOutput.x;//-0.13133252;
+            float newmax = minmaxVSOutput.y;//0.28208936;
             return (coef - min) * ((newmax - newmin) / (max - min)) + newmin;
         }
+    """
 
+    map_function_tex =  \
+        """
         vec3 map( in vec3 p )
         {
             p = p - centerMCVSOutput;
@@ -263,6 +297,102 @@ if __name__ == '__main__':
         }
         """
 
+    map_function_unif = \
+        """
+        vec3 map( in vec3 p )
+        {
+            p = p - centerMCVSOutput;vec3
+            p00 = p;
+            float r, d;
+            vec3 n, s, res;
+            # define SHAPE (vec3(d-abs(r), sign(r),d))
+            d = length(p00);
+            n = p00 / d;
+            float
+            sc = scaleVSOutput;
+            r = coeffs[0] * SH(0, 0, n) * sc;
+            r += coeffs[1] * SH(2, -2, n) * sc;
+            r += coeffs[2] * SH(2, -1, n) * sc;
+            r += coeffs[3] * SH(2, 0, n) * sc;
+            r += coeffs[4] * SH(2, 1, n) * sc;
+            r += coeffs[5] * SH(2, 2, n) * sc;
+            r += coeffs[6] * SH(4, -4, n) * sc;
+            r += coeffs[7] * SH(4, -3, n) * sc;
+            r += coeffs[8] * SH(4, -2, n) * sc;
+            r += coeffs[9] * SH(4, -1, n) * sc;
+            r += coeffs[10] * SH(4, 0, n) * sc;
+            r += coeffs[11] * SH(4, 1, n) * sc;
+            r += coeffs[12] * SH(4, 2, n) * sc;
+            r += coeffs[13] * SH(4, 3, n) * sc;
+            r += coeffs[14] * SH(4, 4, n) * sc;
+            s = SHAPE;
+            res = s;
+            return vec3(res.x, 0.5 + 0.5 * res.y, res.z);
+            }
+        """
+
+    map_function_templ_1 = \
+        """
+        vec3 map( in vec3 p )
+        {
+            p = p - centerMCVSOutput;vec3
+            p00 = p;
+            float r, d;
+            vec3 n, s, res;
+            # define SHAPE (vec3(d-abs(r), sign(r),d))
+            d = length(p00);
+            n = p00 / d;
+            float
+            sc = scaleVSOutput;
+        """
+
+    coeffs_1 = \
+        """
+        float coeffs[15] = float[15](0.2820735, 0.15236554, -0.04038717,
+        -0.11270988, -0.04532376, 0.14921817, 0.00257928, 
+        0.0040734, -0.05313807, 0.03486542, 0.04083064, 0.02105767, 
+        -0.04389586, -0.04302812, 0.1048641);
+        """
+
+    coeffs_2 = \
+        """
+        float coeffs[15] = float[15](0.28549338, 0.0978267, -0.11544838,
+        0.12525354, -0.00126003, 0.00320594, 0.04744155, -0.07141446,
+        0.03211689, 0.04711322, 0.08064896, 0.00154299, 0.00086506, 0.00162543,
+        -0.00444893);
+        """
+
+    coeffs_3 = \
+        """
+        float coeffs[15] = float[15](0.28208936, -0.13133252, -0.04701012,
+        -0.06303016, -0.0468775, 0.02348355, 0.03991898, 0.02587433,
+        0.02645416, 0.00668765, 0.00890633, 0.02189304, 0.00387415, 0.01665629,
+        -0.01427194);
+        """
+
+    map_function_templ_2 = \
+        """
+            r = coeffs[0] * SH(0, 0, n) * sc;
+            r += coeffs[1] * SH(2, -2, n) * sc;
+            r += coeffs[2] * SH(2, -1, n) * sc;
+            r += coeffs[3] * SH(2, 0, n) * sc;
+            r += coeffs[4] * SH(2, 1, n) * sc;
+            r += coeffs[5] * SH(2, 2, n) * sc;
+            r += coeffs[6] * SH(4, -4, n) * sc;
+            r += coeffs[7] * SH(4, -3, n) * sc;
+            r += coeffs[8] * SH(4, -2, n) * sc;
+            r += coeffs[9] * SH(4, -1, n) * sc;
+            r += coeffs[10] * SH(4, 0, n) * sc;
+            r += coeffs[11] * SH(4, 1, n) * sc;
+            r += coeffs[12] * SH(4, 2, n) * sc;
+            r += coeffs[13] * SH(4, 3, n) * sc;
+            r += coeffs[14] * SH(4, 4, n) * sc;
+            s = SHAPE;
+            res = s;
+            return vec3(res.x, 0.5 + 0.5 * res.y, res.z);
+            }
+        """
+
     central_diffs_normal = \
         """
         vec3 centralDiffsNormals(in vec3 pos)
@@ -304,10 +434,29 @@ if __name__ == '__main__':
     blinn_phong_model = import_fury_shader(os.path.join(
         'lighting', 'blinn_phong_model.frag'))
 
-    fs_dec = compose_shader([fs_vars_dec, sdf_map, central_diffs_normal,
-                             cast_ray, blinn_phong_model])
+    fs_dec = compose_shader([fs_vars_dec, sdf_map, map_function_tex,
+                             central_diffs_normal, cast_ray, blinn_phong_model])
+    fs_dec_2 = compose_shader([fs_vars_dec, sdf_map, map_function_unif,
+                             central_diffs_normal, cast_ray,
+                             blinn_phong_model])
+    fs_dec_t1 = compose_shader([fs_vars_dec, sdf_map, map_function_templ_1,
+                               coeffs_1, map_function_templ_2,
+                               central_diffs_normal, cast_ray,
+                               blinn_phong_model])
+    fs_dec_t2 = compose_shader([fs_vars_dec, sdf_map, map_function_templ_1,
+                                coeffs_2, map_function_templ_2,
+                                central_diffs_normal, cast_ray,
+                                blinn_phong_model])
+    fs_dec_t3 = compose_shader([fs_vars_dec, sdf_map, map_function_templ_1,
+                                coeffs_3, map_function_templ_2,
+                                central_diffs_normal, cast_ray,
+                                blinn_phong_model])
 
-    shader_to_actor(box_sd_stg_actor, 'fragment', decl_code=fs_dec, debug=False)
+    shader_to_actor(box_actor_texture, 'fragment', decl_code=fs_dec, debug=False)
+    shader_to_actor(box_actor_uniform_1, 'fragment', decl_code=fs_dec_2)
+    shader_to_actor(box_actor_uniform_2, 'fragment', decl_code=fs_dec_2)
+    shader_to_actor(box_actor_uniform_3, 'fragment', decl_code=fs_dec_2)
+    shader_to_actor(box_actor_template, 'fragment', decl_code=fs_dec_t3)
 
     sdf_frag_impl = \
         """
@@ -343,7 +492,7 @@ if __name__ == '__main__':
             vec3 mater = 0.5*mix( vec3(1.0,1.0,0.0), vec3(1.0,1.0,1.0), t.y); 	
 
             // ================================================================
-            fragOutput0 = vec4( vec3(1,0,0)*lin, 1.0);
+            fragOutput0 = vec4( vec3(1,1,0)*lin, 1.0);
             // ================================================================
         }
         else
@@ -354,12 +503,19 @@ if __name__ == '__main__':
 
         """
 
-    shader_to_actor(box_sd_stg_actor, 'fragment', impl_code=sdf_frag_impl,
-                    block='picking')
+    shader_to_actor(box_actor_texture, 'fragment', impl_code=sdf_frag_impl, block='picking')
+    shader_to_actor(box_actor_uniform_1, 'fragment', impl_code=sdf_frag_impl, block='light')
+    shader_to_actor(box_actor_uniform_2, 'fragment', impl_code=sdf_frag_impl, block='light')
+    shader_to_actor(box_actor_uniform_3, 'fragment', impl_code=sdf_frag_impl, block='light')
+    shader_to_actor(box_actor_template, 'fragment', impl_code=sdf_frag_impl, block='light')
 
     show_manager = window.ShowManager(size=(700, 500))
     show_manager.scene.background([255, 255, 255])
-    show_manager.scene.add(box_sd_stg_actor)
+    show_manager.scene.add(box_actor_texture)
+    show_manager.scene.add(box_actor_uniform_1)
+    show_manager.scene.add(box_actor_uniform_2)
+    show_manager.scene.add(box_actor_uniform_3)
+    show_manager.scene.add(box_actor_template)
 
     from dipy.reconst.shm import sh_to_sf
     from dipy.data import get_sphere
