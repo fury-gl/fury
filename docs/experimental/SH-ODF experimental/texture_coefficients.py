@@ -113,7 +113,7 @@ if __name__ == "__main__":
 
     fs_defs = "#define PI 3.1415926535898"
 
-    fs_uniforms = """
+    fs_unifs = """
     uniform mat4 MCVCMatrix;
     uniform samplerCube texture_0;
     """
@@ -122,6 +122,17 @@ if __name__ == "__main__":
     in vec4 vertexMCVSOutput;
     in vec3 centerMCVSOutput;
     in float scaleVSOutput;
+    """
+
+    coeffs_norm = """
+    float coeffsNorm(float coef)
+    {
+        float min = 0;
+        float max = 1;
+        float newMin = -1;
+        float newMax = 1;
+        return (coef - min) * ((newMax - newMin) / (max - min)) + newMin;
+    }
     """
 
     sdf_map = """
@@ -190,15 +201,6 @@ if __name__ == "__main__":
         return r;
     }
 
-    float coef_norm( in float coef)
-    {
-        float min = 0;
-        float max = 1;
-        float newmin = -1;
-        float newmax = 1;
-        return (coef - min) * ((newmax - newmin) / (max - min)) + newmin;
-    }
-
     vec3 map( in vec3 p )
     {
         p = p - centerMCVSOutput;
@@ -213,49 +215,49 @@ if __name__ == "__main__":
         // ================================================================
         float i = 1/(k*2);
         float c = texture(texture0, vec2(i, tcoordVCVSOutput.y)).x;
-        r = coef_norm(c)*SH(0, 0, n);
+        r = coeffsNorm(c)*SH(0, 0, n);
 
         c = texture(texture0, vec2(i+1/k, tcoordVCVSOutput.y)).x;
-        r += coef_norm(c)*SH(2, -2, n);
+        r += coeffsNorm(c)*SH(2, -2, n);
 
         c = texture(texture0, vec2(i+2/k, tcoordVCVSOutput.y)).x;
-        r += coef_norm(c)*SH(2, -1, n);
+        r += coeffsNorm(c)*SH(2, -1, n);
 
         c = texture(texture0, vec2(i+3/k, tcoordVCVSOutput.y)).x;
-        r += coef_norm(c)*SH(2, 0, n);
+        r += coeffsNorm(c)*SH(2, 0, n);
 
         c = texture(texture0, vec2(i+4/k, tcoordVCVSOutput.y)).x;
-        r += coef_norm(c)*SH(2, 1, n);
+        r += coeffsNorm(c)*SH(2, 1, n);
 
         c = texture(texture0, vec2(i+5/k, tcoordVCVSOutput.y)).x;
-        r += coef_norm(c)*SH(2, 2, n);
+        r += coeffsNorm(c)*SH(2, 2, n);
 
         c = texture(texture0, vec2(i+6/k, tcoordVCVSOutput.y)).x;
-        r += coef_norm(c)*SH(4, -4, n);
+        r += coeffsNorm(c)*SH(4, -4, n);
 
         c = texture(texture0, vec2(i+7/k, tcoordVCVSOutput.y)).x;
-        r += coef_norm(c)*SH(4, -3, n);
+        r += coeffsNorm(c)*SH(4, -3, n);
 
         c = texture(texture0, vec2(i+8/k, tcoordVCVSOutput.y)).x;
-        r += coef_norm(c)*SH(4, -2, n);
+        r += coeffsNorm(c)*SH(4, -2, n);
 
         c = texture(texture0, vec2(i+9/k, tcoordVCVSOutput.y)).x;
-        r += coef_norm(c)*SH(4, -1, n);
+        r += coeffsNorm(c)*SH(4, -1, n);
 
         c = texture(texture0, vec2(i+10/k, tcoordVCVSOutput.y)).x;
-        r += coef_norm(c)*SH(4, 0, n);
+        r += coeffsNorm(c)*SH(4, 0, n);
 
         c = texture(texture0, vec2(i+11/k, tcoordVCVSOutput.y)).x;
-        r += coef_norm(c)*SH(4, 1, n);
+        r += coeffsNorm(c)*SH(4, 1, n);
 
         c = texture(texture0, vec2(i+12/k, tcoordVCVSOutput.y)).x;
-        r += coef_norm(c)*SH(4, 2, n);
+        r += coeffsNorm(c)*SH(4, 2, n);
 
         c = texture(texture0, vec2(i+13/k, tcoordVCVSOutput.y)).x;
-        r += coef_norm(c)*SH(4, 3, n);
+        r += coeffsNorm(c)*SH(4, 3, n);
 
         c = texture(texture0, vec2(i+14/k, tcoordVCVSOutput.y)).x;
-        r += coef_norm(c)*SH(4, 4, n);
+        r += coeffsNorm(c)*SH(4, 4, n);
 
         r *= scaleVSOutput;
         // ================================================================
@@ -264,7 +266,7 @@ if __name__ == "__main__":
     }
     """
 
-    central_diffs_normal = """
+    central_diffs_normals = """
     vec3 centralDiffsNormals(in vec3 pos)
     {
         //vec2 e = vec2(1.0,-1.0)*0.5773*0.0005;
@@ -274,6 +276,12 @@ if __name__ == "__main__":
                             e.yxy*map( pos + e.yxy ).x +
                             e.xxx*map( pos + e.xxx ).x );
     }
+    """
+
+    """
+    central_diffs_normals = import_fury_shader(
+        os.path.join("sdf", "central_diffs.frag")
+    )
     """
 
     cast_ray = """
@@ -305,8 +313,8 @@ if __name__ == "__main__":
 
     # fmt: off
     fs_dec = compose_shader([
-        fs_defs, fs_uniforms, fs_vs_vars, sdf_map, central_diffs_normal,
-        cast_ray, blinn_phong_model
+        fs_defs, fs_unifs, fs_vs_vars, coeffs_norm, sdf_map,
+        central_diffs_normals, cast_ray, blinn_phong_model
     ])
     # fmt: on
 
