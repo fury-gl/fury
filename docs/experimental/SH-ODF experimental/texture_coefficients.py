@@ -17,44 +17,54 @@ from fury.shaders import (
 )
 from fury.utils import numpy_to_vtk_image_data, set_polydata_tcoords
 
-if __name__ == "__main__":
-    show_man = window.ShowManager(size=(1920, 1080))
-    show_man.scene.background((1, 1, 1))
 
-    # fmt: off
-    coeffs = np.array([
-        [
-            0.2820735, 0.15236554, -0.04038717, -0.11270988, -0.04532376,
-            0.14921817, 0.00257928, 0.0040734, -0.05313807, 0.03486542,
-            0.04083064, 0.02105767, -0.04389586, -0.04302812, 0.1048641
-        ],
-        [
-            0.28549338, 0.0978267, -0.11544838, 0.12525354, -0.00126003,
-            0.00320594, 0.04744155, -0.07141446, 0.03211689, 0.04711322,
-            0.08064896, 0.00154299, 0.00086506, 0.00162543, -0.00444893
-        ],
-        [
-            0.28208936, -0.13133252, -0.04701012, -0.06303016, -0.0468775,
-            0.02348355, 0.03991898, 0.02587433, 0.02645416, 0.00668765,
-            0.00890633, 0.02189304, 0.00387415, 0.01665629, -0.01427194
-        ]
-    ])
-    # fmt: on
+if __name__ == '__main__':
+    centers = np.array([[0, -1, 0], [1.0, -1, 0], [2.0, -1, 0]])
+    centers_2 = np.array([[0, -2, 0], [1.0, -2, 0], [2.0, -2, 0]])
+    centers_3 = np.array([[0, -3, 0], [1.0, -3, 0], [2.0, -3, 0]])
+    vecs = np.array([[0, 1, 0], [0, 1, 0], [0, 1, 0]])
+    colors = np.array([[0, 0, 1], [0, 1, 0], [1, 0, 0]])
+    scales = np.array([1.0, 2.0, 2.0])
+    coeffs = np.array(
+        [[0.2820735, 0.15236554, -0.04038717, -0.11270988, -0.04532376,
+          0.14921817, 0.00257928, 0.0040734, -0.05313807, 0.03486542,
+          0.04083064, 0.02105767, -0.04389586, -0.04302812, 0.1048641],
+         [0.28549338, 0.0978267, -0.11544838, 0.12525354, -0.00126003,
+          0.00320594, 0.04744155, -0.07141446, 0.03211689, 0.04711322,
+          0.08064896, 0.00154299, 0.00086506, 0.00162543, -0.00444893],
+         [0.28208936, -0.13133252, -0.04701012, -0.06303016, -0.0468775,
+          0.02348355, 0.03991898, 0.02587433, 0.02645416, 0.00668765,
+          0.00890633, 0.02189304, 0.00387415, 0.01665629, -0.01427194]])
 
-    centers = np.array([[0, -1, 0], [1, -1, 0], [2, -1, 0]])
-    scales = np.array([1, 2, 2])
-
-    odf_actor = actor.box(centers=centers, scales=1.0)
+    box_actor_texture = actor.box(centers=centers, scales=1.0)
+    box_actor_uniform_1 = actor.box(centers=np.array([centers_2[0]]), scales=1.0)
+    box_actor_uniform_2 = actor.box(centers=np.array([centers_2[1]]), scales=1.0)
+    box_actor_uniform_3 = actor.box(centers=np.array([centers_2[2]]), scales=1.0)
+    box_actor_template = actor.box(centers=centers_3, scales=1.0)
 
     big_centers = np.repeat(centers, 8, axis=0)
-    attribute_to_actor(odf_actor, big_centers, "center")
+    attribute_to_actor(box_actor_texture, big_centers, 'center')
+    attribute_to_actor(box_actor_template, np.repeat(centers_3, 8, axis=0), 'center')
+    attribute_to_actor(box_actor_uniform_1, np.repeat(np.array([centers_2[0]]), 8, axis=0), 'center')
+    attribute_to_actor(box_actor_uniform_2, np.repeat(np.array([centers_2[1]]), 8, axis=0), 'center')
+    attribute_to_actor(box_actor_uniform_3, np.repeat(np.array([centers_2[2]]), 8, axis=0), 'center')
 
     big_scales = np.repeat(scales, 8, axis=0)
-    attribute_to_actor(odf_actor, big_scales, "scale")
+    attribute_to_actor(box_actor_texture, big_scales, 'scale')
+    attribute_to_actor(box_actor_template, big_scales, 'scale')
+    attribute_to_actor(box_actor_uniform_1, np.repeat(np.array([scales[0]]), 8, axis=0), 'scale')
+    attribute_to_actor(box_actor_uniform_2, np.repeat(np.array([scales[1]]), 8, axis=0), 'scale')
+    attribute_to_actor(box_actor_uniform_3, np.repeat(np.array([scales[2]]), 8, axis=0), 'scale')
 
-    odf_actor_pd = odf_actor.GetMapper().GetInput()
+    box_actor_uniform_1.GetShaderProperty().GetFragmentCustomUniforms(). \
+        SetUniform1fv("coeffs", 15, coeffs[0])
+    box_actor_uniform_2.GetShaderProperty().GetFragmentCustomUniforms(). \
+        SetUniform1fv("coeffs", 15, coeffs[1])
+    box_actor_uniform_3.GetShaderProperty().GetFragmentCustomUniforms(). \
+        SetUniform1fv("coeffs", 15, coeffs[2])
 
-    # fmt: off
+    actor_box = box_actor_texture.GetMapper().GetInput()
+
     uv_vals = np.array(
         [
             [0, 2 / 3], [0, 1], [1, 1], [1, 2 / 3],
@@ -76,74 +86,89 @@ if __name__ == "__main__":
 
     set_polydata_tcoords(odf_actor_pd, t_coords)
 
-    min = -1
-    max = 1
+    arr = (
+            np.array(
+                [[0.2820735, 0.15236554, -0.04038717, -0.11270988, -0.04532376,
+                  0.14921817, 0.00257928, 0.0040734, -0.05313807, 0.03486542,
+                  0.04083064, 0.02105767, -0.04389586, -0.04302812, 0.1048641],
+                 [0.28549338, 0.0978267, -0.11544838, 0.12525354, -0.00126003,
+                  0.00320594, 0.04744155, -0.07141446, 0.03211689, 0.04711322,
+                  0.08064896, 0.00154299, 0.00086506, 0.00162543, -0.00444893],
+                 [0.28208936, -0.13133252, -0.04701012, -0.06303016,
+                  -0.0468775, 0.02348355, 0.03991898, 0.02587433, 0.02645416,
+                  0.00668765, 0.00890633, 0.02189304, 0.00387415, 0.01665629,
+                  -0.01427194]])
+    )
+
+    minmax = np.array([arr.min(axis=1), arr.max(axis=1)]).T
+    big_minmax = np.repeat(minmax, 8, axis=0)
+    attribute_to_actor(box_actor_texture, big_minmax, 'minmax')
+
+    min = arr.min(axis=1)
+    max = arr.max(axis=1)
     newmin = 0
-    newmax = 255
-    arr = (coeffs - min) * ((newmax - newmin) / (max - min)) + newmin
+    newmax = 1
+    arr = np.array([(arr[i] - min[i])*((newmax - newmin) / (max[i] - min[i])) + newmin for i in range(arr.shape[0])])
+    arr *= 255
+    print(arr.astype(np.uint8))
     grid = numpy_to_vtk_image_data(arr.astype(np.uint8))
 
     texture = Texture()
     texture.SetInputDataObject(grid)
     texture.Update()
 
-    odf_actor.GetProperty().SetTexture("texture0", texture)
+    box_actor_texture.GetProperty().SetTexture("texture0", texture)
+    box_actor_texture.GetShaderProperty().GetFragmentCustomUniforms()\
+        .SetUniformf("k", 15)  # number of coefficients per glyph
+    # =========================================================================
 
-    # TODO: Set int uniform
-    odf_actor.GetShaderProperty().GetFragmentCustomUniforms().SetUniformf(
-        "numCoeffs", 15
-    )
+    vs_dec = \
+        """
+        in vec3 center;
+        in float scale;
+        in vec2 minmax;
 
-    vs_dec = """
-    in vec3 center;
-    in float scale;
+        out vec4 vertexMCVSOutput;
+        out vec3 centerMCVSOutput;
+        out float scaleVSOutput;
+        out vec2 minmaxVSOutput;
+        """
 
-    out vec4 vertexMCVSOutput;
-    out vec3 centerMCVSOutput;
-    out float scaleVSOutput;
-    """
+    vs_impl = \
+        """
+        vertexMCVSOutput = vertexMC;
+        centerMCVSOutput = center;
+        scaleVSOutput = scale;
+        minmaxVSOutput = minmax;
+        vec3 camPos = -MCVCMatrix[3].xyz * mat3(MCVCMatrix);
+        """
 
-    vs_impl = """
-    vertexMCVSOutput = vertexMC;
-    centerMCVSOutput = center;
-    scaleVSOutput = scale;
-    vec3 camPos = -MCVCMatrix[3].xyz * mat3(MCVCMatrix);
-    """
+    shader_to_actor(box_actor_texture, 'vertex', decl_code=vs_dec, impl_code=vs_impl)
+    shader_to_actor(box_actor_template, 'vertex', decl_code=vs_dec, impl_code=vs_impl)
+    shader_to_actor(box_actor_uniform_1, 'vertex', decl_code=vs_dec, impl_code=vs_impl)
+    shader_to_actor(box_actor_uniform_2, 'vertex', decl_code=vs_dec, impl_code=vs_impl)
+    shader_to_actor(box_actor_uniform_3, 'vertex', decl_code=vs_dec, impl_code=vs_impl)
 
-    shader_to_actor(odf_actor, "vertex", decl_code=vs_dec, impl_code=vs_impl)
+    fs_vars_dec = \
+        """
+        in vec4 vertexMCVSOutput;
+        in vec3 centerMCVSOutput;
+        in float scaleVSOutput;
+        in vec2 minmaxVSOutput;
+        uniform samplerCube texture_0;
 
-    fs_defs = "#define PI 3.1415926535898"
+        uniform mat4 MCVCMatrix;
+        """
 
-    fs_unifs = """
-    uniform mat4 MCVCMatrix;
-    uniform samplerCube texture_0;
-    //uniform int k;
-    """
+    sdf_map = \
+        """
 
-    fs_vs_vars = """
-    in vec4 vertexMCVSOutput;
-    in vec3 centerMCVSOutput;
-    in float scaleVSOutput;
-    """
+        #define PI 3.1415926535898
 
-    coeffs_norm = """
-    float coeffsNorm(float coef)
-    {
-        float min = 0;
-        float max = 1;
-        float newMin = -1;
-        float newMax = 1;
-        return (coef - min) * ((newMax - newMin) / (max - min)) + newMin;
-    }
-    """
-
-    # Clenshaw Legendre normalized
-    legendre_polys = """
-    float Pgn(int l, int m, float x)
-    {
-        float p0 = 0;
-        float p1 = 0;
-        float p2 = 0;
+        // Clenshaw Legendre normalized
+        float Pgn(int l, int m, float x)
+        {
+            float p0 = 0., p1 = 0., p2 = 0.;
 
         for (int k = l; k >= 0; k--)
         {
@@ -192,85 +217,185 @@ if __name__ == "__main__":
 
         float pl = Pgn(l, m, thetax);
 
-        float r = pow(-1, float(m)) * cos(float(m) * phi) * pl;
-
-        /*
-        if (m != 0) {
-            r *= sqrt(2);
+            float r = pow(-1.0, float(m)) * cos(float(m) * phi) * pl;
+            if (m != 0) {
+                r *= sqrt(2.0);
+            }
+            return r;
         }
-        */
 
-        return r;
-    }
+        float coef_norm( in float coef)
+        {
+            float min = 0;
+            float max = 1;
+            float newmin = minmaxVSOutput.x;//-0.13133252;
+            float newmax = minmaxVSOutput.y;//0.28208936;
+            return (coef - min) * ((newmax - newmin) / (max - min)) + newmin;
+        }
     """
 
-    sdf_map = """
-    vec3 map( in vec3 p )
-    {
-        p = p - centerMCVSOutput;
-        vec3 p00 = p;
+    map_function_tex =  \
+        """
+        vec3 map( in vec3 p )
+        {
+            p = p - centerMCVSOutput;
+            vec3 p00 = p;
 
         float r, d; vec3 n, s, res;
 
-        #define SHAPE (vec3(d-abs(r), sign(r),d))
-        //#define SHAPE (vec3(d-0.35, -1.0+2.0*clamp(0.5 + 16.0*r,0.0,1.0),d))
-        d=length(p00);
-        n=p00 / d;
-        // ================================================================
-        float i = 1 / (numCoeffs * 2);
+            #define SHAPE (vec3(d-abs(r), sign(r),d))
+            //#define SHAPE (vec3(d-0.35, -1.0+2.0*clamp(0.5 + 16.0*r,0.0,1.0),d))
+            d=length(p00);
+            n=p00/d;
+            // ================================================================
+            float i = 1/(k*2);
+            float c = texture(texture0, vec2(i, tcoordVCVSOutput.y)).x;
+            r = coef_norm(c)*SH(0, 0, n);
 
-        float c = texture(texture0, vec2(i, tcoordVCVSOutput.y)).x;
-        r = coeffsNorm(c) * SH(0, 0, n);
+            c = texture(texture0, vec2(i+1/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(2, -2, n);
 
-        c = texture(texture0, vec2(i + 1 / numCoeffs, tcoordVCVSOutput.y)).x;
-        r += coeffsNorm(c) * SH(2, -2, n);
+            c = texture(texture0, vec2(i+2/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(2, -1, n);
 
-        c = texture(texture0, vec2(i + 2 / numCoeffs, tcoordVCVSOutput.y)).x;
-        r += coeffsNorm(c) * SH(2, -1, n);
+            c = texture(texture0, vec2(i+3/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(2, 0, n);
 
-        c = texture(texture0, vec2(i + 3 / numCoeffs, tcoordVCVSOutput.y)).x;
-        r += coeffsNorm(c) * SH(2, 0, n);
+            c = texture(texture0, vec2(i+4/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(2, 1, n);
 
-        c = texture(texture0, vec2(i + 4 / numCoeffs, tcoordVCVSOutput.y)).x;
-        r += coeffsNorm(c) * SH(2, 1, n);
+            c = texture(texture0, vec2(i+5/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(2, 2, n);
 
-        c = texture(texture0, vec2(i + 5 / numCoeffs, tcoordVCVSOutput.y)).x;
-        r += coeffsNorm(c) * SH(2, 2, n);
+            c = texture(texture0, vec2(i+6/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(4, -4, n);
 
-        c = texture(texture0, vec2(i + 6 / numCoeffs, tcoordVCVSOutput.y)).x;
-        r += coeffsNorm(c) * SH(4, -4, n);
+            c = texture(texture0, vec2(i+7/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(4, -3, n);
 
-        c = texture(texture0, vec2(i + 7 / numCoeffs, tcoordVCVSOutput.y)).x;
-        r += coeffsNorm(c) * SH(4, -3, n);
+            c = texture(texture0, vec2(i+8/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(4, -2, n);
 
-        c = texture(texture0, vec2(i + 8 / numCoeffs, tcoordVCVSOutput.y)).x;
-        r += coeffsNorm(c) * SH(4, -2, n);
+            c = texture(texture0, vec2(i+9/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(4, -1, n);
 
-        c = texture(texture0, vec2(i + 9 / numCoeffs, tcoordVCVSOutput.y)).x;
-        r += coeffsNorm(c) * SH(4, -1, n);
+            c = texture(texture0, vec2(i+10/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(4, 0, n);
 
-        c = texture(texture0, vec2(i + 10 / numCoeffs, tcoordVCVSOutput.y)).x;
-        r += coeffsNorm(c) * SH(4, 0, n);
+            c = texture(texture0, vec2(i+11/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(4, 1, n);
 
-        c = texture(texture0, vec2(i + 11 / numCoeffs, tcoordVCVSOutput.y)).x;
-        r += coeffsNorm(c) * SH(4, 1, n);
+            c = texture(texture0, vec2(i+12/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(4, 2, n);
 
-        c = texture(texture0, vec2(i + 12 / numCoeffs, tcoordVCVSOutput.y)).x;
-        r += coeffsNorm(c) * SH(4, 2, n);
+            c = texture(texture0, vec2(i+13/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(4, 3, n);
 
-        c = texture(texture0, vec2(i + 13 / numCoeffs, tcoordVCVSOutput.y)).x;
-        r += coeffsNorm(c) * SH(4, 3, n);
+            c = texture(texture0, vec2(i+14/k, tcoordVCVSOutput.y)).x;
+            r += coef_norm(c)*SH(4, 4, n);
 
-        c = texture(texture0, vec2(i + 14 / numCoeffs, tcoordVCVSOutput.y)).x;
-        r += coeffsNorm(c) * SH(4, 4, n);
+            r *= scaleVSOutput;
+            // ================================================================
+            s = SHAPE; res = s;
+            return vec3( res.x, 0.5+0.5*res.y, res.z );
+        }
+        """
 
-        r *= scaleVSOutput;
-        // ================================================================
-        s = SHAPE;
-        res = s;
-        return vec3(res.x, .5 + .5 * res.y, res.z);
-    }
-    """
+    map_function_unif = \
+        """
+        vec3 map( in vec3 p )
+        {
+            p = p - centerMCVSOutput;vec3
+            p00 = p;
+            float r, d;
+            vec3 n, s, res;
+            # define SHAPE (vec3(d-abs(r), sign(r),d))
+            d = length(p00);
+            n = p00 / d;
+            float
+            sc = scaleVSOutput;
+            r = coeffs[0] * SH(0, 0, n) * sc;
+            r += coeffs[1] * SH(2, -2, n) * sc;
+            r += coeffs[2] * SH(2, -1, n) * sc;
+            r += coeffs[3] * SH(2, 0, n) * sc;
+            r += coeffs[4] * SH(2, 1, n) * sc;
+            r += coeffs[5] * SH(2, 2, n) * sc;
+            r += coeffs[6] * SH(4, -4, n) * sc;
+            r += coeffs[7] * SH(4, -3, n) * sc;
+            r += coeffs[8] * SH(4, -2, n) * sc;
+            r += coeffs[9] * SH(4, -1, n) * sc;
+            r += coeffs[10] * SH(4, 0, n) * sc;
+            r += coeffs[11] * SH(4, 1, n) * sc;
+            r += coeffs[12] * SH(4, 2, n) * sc;
+            r += coeffs[13] * SH(4, 3, n) * sc;
+            r += coeffs[14] * SH(4, 4, n) * sc;
+            s = SHAPE;
+            res = s;
+            return vec3(res.x, 0.5 + 0.5 * res.y, res.z);
+            }
+        """
+
+    map_function_templ_1 = \
+        """
+        vec3 map( in vec3 p )
+        {
+            p = p - centerMCVSOutput;vec3
+            p00 = p;
+            float r, d;
+            vec3 n, s, res;
+            # define SHAPE (vec3(d-abs(r), sign(r),d))
+            d = length(p00);
+            n = p00 / d;
+            float
+            sc = scaleVSOutput;
+        """
+
+    coeffs_1 = \
+        """
+        float coeffs[15] = float[15](0.2820735, 0.15236554, -0.04038717,
+        -0.11270988, -0.04532376, 0.14921817, 0.00257928,
+        0.0040734, -0.05313807, 0.03486542, 0.04083064, 0.02105767,
+        -0.04389586, -0.04302812, 0.1048641);
+        """
+
+    coeffs_2 = \
+        """
+        float coeffs[15] = float[15](0.28549338, 0.0978267, -0.11544838,
+        0.12525354, -0.00126003, 0.00320594, 0.04744155, -0.07141446,
+        0.03211689, 0.04711322, 0.08064896, 0.00154299, 0.00086506, 0.00162543,
+        -0.00444893);
+        """
+
+    coeffs_3 = \
+        """
+        float coeffs[15] = float[15](0.28208936, -0.13133252, -0.04701012,
+        -0.06303016, -0.0468775, 0.02348355, 0.03991898, 0.02587433,
+        0.02645416, 0.00668765, 0.00890633, 0.02189304, 0.00387415, 0.01665629,
+        -0.01427194);
+        """
+
+    map_function_templ_2 = \
+        """
+            r = coeffs[0] * SH(0, 0, n) * sc;
+            r += coeffs[1] * SH(2, -2, n) * sc;
+            r += coeffs[2] * SH(2, -1, n) * sc;
+            r += coeffs[3] * SH(2, 0, n) * sc;
+            r += coeffs[4] * SH(2, 1, n) * sc;
+            r += coeffs[5] * SH(2, 2, n) * sc;
+            r += coeffs[6] * SH(4, -4, n) * sc;
+            r += coeffs[7] * SH(4, -3, n) * sc;
+            r += coeffs[8] * SH(4, -2, n) * sc;
+            r += coeffs[9] * SH(4, -1, n) * sc;
+            r += coeffs[10] * SH(4, 0, n) * sc;
+            r += coeffs[11] * SH(4, 1, n) * sc;
+            r += coeffs[12] * SH(4, 2, n) * sc;
+            r += coeffs[13] * SH(4, 3, n) * sc;
+            r += coeffs[14] * SH(4, 4, n) * sc;
+            s = SHAPE;
+            res = s;
+            return vec3(res.x, 0.5 + 0.5 * res.y, res.z);
+            }
+        """
 
     central_diffs_normals = """
     vec3 centralDiffsNormals(in vec3 pos)
@@ -320,15 +445,29 @@ if __name__ == "__main__":
         os.path.join("lighting", "blinn_phong_model.frag")
     )
 
-    # fmt: off
-    fs_dec = compose_shader([
-        fs_defs, fs_unifs, fs_vs_vars, coeffs_norm, legendre_polys,
-        spherical_harmonics, sdf_map, central_diffs_normals, cast_ray,
-        blinn_phong_model
-    ])
-    # fmt: on
+    fs_dec = compose_shader([fs_vars_dec, sdf_map, map_function_tex,
+                             central_diffs_normal, cast_ray, blinn_phong_model])
+    fs_dec_2 = compose_shader([fs_vars_dec, sdf_map, map_function_unif,
+                             central_diffs_normal, cast_ray,
+                             blinn_phong_model])
+    fs_dec_t1 = compose_shader([fs_vars_dec, sdf_map, map_function_templ_1,
+                               coeffs_1, map_function_templ_2,
+                               central_diffs_normal, cast_ray,
+                               blinn_phong_model])
+    fs_dec_t2 = compose_shader([fs_vars_dec, sdf_map, map_function_templ_1,
+                                coeffs_2, map_function_templ_2,
+                                central_diffs_normal, cast_ray,
+                                blinn_phong_model])
+    fs_dec_t3 = compose_shader([fs_vars_dec, sdf_map, map_function_templ_1,
+                                coeffs_3, map_function_templ_2,
+                                central_diffs_normal, cast_ray,
+                                blinn_phong_model])
 
-    shader_to_actor(odf_actor, "fragment", decl_code=fs_dec, debug=False)
+    shader_to_actor(box_actor_texture, 'fragment', decl_code=fs_dec, debug=False)
+    shader_to_actor(box_actor_uniform_1, 'fragment', decl_code=fs_dec_2)
+    shader_to_actor(box_actor_uniform_2, 'fragment', decl_code=fs_dec_2)
+    shader_to_actor(box_actor_uniform_3, 'fragment', decl_code=fs_dec_2)
+    shader_to_actor(box_actor_template, 'fragment', decl_code=fs_dec_t3)
 
     sdf_frag_impl = """
     vec3 pnt = vertexMCVSOutput.xyz;
@@ -363,21 +502,31 @@ if __name__ == "__main__":
 
         vec3 mater = .5 * mix(vec3(1, 1, 0), vec3(1), t.y);
 
-        // ================================================================
-        fragOutput0 = vec4(vec3(1, 0, 0) * lin, opacity);
-        // ================================================================
-    }
-    else
-    {
-        discard;
-    }
-    """
+            // ================================================================
+            fragOutput0 = vec4( vec3(1,1,0)*lin, 1.0);
+            // ================================================================
+        }
+        else
+        {
+            discard;
+        }
 
-    shader_to_actor(
-        odf_actor, "fragment", impl_code=sdf_frag_impl, block="picking"
-    )
 
-    show_man.scene.add(odf_actor)
+        """
+
+    shader_to_actor(box_actor_texture, 'fragment', impl_code=sdf_frag_impl, block='picking')
+    shader_to_actor(box_actor_uniform_1, 'fragment', impl_code=sdf_frag_impl, block='light')
+    shader_to_actor(box_actor_uniform_2, 'fragment', impl_code=sdf_frag_impl, block='light')
+    shader_to_actor(box_actor_uniform_3, 'fragment', impl_code=sdf_frag_impl, block='light')
+    shader_to_actor(box_actor_template, 'fragment', impl_code=sdf_frag_impl, block='light')
+
+    show_manager = window.ShowManager(size=(700, 500))
+    show_manager.scene.background([255, 255, 255])
+    show_manager.scene.add(box_actor_texture)
+    show_manager.scene.add(box_actor_uniform_1)
+    show_manager.scene.add(box_actor_uniform_2)
+    show_manager.scene.add(box_actor_uniform_3)
+    show_manager.scene.add(box_actor_template)
 
     sphere = get_sphere("repulsion724")
 
