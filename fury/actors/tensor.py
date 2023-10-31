@@ -484,6 +484,9 @@ def main_dir_uncertainty(evals, evecs, signal, sigma, b_matrix):
             theta = np.arctan(np.linalg.norm(delta_e1))
             angles[i] = theta
         else:
+            # If the condition is not satisfied it means that there is not a
+            # predominant diffusion direction, hence the uncertainty will be
+            # higher and a default value close to pi/2 is assigned
             theta = 1.39626
 
     return angles
