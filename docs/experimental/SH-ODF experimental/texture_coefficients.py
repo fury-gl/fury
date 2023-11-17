@@ -51,10 +51,10 @@ if __name__ == "__main__":
 
     big_scales = np.repeat(scales, 8, axis=0)
     attribute_to_actor(odf_actor, big_scales, "scale")
-    
+
     minmax = np.array([coeffs.min(axis=1), coeffs.max(axis=1)]).T
     big_minmax = np.repeat(minmax, 8, axis=0)
-    attribute_to_actor(odf_actor, big_minmax, 'minmax')
+    attribute_to_actor(odf_actor, big_minmax, "minmax")
 
     odf_actor_pd = odf_actor.GetMapper().GetInput()
 
@@ -68,12 +68,14 @@ if __name__ == "__main__":
             [0, 0], [0, 1 / 3], [1, 1 / 3], [1, 0],
             [0, 0], [0, 1 / 3], [1, 1 / 3], [1, 0]  # glyph3
         ]
-    ) + [[0.1, 0.1], [0.1, -0.1], [-0.1, -0.1], [-0.1, 0.1],
-         [0.1, 0.1], [0.1, -0.1], [-0.1, -0.1], [-0.1, 0.1],
-         [0.1, 0.1], [0.1, -0.1], [-0.1, -0.1], [-0.1, 0.1],
-         [0.1, 0.1], [0.1, -0.1], [-0.1, -0.1], [-0.1, 0.1],
-         [0.1, 0.1], [0.1, -0.1], [-0.1, -0.1], [-0.1, 0.1],
-         [0.1, 0.1], [0.1, -0.1], [-0.1, -0.1], [-0.1, 0.1]]
+    ) + [
+            [0.1, 0.1], [0.1, -0.1], [-0.1, -0.1], [-0.1, 0.1],
+            [0.1, 0.1], [0.1, -0.1], [-0.1, -0.1], [-0.1, 0.1], # glyph1
+            [0.1, 0.1], [0.1, -0.1], [-0.1, -0.1], [-0.1, 0.1],
+            [0.1, 0.1], [0.1, -0.1], [-0.1, -0.1], [-0.1, 0.1], # glyph2
+            [0.1, 0.1], [0.1, -0.1], [-0.1, -0.1], [-0.1, 0.1],
+            [0.1, 0.1], [0.1, -0.1], [-0.1, -0.1], [-0.1, 0.1] # glyph3
+        ]
     # fmt: on
 
     num_pnts = uv_vals.shape[0]
@@ -89,7 +91,13 @@ if __name__ == "__main__":
     max = coeffs.max(axis=1)
     newmin = 0
     newmax = 1
-    arr = np.array([(coeffs[i] - min[i])*((newmax - newmin) / (max[i] - min[i])) + newmin for i in range(coeffs.shape[0])])
+    arr = np.array(
+        [
+            (coeffs[i] - min[i]) * ((newmax - newmin) / (max[i] - min[i]))
+            + newmin
+            for i in range(coeffs.shape[0])
+        ]
+    )
     arr *= 255
     grid = numpy_to_vtk_image_data(arr.astype(np.uint8))
 
@@ -151,8 +159,8 @@ if __name__ == "__main__":
     }
     """
 
-    # Associated Legendre Polynomial
-    legendre_polys = """
+    # Functions needed to calculate the associated Legendre polynomial
+    factorial = """
     int factorial(int v)
     {
         int t = 1;
@@ -162,44 +170,48 @@ if __name__ == "__main__":
         }
         return t;
     }
+    """
 
-    // Adapted from https://patapom.com/blog/SHPortal/
-    // "Evaluate an Associated Legendre Polynomial P(l,m,x) at x
-    // For more, see “Numerical Methods in C: The Art of Scientific Computing”, Cambridge University Press, 1992, pp 252-254" 
+    # Adapted from https://patapom.com/blog/SHPortal/
+    # "Evaluate an Associated Legendre Polynomial P(l,m,x) at x
+    # For more, see “Numerical Methods in C: The Art of Scientific Computing”,
+    # Cambridge University Press, 1992, pp 252-254"
+    legendre_polys = """
     float P(int l, int m, float x )
     {
-        float pmm = 1.0;
-        
-        float somx2 = sqrt((1.0-x)*(1.0+x));
-        float fact = 1.0;
-        for ( int i=1; i<=m; i++ ) {
-            pmm *= (-fact) * somx2;
-            fact += 2.0;
+        float pmm = 1;
+
+        float somx2 = sqrt((1 - x) * (1 + x));
+        float fact = 1;
+        for (int i=1; i<=m; i++) {
+            pmm *= -fact * somx2;
+            fact += 2;
         }
-        
+
         if( l == m )
             return pmm;
 
-        float pmmp1 = x * (2.0*float(m)+1.0) * pmm;
-        if ( l == m+1 )
+        float pmmp1 = x * (2 * m + 1) * pmm;
+        if(l == m + 1)
             return pmmp1;
 
-        float pll = 0.0;
-        for ( float ll=float(m+2); ll<=float(l); ll+=1.0 ) {
-            pll = ( (2.0*ll-1.0)*x*pmmp1-(ll+float(m)-1.0)*pmm ) / (ll-float(m));
+        float pll = 0;
+        for (float ll=m + 2; ll<=l; ll+=1) {
+            pll = ((2 * ll - 1) * x * pmmp1 - (ll + m - 1) * pmm) / (ll - m);
             pmm = pmmp1;
             pmmp1 = pll;
         }
 
         return pll;
     }
+    """
 
-
+    norm_const = """
     float K(int l, int m)
     {
-        float n = float((2*l+1)*factorial(l - m));
-        float d = 4.0 * PI * float(factorial(l + m));
-        return sqrt(n/d);
+        float n = (2 * l + 1) * factorial(l - m);
+        float d = 4 * PI * factorial(l + m);
+        return sqrt(n / d);
     }
     """
 
@@ -208,15 +220,15 @@ if __name__ == "__main__":
     {
         vec3 ns = normalize(s);
         float thetax = ns.y;
-        float phi = atan(ns.z, ns.x)+PI/2.;
+        float phi = atan(ns.z, ns.x) + PI / 2;
         float v = K(l, abs(m)) * P(l, abs(m), thetax);
         if(m != 0)
-            v *= sqrt(2.0);
+            v *= sqrt(2);
         if(m > 0)
-            v *= sin(float(m)*phi);
+            v *= sin(m * phi);
         if(m < 0)
-            v *= cos(float(-m)*phi);
-        
+            v *= cos(-m * phi);
+
         return v;
     }
     """
@@ -339,9 +351,9 @@ if __name__ == "__main__":
 
     # fmt: off
     fs_dec = compose_shader([
-        fs_defs, fs_unifs, fs_vs_vars, coeffs_norm, legendre_polys,
-        spherical_harmonics, sdf_map, central_diffs_normals, cast_ray,
-        blinn_phong_model
+        fs_defs, fs_unifs, fs_vs_vars, coeffs_norm, factorial, legendre_polys,
+        norm_const, spherical_harmonics, sdf_map, central_diffs_normals,
+        cast_ray, blinn_phong_model
     ])
     # fmt: on
 
