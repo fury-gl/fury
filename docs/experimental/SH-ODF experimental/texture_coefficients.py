@@ -362,14 +362,10 @@ if __name__ == "__main__":
     sdf_frag_impl = """
     vec3 pnt = vertexMCVSOutput.xyz;
 
-    // Ray Origin
-    // Camera position in world space
     vec3 ro = (-MCVCMatrix[3] * MCVCMatrix).xyz;
 
-    // Ray Direction
     vec3 rd = normalize(pnt - ro);
 
-    // Light Direction
     vec3 ld = normalize(ro - pnt);
 
     ro += pnt - ro;
@@ -386,15 +382,12 @@ if __name__ == "__main__":
         //float sss = pow(clamp(1 + dot(normal, rd), 0, 1), 1);
         float sss = clamp(1 + dot(normal, rd), 0, 1);
 
-        // lights
         vec3 lin  = 2.5 * occ * vec3(1) * (.6 + .4 * normal.y);
         lin += 1 * sss * vec3(1, .95, .7) * occ;
 
         vec3 mater = .5 * mix(vec3(1, 1, 0), vec3(1), t.y);
 
-        // ================================================================
         fragOutput0 = vec4(vec3(1, 0, 0) * lin, opacity);
-        // ================================================================
     }
     else
     {
