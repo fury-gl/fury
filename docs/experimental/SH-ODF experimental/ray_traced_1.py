@@ -1,5 +1,12 @@
 """
-This script includes TEXTURE experimentation for passing SH coefficients
+Fury's implementation of "Ray Tracing Spherical Harmonics Glyphs":
+https://momentsingraphics.de/VMV2023.html
+The fragment shader is based on: https://www.shadertoy.com/view/dlGSDV
+(c) 2023, Christoph Peters
+This work is licensed under a CC0 1.0 Universal License. To the extent
+possible under law, Christoph Peters has waived all copyright and related or
+neighboring rights to the following code. This work is published from
+Germany. https://creativecommons.org/publicdomain/zero/1.0/
 """
 import os
 
@@ -46,11 +53,35 @@ if __name__ == "__main__":
 
     shader_to_actor(odf_actor, "vertex", decl_code=vs_dec, impl_code=vs_impl)
 
-    fs_defs = """
-    #define SH_DEGREE 4
-    #define SH_COUNT (((SH_DEGREE + 1) * (SH_DEGREE + 2)) / 2)
-    #define MAX_DEGREE (2 * SH_DEGREE + 2)
-    #define NO_INTERSECTION 3.4e38
+    # The index of the highest used band of the spherical harmonics basis. Must
+    # be even, at least 2 and at most 12.
+    def_sh_degree = "#define SH_DEGREE 4"
+
+    # The number of spherical harmonics basis functions
+    def_sh_count = "#define SH_COUNT (((SH_DEGREE + 1) * (SH_DEGREE + 2)) / 2)"
+
+    # Degree of polynomials for which we have to find roots
+    def_max_degree = "#define MAX_DEGREE (2 * SH_DEGREE + 2)"
+
+    # If GL_EXT_control_flow_attributes is available, these defines should be
+    # defined as [[unroll]] and [[loop]] to give reasonable hints to the
+    # compiler. That avoids register spilling, which makes execution
+    # considerably faster.
+    def_gl_ext_control_flow_attributes = """
+    #ifndef _unroll_
+    #define _unroll_
+    #endif
+    #ifndef _loop_
+    #define _loop_
+    #endif
+    """
+
+    # When there are fewer intersections/roots than theoretically possible,
+    # some array entries are set to this value
+    def_no_intersection = "#define NO_INTERSECTION 3.4e38"
+
+    # pi and its reciprocal
+    def_pis = """
     #define M_PI 3.141592653589793238462643
     #define M_INV_PI 0.318309886183790671537767526745
     """
@@ -114,39 +145,6 @@ if __name__ == "__main__":
     )
 
     new_code = """
-    // Supplemental code for "Ray Tracing Spherical Harmonics Glyphs":
-// https://momentsingraphics.de/VMV2023.html
-// View results of this shader here: https://www.shadertoy.com/view/dlGSDV
-// (c) 2023, Christoph Peters
-// This work is licensed under a CC0 1.0 Universal License. To the extent
-// possible under law, Christoph Peters has waived all copyright and related or
-// neighboring rights to the following code. This work is published from
-// Germany. https://creativecommons.org/publicdomain/zero/1.0/
-
-// The index of the highest used band of the spherical harmonics basis. Must be
-// even, at least 2 and at most 12.
-#define SH_DEGREE 4
-// The number of spherical harmonics basis functions
-#define SH_COUNT (((SH_DEGREE + 1) * (SH_DEGREE + 2)) / 2)
-// Degree of polynomials for which we have to find roots
-#define MAX_DEGREE (2 * SH_DEGREE + 2)
-// If GL_EXT_control_flow_attributes is available, these defines should be
-// defined as [[unroll]] and [[loop]] to give reasonable hints to the compiler.
-// That avoids register spilling, which makes execution considerably faster.
-#ifndef _unroll_
-#define _unroll_
-#endif
-#ifndef _loop_
-#define _loop_
-#endif
-// When there are fewer intersections/roots than theoretically possible, some
-// array entries are set to this value
-#define NO_INTERSECTION 3.4e38
-// pi and its reciprocal
-#define M_PI 3.141592653589793238462643
-#define M_INV_PI 0.318309886183790671537767526745
-
-
 // Searches a single root of a polynomial within a given interval.
 // \param out_root The location of the found root.
 // \param out_end_value The value of the given polynomial at end.
@@ -658,7 +656,9 @@ void mainImage(out vec4 out_color, vec2 frag_coord) {
 
     # fmt: off
     fs_dec = compose_shader([
-        fs_defs, fs_unifs, fs_vs_vars, eval_sh_2, eval_sh_4, eval_sh_6,
+        def_sh_degree, def_sh_count, def_max_degree,
+        def_gl_ext_control_flow_attributes, def_no_intersection,
+        def_pis, fs_unifs, fs_vs_vars, eval_sh_2, eval_sh_4, eval_sh_6,
         eval_sh_8, eval_sh_10, eval_sh_12, eval_sh_grad_2, eval_sh_grad_4,
         eval_sh_grad_6, eval_sh_grad_8, eval_sh_grad_10, eval_sh_grad_12,
         new_code
