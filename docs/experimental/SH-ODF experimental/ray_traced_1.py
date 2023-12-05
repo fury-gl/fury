@@ -295,7 +295,7 @@ if __name__ == "__main__":
     vec3 camera_pos = ro; //vec3(0.0, -5.0, 0.0);
     //float aspect = float(iResolution.x) / float(iResolution.y);
     float aspect = 1;
-    float zoom = .5;
+    float zoom = .8;
     vec3 right = (aspect / zoom) * vec3(3.0, 0.0, 0.0);
     vec3 up = (1.0 / zoom) * vec3(0.0, 0.0, 3.0);
     vec3 bottom_left = -0.5 * (right + up);
