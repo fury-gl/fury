@@ -210,105 +210,57 @@ if __name__ == "__main__":
         os.path.join("spherical_harmonics", "ray_sh_glyph_intersections.frag")
     )
 
+    # Provides a normalized normal vector for a spherical harmonics glyph.
+    #   param sh_coeffs SH_COUNT spherical harmonic coefficients defining the
+    #       glyph. Their exact meaning is defined by eval_sh().
+    #   param point A point on the surface of the glyph, relative to its
+    #       center.
+    #
+    #   return A normalized surface normal pointing away from the origin.
+    get_sh_glyph_normal = import_fury_shader(
+        os.path.join("spherical_harmonics", "get_sh_glyph_normal.frag")
+    )
+
+    # This is the glTF BRDF for dielectric materials, exactly as described
+    # here:
+    # https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#appendix-b-brdf-implementation
+    #   param incoming The normalized incoming light direction.
+    #   param outgoing The normalized outgoing light direction.
+    #   param normal The normalized shading normal.
+    #   param roughness An artist friendly roughness value between 0 and 1.
+    #   param base_color The albedo used for the Lambertian diffuse component.
+    #
+    #   return The BRDF for the given directions.
+    gltf_dielectric_brdf = import_fury_shader(
+        os.path.join("spherical_harmonics", "gltf_dielectric_brdf.frag")
+    )
+
+    # Applies the non-linearity that maps linear RGB to sRGB
+    linear_to_srgb = import_fury_shader(
+        os.path.join("spherical_harmonics", "linear_to_srgb.frag")
+    )
+
+    # Inverse of linear_to_srgb()
+    srgb_to_linear = import_fury_shader(
+        os.path.join("spherical_harmonics", "srgb_to_linear.frag")
+    )
+
+    # Turns a linear RGB color (i.e. rec. 709) into sRGB
+    linear_rgb_to_srgb = import_fury_shader(
+        os.path.join("spherical_harmonics", "linear_rgb_to_srgb.frag")
+    )
+
+    # Inverse of linear_rgb_to_srgb()
+    srgb_to_linear_rgb = import_fury_shader(
+        os.path.join("spherical_harmonics", "srgb_to_linear_rgb.frag")
+    )
+
+    # Logarithmic tonemapping operator. Input and output are linear RGB.
+    tonemap = import_fury_shader(
+        os.path.join("spherical_harmonics", "tonemap.frag")
+    )
+
     new_code = """
-// Provides a normalized normal vector for a spherical harmonics glyph.
-// \param sh_coeffs SH_COUNT spherical harmonic coefficients defining the
-//        glyph. Their exact meaning is defined by eval_sh().
-// \param point A point on the surface of the glyph, relative to its center.
-// return A normalized surface normal pointing away from the origin.
-vec3 get_sh_glyph_normal(float sh_coeffs[SH_COUNT], vec3 point) {
-    float shs[SH_COUNT];
-    vec3 grads[SH_COUNT];
-    float length_inv = inversesqrt(dot(point, point));
-    vec3 normalized = point * length_inv;
-    eval_sh_grad(shs, grads, normalized);
-    float value = 0.0;
-    vec3 grad = vec3(0.0);
-    _unroll_
-    for (int i = 0; i != SH_COUNT; ++i) {
-        value += sh_coeffs[i] * shs[i];
-        grad += sh_coeffs[i] * grads[i];
-    }
-    return normalize(point - (value * length_inv) * (grad - dot(grad, normalized) * normalized));
-}
-
-
-// This is the glTF BRDF for dielectric materials, exactly as described here:
-// https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#appendix-b-brdf-implementation
-// \param incoming The normalized incoming light direction.
-// \param outgoing The normalized outgoing light direction.
-// \param normal The normalized shading normal.
-// \param roughness An artist friendly roughness value between 0 and 1
-// \param base_color The albedo used for the Lambertian diffuse component
-// return The BRDF for the given directions.
-vec3 gltf_dielectric_brdf(vec3 incoming, vec3 outgoing, vec3 normal, float roughness, vec3 base_color) {
-    float ni = dot(normal, incoming);
-    float no = dot(normal, outgoing);
-    // Early out if incoming or outgoing direction are below the horizon
-    if (ni <= 0.0 || no <= 0.0)
-        return vec3(0.0);
-    // Save some work by not actually computing the half-vector. If the half-
-    // vector were h, ih = dot(incoming, h) and
-    // sqrt(nh_ih_2 / ih_2) = dot(normal, h).
-    float ih_2 = dot(incoming, outgoing) * 0.5 + 0.5;
-    float sum = ni + no;
-    float nh_ih_2 = 0.25 * sum * sum;
-    float ih = sqrt(ih_2);
-
-    // Evaluate the GGX normal distribution function
-    float roughness_2 = roughness * roughness;
-    float roughness_4  = roughness_2 * roughness_2;
-    float roughness_flip = 1.0 - roughness_4;
-    float denominator = ih_2 - nh_ih_2 * roughness_flip;
-    float ggx = (roughness_4 * M_INV_PI * ih_2) / (denominator * denominator);
-    // Evaluate the "visibility" (i.e. masking-shadowing times geometry terms)
-    float vi = ni + sqrt(roughness_4 + roughness_flip * ni * ni);
-    float vo = no + sqrt(roughness_4 + roughness_flip * no * no);
-    float v = 1.0 / (vi * vo);
-    // That completes the specular BRDF
-    float specular = v * ggx;
-
-    // The diffuse BRDF is Lambertian
-    vec3 diffuse = M_INV_PI * base_color;
-
-    // Evaluate the Fresnel term using the Fresnel-Schlick approximation
-    const float ior = 1.5;
-    const float f0 = ((1.0 - ior) / (1.0 + ior)) * ((1.0 - ior) / (1.0 + ior));
-    float ih_flip = 1.0 - ih;
-    float ih_flip_2 = ih_flip * ih_flip;
-    float fresnel = f0 + (1.0 - f0) * ih_flip * ih_flip_2 * ih_flip_2;
-
-    // Mix the two components
-    return mix(diffuse, vec3(specular), fresnel);
-}
-
-
-// Applies the non-linearity that maps linear RGB to sRGB
-float linear_to_srgb(float linear) {
-    return (linear <= 0.0031308) ? (12.92 * linear) : (1.055 * pow(linear, 1.0 / 2.4) - 0.055);
-}
-
-// Inverse of linear_to_srgb()
-float srgb_to_linear(float non_linear) {
-    return (non_linear <= 0.04045) ? ((1.0 / 12.92) * non_linear) : pow(non_linear * (1.0 / 1.055) + 0.055 / 1.055, 2.4);
-}
-
-// Turns a linear RGB color (i.e. rec. 709) into sRGB
-vec3 linear_rgb_to_srgb(vec3 linear) {
-    return vec3(linear_to_srgb(linear.r), linear_to_srgb(linear.g), linear_to_srgb(linear.b));
-}
-
-// Inverse of linear_rgb_to_srgb()
-vec3 srgb_to_linear_rgb(vec3 srgb) {
-    return vec3(srgb_to_linear(srgb.r), srgb_to_linear(srgb.g), srgb_to_linear(srgb.b));
-}
-
-// Logarithmic tonemapping operator. Input and output are linear RGB.
-vec3 tonemap(vec3 linear) {
-    float max_channel = max(max(1.0, linear.r), max(linear.g, linear.b));
-    return linear * ((1.0 - 0.02 * log2(max_channel)) / max_channel);
-}
-
 vec3 iResolution = vec3(1920, 1080, 1.0);
 float iTime = 1.0;
 void mainImage(out vec4 out_color, vec2 frag_coord) {
@@ -383,15 +335,15 @@ void mainImage(out vec4 out_color, vec2 frag_coord) {
         eval_sh_8, eval_sh_10, eval_sh_12, eval_sh_grad_2, eval_sh_grad_4,
         eval_sh_grad_6, eval_sh_grad_8, eval_sh_grad_10, eval_sh_grad_12,
         newton_bisection, find_roots, eval_sh, eval_sh_grad,
-        get_inv_vandermonde, ray_sh_glyph_intersections, new_code
+        get_inv_vandermonde, ray_sh_glyph_intersections, get_sh_glyph_normal,
+        gltf_dielectric_brdf, linear_to_srgb, srgb_to_linear,
+        linear_rgb_to_srgb, srgb_to_linear_rgb, tonemap, new_code
     ])
     # fmt: on
 
     shader_to_actor(odf_actor, "fragment", decl_code=fs_dec, debug=False)
 
     sdf_frag_impl = """
-
-    // ------------------------------------------------------------------------------------------------------------------
     vec3 pnt = vertexMCVSOutput.xyz;
 
     // Ray Origin
@@ -405,8 +357,6 @@ void mainImage(out vec4 out_color, vec2 frag_coord) {
     vec3 ld = normalize(ro - pnt);
 
     ro += pnt - ro;
-
-    //vec3 t = castRay(ro, rd);
 
     vec2 frag_coord = gl_FragCoord.xy;
     vec3 camera_pos = ro; //vec3(0.0, -5.0, 0.0);
