@@ -96,52 +96,40 @@ if __name__ == "__main__":
     in float scaleVSOutput;
     """
 
-    eval_sh_2 = import_fury_shader(
-        os.path.join("spherical_harmonics", "eval_sh_2.frag")
-    )
+    eval_sh_2 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_2.frag"))
 
-    eval_sh_4 = import_fury_shader(
-        os.path.join("spherical_harmonics", "eval_sh_4.frag")
-    )
+    eval_sh_4 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_4.frag"))
 
-    eval_sh_6 = import_fury_shader(
-        os.path.join("spherical_harmonics", "eval_sh_6.frag")
-    )
+    eval_sh_6 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_6.frag"))
 
-    eval_sh_8 = import_fury_shader(
-        os.path.join("spherical_harmonics", "eval_sh_8.frag")
-    )
+    eval_sh_8 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_8.frag"))
 
-    eval_sh_10 = import_fury_shader(
-        os.path.join("spherical_harmonics", "eval_sh_10.frag")
-    )
+    eval_sh_10 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_10.frag"))
 
-    eval_sh_12 = import_fury_shader(
-        os.path.join("spherical_harmonics", "eval_sh_12.frag")
-    )
+    eval_sh_12 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_12.frag"))
 
     eval_sh_grad_2 = import_fury_shader(
-        os.path.join("spherical_harmonics", "eval_sh_grad_2.frag")
+        os.path.join("rt_odfs", "eval_sh_grad_2.frag")
     )
 
     eval_sh_grad_4 = import_fury_shader(
-        os.path.join("spherical_harmonics", "eval_sh_grad_4.frag")
+        os.path.join("rt_odfs", "eval_sh_grad_4.frag")
     )
 
     eval_sh_grad_6 = import_fury_shader(
-        os.path.join("spherical_harmonics", "eval_sh_grad_6.frag")
+        os.path.join("rt_odfs", "eval_sh_grad_6.frag")
     )
 
     eval_sh_grad_8 = import_fury_shader(
-        os.path.join("spherical_harmonics", "eval_sh_grad_8.frag")
+        os.path.join("rt_odfs", "eval_sh_grad_8.frag")
     )
 
     eval_sh_grad_10 = import_fury_shader(
-        os.path.join("spherical_harmonics", "eval_sh_grad_10.frag")
+        os.path.join("rt_odfs", "eval_sh_grad_10.frag")
     )
 
     eval_sh_grad_12 = import_fury_shader(
-        os.path.join("spherical_harmonics", "eval_sh_grad_12.frag")
+        os.path.join("rt_odfs", "eval_sh_grad_12.frag")
     )
 
     # Searches a single root of a polynomial within a given interval.
@@ -161,15 +149,13 @@ if __name__ == "__main__":
     #
     #   return true if a root was found, false if no root exists.
     newton_bisection = import_fury_shader(
-        os.path.join("spherical_harmonics", "newton_bisection.frag")
+        os.path.join("rt_odfs", "newton_bisection.frag")
     )
 
     # Finds all roots of the given polynomial in the interval [begin, end] and
     # writes them to out_roots. Some entries will be NO_INTERSECTION but other
     # than that the array is sorted. The last entry is always NO_INTERSECTION.
-    find_roots = import_fury_shader(
-        os.path.join("spherical_harmonics", "find_roots.frag")
-    )
+    find_roots = import_fury_shader(os.path.join("rt_odfs", "find_roots.frag"))
 
     # Evaluates the spherical harmonics basis in bands 0, 2, ..., SH_DEGREE.
     # Conventions are as in the following paper.
@@ -180,20 +166,18 @@ if __name__ == "__main__":
     #       SH_DEGREE in this order.
     #   param point The point on the unit sphere where the basis should be
     #       evaluated.
-    eval_sh = import_fury_shader(
-        os.path.join("spherical_harmonics", "eval_sh.frag")
-    )
+    eval_sh = import_fury_shader(os.path.join("rt_odfs", "eval_sh.frag"))
 
     # Evaluates the gradient of each basis function given by eval_sh() and the
     # basis itself
     eval_sh_grad = import_fury_shader(
-        os.path.join("spherical_harmonics", "eval_sh_grad.frag")
+        os.path.join("rt_odfs", "eval_sh_grad.frag")
     )
 
     # Outputs a matrix that turns equidistant samples on the unit circle of a
     # homogeneous polynomial into coefficients of that polynomial.
     get_inv_vandermonde = import_fury_shader(
-        os.path.join("spherical_harmonics", "get_inv_vandermonde.frag")
+        os.path.join("rt_odfs", "get_inv_vandermonde.frag")
     )
 
     # Determines all intersections between a ray and a spherical harmonics
@@ -207,7 +191,7 @@ if __name__ == "__main__":
     #   param ray_origin The origin of the ray, relative to the glyph center.
     #   param ray_dir The normalized direction vector of the ray.
     ray_sh_glyph_intersections = import_fury_shader(
-        os.path.join("spherical_harmonics", "ray_sh_glyph_intersections.frag")
+        os.path.join("rt_odfs", "ray_sh_glyph_intersections.frag")
     )
 
     # Provides a normalized normal vector for a spherical harmonics glyph.
@@ -218,7 +202,7 @@ if __name__ == "__main__":
     #
     #   return A normalized surface normal pointing away from the origin.
     get_sh_glyph_normal = import_fury_shader(
-        os.path.join("spherical_harmonics", "get_sh_glyph_normal.frag")
+        os.path.join("rt_odfs", "get_sh_glyph_normal.frag")
     )
 
     # This is the glTF BRDF for dielectric materials, exactly as described
@@ -232,33 +216,31 @@ if __name__ == "__main__":
     #
     #   return The BRDF for the given directions.
     gltf_dielectric_brdf = import_fury_shader(
-        os.path.join("spherical_harmonics", "gltf_dielectric_brdf.frag")
+        os.path.join("rt_odfs", "gltf_dielectric_brdf.frag")
     )
 
     # Applies the non-linearity that maps linear RGB to sRGB
     linear_to_srgb = import_fury_shader(
-        os.path.join("spherical_harmonics", "linear_to_srgb.frag")
+        os.path.join("rt_odfs", "linear_to_srgb.frag")
     )
 
     # Inverse of linear_to_srgb()
     srgb_to_linear = import_fury_shader(
-        os.path.join("spherical_harmonics", "srgb_to_linear.frag")
+        os.path.join("rt_odfs", "srgb_to_linear.frag")
     )
 
     # Turns a linear RGB color (i.e. rec. 709) into sRGB
     linear_rgb_to_srgb = import_fury_shader(
-        os.path.join("spherical_harmonics", "linear_rgb_to_srgb.frag")
+        os.path.join("rt_odfs", "linear_rgb_to_srgb.frag")
     )
 
     # Inverse of linear_rgb_to_srgb()
     srgb_to_linear_rgb = import_fury_shader(
-        os.path.join("spherical_harmonics", "srgb_to_linear_rgb.frag")
+        os.path.join("rt_odfs", "srgb_to_linear_rgb.frag")
     )
 
     # Logarithmic tonemapping operator. Input and output are linear RGB.
-    tonemap = import_fury_shader(
-        os.path.join("spherical_harmonics", "tonemap.frag")
-    )
+    tonemap = import_fury_shader(os.path.join("rt_odfs", "tonemap.frag"))
 
     # fmt: off
     fs_dec = compose_shader([
@@ -274,7 +256,7 @@ if __name__ == "__main__":
     ])
     # fmt: on
 
-    shader_to_actor(odf_actor, "fragment", decl_code=fs_dec, debug=False)
+    shader_to_actor(odf_actor, "fragment", decl_code=fs_dec)
 
     sdf_frag_impl = """
     vec3 pnt = vertexMCVSOutput.xyz;
