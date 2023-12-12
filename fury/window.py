@@ -291,7 +291,7 @@ class Scene(OpenGLRenderer):
         self.SetUseFXAA(False)
 
     def enable_ssaa(self):
-        """Turn SSAA (Screen Space Anti Aliasing pass) on. Uses VTK Render/Sequence Pass, and SSAA Pass."""
+        """Turn SSAA on. Uses render passes."""
         collection_pass = RenderPassCollection()
         collection_pass.AddItem(DefaultRenderPass())
 
@@ -308,7 +308,7 @@ class Scene(OpenGLRenderer):
 
     def msaa(self):
         """Turn MSAA on. Uses VTK Render/Sequence Pass, and MSAA Pass."""
-        # TODO: Could be useful to add MSAA here too for continuity, but lacking RenderWindow()
+        # TODO: Add MSAA to Scene()
 
 
 class ShowManager:
