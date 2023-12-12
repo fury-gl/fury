@@ -25,6 +25,11 @@ from fury.lib import (
     Skybox,
     Volume,
     WindowToImageFilter,
+    RenderPassCollection,
+    DefaultRenderPass,
+    SequencePass,
+    SSAAPass,
+    CameraPass,
     colors,
     numpy_support,
 )
@@ -285,7 +290,7 @@ class Scene(OpenGLRenderer):
     def fxaa_off(self):
         self.SetUseFXAA(False)
 
-    def ssaa_on(self):
+    def enable_ssaa(self):
         """Turn SSAA (Screen Space Anti Aliasing pass) on. Uses VTK Render/Sequence Pass, and SSAA Pass."""
         collection_pass = RenderPassCollection()
         collection_pass.AddItem(DefaultRenderPass())
@@ -303,7 +308,7 @@ class Scene(OpenGLRenderer):
 
     def msaa(self):
         """Turn MSAA on. Uses VTK Render/Sequence Pass, and MSAA Pass."""
-        # TODO: Add support for MSAA, OpenGLrenderer does not have SetPass method for MSAA pass.
+        # TODO: Could be useful to add MSAA here too for continuity, but lacking RenderWindow()
 
 
 class ShowManager:
