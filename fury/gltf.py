@@ -13,7 +13,7 @@ from fury.animation.interpolator import (linear_interpolator,
                                          slerp,
                                          step_interpolator,
                                          tan_cubic_spline_interpolator)
-from fury.lib import Camera, Matrix4x4, Texture, Transform, numpy_support, PolyDataTangents
+from fury.lib import Camera, Matrix4x4, Texture, Transform, numpy_support
 
 comp_type = {
     5120: {'size': 1, 'dtype': np.byte},
@@ -128,10 +128,10 @@ class glTF:
 
                     base_col_tex = pbr['baseColorTexture']
                     metal_rough_tex = pbr['metallicRoughnessTexture']
-    
+
                     actor.GetProperty().SetBaseColorTexture(base_col_tex)
                     actor.GetProperty().SetORMTexture(metal_rough_tex)
-                
+
                 emissive = self.materials[i]['emissive']
                 if emissive['texture'] is not None:
                     actor.GetProperty().SetEmissiveTexture(emissive['texture'])
@@ -216,7 +216,7 @@ class glTF:
 
         if node.skin is not None:
             if (nextnode_id in self.gltf.skins[0].joints and
-               nextnode_id not in self.bone_tranforms):
+                    nextnode_id not in self.bone_tranforms):
                 self.bone_tranforms[nextnode_id] = next_matrix[:]
 
         if is_joint:
@@ -253,7 +253,7 @@ class glTF:
             Mesh index to be loaded
         transform_mat : ndarray (4, 4)
             Transformation matrix.
-
+        parent : list
         """
         primitives = self.gltf.meshes[mesh_id].primitives
 
@@ -269,8 +269,6 @@ class glTF:
 
             if attributes.NORMAL is not None and self.apply_normals:
                 normals = self.get_acc_data(attributes.NORMAL)
-                # normals = transform.apply_transformation(normals, 
-                #                                          transform_mat)
                 utils.set_polydata_normals(polydata, normals)
 
             if attributes.TEXCOORD_0 is not None:
@@ -287,7 +285,7 @@ class glTF:
 
             if attributes.COLOR_0 is not None:
                 color = self.get_acc_data(attributes.COLOR_0)
-                color = color[:, :-1]*255
+                color = color[:, :-1] * 255
                 utils.set_polydata_colors(polydata, color)
 
             if primitive.indices is not None:
@@ -381,12 +379,12 @@ class glTF:
 
         if d_type == np.short or d_type == np.ushort or \
                 d_type == np.uint16:
-            byte_length = int(byte_length/2)
-            byte_stride = int(byte_stride/2)
+            byte_length = int(byte_length / 2)
+            byte_stride = int(byte_stride / 2)
 
         elif d_type == np.float32:
-            byte_length = int(byte_length/4)
-            byte_stride = int(byte_stride/4)
+            byte_length = int(byte_length / 4)
+            byte_stride = int(byte_stride / 4)
 
         try:
             if uri.startswith('data:application/octet-stream;base64') or \
@@ -423,7 +421,6 @@ class glTF:
         """
         material = self.gltf.materials[mat_id]
         pbr_dict = None
-        
         pbr = material.pbrMetallicRoughness
         if pbr is not None:
             bct, orm = None, None
@@ -502,7 +499,7 @@ class glTF:
             buff_data = base64.b64decode(buff_data)
 
             extension = '.png' if file.startswith('data:image/png') else '.jpg'
-            image_path = os.path.join(self.pwd, str("b64texture"+extension))
+            image_path = os.path.join(self.pwd, str("b64texture" + extension))
             with open(image_path, "wb") as image_file:
                 image_file.write(buff_data)
 
@@ -516,7 +513,7 @@ class glTF:
                 f.seek(bo)
                 img_binary = f.read(bl)
             extension = '.png' if mimetype == 'images/png' else '.jpg'
-            image_path = os.path.join(self.pwd, str("bvtexture"+extension))
+            image_path = os.path.join(self.pwd, str("bvtexture" + extension))
             with open(image_path, "wb") as image_file:
                 image_file.write(img_binary)
 
@@ -536,7 +533,8 @@ class glTF:
         atexture.Update()
 
         return atexture
-    
+
+
     def generate_orm(self, metallic_roughness=None, occlusion=None):
         """Generates ORM texture from O, R & M textures.
         We do this by swapping Red channel of metallic_roughness with the
@@ -572,7 +570,7 @@ class glTF:
         atexture.EdgeClampOn()
         atexture.SetInputDataObject(grid)
 
-        return atexture           
+        return atexture
 
 
     def load_camera(self, camera_id, transform_mat):
@@ -606,7 +604,7 @@ class glTF:
             zfar = perspective.zfar if perspective.zfar else 1000.0
             znear = perspective.znear
             vtk_cam.SetClippingRange(znear, zfar)
-            angle = perspective.yfov*180/np.pi if perspective.yfov else 30.0
+            angle = perspective.yfov * 180 / np.pi if perspective.yfov else 30.0
             vtk_cam.SetViewAngle(angle)
             if perspective.aspectRatio:
                 vtk_cam.SetExplicitAspectRatio(perspective.aspectRatio)
@@ -708,7 +706,7 @@ class glTF:
         }
         self.sampler_matrices[node] = data
         return data
-    
+
     def get_morph_data(self, target, mesh_id):
         weights_array = self.gltf.meshes[mesh_id].weights
         if target.get('POSITION') is not None:
@@ -882,9 +880,9 @@ class glTF:
             a_weight = weights[i]
 
             skin_mat = \
-                np.multiply(a_weight[0], joint_matrices[a_joint[0]]) +\
-                np.multiply(a_weight[1], joint_matrices[a_joint[1]]) +\
-                np.multiply(a_weight[2], joint_matrices[a_joint[2]]) +\
+                np.multiply(a_weight[0], joint_matrices[a_joint[0]]) + \
+                np.multiply(a_weight[1], joint_matrices[a_joint[1]]) + \
+                np.multiply(a_weight[2], joint_matrices[a_joint[2]]) + \
                 np.multiply(a_weight[3], joint_matrices[a_joint[3]])
 
             xyz = np.dot(skin_mat, np.append(xyz, [1.0]))
@@ -1046,7 +1044,7 @@ class glTF:
 
     def get_animations(self):
         """Return list of animations.
- 
+
         Returns
         -------
         animations: List
@@ -1073,7 +1071,7 @@ class glTF:
                 animation = Animation()
                 transform_mat = self.transformations[i]
                 position, rot, scale = transform.transform_from_matrix(
-                                       transform_mat)
+                    transform_mat)
                 animation.set_keyframe('position', 0.0, position)
 
                 if target_node in nodes:
@@ -1086,7 +1084,7 @@ class glTF:
 
                     interpolator = interpolators.get(interpolation_type)
                     rot_interp = rotation_interpolators.get(
-                                       interpolation_type)
+                        interpolation_type)
                     timeshape = timestamp.shape
                     transhape = node_transform.shape
                     if transforms['interpolation'] == 'CUBICSPLINE':
@@ -1103,18 +1101,18 @@ class glTF:
 
                         if prop == 'rotation':
                             animation.set_rotation(time[0], trs,
-                                                  in_tangent=in_tan,
-                                                  out_tangent=out_tan)
+                                                   in_tangent=in_tan,
+                                                   out_tangent=out_tan)
                             animation.set_rotation_interpolator(rot_interp)
                         if prop == 'translation':
                             animation.set_position(time[0], trs,
-                                                  in_tangent=in_tan,
-                                                  out_tangent=out_tan)
+                                                   in_tangent=in_tan,
+                                                   out_tangent=out_tan)
                             animation.set_position_interpolator(interpolator)
                         if prop == 'scale':
                             animation.set_scale(time[0], trs,
-                                               in_tangent=in_tan,
-                                               out_tangent=out_tan)
+                                                in_tangent=in_tan,
+                                                out_tangent=out_tan)
                             animation.set_scale_interpolator(interpolator)
                 else:
                     animation.add_static_actor(actors[i])
@@ -1236,7 +1234,7 @@ def _connect_primitives(gltf, actor, buff_file, byteoffset, count, name):
     vertex, index, normal, tcoord, color = (None, None, None,
                                             None, None)
     if indices is not None and len(indices) != 0:
-        indices = indices.reshape((-1, ))
+        indices = indices.reshape((-1,))
         amax = [np.max(indices)]
         amin = [np.min(indices)]
 
@@ -1244,7 +1242,7 @@ def _connect_primitives(gltf, actor, buff_file, byteoffset, count, name):
         atype = acc_type.get(gltflib.SCALAR)
 
         indices = indices.astype(np.ushort)
-        blength = len(indices)*ctype['size']
+        blength = len(indices) * ctype['size']
         buff_file.write(indices.tobytes())
         write_bufferview(gltf, 0, byteoffset, blength)
         write_accessor(gltf, count, 0, gltflib.UNSIGNED_SHORT,
@@ -1260,11 +1258,11 @@ def _connect_primitives(gltf, actor, buff_file, byteoffset, count, name):
         ctype = comp_type.get(gltflib.FLOAT)
         atype = acc_type.get(gltflib.VEC3)
 
-        vertices = vertices.reshape((-1, )).astype(ctype['dtype'])
-        blength = len(vertices)*ctype['size']
+        vertices = vertices.reshape((-1,)).astype(ctype['dtype'])
+        blength = len(vertices) * ctype['size']
         buff_file.write(vertices.tobytes())
         write_bufferview(gltf, 0, byteoffset, blength)
-        write_accessor(gltf, count, 0, gltflib.FLOAT, len(vertices)//atype,
+        write_accessor(gltf, count, 0, gltflib.FLOAT, len(vertices) // atype,
                        gltflib.VEC3, amax, amin)
         byteoffset += blength
         vertex = count
@@ -1277,11 +1275,11 @@ def _connect_primitives(gltf, actor, buff_file, byteoffset, count, name):
         ctype = comp_type.get(gltflib.FLOAT)
         atype = acc_type.get(gltflib.VEC3)
 
-        normals = normals.reshape((-1, ))
-        blength = len(normals)*ctype['size']
+        normals = normals.reshape((-1,))
+        blength = len(normals) * ctype['size']
         buff_file.write(normals.tobytes())
         write_bufferview(gltf, 0, byteoffset, blength)
-        write_accessor(gltf, count, 0, gltflib.FLOAT, len(normals)//atype,
+        write_accessor(gltf, count, 0, gltflib.FLOAT, len(normals) // atype,
                        gltflib.VEC3, amax, amin)
         byteoffset += blength
         normal = count
@@ -1294,11 +1292,11 @@ def _connect_primitives(gltf, actor, buff_file, byteoffset, count, name):
         ctype = comp_type.get(gltflib.FLOAT)
         atype = acc_type.get(gltflib.VEC2)
 
-        tcoords = tcoords.reshape((-1, )).astype(ctype['dtype'])
-        blength = len(tcoords)*ctype['size']
+        tcoords = tcoords.reshape((-1,)).astype(ctype['dtype'])
+        blength = len(tcoords) * ctype['size']
         buff_file.write(tcoords.tobytes())
         write_bufferview(gltf, 0, byteoffset, blength)
-        write_accessor(gltf, count, 0, gltflib.FLOAT, len(tcoords)//atype,
+        write_accessor(gltf, count, 0, gltflib.FLOAT, len(tcoords) // atype,
                        gltflib.VEC2)
         byteoffset += blength
         tcoord = count
@@ -1321,8 +1319,8 @@ def _connect_primitives(gltf, actor, buff_file, byteoffset, count, name):
         shape = colors.shape[0]
         colors = np.concatenate((colors, np.full((shape, 1), 255.)), axis=1)
         colors = colors / 255
-        colors = colors.reshape((-1, )).astype(ctype['dtype'])
-        blength = len(colors)*ctype['size']
+        colors = colors.reshape((-1,)).astype(ctype['dtype'])
+        blength = len(colors) * ctype['size']
         buff_file.write(colors.tobytes())
         write_bufferview(gltf, 0, byteoffset, blength)
         write_accessor(gltf, count, 0, gltflib.FLOAT, shape, gltflib.VEC4)
@@ -1408,7 +1406,7 @@ def write_camera(gltf, camera):
         pers = gltflib.Perspective()
         pers.aspectRatio = aspect_ratio
         pers.znear, pers.zfar = clip_range
-        pers.yfov = angle * np.pi/180
+        pers.yfov = angle * np.pi / 180
         cam.type = "perspective"
         cam.perspective = pers
     gltf.cameras.append(cam)
