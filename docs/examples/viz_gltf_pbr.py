@@ -2,7 +2,8 @@
 ==========================================
 Visualizing a glTF file with PBR materials
 ==========================================
-In this tutorial, we will show how to display a glTF file that uses PBR materials.
+In this tutorial, we will show how to display a glTF file that uses PBR
+materials.
 """
 
 from fury import window
