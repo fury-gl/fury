@@ -133,16 +133,19 @@ class glTF:
                     actor.GetProperty().SetORMTexture(metal_rough_tex)
                 
                 emissive = self.materials[i]['emissive']
-                if emissive is not None:
-                    actor.GetProperty().SetEmissiveTexture(emissive)
-                    actor.GetProperty().SetEmissiveFactor(
-                        self.materials[i]['emissive_factor']
-                    )
+                if emissive['texture'] is not None:
+                    actor.GetProperty().SetEmissiveTexture(emissive['texture'])
+                if emissive['factor'] is not None:
+                    actor.GetProperty().SetEmissiveFactor(emissive['factor'])
+
                 normal = self.materials[i]['normal']
-                if normal is not None:
-                    print('applying normal map')
-                    actor.GetProperty().SetNormalTexture(normal)
-                    actor.GetProperty().SetNormalScale(1.0)
+                if normal["texture"] is not None:
+                    actor.GetProperty().SetNormalTexture(normal["texture"])
+                    actor.GetProperty().SetNormalScale(normal["scale"])
+
+                # occlusion = self.materials[i]['occlusion']
+                # if occlusion["texture"] is not None:
+                #     actor.GetProperty().SetOcclusionStrength(occlusion["strength"])
 
             self._actors.append(actor)
 
@@ -447,20 +450,27 @@ class glTF:
                         'metallicValue': metalvalue,
                         'roughnessValue': roughvalue}
         normal = material.normalTexture
-        normal_tex = self.get_texture(normal.index) if normal else None
+        normal_tex = {
+            "texture": self.get_texture(normal.index) if normal else None,
+            "scale": normal.scale if normal else 1.0
+        }
         occlusion = material.occlusionTexture
-        occ_tex = self.get_texture(occlusion.index) if occlusion else None
+        occ_tex = {
+            "texture": self.get_texture(occlusion.index) if occlusion else None,
+            "strength": occlusion.strength if occlusion else 1.0
+        }
         # must update pbr_dict with ORM texture
         emissive = material.emissiveTexture
-        emi_tex = self.get_texture(emissive.index, True) if emissive else None
+        emi_tex = {
+            "texture": self.get_texture(emissive.index, True) if emissive else None,
+            "factor": material.emissiveFactor if emissive else [0, 0, 0]
+        }
 
-        
         return {
-            'pbr' : pbr_dict,
-            'normal' : normal_tex,
-            'occlusion' : occ_tex,
-            'emissive' : emi_tex,
-            'emissive_factor' : material.emissiveFactor
+            'pbr': pbr_dict,
+            'normal': normal_tex,
+            'occlusion': occ_tex,
+            'emissive': emi_tex
         }
 
     def get_texture(self, tex_id, srgb_colorspace=False, rgb=False):

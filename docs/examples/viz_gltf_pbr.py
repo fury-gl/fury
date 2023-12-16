@@ -1,41 +1,47 @@
-from fury import window, material, utils
+"""
+==========================================
+Visualizing a glTF file with PBR materials
+==========================================
+In this tutorial, we will show how to display a glTF file that uses PBR materials.
+"""
+
+from fury import window
+from fury.data import fetch_gltf, read_viz_gltf
 from fury.gltf import glTF
-from fury.io import load_cubemap_texture, load_image
-from fury.data import fetch_gltf, read_viz_gltf, read_viz_cubemap
-from fury.lib import Texture, ImageFlip
 
-# rgb_array = load_image(
-#     '/home/shivam/Downloads/skybox.jpg')
+##############################################################################
+# Create a scene.
 
-# grid = utils.rgb_to_vtk(rgb_array)
-# cubemap = Texture()
-# flip = ImageFlip()
-# flip.SetInputDataObject(grid)
-# flip.SetFilteredAxis(1)
-# cubemap.InterpolateOn()
-# cubemap.MipmapOn()
-# cubemap.SetInputConnection(0, flip.GetOutputPort(0))
-# cubemap.UseSRGBColorSpaceOn()
+scene = window.Scene()
+scene.SetBackground(0.19, 0.21, 0.26)
 
-scene = window.Scene(skybox=None)
-# scene.SetBackground(0.5, 0.3, 0.3)
-
+##############################################################################
+# Fetch and read the glTF file 'DamagedHelmet'.
 fetch_gltf('DamagedHelmet')
 filename = read_viz_gltf('DamagedHelmet')
 
+##############################################################################
+# Create a glTF object from the file and apply normals to the geometry.
 gltf_obj = glTF(filename, apply_normals=True)
+
+##############################################################################
+# Extract actors representing the geometry from the glTF object.
 actors = gltf_obj.actors()
 
+##############################################################################
+# Add all the actors representing the geometry to the scene.
 scene.add(*actors)
-scene.UseImageBasedLightingOn()
+
+##############################################################################
+# Applying camera from the glTF object to the scene.
 
 cameras = gltf_obj.cameras
 if cameras:
     scene.SetActiveCamera(cameras[0])
 
-interactive = True
+interactive = 6
 
 if interactive:
     window.show(scene, size=(1280, 720))
 
-window.record(scene, out_path='viz_gltf.png', size=(1280, 720))
+window.record(scene, out_path='viz_gltf_PBR.png', size=(1280, 720))
