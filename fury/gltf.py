@@ -516,7 +516,7 @@ class glTF:
         rgb_array = io.load_image(image_path)
         if rgb:
             return rgb_array
-        grid = utils.rgb_to_vtk(rgb_array)
+        grid = utils.rgb_to_vtk(np.flipud(rgb_array))
         atexture = Texture()
         atexture.InterpolateOn()
         atexture.EdgeClampOn()
