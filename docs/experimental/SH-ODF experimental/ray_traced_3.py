@@ -35,6 +35,8 @@ if __name__ == "__main__":
     out vec4 vertexMCVSOutput;
     out vec3 centerMCVSOutput;
     out vec3 camPosMCVSOutput;
+    out vec3 camRightMCVSOutput;
+    out vec3 camUpMCVSOutput;
     out float scaleVSOutput;
     """
 
@@ -43,6 +45,10 @@ if __name__ == "__main__":
     centerMCVSOutput = center;
     scaleVSOutput = scale;
     camPosMCVSOutput = -MCVCMatrix[3].xyz * mat3(MCVCMatrix);
+    camRightMCVSOutput = vec3(
+        MCVCMatrix[0][0], MCVCMatrix[1][0], MCVCMatrix[2][0]);
+    camUpMCVSOutput = vec3(
+        MCVCMatrix[0][1], MCVCMatrix[1][1], MCVCMatrix[2][1]);
     """
 
     shader_to_actor(odf_actor, "vertex", decl_code=vs_dec, impl_code=vs_impl)
@@ -84,6 +90,8 @@ if __name__ == "__main__":
     in vec4 vertexMCVSOutput;
     in vec3 centerMCVSOutput;
     in vec3 camPosMCVSOutput;
+    in vec3 camRightMCVSOutput;
+    in vec3 camUpMCVSOutput;
     in float scaleVSOutput;
     """
 
@@ -251,27 +259,24 @@ if __name__ == "__main__":
     # Ray direction is the normalized difference between the fragment and the
     # camera position/ray origin
     ray_direction = """
-    vec3 rd = normalize(pnt - ro);
-    /*
+    //vec3 rd = normalize(pnt - ro);
     //float aspect = float(iResolution.x) / float(iResolution.y);
     float aspect = 1;
     float zoom = .4;
     //vec3 right = (aspect / zoom) * vec3(3., .0, .0);
-    vec3 right = vec3(MCVCMatrix[0][0], MCVCMatrix[1][0], MCVCMatrix[2][0]);
-    right *= aspect / zoom;
+    vec3 right = (aspect / zoom) * camRightMCVSOutput;
     //vec3 up = (1 / zoom) * vec3(.0, .0, 3.);
-    vec3 up = vec3(MCVCMatrix[0][1], MCVCMatrix[1][1], MCVCMatrix[2][1]);
-    up *= 1 / zoom;
+    vec3 up = (1 / zoom) * camUpMCVSOutput;
     //vec3 bottom_left = -.5 * (right + up);
     vec3 bottom_left = .0 * (right + up);
     //vec2 frag_coord = gl_FragCoord.xy;
+    // TODO: Use 3D point instead
     vec2 frag_coord = pnt.xy;
     //vec2 uv = frag_coord / vec2(iResolution.xy);
     vec2 uv = frag_coord / vec2(scaleVSOutput);
     //vec3 ray_dir = normalize(bottom_left + uv.x * right + uv.y * up - camera_pos);
     vec3 rd = normalize(bottom_left + uv.x * right + uv.y * up - ro);
     //vec3 ray_dir = rd;
-    */
     """
 
     # Light direction in a retroreflective model is the normalized difference
