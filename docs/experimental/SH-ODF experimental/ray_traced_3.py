@@ -34,6 +34,7 @@ if __name__ == "__main__":
 
     out vec4 vertexMCVSOutput;
     out vec3 centerMCVSOutput;
+    out vec3 camPosMCVSOutput;
     out float scaleVSOutput;
     """
 
@@ -41,7 +42,7 @@ if __name__ == "__main__":
     vertexMCVSOutput = vertexMC;
     centerMCVSOutput = center;
     scaleVSOutput = scale;
-    vec3 camPos = -MCVCMatrix[3].xyz * mat3(MCVCMatrix);
+    camPosMCVSOutput = -MCVCMatrix[3].xyz * mat3(MCVCMatrix);
     """
 
     shader_to_actor(odf_actor, "vertex", decl_code=vs_dec, impl_code=vs_impl)
@@ -79,13 +80,10 @@ if __name__ == "__main__":
     #define M_INV_PI 0.318309886183790671537767526745
     """
 
-    fs_unifs = """
-    uniform mat4 MCVCMatrix;
-    """
-
     fs_vs_vars = """
     in vec4 vertexMCVSOutput;
     in vec3 centerMCVSOutput;
+    in vec3 camPosMCVSOutput;
     in float scaleVSOutput;
     """
 
@@ -230,13 +228,13 @@ if __name__ == "__main__":
     fs_dec = compose_shader([
         def_sh_degree, def_sh_count, def_max_degree,
         def_gl_ext_control_flow_attributes, def_no_intersection,
-        def_pis, fs_unifs, fs_vs_vars, eval_sh_2, eval_sh_4, eval_sh_6,
-        eval_sh_8, eval_sh_10, eval_sh_12, eval_sh_grad_2, eval_sh_grad_4,
-        eval_sh_grad_6, eval_sh_grad_8, eval_sh_grad_10, eval_sh_grad_12,
-        newton_bisection, find_roots, eval_sh, eval_sh_grad,
-        get_inv_vandermonde, ray_sh_glyph_intersections, get_sh_glyph_normal,
-        blinn_phong_model, linear_to_srgb, srgb_to_linear, linear_rgb_to_srgb,
-        srgb_to_linear_rgb, tonemap
+        def_pis, fs_vs_vars, eval_sh_2, eval_sh_4, eval_sh_6, eval_sh_8,
+        eval_sh_10, eval_sh_12, eval_sh_grad_2, eval_sh_grad_4, eval_sh_grad_6,
+        eval_sh_grad_8, eval_sh_grad_10, eval_sh_grad_12, newton_bisection,
+        find_roots, eval_sh, eval_sh_grad, get_inv_vandermonde,
+        ray_sh_glyph_intersections, get_sh_glyph_normal, blinn_phong_model,
+        linear_to_srgb, srgb_to_linear, linear_rgb_to_srgb, srgb_to_linear_rgb,
+        tonemap
     ])
     # fmt: on
 
@@ -246,9 +244,7 @@ if __name__ == "__main__":
 
     # Ray origin is the camera position in world space
     ray_origin = """
-    vec3 ro = (-MCVCMatrix[3] * MCVCMatrix).xyz;
-    //vec3 camera_pos = vec3(0.0, -5.0, 0.0);
-    //vec3 camera_pos = ro;
+    vec3 ro = camPosMCVSOutput;
     """
 
     # TODO: Check aspect for automatic scaling
@@ -256,16 +252,26 @@ if __name__ == "__main__":
     # camera position/ray origin
     ray_direction = """
     vec3 rd = normalize(pnt - ro);
+    /*
     //float aspect = float(iResolution.x) / float(iResolution.y);
-    //float aspect = 1;
-    //float zoom = .8;
-    //vec3 right = (aspect / zoom) * vec3(3.0, 0.0, 0.0);
-    //vec3 up = (1.0 / zoom) * vec3(0.0, 0.0, 3.0);
-    //vec3 bottom_left = -0.5 * (right + up);
+    float aspect = 1;
+    float zoom = .4;
+    //vec3 right = (aspect / zoom) * vec3(3., .0, .0);
+    vec3 right = vec3(MCVCMatrix[0][0], MCVCMatrix[1][0], MCVCMatrix[2][0]);
+    right *= aspect / zoom;
+    //vec3 up = (1 / zoom) * vec3(.0, .0, 3.);
+    vec3 up = vec3(MCVCMatrix[0][1], MCVCMatrix[1][1], MCVCMatrix[2][1]);
+    up *= 1 / zoom;
+    //vec3 bottom_left = -.5 * (right + up);
+    vec3 bottom_left = .0 * (right + up);
     //vec2 frag_coord = gl_FragCoord.xy;
+    vec2 frag_coord = pnt.xy;
     //vec2 uv = frag_coord / vec2(iResolution.xy);
+    vec2 uv = frag_coord / vec2(scaleVSOutput);
     //vec3 ray_dir = normalize(bottom_left + uv.x * right + uv.y * up - camera_pos);
+    vec3 rd = normalize(bottom_left + uv.x * right + uv.y * up - ro);
     //vec3 ray_dir = rd;
+    */
     """
 
     # Light direction in a retroreflective model is the normalized difference
