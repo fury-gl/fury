@@ -761,9 +761,11 @@ class TabUI(UI):
             tab_panel.content_panel.resize(self.content_size)
             self.parent_panel.add_element(tab_panel, tab_panel_pos)
             if self.tabBar_pos == "top":
-                self.parent_panel.add_element(tab_panel.content_panel, (0.0, 0.0))
+                self.parent_panel.add_element(tab_panel.content_panel,
+                                              (0.0, 0.0))
             elif self.tabBar_pos == "bottom":
-                self.parent_panel.add_element(tab_panel.content_panel, (0.0, 0.1))
+                self.parent_panel.add_element(tab_panel.content_panel,
+                                              (0.0, 0.1))
             tab_panel_pos[0] += 1 / self.nb_tabs
 
     def select_tab_callback(self, iren, _obj, _tab_comp):
