@@ -312,7 +312,8 @@ def test_ui_tab_ui(interactive=False):
         npt.assert_equal(tab_ui.tabs[1].title_italic, True)
         npt.assert_equal(tab_ui.tabs[2].title_italic, False)
 
-        tab_ui.add_element(0, ui.Checkbox(['Option 1', 'Option 2']), (0.5, 0.5))
+        tab_ui.add_element(0, ui.Checkbox(['Option 1', 'Option 2']),
+                           (0.5, 0.5))
         tab_ui.add_element(1, ui.LineSlider2D(), (0.0, 0.5))
         tab_ui.add_element(2, ui.TextBlock2D(), (0.5, 0.5))
 
@@ -348,7 +349,8 @@ def test_ui_tab_ui(interactive=False):
         event_counter.monitor(tab_ui)
 
         current_size = (800, 800)
-        show_manager = window.ShowManager(size=current_size, title='Tab UI Test')
+        show_manager = window.ShowManager(size=current_size,
+                                          title='Tab UI Test')
         show_manager.scene.add(tab_ui)
 
         if interactive:
