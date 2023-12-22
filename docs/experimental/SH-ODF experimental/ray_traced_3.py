@@ -271,12 +271,14 @@ if __name__ == "__main__":
     vec3 bottom_left = .0 * (right + up);
     //vec2 frag_coord = gl_FragCoord.xy;
     // TODO: Use 3D point instead
-    vec2 frag_coord = pnt.xy;
+    //vec2 frag_coord = pnt.xy;
+    vec3 frag_coord = pnt;
     //vec2 uv = frag_coord / vec2(iResolution.xy);
-    vec2 uv = frag_coord / vec2(scaleVSOutput);
+    //vec2 uv = frag_coord / vec2(scaleVSOutput);
+    vec3 uv = frag_coord / vec3(scaleVSOutput);
     //vec3 ray_dir = normalize(bottom_left + uv.x * right + uv.y * up - camera_pos);
-    vec3 rd = normalize(bottom_left + uv.x * right + uv.y * up - ro);
-    //vec3 ray_dir = rd;
+    //vec3 rd = normalize(bottom_left + uv.x * right + uv.y * up - ro);
+    vec3 rd = normalize(bottom_left + uv.x * right + uv.y * up + uv.z - ro);
     """
 
     # Light direction in a retroreflective model is the normalized difference
