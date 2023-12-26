@@ -619,7 +619,7 @@ class TabUI(UI):
         inactive_color=(0.5, 0.5, 0.5),
         draggable=False,
         startup_tab_id=None,
-        tabBar_pos="top",
+        tab_bar_pos="top",
     ):
         """Init class instance.
 
@@ -653,7 +653,7 @@ class TabUI(UI):
         self.inactive_color = inactive_color
         self.active_tab_idx = startup_tab_id
         self.collapsed = True
-        self.tabBar_pos = tabBar_pos
+        self.tab_bar_pos = tab_bar_pos
 
         super(TabUI, self).__init__()
         self.position = position
@@ -719,9 +719,9 @@ class TabUI(UI):
     def update_tabs(self):
         """Update position, size and callbacks for tab panels."""
         self.tab_panel_size = (self.size[0] // self.nb_tabs, int(0.1 * self.size[1]))
-        if self.tabBar_pos == "top":
+        if self.tab_bar_pos == "top":
             tab_panel_pos = [0.0, 0.9]
-        elif self.tabBar_pos == "bottom":
+        elif self.tab_bar_pos == "bottom":
             tab_panel_pos = [0.0, 0.0]
         for tab_panel in self.tabs:
             tab_panel.resize(self.tab_panel_size)
@@ -760,10 +760,10 @@ class TabUI(UI):
 
             tab_panel.content_panel.resize(self.content_size)
             self.parent_panel.add_element(tab_panel, tab_panel_pos)
-            if self.tabBar_pos == "top":
+            if self.tab_bar_pos == "top":
                 self.parent_panel.add_element(tab_panel.content_panel,
                                               (0.0, 0.0))
-            elif self.tabBar_pos == "bottom":
+            elif self.tab_bar_pos == "bottom":
                 self.parent_panel.add_element(tab_panel.content_panel,
                                               (0.0, 0.1))
             tab_panel_pos[0] += 1 / self.nb_tabs
