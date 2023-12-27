@@ -257,7 +257,7 @@ def test_ui_tab_ui(interactive=False):
     tab_ui_top = ui.TabUI(
         position=(50, 50), size=(300, 300), nb_tabs=3, draggable=True,
         tab_bar_pos='top')
-    
+
     tab_ui_top.tabs[0].title = 'Tab 1'
     tab_ui_top.tabs[1].title = 'Tab 2'
     tab_ui_top.tabs[2].title = 'Tab 3'
@@ -311,7 +311,7 @@ def test_ui_tab_ui(interactive=False):
     npt.assert_equal(tab_ui_top.tabs[2].title_italic, False)
 
     tab_ui_top.add_element(0, ui.Checkbox(['Option 1', 'Option 2']),
-                        (0.5, 0.5))
+                           (0.5, 0.5))
     tab_ui_top.add_element(1, ui.LineSlider2D(), (0.0, 0.5))
     tab_ui_top.add_element(2, ui.TextBlock2D(), (0.5, 0.5))
 
@@ -348,7 +348,7 @@ def test_ui_tab_ui(interactive=False):
 
     current_size = (800, 800)
     show_manager = window.ShowManager(size=current_size,
-                                        title='Tab UI Test')
+                                      title='Tab UI Test')
     show_manager.scene.add(tab_ui_top)
 
     if interactive:
@@ -371,7 +371,7 @@ def test_ui_tab_ui(interactive=False):
     expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
 
     tab_ui_bottom = ui.TabUI(
-        position=(50,50), size=(300,300), nb_tabs=3, draggable=True,
+        position=(50, 50), size=(300, 300), nb_tabs=3, draggable=True,
         tab_bar_pos='bottom'
     )
 
@@ -388,7 +388,7 @@ def test_ui_tab_ui(interactive=False):
     tab_ui_bottom.tabs[2].title_font_size = 30
 
     tab_ui_bottom.add_element(0, ui.Checkbox(['Option 1', 'Option 2']),
-                        (0.5, 0.5))
+                              (0.5, 0.5))
     tab_ui_bottom.add_element(1, ui.LineSlider2D(), (0.0, 0.5))
     tab_ui_bottom.add_element(2, ui.TextBlock2D(), (0.5, 0.5))
 
@@ -410,7 +410,7 @@ def test_ui_tab_ui(interactive=False):
 
     current_size = (800, 800)
     show_manager = window.ShowManager(size=current_size,
-                                        title='Tab UI Test')
+                                      title='Tab UI Test')
     show_manager.scene.add(tab_ui_bottom)
 
     if interactive:
