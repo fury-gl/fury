@@ -456,7 +456,7 @@ def test_ui_tab_ui_position(interactive=False):
                                       title='Tab UI Test')
     show_manager.scene.add(tab_ui_top)
     show_manager.scene.add(tab_ui_bottom)
-    
+
     if interactive:
         show_manager.record_events_to_file(recording_filename)
         print(list(event_counter.events_counts.items()))
