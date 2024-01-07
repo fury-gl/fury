@@ -310,7 +310,7 @@ def test_ui_tab_ui(interactive=False):
     npt.assert_equal(tab_ui.tabs[2].title_italic, False)
 
     tab_ui.add_element(0, ui.Checkbox(['Option 1', 'Option 2']),
-                           (0.5, 0.5))
+                       (0.5, 0.5))
     tab_ui.add_element(1, ui.LineSlider2D(), (0.0, 0.5))
     tab_ui.add_element(2, ui.TextBlock2D(), (0.5, 0.5))
 
@@ -372,13 +372,13 @@ def test_ui_tab_ui_position(interactive=False):
     tab_ui_top = ui.TabUI(
         position=(50, 50), size=(300, 300), nb_tabs=3, draggable=True,
         tab_bar_pos='top')
-    
+
     tab_ui_top.tabs[0].title = 'Tab 1'
     tab_ui_top.tabs[1].title = 'Tab 2'
     tab_ui_top.tabs[2].title = 'Tab 3'
 
     tab_ui_top.add_element(0, ui.Checkbox(['Option 1', 'Option 2']),
-                            (0.5, 0.5))
+                           (0.5, 0.5))
     tab_ui_top.add_element(1, ui.LineSlider2D(), (0.0, 0.5))
     tab_ui_top.add_element(2, ui.TextBlock2D(), (0.5, 0.5))
 
@@ -388,8 +388,8 @@ def test_ui_tab_ui_position(interactive=False):
 
     npt.assert_equal(3, tab_ui_top.nb_tabs)
 
-    npt.assert_equal((50,50),tab_ui_top.position)
-    npt.assert_equal((300,300),tab_ui_top.size)
+    npt.assert_equal((50, 50), tab_ui_top.position)
+    npt.assert_equal((300, 300), tab_ui_top.size)
 
     with npt.assert_raises(IndexError):
         tab_ui_top.add_element(3, ui.TextBlock2D(), (0.5, 0.5, 0.5))
@@ -409,7 +409,7 @@ def test_ui_tab_ui_position(interactive=False):
     tab_ui_bottom.tabs[2].title = 'Tab 3'
 
     tab_ui_bottom.add_element(0, ui.Checkbox(['Option 1', 'Option 2']),
-                            (0.5, 0.5))
+                              (0.5, 0.5))
     tab_ui_bottom.add_element(1, ui.LineSlider2D(), (0.0, 0.5))
     tab_ui_bottom.add_element(2, ui.TextBlock2D(), (0.5, 0.5))
 
@@ -419,9 +419,9 @@ def test_ui_tab_ui_position(interactive=False):
 
     npt.assert_equal(3, tab_ui_bottom.nb_tabs)
 
-    npt.assert_equal((350,50),tab_ui_bottom.position)
-    npt.assert_equal((300,300),tab_ui_bottom.size)
-    
+    npt.assert_equal((350, 50), tab_ui_bottom.position)
+    npt.assert_equal((300, 300), tab_ui_bottom.size)
+
     with npt.assert_raises(IndexError):
         tab_ui_bottom.add_element(3, ui.TextBlock2D(), (0.5, 0.5, 0.5))
 
@@ -433,7 +433,6 @@ def test_ui_tab_ui_position(interactive=False):
 
     collapses = itertools.count()
     changes = itertools.count()
-
 
     def collapse(tab_ui_top):
         if tab_ui_top.collapsed or tab_ui_bottom.collapsed:
@@ -454,9 +453,10 @@ def test_ui_tab_ui_position(interactive=False):
 
     current_size = (800, 800)
     show_manager = window.ShowManager(size=current_size,
-                                        title='Tab UI Test')
+                                      title='Tab UI Test')
     show_manager.scene.add(tab_ui_top)
     show_manager.scene.add(tab_ui_bottom)
+    
     if interactive:
         show_manager.record_events_to_file(recording_filename)
         print(list(event_counter.events_counts.items()))
