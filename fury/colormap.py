@@ -115,7 +115,7 @@ def boys2rgb(v):
     y3 = y * y2
     z3 = z * z2
 
-    z4 = z * z2
+    z4 = z2 * z2
 
     xy = x * y
     xz = x * z
