@@ -404,7 +404,7 @@ if __name__ == "__main__":
     sphere = get_sphere("repulsion724")
 
     sh_basis = "descoteaux07"
-    # sh_basis = "tournier07"
+    sh_basis = "tournier07"
     sh_order = 4
 
     sh = np.zeros((3, 1, 1, 15))
@@ -413,7 +413,7 @@ if __name__ == "__main__":
     sh[2, 0, 0, :] = coeffs[2, :]
 
     tensor_sf = sh_to_sf(
-        sh, sh_order=sh_order, basis_type=sh_basis, sphere=sphere
+        sh, sh_order=sh_order, basis_type=sh_basis, sphere=sphere, legacy=False
     )
 
     odf_slicer_actor = actor.odf_slicer(
