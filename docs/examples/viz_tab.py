@@ -28,6 +28,12 @@ fetch_viz_icons()
 tab_ui = ui.TabUI(position=(49, 94), size=(300, 300), nb_tabs=3, draggable=True)
 
 ###############################################################################
+# We can also define the position of the Tab Bar.
+# By default the Tab Bar is positioned at top
+
+tab_ui.tab_bar_pos = 'bottom'
+
+###############################################################################
 # Slider Controls for a Cube for Tab Index 0
 # ==========================================
 #
