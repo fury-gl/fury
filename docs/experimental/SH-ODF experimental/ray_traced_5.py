@@ -31,8 +31,8 @@ def uv_calculations(n):
         a = (n-(i+1))/n
         b = (n-i)/n
         #glyph_coord [0, a], [0, b], [1, b], [1, a]
-        uvs.extend([[.1, a+.1], [.1, b-.1], [.9, b-.1], [.9, a+.1],
-                    [.1, a+.1], [.1, b-.1], [.9, b-.1], [.9, a+.1]])
+        uvs.extend([[.01, a+.01], [.01, b-.01], [.99, b-.01], [.99, a+.01],
+                    [.01, a+.01], [.01, b-.01], [.99, b-.01], [.99, a+.01]])
     return uvs
 
 if __name__ == "__main__":
@@ -42,30 +42,35 @@ if __name__ == "__main__":
     # fmt: off
     coeffs = np.array([
         [
-            0.2820735, 0.15236554, -0.04038717, -0.11270988, -0.04532376,
-            0.14921817, 0.00257928, 0.0040734, -0.05313807, 0.03486542,
-            0.04083064, 0.02105767, -0.04389586, -0.04302812, 0.1048641
-        ],
-        [
-            0.28549338, 0.0978267, -0.11544838, 0.12525354, -0.00126003,
-            0.00320594, 0.04744155, -0.07141446, 0.03211689, 0.04711322,
-            0.08064896, 0.00154299, 0.00086506, 0.00162543, -0.00444893
-        ],
-        [
-            0.28208936, -0.13133252, -0.04701012, -0.06303016, -0.0468775,
-            0.02348355, 0.03991898, 0.02587433, 0.02645416, 0.00668765,
-            0.00890633, 0.02189304, 0.00387415, 0.01665629, -0.01427194
-        ],
-        [   2.82094529e-01, 7.05702620e-03, 3.20326265e-02, -2.88333917e-02, 5.33638381e-03,
-            1.18306258e-02, -2.21964945e-04, 5.54136434e-04, 1.25108672e-03, -4.69248914e-03,
-            4.30155475e-04, -1.15585609e-03, -4.69016480e-04, 1.44523500e-03, 3.96346915e-04
+            -0.2739740312099, 0.2526670396328, 1.8922271728516, 0.2878578901291, -0.5339795947075,
+            -0.2620058953762, 0.1580424904823, 0.0329004973173, -0.1322413831949, -0.1332057565451,
+            1.0894461870193, -0.6319401264191, -0.0416776277125, -1.0772529840469,  0.1423762738705, 
+            0.7941166162491, 0.7490307092667, -0.3428381681442, 0.1024847552180, -0.0219132602215,
+            0.0499043911695, 0.2162453681231, 0.0921059995890, -0.2611238956451, 0.2549301385880,
+            -0.4534865319729, 0.1922748684883, -0.6200597286224
         ]
-    ])*1.5
-    # fmt: on
+    ])
+    
+    """
+            , -0.0532187558711, -0.3569841980934,
+            0.0293972902000, -0.1977960765362, -0.1058669015765, 0.2372217923403, -0.1856198310852, 
+            -0.3373193442822, -0.0750469490886, 0.2146576642990, -0.0490148440003, 0.1288588196039,
+            0.3173974752426, 0.1990085393190, -0.1736343950033, -0.0482443645597, 0.1749017387629,
+            -0.0151847425660, 0.0418366046081, 0.0863263587216, -0.0649211244490, 0.0126096132283, 
+            0.0545089217982, -0.0275142164626, 0.0399986574832, -0.0468244261610, -0.1292105653111,
+            -0.0786858322658, -0.0663828464882, 0.0382439706831, -0.0041550330365, -0.0502800566338,
+            -0.0732471630735, 0.0181751900972, -0.0090119333757, -0.0604443282359, -0.1469985252752,
+            -0.0534046899715, -0.0896672753415, -0.0130841364808, -0.0112942893801, 0.0272257498541,
+            0.0626717616331, -0.0222197983050, -0.0018541504308, -0.1653251944056, 0.0409697402846,
+            0.0749921454327, -0.0282830872616, 0.0006909458525, 0.0625599842287, 0.0812529816082,
+            0.0914693020772, -0.1197222726745, 0.0376277453183, -0.0832617004142, -0.0482175038043,
+            -0.0839003635737, -0.0349423908400,  0.1204519568256, 0.0783745984003, 0.0297401205976,
+            -0.0505947662525
+    """
 
-    centers = np.array([[0, -1, 0], [1, -1, 0], [2, -1, 0], [3, -1, 0]])
+    centers = np.array([[0, -2.5, 0]])
 
-    odf_actor = actor.box(centers=centers, scales=1.0)
+    odf_actor = actor.box(centers=centers, scales=4)
 
     big_centers = np.repeat(centers, 8, axis=0)
     attribute_to_actor(odf_actor, big_centers, "center")
@@ -77,7 +82,7 @@ if __name__ == "__main__":
     odf_actor_pd = odf_actor.GetMapper().GetInput()
 
     # fmt: off
-    uv_vals = np.array(uv_calculations(4))
+    uv_vals = np.array(uv_calculations(1))
     # fmt: on
 
     num_pnts = uv_vals.shape[0]
@@ -111,7 +116,7 @@ if __name__ == "__main__":
 
     # TODO: Set int uniform
     odf_actor.GetShaderProperty().GetFragmentCustomUniforms().SetUniformf(
-        "numCoeffs", 15
+        "numCoeffs", 28
     )
 
     vs_dec = """
@@ -134,7 +139,7 @@ if __name__ == "__main__":
 
     # The index of the highest used band of the spherical harmonics basis. Must
     # be even, at least 2 and at most 12.
-    def_sh_degree = "#define SH_DEGREE 4"
+    def_sh_degree = "#define SH_DEGREE 6"
 
     # The number of spherical harmonics basis functions
     def_sh_count = "#define SH_COUNT (((SH_DEGREE + 1) * (SH_DEGREE + 2)) / 2)"
@@ -186,17 +191,17 @@ if __name__ == "__main__":
     }
     """
 
-    eval_sh_2 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_2 copy.frag"))
+    eval_sh_2 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_2.frag"))
 
-    eval_sh_4 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_4 copy.frag"))
+    eval_sh_4 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_4.frag"))
 
-    eval_sh_6 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_6 copy.frag"))
+    eval_sh_6 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_6.frag"))
 
-    eval_sh_8 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_8 copy.frag"))
+    eval_sh_8 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_8.frag"))
 
-    eval_sh_10 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_10 copy.frag"))
+    eval_sh_10 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_10.frag"))
 
-    eval_sh_12 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_12 copy.frag"))
+    eval_sh_12 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_12.frag"))
 
     eval_sh_grad_2 = import_fury_shader(
         os.path.join("rt_odfs", "eval_sh_grad_2.frag")
@@ -426,26 +431,26 @@ if __name__ == "__main__":
 
     shader_to_actor(odf_actor, "fragment", impl_code=fs_impl, block="picking")
     show_man.scene.add(odf_actor)
-
+    #'''
     sphere = get_sphere("repulsion724")
 
-    sh_basis = "tournier07"
-    sh_order = 4
+    sh_basis = "descoteaux07"
+    #sh_basis = "tournier07"
+    sh_order = 6
 
-    sh = np.zeros((4, 1, 1, 15))
-    sh[0, 0, 0, :] = coeffs[0, :]
-    sh[1, 0, 0, :] = coeffs[1, :]
-    sh[2, 0, 0, :] = coeffs[2, :]
-    sh[3, 0, 0, :] = coeffs[3, :]
+    n = int((sh_order / 2) + 1)
+    sz = 2 * n ** 2 - n
+    sh = np.zeros((1, 1, 1, sz))
+    sh[0, 0, 0, :] = coeffs[0, :sz]
 
     tensor_sf = sh_to_sf(
         sh, sh_order=sh_order, basis_type=sh_basis, sphere=sphere, legacy=False
     )
 
     odf_slicer_actor = actor.odf_slicer(
-        tensor_sf, sphere=sphere, scale=0.5, colormap="plasma"
+        tensor_sf, sphere=sphere, scale=1, colormap="plasma"
     )
 
     show_man.scene.add(odf_slicer_actor)
-
+    #'''
     show_man.start()
