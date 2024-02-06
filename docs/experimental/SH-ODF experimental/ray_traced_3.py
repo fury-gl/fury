@@ -1,6 +1,11 @@
 """
 Fury's simplified version of the script ray_traced_1.py.
+ - Simplified color calculation.
+ - Simplified lighting.
+Improved scalability.
+ - Using scale from python properties.
 """
+
 import os
 
 import numpy as np
