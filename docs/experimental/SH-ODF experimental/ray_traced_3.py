@@ -264,26 +264,17 @@ if __name__ == "__main__":
     # Ray direction is the normalized difference between the fragment and the
     # camera position/ray origin
     ray_direction = """
-    //vec3 rd = normalize(pnt - ro);
+    vec3 rd = normalize(pnt - ro);
     //float aspect = float(iResolution.x) / float(iResolution.y);
-    float aspect = 1;
-    float zoom = .4;
-    //vec3 right = (aspect / zoom) * vec3(3., .0, .0);
-    vec3 right = (aspect / zoom) * camRightMCVSOutput;
-    //vec3 up = (1 / zoom) * vec3(.0, .0, 3.);
-    vec3 up = (1 / zoom) * camUpMCVSOutput;
-    //vec3 bottom_left = -.5 * (right + up);
-    vec3 bottom_left = .0 * (right + up);
+    //float aspect = 1;
+    //float zoom = .8;
+    //vec3 right = (aspect / zoom) * vec3(3.0, 0.0, 0.0);
+    //vec3 up = (1.0 / zoom) * vec3(0.0, 0.0, 3.0);
+    //vec3 bottom_left = -0.5 * (right + up);
     //vec2 frag_coord = gl_FragCoord.xy;
-    // TODO: Use 3D point instead
-    //vec2 frag_coord = pnt.xy;
-    vec3 frag_coord = pnt;
     //vec2 uv = frag_coord / vec2(iResolution.xy);
-    //vec2 uv = frag_coord / vec2(scaleVSOutput);
-    vec3 uv = frag_coord / vec3(scaleVSOutput);
     //vec3 ray_dir = normalize(bottom_left + uv.x * right + uv.y * up - camera_pos);
-    //vec3 rd = normalize(bottom_left + uv.x * right + uv.y * up - ro);
-    vec3 rd = normalize(bottom_left + uv.x * right + uv.y * up + uv.z - ro);
+    //vec3 ray_dir = rd;
     """
 
     # Light direction in a retroreflective model is the normalized difference
@@ -373,7 +364,7 @@ if __name__ == "__main__":
 
     # Evaluate shading for a directional light
     directional_light = """
-    vec3 color = vec3(1.0);
+    vec3 color = vec3(1.);
     if (first_ray_param != NO_INTERSECTION) {
         vec3 intersection = ro + first_ray_param * rd;
         vec3 normal = get_sh_glyph_normal(sh_coeffs, intersection);
