@@ -2,8 +2,6 @@
 Fury's simplified version of the script ray_traced_1.py.
  - Simplified color calculation.
  - Simplified lighting.
-Improved scalability.
- - Using scale from python properties.
 """
 
 import os
@@ -256,9 +254,7 @@ if __name__ == "__main__":
     point_from_vs = "vec3 pnt = vertexMCVSOutput.xyz;"
 
     # Ray origin is the camera position in world space
-    ray_origin = """
-    vec3 ro = camPosMCVSOutput;
-    """
+    ray_origin = "vec3 ro = camPosMCVSOutput;"
 
     # TODO: Check aspect for automatic scaling
     # Ray direction is the normalized difference between the fragment and the
