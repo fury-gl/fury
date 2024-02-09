@@ -178,6 +178,8 @@ if __name__ == "__main__":
     """
 
     fs_vs_vars = """
+    //uniform float numCoeffs;
+
     in vec4 vertexMCVSOutput;
     in vec3 centerMCVSOutput;
     in vec2 minmaxVSOutput;
@@ -360,8 +362,7 @@ if __name__ == "__main__":
     # Ray direction is the normalized difference between the fragment and the
     # camera position/ray origin
     ray_direction = """
-    vec3 rd = normalize(pnt - ro);
-    /*
+    //vec3 rd = normalize(pnt - ro);
     //float aspect = float(iResolution.x) / float(iResolution.y);
     float aspect = 1.;
     float zoom = 1.;
@@ -371,7 +372,8 @@ if __name__ == "__main__":
     vec3 up = (1. / zoom) * camUpMCVSOutput;
     //vec3 bottom_left = -.5 * (right + up);
     //vec3 bottom_left = .0 * (right + up);
-    vec3 bottom_left = vec3(.0);
+    //vec3 bottom_left = vec3(.0);
+    vec3 bottom_left = centerMCVSOutput;
     //vec2 frag_coord = gl_FragCoord.xy;
     // TODO: Use 3D point instead
     vec2 frag_coord = pnt.xy;
@@ -384,7 +386,6 @@ if __name__ == "__main__":
     //vec3 ray_dir = normalize(bottom_left + uv.x * right + uv.y * up - camera_pos);
     vec3 rd = normalize(bottom_left + uv.x * right + uv.y * up - ro);
     //vec3 rd = normalize(bottom_left + uv.x * right + uv.y * up + uv.z - ro);
-    */
     """
 
     # Light direction in a retroreflective model is the normalized difference
@@ -422,8 +423,8 @@ if __name__ == "__main__":
     directional_light = """
     vec3 color = vec3(0.5);
     if (first_ray_param != NO_INTERSECTION) {
-        //vec3 intersection = ro + first_ray_param * rd;
-        vec3 intersection = ro - centerMCVSOutput + first_ray_param * rd;
+        vec3 intersection = ro + first_ray_param * rd;
+        //vec3 intersection = ro - centerMCVSOutput + first_ray_param * rd;
         vec3 normal = get_sh_glyph_normal(sh_coeffs, intersection);
         vec3 colorDir = srgb_to_linear_rgb(abs(normalize(intersection)));
         float attenuation = dot(ld, normal);
