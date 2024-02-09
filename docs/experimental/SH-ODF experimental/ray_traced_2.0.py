@@ -7,12 +7,14 @@ This work is licensed under a CC0 1.0 Universal License. To the extent
 possible under law, Christoph Peters has waived all copyright and related or
 neighboring rights to the following code. This work is published from
 Germany. https://creativecommons.org/publicdomain/zero/1.0/
+
+This script extends the original implementation by passing glyph information
+through a texture.
 """
+
 import os
 
 import numpy as np
-from dipy.data import get_sphere
-from dipy.reconst.shm import sh_to_sf
 
 from fury import actor, window
 from fury.lib import FloatArray, Texture
@@ -27,16 +29,27 @@ from fury.utils import numpy_to_vtk_image_data, set_polydata_tcoords
 
 def uv_calculations(n):
     uvs = []
-    for i in range (0,n):
-        a = (n-(i+1))/n
-        b = (n-i)/n
-        #glyph_coord [0, a], [0, b], [1, b], [1, a]
-        uvs.extend([[.1, a+.1], [.1, b-.1], [.9, b-.1], [.9, a+.1],
-                    [.1, a+.1], [.1, b-.1], [.9, b-.1], [.9, a+.1]])
+    for i in range(0, n):
+        a = (n - (i + 1)) / n
+        b = (n - i) / n
+        # glyph_coord [0, a], [0, b], [1, b], [1, a]
+        uvs.extend(
+            [
+                [0.1, a + 0.1],
+                [0.1, b - 0.1],
+                [0.9, b - 0.1],
+                [0.9, a + 0.1],
+                [0.1, a + 0.1],
+                [0.1, b - 0.1],
+                [0.9, b - 0.1],
+                [0.9, a + 0.1],
+            ]
+        )
     return uvs
 
+
 if __name__ == "__main__":
-    show_man = window.ShowManager(size=(1920, 1080))
+    show_man = window.ShowManager(size=(1280, 720))
     show_man.scene.background((1, 1, 1))
 
     # fmt: off
@@ -55,15 +68,11 @@ if __name__ == "__main__":
             0.28208936, -0.13133252, -0.04701012, -0.06303016, -0.0468775,
             0.02348355, 0.03991898, 0.02587433, 0.02645416, 0.00668765,
             0.00890633, 0.02189304, 0.00387415, 0.01665629, -0.01427194
-        ],
-        [   2.82094529e-01, 7.05702620e-03, 3.20326265e-02, -2.88333917e-02, 5.33638381e-03,
-            1.18306258e-02, -2.21964945e-04, 5.54136434e-04, 1.25108672e-03, -4.69248914e-03,
-            4.30155475e-04, -1.15585609e-03, -4.69016480e-04, 1.44523500e-03, 3.96346915e-04
         ]
-    ])*1.5
+    ])
     # fmt: on
 
-    centers = np.array([[0, -1, 0], [1, -1, 0], [2, -1, 0], [3, -1, 0]])
+    centers = np.array([[0, -1, 0], [1, -1, 0], [2, -1, 0]])
 
     odf_actor = actor.box(centers=centers, scales=1.0)
 
@@ -77,7 +86,7 @@ if __name__ == "__main__":
     odf_actor_pd = odf_actor.GetMapper().GetInput()
 
     # fmt: off
-    uv_vals = np.array(uv_calculations(4))
+    uv_vals = np.array(uv_calculations(3))
     # fmt: on
 
     num_pnts = uv_vals.shape[0]
@@ -174,7 +183,7 @@ if __name__ == "__main__":
     in vec3 centerMCVSOutput;
     in vec2 minmaxVSOutput;
     """
-    
+
     coeffs_norm = """
     float coeffsNorm(float coef)
     {
@@ -186,17 +195,17 @@ if __name__ == "__main__":
     }
     """
 
-    eval_sh_2 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_2 copy.frag"))
+    eval_sh_2 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_2.frag"))
 
-    eval_sh_4 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_4 copy.frag"))
+    eval_sh_4 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_4.frag"))
 
-    eval_sh_6 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_6 copy.frag"))
+    eval_sh_6 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_6.frag"))
 
-    eval_sh_8 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_8 copy.frag"))
+    eval_sh_8 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_8.frag"))
 
-    eval_sh_10 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_10 copy.frag"))
+    eval_sh_10 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_10.frag"))
 
-    eval_sh_12 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_12 copy.frag"))
+    eval_sh_12 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_12.frag"))
 
     eval_sh_grad_2 = import_fury_shader(
         os.path.join("rt_odfs", "eval_sh_grad_2.frag")
@@ -374,7 +383,7 @@ if __name__ == "__main__":
         sh_coeffs[j] = coeffsNorm(texture(texture0, vec2(i + j / numCoeffs, tcoordVCVSOutput.y)).x);
     }
     """
-    
+
     # Perform the intersection test
     intersection_test = """
     float ray_params[MAX_DEGREE];
@@ -395,7 +404,7 @@ if __name__ == "__main__":
 
     # Evaluate shading for a directional light
     directional_light = """
-    vec3 color = vec3(0.5);
+    vec3 color = vec3(1.0);
     if (first_ray_param != NO_INTERSECTION) {
         vec3 intersection = ro - centerMCVSOutput + first_ray_param * rd;
         vec3 normal = get_sh_glyph_normal(sh_coeffs, intersection);
@@ -426,26 +435,5 @@ if __name__ == "__main__":
 
     shader_to_actor(odf_actor, "fragment", impl_code=fs_impl, block="picking")
     show_man.scene.add(odf_actor)
-
-    sphere = get_sphere("repulsion724")
-
-    sh_basis = "tournier07"
-    sh_order = 4
-
-    sh = np.zeros((4, 1, 1, 15))
-    sh[0, 0, 0, :] = coeffs[0, :]
-    sh[1, 0, 0, :] = coeffs[1, :]
-    sh[2, 0, 0, :] = coeffs[2, :]
-    sh[3, 0, 0, :] = coeffs[3, :]
-
-    tensor_sf = sh_to_sf(
-        sh, sh_order=sh_order, basis_type=sh_basis, sphere=sphere, legacy=False
-    )
-
-    odf_slicer_actor = actor.odf_slicer(
-        tensor_sf, sphere=sphere, scale=0.5, colormap="plasma"
-    )
-
-    show_man.scene.add(odf_slicer_actor)
 
     show_man.start()

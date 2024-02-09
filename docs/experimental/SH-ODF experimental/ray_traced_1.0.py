@@ -7,7 +7,10 @@ This work is licensed under a CC0 1.0 Universal License. To the extent
 possible under law, Christoph Peters has waived all copyright and related or
 neighboring rights to the following code. This work is published from
 Germany. https://creativecommons.org/publicdomain/zero/1.0/
+
+This script includes the original implementation as seen in shadertoy.com.
 """
+
 import os
 
 import numpy as np
