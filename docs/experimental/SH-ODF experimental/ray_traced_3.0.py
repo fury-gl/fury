@@ -1,13 +1,9 @@
 """
-Fury's implementation of "Ray Tracing Spherical Harmonics Glyphs":
-https://momentsingraphics.de/VMV2023.html
-The fragment shader is based on: https://www.shadertoy.com/view/dlGSDV
-(c) 2023, Christoph Peters
-This work is licensed under a CC0 1.0 Universal License. To the extent
-possible under law, Christoph Peters has waived all copyright and related or
-neighboring rights to the following code. This work is published from
-Germany. https://creativecommons.org/publicdomain/zero/1.0/
+Fury's simplified version of the script ray_traced_1.0.py.
+ - Simplified color calculation.
+ - Simplified lighting.
 """
+
 import os
 
 import numpy as np
@@ -41,6 +37,9 @@ if __name__ == "__main__":
 
     out vec4 vertexMCVSOutput;
     out vec3 centerMCVSOutput;
+    out vec3 camPosMCVSOutput;
+    out vec3 camRightMCVSOutput;
+    out vec3 camUpMCVSOutput;
     out float scaleVSOutput;
     """
 
@@ -48,7 +47,11 @@ if __name__ == "__main__":
     vertexMCVSOutput = vertexMC;
     centerMCVSOutput = center;
     scaleVSOutput = scale;
-    vec3 camPos = -MCVCMatrix[3].xyz * mat3(MCVCMatrix);
+    camPosMCVSOutput = -MCVCMatrix[3].xyz * mat3(MCVCMatrix);
+    camRightMCVSOutput = vec3(
+        MCVCMatrix[0][0], MCVCMatrix[1][0], MCVCMatrix[2][0]);
+    camUpMCVSOutput = vec3(
+        MCVCMatrix[0][1], MCVCMatrix[1][1], MCVCMatrix[2][1]);
     """
 
     shader_to_actor(odf_actor, "vertex", decl_code=vs_dec, impl_code=vs_impl)
@@ -86,13 +89,12 @@ if __name__ == "__main__":
     #define M_INV_PI 0.318309886183790671537767526745
     """
 
-    fs_unifs = """
-    uniform mat4 MCVCMatrix;
-    """
-
     fs_vs_vars = """
     in vec4 vertexMCVSOutput;
     in vec3 centerMCVSOutput;
+    in vec3 camPosMCVSOutput;
+    in vec3 camRightMCVSOutput;
+    in vec3 camUpMCVSOutput;
     in float scaleVSOutput;
     """
 
@@ -205,20 +207,6 @@ if __name__ == "__main__":
         os.path.join("rt_odfs", "get_sh_glyph_normal.frag")
     )
 
-    # This is the glTF BRDF for dielectric materials, exactly as described
-    # here:
-    # https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#appendix-b-brdf-implementation
-    #   param incoming The normalized incoming light direction.
-    #   param outgoing The normalized outgoing light direction.
-    #   param normal The normalized shading normal.
-    #   param roughness An artist friendly roughness value between 0 and 1.
-    #   param base_color The albedo used for the Lambertian diffuse component.
-    #
-    #   return The BRDF for the given directions.
-    gltf_dielectric_brdf = import_fury_shader(
-        os.path.join("rt_odfs", "gltf_dielectric_brdf.frag")
-    )
-
     # Applies the non-linearity that maps linear RGB to sRGB
     linear_to_srgb = import_fury_shader(
         os.path.join("rt_odfs", "linear_to_srgb.frag")
@@ -242,17 +230,22 @@ if __name__ == "__main__":
     # Logarithmic tonemapping operator. Input and output are linear RGB.
     tonemap = import_fury_shader(os.path.join("rt_odfs", "tonemap.frag"))
 
+    # Blinn-Phong illumination model
+    blinn_phong_model = import_fury_shader(
+        os.path.join("lighting", "blinn_phong_model.frag")
+    )
+
     # fmt: off
     fs_dec = compose_shader([
         def_sh_degree, def_sh_count, def_max_degree,
         def_gl_ext_control_flow_attributes, def_no_intersection,
-        def_pis, fs_unifs, fs_vs_vars, eval_sh_2, eval_sh_4, eval_sh_6,
-        eval_sh_8, eval_sh_10, eval_sh_12, eval_sh_grad_2, eval_sh_grad_4,
-        eval_sh_grad_6, eval_sh_grad_8, eval_sh_grad_10, eval_sh_grad_12,
-        newton_bisection, find_roots, eval_sh, eval_sh_grad,
-        get_inv_vandermonde, ray_sh_glyph_intersections, get_sh_glyph_normal,
-        gltf_dielectric_brdf, linear_to_srgb, srgb_to_linear,
-        linear_rgb_to_srgb, srgb_to_linear_rgb, tonemap
+        def_pis, fs_vs_vars, eval_sh_2, eval_sh_4, eval_sh_6, eval_sh_8,
+        eval_sh_10, eval_sh_12, eval_sh_grad_2, eval_sh_grad_4, eval_sh_grad_6,
+        eval_sh_grad_8, eval_sh_grad_10, eval_sh_grad_12, newton_bisection,
+        find_roots, eval_sh, eval_sh_grad, get_inv_vandermonde,
+        ray_sh_glyph_intersections, get_sh_glyph_normal, blinn_phong_model,
+        linear_to_srgb, srgb_to_linear, linear_rgb_to_srgb, srgb_to_linear_rgb,
+        tonemap
     ])
     # fmt: on
 
@@ -261,11 +254,7 @@ if __name__ == "__main__":
     point_from_vs = "vec3 pnt = vertexMCVSOutput.xyz;"
 
     # Ray origin is the camera position in world space
-    ray_origin = """
-    vec3 ro = (-MCVCMatrix[3] * MCVCMatrix).xyz;
-    //vec3 camera_pos = vec3(0.0, -5.0, 0.0);
-    //vec3 camera_pos = ro;
-    """
+    ray_origin = "vec3 ro = camPosMCVSOutput;"
 
     # TODO: Check aspect for automatic scaling
     # Ray direction is the normalized difference between the fragment and the
@@ -354,7 +343,6 @@ if __name__ == "__main__":
     # Perform the intersection test
     intersection_test = """
     float ray_params[MAX_DEGREE];
-    //ray_sh_glyph_intersections(ray_params, sh_coeffs, camera_pos, ray_dir);
     ray_sh_glyph_intersections(ray_params, sh_coeffs, ro, rd);
     """
 
@@ -372,19 +360,16 @@ if __name__ == "__main__":
 
     # Evaluate shading for a directional light
     directional_light = """
-    vec3 color = vec3(1.0);
+    vec3 color = vec3(1.);
     if (first_ray_param != NO_INTERSECTION) {
-        //vec3 intersection = camera_pos + first_ray_param * ray_dir;
         vec3 intersection = ro + first_ray_param * rd;
         vec3 normal = get_sh_glyph_normal(sh_coeffs, intersection);
-        vec3 base_color = srgb_to_linear_rgb(abs(normalize(intersection)));
-        const vec3 incoming = normalize(vec3(1.23, -4.56, 7.89));
-        float ambient = 0.04;
-        float exposure = 4.0;
-        //vec3 outgoing = -ray_dir;
-        vec3 outgoing = -rd;
-        vec3 brdf = gltf_dielectric_brdf(incoming, outgoing, normal, 0.45, base_color);
-        color = exposure * (brdf * max(0.0, dot(incoming, normal)) + base_color * ambient);
+        vec3 colorDir = srgb_to_linear_rgb(abs(normalize(intersection)));
+        float attenuation = dot(ld, normal);
+        color = blinnPhongIllumModel(
+            //attenuation, lightColor0, diffuseColor, specularPower,
+            attenuation, lightColor0, colorDir, specularPower,
+            specularColor, ambientColor);
     }
     """
 
@@ -392,6 +377,7 @@ if __name__ == "__main__":
     //vec4 out_color = vec4(linear_rgb_to_srgb(tonemap(color)), 1.0);
     vec3 out_color = linear_rgb_to_srgb(tonemap(color));
     fragOutput0 = vec4(out_color, opacity);
+    //fragOutput0 = vec4(color, opacity);
     """
 
     # fmt: off

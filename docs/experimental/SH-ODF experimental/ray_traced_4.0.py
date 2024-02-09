@@ -1,18 +1,12 @@
 """
-Fury's implementation of "Ray Tracing Spherical Harmonics Glyphs":
-https://momentsingraphics.de/VMV2023.html
-The fragment shader is based on: https://www.shadertoy.com/view/dlGSDV
-(c) 2023, Christoph Peters
-This work is licensed under a CC0 1.0 Universal License. To the extent
-possible under law, Christoph Peters has waived all copyright and related or
-neighboring rights to the following code. This work is published from
-Germany. https://creativecommons.org/publicdomain/zero/1.0/
+Fury's simplified version of the script ray_traced_2.0.py.
+ - Simplified color calculation.
+ - Simplified lighting.
 """
+
 import os
 
 import numpy as np
-from dipy.data import get_sphere
-from dipy.reconst.shm import sh_to_sf
 
 from fury import actor, window
 from fury.lib import FloatArray, Texture
@@ -27,16 +21,27 @@ from fury.utils import numpy_to_vtk_image_data, set_polydata_tcoords
 
 def uv_calculations(n):
     uvs = []
-    for i in range (0,n):
-        a = (n-(i+1))/n
-        b = (n-i)/n
-        #glyph_coord [0, a], [0, b], [1, b], [1, a]
-        uvs.extend([[.1, a+.1], [.1, b-.1], [.9, b-.1], [.9, a+.1],
-                    [.1, a+.1], [.1, b-.1], [.9, b-.1], [.9, a+.1]])
+    for i in range(0, n):
+        a = (n - (i + 1)) / n
+        b = (n - i) / n
+        # glyph_coord [0, a], [0, b], [1, b], [1, a]
+        uvs.extend(
+            [
+                [0.1, a + 0.1],
+                [0.1, b - 0.1],
+                [0.9, b - 0.1],
+                [0.9, a + 0.1],
+                [0.1, a + 0.1],
+                [0.1, b - 0.1],
+                [0.9, b - 0.1],
+                [0.9, a + 0.1],
+            ]
+        )
     return uvs
 
+
 if __name__ == "__main__":
-    show_man = window.ShowManager(size=(1920, 1080))
+    show_man = window.ShowManager(size=(1280, 720))
     show_man.scene.background((1, 1, 1))
 
     # fmt: off
@@ -55,15 +60,11 @@ if __name__ == "__main__":
             0.28208936, -0.13133252, -0.04701012, -0.06303016, -0.0468775,
             0.02348355, 0.03991898, 0.02587433, 0.02645416, 0.00668765,
             0.00890633, 0.02189304, 0.00387415, 0.01665629, -0.01427194
-        ],
-        [   2.82094529e-01, 7.05702620e-03, 3.20326265e-02, -2.88333917e-02, 5.33638381e-03,
-            1.18306258e-02, -2.21964945e-04, 5.54136434e-04, 1.25108672e-03, -4.69248914e-03,
-            4.30155475e-04, -1.15585609e-03, -4.69016480e-04, 1.44523500e-03, 3.96346915e-04
         ]
-    ])*1.5
+    ])
     # fmt: on
 
-    centers = np.array([[0, -1, 0], [1, -1, 0], [2, -1, 0], [3, -1, 0]])
+    centers = np.array([[0, -1, 0], [1, -1, 0], [2, -1, 0]])
 
     odf_actor = actor.box(centers=centers, scales=1.0)
 
@@ -77,7 +78,7 @@ if __name__ == "__main__":
     odf_actor_pd = odf_actor.GetMapper().GetInput()
 
     # fmt: off
-    uv_vals = np.array(uv_calculations(4))
+    uv_vals = np.array(uv_calculations(3))
     # fmt: on
 
     num_pnts = uv_vals.shape[0]
@@ -121,13 +122,20 @@ if __name__ == "__main__":
     out vec4 vertexMCVSOutput;
     out vec3 centerMCVSOutput;
     out vec2 minmaxVSOutput;
+    out vec3 camPosMCVSOutput;
+    out vec3 camRightMCVSOutput;
+    out vec3 camUpMCVSOutput;
     """
 
     vs_impl = """
     vertexMCVSOutput = vertexMC;
     centerMCVSOutput = center;
     minmaxVSOutput = minmax;
-    vec3 camPos = -MCVCMatrix[3].xyz * mat3(MCVCMatrix);
+    camPosMCVSOutput = -MCVCMatrix[3].xyz * mat3(MCVCMatrix);
+    camRightMCVSOutput = vec3(
+        MCVCMatrix[0][0], MCVCMatrix[1][0], MCVCMatrix[2][0]);
+    camUpMCVSOutput = vec3(
+        MCVCMatrix[0][1], MCVCMatrix[1][1], MCVCMatrix[2][1]);
     """
 
     shader_to_actor(odf_actor, "vertex", decl_code=vs_dec, impl_code=vs_impl)
@@ -165,16 +173,15 @@ if __name__ == "__main__":
     #define M_INV_PI 0.318309886183790671537767526745
     """
 
-    fs_unifs = """
-    uniform mat4 MCVCMatrix;
-    """
-
     fs_vs_vars = """
     in vec4 vertexMCVSOutput;
     in vec3 centerMCVSOutput;
     in vec2 minmaxVSOutput;
+    in vec3 camPosMCVSOutput;
+    in vec3 camRightMCVSOutput;
+    in vec3 camUpMCVSOutput;
     """
-    
+
     coeffs_norm = """
     float coeffsNorm(float coef)
     {
@@ -186,17 +193,17 @@ if __name__ == "__main__":
     }
     """
 
-    eval_sh_2 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_2 copy.frag"))
+    eval_sh_2 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_2.frag"))
 
-    eval_sh_4 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_4 copy.frag"))
+    eval_sh_4 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_4.frag"))
 
-    eval_sh_6 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_6 copy.frag"))
+    eval_sh_6 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_6.frag"))
 
-    eval_sh_8 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_8 copy.frag"))
+    eval_sh_8 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_8.frag"))
 
-    eval_sh_10 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_10 copy.frag"))
+    eval_sh_10 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_10.frag"))
 
-    eval_sh_12 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_12 copy.frag"))
+    eval_sh_12 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_12.frag"))
 
     eval_sh_grad_2 = import_fury_shader(
         os.path.join("rt_odfs", "eval_sh_grad_2.frag")
@@ -295,20 +302,6 @@ if __name__ == "__main__":
         os.path.join("rt_odfs", "get_sh_glyph_normal.frag")
     )
 
-    # This is the glTF BRDF for dielectric materials, exactly as described
-    # here:
-    # https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#appendix-b-brdf-implementation
-    #   param incoming The normalized incoming light direction.
-    #   param outgoing The normalized outgoing light direction.
-    #   param normal The normalized shading normal.
-    #   param roughness An artist friendly roughness value between 0 and 1.
-    #   param base_color The albedo used for the Lambertian diffuse component.
-    #
-    #   return The BRDF for the given directions.
-    gltf_dielectric_brdf = import_fury_shader(
-        os.path.join("rt_odfs", "gltf_dielectric_brdf.frag")
-    )
-
     # Applies the non-linearity that maps linear RGB to sRGB
     linear_to_srgb = import_fury_shader(
         os.path.join("rt_odfs", "linear_to_srgb.frag")
@@ -332,16 +325,21 @@ if __name__ == "__main__":
     # Logarithmic tonemapping operator. Input and output are linear RGB.
     tonemap = import_fury_shader(os.path.join("rt_odfs", "tonemap.frag"))
 
+    # Blinn-Phong illumination model
+    blinn_phong_model = import_fury_shader(
+        os.path.join("lighting", "blinn_phong_model.frag")
+    )
+
     # fmt: off
     fs_dec = compose_shader([
         def_sh_degree, def_sh_count, def_max_degree,
         def_gl_ext_control_flow_attributes, def_no_intersection,
-        def_pis, fs_unifs, fs_vs_vars, coeffs_norm, eval_sh_2, eval_sh_4, eval_sh_6,
+        def_pis, fs_vs_vars, coeffs_norm, eval_sh_2, eval_sh_4, eval_sh_6,
         eval_sh_8, eval_sh_10, eval_sh_12, eval_sh_grad_2, eval_sh_grad_4,
         eval_sh_grad_6, eval_sh_grad_8, eval_sh_grad_10, eval_sh_grad_12,
         newton_bisection, find_roots, eval_sh, eval_sh_grad,
         get_inv_vandermonde, ray_sh_glyph_intersections, get_sh_glyph_normal,
-        gltf_dielectric_brdf, linear_to_srgb, srgb_to_linear,
+        blinn_phong_model, linear_to_srgb, srgb_to_linear,
         linear_rgb_to_srgb, srgb_to_linear_rgb, tonemap
     ])
     # fmt: on
@@ -351,9 +349,7 @@ if __name__ == "__main__":
     point_from_vs = "vec3 pnt = vertexMCVSOutput.xyz;"
 
     # Ray origin is the camera position in world space
-    ray_origin = """
-    vec3 ro = (-MCVCMatrix[3] * MCVCMatrix).xyz;
-    """
+    ray_origin = "vec3 ro = camPosMCVSOutput;"
 
     # TODO: Check aspect for automatic scaling
     # Ray direction is the normalized difference between the fragment and the
@@ -374,7 +370,7 @@ if __name__ == "__main__":
         sh_coeffs[j] = coeffsNorm(texture(texture0, vec2(i + j / numCoeffs, tcoordVCVSOutput.y)).x);
     }
     """
-    
+
     # Perform the intersection test
     intersection_test = """
     float ray_params[MAX_DEGREE];
@@ -395,17 +391,17 @@ if __name__ == "__main__":
 
     # Evaluate shading for a directional light
     directional_light = """
-    vec3 color = vec3(0.5);
+    vec3 color = vec3(1.);
     if (first_ray_param != NO_INTERSECTION) {
+        //vec3 intersection = ro + first_ray_param * rd;
         vec3 intersection = ro - centerMCVSOutput + first_ray_param * rd;
         vec3 normal = get_sh_glyph_normal(sh_coeffs, intersection);
-        vec3 base_color = srgb_to_linear_rgb(abs(normalize(intersection)));
-        const vec3 incoming = normalize(vec3(1.23, -4.56, 7.89));
-        float ambient = 0.04;
-        float exposure = 4.0;
-        vec3 outgoing = -rd;
-        vec3 brdf = gltf_dielectric_brdf(incoming, outgoing, normal, 0.45, base_color);
-        color = exposure * (brdf * max(0.0, dot(incoming, normal)) + base_color * ambient);
+        vec3 colorDir = srgb_to_linear_rgb(abs(normalize(intersection)));
+        float attenuation = dot(ld, normal);
+        color = blinnPhongIllumModel(
+            //attenuation, lightColor0, diffuseColor, specularPower,
+            attenuation, lightColor0, colorDir, specularPower,
+            specularColor, ambientColor);
     } else {
         discard;
     }
@@ -415,6 +411,7 @@ if __name__ == "__main__":
     //vec4 out_color = vec4(linear_rgb_to_srgb(tonemap(color)), 1.0);
     vec3 out_color = linear_rgb_to_srgb(tonemap(color));
     fragOutput0 = vec4(out_color, opacity);
+    //fragOutput0 = vec4(color, opacity);
     """
 
     # fmt: off
@@ -426,26 +423,5 @@ if __name__ == "__main__":
 
     shader_to_actor(odf_actor, "fragment", impl_code=fs_impl, block="picking")
     show_man.scene.add(odf_actor)
-
-    sphere = get_sphere("repulsion724")
-
-    sh_basis = "tournier07"
-    sh_order = 4
-
-    sh = np.zeros((4, 1, 1, 15))
-    sh[0, 0, 0, :] = coeffs[0, :]
-    sh[1, 0, 0, :] = coeffs[1, :]
-    sh[2, 0, 0, :] = coeffs[2, :]
-    sh[3, 0, 0, :] = coeffs[3, :]
-
-    tensor_sf = sh_to_sf(
-        sh, sh_order=sh_order, basis_type=sh_basis, sphere=sphere, legacy=False
-    )
-
-    odf_slicer_actor = actor.odf_slicer(
-        tensor_sf, sphere=sphere, scale=0.5, colormap="plasma"
-    )
-
-    show_man.scene.add(odf_slicer_actor)
 
     show_man.start()
