@@ -38,20 +38,6 @@ from fury.actor import _fa, _color_fa
 from fury.data import fetch_viz_dmri, read_viz_dmri
 from fury.primitive import prim_sphere
 
-
-
-#scene = window.Scene()
-#scene.background([255, 255, 255])
-
-#showm = window.ShowManager(scene, size=(600, 600))
-
-
-
-#tensors = actor.ellipsoid(centers=centers, colors=colors, axes=evecs,
-#                          lengths=evals, scales=.6)
-#showm.scene.add(tensors)
-#showm.start()
-
 def uv_calculations(n):
     uvs = []
     for i in range(0, n):
@@ -79,7 +65,9 @@ if __name__ == "__main__":
     show_man.scene.background((1, 1, 1))
 
     # fmt: off
-    coeffs, affine = load_nifti("docs\experimental\SH-ODF experimental\data\coeffs_odf.nii.gz")
+    coeffs, affine = load_nifti("docs\experimental\SH-ODF experimental\data\odf_slice_2.nii.gz")
+    print(coeffs)
+    print(coeffs.shape)
     
     valid_mask = np.abs(coeffs).max(axis=(-1)) > 0
     indices = np.nonzero(valid_mask)
@@ -88,15 +76,16 @@ if __name__ == "__main__":
     
     x, y, z, s = coeffs.shape
     coeffs = coeffs[:, :, :].reshape((x * y * z, s))
+    n_glyphs = coeffs.shape[0]
+    print(n_glyphs)
 
-    coeffs = np.array(coeffs)*.15
-    coeffs = coeffs[:270,:]
+    coeffs = np.array(coeffs) * 1.6
     
-    max_val = coeffs.max(axis=1)
-    coeffs = np.dot(np.abs(np.diag(1/max_val)), coeffs) * .7
-    centers = centers[:270]
+    max_val = coeffs.min(axis=1)
+    #coeffs = np.dot(np.abs(np.diag(1/max_val)), coeffs) 
     
     odf_actor = actor.box(centers=centers, scales=1.0)
+    odf_actor.GetMapper().SetVBOShiftScaleMethod(False)
 
     big_centers = np.repeat(centers, 8, axis=0)
     attribute_to_actor(odf_actor, big_centers, "center")
@@ -108,7 +97,7 @@ if __name__ == "__main__":
     odf_actor_pd = odf_actor.GetMapper().GetInput()
 
     # fmt: off
-    uv_vals = np.array(uv_calculations(270))
+    uv_vals = np.array(uv_calculations(900))
     # fmt: on
 
     num_pnts = uv_vals.shape[0]
@@ -133,7 +122,6 @@ if __name__ == "__main__":
     )
     arr *= 255
     grid = numpy_to_vtk_image_data(arr.astype(np.uint8))
-    print(grid)
 
     texture = Texture()
     texture.SetInputDataObject(grid)
