@@ -34,3 +34,5 @@ To better understand the base approach and being able to build on top on it we n
 | BRDF lighting ([ray_traced_2.0.py](ray_traced_2.0.py)) | Blinn-Phong lighting ([ray_traced_4.0.py](ray_traced_4.0.py)) |
 |---|---|
 |<img width="350" src="https://github.com/tvcastillod/fury/assets/9929496/ab4af59e-2cd5-429a-9616-3511e0857a18">|<img width="350" src="https://github.com/tvcastillod/fury/assets/9929496/0509a424-b925-4f03-b862-f24e7bd17c2b">|
+
+- [ray_traced_6.0.py](ray_traced_6.0.py) An example with more data (a slice) using 'descoteaux07' basis and 4th order SH.

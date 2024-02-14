@@ -66,8 +66,6 @@ if __name__ == "__main__":
 
     # fmt: off
     coeffs, affine = load_nifti("docs\experimental\SH-ODF experimental\data\odf_slice_2.nii.gz")
-    print(coeffs)
-    print(coeffs.shape)
     
     valid_mask = np.abs(coeffs).max(axis=(-1)) > 0
     indices = np.nonzero(valid_mask)
@@ -77,7 +75,6 @@ if __name__ == "__main__":
     x, y, z, s = coeffs.shape
     coeffs = coeffs[:, :, :].reshape((x * y * z, s))
     n_glyphs = coeffs.shape[0]
-    print(n_glyphs)
 
     coeffs = np.array(coeffs) * 1.6
     
@@ -97,7 +94,7 @@ if __name__ == "__main__":
     odf_actor_pd = odf_actor.GetMapper().GetInput()
 
     # fmt: off
-    uv_vals = np.array(uv_calculations(900))
+    uv_vals = np.array(uv_calculations(n_glyphs))
     # fmt: on
 
     num_pnts = uv_vals.shape[0]
