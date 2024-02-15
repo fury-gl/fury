@@ -128,13 +128,14 @@ if __name__ == "__main__":
     out vec4 vertexMCVSOutput;
     out vec3 centerMCVSOutput;
     out vec2 minmaxVSOutput;
+    out vec3 camPosMCVSOutput;
     """
 
     vs_impl = """
     vertexMCVSOutput = vertexMC;
     centerMCVSOutput = center;
     minmaxVSOutput = minmax;
-    vec3 camPos = -MCVCMatrix[3].xyz * mat3(MCVCMatrix);
+    camPosMCVSOutput = -MCVCMatrix[3].xyz * mat3(MCVCMatrix);
     """
 
     shader_to_actor(odf_actor, "vertex", decl_code=vs_dec, impl_code=vs_impl)
@@ -172,14 +173,11 @@ if __name__ == "__main__":
     #define M_INV_PI 0.318309886183790671537767526745
     """
 
-    fs_unifs = """
-    uniform mat4 MCVCMatrix;
-    """
-
     fs_vs_vars = """
     in vec4 vertexMCVSOutput;
     in vec3 centerMCVSOutput;
     in vec2 minmaxVSOutput;
+    in vec3 camPosMCVSOutput;
     """
 
     coeffs_norm = """
@@ -342,14 +340,14 @@ if __name__ == "__main__":
     # fmt: off
     fs_dec = compose_shader([
         def_sh_degree, def_sh_count, def_max_degree,
-        def_gl_ext_control_flow_attributes, def_no_intersection,
-        def_pis, fs_unifs, fs_vs_vars, coeffs_norm, eval_sh_2, eval_sh_4, eval_sh_6,
-        eval_sh_8, eval_sh_10, eval_sh_12, eval_sh_grad_2, eval_sh_grad_4,
-        eval_sh_grad_6, eval_sh_grad_8, eval_sh_grad_10, eval_sh_grad_12,
-        newton_bisection, find_roots, eval_sh, eval_sh_grad,
-        get_inv_vandermonde, ray_sh_glyph_intersections, get_sh_glyph_normal,
-        gltf_dielectric_brdf, linear_to_srgb, srgb_to_linear,
-        linear_rgb_to_srgb, srgb_to_linear_rgb, tonemap
+        def_gl_ext_control_flow_attributes, def_no_intersection, def_pis,
+        fs_vs_vars, coeffs_norm, eval_sh_2, eval_sh_4, eval_sh_6, eval_sh_8,
+        eval_sh_10, eval_sh_12, eval_sh_grad_2, eval_sh_grad_4, eval_sh_grad_6,
+        eval_sh_grad_8, eval_sh_grad_10, eval_sh_grad_12, newton_bisection,
+        find_roots, eval_sh, eval_sh_grad, get_inv_vandermonde,
+        ray_sh_glyph_intersections, get_sh_glyph_normal, gltf_dielectric_brdf,
+        linear_to_srgb, srgb_to_linear, linear_rgb_to_srgb, srgb_to_linear_rgb,
+        tonemap
     ])
     # fmt: on
 
@@ -358,16 +356,12 @@ if __name__ == "__main__":
     point_from_vs = "vec3 pnt = vertexMCVSOutput.xyz;"
 
     # Ray origin is the camera position in world space
-    ray_origin = """
-    vec3 ro = (-MCVCMatrix[3] * MCVCMatrix).xyz;
-    """
+    ray_origin = "vec3 ro = camPosMCVSOutput;"
 
     # TODO: Check aspect for automatic scaling
     # Ray direction is the normalized difference between the fragment and the
     # camera position/ray origin
-    ray_direction = """
-    vec3 rd = normalize(pnt - ro);
-    """
+    ray_direction = "vec3 rd = normalize(pnt - ro);"
 
     # Light direction in a retroreflective model is the normalized difference
     # between the camera position/ray origin and the fragment
