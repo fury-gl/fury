@@ -77,9 +77,7 @@ if __name__ == "__main__":
 
     odf_actor_pd = odf_actor.GetMapper().GetInput()
 
-    # fmt: off
     uv_vals = np.array(uv_calculations(3))
-    # fmt: on
 
     num_pnts = uv_vals.shape[0]
 
