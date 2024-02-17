@@ -41,7 +41,6 @@ def uv_calculations(n):
 
 if __name__ == "__main__":
     show_man = window.ShowManager(size=(1280, 720))
-    show_man.scene.background((1, 1, 1))
 
     dataset_dir = os.path.join(dipy_home, "stanford_hardi")
 
@@ -58,13 +57,11 @@ if __name__ == "__main__":
     coeffs = coeffs[:, :, :].reshape((x * y * z, s))
     n_glyphs = coeffs.shape[0]
 
-    coeffs = np.array(coeffs) * 1.6
-
-
     max_val = coeffs.min(axis=1)
-    #coeffs = np.dot(np.abs(np.diag(1/max_val)), coeffs)
+    total = np.sum(abs(coeffs), axis=1)
+    coeffs = np.dot(np.diag(1 / total), coeffs) * 1.7
 
-    odf_actor = actor.box(centers=centers, scales=1.0)
+    odf_actor = actor.box(centers=centers, scales=1)
     odf_actor.GetMapper().SetVBOShiftScaleMethod(False)
 
     big_centers = np.repeat(centers, 8, axis=0)
@@ -414,7 +411,7 @@ if __name__ == "__main__":
         intersection_test, first_intersection, directional_light, frag_output
     ])
     # fmt: on
-    show_man.scene.background([0,0,0])
+
     shader_to_actor(odf_actor, "fragment", impl_code=fs_impl, block="picking")
     show_man.scene.add(odf_actor)
 
