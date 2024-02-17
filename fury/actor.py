@@ -3466,7 +3466,7 @@ def _textured_sphere_source(theta=60, phi=60):
 
 def texture_on_sphere(rgb, theta=60, phi=60, interpolate=True):
     """
-    Map an RGB or RGBA texture on a plane.
+    Map an RGB or RGBA texture on a sphere.
 
     Parameters:
     -----------
