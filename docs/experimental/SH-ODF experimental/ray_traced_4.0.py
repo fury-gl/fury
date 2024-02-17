@@ -77,9 +77,7 @@ if __name__ == "__main__":
 
     odf_actor_pd = odf_actor.GetMapper().GetInput()
 
-    # fmt: off
     uv_vals = np.array(uv_calculations(3))
-    # fmt: on
 
     num_pnts = uv_vals.shape[0]
 
@@ -333,14 +331,14 @@ if __name__ == "__main__":
     # fmt: off
     fs_dec = compose_shader([
         def_sh_degree, def_sh_count, def_max_degree,
-        def_gl_ext_control_flow_attributes, def_no_intersection,
-        def_pis, fs_vs_vars, coeffs_norm, eval_sh_2, eval_sh_4, eval_sh_6,
-        eval_sh_8, eval_sh_10, eval_sh_12, eval_sh_grad_2, eval_sh_grad_4,
-        eval_sh_grad_6, eval_sh_grad_8, eval_sh_grad_10, eval_sh_grad_12,
-        newton_bisection, find_roots, eval_sh, eval_sh_grad,
-        get_inv_vandermonde, ray_sh_glyph_intersections, get_sh_glyph_normal,
-        blinn_phong_model, linear_to_srgb, srgb_to_linear,
-        linear_rgb_to_srgb, srgb_to_linear_rgb, tonemap
+        def_gl_ext_control_flow_attributes, def_no_intersection, def_pis,
+        fs_vs_vars, coeffs_norm, eval_sh_2, eval_sh_4, eval_sh_6, eval_sh_8,
+        eval_sh_10, eval_sh_12, eval_sh_grad_2, eval_sh_grad_4, eval_sh_grad_6,
+        eval_sh_grad_8, eval_sh_grad_10, eval_sh_grad_12, newton_bisection,
+        find_roots, eval_sh, eval_sh_grad, get_inv_vandermonde,
+        ray_sh_glyph_intersections, get_sh_glyph_normal, blinn_phong_model,
+        linear_to_srgb, srgb_to_linear, linear_rgb_to_srgb, srgb_to_linear_rgb,
+        tonemap
     ])
     # fmt: on
 
@@ -354,9 +352,7 @@ if __name__ == "__main__":
     # TODO: Check aspect for automatic scaling
     # Ray direction is the normalized difference between the fragment and the
     # camera position/ray origin
-    ray_direction = """
-    vec3 rd = normalize(pnt - ro);
-    """
+    ray_direction = "vec3 rd = normalize(pnt - ro);"
 
     # Light direction in a retroreflective model is the normalized difference
     # between the camera position/ray origin and the fragment

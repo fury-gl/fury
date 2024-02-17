@@ -1,21 +1,11 @@
 """
-Fury's implementation of "Ray Tracing Spherical Harmonics Glyphs":
-https://momentsingraphics.de/VMV2023.html
-The fragment shader is based on: https://www.shadertoy.com/view/dlGSDV
-(c) 2023, Christoph Peters
-This work is licensed under a CC0 1.0 Universal License. To the extent
-possible under law, Christoph Peters has waived all copyright and related or
-neighboring rights to the following code. This work is published from
-Germany. https://creativecommons.org/publicdomain/zero/1.0/
 """
 
 import os
 
 import numpy as np
-from dipy.data import get_sphere
-from dipy.reconst.shm import sh_to_sf, sf_to_sh
-
-from dipy.io.image import load_nifti, save_nifti
+from dipy.data.fetcher import dipy_home
+from dipy.io.image import load_nifti
 
 from fury import actor, window
 from fury.lib import FloatArray, Texture
@@ -27,16 +17,6 @@ from fury.shaders import (
 )
 from fury.utils import numpy_to_vtk_image_data, set_polydata_tcoords
 
-import itertools
-
-import numpy as np
-
-from dipy.io.image import load_nifti
-
-from fury import window, actor, ui
-from fury.actor import _fa, _color_fa
-from fury.data import fetch_viz_dmri, read_viz_dmri
-from fury.primitive import prim_sphere
 
 def uv_calculations(n):
     uvs = []
@@ -59,42 +39,41 @@ def uv_calculations(n):
     return uvs
 
 
-
 if __name__ == "__main__":
-    show_man = window.ShowManager(size=(1920, 1080))
-    show_man.scene.background((1, 1, 1))
+    show_man = window.ShowManager(size=(1280, 720))
 
-    # fmt: off
-    coeffs, affine = load_nifti("docs\experimental\SH-ODF experimental\data\odf_slice_2.nii.gz")
-    
+    dataset_dir = os.path.join(dipy_home, "stanford_hardi")
+
+    coeffs, affine = load_nifti(
+        os.path.join(dataset_dir, "odf_slice_2.nii.gz")
+    )
+
     valid_mask = np.abs(coeffs).max(axis=(-1)) > 0
     indices = np.nonzero(valid_mask)
 
     centers = np.asarray(indices).T
-    
+
     x, y, z, s = coeffs.shape
     coeffs = coeffs[:, :, :].reshape((x * y * z, s))
     n_glyphs = coeffs.shape[0]
-    
+
     max_val = coeffs.min(axis=1)
     total = np.sum(abs(coeffs), axis=1)
-    coeffs = np.dot(np.diag(1/total), coeffs) * 1.7
-    
-    odf_actor = actor.box(centers=centers, scales=1.0)
+    coeffs = np.dot(np.diag(1 / total), coeffs) * 1.7
+
+    odf_actor = actor.box(centers=centers, scales=1)
     odf_actor.GetMapper().SetVBOShiftScaleMethod(False)
 
     big_centers = np.repeat(centers, 8, axis=0)
     attribute_to_actor(odf_actor, big_centers, "center")
-    
+
     minmax = np.array([coeffs.min(axis=1), coeffs.max(axis=1)]).T
     big_minmax = np.repeat(minmax, 8, axis=0)
     attribute_to_actor(odf_actor, big_minmax, "minmax")
 
     odf_actor_pd = odf_actor.GetMapper().GetInput()
 
-    # fmt: off
     uv_vals = np.array(uv_calculations(n_glyphs))
-    # fmt: on
 
     num_pnts = uv_vals.shape[0]
 
@@ -137,13 +116,20 @@ if __name__ == "__main__":
     out vec4 vertexMCVSOutput;
     out vec3 centerMCVSOutput;
     out vec2 minmaxVSOutput;
+    out vec3 camPosMCVSOutput;
+    out vec3 camRightMCVSOutput;
+    out vec3 camUpMCVSOutput;
     """
 
     vs_impl = """
     vertexMCVSOutput = vertexMC;
     centerMCVSOutput = center;
     minmaxVSOutput = minmax;
-    vec3 camPos = -MCVCMatrix[3].xyz * mat3(MCVCMatrix);
+    camPosMCVSOutput = -MCVCMatrix[3].xyz * mat3(MCVCMatrix);
+    camRightMCVSOutput = vec3(
+        MCVCMatrix[0][0], MCVCMatrix[1][0], MCVCMatrix[2][0]);
+    camUpMCVSOutput = vec3(
+        MCVCMatrix[0][1], MCVCMatrix[1][1], MCVCMatrix[2][1]);
     """
 
     shader_to_actor(odf_actor, "vertex", decl_code=vs_dec, impl_code=vs_impl)
@@ -181,14 +167,13 @@ if __name__ == "__main__":
     #define M_INV_PI 0.318309886183790671537767526745
     """
 
-    fs_unifs = """
-    uniform mat4 MCVCMatrix;
-    """
-
     fs_vs_vars = """
     in vec4 vertexMCVSOutput;
     in vec3 centerMCVSOutput;
     in vec2 minmaxVSOutput;
+    in vec3 camPosMCVSOutput;
+    in vec3 camRightMCVSOutput;
+    in vec3 camUpMCVSOutput;
     """
 
     coeffs_norm = """
@@ -202,29 +187,17 @@ if __name__ == "__main__":
     }
     """
 
-    eval_sh_2 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_2.frag")
-    )
+    eval_sh_2 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_2.frag"))
 
-    eval_sh_4 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_4.frag")
-    )
+    eval_sh_4 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_4.frag"))
 
-    eval_sh_6 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_6.frag")
-    )
+    eval_sh_6 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_6.frag"))
 
-    eval_sh_8 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_8.frag")
-    )
+    eval_sh_8 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_8.frag"))
 
-    eval_sh_10 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_10.frag")
-    )
+    eval_sh_10 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_10.frag"))
 
-    eval_sh_12 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_12.frag")
-    )
+    eval_sh_12 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_12.frag"))
 
     eval_sh_grad_2 = import_fury_shader(
         os.path.join("rt_odfs", "eval_sh_grad_2.frag")
@@ -323,20 +296,6 @@ if __name__ == "__main__":
         os.path.join("rt_odfs", "get_sh_glyph_normal.frag")
     )
 
-    # This is the glTF BRDF for dielectric materials, exactly as described
-    # here:
-    # https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#appendix-b-brdf-implementation
-    #   param incoming The normalized incoming light direction.
-    #   param outgoing The normalized outgoing light direction.
-    #   param normal The normalized shading normal.
-    #   param roughness An artist friendly roughness value between 0 and 1.
-    #   param base_color The albedo used for the Lambertian diffuse component.
-    #
-    #   return The BRDF for the given directions.
-    gltf_dielectric_brdf = import_fury_shader(
-        os.path.join("rt_odfs", "gltf_dielectric_brdf.frag")
-    )
-
     # Applies the non-linearity that maps linear RGB to sRGB
     linear_to_srgb = import_fury_shader(
         os.path.join("rt_odfs", "linear_to_srgb.frag")
@@ -360,17 +319,22 @@ if __name__ == "__main__":
     # Logarithmic tonemapping operator. Input and output are linear RGB.
     tonemap = import_fury_shader(os.path.join("rt_odfs", "tonemap.frag"))
 
+    # Blinn-Phong illumination model
+    blinn_phong_model = import_fury_shader(
+        os.path.join("lighting", "blinn_phong_model.frag")
+    )
+
     # fmt: off
     fs_dec = compose_shader([
         def_sh_degree, def_sh_count, def_max_degree,
-        def_gl_ext_control_flow_attributes, def_no_intersection,
-        def_pis, fs_unifs, fs_vs_vars, coeffs_norm, eval_sh_2, eval_sh_4, eval_sh_6,
-        eval_sh_8, eval_sh_10, eval_sh_12, eval_sh_grad_2, eval_sh_grad_4,
-        eval_sh_grad_6, eval_sh_grad_8, eval_sh_grad_10, eval_sh_grad_12,
-        newton_bisection, find_roots, eval_sh, eval_sh_grad,
-        get_inv_vandermonde, ray_sh_glyph_intersections, get_sh_glyph_normal,
-        gltf_dielectric_brdf, linear_to_srgb, srgb_to_linear,
-        linear_rgb_to_srgb, srgb_to_linear_rgb, tonemap
+        def_gl_ext_control_flow_attributes, def_no_intersection, def_pis,
+        fs_vs_vars, coeffs_norm, eval_sh_2, eval_sh_4, eval_sh_6, eval_sh_8,
+        eval_sh_10, eval_sh_12, eval_sh_grad_2, eval_sh_grad_4, eval_sh_grad_6,
+        eval_sh_grad_8, eval_sh_grad_10, eval_sh_grad_12, newton_bisection,
+        find_roots, eval_sh, eval_sh_grad, get_inv_vandermonde,
+        ray_sh_glyph_intersections, get_sh_glyph_normal, blinn_phong_model,
+        linear_to_srgb, srgb_to_linear, linear_rgb_to_srgb, srgb_to_linear_rgb,
+        tonemap
     ])
     # fmt: on
 
@@ -379,16 +343,12 @@ if __name__ == "__main__":
     point_from_vs = "vec3 pnt = vertexMCVSOutput.xyz;"
 
     # Ray origin is the camera position in world space
-    ray_origin = """
-    vec3 ro = (-MCVCMatrix[3] * MCVCMatrix).xyz;
-    """
+    ray_origin = "vec3 ro = camPosMCVSOutput;"
 
     # TODO: Check aspect for automatic scaling
     # Ray direction is the normalized difference between the fragment and the
     # camera position/ray origin
-    ray_direction = """
-    vec3 rd = normalize(pnt - ro);
-    """
+    ray_direction = "vec3 rd = normalize(pnt - ro);"
 
     # Light direction in a retroreflective model is the normalized difference
     # between the camera position/ray origin and the fragment
@@ -423,17 +383,16 @@ if __name__ == "__main__":
 
     # Evaluate shading for a directional light
     directional_light = """
-    vec3 color = vec3(1.0);
+    vec3 color = vec3(1.);
     if (first_ray_param != NO_INTERSECTION) {
         vec3 intersection = ro - centerMCVSOutput + first_ray_param * rd;
         vec3 normal = get_sh_glyph_normal(sh_coeffs, intersection);
-        vec3 base_color = srgb_to_linear_rgb(abs(normalize(intersection)));
-        const vec3 incoming = normalize(vec3(1.23, -4.56, 7.89));
-        float ambient = 0.04;
-        float exposure = 4.0;
-        vec3 outgoing = -rd;
-        vec3 brdf = gltf_dielectric_brdf(incoming, outgoing, normal, 0.45, base_color);
-        color = exposure * (brdf * max(0.0, dot(incoming, normal)) + base_color * ambient);
+        vec3 colorDir = srgb_to_linear_rgb(abs(normalize(intersection)));
+        float attenuation = dot(ld, normal);
+        color = blinnPhongIllumModel(
+            //attenuation, lightColor0, diffuseColor, specularPower,
+            attenuation, lightColor0, colorDir, specularPower,
+            specularColor, ambientColor);
     } else {
         discard;
     }
@@ -443,6 +402,7 @@ if __name__ == "__main__":
     //vec4 out_color = vec4(linear_rgb_to_srgb(tonemap(color)), 1.0);
     vec3 out_color = linear_rgb_to_srgb(tonemap(color));
     fragOutput0 = vec4(out_color, opacity);
+    //fragOutput0 = vec4(color, opacity);
     """
 
     # fmt: off
@@ -451,9 +411,8 @@ if __name__ == "__main__":
         intersection_test, first_intersection, directional_light, frag_output
     ])
     # fmt: on
-    show_man.scene.background([0,0,0])
+
     shader_to_actor(odf_actor, "fragment", impl_code=fs_impl, block="picking")
     show_man.scene.add(odf_actor)
 
     show_man.start()
-    
