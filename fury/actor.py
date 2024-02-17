@@ -3508,7 +3508,7 @@ def texture_2d(rgb, interp=False):
     rgb : ndarray
         Input 2D RGB or RGBA array. Dtype should be uint8.
     interp : bool
-        Interpolate between grid centers. Default True.
+        Interpolate between grid centers. Default False.
 
     Returns
     -------
