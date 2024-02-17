@@ -60,10 +60,11 @@ if __name__ == "__main__":
 
     coeffs = np.array(coeffs) * 1.6
 
-    max_val = coeffs.min(axis=1)
-    # coeffs = np.dot(np.abs(np.diag(1/max_val)), coeffs)
 
-    odf_actor = actor.box(centers=centers, scales=1)
+    max_val = coeffs.min(axis=1)
+    #coeffs = np.dot(np.abs(np.diag(1/max_val)), coeffs)
+
+    odf_actor = actor.box(centers=centers, scales=1.0)
     odf_actor.GetMapper().SetVBOShiftScaleMethod(False)
 
     big_centers = np.repeat(centers, 8, axis=0)
@@ -413,7 +414,7 @@ if __name__ == "__main__":
         intersection_test, first_intersection, directional_light, frag_output
     ])
     # fmt: on
-
+    show_man.scene.background([0,0,0])
     shader_to_actor(odf_actor, "fragment", impl_code=fs_impl, block="picking")
     show_man.scene.add(odf_actor)
 
