@@ -3443,6 +3443,20 @@ def texture_update(texture_actor, arr):
 
 
 def _textured_sphere_source(theta=60, phi=60):
+    """
+    Uses vtkTexturedSphereSource to set the theta and phi
+
+    Parameters:
+    -----------
+    theta : int, optional
+        Set the number of points in the longitude direction.
+    phi : int, optional
+        Set the number of points in the latitude direction.
+
+    Returns:
+    --------
+    tss : TexturedSphereSource
+    """
     tss = TexturedSphereSource()
     tss.SetThetaResolution(theta)
     tss.SetPhiResolution(phi)
@@ -3451,7 +3465,24 @@ def _textured_sphere_source(theta=60, phi=60):
 
 
 def texture_on_sphere(rgb, theta=60, phi=60, interpolate=True):
+    """
+    Map an RGB or RGBA texture on a plane.
 
+    Parameters:
+    -----------
+    rgb : ndarray
+        Input 2D RGB or RGBA array. Dtype should be uint8.
+    theta : int, optional
+        Set the number of points in the longitude direction.
+    phi : int, optional
+        Set the number of points in the latitude direction.
+    interp : bool
+        Interpolate between grid centers. Default True.
+
+    Returns:
+    --------
+    earthActor : Actor
+    """
     tss = _textured_sphere_source(theta=theta, phi=phi)
     earthMapper = PolyDataMapper()
     earthMapper.SetInputConnection(tss.GetOutputPort())
