@@ -978,18 +978,19 @@ class LineDoubleSlider2D(UI):
         self.handles[0].position = self.handles[0].position.astype(float)
         self.handles[1].position = self.handles[1].position.astype(float)
 
-        self.handles[0].position += coords - self.position
-        self.handles[1].position += coords - self.position
+        self.handles[0].center = (track_position[0], self.track.center[1])
+        self.handles[1].center = (track_position[0] + self.track.size[0],
+                                  self.track.center[1])
 
         if self.orientation == 'horizontal':
             # Position the text below the handles.
             self.text[0].position = (
                 self.handles[0].center[0],
-                self.handles[0].position[1] - 20,
+                self.handles[0].position[1] - 10,
             )
             self.text[1].position = (
                 self.handles[1].center[0],
-                self.handles[1].position[1] - 20,
+                self.handles[1].position[1] - 10,
             )
         else:
             # Position the text to the left of the handles.
@@ -2205,9 +2206,9 @@ class ComboBox2D(UI):
         self.menu_opacity = menu_opacity
 
         # Define subcomponent sizes.
-        self.text_block_size = (int(0.8 * size[0]), int(0.3 * size[1]))
-        self.drop_menu_size = (size[0], int(0.7 * size[1]))
-        self.drop_button_size = (int(0.2 * size[0]), int(0.3 * size[1]))
+        self.text_block_size = (int(0.9 * size[0]), int(0.1 * size[1]))
+        self.drop_menu_size = (int(0.9 * size[0]), int(0.7 * size[1]))
+        self.drop_button_size = (int(0.1 * size[0]), int(0.1 * size[1]))
 
         self._icon_files = [
             ('left', read_viz_icons(fname='circle-left.png')),
@@ -2344,6 +2345,8 @@ class ComboBox2D(UI):
 
         """
         self.panel.position = coords
+        self.panel.position = (self.panel.position[0],
+                               self.panel.position[1] - self.drop_menu_size[1])
 
     def _add_to_scene(self, scene):
         """Add all subcomponents or VTK props that compose this UI component.
