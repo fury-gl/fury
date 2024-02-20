@@ -973,14 +973,39 @@ class LineDoubleSlider2D(UI):
         else:
             # Offset the slider line width by half the slider line height.
             track_position[0] -= self.track.size[0] / 2.0
+
         self.track.position = track_position
 
         self.handles[0].position = self.handles[0].position.astype(float)
         self.handles[1].position = self.handles[1].position.astype(float)
 
-        self.handles[0].center = (track_position[0], self.track.center[1])
-        self.handles[1].center = (track_position[0] + self.track.size[0],
-                                  self.track.center[1])
+        if self.orientation == 'horizontal':
+            x_pos0 = coords[0]
+            x_pos1 = coords[0] + self.track.size[0]
+            y_pos = coords[1] + self.handles[0].size[1] / 2.0
+
+            if hasattr(self, '_values'):
+                x_pos0 = self.ratio_to_coord(
+                    self.value_to_ratio(self._values[0]))
+                x_pos1 = self.ratio_to_coord(
+                    self.value_to_ratio(self._values[1]))
+
+            self.handles[0].center = (x_pos0, y_pos)
+            self.handles[1].center = (x_pos1, y_pos)
+
+        else:
+            y_pos0 = coords[1]
+            y_pos1 = coords[1] + self.track.size[1]
+            x_pos = coords[0] + self.handles[0].size[0] / 2.0
+
+            if hasattr(self, '_values'):
+                y_pos0 = self.ratio_to_coord(
+                    self.value_to_ratio(self._values[0]))
+                y_pos1 = self.ratio_to_coord(
+                    self.value_to_ratio(self._values[1]))
+
+            self.handles[0].center = (x_pos, y_pos0)
+            self.handles[1].center = (x_pos, y_pos1)
 
         if self.orientation == 'horizontal':
             # Position the text below the handles.
