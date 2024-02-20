@@ -8,12 +8,19 @@ on a cube by updating a texture.
 """
 
 import cv2
-import vtk
+import vtk  # only for vtkCubeSource which needs to be added to lib.py 
 
 import numpy as np 
 
 from fury import actor, window
-from fury.lib import numpy_support
+from fury.lib import (
+    numpy_support,
+    ImageData,
+    Texture,
+    # lib.py needs to have CubeSource,
+    PolyDataMapper,
+    Actor
+)
 
 def texture_on_cube(image):
     """
@@ -22,30 +29,31 @@ def texture_on_cube(image):
     Parameters:
     -----------
     image : ndarray
-        Input 2D RGB or RGBA array. Dtype should be uint8.
+        Input 2D RGB array. Dtype should be uint8.
     
     Returns:
     --------
     actor : Actor
     """
 
-    grid = vtk.vtkImageData()
+    grid = ImageData()
     grid.SetDimensions(image.shape[1], image.shape[0], 1)
-    vtkarr = numpy_support.numpy_to_vtk(np.flip(image.swapaxes(0,1), axis=1).reshape((-1, 3), order='F'))
+    # we need a numpy array -> vtkTexture function in numpy_support
+    vtkarr = numpy_support.numpy_to_vtk(np.flip(image.swapaxes(0,1), axis=1).reshape((-1, 3), order='F'))   
     vtkarr.SetName('Image')
     grid.GetPointData().AddArray(vtkarr)
     grid.GetPointData().SetActiveScalars('Image')
 
-    vtex = vtk.vtkTexture()
+    vtex = Texture()
     vtex.SetInputDataObject(grid)
     vtex.Update()
 
     cubeSource = vtk.vtkCubeSource()
 
-    mapper = vtk.vtkPolyDataMapper()
+    mapper = PolyDataMapper()
     mapper.SetInputConnection(cubeSource.GetOutputPort())
 
-    actor = vtk.vtkActor()
+    actor = Actor()
     actor.SetMapper(mapper)
     actor.SetTexture(vtex)
 
@@ -54,13 +62,19 @@ def texture_on_cube(image):
 # timer_callback is called by window.showManager
 def timer_callback(caller, timer_event):
     _, image = cam.read()
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    actor.texture_update(cube, image)
-    showmanager.render()
+
+    if image is None:
+        showmanager.exit()
+    else:
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        actor.texture_update(cube, image)
+        showmanager.render()
 
 # openCV video capture and conversion to RGB
 cam = cv2.VideoCapture('http://commondatastorage.googleapis.com/'
     + 'gtv-videos-bucket/sample/BigBuckBunny.mp4')
+fps = int(cam.get(cv2.CAP_PROP_FPS))
+
 _, image = cam.read()
 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
@@ -73,5 +87,5 @@ cube = texture_on_cube(image)
 # working with window.ShowManager to setup timer_callbacks
 scene.add(cube)
 showmanager = window.ShowManager(scene, size=(600, 600), reset_camera=False)
-showmanager.add_timer_callback(True, int(1/60), timer_callback)
+showmanager.add_timer_callback(True, int(1000/fps), timer_callback)
 showmanager.start()
