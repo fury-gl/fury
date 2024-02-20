@@ -39,9 +39,12 @@ def texture_on_cube(image):
 
     grid = ImageData()
     grid.SetDimensions(image.shape[1], image.shape[0], 1)
+
     # we need a numpy array -> vtkTexture function in numpy_support
-    vtkarr = numpy_support.numpy_to_vtk(np.flip(image.swapaxes(0, 1), axis=1).reshape((-1, 3), order='F'))
+    arr = np.flip(image.swapaxes(0, 1), axis=1).reshape((-1, 3), order='F')
+    vtkarr = numpy_support.numpy_to_vtk(arr)
     vtkarr.SetName('Image')
+
     grid.GetPointData().AddArray(vtkarr)
     grid.GetPointData().SetActiveScalars('Image')
 
@@ -75,7 +78,7 @@ def timer_callback(caller, timer_event):
 
 # openCV video capture and conversion to RGB
 cam = cv2.VideoCapture('http://commondatastorage.googleapis.com/'
-                        + 'gtv-videos-bucket/sample/BigBuckBunny.mp4')
+                       + 'gtv-videos-bucket/sample/BigBuckBunny.mp4')
 fps = int(cam.get(cv2.CAP_PROP_FPS))
 
 _, image = cam.read()
