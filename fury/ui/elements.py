@@ -948,11 +948,11 @@ class LineDoubleSlider2D(UI):
         width = None
         height = None
         if self.orientation == 'horizontal':
-            width = self.track.width + 2 * self.handles[0].size[0]
+            width = self.track.width + self.handles[0].size[0]
             height = max(self.track.height, self.handles[0].size[1])
         else:
             width = max(self.track.width, self.handles[0].size[0])
-            height = self.track.height + 2 * self.handles[0].size[1]
+            height = self.track.height + self.handles[0].size[1]
 
         return np.array([width, height])
 
@@ -966,7 +966,7 @@ class LineDoubleSlider2D(UI):
 
         """
         # Offset the slider line by the handle's radius.
-        track_position = coords + self.handles[0].size / 2.0
+        track_position = coords
         if self.orientation == 'horizontal':
             # Offset the slider line height by half the slider line width.
             track_position[1] -= self.track.size[1] / 2.0
@@ -979,33 +979,8 @@ class LineDoubleSlider2D(UI):
         self.handles[0].position = self.handles[0].position.astype(float)
         self.handles[1].position = self.handles[1].position.astype(float)
 
-        if self.orientation == 'horizontal':
-            x_pos0 = coords[0]
-            x_pos1 = coords[0] + self.track.size[0]
-            y_pos = coords[1] + self.handles[0].size[1] / 2.0
-
-            if hasattr(self, '_values'):
-                x_pos0 = self.ratio_to_coord(
-                    self.value_to_ratio(self._values[0]))
-                x_pos1 = self.ratio_to_coord(
-                    self.value_to_ratio(self._values[1]))
-
-            self.handles[0].center = (x_pos0, y_pos)
-            self.handles[1].center = (x_pos1, y_pos)
-
-        else:
-            y_pos0 = coords[1]
-            y_pos1 = coords[1] + self.track.size[1]
-            x_pos = coords[0] + self.handles[0].size[0] / 2.0
-
-            if hasattr(self, '_values'):
-                y_pos0 = self.ratio_to_coord(
-                    self.value_to_ratio(self._values[0]))
-                y_pos1 = self.ratio_to_coord(
-                    self.value_to_ratio(self._values[1]))
-
-            self.handles[0].center = (x_pos, y_pos0)
-            self.handles[1].center = (x_pos, y_pos1)
+        self.handles[0].position += coords - self.position
+        self.handles[1].position += coords - self.position
 
         if self.orientation == 'horizontal':
             # Position the text below the handles.
