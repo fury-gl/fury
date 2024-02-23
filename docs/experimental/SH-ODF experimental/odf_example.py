@@ -22,10 +22,6 @@ if __name__ == "__main__":
     coeffs = coeffs[:, :, :].reshape((x * y * z, s))
     n_glyphs = coeffs.shape[0]
 
-    max_val = coeffs.min(axis=1)
-    total = np.sum(abs(coeffs), axis=1)
-    coeffs = np.dot(np.diag(1 / total), coeffs) * 1.7
-
-    odf_actor = actor.odf(centers=centers, coeffs=coeffs)
+    odf_actor = actor.odf(centers=centers, coeffs=coeffs, scales=1.0)
     show_man.scene.add(odf_actor)
     show_man.start()
