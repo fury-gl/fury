@@ -1,4 +1,4 @@
-float rescale(float x, float oldMin, float oldMax, float newMin, float newMax)
+float coeffsNorm(float coef, float min, float max, float a, float b)
 {
-    return (x - oldMin) * (newMax - newMin) / (oldMax - oldMin) + newMin;
+    return (coef - min) * ((b - a) / (max - min)) + a;
 }
