@@ -242,7 +242,7 @@ def test_load_cubemap_texture():
 def test_load_sprite_sheet():
     sprite_URL = (
         'https://raw.githubusercontent.com/'
-        'antrikshmisri/DATA/master/fury/0yKFTBQ.png'
+        'fury-gl/fury-data/master/unittests/fury_sprite.png'
     )
 
     with InTemporaryDirectory() as tdir:
