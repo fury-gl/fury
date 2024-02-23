@@ -11,6 +11,7 @@ from fury import layout
 from fury.actors.odf_slicer import OdfSlicerActor
 from fury.actors.peak import PeakActor
 from fury.actors.tensor import tensor_ellipsoid
+from fury.actors.odf import sh_odf
 from fury.colormap import colormap_lookup_table
 from fury.deprecator import deprecate_with_version, deprecated_params
 from fury.io import load_image
@@ -3868,3 +3869,50 @@ def ellipsoid(
 
     return tensor_ellipsoid(centers, axes, lengths, colors, scales, opacity)
 
+
+def odf(
+    centers,
+    coeffs,
+    basis_type='descoteaux',
+    scales=1.0,
+    opacity=1.0
+):
+    """
+    VTK actor for visualizing ODFs given an array of spherical harmonics (SH)
+    coefficients.
+
+    Parameters
+    ----------
+    centers : ndarray(N, 3)
+        ODFs positions.
+    coeffs : ndarray
+        2D ODFs array in SH coefficients.
+    basis_type: str, optional
+        Type of basis (descoteaux, tournier)
+        'descoteaux' for the default ``descoteaux07`` DYPY basis.
+        'tournier' for the default ``tournier07` DYPY basis.
+    scales : float or ndarray (N, )
+        ODFs size.
+    opacity : float
+        Takes values from 0 (fully transparent) to 1 (opaque).
+        
+    Returns
+    -------
+    odf: Actor
+
+    """
+
+    if not isinstance(centers, np.ndarray):
+        centers = np.array(centers)
+    if centers.ndim == 1:
+        centers = np.array([centers])
+
+    if not isinstance(scales, np.ndarray):
+        scales = np.array(scales)
+    if scales.size == 1:
+        scales = np.repeat(scales, centers.shape[0])
+    elif scales.size != centers.shape[0]:
+        scales = np.concatenate(
+            (scales, np.ones(centers.shape[0] - scales.shape[0])), axis=None)
+
+    return sh_odf(centers, coeffs, basis_type, scales, opacity)
