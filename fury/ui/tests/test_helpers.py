@@ -22,7 +22,7 @@ def test_clip_overflow():
     clip_overflow(text, text.size[0])
     npt.assert_equal('Hello', text.message)
 
-    text.message = 'Hello wassup'
+    text.message = "Hello what's up?"
     clip_overflow(text, text.size[0])
     npt.assert_equal('He...', text.message)
 
@@ -63,9 +63,9 @@ def test_wrap_overflow():
     wrap_overflow(text, text.size[0])
     npt.assert_equal('Hello', text.message)
 
-    text.message = 'Hello wassup'
+    text.message = "Hello what's up?"
     wrap_overflow(text, text.size[0])
-    npt.assert_equal('Hello\n wass\nup', text.message)
+    npt.assert_equal("Hello\n what\n's up\n?", text.message)
 
     text.message = 'A very very long message to clip text overflow'
     wrap_overflow(text, text.size[0])
