@@ -35,7 +35,7 @@ tasks related with this PR:
    `#424`_ now is possible to control all the visual characteristics at
    runtime.
 -  2D Layout: Meanwhile 3d network representations are very usefully
-   for exploring a dataset is hard to convice a group of network
+   for exploring a dataset is hard to convince a group of network
    scientists to use a visualization system which doesn't allow 2d
    representations. Because of that I started to coding the 2d behavior
    in the network visualization system.

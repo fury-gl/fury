@@ -149,7 +149,7 @@ def sphere2cart(r, theta, phi):
     Returns
     ---------
     x : array
-       x coordinate(s) in Cartesion space
+       x coordinate(s) in Cartesian space
     y : array
        y coordinate(s) in Cartesian space
     z : array

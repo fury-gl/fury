@@ -83,7 +83,7 @@ Objectives Completed
 
 - **Add Accordion2D UI element to the UI sub-module**
 
-  Added Accordion2D to the UI sub-module. This Ui element allows users to visulize data in a tree with depth of one. Each node has a title and a content panel. The children for each node can be N if and only if the children are not nodes themselves. The child UIs can be placed inside the content panel by passing some coordinates, which can be absolute or normalized w.r.t the node content panel size. Tests and two demos were added for this UI element. Below is a screenshot for reference
+  Added Accordion2D to the UI sub-module. This Ui element allows users to visualize data in a tree with depth of one. Each node has a title and a content panel. The children for each node can be N if and only if the children are not nodes themselves. The child UIs can be placed inside the content panel by passing some coordinates, which can be absolute or normalized w.r.t the node content panel size. Tests and two demos were added for this UI element. Below is a screenshot for reference
 
   .. image:: https://camo.githubusercontent.com/9395d0ea572d7f253a051823f02496450c9f79d19ff0baf32841ec648b6f2860/68747470733a2f2f692e696d6775722e636f6d2f7854754f645a742e706e67
         :width: 200
