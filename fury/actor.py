@@ -3443,19 +3443,19 @@ def texture_update(texture_actor, arr):
 
 
 def _textured_sphere_source(theta=60, phi=60):
-    """
-    Uses vtkTexturedSphereSource to set the theta and phi
+    """Use vtkTexturedSphereSource to set the theta and phi.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     theta : int, optional
         Set the number of points in the longitude direction.
     phi : int, optional
         Set the number of points in the latitude direction.
 
-    Returns:
-    --------
+    Returns
+    -------
     tss : TexturedSphereSource
+
     """
     tss = TexturedSphereSource()
     tss.SetThetaResolution(theta)
@@ -3465,23 +3465,23 @@ def _textured_sphere_source(theta=60, phi=60):
 
 
 def texture_on_sphere(rgb, theta=60, phi=60, interpolate=True):
-    """
-    Map an RGB or RGBA texture on a sphere.
+    """Map an RGB or RGBA texture on a sphere.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     rgb : ndarray
         Input 2D RGB or RGBA array. Dtype should be uint8.
     theta : int, optional
         Set the number of points in the longitude direction.
     phi : int, optional
         Set the number of points in the latitude direction.
-    interp : bool
-        Interpolate between grid centers. Default True.
+    interpolate : bool, optional
+        Interpolate between grid centers.
 
-    Returns:
-    --------
+    Returns
+    -------
     earthActor : Actor
+    
     """
     tss = _textured_sphere_source(theta=theta, phi=phi)
     earthMapper = PolyDataMapper()
@@ -3507,8 +3507,8 @@ def texture_2d(rgb, interp=False):
     ----------
     rgb : ndarray
         Input 2D RGB or RGBA array. Dtype should be uint8.
-    interp : bool
-        Interpolate between grid centers. Default False.
+    interp : bool, optional
+        Interpolate between grid centers.
 
     Returns
     -------
