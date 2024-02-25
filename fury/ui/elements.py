@@ -2323,9 +2323,9 @@ class ComboBox2D(UI):
         """
         self.panel.resize(size)
 
-        self.text_block_size = (int(0.8 * size[0]), int(0.3 * size[1]))
-        self.drop_menu_size = (size[0], int(0.7 * size[1]))
-        self.drop_button_size = (int(0.2 * size[0]), int(0.3 * size[1]))
+        self.text_block_size = (int(0.9 * size[0]), int(0.1 * size[1]))
+        self.drop_menu_size = (int(0.9 * size[0]), int(0.7 * size[1]))
+        self.drop_button_size = (int(0.1 * size[0]), int(0.1 * size[1]))
 
         self.panel.update_element(self.selection_box, (0.001, 0.7))
         self.panel.update_element(self.drop_down_button, (0.8, 0.7))
