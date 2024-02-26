@@ -948,11 +948,11 @@ class LineDoubleSlider2D(UI):
         width = None
         height = None
         if self.orientation == 'horizontal':
-            width = self.track.width + 2 * self.handles[0].size[0]
+            width = self.track.width + self.handles[0].size[0]
             height = max(self.track.height, self.handles[0].size[1])
         else:
             width = max(self.track.width, self.handles[0].size[0])
-            height = self.track.height + 2 * self.handles[0].size[1]
+            height = self.track.height + self.handles[0].size[1]
 
         return np.array([width, height])
 
@@ -966,13 +966,14 @@ class LineDoubleSlider2D(UI):
 
         """
         # Offset the slider line by the handle's radius.
-        track_position = coords + self.handles[0].size / 2.0
+        track_position = coords
         if self.orientation == 'horizontal':
             # Offset the slider line height by half the slider line width.
             track_position[1] -= self.track.size[1] / 2.0
         else:
             # Offset the slider line width by half the slider line height.
             track_position[0] -= self.track.size[0] / 2.0
+
         self.track.position = track_position
 
         self.handles[0].position = self.handles[0].position.astype(float)
@@ -985,11 +986,11 @@ class LineDoubleSlider2D(UI):
             # Position the text below the handles.
             self.text[0].position = (
                 self.handles[0].center[0],
-                self.handles[0].position[1] - 20,
+                self.handles[0].position[1] - 10,
             )
             self.text[1].position = (
                 self.handles[1].center[0],
-                self.handles[1].position[1] - 20,
+                self.handles[1].position[1] - 10,
             )
         else:
             # Position the text to the left of the handles.
@@ -2205,9 +2206,9 @@ class ComboBox2D(UI):
         self.menu_opacity = menu_opacity
 
         # Define subcomponent sizes.
-        self.text_block_size = (int(0.8 * size[0]), int(0.3 * size[1]))
-        self.drop_menu_size = (size[0], int(0.7 * size[1]))
-        self.drop_button_size = (int(0.2 * size[0]), int(0.3 * size[1]))
+        self.text_block_size = (int(0.9 * size[0]), int(0.1 * size[1]))
+        self.drop_menu_size = (int(0.9 * size[0]), int(0.7 * size[1]))
+        self.drop_button_size = (int(0.1 * size[0]), int(0.1 * size[1]))
 
         self._icon_files = [
             ('left', read_viz_icons(fname='circle-left.png')),
@@ -2322,9 +2323,9 @@ class ComboBox2D(UI):
         """
         self.panel.resize(size)
 
-        self.text_block_size = (int(0.8 * size[0]), int(0.3 * size[1]))
-        self.drop_menu_size = (size[0], int(0.7 * size[1]))
-        self.drop_button_size = (int(0.2 * size[0]), int(0.3 * size[1]))
+        self.text_block_size = (int(0.9 * size[0]), int(0.1 * size[1]))
+        self.drop_menu_size = (int(0.9 * size[0]), int(0.7 * size[1]))
+        self.drop_button_size = (int(0.1 * size[0]), int(0.1 * size[1]))
 
         self.panel.update_element(self.selection_box, (0.001, 0.7))
         self.panel.update_element(self.drop_down_button, (0.8, 0.7))
@@ -2344,6 +2345,8 @@ class ComboBox2D(UI):
 
         """
         self.panel.position = coords
+        self.panel.position = (self.panel.position[0],
+                               self.panel.position[1] - self.drop_menu_size[1])
 
     def _add_to_scene(self, scene):
         """Add all subcomponents or VTK props that compose this UI component.
