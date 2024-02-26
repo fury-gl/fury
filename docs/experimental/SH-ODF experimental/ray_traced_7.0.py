@@ -6,7 +6,6 @@ import argparse
 import os
 
 import numpy as np
-from dipy.data.fetcher import dipy_home
 from dipy.io.image import load_nifti
 
 from fury import actor, window
@@ -111,7 +110,7 @@ if __name__ == "__main__":
 
     # TODO: Set int uniform
     odf_actor.GetShaderProperty().GetFragmentCustomUniforms().SetUniformf(
-        "numCoeffs", 15
+        "numCoeffs", coeffs.shape[-1]
     )
 
     vs_dec = """
@@ -141,7 +140,7 @@ if __name__ == "__main__":
 
     # The index of the highest used band of the spherical harmonics basis. Must
     # be even, at least 2 and at most 12.
-    def_sh_degree = "#define SH_DEGREE 4"
+    def_sh_degree = "#define SH_DEGREE 8"
 
     # The number of spherical harmonics basis functions
     def_sh_count = "#define SH_COUNT (((SH_DEGREE + 1) * (SH_DEGREE + 2)) / 2)"
