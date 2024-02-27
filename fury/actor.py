@@ -10,7 +10,8 @@ import fury.primitive as fp
 from fury import layout
 from fury.actors.odf_slicer import OdfSlicerActor
 from fury.actors.peak import PeakActor
-from fury.actors.tensor import tensor_ellipsoid
+from fury.actors.tensor import double_cone, main_dir_uncertainty, \
+    tensor_ellipsoid
 from fury.colormap import colormap_lookup_table
 from fury.deprecator import deprecate_with_version, deprecated_params
 from fury.io import load_image
@@ -3899,3 +3900,59 @@ def ellipsoid(
 
     return tensor_ellipsoid(centers, axes, lengths, colors, scales, opacity)
 
+
+def uncertainty_cone(
+    evals,
+    evecs,
+    signal,
+    sigma,
+    b_matrix,
+    scales=.6,
+    opacity=1.0
+):
+    """
+    VTK actor for visualizing the cone of uncertainty representing the
+    variance of the main direction of diffusion.
+
+    Parameters
+    ----------
+    evals : ndarray (3, ) or (N, 3)
+        Eigenvalues.
+    evecs : ndarray (3, 3) or (N, 3, 3)
+        Eigenvectors.
+    signal : 3D or 4D ndarray
+        Predicted signal.
+    sigma : ndarray
+        Standard deviation of the noise.
+    b_matrix : array (N, 7)
+        Design matrix for DTI.
+    scales : float or ndarray (N, ), optional
+        Cones of uncertainty size.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque), default(1.0).
+
+    Returns
+    -------
+    double_cone: Actor
+
+    """
+
+    valid_mask = np.abs(evecs).max(axis=(-2, -1)) > 0
+    indices = np.nonzero(valid_mask)
+
+    evecs = evecs[indices]
+    evals = evals[indices]
+    signal = signal[indices]
+
+    centers = np.asarray(indices).T
+    colors = np.array([107, 107, 107])
+
+    x, y, z = evecs.shape
+    if not isinstance(scales, np.ndarray):
+        scales = np.array(scales)
+    if scales.size == 1:
+        scales = np.repeat(scales, x)
+
+    angles = main_dir_uncertainty(evals, evecs, signal, sigma, b_matrix)
+
+    return double_cone(centers, evecs, angles, colors, scales, opacity)
