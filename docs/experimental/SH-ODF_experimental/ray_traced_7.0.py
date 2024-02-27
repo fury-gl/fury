@@ -191,17 +191,29 @@ if __name__ == "__main__":
     }
     """
 
-    eval_sh_2 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_2.frag"))
+    eval_sh_2 = import_fury_shader(
+        os.path.join("rt_odfs", "eval_sh_2 copy.frag")
+    )
 
-    eval_sh_4 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_4.frag"))
+    eval_sh_4 = import_fury_shader(
+        os.path.join("rt_odfs", "eval_sh_4 copy.frag")
+    )
 
-    eval_sh_6 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_6.frag"))
+    eval_sh_6 = import_fury_shader(
+        os.path.join("rt_odfs", "eval_sh_6 copy.frag")
+    )
 
-    eval_sh_8 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_8.frag"))
+    eval_sh_8 = import_fury_shader(
+        os.path.join("rt_odfs", "eval_sh_8 copy.frag")
+    )
 
-    eval_sh_10 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_10.frag"))
+    eval_sh_10 = import_fury_shader(
+        os.path.join("rt_odfs", "eval_sh_10 copy.frag")
+    )
 
-    eval_sh_12 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_12.frag"))
+    eval_sh_12 = import_fury_shader(
+        os.path.join("rt_odfs", "eval_sh_12 copy.frag")
+    )
 
     eval_sh_grad_2 = import_fury_shader(
         os.path.join("rt_odfs", "eval_sh_grad_2.frag")
