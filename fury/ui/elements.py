@@ -24,16 +24,22 @@ import os
 from collections import OrderedDict
 from numbers import Number
 from string import printable
-from PIL import UnidentifiedImageError, Image
 from urllib.request import urlopen
 
 import numpy as np
+from PIL import Image, UnidentifiedImageError
 
 from fury.data import read_viz_icons
 from fury.lib import Command
-from fury.ui.containers import Panel2D, ImageContainer2D
+from fury.ui.containers import ImageContainer2D, Panel2D
 from fury.ui.core import UI, Button2D, Disk2D, Rectangle2D, TextBlock2D
-from fury.ui.helpers import TWO_PI, cal_bounding_box_2d, clip_overflow, rotate_2d, wrap_overflow
+from fury.ui.helpers import (
+    TWO_PI,
+    cal_bounding_box_2d,
+    clip_overflow,
+    rotate_2d,
+    wrap_overflow,
+)
 from fury.utils import set_polydata_vertices, update_actor, vertices_from_actor
 
 

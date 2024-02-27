@@ -10,8 +10,7 @@ import fury.primitive as fp
 from fury import layout
 from fury.actors.odf_slicer import OdfSlicerActor
 from fury.actors.peak import PeakActor
-from fury.actors.tensor import double_cone, main_dir_uncertainty, \
-    tensor_ellipsoid
+from fury.actors.tensor import double_cone, main_dir_uncertainty, tensor_ellipsoid
 from fury.colormap import colormap_lookup_table
 from fury.deprecator import deprecate_with_version, deprecated_params
 from fury.io import load_image
@@ -3482,7 +3481,7 @@ def texture_on_sphere(rgb, theta=60, phi=60, interpolate=True):
     Returns
     -------
     earthActor : Actor
-    
+
     """
     tss = _textured_sphere_source(theta=theta, phi=phi)
     earthMapper = PolyDataMapper()

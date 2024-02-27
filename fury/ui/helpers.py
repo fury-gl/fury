@@ -113,7 +113,8 @@ def check_overflow(textblock, width, overflow_postfix='', side='right'):
         elif textblock.cal_size_from_message()[0] > width:
             end_ptr = mid_ptr
 
-        if mid_ptr == (start_ptr + end_ptr) // 2 or textblock.cal_size_from_message()[0] == width:
+        if (mid_ptr == (start_ptr + end_ptr) // 2 or
+           textblock.cal_size_from_message()[0] == width):
             if side == 'left':
                 textblock.message = textblock.message[::-1]
             return mid_ptr

@@ -3,7 +3,6 @@
 __all__ = ['Rectangle2D', 'Disk2D', 'TextBlock2D', 'Button2D']
 
 import abc
-from warnings import warn
 
 import numpy as np
 
@@ -1162,7 +1161,8 @@ class TextBlock2D(UI):
 
         if self.auto_font_scale:
             self.actor.SetPosition2(
-                self.boundingbox[2]-self.boundingbox[0], self.boundingbox[3]-self.boundingbox[1])
+                self.boundingbox[2]-self.boundingbox[0],
+                self.boundingbox[3]-self.boundingbox[1])
         else:
             self.update_alignment()
 
