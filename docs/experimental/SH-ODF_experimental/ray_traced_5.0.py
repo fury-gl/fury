@@ -1,12 +1,4 @@
 """
-Fury's implementation of "Ray Tracing Spherical Harmonics Glyphs":
-https://momentsingraphics.de/VMV2023.html
-The fragment shader is based on: https://www.shadertoy.com/view/dlGSDV
-(c) 2023, Christoph Peters
-This work is licensed under a CC0 1.0 Universal License. To the extent
-possible under law, Christoph Peters has waived all copyright and related or
-neighboring rights to the following code. This work is published from
-Germany. https://creativecommons.org/publicdomain/zero/1.0/
 """
 
 import os
@@ -48,7 +40,7 @@ def uv_calculations(n):
 
 
 if __name__ == "__main__":
-    show_man = window.ShowManager(size=(1920, 1080))
+    show_man = window.ShowManager(size=(1280, 720))
     show_man.scene.background((1, 1, 1))
 
     # fmt: off
@@ -199,51 +191,51 @@ if __name__ == "__main__":
     """
 
     eval_sh_2 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_2 copy.frag")
+        os.path.join("rt_odfs", "tournier", "eval_sh_2.frag")
     )
 
     eval_sh_4 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_4 copy.frag")
+        os.path.join("rt_odfs", "tournier", "eval_sh_4.frag")
     )
 
     eval_sh_6 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_6 copy.frag")
+        os.path.join("rt_odfs", "tournier", "eval_sh_6.frag")
     )
 
     eval_sh_8 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_8 copy.frag")
+        os.path.join("rt_odfs", "tournier", "eval_sh_8.frag")
     )
 
     eval_sh_10 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_10 copy.frag")
+        os.path.join("rt_odfs", "tournier", "eval_sh_10.frag")
     )
 
     eval_sh_12 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_12 copy.frag")
+        os.path.join("rt_odfs", "tournier", "eval_sh_12.frag")
     )
 
     eval_sh_grad_2 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_grad_2.frag")
+        os.path.join("rt_odfs", "tournier", "eval_sh_grad_2.frag")
     )
 
     eval_sh_grad_4 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_grad_4.frag")
+        os.path.join("rt_odfs", "tournier", "eval_sh_grad_4.frag")
     )
 
     eval_sh_grad_6 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_grad_6.frag")
+        os.path.join("rt_odfs", "tournier", "eval_sh_grad_6.frag")
     )
 
     eval_sh_grad_8 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_grad_8.frag")
+        os.path.join("rt_odfs", "tournier", "eval_sh_grad_8.frag")
     )
 
     eval_sh_grad_10 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_grad_10.frag")
+        os.path.join("rt_odfs", "tournier", "eval_sh_grad_10.frag")
     )
 
     eval_sh_grad_12 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_grad_12.frag")
+        os.path.join("rt_odfs", "tournier", "eval_sh_grad_12.frag")
     )
 
     # Searches a single root of a polynomial within a given interval.

@@ -1,13 +1,6 @@
 """
-Fury's implementation of "Ray Tracing Spherical Harmonics Glyphs":
-https://momentsingraphics.de/VMV2023.html
-The fragment shader is based on: https://www.shadertoy.com/view/dlGSDV
-(c) 2023, Christoph Peters
-This work is licensed under a CC0 1.0 Universal License. To the extent
-possible under law, Christoph Peters has waived all copyright and related or
-neighboring rights to the following code. This work is published from
-Germany. https://creativecommons.org/publicdomain/zero/1.0/
 """
+
 import os
 
 import numpy as np
@@ -27,16 +20,27 @@ from fury.utils import numpy_to_vtk_image_data, set_polydata_tcoords
 
 def uv_calculations(n):
     uvs = []
-    for i in range (0,n):
-        a = (n-(i+1))/n
-        b = (n-i)/n
-        #glyph_coord [0, a], [0, b], [1, b], [1, a]
-        uvs.extend([[.01, a+.01], [.01, b-.01], [.99, b-.01], [.99, a+.01],
-                    [.01, a+.01], [.01, b-.01], [.99, b-.01], [.99, a+.01]])
+    for i in range(0, n):
+        a = (n - (i + 1)) / n
+        b = (n - i) / n
+        # glyph_coord [0, a], [0, b], [1, b], [1, a]
+        uvs.extend(
+            [
+                [0.01, a + 0.01],
+                [0.01, b - 0.01],
+                [0.99, b - 0.01],
+                [0.99, a + 0.01],
+                [0.01, a + 0.01],
+                [0.01, b - 0.01],
+                [0.99, b - 0.01],
+                [0.99, a + 0.01],
+            ]
+        )
     return uvs
 
+
 if __name__ == "__main__":
-    show_man = window.ShowManager(size=(1920, 1080))
+    show_man = window.ShowManager(size=(1280, 720))
     show_man.scene.background((1, 1, 1))
 
     # fmt: off
@@ -44,19 +48,19 @@ if __name__ == "__main__":
         [
             -0.2739740312099, 0.2526670396328, 1.8922271728516, 0.2878578901291, -0.5339795947075,
             -0.2620058953762, 0.1580424904823, 0.0329004973173, -0.1322413831949, -0.1332057565451,
-            1.0894461870193, -0.6319401264191, -0.0416776277125, -1.0772529840469,  0.1423762738705, 
+            1.0894461870193, -0.6319401264191, -0.0416776277125, -1.0772529840469,  0.1423762738705,
             0.7941166162491, 0.7490307092667, -0.3428381681442, 0.1024847552180, -0.0219132602215,
             0.0499043911695, 0.2162453681231, 0.0921059995890, -0.2611238956451, 0.2549301385880,
             -0.4534865319729, 0.1922748684883, -0.6200597286224
         ]
     ])
-    
+
     """
             , -0.0532187558711, -0.3569841980934,
-            0.0293972902000, -0.1977960765362, -0.1058669015765, 0.2372217923403, -0.1856198310852, 
+            0.0293972902000, -0.1977960765362, -0.1058669015765, 0.2372217923403, -0.1856198310852,
             -0.3373193442822, -0.0750469490886, 0.2146576642990, -0.0490148440003, 0.1288588196039,
             0.3173974752426, 0.1990085393190, -0.1736343950033, -0.0482443645597, 0.1749017387629,
-            -0.0151847425660, 0.0418366046081, 0.0863263587216, -0.0649211244490, 0.0126096132283, 
+            -0.0151847425660, 0.0418366046081, 0.0863263587216, -0.0649211244490, 0.0126096132283,
             0.0545089217982, -0.0275142164626, 0.0399986574832, -0.0468244261610, -0.1292105653111,
             -0.0786858322658, -0.0663828464882, 0.0382439706831, -0.0041550330365, -0.0502800566338,
             -0.0732471630735, 0.0181751900972, -0.0090119333757, -0.0604443282359, -0.1469985252752,
@@ -179,7 +183,7 @@ if __name__ == "__main__":
     in vec3 centerMCVSOutput;
     in vec2 minmaxVSOutput;
     """
-    
+
     coeffs_norm = """
     float coeffsNorm(float coef)
     {
@@ -191,40 +195,52 @@ if __name__ == "__main__":
     }
     """
 
-    eval_sh_2 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_2.frag"))
+    eval_sh_2 = import_fury_shader(
+        os.path.join("rt_odfs", "tournier", "eval_sh_2.frag")
+    )
 
-    eval_sh_4 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_4.frag"))
+    eval_sh_4 = import_fury_shader(
+        os.path.join("rt_odfs", "tournier", "eval_sh_4.frag")
+    )
 
-    eval_sh_6 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_6.frag"))
+    eval_sh_6 = import_fury_shader(
+        os.path.join("rt_odfs", "tournier", "eval_sh_6.frag")
+    )
 
-    eval_sh_8 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_8.frag"))
+    eval_sh_8 = import_fury_shader(
+        os.path.join("rt_odfs", "tournier", "eval_sh_8.frag")
+    )
 
-    eval_sh_10 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_10.frag"))
+    eval_sh_10 = import_fury_shader(
+        os.path.join("rt_odfs", "tournier", "eval_sh_10.frag")
+    )
 
-    eval_sh_12 = import_fury_shader(os.path.join("rt_odfs", "eval_sh_12.frag"))
+    eval_sh_12 = import_fury_shader(
+        os.path.join("rt_odfs", "tournier", "eval_sh_12.frag")
+    )
 
     eval_sh_grad_2 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_grad_2.frag")
+        os.path.join("rt_odfs", "tournier", "eval_sh_grad_2.frag")
     )
 
     eval_sh_grad_4 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_grad_4.frag")
+        os.path.join("rt_odfs", "tournier", "eval_sh_grad_4.frag")
     )
 
     eval_sh_grad_6 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_grad_6.frag")
+        os.path.join("rt_odfs", "tournier", "eval_sh_grad_6.frag")
     )
 
     eval_sh_grad_8 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_grad_8.frag")
+        os.path.join("rt_odfs", "tournier", "eval_sh_grad_8.frag")
     )
 
     eval_sh_grad_10 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_grad_10.frag")
+        os.path.join("rt_odfs", "tournier", "eval_sh_grad_10.frag")
     )
 
     eval_sh_grad_12 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_grad_12.frag")
+        os.path.join("rt_odfs", "tournier", "eval_sh_grad_12.frag")
     )
 
     # Searches a single root of a polynomial within a given interval.
@@ -379,7 +395,7 @@ if __name__ == "__main__":
         sh_coeffs[j] = coeffsNorm(texture(texture0, vec2(i + j / numCoeffs, tcoordVCVSOutput.y)).x);
     }
     """
-    
+
     # Perform the intersection test
     intersection_test = """
     float ray_params[MAX_DEGREE];
@@ -435,11 +451,11 @@ if __name__ == "__main__":
     sphere = get_sphere("repulsion724")
 
     sh_basis = "descoteaux07"
-    #sh_basis = "tournier07"
+    # sh_basis = "tournier07"
     sh_order = 6
 
     n = int((sh_order / 2) + 1)
-    sz = 2 * n ** 2 - n
+    sz = 2 * n**2 - n
     sh = np.zeros((1, 1, 1, sz))
     sh[0, 0, 0, :] = coeffs[0, :sz]
 

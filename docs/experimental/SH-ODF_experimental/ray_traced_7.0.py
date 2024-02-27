@@ -191,52 +191,55 @@ if __name__ == "__main__":
     }
     """
 
+    # sh_basis = "descoteaux"
+    sh_basis = "tournier"
+
     eval_sh_2 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_2 copy.frag")
+        os.path.join("rt_odfs", sh_basis, "eval_sh_2.frag")
     )
 
     eval_sh_4 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_4 copy.frag")
+        os.path.join("rt_odfs", sh_basis, "eval_sh_4.frag")
     )
 
     eval_sh_6 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_6 copy.frag")
+        os.path.join("rt_odfs", sh_basis, "eval_sh_6.frag")
     )
 
     eval_sh_8 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_8 copy.frag")
+        os.path.join("rt_odfs", sh_basis, "eval_sh_8.frag")
     )
 
     eval_sh_10 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_10 copy.frag")
+        os.path.join("rt_odfs", sh_basis, "eval_sh_10.frag")
     )
 
     eval_sh_12 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_12 copy.frag")
+        os.path.join("rt_odfs", sh_basis, "eval_sh_12.frag")
     )
 
     eval_sh_grad_2 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_grad_2.frag")
+        os.path.join("rt_odfs", sh_basis, "eval_sh_grad_2.frag")
     )
 
     eval_sh_grad_4 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_grad_4.frag")
+        os.path.join("rt_odfs", sh_basis, "eval_sh_grad_4.frag")
     )
 
     eval_sh_grad_6 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_grad_6.frag")
+        os.path.join("rt_odfs", sh_basis, "eval_sh_grad_6.frag")
     )
 
     eval_sh_grad_8 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_grad_8.frag")
+        os.path.join("rt_odfs", sh_basis, "eval_sh_grad_8.frag")
     )
 
     eval_sh_grad_10 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_grad_10.frag")
+        os.path.join("rt_odfs", sh_basis, "eval_sh_grad_10.frag")
     )
 
     eval_sh_grad_12 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_grad_12.frag")
+        os.path.join("rt_odfs", sh_basis, "eval_sh_grad_12.frag")
     )
 
     # Searches a single root of a polynomial within a given interval.
