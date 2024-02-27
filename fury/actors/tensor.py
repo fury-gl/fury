@@ -12,8 +12,7 @@ from fury.shaders import (
 
 
 def tensor_ellipsoid(centers, axes, lengths, colors, scales, opacity):
-    """
-    Visualize one or many Tensor Ellipsoids with different features.
+    """Visualize one or many Tensor Ellipsoids with different features.
 
     Parameters
     ----------
@@ -35,7 +34,6 @@ def tensor_ellipsoid(centers, axes, lengths, colors, scales, opacity):
     box_actor: Actor
 
     """
-
     box_actor = actor.box(centers, colors=colors, scales=scales)
     box_actor.GetMapper().SetVBOShiftScaleMethod(False)
     box_actor.GetProperty().SetOpacity(opacity)
@@ -214,8 +212,7 @@ def tensor_ellipsoid(centers, axes, lengths, colors, scales, opacity):
 
 
 def double_cone(centers, axes, angles, colors, scales, opacity):
-    """
-    Visualize one or many Double Cones with different features.
+    """Visualize one or many Double Cones with different features.
 
     Parameters
     ----------
@@ -237,7 +234,6 @@ def double_cone(centers, axes, angles, colors, scales, opacity):
     box_actor: Actor
 
     """
-
     box_actor = actor.box(centers, colors=colors, scales=scales)
     box_actor.GetMapper().SetVBOShiftScaleMethod(False)
     box_actor.GetProperty().SetOpacity(opacity)
@@ -400,8 +396,7 @@ def double_cone(centers, axes, angles, colors, scales, opacity):
 
 
 def main_dir_uncertainty(evals, evecs, signal, sigma, b_matrix):
-    """
-    Calculate the angle of the cone of uncertainty that represents the
+    """Calculate the angle of the cone of uncertainty that represents the
     perturbation of the main eigenvector of the diffusion tensor matrix.
 
     Parameters
@@ -426,14 +421,15 @@ def main_dir_uncertainty(evals, evecs, signal, sigma, b_matrix):
     The uncertainty calculation is based on first-order matrix perturbation
     analysis described in [1]_. The idea is to estimate the variance of the
     main eigenvector which corresponds to the main direction of diffusion,
-    directly from estimated D and its estimated covariance matrix :math:`\Delta
-    D` (see [2]_, equation 4). The angle :math:`\Theta` between the perturbed
-    principal eigenvector of D, :math:`\epsilon_1+\Delta\epsilon_1`, and the
-    estimated eigenvector :math:`\epsilon_1`, measures the angular deviation of
-    the main fiber direction and can be approximated by:
+    directly from estimated D and its estimated covariance matrix
+    :math:`\Delta D` (see [2]_, equation 4). The angle :math:`\\Theta`
+    between the perturbed principal eigenvector of D,
+    :math:`\\epsilon_1+\\Delta\\epsilon_1`, and the estimated eigenvector
+    :math:`\\epsilon_1`, measures the angular deviation of the main fiber
+    direction and can be approximated by:
 
     .. math::
-        \Theta=tan^{-1}(\|\Delta\epsilon_1\|)
+        \\Theta=tan^{-1}(\\|\\Delta\\epsilon_1\\|)
 
     Giving way to a graphical construct for displaying both the main
     eigenvector of D and its associated uncertainty, with the so-called
@@ -446,11 +442,11 @@ def main_dir_uncertainty(evals, evecs, signal, sigma, b_matrix):
     Meeting of the ISMRM (Vol. 1740).
 
     .. [2] Chang, L. C., Koay, C. G., Pierpaoli, C., & Basser, P. J. (2007).
-    Variance of estimated DTI‐derived parameters via first‐order perturbation
+    Variance of estimated DTI-derived parameters via first-order perturbation
     methods. Magnetic Resonance in Medicine: An Official Journal of the
     International Society for Magnetic Resonance in Medicine, 57(1), 141-149.
-    """
 
+    """
     angles = np.ones(evecs.shape[0])
     for i in range(evecs.shape[0]):
         sigma_e = np.diag(signal[i] / sigma ** 2)

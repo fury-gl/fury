@@ -1,5 +1,4 @@
-"""
-Attempt to generate templates for module reference with Sphinx.
+"""Attempt to generate templates for module reference with Sphinx.
 
 To include extension modules, first identify them as valid in the
 ``_uri2path`` method, then handle them in the ``_parse_module_with_import``
@@ -15,6 +14,7 @@ Extension modules should be discovered and included as well.
 This is a modified version of a script originally shipped with the PyMVPA
 project, then adapted for use first in NIPY and then in skimage. PyMVPA
 is an MIT-licensed project.
+
 """
 
 # Stdlib imports
@@ -29,7 +29,8 @@ DEBUG = True
 
 class ApiDocWriter:
     """Class for automatic detection and parsing of API docs
-    to Sphinx-parsable reST format."""
+    to Sphinx-parsable reST format.
+    """
 
     # only separating first two levels
     rst_section_levels = ['*', '=', '-', '~', '^']

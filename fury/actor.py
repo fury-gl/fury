@@ -2712,9 +2712,10 @@ def billboard(
     bb_type='spherical'
 ):
     """Create a billboard actor.
--
+    -
     Billboards are 2D elements placed in a 3D world. They offer possibility to
     draw different shapes/elements at the fragment shader level.
+
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
@@ -2744,6 +2745,7 @@ def billboard(
     Returns
     -------
     billboard_actor: Actor
+
     """
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(
@@ -3103,12 +3105,11 @@ class Container:
     """
 
     def __init__(self, layout=layout.Layout()):
-        """
-
-        Parameters
+        """Parameters
         ----------
         layout : ``fury.layout.Layout`` object
             Items of this container will be arranged according to `layout`.
+
         """
         self.layout = layout
         self._items = []
@@ -3136,6 +3137,7 @@ class Container:
             If True the items are added as-is, otherwise a shallow copy is
             made first. If you intend to reuse the items elsewhere you
             should set `borrow=False`. Default: True.
+
         """
         self._need_update = True
 
@@ -3657,6 +3659,7 @@ def markers(
     edge_opacity=0.8,
 ):
     """Create a marker actor with different shapes.
+
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
@@ -3837,8 +3840,7 @@ def ellipsoid(
     scales=1.0,
     opacity=1.0
 ):
-    """
-    VTK actor for visualizing ellipsoids.
+    """VTK actor for visualizing ellipsoids.
 
     Parameters
     ----------
@@ -3860,7 +3862,6 @@ def ellipsoid(
     tensor_ellipsoid: Actor
 
     """
-
     if not isinstance(centers, np.ndarray):
         centers = np.array(centers)
     if centers.ndim == 1:
@@ -3909,8 +3910,7 @@ def uncertainty_cone(
     scales=.6,
     opacity=1.0
 ):
-    """
-    VTK actor for visualizing the cone of uncertainty representing the
+    """VTK actor for visualizing the cone of uncertainty representing the
     variance of the main direction of diffusion.
 
     Parameters
@@ -3935,7 +3935,6 @@ def uncertainty_cone(
     double_cone: Actor
 
     """
-
     valid_mask = np.abs(evecs).max(axis=(-2, -1)) > 0
     indices = np.nonzero(valid_mask)
 

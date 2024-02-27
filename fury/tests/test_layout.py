@@ -32,6 +32,7 @@ def get_default_cubes(
         RGB or RGBA (for opacity)
     scales: list of 2 floats
         Cube Sizes
+
     """
     cube_first_center, cube_second_center = centers
     cube_first_direction, cube_second_direction = directions
@@ -58,6 +59,7 @@ def get_default_panels(sizes=[(100, 100), (200, 200)], colors=np.random.rand(2, 
         Sizes of the two panels
     colors: ndarray ndarray (2,3) or (2, 4)
         RGB or RGBA (for opacity)
+
     """
     panel_first_size, panel_second_size = sizes
     panel_first_color, panel_second_color = colors

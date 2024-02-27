@@ -70,6 +70,7 @@ class TextBox2D(UI):
         Position of the caret in the text.
     init : bool
         Flag which says whether the textbox has just been initialized.
+
     """
 
     def __init__(
@@ -157,6 +158,7 @@ class TextBox2D(UI):
         Parameters
         ----------
         scene : scene
+
         """
         self.text.add_to_scene(scene)
 
@@ -221,6 +223,7 @@ class TextBox2D(UI):
         Parameters
         ----------
         character : str
+
         """
         if key.lower() == 'return':
             self.render_text(False)
@@ -366,6 +369,7 @@ class TextBox2D(UI):
         obj: :class:`vtkActor`
             The picked actor
         _textbox_object: :class:`TextBox2D`
+
         """
         i_ren.add_active_prop(self.text.actor)
         self.edit_mode()
@@ -415,6 +419,7 @@ class LineSlider2D(UI):
         Color of the handle when in unpressed state.
     active_color : (float, float, float)
         Color of the handle when it is pressed.
+
     """
 
     def __init__(
@@ -586,6 +591,7 @@ class LineSlider2D(UI):
         ----------
         coords: (float, float)
             Absolute pixel coordinates (x, y).
+
         """
         # Offset the slider line by the handle's radius.
         track_position = coords + self.handle.size / 2.0
@@ -636,8 +642,8 @@ class LineSlider2D(UI):
         ----------
         position : (float, float)
             The absolute position of the disk (x, y).
-        """
 
+        """
         # Move slider disk.
         if self.orientation == 'horizontal':
             x_position = position[0]
@@ -790,6 +796,7 @@ class LineDoubleSlider2D(UI):
         Color of the handles when in unpressed state.
     active_color : (float, float, float)
         Color of the handles when they are pressed.
+
     """
 
     def __init__(
@@ -1042,6 +1049,7 @@ class LineDoubleSlider2D(UI):
         Parameters
         ----------
         ratio : float
+
         """
         if self.orientation == 'horizontal':
             return self.left_x_position + ratio * self.track.width
@@ -1053,6 +1061,7 @@ class LineDoubleSlider2D(UI):
         Parameters
         ----------
         coord : float
+
         """
         if self.orientation == 'horizontal':
             return (coord - self.left_x_position) / float(self.track.width)
@@ -1181,6 +1190,7 @@ class LineDoubleSlider2D(UI):
         ----------
         right_disk_value : float
             New value for the right disk.
+
         """
         self.right_disk_ratio = self.value_to_ratio(right_disk_value)
         self.on_value_changed(self)
@@ -1217,6 +1227,7 @@ class LineDoubleSlider2D(UI):
         ----------
         top_disk_ratio : float
             New ratio for the top disk.
+
         """
         position_x = self.ratio_to_coord(top_disk_ratio)
         position_y = self.ratio_to_coord(top_disk_ratio)
@@ -1235,6 +1246,7 @@ class LineDoubleSlider2D(UI):
         ----------
         left_disk_ratio : float
             New ratio for the left disk.
+
         """
         position_x = self.ratio_to_coord(left_disk_ratio)
         position_y = self.ratio_to_coord(left_disk_ratio)
@@ -1253,6 +1265,7 @@ class LineDoubleSlider2D(UI):
         ----------
         right_disk_ratio : float
             New ratio for the right disk.
+
         """
         position_x = self.ratio_to_coord(right_disk_ratio)
         position_y = self.ratio_to_coord(right_disk_ratio)
@@ -1265,6 +1278,7 @@ class LineDoubleSlider2D(UI):
         ----------
         disk_number : int
             Index of the disk.
+
         """
         if callable(self.text_template):
             return self.text_template(self)
@@ -1371,6 +1385,7 @@ class RingSlider2D(UI):
         Color of the handle when in unpressed state.
     active_color : (float, float, float)
         Color of the handle when it is pressed.
+
     """
 
     def __init__(
@@ -1413,6 +1428,7 @@ class RingSlider2D(UI):
             replacement fields: `{value:}`, `{ratio:}`, `{angle:}`.
             If callable, this instance of `:class:RingSlider2D` will be
             passed as argument to the text template function.
+
         """
         self.default_color = (1, 1, 1)
         self.active_color = (0, 0, 1)
@@ -1476,6 +1492,7 @@ class RingSlider2D(UI):
         Parameters
         ----------
         scene : scene
+
         """
         self.track.add_to_scene(scene)
         self.handle.add_to_scene(scene)
@@ -1491,6 +1508,7 @@ class RingSlider2D(UI):
         ----------
         coords: (float, float)
             Absolute pixel coordinates (x, y).
+
         """
         self.track.position = coords + self.handle.size / 2.0
         self.handle.position += coords - self.position
@@ -1544,7 +1562,6 @@ class RingSlider2D(UI):
 
     def update(self):
         """Update the slider."""
-
         # Compute the ratio determined by the position of the slider disk.
         self._ratio = self.angle / TWO_PI
 
@@ -1631,7 +1648,6 @@ class RingSlider2D(UI):
 
 
 class RangeSlider(UI):
-
     """A set of a LineSlider2D and a LineDoubleSlider2D.
     The double slider is used to set the min and max value
     for the LineSlider2D
@@ -1646,6 +1662,7 @@ class RangeSlider(UI):
         The line slider which sets the min and max values
     value_slider : :class:`LineSlider2D`
         The line slider which sets the value
+
     """
 
     def __init__(
@@ -1770,6 +1787,7 @@ class RangeSlider(UI):
         Parameters
         ----------
         scene : scene
+
         """
         self.range_slider.add_to_scene(scene)
         self.value_slider.add_to_scene(scene)
@@ -1807,7 +1825,6 @@ class RangeSlider(UI):
 
 
 class Option(UI):
-
     """A set of a Button2D and a TextBlock2D to act as a single option
     for checkboxes and radio buttons.
     Clicking the button toggles its checked/unchecked status.
@@ -1918,7 +1935,6 @@ class Option(UI):
 
 
 class Checkbox(UI):
-
     """A 2D set of :class:'Option' objects.
     Multiple options can be selected.
 
@@ -1930,6 +1946,7 @@ class Checkbox(UI):
         Dictionary of all the options in the checkbox set.
     padding : float
         Distance between two adjacent options
+
     """
 
     def __init__(
@@ -1958,8 +1975,8 @@ class Checkbox(UI):
         position : (float, float), optional
             Absolute coordinates (x, y) of the lower-left corner of
             the button of the first option.
-        """
 
+        """
         self.labels = list(reversed(list(labels)))
         self._padding = padding
         self._font_size = font_size
@@ -2021,6 +2038,7 @@ class Checkbox(UI):
         Parameters
         ----------
         option : :class:`Option`
+
         """
         if option.checked:
             self.checked_labels.append(option.label)
@@ -2102,6 +2120,7 @@ class RadioButton(Checkbox):
         position : (float, float), optional
             Absolute coordinates (x, y) of the lower-left corner of
             the button of the first option.
+
         """
         if len(checked_labels) > 1:
             err_msg = 'Only one option can be pre-selected for radio buttons.'
@@ -2136,6 +2155,7 @@ class ComboBox2D(UI):
         Button to show or hide menu.
     drop_down_menu: :class: 'ListBox2D'
         Container for item list.
+
     """
 
     def __init__(
@@ -2192,6 +2212,7 @@ class ComboBox2D(UI):
             The font size of selected text in pixels.
         line_spacing: float
             Distance between drop down menu's items in pixels.
+
         """
         self.items = items.copy()
         self.font_size = font_size
@@ -2326,6 +2347,7 @@ class ComboBox2D(UI):
         ----------
         size : (int, int)
             ComboBox size(width, height) in pixels.
+
         """
         self.panel.resize(size)
 
@@ -2414,7 +2436,6 @@ class ComboBox2D(UI):
         listboxitem: :class:`ListBoxItem2D`
 
         """
-
         # Set the Text of TextBlock2D to the text of listboxitem
         self._selection = listboxitem.element
         self._selection_ID = self.items.index(self._selection)
@@ -2470,6 +2491,7 @@ class ListBox2D(UI):
     ----------
     on_change: function
         Callback function for when the selected items have changed.
+
     """
 
     def __init__(
@@ -2514,6 +2536,7 @@ class ListBox2D(UI):
         scroll_bar_active_color : tuple of 3 floats
         scroll_bar_inactive_color : tuple of 3 floats
         background_opacity : float
+
         """
         self.view_offset = 0
         self.slots = []
@@ -2905,6 +2928,7 @@ class ListBoxItem2D(UI):
         unselected_color : tuple of 3 floats
         selected_color : tuple of 3 floats
         background_opacity : float
+
         """
         super(ListBoxItem2D, self).__init__()
         self._element = None
@@ -2948,6 +2972,7 @@ class ListBoxItem2D(UI):
         Parameters
         ----------
         scene : scene
+
         """
         self.background.add_to_scene(scene)
         self.textblock.add_to_scene(scene)
@@ -2962,6 +2987,7 @@ class ListBoxItem2D(UI):
         ----------
         coords: (float, float)
             Absolute pixel coordinates (x, y).
+
         """
         self.textblock.position = coords
         # Center background underneath the text.
@@ -3057,6 +3083,7 @@ class FileMenu2D(UI):
             The font size in pixels.
         line_spacing: float
             Distance between listbox's items in pixels.
+
         """
         self.font_size = font_size
         self.multiselection = multiselection
@@ -3287,6 +3314,7 @@ class DrawShape(UI):
             Reference to the main canvas on which it is drawn.
         position : (float, float), optional
             (x, y) in pixels.
+
         """
         self.shape = None
         self.shape_type = shape_type.lower()
@@ -3339,6 +3367,7 @@ class DrawShape(UI):
         ----------
         coords: (float, float)
             Absolute pixel coordinates (x, y).
+
         """
         if self.shape_type == 'circle':
             self.shape.center = coords
@@ -3352,6 +3381,7 @@ class DrawShape(UI):
         ----------
         center_position: (float, float)
             Absolute pixel coordinates (x, y).
+
         """
         new_center = self.clamp_position(center=center_position)
         self.drawpanel.canvas.update_element(self, new_center, 'center')
@@ -3400,6 +3430,7 @@ class DrawShape(UI):
         ----------
         angle: float
             Value by which the vertices are rotated in radian.
+
         """
         if self.shape_type == 'circle':
             return
@@ -3434,6 +3465,7 @@ class DrawShape(UI):
         -------
         new_center: ndarray(int)
             New center for the shape.
+
         """
         center = self.center if center is None else center
         new_center = np.clip(
@@ -3514,6 +3546,7 @@ class DrawPanel(UI):
             (x, y) in pixels.
         is_draggable : bool, optional
             Whether the background canvas will be draggble or not.
+
         """
         self.panel_size = size
         super(DrawPanel, self).__init__(position)
@@ -3619,6 +3652,7 @@ class DrawPanel(UI):
         ----------
         coords: (float, float)
             Absolute pixel coordinates (x, y).
+
         """
         self.canvas.position = coords + [0, self.mode_panel.size[1]]
         slider_position = self.canvas.position + \
@@ -3653,6 +3687,7 @@ class DrawPanel(UI):
         -------
         float
             Minimum distance from the boundary.
+
         """
         distance_list = []
         # calculate distance from element to left and lower boundary
@@ -3671,6 +3706,7 @@ class DrawPanel(UI):
             Type of shape - line, quad, circle.
         current_position: (float,float)
             Lower left corner position for the shape.
+
         """
         shape = DrawShape(
             shape_type=shape_type, drawpanel=self, position=current_position
@@ -3689,6 +3725,7 @@ class DrawPanel(UI):
         ----------
         current_position: (float,float)
             Lower left corner position for the shape.
+
         """
         self.current_shape = self.shape_list[-1]
         size = current_position - self.current_shape.position
@@ -3715,6 +3752,7 @@ class DrawPanel(UI):
         ----------
         current_mode: string
             Current mode of the UI.
+
         """
         for btn in self.mode_panel._elements[1:]:
             if btn.icon_names[0] == current_mode:
@@ -3734,6 +3772,7 @@ class DrawPanel(UI):
         -------
         list(float)
             New clipped position.
+
         """
         return np.clip(
             mouse_position,
@@ -3947,6 +3986,7 @@ class PlaybackPanel(UI):
         -------
         float
             Final time for the progress slider.
+
         """
         return self._progress_bar.max_value
 
@@ -3958,6 +3998,7 @@ class PlaybackPanel(UI):
         ----------
         t: float
             Final time for the progress slider.
+
         """
         self._progress_bar.max_value = t
 
@@ -3969,6 +4010,7 @@ class PlaybackPanel(UI):
         -------
         float
             Progress slider current value.
+
         """
         return self._progress_bar.value
 
@@ -3977,9 +4019,10 @@ class PlaybackPanel(UI):
         """Set progress slider value.
 
         Parameters
-        -------
+        ----------
         t: float
             Current time to be set.
+
         """
         self._progress_bar.value = t
         self.current_time_str = t
@@ -4009,6 +4052,7 @@ class PlaybackPanel(UI):
         -----
         This should only be used when the `current_value` is not being set
         since setting`current_value` automatically sets this property as well.
+
         """
         t = np.clip(t, 0, self.final_time)
         if self.final_time < 3600:
@@ -4040,6 +4084,7 @@ class PlaybackPanel(UI):
         ----------
         speed: float
             Speed value to be set in the speed_text counter.
+
         """
         if speed <= 0:
             speed = 0.01
@@ -4089,6 +4134,7 @@ class PlaybackPanel(UI):
         -------
         float
             The width of the PlaybackPanel.
+
         """
         return self._width
 
@@ -4101,6 +4147,7 @@ class PlaybackPanel(UI):
         width: float
             The width of the whole panel.
             If set to None, The width will be the same as the window's width.
+
         """
         self._width = width if width is not None else 900
         self._auto_width = width is None
@@ -4130,6 +4177,7 @@ class Card2D(UI):
         Displays the title on card.
     body_box: :class: 'TextBLock2D'
         Displays the body text.
+
     """
 
     def __init__(self, image_path, body_text="", draggable=True,
@@ -4138,9 +4186,7 @@ class Card2D(UI):
                  bg_opacity=1, title_color=(0., 0., 0.),
                  body_color=(0., 0., 0.), border_color=(1., 1., 1.),
                  border_width=0, maintain_aspect=False):
-        """
-
-        Parameters
+        """Parameters
         ----------
         image_path: str
             Path of the image, supports png and jpg/jpeg images
@@ -4173,8 +4219,8 @@ class Card2D(UI):
             Width of the border
         maintain_aspect: bool, optional
             If the image should be scaled to maintain aspect ratio
-        """
 
+        """
         self.image_path = image_path
         self._basename = os.path.basename(self.image_path)
         self._extension = self._basename.split('.')[-1]
@@ -4218,7 +4264,7 @@ class Card2D(UI):
             self.resize(size)
 
     def _setup(self):
-        """ Setup this UI component
+        """Setup this UI component
         Create the image.
         Create the title and body.
         Create a Panel2D widget to hold image, title, body.
@@ -4256,17 +4302,17 @@ class Card2D(UI):
                 lambda i_ren, _obj, _comp: i_ren.force_render
 
     def _get_actors(self):
-        """ Get the actors composing this UI component.
+        """Get the actors composing this UI component.
         """
-
         return self.panel.actors
 
     def _add_to_scene(self, _scene):
-        """ Add all subcomponents or VTK props that compose this UI component.
+        """Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
         scene : scene
+
         """
         self.panel.add_to_scene(_scene)
         if self.size[0] <= 200:
@@ -4286,6 +4332,7 @@ class Card2D(UI):
         ----------
         size : (int, int)
             Card2D size(width, height) in pixels.
+
         """
         _width, _height = size
         self.panel.resize(size)
@@ -4318,39 +4365,37 @@ class Card2D(UI):
         self.title_box.resize(_title_box_size)
 
     def _set_position(self, _coords):
-        """ Position the lower-left corner of this UI component.
+        """Position the lower-left corner of this UI component.
 
         Parameters
         ----------
         coords: (float, float)
             Absolute pixel coordinates (x, y).
-        """
 
+        """
         self.panel.position = _coords
 
     @property
     def color(self):
-        """ Returns the background color of card.
+        """Returns the background color of card.
         """
-
         return self.panel.color
 
     @color.setter
     def color(self, color):
-        """ Sets background color of card.
+        """Sets background color of card.
 
         Parameters
         ----------
         color : list of 3 floats.
-        """
 
+        """
         self.panel.color = color
 
     @property
     def body(self):
-        """ Returns the body text of the card.
+        """Returns the body text of the card.
         """
-
         return self.body_box.message
 
     @body.setter
@@ -4359,9 +4404,8 @@ class Card2D(UI):
 
     @property
     def title(self):
-        """ Returns the title text of the card
+        """Returns the title text of the card
         """
-
         return self.title_box.message
 
     @title.setter
@@ -4413,6 +4457,7 @@ class SpinBox(UI):
             Max number of characters in a line.
         max_line: int, optional
             Max number of lines in the textbox.
+
         """
         self.panel_size = size
         self.padding = padding
@@ -4464,6 +4509,7 @@ class SpinBox(UI):
         ----------
         size : (float, float)
             SpinBox size(width, height) in pixels.
+
         """
         self.panel_size = size
         self.textbox_size = (int(0.7 * size[0]), int(0.8 * size[1]))
@@ -4509,6 +4555,7 @@ class SpinBox(UI):
         ----------
         coords: (float, float)
             Absolute pixel coordinates (x, y).
+
         """
         self.panel.center = coords
 
@@ -4549,6 +4596,7 @@ class SpinBox(UI):
         -------
         int
             If valid return converted integer else the previous value.
+
         """
         if value.isnumeric():
             return int(value)

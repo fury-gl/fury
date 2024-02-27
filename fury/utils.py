@@ -56,7 +56,7 @@ def set_input(vtk_object, inp):
     vtk_object
 
     Notes
-    -------
+    -----
     This can be used in the following way::
         from fury.utils import set_input
         poly_mapper = set_input(PolyDataMapper(), poly_data)
@@ -569,6 +569,7 @@ def get_polydata_primitives_count(polydata):
     Returns
     -------
     primitives count : int
+
     """
     return get_polydata_field(polydata, 'prim_count')[0]
 
@@ -596,6 +597,7 @@ def primitives_count_from_actor(actor):
     Returns
     -------
     primitives count : int
+
     """
     polydata = actor.GetMapper().GetInput()
     return get_polydata_primitives_count(polydata)
@@ -694,6 +696,7 @@ def set_polydata_tcoords(polydata, tcoords):
     polydata : vtkPolyData
     tcoords : texture coordinates, represented as 2D ndarrays (Nx2)
         (one per vertex range (0, 1))
+
     """
     vtk_tcoords = numpy_support.numpy_to_vtk(tcoords, deep=True, array_type=VTK_FLOAT)
     polydata.GetPointData().SetTCoords(vtk_tcoords)
@@ -920,6 +923,7 @@ def apply_affine_to_actor(act, affine):
     Returns
     -------
     transformed_act: Actor
+
     """
     act.SetUserMatrix(numpy_to_vtk_matrix(affine))
     return act
@@ -1169,7 +1173,7 @@ def normalize_v3(arr):
     """Normalize a numpy array of 3 component vectors shape=(N, 3).
 
     Parameters
-    -----------
+    ----------
     array : ndarray
         Shape (N, 3)
 
@@ -1499,6 +1503,7 @@ def represent_actor_as_wireframe(actor):
     Returns
     -------
     actor : actor
+
     """
     return actor.GetProperty().SetRepresentationToWireframe()
 
@@ -1511,6 +1516,7 @@ def update_surface_actor_colors(actor, colors):
     actor : surface actor
     colors : ndarray of shape (N, 3) having colors. The colors should be in the
         range [0, 1].
+
     """
     actor.GetMapper().GetInput().GetPointData().SetScalars(
         numpy_to_vtk_colors(255 * colors)
@@ -1518,8 +1524,7 @@ def update_surface_actor_colors(actor, colors):
 
 
 def color_check(pts_len, colors=None):
-    """
-    Returns a VTK scalar array containing colors information for each one of
+    """Returns a VTK scalar array containing colors information for each one of
     the points according to the policy defined by the parameter colors.
 
     Parameters
@@ -1569,6 +1574,7 @@ def is_ui(actor):
     ----------
     actor: :class: `UI` or `vtkProp3D`
         actor that is to be checked
+
     """
     return all([hasattr(actor, attr) for attr in ['add_to_scene', '_setup']])
 
@@ -1583,6 +1589,7 @@ def set_actor_origin(actor, center=None):
     center: ndarray, optional, default: None
         The new center position. If `None`, the origin will be set to the mean
         of the actor's vertices.
+
     """
     vertices = vertices_from_actor(actor)
     if center is None:

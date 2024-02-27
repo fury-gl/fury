@@ -44,7 +44,9 @@ class __PBRParams:
     coat_ior : float
         Index of refraction of the coat material. Default is 1.5. Values must
         be between 1.0 and 2.3.
+
     """
+
     def __init__(self, actor_properties, metallic, roughness,
                  anisotropy, anisotropy_rotation, coat_strength,
                  coat_roughness, base_ior, coat_ior):
@@ -218,7 +220,6 @@ def manifest_principled(actor, subsurface=0, metallic=0, specular=0,
         Dictionary containing the Principled Shading parameters.
 
     """
-
     try:
         prop = actor.GetProperty()
 

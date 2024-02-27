@@ -29,6 +29,7 @@ class Panel2D(UI):
     ----------
     alignment : [left, right]
         Alignment of the panel with respect to the overall screen.
+
     """
 
     def __init__(
@@ -62,6 +63,7 @@ class Panel2D(UI):
             width of the border
         has_border: bool, optional
             If the panel should have borders.
+
         """
         self.has_border = has_border
         self._border_color = border_color
@@ -132,6 +134,7 @@ class Panel2D(UI):
         Parameters
         ----------
         scene : scene
+
         """
         for element in self._elements:
             element.add_to_scene(scene)
@@ -146,6 +149,7 @@ class Panel2D(UI):
         ----------
         size : (float, float)
             Panel size (width, height) in pixels.
+
         """
         self.background.resize(size)
 
@@ -245,6 +249,7 @@ class Panel2D(UI):
         ----------
         element : UI
             The UI item to be removed.
+
         """
         idx = self._elements.index(element)
         del self._elements[idx]
@@ -263,6 +268,7 @@ class Panel2D(UI):
             between [0,1].
             If int, pixels coordinates are assumed and it must fit within the
             panel's size.
+
         """
         self.remove_element(element)
         self.add_element(element, coords, anchor)
@@ -286,6 +292,7 @@ class Panel2D(UI):
         ----------
         window_size_change : (int, int)
             New window size (width, height) in pixels.
+
         """
         if self.alignment == 'left':
             pass
@@ -320,6 +327,7 @@ class Panel2D(UI):
         ----------
         side_color: Iterable
             Iterable to pack side, color values
+
         """
         side, color = side_color
 
@@ -350,6 +358,7 @@ class Panel2D(UI):
         ----------
         side_width: Iterable
             Iterable to pack side, width values
+
         """
         side, border_width = side_width
 
@@ -370,6 +379,7 @@ class TabPanel2D(UI):
         Hold all the content UI components.
     text_block: :class: 'TextBlock2D'
         Renders the title of the tab.
+
     """
 
     def __init__(
@@ -395,6 +405,7 @@ class TabPanel2D(UI):
             Background color of tab panel.
         content_panel : Panel2D
             Panel consisting of the content UI elements.
+
         """
         self.content_panel = content_panel
         self.panel_size = size
@@ -472,6 +483,7 @@ class TabPanel2D(UI):
         Parameters
         ----------
         color : list of 3 floats.
+
         """
         self.panel.color = color
 
@@ -488,6 +500,7 @@ class TabPanel2D(UI):
         ----------
         text : str
             New title for tab panel.
+
         """
         self.text_block.message = text
 
@@ -504,6 +517,7 @@ class TabPanel2D(UI):
         ----------
         bold : bool
             Bold property for a text title in a tab panel.
+
         """
         self.text_block.bold = bold
 
@@ -520,6 +534,7 @@ class TabPanel2D(UI):
         ----------
         color : tuple
             New title color for tab panel.
+
         """
         self.text_block.color = color
 
@@ -536,6 +551,7 @@ class TabPanel2D(UI):
         ----------
         font_size : int
             New title font size for tab panel.
+
         """
         self.text_block.font_size = font_size
 
@@ -552,6 +568,7 @@ class TabPanel2D(UI):
         ----------
         italic : bool
             Italic property for a text title in a tab panel.
+
         """
         self.text_block.italic = italic
 
@@ -570,6 +587,7 @@ class TabPanel2D(UI):
             between [0,1].
             If int, pixels coordinates are assumed and it must fit within the
             panel's size.
+
         """
         element.set_visibility(False)
         self.content_panel.add_element(element, coords, anchor)
@@ -581,6 +599,7 @@ class TabPanel2D(UI):
         ----------
         element : UI
             The UI item to be removed.
+
         """
         self.content_panel.remove_element(element)
 
@@ -597,6 +616,7 @@ class TabPanel2D(UI):
             between [0,1].
             If int, pixels coordinates are assumed and it must fit within the
             panel's size.
+
         """
         self.content_panel.update_element(element, coords, anchor='position')
 
@@ -608,6 +628,7 @@ class TabUI(UI):
     ----------
     tabs: :class: List of 'TabPanel2D'
         Stores all the instances of 'TabPanel2D' that renders the contents.
+
     """
 
     def __init__(
@@ -640,6 +661,7 @@ class TabUI(UI):
         startup_tab_id : int, optional
             Tab to be activated and uncollapsed on startup.
             by default None is activated/ all collapsed.
+
         """
         self.tabs = []
         self.nb_tabs = nb_tabs
@@ -854,6 +876,7 @@ class ImageContainer2D(UI):
             Absolute coordinates (x, y) of the lower-left corner of the image.
         size : (int, int), optional
             Width and height in pixels of the image.
+
         """
         super(ImageContainer2D, self).__init__(position)
         self.img = load_image(img_path, as_vtktype=True)
@@ -874,6 +897,7 @@ class ImageContainer2D(UI):
         Returns
         -------
         :class:`vtkTexturedActor2D`
+
         """
         self.texture_polydata = PolyData()
         self.texture_points = Points()
@@ -927,6 +951,7 @@ class ImageContainer2D(UI):
         Parameters
         ----------
         scene : scene
+
         """
         scene.add(self.actor)
 
@@ -937,6 +962,7 @@ class ImageContainer2D(UI):
         ----------
         size : (float, float)
             image size (width, height) in pixels.
+
         """
         # Update actor.
         self.texture_points.SetPoint(0, 0, 0, 0.0)
@@ -952,6 +978,7 @@ class ImageContainer2D(UI):
         ----------
         coords: (float, float)
             Absolute pixel coordinates (x, y).
+
         """
         self.actor.SetPosition(*coords)
 
@@ -962,6 +989,7 @@ class ImageContainer2D(UI):
         ----------
         factor : (float, float)
             Scaling factor (width, height) in pixels.
+
         """
         self.resize(self.size * factor)
 
@@ -1168,6 +1196,7 @@ class GridUI(UI):
         ----------
         coords: (float, float)
             Absolute pixel coordinates (x, y).
+
         """
         # coords = (0, 0, 0)
         pass

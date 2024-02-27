@@ -60,7 +60,7 @@ def ss(na, nd):
 
 
 def boys2rgb(v):
-    """boys 2 rgb cool colormap
+    """Boys 2 rgb cool colormap
 
     Maps a given field of undirected lines (line field) to rgb
     colors using Boy's Surface immersion of the real projective
@@ -79,24 +79,23 @@ def boys2rgb(v):
     the FURY Team. Thank you Cagatay for putting this online.
 
     Parameters
-    ------------
+    ----------
     v : array, shape (N, 3) of unit vectors (e.g., principal eigenvectors of
        tensor data) representing one of the two directions of the
        undirected lines in a line field.
 
     Returns
-    ---------
+    -------
     c : array, shape (N, 3) matrix of rgb colors corresponding to the vectors
            given in V.
 
     Examples
-    ----------
-
+    --------
     >>> from fury import colormap
     >>> v = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
     >>> c = colormap.boys2rgb(v)
-    """
 
+    """
     if v.ndim == 1:
         x = v[0]
         y = v[1]
@@ -638,6 +637,7 @@ def hex_to_rgb(color):
 
 def rgb2hsv(rgb):
     """RGB to HSV color space conversion.
+
     Parameters
     ----------
     rgb : (..., 3, ...) array_like
@@ -655,6 +655,7 @@ def rgb2hsv(rgb):
     it can be found at:
     https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
     This implementation might have been modified.
+
     """
     input_is_one_pixel = rgb.ndim == 1
     if input_is_one_pixel:
@@ -725,7 +726,6 @@ def hsv2rgb(hsv):
     This implementation might have been modified.
 
     """
-
     hi = np.floor(hsv[..., 0] * 6)
     f = hsv[..., 0] * 6 - hi
     p = hsv[..., 2] * (1 - hsv[..., 1])
@@ -875,6 +875,7 @@ def get_xyz_coords(illuminant, observer):
     observer : {"2", "10", "R"}, optional
         One of: 2-degree observer, 10-degree observer, or 'R' observer as in
         R function grDevices::convertColor.
+
     Returns
     -------
     out : array
@@ -927,7 +928,6 @@ def xyz2lab(xyz, illuminant='D65', observer='2'):
     This implementation might have been modified.
 
     """
-
     xyz_ref_white = get_xyz_coords(illuminant, observer)
 
     # scale by CIE XYZ tristimulus values of the reference white point
@@ -960,6 +960,7 @@ def lab2xyz(lab, illuminant='D65', observer='2'):
         The name of the illuminant (the function is NOT case-sensitive).
     observer : {"2", "10", "R"}, optional
         The aperture angle of the observer.
+
     Returns
     -------
     out : (..., 3, ...) ndarray

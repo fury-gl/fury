@@ -18,7 +18,6 @@ ngrok. However, to use webRTC you need to install the aiortc library.
 
 Notes
 -----
-
 If you don't have ffmpeg installed, you need to install it to use WebRTC
 
 Linux
@@ -29,6 +28,7 @@ Linux
 OS X
 
 `brew install ffmpeg opus libvpx pkg-config`
+
 """
 
 import multiprocessing
