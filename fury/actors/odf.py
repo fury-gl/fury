@@ -206,27 +206,27 @@ def sh_odf(centers, coeffs, basis_type, scales, opacity):
         os.path.join("rt_odfs", basis_type, "eval_sh_12.frag"))
 
     eval_sh_grad_2 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_grad_2.frag")
+        os.path.join("rt_odfs/descoteaux", "eval_sh_grad_2.frag")
     )
 
     eval_sh_grad_4 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_grad_4.frag")
+        os.path.join("rt_odfs/descoteaux", "eval_sh_grad_4.frag")
     )
 
     eval_sh_grad_6 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_grad_6.frag")
+        os.path.join("rt_odfs/descoteaux", "eval_sh_grad_6.frag")
     )
 
     eval_sh_grad_8 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_grad_8.frag")
+        os.path.join("rt_odfs/descoteaux", "eval_sh_grad_8.frag")
     )
 
     eval_sh_grad_10 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_grad_10.frag")
+        os.path.join("rt_odfs/descoteaux", "eval_sh_grad_10.frag")
     )
 
     eval_sh_grad_12 = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_grad_12.frag")
+        os.path.join("rt_odfs/descoteaux", "eval_sh_grad_12.frag")
     )
 
     # Searches a single root of a polynomial within a given interval.
@@ -246,13 +246,13 @@ def sh_odf(centers, coeffs, basis_type, scales, opacity):
     #
     #   return true if a root was found, false if no root exists.
     newton_bisection = import_fury_shader(
-        os.path.join("rt_odfs", "newton_bisection.frag")
+        os.path.join("utils", "newton_bisection.frag")
     )
 
     # Finds all roots of the given polynomial in the interval [begin, end] and
     # writes them to out_roots. Some entries will be NO_INTERSECTION but other
     # than that the array is sorted. The last entry is always NO_INTERSECTION.
-    find_roots = import_fury_shader(os.path.join("rt_odfs", "find_roots.frag"))
+    find_roots = import_fury_shader(os.path.join("utils", "find_roots.frag"))
 
     # Evaluates the spherical harmonics basis in bands 0, 2, ..., SH_DEGREE.
     # Conventions are as in the following paper.
@@ -304,22 +304,22 @@ def sh_odf(centers, coeffs, basis_type, scales, opacity):
 
     # Applies the non-linearity that maps linear RGB to sRGB
     linear_to_srgb = import_fury_shader(
-        os.path.join("rt_odfs", "linear_to_srgb.frag")
+        os.path.join("lighting", "linear_to_srgb.frag")
     )
 
     # Inverse of linear_to_srgb()
     srgb_to_linear = import_fury_shader(
-        os.path.join("rt_odfs", "srgb_to_linear.frag")
+        os.path.join("lighting", "srgb_to_linear.frag")
     )
 
     # Turns a linear RGB color (i.e. rec. 709) into sRGB
     linear_rgb_to_srgb = import_fury_shader(
-        os.path.join("rt_odfs", "linear_rgb_to_srgb.frag")
+        os.path.join("lighting", "linear_rgb_to_srgb.frag")
     )
 
     # Inverse of linear_rgb_to_srgb()
     srgb_to_linear_rgb = import_fury_shader(
-        os.path.join("rt_odfs", "srgb_to_linear_rgb.frag")
+        os.path.join("lighting", "srgb_to_linear_rgb.frag")
     )
 
     # Logarithmic tonemapping operator. Input and output are linear RGB.
