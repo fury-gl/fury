@@ -10,10 +10,11 @@ sheet to update the image in the card.
 First, some imports.
 """
 import os
+from tempfile import TemporaryDirectory as InTemporaryDirectory
+
 from fury import ui, window
 from fury.data import fetch_viz_icons
 from fury.io import load_image, load_sprite_sheet, save_image
-from tempfile import TemporaryDirectory as InTemporaryDirectory
 
 ##############################################################################
 # First we need to fetch some icons that are included in FURY.
@@ -23,7 +24,9 @@ FRAME_TIME = (1.0 / TARGET_FPS) * 1000
 
 fetch_viz_icons()
 
-sprite_sheet = load_sprite_sheet('https://i.imgur.com/0yKFTBQ.png', 5, 5)
+sprite_sheet = load_sprite_sheet('https://raw.githubusercontent.com/fury-gl/'
+                                 'fury-data/master/unittests/fury_sprite.png',
+                                 5, 5)
 CURRENT_SPRITE_IDX = 0
 
 vtk_sprites = []
