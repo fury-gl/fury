@@ -92,15 +92,15 @@ rope = p.createMultiBody(
     basePosition,
     baseOrientation,
     linkMasses=link_Masses,
-    linkCollisionShapeIndices=linkCollisionShapeIndices,
-    linkVisualShapeIndices=linkVisualShapeIndices,
+    linkCollisionShapeIndices=linkCollisionShapeIndices.astype(int),
+    linkVisualShapeIndices=linkVisualShapeIndices.astype(int),
     linkPositions=linkPositions,
     linkOrientations=linkOrientations,
     linkInertialFramePositions=linkInertialFramePositions,
     linkInertialFrameOrientations=linkInertialFrameOrns,
-    linkParentIndices=indices,
-    linkJointTypes=jointTypes,
-    linkJointAxis=axis,
+    linkParentIndices=indices.astype(int),
+    linkJointTypes=jointTypes.astype(int),
+    linkJointAxis=axis.astype(int),
 )
 
 ###############################################################################

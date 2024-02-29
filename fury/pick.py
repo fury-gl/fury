@@ -20,7 +20,7 @@ class PickingManager:
         """Initialize Picking Manager.
 
         Parameters
-        -----------
+        ----------
         vertices : bool
             If True allows to pick vertex indices.
         faces : bool
@@ -124,7 +124,7 @@ class SelectionManager:
         """Initialize Selection Manager.
 
         Parameters
-        -----------
+        ----------
         select : 'faces'
             Options are 'faces', 'vertices' or 'actors'.
             Default 'faces'.
@@ -142,7 +142,7 @@ class SelectionManager:
         """Update selection type.
 
         Parameters
-        -----------
+        ----------
         select : 'faces'
             Options are 'faces', 'vertices' or 'actors'.
             Default 'faces'.

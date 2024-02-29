@@ -126,6 +126,7 @@ def load_shader(shader_file):
     -------
     code : str
         GLSL shader code.
+
     """
     file_ext = os.path.splitext(os.path.basename(shader_file))[1]
     if file_ext not in SHADERS_EXTS:
@@ -291,7 +292,7 @@ def add_shader_callback(actor, callback, priority=0.0):
         See more at: https://vtk.org/doc/nightly/html/classvtkObject.html
 
     Examples
-    ---------
+    --------
     .. code-block:: python
 
         add_shader_callback(actor, func_call1)

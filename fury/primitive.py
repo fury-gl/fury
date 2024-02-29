@@ -24,8 +24,7 @@ SPHERE_FILES = {
 
 
 def faces_from_sphere_vertices(vertices):
-    """
-    Triangulate a set of vertices on the sphere.
+    """Triangulate a set of vertices on the sphere.
 
     Parameters
     ----------
@@ -311,6 +310,7 @@ def prim_sphere(name='symmetric362', gen_faces=False, phi=None, theta=None):
         Set the number of points in the latitude direction
     theta : int, optional
         Set the number of points in the longitude direction
+
     Returns
     -------
     vertices: ndarray
@@ -933,8 +933,8 @@ def prim_cylinder(radius=0.5, height=1, sectors=36, capped=True):
         vertices coords that compose our cylinder
     triangles: ndarray
         triangles that compose our cylinder
-    """
 
+    """
     if not isinstance(sectors, int):
         raise TypeError('Only integers are allowed for sectors parameter')
     if not sectors > 7:
@@ -1066,7 +1066,6 @@ def prim_arrow(
         Triangles of the Arrow
 
     """
-
     shaft_height = height - tip_length
 
     all_faces = []
@@ -1151,7 +1150,6 @@ def prim_cone(radius=0.5, height=1, sectors=10):
         triangles that compose our cone
 
     """
-
     if sectors < 3:
         raise ValueError('Sectors parameter should be greater than 2')
 

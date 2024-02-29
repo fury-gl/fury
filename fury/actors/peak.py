@@ -277,7 +277,6 @@ class PeakActor(Actor):
 
 def _orientation_colors(points, cmap='rgb_standard'):
     """
-
     Parameters
     ----------
     points : (N, 3) array or ndarray
@@ -308,8 +307,7 @@ def _orientation_colors(points, cmap='rgb_standard'):
 
 
 def _peaks_colors_from_points(points, colors=None, points_per_line=2):
-    """
-    Returns a VTK scalar array containing colors information for each one of
+    """Return a VTK scalar array containing colors information for each one of
     the peaks according to the policy defined by the parameter colors.
 
     Parameters
@@ -379,9 +377,7 @@ def _peaks_colors_from_points(points, colors=None, points_per_line=2):
 
 
 def _points_to_vtk_cells(points, points_per_line=2):
-    """
-
-    Returns the VTK cell array for the peaks given the set of points
+    """Return the VTK cell array for the peaks given the set of points
     coordinates.
 
     Parameters

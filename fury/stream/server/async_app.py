@@ -47,8 +47,8 @@ async def mjpeg_handler(request):
     """This async function it's responsible
     to create the MJPEG streaming.
 
-    Notes:
-    ------
+    Notes
+    -----
     endpoint : /video/mjpeg
 
     """
@@ -147,8 +147,7 @@ def set_mouse(data, circular_queue):
 
 
 def set_mouse_click(data, circular_queue):
-    """
-    3 | LeftButtonPressEvent
+    """3 | LeftButtonPressEvent
     4 | LeftButtonReleaseEvent
     5 | MiddleButtonPressEvent
     6 | MiddleButtonReleaseEvent

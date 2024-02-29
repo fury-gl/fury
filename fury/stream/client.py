@@ -55,8 +55,7 @@ class FuryStreamClient:
         whithout_iren_start=False,
         num_buffers=2,
     ):
-        """
-        A StreamClient extracts a framebuffer from the OpenGL context
+        """A StreamClient extracts a framebuffer from the OpenGL context
         and writes into a shared memory resource.
 
         Parameters
@@ -77,7 +76,6 @@ class FuryStreamClient:
             technique.
 
         """
-
         self._whithout_iren_start = whithout_iren_start
         self.showm = showm
         self.window2image_filter = vtk.vtkWindowToImageFilter()
@@ -275,7 +273,7 @@ class FuryStreamInteraction:
     def __init__(
         self, showm, max_queue_size=50, use_raw_array=True, whithout_iren_start=False
     ):
-        """
+        """Initialize the StreamInteraction obj.
 
         Parameters
         ----------
@@ -291,7 +289,6 @@ class FuryStreamInteraction:
             instance.
 
         """
-
         self.showm = showm
         self.iren = self.showm.iren
         if use_raw_array:
@@ -321,7 +318,6 @@ class FuryStreamInteraction:
             separate thread.
 
         """
-
         use_asyncio = platform.system() == 'Windows' or use_asyncio
         if ms <= 0:
             raise ValueError('ms must be greater than zero')

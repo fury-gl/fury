@@ -194,7 +194,7 @@ vec3 calcNormal( in vec3 pos )
             vec3 lin  = 2.5*occ*vec3(1.0,1.00,1.00)*(0.6+0.4*nor.y);
                  lin += 1.0*sss*vec3(1.0,0.95,0.70)*occ;
 
-            // surface-light interacion
+            // surface-light interaction
             col = mate.xyz * lin;
         }
 

@@ -1,5 +1,4 @@
-"""
-This simple example demonstrates how to use shaders to modify the fragments in
+"""This simple example demonstrates how to use shaders to modify the fragments in
 your scene. We will use the AddShaderReplacement() function to modify the
 fragment shader with VTK's shader template system.
 

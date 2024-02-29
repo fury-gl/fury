@@ -12,8 +12,7 @@ from fury.utils import (
 
 
 class OdfSlicerActor(Actor):
-    """
-    VTK actor for visualizing slices of ODF field.
+    """VTK actor for visualizing slices of ODF field.
 
     Parameters
     ----------
@@ -49,6 +48,7 @@ class OdfSlicerActor(Actor):
         Optional SH to SF matrix for projecting `odfs` given in SH
         coefficients on the `sphere`. If None, then the input is assumed
         to be expressed in SF coefficients.
+
     """
 
     def __init__(
@@ -108,14 +108,12 @@ class OdfSlicerActor(Actor):
         self.set_opacity(opacity)
 
     def set_opacity(self, opacity):
-        """
-        Set opacity value of ODFs to display.
+        """Set opacity value of ODFs to display.
         """
         self.GetProperty().SetOpacity(opacity)
 
     def display_extent(self, x1, x2, y1, y2, z1, z2):
-        """
-        Set visible volume from x1 (inclusive) to x2 (inclusive),
+        """Set visible volume from x1 (inclusive) to x2 (inclusive),
         y1 (inclusive) to y2 (inclusive), z1 (inclusive) to z2
         (inclusive).
         """
@@ -126,8 +124,7 @@ class OdfSlicerActor(Actor):
         self._update_mapper()
 
     def slice_along_axis(self, slice_index, axis='zaxis'):
-        """
-        Slice ODF field at given `slice_index` along axis
+        """Slice ODF field at given `slice_index` along axis
         in ['xaxis', 'yaxis', zaxis'].
         """
         if axis == 'xaxis':
@@ -161,8 +158,7 @@ class OdfSlicerActor(Actor):
             raise ValueError('Invalid axis name {0}.'.format(axis))
 
     def display(self, x=None, y=None, z=None):
-        """
-        Display a slice along x, y, or z axis.
+        """Display a slice along x, y, or z axis.
         """
         if x is None and y is None and z is None:
             self.slice_along_axis(self.grid_shape[2] // 2)
@@ -174,8 +170,7 @@ class OdfSlicerActor(Actor):
             self.slice_along_axis(z, 'zaxis')
 
     def update_sphere(self, vertices, faces, B):
-        """
-        Dynamically change the sphere used for SH to SF projection.
+        """Dynamically change the sphere used for SH to SF projection.
         """
         if self.B is None:
             raise ValueError("Can't update sphere when using " 'SF coefficients.')
@@ -189,8 +184,7 @@ class OdfSlicerActor(Actor):
         self._update_mapper()
 
     def _update_mapper(self):
-        """
-        Map vtkPolyData to the actor.
+        """Map vtkPolyData to the actor.
         """
         polydata = PolyData()
 
@@ -215,24 +209,21 @@ class OdfSlicerActor(Actor):
         self.mapper.SetInputData(polydata)
 
     def _get_odf_offsets(self, mask):
-        """
-        Get the position of non-zero voxels inside `mask`.
+        """Get the position of non-zero voxels inside `mask`.
         """
         if self.affine is not None:
             return self.w_pos[mask[self.indices]]
         return np.asarray(self.indices).T[mask[self.indices]]
 
     def _get_sphere_directions(self):
-        """
-        Get the sphere directions onto which is projected the signal.
+        """Get the sphere directions onto which is projected the signal.
         """
         if self.affine is not None:
             return self.w_verts
         return self.vertices
 
     def _get_sf(self, mask):
-        """
-        Get SF coefficients inside `mask`.
+        """Get SF coefficients inside `mask`.
         """
         # when odfs are expressed in SH coefficients
         if self.B is not None:
@@ -246,8 +237,7 @@ class OdfSlicerActor(Actor):
         return self.odfs[mask[self.indices]]
 
     def _get_all_vertices(self, offsets, sph_dirs, sf):
-        """
-        Get array of all the vertices of the ODFs to display.
+        """Get array of all the vertices of the ODFs to display.
         """
         if self.radial_scale:
             # apply SF amplitudes to all sphere
@@ -261,16 +251,14 @@ class OdfSlicerActor(Actor):
         )
 
     def _get_all_faces(self, nb_odfs, nb_dirs):
-        """
-        Get array of all the faces of the ODFs to display.
+        """Get array of all the faces of the ODFs to display.
         """
         return np.tile(self.faces, (nb_odfs, 1)) + np.repeat(
             np.arange(nb_odfs) * nb_dirs, len(self.faces)
         ).reshape(-1, 1)
 
     def _generate_color_for_vertices(self, sf):
-        """
-        Get array of all vertices colors.
+        """Get array of all vertices colors.
         """
         if self.global_cm:
             if self.colormap is None:

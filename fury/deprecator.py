@@ -5,6 +5,7 @@ Notes
 this file is copied (with minor modifications) from the Nibabel.
 https://github.com/nipy/nibabel. See COPYING file distributed along with
 the Nibabel package for the copyright and license terms.
+
 """
 
 import functools

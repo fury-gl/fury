@@ -24,11 +24,11 @@ jobs:
       matrix:
         python-version: [3.9]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install Dependencies
@@ -62,5 +62,5 @@ jobs:
         ssh-key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
         repository-name: fury-gl/fury-website
         folder: ./docs/build/html-web-only
-        target-folder: v0.9.x
+        target-folder: v0.10.x
         clean: false
