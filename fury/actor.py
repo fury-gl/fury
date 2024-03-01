@@ -3873,6 +3873,7 @@ def ellipsoid(
 def odf(
     centers,
     coeffs,
+    degree=4,
     basis_type='descoteaux',
     scales=1.0,
     opacity=1.0
@@ -3887,6 +3888,9 @@ def odf(
         ODFs positions.
     coeffs : ndarray
         2D ODFs array in SH coefficients.
+    degree: int, optional
+        Index of the highest used band of the spherical harmonics basis. Must
+        be even, at least 2 and at most 12.
     basis_type: str, optional
         Type of basis (descoteaux, tournier)
         'descoteaux' for the default ``descoteaux07`` DYPY basis.
@@ -3906,6 +3910,20 @@ def odf(
         centers = np.array(centers)
     if centers.ndim == 1:
         centers = np.array([centers])
+        
+    if not isinstance(coeffs, np.ndarray):
+        coeffs = np.array(coeffs)
+        
+    coeffs_given = coeffs.shape[1]
+    coeffs_needed = int(((degree + 1) * (degree + 2)) / 2)
+    if degree % 2 != 0:
+        raise ValueError('degree must be even')
+    if coeffs_given < coeffs_needed:
+        raise ValueError(
+                'Not enough number of coefficient for SH of degree {0}. '
+                'Expected at least {1}'.format(degree, coeffs_needed))
+    else:
+        coeffs = coeffs[:, :coeffs_needed]
 
     if not isinstance(scales, np.ndarray):
         scales = np.array(scales)
@@ -3918,4 +3936,4 @@ def odf(
     total = np.sum(abs(coeffs), axis=1)
     coeffs = np.dot(np.diag(1 / total * scales), coeffs) * 1.7
 
-    return sh_odf(centers, coeffs, basis_type, scales, opacity)
+    return sh_odf(centers, coeffs, degree, basis_type, scales, opacity)

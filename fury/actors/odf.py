@@ -32,14 +32,13 @@ def uv_calculations(n):
     return uvs
 
 def minmax_norm(data):
-    
     min = data.min(axis=1)
     max = data.max(axis=1)
     return np.array([(data[i] - min[i]) / (max[i] - min[i]) 
                      for i in range(data.shape[0])])
     
 
-def sh_odf(centers, coeffs, basis_type, scales, opacity):
+def sh_odf(centers, coeffs, degree, basis_type, scales, opacity):
     """
     Visualize one or many ODFs with different features.
 
@@ -53,6 +52,9 @@ def sh_odf(centers, coeffs, basis_type, scales, opacity):
         Type of basis (descoteaux, tournier)
         'descoteaux' for the default ``descoteaux07`` DYPY basis.
         'tournier' for the default ``tournier07` DYPY basis.
+    degree: int, optional
+        Index of the highest used band of the spherical harmonics basis. Must
+        be even, at least 2 and at most 12.
     scales : float or ndarray (N, )
         ODFs size.
     opacity : float
@@ -108,7 +110,7 @@ def sh_odf(centers, coeffs, basis_type, scales, opacity):
 
     # The number of coefficients is associated to the order of the SH
     odf_actor.GetShaderProperty().GetFragmentCustomUniforms().SetUniformf(
-        "numCoeffs", 15
+        "numCoeffs", ((degree + 1) * (degree + 2)) / 2
     )
     
     # Start of shader implementation
@@ -142,7 +144,7 @@ def sh_odf(centers, coeffs, basis_type, scales, opacity):
 
     # The index of the highest used band of the spherical harmonics basis. Must
     # be even, at least 2 and at most 12.
-    def_sh_degree = "#define SH_DEGREE 4"
+    def_sh_degree = "#define SH_DEGREE " + str(degree)
 
     # The number of spherical harmonics basis functions
     def_sh_count = "#define SH_COUNT (((SH_DEGREE + 1) * (SH_DEGREE + 2)) / 2)"
@@ -187,47 +189,14 @@ def sh_odf(centers, coeffs, basis_type, scales, opacity):
 
     coeffs_norm = import_fury_shader(os.path.join("utils", "minmax_norm.glsl"))
     
-    eval_sh_2 = import_fury_shader(
-        os.path.join("rt_odfs", basis_type, "eval_sh_2.frag"))
-
-    eval_sh_4 = import_fury_shader(
-        os.path.join("rt_odfs", basis_type, "eval_sh_4.frag"))
-
-    eval_sh_6 = import_fury_shader(
-        os.path.join("rt_odfs", basis_type, "eval_sh_6.frag"))
-
-    eval_sh_8 = import_fury_shader(
-        os.path.join("rt_odfs", basis_type, "eval_sh_8.frag"))
-
-    eval_sh_10 = import_fury_shader(
-        os.path.join("rt_odfs", basis_type, "eval_sh_10.frag"))
-
-    eval_sh_12 = import_fury_shader(
-        os.path.join("rt_odfs", basis_type, "eval_sh_12.frag"))
-
-    eval_sh_grad_2 = import_fury_shader(
-        os.path.join("rt_odfs/descoteaux", "eval_sh_grad_2.frag")
-    )
-
-    eval_sh_grad_4 = import_fury_shader(
-        os.path.join("rt_odfs/descoteaux", "eval_sh_grad_4.frag")
-    )
-
-    eval_sh_grad_6 = import_fury_shader(
-        os.path.join("rt_odfs/descoteaux", "eval_sh_grad_6.frag")
-    )
-
-    eval_sh_grad_8 = import_fury_shader(
-        os.path.join("rt_odfs/descoteaux", "eval_sh_grad_8.frag")
-    )
-
-    eval_sh_grad_10 = import_fury_shader(
-        os.path.join("rt_odfs/descoteaux", "eval_sh_grad_10.frag")
-    )
-
-    eval_sh_grad_12 = import_fury_shader(
-        os.path.join("rt_odfs/descoteaux", "eval_sh_grad_12.frag")
-    )
+    eval_sh_list = ''
+    for i in range (2, degree+1, 2):
+        eval_sh = import_fury_shader(
+            os.path.join("rt_odfs", basis_type, 'eval_sh_' + str(i) + '.frag'))
+        eval_sh_grad = import_fury_shader(
+            os.path.join("rt_odfs", basis_type, 
+                         'eval_sh_grad_' + str(i) + '.frag'))
+        eval_sh_list = eval_sh_list + '\n\n' + eval_sh + '\n\n' + eval_sh_grad
 
     # Searches a single root of a polynomial within a given interval.
     #   param out_root The location of the found root.
@@ -334,13 +303,10 @@ def sh_odf(centers, coeffs, basis_type, scales, opacity):
     fs_dec = compose_shader([
         def_sh_degree, def_sh_count, def_max_degree,
         def_gl_ext_control_flow_attributes, def_no_intersection, def_pis,
-        fs_vs_vars, coeffs_norm, eval_sh_2, eval_sh_4, eval_sh_6, eval_sh_8,
-        eval_sh_10, eval_sh_12, eval_sh_grad_2, eval_sh_grad_4, eval_sh_grad_6,
-        eval_sh_grad_8, eval_sh_grad_10, eval_sh_grad_12, newton_bisection,
-        find_roots, eval_sh, eval_sh_grad, get_inv_vandermonde,
-        ray_sh_glyph_intersections, get_sh_glyph_normal, blinn_phong_model,
-        linear_to_srgb, srgb_to_linear, linear_rgb_to_srgb, srgb_to_linear_rgb,
-        tonemap
+        fs_vs_vars, coeffs_norm, eval_sh_list, newton_bisection, find_roots,
+        eval_sh, eval_sh_grad, get_inv_vandermonde, ray_sh_glyph_intersections,
+        get_sh_glyph_normal, blinn_phong_model, linear_to_srgb, srgb_to_linear,
+        linear_rgb_to_srgb, srgb_to_linear_rgb, tonemap
     ])
     # fmt: on
 
@@ -351,7 +317,6 @@ def sh_odf(centers, coeffs, basis_type, scales, opacity):
     # Ray origin is the camera position in world space
     ray_origin = "vec3 ro = camPosMCVSOutput;"
 
-    # TODO: Check aspect for automatic scaling
     # Ray direction is the normalized difference between the fragment and the
     # camera position/ray origin
     ray_direction = "vec3 rd = normalize(pnt - ro);"
@@ -392,7 +357,7 @@ def sh_odf(centers, coeffs, basis_type, scales, opacity):
                 break;
             }
         }
-    """
+        """
 
     # Evaluate shading for a directional light
     directional_light = \
@@ -404,7 +369,6 @@ def sh_odf(centers, coeffs, basis_type, scales, opacity):
             vec3 colorDir = srgb_to_linear_rgb(abs(normalize(intersection)));
             float attenuation = dot(ld, normal);
             color = blinnPhongIllumModel(
-                //attenuation, lightColor0, diffuseColor, specularPower,
                 attenuation, lightColor0, colorDir, specularPower,
                 specularColor, ambientColor);
         } else {
