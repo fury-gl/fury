@@ -392,6 +392,7 @@ class CustomInteractorStyle(InteractorStyleUser):
         event_type : event code
         callback : function
         priority : int
+
         """
 
         def _callback(_obj, event_name):

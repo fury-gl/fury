@@ -1,10 +1,13 @@
 import os
 import warnings
 
-
-from fury.shaders import (add_shader_callback, compose_shader,
-                          import_fury_shader, shader_to_actor)
 from fury.lib import VTK_OBJECT, calldata_type
+from fury.shaders import (
+    add_shader_callback,
+    compose_shader,
+    import_fury_shader,
+    shader_to_actor,
+)
 
 
 class __PBRParams:
@@ -41,7 +44,9 @@ class __PBRParams:
     coat_ior : float
         Index of refraction of the coat material. Default is 1.5. Values must
         be between 1.0 and 2.3.
+
     """
+
     def __init__(self, actor_properties, metallic, roughness,
                  anisotropy, anisotropy_rotation, coat_strength,
                  coat_roughness, base_ior, coat_ior):
@@ -215,7 +220,6 @@ def manifest_principled(actor, subsurface=0, metallic=0, specular=0,
         Dictionary containing the Principled Shading parameters.
 
     """
-
     try:
         prop = actor.GetProperty()
 
@@ -263,8 +267,7 @@ def manifest_principled(actor, subsurface=0, metallic=0, specular=0,
         pi = '#define PI 3.14159265359'
 
         # Adding uniforms
-        uniforms = \
-        """
+        uniforms = """
         uniform float subsurface;
         uniform float metallic;
         uniform float specularTint;
@@ -274,7 +277,7 @@ def manifest_principled(actor, subsurface=0, metallic=0, specular=0,
         uniform float sheenTint;
         uniform float clearcoat;
         uniform float clearcoatGloss;
-        
+
         uniform vec3 anisotropicDirection;
         """
 
@@ -388,8 +391,7 @@ def manifest_principled(actor, subsurface=0, metallic=0, specular=0,
         # calculate one single dot product
         dot_n_v = 'float dotNV = clamp(dot(normal, view), 1e-5, 1);'
 
-        dot_n_v_validation = \
-        """
+        dot_n_v_validation = """
         if(dotNV < 0)
             fragOutput0 = vec4(vec3(0), opacity);
         """
@@ -400,8 +402,7 @@ def manifest_principled(actor, subsurface=0, metallic=0, specular=0,
         bitangent = 'vec3 bitangent = vec3(.0);'
         # The shader function updateTanBitan aligns tangents and bitangents
         # according to a direction of anisotropy
-        update_aniso_vecs = \
-        """
+        update_aniso_vecs = """
         updateTanBitan(normal, anisotropicDirection, tangent, bitangent);
         """
 
@@ -420,37 +421,32 @@ def manifest_principled(actor, subsurface=0, metallic=0, specular=0,
         fsw = 'float fsw = schlickWeight(dotNV);'
 
         # Calculating the diffuse coefficient
-        diff_coeff = \
-        """
+        diff_coeff = """
         float diffCoeff = evaluateDiffuse(roughness, fsw, fsw, dotNV);
         """
 
         # Calculating the subsurface coefficient
-        subsurf_coeff = \
-        """
-        float subsurfCoeff = evaluateSubsurface(roughness, fsw, fsw, dotNV, 
+        subsurf_coeff = """
+        float subsurfCoeff = evaluateSubsurface(roughness, fsw, fsw, dotNV,
             dotNV, dotNV);
         """
 
         # Calculating the sheen irradiance
-        sheen_rad = \
-        """
+        sheen_rad = """
         vec3 sheenRad = evaluateSheen(sheen, sheenTint, tint, fsw);
         """
 
         # Calculating the specular irradiance
-        spec_rad = \
-        """
-        vec3 specRad = evaluateSpecularAnisotropic(specularIntensity, 
-            specularTint, metallic, anisotropic, roughness, tint, linColor, 
-            fsw, dotNV, dotTV, dotBV, dotNV, dotTV, dotBV, dotNV, dotTV, 
+        spec_rad = """
+        vec3 specRad = evaluateSpecularAnisotropic(specularIntensity,
+            specularTint, metallic, anisotropic, roughness, tint, linColor,
+            fsw, dotNV, dotTV, dotBV, dotNV, dotTV, dotBV, dotNV, dotTV,
             dotBV);
         """
 
         # Calculating the clear coat coefficient
-        clear_coat_coef = \
-        """
-        float coatCoeff = evaluateClearcoat(clearcoat, clearcoatGloss, fsw, 
+        clear_coat_coef = """
+        float coatCoeff = evaluateClearcoat(clearcoat, clearcoatGloss, fsw,
             dotNV, dotNV, dotNV);
         """
 
@@ -560,4 +556,3 @@ def manifest_standard(actor, ambient_level=0, ambient_color=(1, 1, 1),
         warnings.warn('Actor does not have the attribute property. This '
                       'material will not be applied.')
         return
-

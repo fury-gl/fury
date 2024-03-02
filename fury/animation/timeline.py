@@ -1,11 +1,13 @@
 import os
+from time import perf_counter
+
 import numpy as np
-from fury.lib import WindowToImageFilter, RenderWindow, numpy_support
+from PIL import Image
+
 from fury import window
 from fury.animation.animation import Animation
+from fury.lib import RenderWindow, WindowToImageFilter, numpy_support
 from fury.ui.elements import PlaybackPanel
-from PIL import Image
-from time import perf_counter
 
 
 class Timeline:
@@ -28,6 +30,7 @@ class Timeline:
          its length from the animations that it controls automatically.
     loop : bool, optional
         Whether loop playing the timeline or play once.
+
     """
 
     def __init__(self, animations=None, playback_panel=False, loop=True, length=None):
@@ -69,6 +72,7 @@ class Timeline:
         -------
         float
             The duration of the Timeline.
+
         """
         if self._length is not None:
             self._duration = self._length
@@ -88,6 +92,7 @@ class Timeline:
         -------
         float
             The duration of the Timeline.
+
         """
         return self._duration
 
@@ -186,6 +191,7 @@ class Timeline:
         -------
         bool
             True if the Timeline is playing.
+
         """
         return self._playing
 
@@ -211,7 +217,6 @@ class Timeline:
             True if the Timeline is paused.
 
         """
-
         return not self.playing and self._current_timestamp is not None
 
     @property
@@ -222,6 +227,7 @@ class Timeline:
         -------
         float
             The speed of the timeline's playback.
+
         """
         return self._speed
 
@@ -251,6 +257,7 @@ class Timeline:
         bool
             Whether the playback is in loop mode (True) or play one mode
             (False).
+
         """
         return self._loop
 
@@ -263,6 +270,7 @@ class Timeline:
         loop: bool
             The loop condition to be set. (True) to loop the playback, and
             (False) to play only once.
+
         """
         self._loop = loop
 
@@ -273,6 +281,7 @@ class Timeline:
         Returns
         -------
         bool: 'True' if the `Timeline` has a playback panel. otherwise, 'False'
+
         """
         return self.playback_panel is not None
 
@@ -282,7 +291,7 @@ class Timeline:
         """Record the animation
 
         Parameters
-        -----------
+        ----------
         fname : str, optional
             The file name. Save a GIF file if name ends with '.gif', or mp4
             video if name ends with'.mp4'.
@@ -313,8 +322,8 @@ class Timeline:
         Notes
         -----
         It's recommended to use 50 or 30 FPS while recording to a GIF file.
-        """
 
+        """
         ext = os.path.splitext(fname)[-1]
 
         mp4 = ext == '.mp4'
@@ -407,6 +416,7 @@ class Timeline:
         ----------
         animation: Animation or list[Animation] or tuple[Animation]
             Animation/s to be added.
+
         """
         if isinstance(animation, (list, tuple)):
             [self.add_animation(anim) for anim in animation]
@@ -425,6 +435,7 @@ class Timeline:
         -------
         list:
             List of Animations controlled by the timeline.
+
         """
         return self._animations
 

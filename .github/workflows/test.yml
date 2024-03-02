@@ -54,10 +54,10 @@ jobs:
       PRE_WHEELS: "https://pypi.anaconda.org/scipy-wheels-nightly/simple"
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - uses: actions/cache@v2
+    - uses: actions/cache@v4
       if: startsWith(runner.os, 'Linux')
       with:
         path: |
@@ -66,14 +66,14 @@ jobs:
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
         restore-keys: |
           ${{ runner.os }}-pip-
-    - uses: actions/cache@v2
+    - uses: actions/cache@v4
       if: startsWith(runner.os, 'macOS')
       with:
         path: ~/Library/Caches/pip
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
         restore-keys: |
           ${{ runner.os }}-pip-
-    - uses: actions/cache@v2
+    - uses: actions/cache@v4
       if: startsWith(runner.os, 'Windows')
       with:
         path: ~/.pip
@@ -81,7 +81,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
     - name: Set up Virtualenv
@@ -90,7 +90,7 @@ jobs:
         python -m pip install --upgrade pip virtualenv
         virtualenv $VENV_ARGS venv
     - name: Setup Miniconda
-      uses: conda-incubator/setup-miniconda@v2
+      uses: conda-incubator/setup-miniconda@v3
       if: ${{ matrix.install-type == 'conda' }}
       with:
         auto-update-conda: true
@@ -113,7 +113,7 @@ jobs:
           ci/run_tests.sh
         fi
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       if: ${{ matrix.coverage }}
       with:
         token: ${{ secrets.CODECOV_TOKEN }}

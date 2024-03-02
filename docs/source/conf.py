@@ -341,9 +341,6 @@ intersphinx_mapping = {
     'scipy': ('https://docs.scipy.org/doc/scipy/', None),
     'pandas': ('https://pandas.pydata.org/docs/', None),
     'matplotlib': ('https://matplotlib.org/stable/', None),
-    'dipy': (
-        'https://dipy.org/documentation/latest',
-        'https://dipy.org/documentation/latest/objects.inv/',
-    ),
+    'dipy': ('https://docs.dipy.org/stable', None),
     'scikit-learn': ('https://scikit-learn.org/stable/', None),
 }

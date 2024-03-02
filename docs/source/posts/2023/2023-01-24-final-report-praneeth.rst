@@ -133,7 +133,7 @@ Other Objectives
 
 -  **Grouping Shapes**
 
-   Many times we need to perform some actions on a group of shapes so here we are with the grouping feature using which you can group shapes together, reposition them, rotate them and delete them together. To activate grouping of shapes you have to be on selection mode then by holding **Ctrl** key select the required shapes and they will get highlighted. To remove shape from the group just hold the **Ctrl** and click the shape again it will get deselected. Then once eveything is grouped you can use the normal transformation as normal i.e. for translation just drag the shapes around and for rotation the rotation slider appears at usual lower left corner which can be used.
+   Many times we need to perform some actions on a group of shapes so here we are with the grouping feature using which you can group shapes together, reposition them, rotate them and delete them together. To activate grouping of shapes you have to be on selection mode then by holding **Ctrl** key select the required shapes and they will get highlighted. To remove shape from the group just hold the **Ctrl** and click the shape again it will get deselected. Then once everything is grouped you can use the normal transformation as normal i.e. for translation just drag the shapes around and for rotation the rotation slider appears at usual lower left corner which can be used.
 
    *Pull Requests:*
 

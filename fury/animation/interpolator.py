@@ -102,8 +102,8 @@ def step_interpolator(keyframes):
     function
         The interpolation function that take time and return interpolated
         value at that time.
-    """
 
+    """
     timestamps = get_timestamps_from_keyframes(keyframes)
 
     def interpolate(t):
@@ -129,6 +129,7 @@ def linear_interpolator(keyframes):
     function
         The interpolation function that take time and return interpolated
         value at that time.
+
     """
     timestamps = get_timestamps_from_keyframes(keyframes)
     is_single = len(keyframes) == 1
@@ -167,8 +168,8 @@ def cubic_bezier_interpolator(keyframes):
     -----
     If no control points are set in the keyframes, The cubic
     Bézier interpolator will almost behave as a linear interpolator.
-    """
 
+    """
     timestamps = get_timestamps_from_keyframes(keyframes)
 
     for ts in timestamps:
@@ -293,6 +294,7 @@ def hsv_color_interpolator(keyframes):
     See Also
     --------
     color_interpolator
+
     """
     return color_interpolator(keyframes, rgb2hsv, hsv2rgb)
 
@@ -303,6 +305,7 @@ def lab_color_interpolator(keyframes):
     See Also
     --------
     color_interpolator
+
     """
     return color_interpolator(keyframes, rgb2lab, lab2rgb)
 
@@ -313,6 +316,7 @@ def xyz_color_interpolator(keyframes):
     See Also
     --------
     color_interpolator
+
     """
     return color_interpolator(keyframes, rgb2xyz, xyz2rgb)
 
@@ -335,7 +339,6 @@ def tan_cubic_spline_interpolator(keyframes):
         value at that time.
 
     """
-
     timestamps = get_timestamps_from_keyframes(keyframes)
     for time in keyframes:
         data = keyframes.get(time)

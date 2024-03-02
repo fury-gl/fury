@@ -29,9 +29,10 @@ from fury.stream.widget import Widget, check_port_is_available
 
 @pytest.fixture
 def loop():
-    """
-    Refs
-    ----
+    """Use this fixture to get the event loop.
+
+    References
+    ----------
      https://promity.com/2020/06/03/testing-asynchronous-code-in-python/
     """
     loop = asyncio.new_event_loop()
@@ -665,7 +666,7 @@ def test_circular_queue():
 
 
 def test_queue_and_webserver():
-    """check if the correct
+    """Check if the correct
     envent ids and the data are stored in the
     correct positions
     """
