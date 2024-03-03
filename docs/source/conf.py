@@ -182,6 +182,7 @@ else:
 #Log:3/3/24 ~ footer_items is deprecated, using new keys for footer       
 html_theme_options = {
     'navigation_depth': 1,
+    'navigation_with_keys': True,
     #   "logo_link": 'index.html',
     'navbar_start': ['custom-title.html'],
     'navbar_center': ['custom-navbar.html'],
