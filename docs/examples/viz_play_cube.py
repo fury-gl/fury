@@ -7,91 +7,93 @@ The goal of this demo is to show how to visualize a video
 on a cube by updating a texture.
 """
 
-import cv2
-import vtk  # only for vtkCubeSource which needs to be added to lib.py
+import vtk
+from fury import window
+from fury.lib import Texture, PolyDataMapper, Actor, JPEGReader #vtkPlaneSource to be added here
 
-import numpy as np
 
-from fury import actor, window
-from fury.lib import (
-    numpy_support,
-    ImageData,
-    Texture,
-    # lib.py needs to have CubeSource,
-    PolyDataMapper,
-    Actor
+class TexturedCube:
+    """
+    A class to represent a textured cube.
+    """
+
+    def __init__(self, negx: str, negy: str, negz: str, posx: str, posy: str, posz: str):
+        """
+        Initializes a TexturedCube object.
+
+        Args:
+            negx (str): Path to the negative X-axis texture file.
+            negy (str): Path to the negative Y-axis texture file.
+            negz (str): Path to the negative Z-axis texture file.
+            posx (str): Path to the positive X-axis texture file.
+            posy (str): Path to the positive Y-axis texture file.
+            posz (str): Path to the positive Z-axis texture file.
+        """
+
+        self.negx = negx
+        self.negy = negy
+        self.negz = negz
+        self.posx = posx
+        self.posy = posy
+        self.posz = posz        
+
+        self.planes = [vtk.vtkPlaneSource() for _ in range(6)]
+
+        self.plane_centers = [
+            (0, 0.5, 0),
+            (0, 0, 0.5),
+            (0, 1, 0.5),
+            (0, 0.5, 1),
+            (0.5, 0.5, 0.5),
+            (-0.5, 0.5, 0.5),
+        ]
+
+        self.plane_normals = [
+            (0, 0, 1),
+            (0, 1, 0),
+            (0, 1, 0),
+            (0, 0, 1),
+            (1, 0, 0),
+            (1, 0, 0),
+        ]
+        
+        for plane, center, normal in zip(self.planes, self.plane_centers, self.plane_normals):
+            plane.SetCenter(*center)
+            plane.SetNormal(*normal)
+
+        self.texture_filenames = [negx, negy, negz, posx, posy, posz]
+
+        self.textures = [Texture() for _ in self.texture_filenames]
+        self.texture_readers = [JPEGReader() for _ in self.texture_filenames]
+
+        for filename, reader, texture in zip(self.texture_filenames, self.texture_readers, self.textures):
+            reader.SetFileName(filename)
+            reader.Update()
+            texture.SetInputConnection(reader.GetOutputPort())
+
+        self.mappers = [PolyDataMapper() for _ in self.planes]
+        self.actors = [Actor() for _ in self.planes]
+
+        for mapper, actor, plane, texture in zip(self.mappers, self.actors, self.planes, self.textures):
+            mapper.SetInputConnection(plane.GetOutputPort())
+            actor.SetMapper(mapper)
+            actor.SetTexture(texture)
+
+    def visualize(self):
+        """
+        Visualizes the textured cube using Fury.
+        """
+
+        scene = window.Scene()
+        for actor in self.actors:
+            scene.add(actor)
+
+        show_manager = window.ShowManager(scene, size=(1280, 720), reset_camera=False)
+        show_manager.start()
+
+
+# Example usage
+cube = TexturedCube(
+    "negx.jpg", "negy.jpg", "negz.jpg", "posx.jpg", "posy.jpg", "posz.jpg"
 )
-
-
-def texture_on_cube(image):
-    """
-    Map an RGB texture on a cube.
-
-    Parameters:
-    -----------
-    image : ndarray
-        Input 2D RGB array. Dtype should be uint8.
-
-    Returns:
-    --------
-    actor : Actor
-    """
-
-    grid = ImageData()
-    grid.SetDimensions(image.shape[1], image.shape[0], 1)
-
-    # we need a numpy array -> vtkTexture function in numpy_support
-    arr = np.flip(image.swapaxes(0, 1), axis=1).reshape((-1, 3), order='F')
-    vtkarr = numpy_support.numpy_to_vtk(arr)
-    vtkarr.SetName('Image')
-
-    grid.GetPointData().AddArray(vtkarr)
-    grid.GetPointData().SetActiveScalars('Image')
-
-    vtex = Texture()
-    vtex.SetInputDataObject(grid)
-    vtex.Update()
-
-    cubeSource = vtk.vtkCubeSource()
-
-    mapper = PolyDataMapper()
-    mapper.SetInputConnection(cubeSource.GetOutputPort())
-
-    actor = Actor()
-    actor.SetMapper(mapper)
-    actor.SetTexture(vtex)
-
-    return actor
-
-
-# timer_callback is called by window.showManager
-def timer_callback(caller, timer_event):
-    _, image = cam.read()
-
-    if image is None:
-        showmanager.exit()
-    else:
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        actor.texture_update(cube, image)
-        showmanager.render()
-
-
-# openCV video capture and conversion to RGB
-cam = cv2.VideoCapture('http://commondatastorage.googleapis.com/'
-                       + 'gtv-videos-bucket/sample/BigBuckBunny.mp4')
-fps = int(cam.get(cv2.CAP_PROP_FPS))
-
-_, image = cam.read()
-image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-# Scene creation
-scene = window.Scene()
-
-# actor for fury
-cube = texture_on_cube(image)
-
-# working with window.ShowManager to setup timer_callbacks
-scene.add(cube)
-showmanager = window.ShowManager(scene, size=(600, 600), reset_camera=False)
-showmanager.add_timer_callback(True, int(1000/fps), timer_callback)
-showmanager.start()
+cube.visualize()
