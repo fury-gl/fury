@@ -110,7 +110,11 @@ class TexturedCube:
         for actor in self.actors:
             scene.add(actor)
 
-        show_manager = window.ShowManager(scene, size=(1280, 720), reset_camera=False)
+        show_manager = window.ShowManager(
+            scene,
+            size=(1280, 720),
+            reset_camera=False
+        )
         show_manager.start()
 
 
