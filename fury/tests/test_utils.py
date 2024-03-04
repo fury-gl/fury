@@ -848,7 +848,7 @@ def test_color_check():
     npt.assert_equal(global_opacity, 1)
 
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
-    colors = (1, 1, 1, 0.5)
+    colors = np.array([1, 1, 1, 0.5])
 
     color_tuple = color_check(len(points), colors)
     color_array, global_opacity = color_tuple
@@ -857,7 +857,7 @@ def test_color_check():
     npt.assert_equal(global_opacity, 0.5)
 
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
-    colors = (1, 0, 0)
+    colors = np.array([1, 0, 0])
 
     color_tuple = color_check(len(points), colors)
     color_array, global_opacity = color_tuple
@@ -872,6 +872,44 @@ def test_color_check():
 
     npt.assert_equal(color_array, np.floor(np.array([[1, 1, 1]] * 3) * 255))
     npt.assert_equal(global_opacity, 1)
+
+
+def test_normalize_color():
+    # Test input None in color
+    none_color = None
+    assert utils.normalize_color(none_color) == None
+
+    # Test 2d input data
+    valid_color_array = np.array([[0.1, 0.2, 0.3, 0.4], [0.4, 0.5, 0.6, 0.7]])
+    outbound_color_array = [[0.1, 0.2, 1.0, 0.3], [255, 255, 255, 0.7]]
+    outbound_color_array_expected = np.array(
+        [[0.1, 0.2, 1.0, 0.3], [1.0, 1.0, 1.0, 0.7]])
+
+    # Test for valid 2d input
+    npt.assert_array_equal(utils.normalize_color(
+        valid_color_array), valid_color_array)
+
+    # Test for invalid 2d input
+    npt.assert_array_equal(utils.normalize_color(
+        outbound_color_array), outbound_color_array_expected)
+
+    # Test for input of type tuple
+    color_tuple = (0.1, 0.2, 0.3)
+    color_tuple_expected = np.array([0.1, 0.2, 0.3])
+    npt.assert_array_equal(utils.normalize_color(color_tuple), color_tuple_expected)
+
+    # Test for input of type list
+    color_list = [100, 150, 200, 0.4]
+    color_list_expected = np.array(color_list)
+    color_list_expected[:3] = color_list_expected[:3]/255.0
+    npt.assert_array_equal(
+        utils.normalize_color(color_list), color_list_expected)
+
+    # Test for input of type 1d np.array
+    color_1d = np.array([0.1, 0.5, 0.9, 0.3])
+    color_1d_expected = np.array([0.1, 0.5, 0.9, 0.3])
+    npt.assert_array_equal(
+        utils.normalize_color(color_1d), color_1d_expected)
 
 
 def test_is_ui():
@@ -894,7 +932,7 @@ def test_empty_array_to_polydata():
     npt.assert_raises(ValueError, utils.lines_to_vtk_polydata, lines)
 
 
-@pytest.mark.skipif(not have_dipy, reason='Requires DIPY')
+@ pytest.mark.skipif(not have_dipy, reason='Requires DIPY')
 def test_empty_array_sequence_to_polydata():
     from dipy.tracking.streamline import Streamlines
 

@@ -81,6 +81,7 @@ from fury.utils import (
     set_polydata_triangles,
     set_polydata_vertices,
     shallow_copy,
+    normalize_color,
 )
 
 
@@ -384,6 +385,7 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
     triangle_poly_data.SetPoints(points)
 
     if colors is not None:
+        colors = normalize_color(colors)
         triangle_poly_data.GetPointData().SetScalars(numpy_to_vtk_colors(255 * colors))
 
     if faces is None:
@@ -529,6 +531,9 @@ def contour_from_roi(data, affine=None, color=np.array([1, 0, 0]), opacity=1):
     skin_actor = Actor()
 
     skin_actor.SetMapper(skin_mapper)
+
+    color = normalize_color(color)
+
     skin_actor.GetProperty().SetColor(color[0], color[1], color[2])
     skin_actor.GetProperty().SetOpacity(opacity)
 
@@ -570,6 +575,8 @@ def contour_from_label(data, affine=None, color=None):
         color = np.random.rand(nb_surfaces, 3)
     elif color.shape != (nb_surfaces, 3) and color.shape != (nb_surfaces, 4):
         raise ValueError('Incorrect color array shape')
+
+    color = normalize_color(color)
 
     if color.shape == (nb_surfaces, 4):
         opacity = color[:, -1]
@@ -681,6 +688,7 @@ def streamtube(
 
     """
     # Poly data with lines and colors
+    colors = normalize_color(colors)
     poly_data, color_is_scalar = lines_to_vtk_polydata(lines, colors)
     next_input = poly_data
 
@@ -832,6 +840,7 @@ def line(
 
     """
     # Poly data with lines and colors
+    colors = normalize_color(colors)
     poly_data, color_is_scalar = lines_to_vtk_polydata(lines, colors)
     next_input = poly_data
 
@@ -948,6 +957,8 @@ def axes(
     centers = np.zeros((3, 3))
     dirs = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
     colors = np.array([colorx + (opacity,), colory + (opacity,), colorz + (opacity,)])
+
+    colors = normalize_color(colors)
 
     scales = np.asarray(scale)
     arrow_actor = arrow(centers, dirs, colors, scales, repeat_primitive=False)
@@ -1691,6 +1702,7 @@ def dot(points, colors=None, opacity=None, dot_size=5):
         vtk_faces.InsertNextCell(1)
         vtk_faces.InsertCellPoint(idd)
 
+    colors = normalize_color(colors)
     color_tuple = color_check(len(points), colors)
     color_array, global_opacity = color_tuple
 
@@ -1758,6 +1770,9 @@ def point(points, colors, point_radius=0.1, phi=8, theta=8, opacity=1.0):
     >>> # window.show(scene)
 
     """
+
+    colors = normalize_color(colors)
+
     return sphere(
         centers=points,
         colors=colors,
@@ -1819,6 +1834,7 @@ def sphere(
     >>> # window.show(scene)
 
     """
+    colors = normalize_color(colors)
     if not use_primitive:
         src = SphereSource() if faces is None else None
 
@@ -1916,6 +1932,7 @@ def cylinder(
     >>> # window.show(scene)
 
     """
+    colors = normalize_color(colors)
     if repeat_primitive:
 
         if resolution < 8:
@@ -2031,6 +2048,8 @@ def disk(
         src = None
         rotate = None
 
+    colors = normalize_color(colors)
+
     disk_actor = repeat_sources(
         centers=centers,
         colors=colors,
@@ -2073,6 +2092,7 @@ def square(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> # window.show(scene)
 
     """
+    colors = normalize_color(colors)
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(
         verts,
@@ -2125,6 +2145,7 @@ def rectangle(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 0))
     >>> # window.show(scene)
 
     """
+    colors = normalize_color(colors)
     return square(centers=centers, directions=directions, colors=colors, scales=scales)
 
 
@@ -2158,6 +2179,7 @@ def box(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 3)):
     >>> # window.show(scene)
 
     """
+    colors = normalize_color(colors)
     verts, faces = fp.prim_box()
     res = fp.repeat_primitive(
         verts,
@@ -2206,6 +2228,7 @@ def cube(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> # window.show(scene)
 
     """
+    colors = normalize_color(colors)
     return box(centers=centers, directions=directions, colors=colors, scales=scales)
 
 
@@ -2266,6 +2289,7 @@ def arrow(
     >>> # window.show(scene)
 
     """
+    colors = normalize_color(colors)
     if repeat_primitive:
         vertices, faces = fp.prim_arrow()
         res = fp.repeat_primitive(
@@ -2353,6 +2377,7 @@ def cone(
     >>> # window.show(scene)
 
     """
+    colors = normalize_color(colors)
     if not use_primitive:
         src = ConeSource() if faces is None else None
 
@@ -2417,6 +2442,7 @@ def triangularprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> # window.show(scene)
 
     """
+    colors = normalize_color(colors)
     verts, faces = fp.prim_triangularprism()
     res = fp.repeat_primitive(
         verts,
@@ -2465,6 +2491,7 @@ def rhombicuboctahedron(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=
     >>> # window.show(scene)
 
     """
+    colors = normalize_color(colors)
     verts, faces = fp.prim_rhombicuboctahedron()
     res = fp.repeat_primitive(
         verts,
@@ -2514,6 +2541,7 @@ def pentagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> # window.show(scene)
 
     """
+    colors = normalize_color(colors)
     verts, faces = fp.prim_pentagonalprism()
     res = fp.repeat_primitive(
         verts,
@@ -2563,6 +2591,7 @@ def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> # window.show(scene)
 
     """
+    colors = normalize_color(colors)
     verts, faces = fp.prim_octagonalprism()
     res = fp.repeat_primitive(
         verts,
@@ -2612,6 +2641,7 @@ def frustum(centers, directions=(1, 0, 0), colors=(0, 1, 0), scales=1):
     >>> # window.show(scene)
 
     """
+    colors = normalize_color(colors)
     verts, faces = fp.prim_frustum()
     res = fp.repeat_primitive(
         verts,
@@ -2683,6 +2713,8 @@ def superquadric(
     else:
         roundness = np.array(roundness)
 
+    colors = normalize_color(colors)
+
     res = fp.repeat_primitive_function(
         func=fp.prim_superquadric,
         centers=centers,
@@ -2747,6 +2779,7 @@ def billboard(
     billboard_actor: Actor
 
     """
+    colors = normalize_color(colors)
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(
         verts, faces, centers=centers, colors=colors, scales=scales
@@ -2957,6 +2990,7 @@ def vector_text(
 
     texta.SetMapper(textm)
 
+    color = normalize_color(color)
     texta.GetProperty().SetColor(color)
 
     # Set rotation origin to the center of the text is following the camera
@@ -3079,6 +3113,8 @@ def text_3d(
     text_actor.set_position(position)
     text_actor.font_family(font_family)
     text_actor.font_style(bold, italic, shadow)
+
+    color = normalize_color(color)
     text_actor.color(color)
     text_actor.justification(justification)
     text_actor.vertical_justification(vertical_justification)
@@ -3380,7 +3416,7 @@ def texture(rgb, interp=True):
     act: Actor
 
     """
-    arr = rgb
+    arr = normalize_color(rgb)
     grid = rgb_to_vtk(np.ascontiguousarray(arr))
 
     Y, X = arr.shape[:2]
@@ -3592,6 +3628,7 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus', sca
     """
     prims = {'sphere': 1, 'torus': 2, 'ellipsoid': 3, 'capsule': 4}
 
+    colors = normalize_color(colors)
     verts, faces = fp.prim_box()
     repeated = fp.repeat_primitive(
         verts,
@@ -3705,6 +3742,7 @@ def markers(
     >>> # window.show(scene, size=(600, 600))
 
     """
+    colors = normalize_color(colors)
     n_markers = centers.shape[0]
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(

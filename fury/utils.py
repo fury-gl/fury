@@ -1,4 +1,5 @@
 import numpy as np
+import warnings
 from scipy.ndimage import map_coordinates
 
 from fury.colormap import line_colors
@@ -1552,7 +1553,7 @@ def color_check(pts_len, colors=None):
         # Automatic RGB colors
         colors = np.asarray((1, 1, 1))
         color_array = numpy_to_vtk_colors(np.tile(255 * colors, (pts_len, 1)))
-    elif type(colors) is tuple:
+    elif colors.shape in [(3,), (4,)]:
         global_opacity = 1 if len(colors) == 3 else colors[3]
         colors = np.asarray(colors)
         color_array = numpy_to_vtk_colors(np.tile(255 * colors, (pts_len, 1)))
@@ -1565,6 +1566,55 @@ def color_check(pts_len, colors=None):
     color_array.SetName('colors')
 
     return color_array, global_opacity
+
+
+def normalize_color(color_array):
+    """
+    Normalize an array of RGB or RGBA color values to be within the range 
+    [0, 1].
+
+    If any values are out of bounds, normalize the color array by scaling all
+    color values to fit within the valid range.
+
+    Parameters
+    ----------
+    color_array : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        An array of RGB or RGBA color values, where each row represents 
+        a single color as an array of shape (3,) or (4,). Alternatively,
+        a tuple of length 3 or 4 can be passed to represent a single color.
+
+    Returns
+    -------
+    color_array : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        The original array if all values are within the range [0,1]. 
+        If any values in the input array were out of bounds, a new array
+        or tuple is returned with the colors normalized to fit within the
+        valid range.
+
+    """
+    # Keep the option for color = None for some actors
+    if color_array is None:
+        return color_array
+
+    # Convert tuple or list to ndarray
+    if isinstance(color_array, (tuple, list)):
+        color_array = np.asarray(color_array)
+
+    # Normalize the out of bounds array
+    if color_array.ndim == 1 and np.any(color_array > 1):
+        print(
+            f"{color_array} in the color array are outside the valid range [0, 1]")
+        color_array[:3] = color_array[:3] / 255.0
+        print("It has been normalized to fit the range.")
+
+    elif color_array.ndim == 2:
+        for i, row in enumerate(color_array):
+            if np.any(row > 1):
+                print(f"{row} in the color array are outside the valid range [0, 1]")
+                color_array[i, :3] = color_array[i, :3] / 255.0
+                print("It has been normalized to fit the range.")
+
+    return color_array
 
 
 def is_ui(actor):
