@@ -39,6 +39,7 @@ class Animation:
     motion_path_res : int, default: None
         the number of line segments used to visualizer the animation's motion
         path (visualizing position).
+
     """
 
     def __init__(self, actors=None, length=None, loop=True, motion_path_res=None):
@@ -73,6 +74,7 @@ class Animation:
         -------
         float
             The duration of the animation.
+
         """
         if self._length is not None:
             self._duration = self._length
@@ -92,6 +94,7 @@ class Animation:
         -------
         float
             The duration of the animation.
+
         """
         return self._duration
 
@@ -103,6 +106,7 @@ class Animation:
         -------
         float
             The current time of the animation.
+
         """
         if self._timeline:
             return self._timeline.current_timestamp
@@ -156,6 +160,7 @@ class Animation:
         -------
         dict:
             The animation data containing keyframes and interpolators.
+
         """
         return self._data
 
@@ -171,6 +176,7 @@ class Animation:
         -------
         dict:
             The animation data for a specific attribute.
+
         """
         data = self._get_data()
 
@@ -194,8 +200,8 @@ class Animation:
         attrib: str, optional, default: None
             The name of the attribute.
             If None, all keyframes for all set attributes will be returned.
-        """
 
+        """
         data = self._get_data()
         if attrib is None:
             attribs = data.keys()
@@ -230,8 +236,8 @@ class Animation:
             The in tangent at that position for the cubic spline curve.
         out_tangent: ndarray, shape (1, M), optional
             The out tangent at that position for the cubic spline curve.
-        """
 
+        """
         attrib_data = self._get_attribute_data(attrib)
         keyframes = attrib_data.get('keyframes')
 
@@ -279,6 +285,7 @@ class Animation:
         >>>                       2: {'value': [3, 4, 5], 'in_cp': [1, 2, 3]}}
         >>> pos_keyframes = {1: np.array([1, 2, 3]), 3: np.array([5, 5, 5])}
         >>> Animation.set_keyframes('position', pos_keyframes)
+
         """
         for t, keyframe in keyframes.items():
             if isinstance(keyframe, dict):
@@ -295,6 +302,7 @@ class Animation:
         bool
             True if the Animation is set to be inside the scene at the given
             timestamp.
+
         Notes
         -----
         If the parent Animation is set to be out of the scene at that time, all
@@ -319,6 +327,7 @@ class Animation:
         ----------
         timestamp: float
             Timestamp of the event.
+
         """
         if not self.is_interpolatable('in_scene'):
             self.set_keyframe('in_scene', timestamp, True)
@@ -333,6 +342,7 @@ class Animation:
         ----------
         timestamp: float
             Timestamp of the event.
+
         """
         if not self.is_interpolatable('in_scene'):
             self.set_keyframe('in_scene', timestamp, False)
@@ -385,8 +395,8 @@ class Animation:
 
         >>> pos_fun = lambda t: np.array([np.sin(t), np.cos(t), 0])
         >>> Animation.set_interpolator('position', pos_fun)
-        """
 
+        """
         attrib_data = self._get_attribute_data(attrib)
         keyframes = attrib_data.get('keyframes', {})
         interp_data = attrib_data.get('interpolator', {})
@@ -449,6 +459,7 @@ class Animation:
         Examples
         --------
         >>> Animation.set_position_interpolator(spline_interpolator, degree=5)
+
         """
         self.set_interpolator(
             'position', interpolator, is_evaluator=is_evaluator, **kwargs
@@ -469,6 +480,7 @@ class Animation:
         Examples
         --------
         >>> Animation.set_scale_interpolator(step_interpolator)
+
         """
         self.set_interpolator('scale', interpolator, is_evaluator=is_evaluator)
 
@@ -487,6 +499,7 @@ class Animation:
         Examples
         --------
         >>> Animation.set_rotation_interpolator(slerp)
+
         """
         self.set_interpolator('rotation', interpolator, is_evaluator=is_evaluator)
 
@@ -505,6 +518,7 @@ class Animation:
         Examples
         --------
         >>> Animation.set_color_interpolator(lab_color_interpolator)
+
         """
         self.set_interpolator('color', interpolator, is_evaluator=is_evaluator)
 
@@ -519,9 +533,11 @@ class Animation:
         is_evaluator: bool, optional
             Specifies whether the `interpolator` is time-only based evaluation
             function that does not depend on keyframes.
+
         Examples
         --------
         >>> Animation.set_opacity_interpolator(step_interpolator)
+
         """
         self.set_interpolator('opacity', interpolator, is_evaluator=is_evaluator)
 
@@ -534,6 +550,7 @@ class Animation:
             The attribute name.
         timestamp: float
             The timestamp to interpolate at.
+
         """
         value = (
             self._data.get(attrib, {}).get('interpolator', {}).get('func')(timestamp)
@@ -547,6 +564,7 @@ class Animation:
         ----------
         attrib: str
             The attribute name.
+
         """
         return (
             self._data.get(attrib)
@@ -581,6 +599,7 @@ class Animation:
         -----
         `in_cp` and `out_cp` only needed when using the cubic bezier
         interpolation method.
+
         """
         self.set_keyframe('position', timestamp, position, **kwargs)
 
@@ -598,6 +617,7 @@ class Animation:
         --------
         >>> pos_keyframes = {1, np.array([0, 0, 0]), 3, np.array([50, 6, 6])}
         >>> Animation.set_position_keyframes(pos_keyframes)
+
         """
         self.set_keyframes('position', keyframes)
 
@@ -616,6 +636,7 @@ class Animation:
         -----
         Euler rotations are executed by rotating first around Z then around X,
         and finally around Y.
+
         """
         no_components = len(np.array(rotation).flatten())
         if no_components == 4:
@@ -643,6 +664,7 @@ class Animation:
             Timestamp of the keyframe
         vector: ndarray, shape(1, 3)
             Directional vector that describes the rotation.
+
         """
         quat = transform.Rotation.from_rotvec(vector).as_quat()
         self.set_keyframe('rotation', timestamp, quat, **kwargs)
@@ -656,6 +678,7 @@ class Animation:
             Timestamp of the keyframe
         scalar: ndarray, shape(1, 3)
             Scale keyframe value associated with the timestamp.
+
         """
         self.set_keyframe('scale', timestamp, scalar, **kwargs)
 
@@ -673,6 +696,7 @@ class Animation:
         --------
         >>> scale_keyframes = {1, np.array([1, 1, 1]), 3, np.array([2, 2, 3])}
         >>> Animation.set_scale_keyframes(scale_keyframes)
+
         """
         self.set_keyframes('scale', keyframes)
 
@@ -685,6 +709,7 @@ class Animation:
             Timestamp of the keyframe
         color: ndarray, shape(1, 3)
             Color keyframe value associated with the timestamp.
+
         """
         self.set_keyframe('color', timestamp, color, **kwargs)
 
@@ -702,6 +727,7 @@ class Animation:
         --------
         >>> color_keyframes = {1, np.array([1, 0, 1]), 3, np.array([0, 0, 1])}
         >>> Animation.set_color_keyframes(color_keyframes)
+
         """
         self.set_keyframes('color', keyframes)
 
@@ -714,6 +740,7 @@ class Animation:
             Timestamp of the keyframe
         opacity: ndarray, shape(1, 3)
             Opacity keyframe value associated with the timestamp.
+
         """
         self.set_keyframe('opacity', timestamp, opacity, **kwargs)
 
@@ -735,6 +762,7 @@ class Animation:
         --------
         >>> opacity = {1, np.array([1, 1, 1]), 3, np.array([2, 2, 3])}
         >>> Animation.set_scale_keyframes(opacity)
+
         """
         self.set_keyframes('opacity', keyframes)
 
@@ -750,6 +778,7 @@ class Animation:
         -------
         ndarray(1, 3):
             The interpolated position.
+
         """
         return self.get_value('position', t)
 
@@ -767,6 +796,7 @@ class Animation:
         -------
         ndarray(1, 3):
             The interpolated rotation as Euler degrees by default.
+
         """
         rot = self.get_value('rotation', t)
         if len(rot) == 4:
@@ -793,6 +823,7 @@ class Animation:
         -------
         ndarray(1, 3):
             The interpolated scale.
+
         """
         return self.get_value('scale', t)
 
@@ -808,6 +839,7 @@ class Animation:
         -------
         ndarray(1, 3):
             The interpolated color.
+
         """
         return self.get_value('color', t)
 
@@ -823,6 +855,7 @@ class Animation:
         -------
         ndarray(1, 1):
             The interpolated opacity.
+
         """
         return self.get_value('opacity', t)
 
@@ -835,6 +868,7 @@ class Animation:
         ----------
         item: Animation, vtkActor, list[Animation], or list[vtkActor]
             Actor/s to be animated by the Animation.
+
         """
         if isinstance(item, list):
             for a in item:
@@ -854,6 +888,7 @@ class Animation:
         ----------
         animation: Animation or list[Animation]
             Animation/s to be added.
+
         """
         if isinstance(animation, list):
             for a in animation:
@@ -875,6 +910,7 @@ class Animation:
             Indicated whether the actor should be animated and controlled by
             the animation or just a static actor that gets added to the scene
             along with the Animation.
+
         """
         if isinstance(actor, list):
             for a in actor:
@@ -906,7 +942,6 @@ class Animation:
 
         Parameters
         ----------
-
         timeline: Timeline
             The Timeline handling the current animation, None, if there is no
             associated Timeline.
@@ -937,6 +972,7 @@ class Animation:
         ----------
         parent_animation: Animation
             The parent Animation instance.
+
         """
         self._parent_animation = parent_animation
 
@@ -948,6 +984,7 @@ class Animation:
         -------
         list:
             List of actors controlled by the Animation.
+
         """
         return self._actors
 
@@ -959,6 +996,7 @@ class Animation:
         -------
         list:
             List of child Animations of this Animation.
+
         """
         return self._animations
 
@@ -971,6 +1009,7 @@ class Animation:
         ----------
         actor: vtkActor or list(vtkActor)
             Static actor/s.
+
         """
         self.add_actor(actor, static=True)
 
@@ -982,6 +1021,7 @@ class Animation:
         -------
         list:
             List of static actors.
+
         """
         return self._static_actors
 
@@ -996,6 +1036,7 @@ class Animation:
         ----------
         actor: vtkActor
             Actor to be removed from the Animation.
+
         """
         self._actors.remove(actor)
 
@@ -1011,6 +1052,7 @@ class Animation:
         -------
         bool
             Whether the animation in loop mode (True) or play one mode (False).
+
         """
         return self._loop
 
@@ -1023,6 +1065,7 @@ class Animation:
         loop: bool
             The loop condition to be set. (True) to loop the animation, and
             (False) to play only once.
+
         """
         self._loop = loop
 
@@ -1043,6 +1086,7 @@ class Animation:
         -----
         If no attribute name was provided, current time of the animation will
         be provided instead of current value for the callback.
+
         """
         if prop is None:
             self._general_callbacks.append(callback)
@@ -1061,6 +1105,7 @@ class Animation:
         time: float or int, optional, default: None
             The time to update animation at. If None, the animation will play
             without adding it to a Timeline.
+
         """
         has_handler = True
         if time is None:
@@ -1169,6 +1214,7 @@ class CameraAnimation(Animation):
     motion_path_res : int, default: None
         the number of line segments used to visualizer the animation's motion
         path (visualizing position).
+
     """
 
     def __init__(self, camera=None, length=None, loop=True, motion_path_res=None):
@@ -1195,7 +1241,6 @@ class CameraAnimation(Animation):
 
         Parameters
         ----------
-
         camera: Camera
             The camera to be animated
 
@@ -1211,6 +1256,7 @@ class CameraAnimation(Animation):
             The time to interpolate opacity at.
         position: ndarray, shape(1, 3)
             The camera position
+
         """
         self.set_keyframe('focal', timestamp, position, **kwargs)
 
@@ -1223,6 +1269,7 @@ class CameraAnimation(Animation):
             The time to interpolate at.
         direction: ndarray, shape(1, 3)
             The camera view-up direction
+
         """
         self.set_keyframe('view_up', timestamp, direction, **kwargs)
 
@@ -1241,6 +1288,7 @@ class CameraAnimation(Animation):
         --------
         >>> focal_pos = {0, np.array([1, 1, 1]), 3, np.array([20, 0, 0])}
         >>> CameraAnimation.set_focal_keyframes(focal_pos)
+
         """
         self.set_keyframes('focal', keyframes)
 
@@ -1259,6 +1307,7 @@ class CameraAnimation(Animation):
         --------
         >>> view_ups = {0, np.array([1, 0, 0]), 3, np.array([0, 1, 0])}
         >>> CameraAnimation.set_view_up_keyframes(view_ups)
+
         """
         self.set_keyframes('view_up', keyframes)
 
@@ -1279,6 +1328,7 @@ class CameraAnimation(Animation):
         -----
         The returned focal position does not necessarily reflect the current
         camera's focal position, but the expected one.
+
         """
         return self.get_value('focal', t)
 
@@ -1299,6 +1349,7 @@ class CameraAnimation(Animation):
         -----
         The returned focal position does not necessarily reflect the actual
         camera view up directional vector, but the expected one.
+
         """
         return self.get_value('view_up', t)
 
@@ -1313,6 +1364,7 @@ class CameraAnimation(Animation):
         is_evaluator: bool, optional
             Specifies whether the `interpolator` is time-only based evaluation
             function that does not depend on keyframes.
+
         """
         self.set_interpolator('focal', interpolator, is_evaluator=is_evaluator)
 
@@ -1327,6 +1379,7 @@ class CameraAnimation(Animation):
         is_evaluator: bool, optional
             Specifies whether the `interpolator` is time-only based evaluation
             function that does not depend on keyframes.
+
         """
         self.set_interpolator('view_up', interpolator, is_evaluator=is_evaluator)
 
@@ -1338,6 +1391,7 @@ class CameraAnimation(Animation):
         time: float or int, optional, default: None
             The time to update the camera animation at. If None, the animation
             will play.
+
         """
         if self._camera is None:
             if self._scene:

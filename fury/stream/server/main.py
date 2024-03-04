@@ -48,7 +48,7 @@ class RTCServer(VideoStreamTrack):
         self,
         image_buffer_manager,
     ):
-        """
+        """Initialize the RTCServer
 
         Parameters
         ----------
@@ -163,7 +163,6 @@ def web_server_raw_array(
         is used just to be able to test the server.
 
     """
-
     image_buffer_manager = RawArrayImageBufferManager(
         image_buffers=image_buffers, info_buffer=info_buffer
     )
@@ -258,7 +257,6 @@ def web_server(
         is used just to be able to test the server.
 
     """
-
     if avoid_unlink_shared_mem and PY_VERSION_8:
         remove_shm_from_resource_tracker()
 

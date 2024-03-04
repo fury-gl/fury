@@ -183,6 +183,7 @@ def fetch_data(files, folder, data_size=None):
 
         Raises if the sha checksum of the file does not match the expected
         value. The downloaded file is not deleted when this error is raised.
+    
     """
     if not os.path.exists(folder):
         print("Creating new folder %s" % (folder))
@@ -282,7 +283,7 @@ def _make_fetcher(name, folder, baseurl, remote_fnames, local_fnames,
 
 
 async def _request(session, url):
-    """An asynchronous function to get the request data as json.
+    """Get the request data as json.
 
     Parameters
     ----------
@@ -295,6 +296,7 @@ async def _request(session, url):
     -------
     response : dictionary
         The response of url request.
+
     """
     async with session.get(url) as response:
         if not response.status == 200:
@@ -304,7 +306,7 @@ async def _request(session, url):
 
 
 async def _download(session, url, filename, size=None):
-    """An asynchronous function to download file from url.
+    """Download file from url.
 
     Parameters
     ----------
@@ -316,6 +318,7 @@ async def _download(session, url, filename, size=None):
         Name of the downloaded file (e.g. BoxTextured.gltf)
     size : int, optional
         Length of the content in bytes
+    
     """
     if not os.path.exists(filename):
         print(f'Downloading: {filename}')
@@ -332,7 +335,7 @@ async def _download(session, url, filename, size=None):
 
 
 async def _fetch_gltf(name, mode):
-    """An asynchronous function to fetch glTF samples.
+    """Fetch glTF samples.
 
     Parameters
     ----------
@@ -349,8 +352,8 @@ async def _fetch_gltf(name, mode):
         list of fetched all file names.
     folder : str
         Path to the fetched files.
-    """
 
+    """
     if name is None:
         name = ['BoxTextured', 'Duck', 'CesiumMilkTruck', 'CesiumMan']
 
@@ -411,6 +414,7 @@ def fetch_gltf(name=None, mode='glTF'):
     -------
     filenames : tuple
         tuple of feteched filenames (list) and folder (str) path.
+    
     """
     if platform.system().lower() == "windows":
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -716,6 +720,7 @@ def read_viz_gltf(fname, mode='glTF'):
     -------
     path : str
         Complete path of models.
+    
     """
     folder = pjoin(fury_home, 'glTF')
     model = pjoin(folder, fname)
@@ -731,13 +736,14 @@ def read_viz_gltf(fname, mode='glTF'):
 
 
 def list_gltf_sample_models():
-    """Returns all model name from the glTF-samples repository
+    """Return all model name from the glTF-samples repository.
 
     Returns
     -------
     model_names : list
         Lists the name of glTF sample from
         https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0
+    
     """
     DATA_DIR = pjoin(dirname(__file__), 'files')
     with open(pjoin(DATA_DIR, 'KhronosGltfSamples.json'), 'r') as f:

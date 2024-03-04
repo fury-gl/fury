@@ -32,7 +32,7 @@ animation = gltf_obj.skin_animation()['anim_0']
 
 # After we get the timeline object, We want to initialise the skinning process.
 # You can set `bones=true` to visualize each bone transformation. Additionally,
-# you can set `lenght` of bones in the `initialise_skin` method.
+# you can set `length` of bones in the `initialise_skin` method.
 # Note: Make sure to call this method before you initialize ShowManager, else
 # bones won't be added to the scene.
 

@@ -7,6 +7,7 @@ TWO_PI = 2 * np.pi
 
 def clip_overflow(textblock, width, side='right'):
     """Clips overflowing text of TextBlock2D with respect to width.
+
     Parameters
     ----------
     textblock : TextBlock2D
@@ -16,10 +17,12 @@ def clip_overflow(textblock, width, side='right'):
     side : str, optional
         Clips the overflowing text according to side.
         It takes values "left" or "right".
+
     Returns
     -------
     clipped text : str
         Clipped version of the text.
+
     """
     original_str = textblock.message
     prev_bg = textblock.have_bg
@@ -35,6 +38,7 @@ def clip_overflow(textblock, width, side='right'):
 
 def wrap_overflow(textblock, wrap_width, side='right'):
     """Wraps overflowing text of TextBlock2D with respect to width.
+
     Parameters
     ----------
     textblock : TextBlock2D
@@ -44,10 +48,12 @@ def wrap_overflow(textblock, wrap_width, side='right'):
     side : str, optional
         Clips the overflowing text according to side.
         It takes values "left" or "right".
+
     Returns
     -------
     wrapped text : str
         Wrapped version of the text.
+
     """
     original_str = textblock.message
     str_copy = textblock.message
@@ -76,6 +82,7 @@ def wrap_overflow(textblock, wrap_width, side='right'):
 
 def check_overflow(textblock, width, overflow_postfix='', side='right'):
     """Checks if the text is overflowing.
+
     Parameters
     ----------
     textblock : TextBlock2D
@@ -84,10 +91,12 @@ def check_overflow(textblock, width, overflow_postfix='', side='right'):
         Required width of the text.
     overflow_postfix: str, optional
         Postfix to be added to the text if it is overflowing.
+
     Returns
     -------
     mid_ptr: int
         Overflow index of the text.
+
     """
     side = side.lower()
     if side not in ['left', 'right']:
@@ -113,7 +122,8 @@ def check_overflow(textblock, width, overflow_postfix='', side='right'):
         elif textblock.cal_size_from_message()[0] > width:
             end_ptr = mid_ptr
 
-        if mid_ptr == (start_ptr + end_ptr) // 2 or textblock.cal_size_from_message()[0] == width:
+        if (mid_ptr == (start_ptr + end_ptr) // 2 or
+           textblock.cal_size_from_message()[0] == width):
             if side == 'left':
                 textblock.message = textblock.message[::-1]
             return mid_ptr
@@ -126,8 +136,8 @@ def cal_bounding_box_2d(vertices):
     ----------
     vertices : ndarray
         vertices of the actors.
-    """
 
+    """
     if vertices.ndim != 2 or vertices.shape[1] not in [2, 3]:
         raise IOError('vertices should be a 2D array with shape (n,2) or (n,3).')
 
@@ -163,6 +173,7 @@ def rotate_2d(vertices, angle):
         vertices of the actors.
     angle: float
         Value by which the vertices are rotated in radian.
+
     """
     if vertices.ndim != 2 or vertices.shape[1] != 3:
         raise IOError('vertices should be a 2D array with shape (n,3).')

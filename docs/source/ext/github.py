@@ -30,7 +30,6 @@ def make_link_node(rawtext, app, type, slug, options):
     :param slug: ID of the thing to link to
     :param options: Options dictionary passed to role func.
     """
-
     try:
         base = app.config.github_project_url
         if not base:
@@ -68,7 +67,6 @@ def ghissue_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
     :param options: Directive options for customization.
     :param content: The directive content for customization.
     """
-
     try:
         issue_num = int(text)
         if issue_num <= 0:

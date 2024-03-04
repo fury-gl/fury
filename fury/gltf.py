@@ -498,6 +498,7 @@ class glTF:
             pygltflib animation object.
         count : int
             Animation count.
+
         """
         name = animation.name
         if name is None:
@@ -533,6 +534,7 @@ class glTF:
         sampler_data : dict
             dictionary of data containing timestamps, node transformations and
             interpolation type.
+
         """
         time_array = self.get_acc_data(sampler.input)
         transform_array = self.get_acc_data(sampler.output)
@@ -562,6 +564,7 @@ class glTF:
             Containing previous animations with node as keys.
         sampler : gltflib.Sampler
             Sampler object for an animation channel.
+
         """
         time_array = self.get_acc_data(sampler.input)
         tran_array = self.get_acc_data(sampler.output)
@@ -608,6 +611,7 @@ class glTF:
             List of bones in the skin.
         inv_bind_matrix : ndarray
             Numpy array containing inverse bind pose for each bone.
+
         """
         skin = self.gltf.skins[skin_id]
         inv_bind_matrix = self.get_acc_data(skin.inverseBindMatrices)
@@ -630,6 +634,7 @@ class glTF:
         -------
         matrix : ndarray (4, 4)
             ransformation matrix of shape (4, 4) with respective transforms.
+
         """
         if prop == 'translation':
             matrix = transform.translate(transf)
@@ -665,6 +670,7 @@ class glTF:
         parent_bone_transform : ndarray (4, 4)
             Transformation matrix of the parent bone.
             (default=np.identity(4))
+
         """
         deform = animation.get_value('transform', timestamp)
         new_deform = np.dot(parent_bone_deform, deform)
@@ -698,6 +704,7 @@ class glTF:
         ----------
         animation : Animation
             Animation object.
+
         """
         animation.update_animation()
         timestamp = animation.current_timestamp
@@ -735,6 +742,7 @@ class glTF:
         length : float
             Length of the bones.
             (default=0.2)
+
         """
         self.show_bones = bones
         if bones:
@@ -756,6 +764,7 @@ class glTF:
         -------
         vertices : ndarray
             Modified vertices.
+
         """
         clone = np.copy(vertices)
         weights = self.weights_0[actor_index]
@@ -791,6 +800,7 @@ class glTF:
         parent_animation : Animation
             The animation of the parent bone. Should be `root_animation` by
             default.
+
         """
         node = self.gltf.nodes[bone_id]
         animation = Animation()
@@ -819,6 +829,7 @@ class glTF:
         -------
         root_animations : Dict
             An animation containing all the child animations for bones.
+
         """
         root_animations = {}
         self._vertices = [utils.vertices_from_actor(act) for act in self.actors()]
@@ -842,6 +853,7 @@ class glTF:
         with_transforms : bool (default = False)
             Applies respective transformations to bone. Bones will be at origin
             if set to `False`.
+
         """
         origin = np.zeros((3, 3))
         parent_transforms = self.bone_tranforms
@@ -865,6 +877,7 @@ class glTF:
         ----------
         animation : Animation
             Animation object.
+
         """
         animation.update_animation()
         timestamp = animation.current_timestamp
@@ -887,6 +900,7 @@ class glTF:
             vertex.
         cnt : int
             Count of the actor.
+
         """
         clone = np.copy(vertices)
         target_vertices = np.copy(self.morph_vertices[cnt])
@@ -905,6 +919,7 @@ class glTF:
         root_animations : Dict
             A dictionary containing animations as values and animation name as
             keys.
+
         """
         animations = {}
         self._vertices = [utils.vertices_from_actor(act) for act in self.actors()]
@@ -935,6 +950,7 @@ class glTF:
         -------
         animations: List
             List of animations containing actors.
+
         """
         actors = self.actors()
         interpolators = {
@@ -1012,6 +1028,7 @@ class glTF:
         main_animation : Animation
             A parent animation containing all child animations for simple
             animation.
+
         """
         main_animation = Animation()
         animations = self.get_animations()
@@ -1029,6 +1046,7 @@ def export_scene(scene, filename='default.gltf'):
         FURY scene object.
     filename: str, optional
         Name of the model to be saved
+
     """
     gltf_obj = gltflib.GLTF2()
     name, extension = os.path.splitext(filename)
@@ -1089,8 +1107,8 @@ def _connect_primitives(gltf, actor, buff_file, byteoffset, count, name):
         Offset size of a primitive
     count: int
         BufferView count after adding the primitive.
-    """
 
+    """
     polydata = actor.GetMapper().GetInput()
     colors = utils.colors_from_actor(actor)
     if colors is not None:
@@ -1244,6 +1262,7 @@ def write_scene(gltf, nodes):
         Pygltflib GLTF2 object
     nodes: list
         List of node indices.
+
     """
     scene = gltflib.Scene()
     scene.nodes = nodes
@@ -1261,6 +1280,7 @@ def write_node(gltf, mesh_id=None, camera_id=None):
         Mesh index
     camera_id: int, optional
         Camera index.
+
     """
     node = gltflib.Node()
     if mesh_id is not None:
@@ -1279,6 +1299,7 @@ def write_mesh(gltf, primitives):
         Pygltflib GLTF2 object.
     primitives: list
         List of Primitive object.
+
     """
     mesh = gltflib.Mesh()
     for prim in primitives:
@@ -1296,6 +1317,7 @@ def write_camera(gltf, camera):
         Pygltflib GLTF2 object.
     camera: vtkCamera
         scene camera.
+
     """
     orthographic = camera.GetParallelProjection()
     cam = gltflib.Camera()
@@ -1340,6 +1362,7 @@ def get_prim(vertex, index, color, tcoord, normal, material, mode=4):
     -------
     prim: Primitive
         pygltflib primitive object.
+
     """
     prim = gltflib.Primitive()
     attr = gltflib.Attributes()
@@ -1366,6 +1389,7 @@ def write_material(gltf, basecolortexture: int, uri: str):
         BaseColorTexture index.
     uri: str
         BaseColorTexture uri.
+
     """
     material = gltflib.Material()
     texture = gltflib.Texture()
@@ -1407,6 +1431,7 @@ def write_accessor(
         Maximum elements of an array
     min: ndarray, optional
         Minimum elements of an array
+
     """
     accessor = gltflib.Accessor()
     accessor.bufferView = bufferview
@@ -1436,6 +1461,7 @@ def write_bufferview(gltf, buffer, byte_offset, byte_length, byte_stride=None):
         the buffer
     byte_stride: int, optional
         Byte stride of the bufferview.
+
     """
     buffer_view = gltflib.BufferView()
     buffer_view.buffer = buffer
@@ -1456,6 +1482,7 @@ def write_buffer(gltf, byte_length, uri):
         Length of the buffer
     uri: str
         Path to the external `.bin` file.
+
     """
     buffer = gltflib.Buffer()
     buffer.uri = uri

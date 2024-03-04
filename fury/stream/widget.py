@@ -57,7 +57,8 @@ class Widget:
         ms_jpeg=33,
         queue_size=20,
     ):
-        """
+        """Initialize the widget.
+
         Parameters
         ----------
         showm : ShowmManager

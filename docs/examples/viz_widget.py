@@ -31,8 +31,9 @@ OS X
 `brew install ffmpeg opus libvpx pkg-config`
 
 Notes
-------
+-----
 For this example your python version should be 3.8 or greater
+
 """
 
 import asyncio

@@ -18,7 +18,6 @@ from fury.testing import EventCounter, assert_arrays_equal, assert_greater
 
 def test_frame_rate_and_anti_aliasing():
     """Testing frame rate with/out anti-aliasing"""
-
     length_ = 200
     multi_samples = 32
     max_peels = 8

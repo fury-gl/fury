@@ -18,8 +18,8 @@ def get_previous_timestamp(timestamps, current_time, include_last=False):
     -------
     float or int
         The previous timestamp
-    """
 
+    """
     for timestamp in timestamps[::-1] if include_last else timestamps[-2::-1]:
         if timestamp <= current_time:
             return timestamp
@@ -43,6 +43,7 @@ def get_next_timestamp(timestamps, current_time, include_first=False):
     -------
     float or int
         The next timestamp
+
     """
     for timestamp in timestamps[:] if include_first else timestamps[1:]:
         if timestamp > current_time:
@@ -62,6 +63,7 @@ def get_timestamps_from_keyframes(keyframes):
     -------
     ndarray
         Array of sorted timestamps extracted from the keyframes.
+
     """
     return np.sort(np.array(list(keyframes)), axis=None)
 
@@ -78,6 +80,7 @@ def get_values_from_keyframes(keyframes):
     -------
     ndarray
         Array of sorted values extracted from the keyframes.
+
     """
     return np.asarray(
         [keyframes.get(t, {}).get('value', None) for t in sorted(keyframes.keys())]
@@ -100,6 +103,7 @@ def get_time_tau(t, t0, t1):
     -------
     float
         The time tau
+
     """
     return 0 if t <= t0 else 1 if t >= t1 else (t - t0) / (t1 - t0)
 
@@ -124,6 +128,7 @@ def lerp(v0, v1, t0, t1, t):
     -------
     ndarray or float
         The interpolated value
+
     """
     if t0 == t1:
         return v0
@@ -144,5 +149,6 @@ def euclidean_distances(points):
     -------
     list
         A List of euclidean distance between each consecutive points or values.
+
     """
     return [np.linalg.norm(x - y) for x, y in zip(points, points[1:])]
