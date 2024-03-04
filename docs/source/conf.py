@@ -224,7 +224,7 @@ html_favicon = '_static/images/logo.ico'
 # }
 
 # Log:3/3/24 ~ search-field is not necessary in sidebar anymore,
-# it is in the Navbar. Also with this update it can be easily accessed, 
+# it is in the Navbar. Also with this update it can be easily accessed,
 # with the shortcut, which was not working previously.
 html_sidebars = {
     # "**": ["search-field", 'globaltoc.html',"sidebar-nav-bs"]
