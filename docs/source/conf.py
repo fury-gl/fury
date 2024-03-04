@@ -179,7 +179,7 @@ else:
 #
 # html_theme_options = {}
 
-#Log:3/3/24 ~ footer_items is deprecated, using new keys for footer       
+# Log:3/3/24 ~ footer_items is deprecated, using new keys for footer.
 html_theme_options = {
     'navigation_depth': 1,
     'navigation_with_keys': True,
@@ -223,7 +223,8 @@ html_favicon = '_static/images/logo.ico'
 #     ]
 # }
 
-#Log:3/3/24 ~ search-field is not necessary in sidebar anymore, it is in the Navbar. Also with this update it can be easily accessed with the shortcut, which was not working previously.
+# Log:3/3/24 ~ search-field is not necessary in sidebar anymore, it is in the Navbar.
+# Also with this update it can be easily accessed with the shortcut, which was not working previously.
 html_sidebars = {
     # "**": ["search-field", 'globaltoc.html',"sidebar-nav-bs"]
     # '**': ['search-field', 'globaltoc.html']
