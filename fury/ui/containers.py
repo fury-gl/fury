@@ -662,6 +662,8 @@ class TabUI(UI):
         startup_tab_id : int, optional
             Tab to be activated and uncollapsed on startup.
             by default None is activated/ all collapsed.
+        tab_bar_pos : str, optional
+            Position of the Tab Bar in the panel
         """
         self.tabs = []
         self.nb_tabs = nb_tabs
