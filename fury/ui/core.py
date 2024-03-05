@@ -786,7 +786,9 @@ class TextBlock2D(UI):
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
-        return [self.actor] + self.background.actors
+        if self.have_bg:
+            return [self.actor] + self.background.actors
+        return [self.actor]
 
     def _add_to_scene(self, scene):
         """Add all subcomponents or VTK props that compose this UI component.
