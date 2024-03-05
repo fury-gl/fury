@@ -80,7 +80,8 @@ files = [
     "viz_ui_slider.py",
     "viz_card.py",
     "viz_card_sprite_sheet.py",
-    "viz_spinbox.py"
+    "viz_spinbox.py",
+    "viz_file_dialog.py"
 ]
 
 [animation]

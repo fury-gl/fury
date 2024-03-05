@@ -13,6 +13,7 @@ __all__ = [
     'ListBox2D',
     'ListBoxItem2D',
     'FileMenu2D',
+    'FileDialog2D',
     'DrawShape',
     'DrawPanel',
     'PlaybackPanel',
@@ -2503,6 +2504,7 @@ class ListBox2D(UI):
         reverse_scrolling=False,
         font_size=20,
         line_spacing=1.4,
+        bg_color=(1, 1, 1),
         text_color=(0.2, 0.2, 0.2),
         selected_color=(0.9, 0.6, 0.6),
         unselected_color=(0.6, 0.6, 0.6),
@@ -2547,6 +2549,7 @@ class ListBox2D(UI):
         self.line_spacing = line_spacing
         self.slot_height = int(self.font_size * self.line_spacing)
 
+        self.bg_color = bg_color
         self.text_color = text_color
         self.selected_color = selected_color
         self.unselected_color = unselected_color
@@ -2590,7 +2593,7 @@ class ListBox2D(UI):
         self.nb_slots = int((size[1] - 2 * self.margin) // self.slot_height)
 
         # This panel facilitates adding slots at the right position.
-        self.panel = Panel2D(size=size, color=(1, 1, 1))
+        self.panel = Panel2D(size=size, color=self.bg_color)
 
         # Add a scroll bar
         scroll_bar_height = (
@@ -2669,8 +2672,6 @@ class ListBox2D(UI):
 
         """
         self.panel.add_to_scene(scene)
-        for slot in self.slots:
-            clip_overflow(slot.textblock, self.slot_width)
 
     def _get_size(self):
         return self.panel.size
@@ -2820,8 +2821,7 @@ class ListBox2D(UI):
         for i, choice in enumerate(values_to_show):
             slot = self.slots[i]
             slot.element = choice
-            if slot.textblock.scene is not None:
-                clip_overflow(slot.textblock, self.slot_width)
+            clip_overflow(slot.textblock, self.slot_width)
             slot.set_visibility(True)
             if slot.size[1] != self.slot_height:
                 slot.resize((self.slot_width, self.slot_height))
@@ -2834,7 +2834,6 @@ class ListBox2D(UI):
         for slot in self.slots[len(values_to_show) :]:
             slot.element = None
             slot.set_visibility(False)
-            slot.resize((self.slot_width, 0))
             slot.deselect()
 
     def update_scrollbar(self):
@@ -2847,9 +2846,12 @@ class ListBox2D(UI):
             self.nb_slots * (self.panel_size[1] - 2 * self.margin) / len(self.values)
         )
 
+        denom = len(self.values) - self.nb_slots
+        if not denom:
+            denom += 1
         self.scroll_step_size = (
             self.slot_height * self.nb_slots - self.scroll_bar.height
-        ) / (len(self.values) - self.nb_slots)
+        ) / denom
 
         self.panel.update_element(
             self.scroll_bar, self.panel_size - self.scroll_bar.size - self.margin
@@ -3052,16 +3054,22 @@ class FileMenu2D(UI):
     """
 
     def __init__(
-        self,
-        directory_path,
-        extensions=None,
-        position=(0, 0),
-        size=(100, 300),
-        multiselection=True,
-        reverse_scrolling=False,
-        font_size=20,
-        line_spacing=1.4,
-    ):
+            self,
+            directory_path,
+            extensions=None,
+            position=(0, 0),
+            size=(100, 300),
+            multiselection=True,
+            reverse_scrolling=False,
+            font_size=20,
+            line_spacing=1.4,
+            bg_color=(1, 1, 1),
+            text_color=(0.2, 0.2, 0.2),
+            selected_color=(0.9, 0.6, 0.6),
+            unselected_color=(0.6, 0.6, 0.6),
+            scroll_bar_active_color=(0.6, 0.2, 0.2),
+            scroll_bar_inactive_color=(0.9, 0.0, 0.0),
+            background_opacity=1.):
         """Init class instance.
 
         Parameters
@@ -3091,8 +3099,17 @@ class FileMenu2D(UI):
         self.line_spacing = line_spacing
         self.extensions = extensions or ['*']
         self.current_directory = directory_path
+        self.current_file = ""
         self.menu_size = size
         self.directory_contents = []
+
+        self.bg_color = bg_color
+        self.text_color = text_color
+        self.selected_color = selected_color
+        self.unselected_color = unselected_color
+        self.scroll_bar_active_color = scroll_bar_active_color
+        self.scroll_bar_inactive_color = scroll_bar_inactive_color
+        self.background_opacity = background_opacity
 
         super(FileMenu2D, self).__init__()
         self.position = position
@@ -3111,9 +3128,13 @@ class FileMenu2D(UI):
             multiselection=self.multiselection,
             font_size=self.font_size,
             line_spacing=self.line_spacing,
-            reverse_scrolling=self.reverse_scrolling,
-            size=self.menu_size,
-        )
+            reverse_scrolling=self.reverse_scrolling, size=self.menu_size,
+            bg_color=self.bg_color, text_color=self.text_color,
+            selected_color=self.selected_color,
+            unselected_color=self.unselected_color,
+            scroll_bar_active_color=self.scroll_bar_active_color,
+            scroll_bar_inactive_color=self.scroll_bar_inactive_color,
+            background_opacity=self.background_opacity)
 
         self.add_callback(
             self.listbox.scroll_bar.actor, 'MouseMoveEvent', self.scroll_callback
@@ -3283,10 +3304,10 @@ class FileMenu2D(UI):
 
         """
         if (listboxitem.element, 'directory') in self.directory_contents:
-            new_directory_path = os.path.join(
-                self.current_directory, listboxitem.element
-            )
+            new_directory_path = os.path.normpath(os.path.join(self.current_directory,
+                                                               listboxitem.element))
             if os.access(new_directory_path, os.R_OK):
+                self.current_file = ""
                 self.current_directory = new_directory_path
                 self.directory_contents = self.get_all_file_names()
                 content_names = [x[0] for x in self.directory_contents]
@@ -3296,8 +3317,231 @@ class FileMenu2D(UI):
                 self.listbox.update()
                 self.listbox.update_scrollbar()
                 self.set_slot_colors()
+        else:
+            new_file_path = os.path.normpath(os.path.join(
+                                            self.current_directory,
+                                            listboxitem.element))
+            if os.access(new_file_path, os.R_OK):
+                self.current_file = new_file_path
         i_ren.force_render()
         i_ren.event.abort()
+
+
+class FileDialog2D(UI):
+    """ UI element to choose a file from the file system.
+    """
+
+    def __init__(self, directory_path, dialog_type="open", extensions=None,
+                 position=(0, 0), size=(100, 100), multiselection=True,
+                 reverse_scrolling=False, font_size=20, line_spacing=1.4,
+                 bg_color=(1, 1, 1),
+                 text_color=(0.2, 0.2, 0.2),
+                 selected_color=(0.9, 0.6, 0.6),
+                 unselected_color=(0.6, 0.6, 0.6),
+                 scroll_bar_active_color=(0.6, 0.2, 0.2),
+                 scroll_bar_inactive_color=(0.9, 0.0, 0.0),
+                 background_opacity=1.,
+                 draggable=True):
+        """
+        Parameters
+        ----------
+        directory_path: string
+            Path of the directory where this dialog should open.
+        dialog_type: str, optional
+            {"open", "save"}
+            Determines the type of file dialog to render.
+        extensions: list(string), optional
+            List of extensions to be shown as files.
+        position : (float, float), optional
+            Absolute coordinates (x, y) of the lower-left corner of this
+            UI component.
+        size : (int, int), optional
+            Width and height in pixels of this UI component.
+        multiselection: bool, optional
+            {True, False}
+            Whether multiple values can be selected at once.
+        reverse_scrolling: bool, optional
+            {True, False}
+            If True, scrolling up will move the list of files down.
+        font_size: int, optional
+            The font size of directory path in pixels.
+        line_spacing: float, optional
+            Distance between listbox's items in pixels.
+        """
+        self.dialog_type = dialog_type.lower()
+        self.draggable = draggable
+        self.font_size = font_size
+        self.multiselection = multiselection
+        self.reverse_scrolling = reverse_scrolling
+        self.line_spacing = line_spacing
+        self.extensions = extensions or ["*"]
+        self.origin_directory = directory_path
+        self.dialog_size = size
+        self.directory_contents = []
+
+        self.bg_color = bg_color
+        self.text_color = text_color
+        self.selected_color = selected_color
+        self.unselected_color = unselected_color
+        self.scroll_bar_active_color = scroll_bar_active_color
+        self.scroll_bar_inactive_color = scroll_bar_inactive_color
+        self.background_opacity = background_opacity
+
+        self.file_menu_size = (size[0], int(0.7*size[1]))
+        self.dir_block_size = (size[0], int(0.1*size[1]))
+        self.accept_button_size = (int(0.15*size[0]), int(0.1*size[1]))
+        self.reject_button_size = (int(0.2*size[0]), int(0.1*size[1]))
+
+        super(FileDialog2D, self).__init__()
+        self.position = position
+        self.on_accept = lambda ui: None
+        self.on_reject = lambda ui: None
+
+    def _setup(self):
+        self.file_menu = FileMenu2D(
+            directory_path=self.origin_directory,
+            extensions=self.extensions,
+            size=self.file_menu_size,
+            multiselection=self.multiselection,
+            reverse_scrolling=self.reverse_scrolling,
+            line_spacing=self.line_spacing,
+            bg_color=self.bg_color,
+            selected_color=self.selected_color,
+            unselected_color=self.unselected_color,
+            scroll_bar_active_color=self.scroll_bar_active_color,
+            scroll_bar_inactive_color=self.scroll_bar_inactive_color,
+            background_opacity=self.background_opacity)
+        self.dir_block = TextBlock2D(text=self.current_directory,
+                                     size=self.dir_block_size)
+        clip_overflow(self.dir_block, self.dir_block_size[0])
+        self.accept_button = TextBlock2D(size=self.accept_button_size,
+                                         text=self.dialog_type.title(),
+                                         color=(1, 1, 1))
+        self.reject_button = TextBlock2D(size=self.reject_button_size,
+                                         text="Cancel",
+                                         color=(1, 1, 1))
+
+        self.parent_panel = Panel2D(size=self.dialog_size, color=self.bg_color)
+        self.parent_panel.add_element(self.file_menu, (0.0, 0.2))
+        self.parent_panel.add_element(self.dir_block, (0.0, 0.89))
+        self.parent_panel.add_element(self.accept_button, (0.55, 0.05))
+        self.parent_panel.add_element(self.reject_button, (0.75, 0.05))
+
+        if self.dialog_type == "save":
+            padding = 10
+            textbox_size = (self.dialog_size[0] - self.accept_button.size[0] - self.reject_button.size[0] - 5*padding,
+                            self.dialog_size[1] - self.dir_block.size[1] - self.file_menu.size[1] - 2*padding)
+            self.save_box = TextBox2D(15, 1, text="Enter filename")
+            self.save_box.text.dynamic_bbox = False
+            self.save_box.text.resize(textbox_size)
+            self.parent_panel.add_element(self.save_box, (0.01, 0.05))
+
+        for slot in self.file_menu.listbox.slots:
+            slot.add_callback(slot.textblock.actor, "LeftButtonPressEvent",
+                              self.dir_click_callback)
+            slot.add_callback(slot.background.actor, "LeftButtonPressEvent",
+                              self.dir_click_callback)
+
+        self.accept_button.on_left_mouse_button_clicked =\
+            self.accept_click_callback
+        self.reject_button.on_left_mouse_button_clicked =\
+            self.reject_click_callback
+
+        if self.draggable:
+            self.dir_block.on_left_mouse_button_dragged =\
+                self.left_button_dragged
+            self.file_menu.listbox.panel.background.\
+                on_left_mouse_button_dragged = self.left_button_dragged
+            self.accept_button.on_left_mouse_button_dragged =\
+                self.left_button_dragged
+            self.reject_button.on_left_mouse_button_dragged =\
+                self.left_button_dragged
+
+            self.dir_block.on_left_mouse_button_pressed =\
+                self.left_button_pressed
+            self.file_menu.listbox.panel.background.\
+                on_left_mouse_button_pressed = self.left_button_pressed
+            self.accept_button.on_left_mouse_button_pressed =\
+                self.left_button_pressed
+            self.reject_button.on_left_mouse_button_pressed =\
+                self.left_button_pressed
+        else:
+            self.parent_panel.background.on_left_mouse_button_dragged =\
+                lambda i_ren, _obj, _comp: i_ren.force_render
+            self.file_menu.listbox.panel.background.\
+                on_left_mouse_button_dragged =\
+                lambda i_ren, _obj, _comp: i_ren.force_render
+
+    def _get_actors(self):
+        """ Get the actors composing this UI component.
+        """
+        return self.parent_panel.actors
+
+    def resize(self, size):
+        pass
+
+    def _set_position(self, coords):
+        """ Position the lower-left corner of this UI component.
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+        """
+        self.parent_panel.position = coords
+
+    def _add_to_scene(self, scene):
+        """ Add all subcomponents or VTK props that compose this UI component.
+        Parameters
+        ----------
+        scene : scene
+        """
+        self.parent_panel.add_to_scene(scene)
+
+    def _get_size(self):
+        return self.parent_panel.size
+
+    def dir_click_callback(self, i_ren, _obj, listboxitem):
+        self.dir_block.message = self.current_directory
+        clip_overflow(self.dir_block, self.size[0])
+        i_ren.force_render()
+        i_ren.event.abort()
+
+    def accept_click_callback(self, i_ren, _obj, textblock):
+        self.on_accept(self)
+        i_ren.force_render()
+        i_ren.event.abort()
+
+    def reject_click_callback(self, i_ren, _obj, textblock):
+        self.on_reject(self)
+        self.set_visibility(False)
+        i_ren.force_render()
+        i_ren.event.abort()
+
+    def left_button_pressed(self, i_ren, _obj, _sub_component):
+        click_pos = np.array(i_ren.event.position)
+        self._click_position = click_pos
+        i_ren.event.abort()  # Stop propagating the event.
+
+    def left_button_dragged(self, i_ren, _obj, _sub_component):
+        click_position = np.array(i_ren.event.position)
+        change = click_position - self._click_position
+        self.parent_panel.position += change
+        self._click_position = click_position
+        i_ren.force_render()
+
+    @property
+    def current_directory(self):
+        return self.file_menu.current_directory
+
+    @property
+    def current_file(self):
+        return self.file_menu.current_file
+
+    @property
+    def save_filename(self):
+        if self.dialog_type == "open":
+            return ""
+        return self.save_box.message
 
 
 class DrawShape(UI):
