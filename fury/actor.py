@@ -3873,7 +3873,7 @@ def ellipsoid(
 def odf(
     centers,
     coeffs,
-    degree=4,
+    degree=None,
     basis_type='descoteaux',
     scales=1.0,
     opacity=1.0
@@ -3890,7 +3890,8 @@ def odf(
         2D ODFs array in SH coefficients.
     degree: int, optional
         Index of the highest used band of the spherical harmonics basis. Must
-        be even, at least 2 and at most 12.
+        be even, at least 2 and at most 12. If None the degree is set based on
+        the number of SH coefficients given.
     basis_type: str, optional
         Type of basis (descoteaux, tournier)
         'descoteaux' for the default ``descoteaux07`` DYPY basis.
@@ -3913,17 +3914,25 @@ def odf(
         
     if not isinstance(coeffs, np.ndarray):
         coeffs = np.array(coeffs)
-        
-    coeffs_given = coeffs.shape[1]
-    coeffs_needed = int(((degree + 1) * (degree + 2)) / 2)
-    if degree % 2 != 0:
+    if coeffs.ndim == 1:
+        coeffs = np.array([coeffs])
+    if coeffs.shape[0] != centers.shape[0]:
+        raise ValueError('number of odf glyphs defined does not match with '
+                         'number of centers')
+
+    coeffs_given = coeffs.shape[-1]
+    if degree == None:
+        degree = int((np.sqrt(8 * coeffs_given + 1) - 3)/2)
+    elif degree % 2 != 0:
         raise ValueError('degree must be even')
+    coeffs_needed = int(((degree + 1) * (degree + 2)) / 2)
     if coeffs_given < coeffs_needed:
-        raise ValueError(
-                'Not enough number of coefficient for SH of degree {0}. '
-                'Expected at least {1}'.format(degree, coeffs_needed))
-    else:
-        coeffs = coeffs[:, :coeffs_needed]
+        print('Not enough number of coefficient for SH of degree {0}. '
+              'Expected at least {1}'.format(degree, coeffs_needed))
+        degree = int((np.sqrt(8 * coeffs_given + 1) - 3)/2)
+        if (degree % 2 != 0): degree -= 1
+        coeffs_needed = int(((degree + 1) * (degree + 2)) / 2)
+    coeffs = coeffs[:, :coeffs_needed]
 
     if not isinstance(scales, np.ndarray):
         scales = np.array(scales)
