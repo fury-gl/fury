@@ -38,6 +38,7 @@ def pkg_commit_hash(pkg_path: str | None = None) -> tuple[str, str]:
        Where we got the hash from - description
     hash_str : str
        short form of hash
+
     """
     if not COMMIT_HASH.startswith('$Format'):  # it has been substituted
         return 'archive substitution', COMMIT_HASH

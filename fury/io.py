@@ -199,6 +199,7 @@ def load_text(file):
     -------
     text: str
         Text contained in the file.
+
     """
     if not os.path.isfile(file):
         raise IOError('File {} does not exist.'.format(file))
@@ -325,7 +326,6 @@ def load_polydata(file_name):
     output : vtkPolyData
 
     """
-
     # Check if file actually exists
     if not os.path.isfile(file_name):
         raise FileNotFoundError(file_name)

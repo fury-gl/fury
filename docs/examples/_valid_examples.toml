@@ -88,7 +88,7 @@ readme = "file: _animation.rst"
 position = 10
 enable = true
 files = [
-    "viz_interpolators.py",
+    # "viz_interpolators.py",
     "viz_bezier_interpolator.py",
     "viz_introduction.py",
     "viz_camera.py",

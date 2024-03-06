@@ -1074,8 +1074,8 @@ def test_ui_combobox_2d(interactive=False):
     npt.assert_raises(TypeError, combobox.append_item, invalid_item)
 
     npt.assert_equal(values, combobox.items)
-    npt.assert_equal((60, 60), combobox.drop_button_size)
-    npt.assert_equal([300, 140], combobox.drop_menu_size)
+    npt.assert_equal((30, 20), combobox.drop_button_size)
+    npt.assert_equal([270, 140], combobox.drop_menu_size)
     npt.assert_equal([300, 200], combobox.size)
 
     ui.ComboBox2D(items=values, draggable=False)
@@ -1094,9 +1094,9 @@ def test_ui_combobox_2d(interactive=False):
     npt.assert_equal(1, combobox.selected_text_index)
 
     combobox.resize((450, 300))
-    npt.assert_equal((360, 90), combobox.text_block_size)
-    npt.assert_equal((90, 90), combobox.drop_button_size)
-    npt.assert_equal((450, 210), combobox.drop_menu_size)
+    npt.assert_equal((405, 30), combobox.text_block_size)
+    npt.assert_equal((45, 30), combobox.drop_button_size)
+    npt.assert_equal((405, 210), combobox.drop_menu_size)
 
 
 def test_ui_combobox_2d_dropdown_visibility(interactive=False):

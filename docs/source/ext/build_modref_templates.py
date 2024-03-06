@@ -54,7 +54,6 @@ def generate_api_reference_rst(
 
 def setup(app):
     """Setup sphinx extension for API reference generation."""
-
     app.connect('builder-inited', generate_api_reference_rst)
     # app.connect('build-finished', summarize_failing_examples)
 

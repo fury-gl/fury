@@ -92,6 +92,7 @@ class Molecule(Mol):
             atoms present in the molecule.
             Array containing a bool value to indicate if an atom is a
             heteroatom.
+
         """
         if atomic_numbers is None and coords is None:
             self.Initialize()
@@ -147,6 +148,7 @@ def add_atom(molecule, atomic_num, x_coord, y_coord, z_coord):
         y-coordinate of the atom.
     z_coord : float
         z-coordinate of the atom.
+
     """
     molecule.AppendAtom(atomic_num, x_coord, y_coord, z_coord)
 
@@ -171,6 +173,7 @@ def add_bond(molecule, atom1_index, atom2_index, bond_order=1):
     Ensure that the total number of bonds between two atoms doesn't exceed 3.
     Calling ``add_bond`` to add bonds between atoms that already have a triple
     bond between them leads to erratic behavior and must be avoided.
+
     """
     molecule.AppendBond(atom1_index, atom2_index, bond_order)
 
@@ -186,6 +189,7 @@ def get_atomic_number(molecule, atom_index):
         The molecule to which the atom belongs.
     atom_index : int
         Index of the atom whose atomic number is to be obtained.
+
     """
     return molecule.GetAtomAtomicNumber(atom_index)
 
@@ -204,6 +208,7 @@ def set_atomic_number(molecule, atom_index, atomic_num):
         Index of the atom to whom the atomic number is to be assigned.
     atom_num : int
         Atomic number to be assigned to the atom.
+
     """
     molecule.SetAtomAtomicNumber(atom_index, atomic_num)
 
@@ -219,6 +224,7 @@ def get_atomic_position(molecule, atom_index):
         The molecule to which the atom belongs.
     atom_index : int
         Index of the atom whose atomic coordinates are to be obtained.
+
     """
     return molecule.GetAtomPosition(atom_index)
 
@@ -241,6 +247,7 @@ def set_atomic_position(molecule, atom_index, x_coord, y_coord, z_coord):
         y-coordinate of the atom.
     z_coord : float
         z-coordinate of the atom.
+
     """
     molecule.SetAtomPosition(atom_index, x_coord, y_coord, z_coord)
 
@@ -257,6 +264,7 @@ def get_bond_order(molecule, bond_index):
         The molecule to which the bond belongs.
     bond_index : int
         Index of the bond whose order is to be obtained.
+
     """
     return molecule.GetBondOrder(bond_index)
 
@@ -275,6 +283,7 @@ def set_bond_order(molecule, bond_index, bond_order):
         Index of the bond whose order is to be assigned.
     bond_order : int
         Bond order (whether it's a single/double/triple bond).
+
     """
     return molecule.SetBondOrder(bond_index, bond_order)
 
@@ -287,6 +296,7 @@ def get_all_atomic_numbers(molecule):
     ----------
     molecule : Molecule
         The molecule whose atomic number array is to be obtained.
+
     """
     return nps.vtk_to_numpy(molecule.GetAtomicNumberArray())
 
@@ -299,6 +309,7 @@ def get_all_bond_orders(molecule):
     ----------
     molecule : Molecule
         The molecule whose bond types array is to be obtained.
+
     """
     return nps.vtk_to_numpy(molecule.GetBondOrdersArray())
 
@@ -311,13 +322,13 @@ def get_all_atomic_positions(molecule):
     ----------
     molecule : Molecule
         The molecule whose atomic position array is to be obtained.
+
     """
     return nps.vtk_to_numpy(molecule.GetAtomicPositionArray().GetData())
 
 
 def deep_copy_molecule(molecule1, molecule2):
-    """
-    Deep copies the atomic information (atoms and bonds) from molecule2 into
+    """Deep copies the atomic information (atoms and bonds) from molecule2 into
     molecule1.
 
     Parameters
@@ -326,13 +337,13 @@ def deep_copy_molecule(molecule1, molecule2):
         The molecule to which the atomic information is copied.
     molecule2 : Molecule
         The molecule from which the atomic information is copied.
+
     """
     molecule1.DeepCopyStructure(molecule2)
 
 
 def compute_bonding(molecule):
-    """
-    Uses `vtkSimpleBondPerceiver` to generate bonding information for a
+    """Uses `vtkSimpleBondPerceiver` to generate bonding information for a
     molecule.
     `vtkSimpleBondPerceiver` performs a simple check of all interatomic
     distances and adds a single bond between atoms that are reasonably
@@ -349,6 +360,7 @@ def compute_bonding(molecule):
     This algorithm does not consider valences, hybridization, aromaticity,
     or anything other than atomic separations. It will not produce anything
     other than single bonds.
+
     """
     bonder = SimpleBondPerceiver()
     bonder.SetInputData(molecule)
@@ -376,6 +388,7 @@ class PTable(PeriodicTable):
         ----------
         atomic_number : int
             Atomic number of the element whose symbol is to be obtained.
+
         """
         return self.GetSymbol(atomic_number)
 
@@ -386,6 +399,7 @@ class PTable(PeriodicTable):
         ----------
         atomic_number : int
             Atomic number of the element whose name is to be obtained.
+
         """
         return self.GetElementName(atomic_number)
 
@@ -397,6 +411,7 @@ class PTable(PeriodicTable):
         ----------
         element_name : string
             Name of the element whose atomic number is to be obtained.
+
         """
         return self.GetAtomicNumber(element_name)
 
@@ -416,6 +431,7 @@ class PTable(PeriodicTable):
             * 'Covalent' : for covalent radius of the atom
 
             Default: 'VDW'
+
         """
         radius_type = radius_type.lower()
         if radius_type == 'vdw':
@@ -437,6 +453,7 @@ class PTable(PeriodicTable):
         ----------
         atomicNumber : int
             Atomic number of the element whose RGB tuple is to be obtained.
+
         """
         rgb = np.array(self.GetDefaultRGBTuple(atomic_number))
         return rgb
@@ -472,6 +489,7 @@ def sphere_cpk(molecule, colormode='discrete'):
     Peptides, and Proteins
     `Review of Scientific Instruments 1953, 24 (8), 621-627.
     <https://doi.org/10.1063/1.1770803>`_
+
     """
     colormode = colormode.lower()
     msp_mapper = OpenGLMoleculeMapper()
@@ -543,6 +561,7 @@ def ball_stick(
     Turner, M. Ball and stick models for organic chemistry
     `J. Chem. Educ. 1971, 48, 6, 407.
     <https://doi.org/10.1021/ed048p407>`_
+
     """
     if molecule.total_num_bonds == 0:
         raise ValueError(
@@ -602,6 +621,7 @@ def stick(molecule, colormode='discrete', bond_thickness=0.1):
     molecule_actor : vtkActor
         Actor created to render the stick representation of the molecule to be
         visualized.
+
     """
     if molecule.total_num_bonds == 0:
         raise ValueError(
@@ -648,6 +668,7 @@ def ribbon(molecule):
     Richardson, J.S. The anatomy and taxonomy of protein structure
     `Advances in Protein Chemistry, 1981, 34, 167-339.
     <https://doi.org/10.1016/S0065-3233(08)60520-3>`_
+
     """
     coords = get_all_atomic_positions(molecule)
     all_atomic_numbers = get_all_atomic_numbers(molecule)

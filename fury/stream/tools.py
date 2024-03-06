@@ -66,7 +66,7 @@ class GenericMultiDimensionalBuffer(ABC):
     """This implements a abstract (generic) multidimensional buffer."""
 
     def __init__(self, max_size=None, dimension=8):
-        """
+        """Initialize the multidimensional buffer.
 
         Parameters
         ----------
@@ -133,9 +133,7 @@ class RawArrayMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
     """This implements a  multidimensional buffer with RawArray."""
 
     def __init__(self, max_size, dimension=4, buffer=None):
-        """
-
-        Stream system uses that to implement the CircularQueue
+        """Stream system uses that to implement the CircularQueue
         with shared memory resources.
 
         Parameters
@@ -180,12 +178,11 @@ class RawArrayMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
 
 class SharedMemMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
     """This implements a generic multidimensional buffer
-    with SharedMemory."""
+    with SharedMemory.
+    """
 
     def __init__(self, max_size, dimension=4, buffer_name=None):
-        """
-
-        Stream system uses that to implement the
+        """Stream system uses that to implement the
         CircularQueue with shared memory resources.
 
         Parameters
@@ -274,7 +271,8 @@ class SharedMemMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
 
 class GenericCircularQueue(ABC):
     """This implements a generic circular queue which works with
-    shared memory resources."""
+    shared memory resources.
+    """
 
     def __init__(
         self,
@@ -284,7 +282,7 @@ class GenericCircularQueue(ABC):
         buffer=None,
         buffer_name=None,
     ):
-        """
+        """Initialize the circular queue.
 
         Parameters
         ----------
@@ -391,12 +389,11 @@ class GenericCircularQueue(ABC):
 
 class ArrayCircularQueue(GenericCircularQueue):
     """This implements a MultiDimensional Queue which works with
-    Arrays and RawArrays."""
+    Arrays and RawArrays.
+    """
 
     def __init__(self, max_size=10, dimension=6, head_tail_buffer=None, buffer=None):
-        """
-
-        Stream system uses that to implement user interactions
+        """Stream system uses that to implement user interactions
 
         Parameters
         ----------
@@ -416,7 +413,6 @@ class ArrayCircularQueue(GenericCircularQueue):
             RawArray to store the data
 
         """
-
         super().__init__(max_size, dimension, use_shared_mem=False, buffer=buffer)
 
         if head_tail_buffer is None:
@@ -460,14 +456,13 @@ class ArrayCircularQueue(GenericCircularQueue):
 
 class SharedMemCircularQueue(GenericCircularQueue):
     """This implements a MultiDimensional Queue which works with
-    SharedMemory."""
+    SharedMemory.
+    """
 
     def __init__(
         self, max_size=10, dimension=6, head_tail_buffer_name=None, buffer_name=None
     ):
-        """
-
-        Stream system uses that to implement user interactions
+        """Stream system uses that to implement user interactions
 
         Parameters
         ----------
@@ -569,10 +564,11 @@ class SharedMemCircularQueue(GenericCircularQueue):
 
 class GenericImageBufferManager(ABC):
     """This implements a abstract (generic) ImageBufferManager with
-    the n-buffer technique."""
+    the n-buffer technique.
+    """
 
     def __init__(self, max_window_size=None, num_buffers=2, use_shared_mem=False):
-        """
+        """Initialize the ImageBufferManager.
 
         Parameters
         ----------
@@ -657,8 +653,10 @@ class GenericImageBufferManager(ABC):
     def get_jpeg(self):
         """Returns a jpeg image from the buffer.
 
-        Returns:
+        Returns
+        -------
             bytes: jpeg image.
+
         """
         width, height, image = self.get_current_frame()
 
@@ -702,7 +700,7 @@ class RawArrayImageBufferManager(GenericImageBufferManager):
         image_buffers=None,
         info_buffer=None,
     ):
-        """
+        """Initialize the ImageBufferManager.
 
         Parameters
         ----------
@@ -717,6 +715,7 @@ class RawArrayImageBufferManager(GenericImageBufferManager):
             frame to be streamed and the respective sizes
         image_buffers : list of buffers, optional
             A list of buffers with each one containing a frame.
+
         """
         super().__init__(max_window_size, num_buffers, use_shared_mem=False)
         if image_buffers is None or info_buffer is None:
@@ -768,7 +767,8 @@ class RawArrayImageBufferManager(GenericImageBufferManager):
 
 class SharedMemImageBufferManager(GenericImageBufferManager):
     """This implements an ImageBufferManager using the
-    SharedMemory approach."""
+    SharedMemory approach.
+    """
 
     def __init__(
         self,
@@ -777,11 +777,7 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
         image_buffer_names=None,
         info_buffer_name=None,
     ):
-        """
-
-        Note
-        -----
-        Python >=3.8 is a requirement to use this object.
+        """Initialize the ImageBufferManager.
 
         Parameters
         ----------
@@ -796,6 +792,10 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
             frame to be streamed and the respective sizes
         image_buffer_names : list of str, optional
             a list of buffer names. Each buffer contains a frame
+
+        Notes
+        -----
+        Python >=3.8 is a requirement to use this object.
 
         """
         super().__init__(max_window_size, num_buffers, use_shared_mem=True)
@@ -978,9 +978,7 @@ class IntervalTimer:
     """A object that creates a timer that calls a function periodically."""
 
     def __init__(self, seconds, callback, *args, **kwargs):
-        """
-
-        Parameters
+        """Parameters
         ----------
         seconds : float
             A positive float number. Represents the total amount of

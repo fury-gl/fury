@@ -3,7 +3,6 @@
 __all__ = ['Rectangle2D', 'Disk2D', 'TextBlock2D', 'Button2D']
 
 import abc
-from warnings import warn
 
 import numpy as np
 
@@ -368,6 +367,7 @@ class Rectangle2D(UI):
             Must take values in [0, 1].
         opacity : float
             Must take values in [0, 1].
+
         """
         super(Rectangle2D, self).__init__(position)
         self.color = color
@@ -424,6 +424,7 @@ class Rectangle2D(UI):
         Parameters
         ----------
         scene : scene
+
         """
         scene.add(self.actor)
 
@@ -594,6 +595,7 @@ class Disk2D(UI):
         ----------
         coords: (float, float)
             Absolute pixel coordinates (x, y).
+
         """
         # Disk actor are positioned with respect to their center.
         self.actor.SetPosition(*coords + self.outer_radius)
@@ -689,6 +691,7 @@ class TextBlock2D(UI):
         Automatically scale font according to the text bounding box.
     dynamic_bbox : bool
         Automatically resize the bounding box according to the content.
+
     """
 
     def __init__(
@@ -740,6 +743,7 @@ class TextBlock2D(UI):
             Automatically scale font according to the text bounding box.
         dynamic_bbox : bool, optional
             Automatically resize the bounding box according to the content.
+
         """
         self.boundingbox = [0, 0, 0, 0]
         super(TextBlock2D, self).__init__(position=position)
@@ -776,6 +780,7 @@ class TextBlock2D(UI):
         ----------
         size : (int, int)
             Text bounding box size(width, height) in pixels.
+
         """
         self.update_bounding_box(size)
 
@@ -789,6 +794,7 @@ class TextBlock2D(UI):
         Parameters
         ----------
         scene : scene
+
         """
         scene.add(self.background, self.actor)
 
@@ -800,6 +806,7 @@ class TextBlock2D(UI):
         -------
         str
             The current text message.
+
         """
         return self.actor.GetInput()
 
@@ -811,6 +818,7 @@ class TextBlock2D(UI):
         ----------
         text : str
             The message to be set.
+
         """
         self.actor.SetInput(text)
         if self.dynamic_bbox:
@@ -821,9 +829,10 @@ class TextBlock2D(UI):
         """Get text font size.
 
         Returns
-        ----------
+        -------
         int
             Text font size.
+
         """
         return self.actor.GetTextProperty().GetFontSize()
 
@@ -835,6 +844,7 @@ class TextBlock2D(UI):
         ----------
         size : int
             Text font size.
+
         """
         if not self.auto_font_scale:
             self.actor.SetTextScaleModeToNone()
@@ -848,9 +858,10 @@ class TextBlock2D(UI):
         """Get font family.
 
         Returns
-        ----------
+        -------
         str
             Text font family.
+
         """
         return self.actor.GetTextProperty().GetFontFamilyAsString()
 
@@ -864,6 +875,7 @@ class TextBlock2D(UI):
         ----------
         family : str
             The font family.
+
         """
         if family == 'Arial':
             self.actor.GetTextProperty().SetFontFamilyToArial()
@@ -880,6 +892,7 @@ class TextBlock2D(UI):
         -------
         str
             Text justification.
+
         """
         return self._justification
 
@@ -965,6 +978,7 @@ class TextBlock2D(UI):
         ----------
         flag : bool
             Italicises text if True.
+
         """
         self.actor.GetTextProperty().SetItalic(flag)
 
@@ -976,6 +990,7 @@ class TextBlock2D(UI):
         -------
         bool
             Text is shadowed if True.
+
         """
         return self.actor.GetTextProperty().GetShadow()
 
@@ -987,6 +1002,7 @@ class TextBlock2D(UI):
         ----------
         flag : bool
             Shadows text if True.
+
         """
         self.actor.GetTextProperty().SetShadow(flag)
 
@@ -998,6 +1014,7 @@ class TextBlock2D(UI):
         -------
         (float, float, float)
             Returns text color in RGB.
+
         """
         return self.actor.GetTextProperty().GetColor()
 
@@ -1022,6 +1039,7 @@ class TextBlock2D(UI):
         (float, float, float) or None
             If None, there no background color.
             Otherwise, background color in RGB.
+
         """
         if not self.have_bg:
             return None
@@ -1057,6 +1075,7 @@ class TextBlock2D(UI):
         -------
         bool
             Text is auto_font_scaled if True.
+
         """
         return self._auto_font_scale
 
@@ -1068,6 +1087,7 @@ class TextBlock2D(UI):
         ----------
         flag : bool
             Automatically scales the text font if True.
+
         """
         self._auto_font_scale = flag
         if flag:
@@ -1085,6 +1105,7 @@ class TextBlock2D(UI):
         -------
         bool
             Bounding box is dynamic if True.
+
         """
         return self._dynamic_bbox
 
@@ -1096,6 +1117,7 @@ class TextBlock2D(UI):
         ----------
         flag : bool
             The text bounding box is dynamic if True.
+
         """
         self._dynamic_bbox = flag
         if flag:
@@ -1138,7 +1160,7 @@ class TextBlock2D(UI):
         self.actor.SetPosition(updated_text_position)
 
     def cal_size_from_message(self):
-        "Calculate size of background according to the message it contains."
+        """Calculate size of background according to the message it contains."""
         lines = self.message.split("\n")
         max_length = max(len(line) for line in lines)
         return [max_length*self.font_size, len(lines)*self.font_size]
@@ -1162,7 +1184,8 @@ class TextBlock2D(UI):
 
         if self.auto_font_scale:
             self.actor.SetPosition2(
-                self.boundingbox[2]-self.boundingbox[0], self.boundingbox[3]-self.boundingbox[1])
+                self.boundingbox[2]-self.boundingbox[0],
+                self.boundingbox[3]-self.boundingbox[1])
         else:
             self.update_alignment()
 
@@ -1336,6 +1359,7 @@ class Button2D(UI):
         ----------
         coords: (float, float)
             Absolute pixel coordinates (x, y).
+
         """
         self.actor.SetPosition(*coords)
 
