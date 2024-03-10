@@ -4011,12 +4011,16 @@ class TexturedCube:
         self.image_grids = [negx, negy, negz, posx, posy, posz]
         self.image_data_objs = [ImageData() for _ in range(6)]
 
-        for grid, image_data_obj in zip(self.image_grids, self.image_data_objs):
+        for grid, image_data_obj in zip(
+            self.image_grids,
+            self.image_data_objs
+        ):
             image_data_obj.SetDimensions(grid.shape[1], grid.shape[0], 1)
-            vtkarr = numpy_support.numpy_to_vtk(
-                np.flip(grid.swapaxes(0, 1), axis=1).reshape((-1, 3), order='F')
-            )
+            numpy_flip = np.flip(grid.swapaxes(0, 1), axis=1)
+            numpy_flip = numpy_flip.reshape((-1, 3), order='F')
+            vtkarr = numpy_support.numpy_to_vtk(numpy_flip)
             vtkarr.SetName('Image')
+
             image_data_obj.GetPointData().AddArray(vtkarr)
             image_data_obj.GetPointData().SetActiveScalars('Image')
 
