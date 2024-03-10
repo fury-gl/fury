@@ -7,7 +7,7 @@ from functools import partial
 import numpy as np
 
 import fury.primitive as fp
-from fury import layout
+from fury import layout, window
 from fury.actors.odf_slicer import OdfSlicerActor
 from fury.actors.peak import PeakActor
 from fury.actors.tensor import double_cone, main_dir_uncertainty, tensor_ellipsoid
@@ -26,6 +26,7 @@ from fury.lib import (
     ConeSource,
     ContourFilter,
     CylinderSource,
+    PlaneSource,
     DiskSource,
     FloatArray,
     Follower,
@@ -3954,3 +3955,127 @@ def uncertainty_cone(
     angles = main_dir_uncertainty(evals, evecs, signal, sigma, b_matrix)
 
     return double_cone(centers, evecs, angles, colors, scales, opacity)
+
+class TexturedCube:
+    """Class to work with textured cube.
+    """
+
+    def __init__(self, negx, negy, negz, posx, posy, posz):
+        """Initializes a TexturedCube object.
+
+        Parameters
+        ----------
+        negx : ndarray
+            Input 2D RGB or RGBA array. Dtype should be uint8.
+        negy : ndarray
+            Input 2D RGB or RGBA array. Dtype should be uint8.
+        negz : ndarray
+            Input 2D RGB or RGBA array. Dtype should be uint8.
+        posx : ndarray
+            Input 2D RGB or RGBA array. Dtype should be uint8.
+        posy : ndarray
+            Input 2D RGB or RGBA array. Dtype should be uint8.
+        posz : ndarray
+            Input 2D RGB or RGBA array. Dtype should be uint8.
+        """
+
+        self.planes = [PlaneSource() for _ in range(6)]
+
+        self.plane_centers = [
+            (0, 0.5, 0),
+            (0, 0, 0.5),
+            (0, 1, 0.5),
+            (0, 0.5, 1),
+            (0.5, 0.5, 0.5),
+            (-0.5, 0.5, 0.5),
+        ]
+
+        self.plane_normals = [
+            (0, 0, 1),
+            (0, 1, 0),
+            (0, 1, 0),
+            (0, 0, 1),
+            (1, 0, 0),
+            (1, 0, 0),
+        ]
+
+        for plane, center, normal in zip(
+            self.planes,
+            self.plane_centers,
+            self.plane_normals
+        ):
+            plane.SetCenter(*center)
+            plane.SetNormal(*normal)
+
+        self.image_grids = [negx, negy, negz, posx, posy, posz]
+        self.image_data_objs = [ImageData() for _ in range(6)]
+        
+        for grid, image_data_obj in zip(self.image_grids, self.image_data_objs):
+            image_data_obj.SetDimensions(grid.shape[1], grid.shape[0], 1)
+            vtkarr = numpy_support.numpy_to_vtk(np.flip(grid.swapaxes(0,1), axis=1).reshape((-1, 3), order='F'))
+            vtkarr.SetName('Image')
+            image_data_obj.GetPointData().AddArray(vtkarr)
+            image_data_obj.GetPointData().SetActiveScalars('Image')
+
+        self.texture_objects = [Texture() for _ in range(6)]
+        for image_data_obj, texture_object in zip(self.image_data_objs, self.texture_objects):
+            texture_object.SetInputDataObject(image_data_obj)
+        
+        self.polyDataMappers = [PolyDataMapper() for _ in range(6)]
+        for mapper, plane in zip(self.polyDataMappers, self.planes):
+            mapper.SetInputConnection(plane.GetOutputPort())
+        
+        self.actors = [Actor() for _ in range(6)]
+        for actor, mapper, texture_object in zip(self.actors, self.polyDataMappers, self.texture_objects):
+            actor.SetMapper(mapper)
+            actor.SetTexture(texture_object)
+    
+    def get_scene(self):
+        """Returns
+           ------- 
+           self.scene : window.Scene"""
+
+        self.scene = window.Scene()
+        for actor in self.actors:
+            self.scene.add(actor)
+        
+        return self.scene
+
+    def get_actor(self):
+        """Returns
+           ------- 
+           assembled_actor : Actor"""
+
+        assembled_actor = Assembly()
+        for actor_ in self.actors:
+            assembled_actor.AddPart(actor_)
+        
+        return assembled_actor
+
+    def texture_update(self, show_manager, negx, negy, negz, posx, posy, posz):
+        """Changes the texture of the cube.
+        
+        Parameters
+        ----------
+        show_manager : window.ShowManager
+            Input currently using ShowManager.
+        negx : ndarray
+            Input 2D RGB or RGBA array. Dtype should be uint8.
+        negy : ndarray
+            Input 2D RGB or RGBA array. Dtype should be uint8.
+        negz : ndarray
+            Input 2D RGB or RGBA array. Dtype should be uint8.
+        posx : ndarray
+            Input 2D RGB or RGBA array. Dtype should be uint8.
+        posy : ndarray
+            Input 2D RGB or RGBA array. Dtype should be uint8.
+        posz : ndarray
+            Input 2D RGB or RGBA array. Dtype should be uint8.
+        """
+
+        self.image_grids = [negx, negy, negz, posx, posy, posz]
+        
+        for actor_, image in zip(self.actors, self.image_grids):
+            texture_update(actor_, image)
+
+        show_manager.render()
