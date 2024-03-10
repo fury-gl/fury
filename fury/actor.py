@@ -3956,6 +3956,7 @@ def uncertainty_cone(
 
     return double_cone(centers, evecs, angles, colors, scales, opacity)
 
+
 class TexturedCube:
     """Class to work with textured cube.
     """
@@ -4009,52 +4010,66 @@ class TexturedCube:
 
         self.image_grids = [negx, negy, negz, posx, posy, posz]
         self.image_data_objs = [ImageData() for _ in range(6)]
-        
+
         for grid, image_data_obj in zip(self.image_grids, self.image_data_objs):
             image_data_obj.SetDimensions(grid.shape[1], grid.shape[0], 1)
-            vtkarr = numpy_support.numpy_to_vtk(np.flip(grid.swapaxes(0,1), axis=1).reshape((-1, 3), order='F'))
+            vtkarr = numpy_support.numpy_to_vtk(
+                np.flip(grid.swapaxes(0, 1), axis=1).reshape((-1, 3), order='F')
+            )
             vtkarr.SetName('Image')
             image_data_obj.GetPointData().AddArray(vtkarr)
             image_data_obj.GetPointData().SetActiveScalars('Image')
 
         self.texture_objects = [Texture() for _ in range(6)]
-        for image_data_obj, texture_object in zip(self.image_data_objs, self.texture_objects):
+
+        for image_data_obj, texture_object in zip(
+            self.image_data_objs,
+            self.texture_objects
+        ):
             texture_object.SetInputDataObject(image_data_obj)
-        
+
         self.polyDataMappers = [PolyDataMapper() for _ in range(6)]
-        for mapper, plane in zip(self.polyDataMappers, self.planes):
+
+        for mapper, plane in zip(
+            self.polyDataMappers,
+            self.planes
+        ):
             mapper.SetInputConnection(plane.GetOutputPort())
-        
+
         self.actors = [Actor() for _ in range(6)]
-        for actor, mapper, texture_object in zip(self.actors, self.polyDataMappers, self.texture_objects):
+        for actor, mapper, texture_object in zip(
+            self.actors,
+            self.polyDataMappers,
+            self.texture_objects
+        ):
             actor.SetMapper(mapper)
             actor.SetTexture(texture_object)
-    
+
     def get_scene(self):
         """Returns
-           ------- 
+           -------
            self.scene : window.Scene"""
 
         self.scene = window.Scene()
         for actor in self.actors:
             self.scene.add(actor)
-        
+
         return self.scene
 
     def get_actor(self):
         """Returns
-           ------- 
+           -------
            assembled_actor : Actor"""
 
         assembled_actor = Assembly()
         for actor_ in self.actors:
             assembled_actor.AddPart(actor_)
-        
+
         return assembled_actor
 
     def texture_update(self, show_manager, negx, negy, negz, posx, posy, posz):
         """Changes the texture of the cube.
-        
+
         Parameters
         ----------
         show_manager : window.ShowManager
@@ -4074,7 +4089,7 @@ class TexturedCube:
         """
 
         self.image_grids = [negx, negy, negz, posx, posy, posz]
-        
+
         for actor_, image in zip(self.actors, self.image_grids):
             texture_update(actor_, image)
 

@@ -4,12 +4,13 @@ Play a video in the 3D world
 =======================================================
 
 The goal of this demo is to show how to visualize a video
-on a cube by updating a texture.
+on a cube by updating its textures.
 """
 
 from fury import window, actor
 import numpy as np
 import cv2
+
 
 def timer_callback(_caller, _timer_event):
     rgb_images = []
@@ -29,6 +30,7 @@ def timer_callback(_caller, _timer_event):
         *rgb_images
     )
 
+
 # the sources for the video, can be URL or directory links on your machine.
 sources = [
     'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
@@ -46,7 +48,7 @@ for video_capture in video_captures:
     rgb_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2RGB)
     rgb_images.append(rgb_image)
 
-# calling the TexturedCube class to create a TexturedCube with different textures on all 6 sides.
+# Creating a TexturedCube with different textures on all 6 sides.
 cube = actor.TexturedCube(*rgb_images)
 scene = cube.get_scene()
 show_manager = window.ShowManager(scene, size=(1280, 720), reset_camera=False)
