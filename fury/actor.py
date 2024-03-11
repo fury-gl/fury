@@ -7,7 +7,7 @@ from functools import partial
 import numpy as np
 
 import fury.primitive as fp
-from fury import layout, window
+from fury import layout
 from fury.actors.odf_slicer import OdfSlicerActor
 from fury.actors.peak import PeakActor
 from fury.actors.tensor import double_cone, main_dir_uncertainty, tensor_ellipsoid
@@ -3958,8 +3958,7 @@ def uncertainty_cone(
 
 
 class TexturedCube:
-    """Class to work with textured cube.
-    """
+    """Class to work with textured cube."""
 
     def __init__(self, negx, negy, negz, posx, posy, posz):
         """Initializes a TexturedCube object.
@@ -3978,6 +3977,7 @@ class TexturedCube:
             Input 2D RGB or RGBA array. Dtype should be uint8.
         posz : ndarray
             Input 2D RGB or RGBA array. Dtype should be uint8.
+
         """
 
         self.planes = [PlaneSource() for _ in range(6)]
@@ -4049,21 +4049,12 @@ class TexturedCube:
             actor.SetMapper(mapper)
             actor.SetTexture(texture_object)
 
-    def get_scene(self):
-        """Returns
-           -------
-           self.scene : window.Scene"""
-
-        self.scene = window.Scene()
-        for actor in self.actors:
-            self.scene.add(actor)
-
-        return self.scene
-
     def get_actor(self):
         """Returns
            -------
-           assembled_actor : Actor"""
+           assembled_actor : Actor
+
+        """
 
         assembled_actor = Assembly()
         for actor_ in self.actors:
@@ -4090,6 +4081,7 @@ class TexturedCube:
             Input 2D RGB or RGBA array. Dtype should be uint8.
         posz : ndarray
             Input 2D RGB or RGBA array. Dtype should be uint8.
+
         """
 
         self.image_grids = [negx, negy, negz, posx, posy, posz]

@@ -56,7 +56,9 @@ for video_capture in video_captures:
 
 # Creating a TexturedCube with different textures on all 6 sides.
 cube = actor.TexturedCube(*rgb_images)
-scene = cube.get_scene()
+scene = window.Scene()
+cube_actor = cube.get_actor()
+scene.add(cube_actor)
 show_manager = window.ShowManager(scene, size=(1280, 720), reset_camera=False)
 show_manager.add_timer_callback(True, int(1/60), timer_callback)
 show_manager.start()
