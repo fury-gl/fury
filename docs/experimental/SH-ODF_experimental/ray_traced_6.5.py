@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     sh_count = coeffs.shape[-1]
 
-    sh_degree = int ((np.sqrt(8 * sh_count + 1) - 3) / 2)
+    sh_degree = int((np.sqrt(8 * sh_count + 1) - 3) / 2)
 
     valid_mask = np.abs(coeffs).max(axis=(-1)) > 0
     indices = np.nonzero(valid_mask)
@@ -108,8 +108,11 @@ if __name__ == "__main__":
 
     odf_actor.GetProperty().SetTexture("texture0", texture)
 
-    # TODO: Set int uniform
-    odf_actor.GetShaderProperty().GetFragmentCustomUniforms().SetUniformf(
+    odf_actor.GetShaderProperty().GetFragmentCustomUniforms().SetUniformi(
+        "shDegree", sh_degree
+    )
+
+    odf_actor.GetShaderProperty().GetFragmentCustomUniforms().SetUniformi(
         "numCoeffs", sh_count
     )
 
@@ -140,13 +143,15 @@ if __name__ == "__main__":
 
     # The index of the highest used band of the spherical harmonics basis. Must
     # be even, at least 2 and at most 12.
-    def_sh_degree = "#define SH_DEGREE 6"
+    def_sh_degree = "//#define SH_DEGREE 8"
 
     # The number of spherical harmonics basis functions
-    def_sh_count = "#define SH_COUNT (((SH_DEGREE + 1) * (SH_DEGREE + 2)) / 2)"
+    # def_sh_count = "#define SH_COUNT (((SH_DEGREE + 1) * (SH_DEGREE + 2)) / 2)"
+    def_sh_count = "#define SH_COUNT (((shDegree + 1) * (shDegree + 2)) / 2)"
 
     # Degree of polynomials for which we have to find roots
-    def_max_degree = "#define MAX_DEGREE (2 * SH_DEGREE + 2)"
+    # def_max_degree = "#define MAX_DEGREE (2 * SH_DEGREE + 2)"
+    def_max_degree = "#define MAX_DEGREE (2 * shDegree + 2)"
 
     # If GL_EXT_control_flow_attributes is available, these defines should be
     # defined as [[unroll]] and [[loop]] to give reasonable hints to the
