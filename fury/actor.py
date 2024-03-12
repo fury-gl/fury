@@ -3978,26 +3978,34 @@ class TexturedCube:
         posz : ndarray
             Input 2D RGB or RGBA array. Dtype should be uint8.
 
+             |----|
+             | +Y |
+        |----|----|----|----|
+        | -X | +Z | +X | -Z |
+        |----|----|----|----|
+             | -Y |
+             |----|
+
         """
 
         self.planes = [PlaneSource() for _ in range(6)]
 
         self.plane_centers = [
-            (0, 0.5, 0),
-            (0, 0, 0.5),
-            (0, 1, 0.5),
-            (0, 0.5, 1),
-            (0.5, 0.5, 0.5),
             (-0.5, 0.5, 0.5),
+            (0, 0, 0.5),
+            (0, 0.5, 0),
+            (0.5, 0.5, 0.5),
+            (0, 1, 0.5),
+            (0, 0.5, 1)
         ]
 
         self.plane_normals = [
-            (0, 0, 1),
-            (0, 1, 0),
+            (1, 0, 0),
             (0, 1, 0),
             (0, 0, 1),
             (1, 0, 0),
-            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1)
         ]
 
         for plane, center, normal in zip(
@@ -4052,7 +4060,7 @@ class TexturedCube:
     def get_actor(self):
         """Returns
            -------
-           assembled_actor : Actor
+           assembled_actor : Assembly
 
         """
 

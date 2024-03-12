@@ -13,6 +13,7 @@ from fury import shaders, window
 from fury.actor import grid
 from fury.decorators import skip_linux, skip_osx, skip_win
 from fury.deprecator import ExpiredDeprecationError
+from fury.lib import Assembly, PropCollection
 
 # Allow import, but disable doctests if we don't have dipy
 from fury.optpkg import optional_package
@@ -1881,3 +1882,53 @@ def test_actors_primitives_count():
         primitives_count = test_case[2]
         act = act_func(**args)
         npt.assert_equal(primitives_count_from_actor(act), primitives_count)
+
+
+def test_texturedcube(interactive=False):
+
+    arr_255 = np.full((720, 1280), 255, dtype=np.uint8)
+    arr_0 = np.full((720, 1280), 0, dtype=np.uint8)
+
+    arr_white = np.full((720, 1280, 3), 255, dtype=np.uint8)
+    arr_red = np.dstack((arr_255, arr_0, arr_0))
+    arr_green = np.dstack((arr_0, arr_255, arr_0))
+    arr_blue = np.dstack((arr_0, arr_0, arr_255))
+    arr_yellow = np.dstack((arr_255, arr_255, arr_0))
+    arr_aqua = np.dstack((arr_0, arr_255, arr_255))
+
+    cube = actor.TexturedCube(arr_white,
+                              arr_red,
+                              arr_green,
+                              arr_blue,
+                              arr_yellow,
+                              arr_aqua)
+
+    cube_actor = cube.get_actor()
+
+    # testing whether the returned is an Assembled Actor Object
+    assert type(cube_actor) is type(Assembly())
+
+    # testing whether there are 6 different planes
+    plane_actors = PropCollection()
+    cube_actor.GetActors(plane_actors)
+
+    assert plane_actors.GetNumberOfItems() == 6
+
+    # testing whether the texture is getting updated
+    def timer_callback(_caller, _timer_event):
+        rgb_images = [arr_aqua,
+                      arr_yellow,
+                      arr_blue,
+                      arr_green,
+                      arr_red,
+                      arr_white]
+        cube.texture_update(show_manager, *rgb_images)
+
+        assert cube.image_grids == rgb_images
+        show_manager.exit()
+
+    scene = window.Scene()
+    scene.add(cube_actor)
+    show_manager = window.ShowManager(scene, reset_camera=False)
+    show_manager.add_timer_callback(True, int(1/60), timer_callback)
+    show_manager.start()

@@ -101,6 +101,8 @@ InteractorEventRecorder = rcvtk.vtkInteractorEventRecorder
 WindowToImageFilter = rcvtk.vtkWindowToImageFilter
 #: class for InteractorStyle
 InteractorStyle = rcvtk.vtkInteractorStyle
+#: class for PropCollection
+PropCollection = rcvtk.vtkPropCollection
 #: class for PropPicker
 PropPicker = rcvtk.vtkPropPicker
 #: class for PointPicker
