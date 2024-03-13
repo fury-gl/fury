@@ -1906,7 +1906,7 @@ def test_texturedcube(interactive=False):
     cube_actor = cube.get_actor()
 
     # testing whether the returned is an Assembled Actor Object
-    assert type(cube_actor) is type(Assembly())
+    assert isinstance(cube_actor, Assembly)
 
     # testing whether there are 6 different planes
     plane_actors = PropCollection()
