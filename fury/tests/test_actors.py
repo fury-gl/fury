@@ -1901,7 +1901,10 @@ def test_texturedcube(interactive=False):
                               arr_green,
                               arr_blue,
                               arr_yellow,
-                              arr_aqua)
+                              arr_aqua,
+                              1,
+                              2,
+                              3)
 
     cube_actor = cube.get_actor()
 

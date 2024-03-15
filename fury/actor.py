@@ -75,6 +75,7 @@ from fury.utils import (
     get_actor_from_primitive,
     lines_to_vtk_polydata,
     numpy_to_vtk_colors,
+    numpy_to_vtk_image_data,
     repeat_sources,
     rgb_to_vtk,
     set_input,
@@ -3960,7 +3961,17 @@ def uncertainty_cone(
 class TexturedCube:
     """Class to work with textured cube."""
 
-    def __init__(self, negx, negy, negz, posx, posy, posz):
+    def __init__(self,
+                 negx,
+                 negy,
+                 negz,
+                 posx,
+                 posy,
+                 posz,
+                 center_x: int = 0,
+                 center_y: int = 0,
+                 center_z: int = 0,
+                 ):
         """Initializes a TexturedCube object.
 
         Parameters
@@ -3977,6 +3988,12 @@ class TexturedCube:
             Input 2D RGB or RGBA array. Dtype should be uint8.
         posz : ndarray
             Input 2D RGB or RGBA array. Dtype should be uint8.
+        center_x : int, optional
+            X-Coordinate of the cube.
+        center_y : int, optional
+            Y-Coordinate of the cube.
+        center_z : int, optional
+            Z-Coordinate of the cube.
 
              |----|
              | +Y |
@@ -3991,12 +4008,12 @@ class TexturedCube:
         self.planes = [PlaneSource() for _ in range(6)]
 
         self.plane_centers = [
-            (-0.5, 0.5, 0.5),
-            (0, 0, 0.5),
-            (0, 0.5, 0),
-            (0.5, 0.5, 0.5),
-            (0, 1, 0.5),
-            (0, 0.5, 1)
+            (-0.5 + center_x, 0.5 + center_y, 0.5 + center_z),
+            (0 + center_x, 0 + center_y, 0.5 + center_z),
+            (0 + center_x, 0.5 + center_y, 0 + center_z),
+            (0.5 + center_x, 0.5 + center_y, 0.5 + center_z),
+            (0 + center_x, 1 + center_y, 0.5 + center_z),
+            (0 + center_x, 0.5 + center_y, 1 + center_z)
         ]
 
         self.plane_normals = [
@@ -4017,20 +4034,10 @@ class TexturedCube:
             plane.SetNormal(*normal)
 
         self.image_grids = [negx, negy, negz, posx, posy, posz]
-        self.image_data_objs = [ImageData() for _ in range(6)]
 
-        for grid, image_data_obj in zip(
-            self.image_grids,
-            self.image_data_objs
-        ):
-            image_data_obj.SetDimensions(grid.shape[1], grid.shape[0], 1)
-            numpy_flip = np.flip(grid.swapaxes(0, 1), axis=1)
-            numpy_flip = numpy_flip.reshape((-1, 3), order='F')
-            vtkarr = numpy_support.numpy_to_vtk(numpy_flip)
-            vtkarr.SetName('Image')
-
-            image_data_obj.GetPointData().AddArray(vtkarr)
-            image_data_obj.GetPointData().SetActiveScalars('Image')
+        self.image_data_objs = [
+            numpy_to_vtk_image_data(grid) for grid in self.image_grids
+        ]
 
         self.texture_objects = [Texture() for _ in range(6)]
 
