@@ -3987,7 +3987,7 @@ def odf(
         ODFs size.
     opacity : float
         Takes values from 0 (fully transparent) to 1 (opaque).
-        
+
     Returns
     -------
     odf: Actor
@@ -3998,7 +3998,7 @@ def odf(
         centers = np.array(centers)
     if centers.ndim == 1:
         centers = np.array([centers])
-        
+ 
     if not isinstance(coeffs, np.ndarray):
         coeffs = np.array(coeffs)
     if coeffs.ndim == 1:
@@ -4008,7 +4008,7 @@ def odf(
                          'number of centers')
 
     coeffs_given = coeffs.shape[-1]
-    if degree == None:
+    if degree is None:
         degree = int((np.sqrt(8 * coeffs_given + 1) - 3)/2)
     elif degree % 2 != 0:
         raise ValueError('degree must be even')
@@ -4017,7 +4017,8 @@ def odf(
         print('Not enough number of coefficient for SH of degree {0}. '
               'Expected at least {1}'.format(degree, coeffs_needed))
         degree = int((np.sqrt(8 * coeffs_given + 1) - 3)/2)
-        if (degree % 2 != 0): degree -= 1
+        if (degree % 2 != 0):
+            degree -= 1
         coeffs_needed = int(((degree + 1) * (degree + 2)) / 2)
     coeffs = coeffs[:, :coeffs_needed]
 
@@ -4028,7 +4029,7 @@ def odf(
     elif scales.size != centers.shape[0]:
         scales = np.concatenate(
             (scales, np.ones(centers.shape[0] - scales.shape[0])), axis=None)
-        
+
     total = np.sum(abs(coeffs), axis=1)
     coeffs = np.dot(np.diag(1 / total * scales), coeffs) * 1.7
 
