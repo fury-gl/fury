@@ -10,33 +10,13 @@ from fury.shaders import (
     import_fury_shader,
     shader_to_actor,
 )
-from fury.utils import numpy_to_vtk_image_data, set_polydata_tcoords
+from fury.utils import (
+    numpy_to_vtk_image_data,
+    set_polydata_tcoords,
+    minmax_norm
+)
+from fury.texture.utils import uv_calculations
 
-def uv_calculations(n):
-    uvs = []
-    for i in range(0, n):
-        a = (n - (i + 1)) / n
-        b = (n - i) / n
-        uvs.extend(
-            [
-                [0.001, a + 0.001],
-                [0.001, b - 0.001],
-                [0.999, b - 0.001],
-                [0.999, a + 0.001],
-                [0.001, a + 0.001],
-                [0.001, b - 0.001],
-                [0.999, b - 0.001],
-                [0.999, a + 0.001],
-            ]
-        )
-    return uvs
-
-def minmax_norm(data):
-    min = data.min(axis=1)
-    max = data.max(axis=1)
-    return np.array([(data[i] - min[i]) / (max[i] - min[i]) 
-                     for i in range(data.shape[0])])
-    
 
 def sh_odf(centers, coeffs, degree, basis_type, scales, opacity):
     """
@@ -75,9 +55,9 @@ def sh_odf(centers, coeffs, degree, basis_type, scales, opacity):
     minmax = np.array([coeffs.min(axis=1), coeffs.max(axis=1)]).T
     big_minmax = np.repeat(minmax, 8, axis=0)
     attribute_to_actor(odf_actor, big_minmax, "minmax")
-    
+
     # The coefficient data is stored in a texture to be passed to the shaders.
-    
+
     # Data is normalized to a range of 0 to 1.
     arr = minmax_norm(coeffs)
     # Data is turned into values within the RGB color range, and then coverted
@@ -92,8 +72,7 @@ def sh_odf(centers, coeffs, degree, basis_type, scales, opacity):
 
     # Texture is associated with the actor
     odf_actor.GetProperty().SetTexture("texture0", texture)
-    
-    
+
     odf_actor_pd = odf_actor.GetMapper().GetInput()
 
     n_glyphs = coeffs.shape[0]
@@ -101,6 +80,7 @@ def sh_odf(centers, coeffs, degree, basis_type, scales, opacity):
     uv_vals = np.array(uv_calculations(n_glyphs))
     num_pnts = uv_vals.shape[0]
 
+    # Definition of texture coordinates to be associated with the actor.
     t_coords = FloatArray()
     t_coords.SetNumberOfComponents(2)
     t_coords.SetNumberOfTuples(num_pnts)
@@ -112,9 +92,9 @@ def sh_odf(centers, coeffs, degree, basis_type, scales, opacity):
     odf_actor.GetShaderProperty().GetFragmentCustomUniforms().SetUniformf(
         "numCoeffs", ((degree + 1) * (degree + 2)) / 2
     )
-    
+
     # Start of shader implementation
-    
+
     vs_dec = \
         """
         in vec3 center;
@@ -188,13 +168,13 @@ def sh_odf(centers, coeffs, degree, basis_type, scales, opacity):
         """
 
     coeffs_norm = import_fury_shader(os.path.join("utils", "minmax_norm.glsl"))
-    
+
     eval_sh_list = ''
-    for i in range (2, degree+1, 2):
+    for i in range(2, degree+1, 2):
         eval_sh = import_fury_shader(
             os.path.join("rt_odfs", basis_type, 'eval_sh_' + str(i) + '.frag'))
         eval_sh_grad = import_fury_shader(
-            os.path.join("rt_odfs", basis_type, 
+            os.path.join("rt_odfs", basis_type,
                          'eval_sh_grad_' + str(i) + '.frag'))
         eval_sh_list = eval_sh_list + '\n\n' + eval_sh + '\n\n' + eval_sh_grad
 
@@ -388,5 +368,5 @@ def sh_odf(centers, coeffs, degree, basis_type, scales, opacity):
     ])
 
     shader_to_actor(odf_actor, "fragment", impl_code=fs_impl, block="picking")
-    
+
     return odf_actor

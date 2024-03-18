@@ -4104,7 +4104,7 @@ def odf(
     elif scales.size != centers.shape[0]:
         scales = np.concatenate(
             (scales, np.ones(centers.shape[0] - scales.shape[0])), axis=None)
-        
+
     total = np.sum(abs(coeffs), axis=1)
     coeffs = np.dot(np.diag(1 / total * scales), coeffs) * 1.7
 
