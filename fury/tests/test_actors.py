@@ -1950,3 +1950,76 @@ def test_actors_primitives_count():
         primitives_count = test_case[2]
         act = act_func(**args)
         npt.assert_equal(primitives_count_from_actor(act), primitives_count)
+
+
+def test_odf_actor(interactive=False):
+    # number of odf glyphs does not match with number of centers
+    centers = np.array([[0, -1, 0]])
+    coeffs = np.array([[0.282, 0.152, -0.040, -0.112, -0.045, 0.149],
+                       [0.285, 0.097, -0.115, 0.125, -0.001, 0.003]])
+    npt.assert_raises(ValueError, actor.odf, centers, coeffs)
+    
+    scene = window.Scene()
+    centers = np.array([[0, -1, 0], [1, -1, 0], [2, -1, 0]])
+    coeffs = np.array([
+        [0.2820735, 0.15236554, -0.04038717, -0.11270988, -0.04532376,
+         0.14921817, 0.00257928, 0.0040734, -0.05313807, 0.03486542,
+         0.04083064, 0.02105767, -0.04389586, -0.04302812, 0.1048641],
+        [0.28549338, 0.0978267, -0.11544838, 0.12525354, -0.00126003,
+         0.00320594, 0.04744155, -0.07141446, 0.03211689, 0.04711322,
+         0.08064896, 0.00154299, 0.00086506, 0.00162543, -0.00444893],
+        [0.28208936, -0.13133252, -0.04701012, -0.06303016, -0.0468775,
+         0.02348355, 0.03991898, 0.02587433, 0.02645416, 0.00668765,
+         0.00890633, 0.02189304, 0.00387415, 0.01665629, -0.01427194]
+    ])
+    odf_actor = actor.odf(centers=centers, coeffs=coeffs)
+    scene.add(odf_actor)
+
+    if interactive:
+        window.show(scene)
+
+    report = window.analyze_scene(scene)
+    npt.assert_equal(report.actors, 1)
+    scene.clear()
+    
+    # given degree is not even
+    npt.assert_raises(ValueError, actor.odf, centers, coeffs, degree=3)
+
+    centers= np.array([0, 0, 0])
+    coeffs = np.array([
+        [-0.2739740312099, 0.2526670396328, 1.8922271728516, 0.2878578901291,
+         -0.5339795947075, -0.2620058953762, 0.1580424904823, 0.0329004973173,
+         -0.1322413831949, -0.1332057565451, 1.0894461870193, -0.6319401264191,
+         -0.0416776277125, -1.0772529840469,  0.1423762738705, 0.7941166162491,
+         0.7490307092667, -0.3428381681442, 0.1024847552180, -0.0219132602215,
+         0.0499043911695, 0.2162453681231, 0.0921059995890, -0.2611238956451,
+         0.2549301385880,-0.4534865319729, 0.1922748684883, -0.6200597286224]
+    ])
+    odf_actor = actor.odf(centers=centers, coeffs=coeffs, degree=6)
+    scene.add(odf_actor)
+
+    if interactive:
+        window.show(scene)
+
+    report = window.analyze_scene(scene)
+    npt.assert_equal(report.actors, 1)
+    scene.clear()
+
+    odf_actor = actor.odf(centers=centers, coeffs=coeffs, degree=4)
+    scene.add(odf_actor)
+    
+    if interactive:
+        window.show(scene)
+    
+    report = window.analyze_scene(scene)
+    npt.assert_equal(report.actors, 1)
+    scene.clear()
+    
+    odf_actor = actor.odf(centers=centers, coeffs=coeffs, degree=8)
+    scene.add(odf_actor)
+    
+    if interactive:
+        window.show(scene)
+    
+    npt.assert_equal(report.actors, 1)
+    scene.clear()
