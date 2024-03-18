@@ -1622,3 +1622,36 @@ def set_actor_origin(actor, *, center=None):
         center = np.mean(vertices)
     vertices[:] -= center
     update_actor(actor)
+
+
+def minmax_norm(data, axis=1):
+    """Returns the min-max normalization of data
+
+    Parameters
+    ----------
+    data: ndarray
+        2D array
+    axis: int
+        axis for the function to be applied on
+
+    Returns
+    -------
+    output : ndarray
+
+    """
+
+    if not isinstance(data, np.ndarray):
+        data = np.array(data)
+    if data.ndim == 1:
+        data = np.array([data])
+    elif data.ndim > 2:
+        raise ValueError('the dimension of the array must be 2.')
+
+    min = data.min(axis=axis)
+    max = data.max(axis=axis)
+    if np.array_equal(min, max):
+        return data
+    if (axis == 0):
+        return (data - min)/(max - min)
+    if (axis == 1):
+        return (data - min[:, None])/(max - min)[:, None]

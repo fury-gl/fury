@@ -4019,3 +4019,82 @@ def uncertainty_cone(
     angles = main_dir_uncertainty(evals, evecs, signal, sigma, b_matrix)
 
     return double_cone(centers, evecs, angles, colors, scales, opacity)
+
+
+def odf(
+    centers,
+    coeffs,
+    degree=None,
+    basis_type='descoteaux',
+    scales=1.0,
+    opacity=1.0
+):
+    """
+    VTK actor for visualizing ODFs given an array of spherical harmonics (SH)
+    coefficients.
+
+    Parameters
+    ----------
+    centers : ndarray(N, 3)
+        ODFs positions.
+    coeffs : ndarray
+        2D ODFs array in SH coefficients.
+    degree: int, optional
+        Index of the highest used band of the spherical harmonics basis. Must
+        be even, at least 2 and at most 12. If None the degree is set based on
+        the number of SH coefficients given.
+    basis_type: str, optional
+        Type of basis (descoteaux, tournier)
+        'descoteaux' for the default ``descoteaux07`` DYPY basis.
+        'tournier' for the default ``tournier07` DYPY basis.
+    scales : float or ndarray (N, )
+        ODFs size.
+    opacity : float
+        Takes values from 0 (fully transparent) to 1 (opaque).
+
+    Returns
+    -------
+    odf: Actor
+
+    """
+
+    if not isinstance(centers, np.ndarray):
+        centers = np.array(centers)
+    if centers.ndim == 1:
+        centers = np.array([centers])
+ 
+    if not isinstance(coeffs, np.ndarray):
+        coeffs = np.array(coeffs)
+    if coeffs.ndim == 1:
+        coeffs = np.array([coeffs])
+    if coeffs.shape[0] != centers.shape[0]:
+        raise ValueError('number of odf glyphs defined does not match with '
+                         'number of centers')
+
+    coeffs_given = coeffs.shape[-1]
+    if degree is None:
+        degree = int((np.sqrt(8 * coeffs_given + 1) - 3)/2)
+    elif degree % 2 != 0:
+        raise ValueError('degree must be even')
+    coeffs_needed = int(((degree + 1) * (degree + 2)) / 2)
+    if coeffs_given < coeffs_needed:
+        print('Not enough number of coefficient for SH of degree {0}. '
+              'Expected at least {1}'.format(degree, coeffs_needed))
+        degree = int((np.sqrt(8 * coeffs_given + 1) - 3)/2)
+        if (degree % 2 != 0):
+            degree -= 1
+        coeffs_needed = int(((degree + 1) * (degree + 2)) / 2)
+    coeffs = coeffs[:, :coeffs_needed]
+
+    if not isinstance(scales, np.ndarray):
+        scales = np.array(scales)
+    if scales.size == 1:
+        scales = np.repeat(scales, centers.shape[0])
+    elif scales.size != centers.shape[0]:
+        scales = np.concatenate(
+            (scales, np.ones(centers.shape[0] - scales.shape[0])), axis=None)
+
+    total = np.sum(abs(coeffs), axis=1)
+    coeffs = np.dot(np.diag(1 / total * scales), coeffs) * 1.7
+
+    return sh_odf(centers, coeffs, degree, basis_type, scales, opacity)
