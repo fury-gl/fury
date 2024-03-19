@@ -53,6 +53,7 @@ from fury.utils import (
     update_surface_actor_colors,
     vertices_from_actor,
     vtk_matrix_to_numpy,
+    minmax_norm,
 )
 
 dipy, have_dipy, _ = optional_package('dipy')
@@ -959,3 +960,23 @@ def test_set_actor_origin():
     utils.set_actor_origin(cube)
     centered_cube_vertices = np.copy(vertices_from_actor(cube))
     npt.assert_array_equal(orig_vert, centered_cube_vertices)
+
+
+def test_minmax_normalization():
+    data = np.array([[1, 2, -1, 3], [4, -1, 3, 5], [-1, 9, 8, 0]])
+    
+    actual = minmax_norm(data, axis=0)
+    expected = np.array([[0.4, 0.3, 0, 0.6], [1, 0, 0.444, 1], [0, 1, 1, 0]])
+    npt.assert_array_almost_equal(actual, expected, decimal=3)
+    actual = minmax_norm(data, axis=1)
+    expected = np.array([[0.5, 0.75, 0, 1], [0.833, 0, 0.666, 1], 
+                         [0, 1, 0.9, 0.1]])
+    npt.assert_array_almost_equal(actual, expected, decimal=3)
+
+    data2 = np.array([1, 3, 9, 6])
+    actual2 = minmax_norm(data2, axis=0)
+    expected2 = np.array([[1, 3, 9, 6]])
+    npt.assert_array_equal(actual2, expected2)
+    actual2 = minmax_norm(data2, axis=1)
+    expected2 = np.array([[0, 0.25 , 1, 0.625]])
+    npt.assert_array_almost_equal(actual2, expected2, decimal=3)
