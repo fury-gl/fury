@@ -13,7 +13,7 @@ from fury import shaders, window
 from fury.actor import grid
 from fury.decorators import skip_linux, skip_osx, skip_win
 from fury.deprecator import ExpiredDeprecationError
-from fury.lib import Assembly, PropCollection
+from fury.lib import Actor
 
 # Allow import, but disable doctests if we don't have dipy
 from fury.optpkg import optional_package
@@ -1884,8 +1884,7 @@ def test_actors_primitives_count():
         npt.assert_equal(primitives_count_from_actor(act), primitives_count)
 
 
-def test_texturedcube(interactive=False):
-
+def test_texture_on_cube(interactive=False):
     arr_255 = np.full((720, 1280), 255, dtype=np.uint8)
     arr_0 = np.full((720, 1280), 0, dtype=np.uint8)
 
@@ -1896,42 +1895,24 @@ def test_texturedcube(interactive=False):
     arr_yellow = np.dstack((arr_255, arr_255, arr_0))
     arr_aqua = np.dstack((arr_0, arr_255, arr_255))
 
-    cube = actor.TexturedCube(arr_white,
-                              arr_red,
-                              arr_green,
-                              arr_blue,
-                              arr_yellow,
-                              arr_aqua,
-                              1,
-                              2,
-                              3)
+    cube = actor.texture_on_cube(arr_white,
+                                 arr_red,
+                                 arr_green,
+                                 arr_blue,
+                                 arr_yellow,
+                                 arr_aqua,
+                                 (1, 2, 3))
 
-    cube_actor = cube.get_actor()
+    # testing whether 6 VTK Planes are returned
+    assert len(cube) == 6 and isinstance(cube[0], Actor)
 
-    # testing whether the returned is an Assembled Actor Object
-    assert isinstance(cube_actor, Assembly)
-
-    # testing whether there are 6 different planes
-    plane_actors = PropCollection()
-    cube_actor.GetActors(plane_actors)
-
-    assert plane_actors.GetNumberOfItems() == 6
-
-    # testing whether the texture is getting updated
-    def timer_callback(_caller, _timer_event):
-        rgb_images = [arr_aqua,
-                      arr_yellow,
-                      arr_blue,
-                      arr_green,
-                      arr_red,
-                      arr_white]
-        cube.texture_update(show_manager, *rgb_images)
-
-        assert cube.image_grids == rgb_images
-        show_manager.exit()
-
+    # testing whether the colors render as required (testing only 1)
     scene = window.Scene()
-    scene.add(cube_actor)
-    show_manager = window.ShowManager(scene, reset_camera=False)
-    show_manager.add_timer_callback(True, int(1/60), timer_callback)
-    show_manager.start()
+    scene.add(cube[5])
+
+    pic1 = window.snapshot(scene)
+    res1 = window.analyze_snapshot(im=pic1, colors=[
+        (0, 255, 255), (255, 255, 255)
+    ])
+
+    npt.assert_equal(res1.colors_found, [True, False])

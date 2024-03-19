@@ -3958,150 +3958,102 @@ def uncertainty_cone(
     return double_cone(centers, evecs, angles, colors, scales, opacity)
 
 
-class TexturedCube:
-    """Class to work with textured cube."""
+def texture_on_cube(negx, negy, negz, posx, posy, posz, centers=(0, 0, 0)):
+    """Map RGB or RGBA textures on a cube
 
-    def __init__(self,
-                 negx,
-                 negy,
-                 negz,
-                 posx,
-                 posy,
-                 posz,
-                 center_x: int = 0,
-                 center_y: int = 0,
-                 center_z: int = 0,
-                 ):
-        """Initializes a TexturedCube object.
+    Parameters
+    ----------
+    negx : ndarray
+        Input 2D RGB or RGBA array. Dtype should be uint8.
+    negy : ndarray
+        Input 2D RGB or RGBA array. Dtype should be uint8.
+    negz : ndarray
+        Input 2D RGB or RGBA array. Dtype should be uint8.
+    posx : ndarray
+        Input 2D RGB or RGBA array. Dtype should be uint8.
+    posy : ndarray
+        Input 2D RGB or RGBA array. Dtype should be uint8.
+    posz : ndarray
+        Input 2D RGB or RGBA array. Dtype should be uint8.
+    centers : tuple (3,)
+        The X, Y and Z coordinate of the cube, optional.
 
-        Parameters
-        ----------
-        negx : ndarray
-            Input 2D RGB or RGBA array. Dtype should be uint8.
-        negy : ndarray
-            Input 2D RGB or RGBA array. Dtype should be uint8.
-        negz : ndarray
-            Input 2D RGB or RGBA array. Dtype should be uint8.
-        posx : ndarray
-            Input 2D RGB or RGBA array. Dtype should be uint8.
-        posy : ndarray
-            Input 2D RGB or RGBA array. Dtype should be uint8.
-        posz : ndarray
-            Input 2D RGB or RGBA array. Dtype should be uint8.
-        center_x : int, optional
-            X-Coordinate of the cube.
-        center_y : int, optional
-            Y-Coordinate of the cube.
-        center_z : int, optional
-            Z-Coordinate of the cube.
+         |----|
+         | +Y |
+    |----|----|----|----|
+    | -X | +Z | +X | -Z |
+    |----|----|----|----|
+         | -Y |
+         |----|
 
-             |----|
-             | +Y |
-        |----|----|----|----|
-        | -X | +Z | +X | -Z |
-        |----|----|----|----|
-             | -Y |
-             |----|
+    Returns
+    -------
+    actors : list[Actor]
+        A list of Actor objects, one for each face of the cube, in order.
 
-        """
+    Implementation
+    --------------
+    Check docs/examples/viz_play_cube.py
 
-        self.planes = [PlaneSource() for _ in range(6)]
+    """
+    planes = [PlaneSource() for _ in range(6)]
+    center_x, center_y, center_z = centers
 
-        self.plane_centers = [
-            (-0.5 + center_x, 0.5 + center_y, 0.5 + center_z),
-            (0 + center_x, 0 + center_y, 0.5 + center_z),
-            (0 + center_x, 0.5 + center_y, 0 + center_z),
-            (0.5 + center_x, 0.5 + center_y, 0.5 + center_z),
-            (0 + center_x, 1 + center_y, 0.5 + center_z),
-            (0 + center_x, 0.5 + center_y, 1 + center_z)
-        ]
+    plane_centers = [
+        (-0.5 + center_x, 0.5 + center_y, 0.5 + center_z),
+        (0 + center_x, 0 + center_y, 0.5 + center_z),
+        (0 + center_x, 0.5 + center_y, 0 + center_z),
+        (0.5 + center_x, 0.5 + center_y, 0.5 + center_z),
+        (0 + center_x, 1 + center_y, 0.5 + center_z),
+        (0 + center_x, 0.5 + center_y, 1 + center_z)
+    ]
 
-        self.plane_normals = [
-            (1, 0, 0),
-            (0, 1, 0),
-            (0, 0, 1),
-            (1, 0, 0),
-            (0, 1, 0),
-            (0, 0, 1)
-        ]
+    plane_normals = [
+        (1, 0, 0),
+        (0, 1, 0),
+        (0, 0, 1),
+        (1, 0, 0),
+        (0, 1, 0),
+        (0, 0, 1)
+    ]
 
-        for plane, center, normal in zip(
-            self.planes,
-            self.plane_centers,
-            self.plane_normals
-        ):
-            plane.SetCenter(*center)
-            plane.SetNormal(*normal)
+    for plane, center, normal in zip(
+        planes,
+        plane_centers,
+        plane_normals
+    ):
+        plane.SetCenter(*center)
+        plane.SetNormal(*normal)
 
-        self.image_grids = [negx, negy, negz, posx, posy, posz]
+    image_grids = [negx, negy, negz, posx, posy, posz]
 
-        self.image_data_objs = [
-            numpy_to_vtk_image_data(grid) for grid in self.image_grids
-        ]
+    image_data_objs = [
+        numpy_to_vtk_image_data(grid) for grid in image_grids
+    ]
 
-        self.texture_objects = [Texture() for _ in range(6)]
+    texture_objects = [Texture() for _ in range(6)]
 
-        for image_data_obj, texture_object in zip(
-            self.image_data_objs,
-            self.texture_objects
-        ):
-            texture_object.SetInputDataObject(image_data_obj)
+    for image_data_obj, texture_object in zip(
+        image_data_objs,
+        texture_objects
+    ):
+        texture_object.SetInputDataObject(image_data_obj)
 
-        self.polyDataMappers = [PolyDataMapper() for _ in range(6)]
+    polyDataMappers = [PolyDataMapper() for _ in range(6)]
 
-        for mapper, plane in zip(
-            self.polyDataMappers,
-            self.planes
-        ):
-            mapper.SetInputConnection(plane.GetOutputPort())
+    for mapper, plane in zip(
+        polyDataMappers,
+        planes
+    ):
+        mapper.SetInputConnection(plane.GetOutputPort())
 
-        self.actors = [Actor() for _ in range(6)]
-        for actor, mapper, texture_object in zip(
-            self.actors,
-            self.polyDataMappers,
-            self.texture_objects
-        ):
-            actor.SetMapper(mapper)
-            actor.SetTexture(texture_object)
+    actors = [Actor() for _ in range(6)]
+    for actor, mapper, texture_object in zip(
+        actors,
+        polyDataMappers,
+        texture_objects
+    ):
+        actor.SetMapper(mapper)
+        actor.SetTexture(texture_object)
 
-    def get_actor(self):
-        """Returns
-           -------
-           assembled_actor : Assembly
-
-        """
-
-        assembled_actor = Assembly()
-        for actor_ in self.actors:
-            assembled_actor.AddPart(actor_)
-
-        return assembled_actor
-
-    def texture_update(self, show_manager, negx, negy, negz, posx, posy, posz):
-        """Changes the texture of the cube.
-
-        Parameters
-        ----------
-        show_manager : window.ShowManager
-            Input currently using ShowManager.
-        negx : ndarray
-            Input 2D RGB or RGBA array. Dtype should be uint8.
-        negy : ndarray
-            Input 2D RGB or RGBA array. Dtype should be uint8.
-        negz : ndarray
-            Input 2D RGB or RGBA array. Dtype should be uint8.
-        posx : ndarray
-            Input 2D RGB or RGBA array. Dtype should be uint8.
-        posy : ndarray
-            Input 2D RGB or RGBA array. Dtype should be uint8.
-        posz : ndarray
-            Input 2D RGB or RGBA array. Dtype should be uint8.
-
-        """
-
-        self.image_grids = [negx, negy, negz, posx, posy, posz]
-
-        for actor_, image in zip(self.actors, self.image_grids):
-            texture_update(actor_, image)
-
-        show_manager.render()
+    return actors
