@@ -3997,8 +3997,8 @@ def texture_on_cube(negx, negy, negz, posx, posy, posz, centers=(0, 0, 0)):
 
     """
     plane_objects = [PlaneSource() for _ in range(6)]
-    center_x, center_y, center_z = centers
 
+    center_x, center_y, center_z = centers
     plane_centers = [
         (-0.5 + center_x, 0 + center_y, 0 + center_z),
         (0 + center_x, -0.5 + center_y, 0 + center_z),
@@ -4009,9 +4009,9 @@ def texture_on_cube(negx, negy, negz, posx, posy, posz, centers=(0, 0, 0)):
     ]
 
     plane_normals = [
-        (1, 0, 0),
-        (0, 1, 0),
-        (0, 0, 1),
+        (-1, 0, 0),
+        (0, -1, 0),
+        (0, 0, -1),
         (1, 0, 0),
         (0, 1, 0),
         (0, 0, 1)
@@ -4026,13 +4026,11 @@ def texture_on_cube(negx, negy, negz, posx, posy, posz, centers=(0, 0, 0)):
         plane.SetNormal(*normal)
 
     image_grids = [negx, negy, negz, posx, posy, posz]
-
     image_data_objects = [
         numpy_to_vtk_image_data(grid) for grid in image_grids
     ]
 
     texture_objects = [Texture() for _ in range(6)]
-
     for image_data, texture in zip(
         image_data_objects,
         texture_objects
@@ -4040,7 +4038,6 @@ def texture_on_cube(negx, negy, negz, posx, posy, posz, centers=(0, 0, 0)):
         texture.SetInputDataObject(image_data)
 
     polydatamapper_objects = [PolyDataMapper() for _ in range(6)]
-
     for mapper, plane in zip(
         polydatamapper_objects,
         plane_objects
