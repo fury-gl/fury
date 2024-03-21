@@ -3996,7 +3996,7 @@ def texture_on_cube(negx, negy, negz, posx, posy, posz, centers=(0, 0, 0)):
     Check docs/examples/viz_play_cube.py
 
     """
-    planes = [PlaneSource() for _ in range(6)]
+    plane_objects = [PlaneSource() for _ in range(6)]
     center_x, center_y, center_z = centers
 
     plane_centers = [
@@ -4018,7 +4018,7 @@ def texture_on_cube(negx, negy, negz, posx, posy, posz, centers=(0, 0, 0)):
     ]
 
     for plane, center, normal in zip(
-        planes,
+        plane_objects,
         plane_centers,
         plane_normals
     ):
@@ -4027,33 +4027,33 @@ def texture_on_cube(negx, negy, negz, posx, posy, posz, centers=(0, 0, 0)):
 
     image_grids = [negx, negy, negz, posx, posy, posz]
 
-    image_data_objs = [
+    image_data_objects = [
         numpy_to_vtk_image_data(grid) for grid in image_grids
     ]
 
     texture_objects = [Texture() for _ in range(6)]
 
-    for image_data_obj, texture_object in zip(
-        image_data_objs,
+    for image_data, texture in zip(
+        image_data_objects,
         texture_objects
     ):
-        texture_object.SetInputDataObject(image_data_obj)
+        texture.SetInputDataObject(image_data)
 
-    polyDataMappers = [PolyDataMapper() for _ in range(6)]
+    polydatamapper_objects = [PolyDataMapper() for _ in range(6)]
 
     for mapper, plane in zip(
-        polyDataMappers,
-        planes
+        polydatamapper_objects,
+        plane_objects
     ):
         mapper.SetInputConnection(plane.GetOutputPort())
 
-    actors = [Actor() for _ in range(6)]
-    for actor, mapper, texture_object in zip(
-        actors,
-        polyDataMappers,
+    actor_objects = [Actor() for _ in range(6)]
+    for actor, mapper, texture in zip(
+        actor_objects,
+        polydatamapper_objects,
         texture_objects
     ):
         actor.SetMapper(mapper)
-        actor.SetTexture(texture_object)
+        actor.SetTexture(texture)
 
-    return actors
+    return actor_objects

@@ -59,6 +59,7 @@ files = [
     "viz_emwave_animation.py",
     "viz_helical_motion.py",
     "viz_play_video.py",
+    "viz_play_cube.py",
     "viz_dt_ellipsoids.py"
 ]
 
