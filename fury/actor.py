@@ -4000,12 +4000,12 @@ def texture_on_cube(negx, negy, negz, posx, posy, posz, centers=(0, 0, 0)):
     center_x, center_y, center_z = centers
 
     plane_centers = [
-        (-0.5 + center_x, 0.5 + center_y, 0.5 + center_z),
-        (0 + center_x, 0 + center_y, 0.5 + center_z),
+        (-0.5 + center_x, 0 + center_y, 0 + center_z),
+        (0 + center_x, -0.5 + center_y, 0 + center_z),
+        (0 + center_x, 0 + center_y, -0.5 + center_z),
+        (0.5 + center_x, 0 + center_y, 0 + center_z),
         (0 + center_x, 0.5 + center_y, 0 + center_z),
-        (0.5 + center_x, 0.5 + center_y, 0.5 + center_z),
-        (0 + center_x, 1 + center_y, 0.5 + center_z),
-        (0 + center_x, 0.5 + center_y, 1 + center_z)
+        (0 + center_x, 0 + center_y, 0.5 + center_z)
     ]
 
     plane_normals = [
