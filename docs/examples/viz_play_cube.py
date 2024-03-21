@@ -99,6 +99,7 @@ show_manager = window.ShowManager(scene, size=(1280, 720), reset_camera=False)
 show_manager.add_timer_callback(True, int(1/60), timer_callback)
 
 
+######################################################################
 # Flip it to ``True`` for video.
 interactive = False
 if interactive:
