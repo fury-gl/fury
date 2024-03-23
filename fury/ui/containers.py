@@ -740,10 +740,15 @@ class TabUI(UI):
     def update_tabs(self):
         """Update position, size and callbacks for tab panels."""
         self.tab_panel_size = (self.size[0] // self.nb_tabs, int(0.1 * self.size[1]))
+        if self.tab_bar_pos.lower() not in ['top', 'bottom']:
+            print("WARNING: tab_bar_pos can only have value top/bottom")
+            self.tab_bar_pos = "top"
+
         if self.tab_bar_pos.lower() == "top":
             tab_panel_pos = [0.0, 0.9]
         elif self.tab_bar_pos.lower() == "bottom":
             tab_panel_pos = [0.0, 0.0]
+
         for tab_panel in self.tabs:
             tab_panel.resize(self.tab_panel_size)
             tab_panel.content_panel.position = self.position
