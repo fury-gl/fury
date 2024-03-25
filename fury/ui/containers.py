@@ -18,7 +18,7 @@ from fury.lib import (
 )
 from fury.ui.core import UI, Rectangle2D, TextBlock2D
 from fury.utils import rotate, set_input
-
+from warnings import warn
 
 class Panel2D(UI):
     """A 2D UI Panel.
@@ -741,7 +741,7 @@ class TabUI(UI):
         """Update position, size and callbacks for tab panels."""
         self.tab_panel_size = (self.size[0] // self.nb_tabs, int(0.1 * self.size[1]))
         if self.tab_bar_pos.lower() not in ['top', 'bottom']:
-            print("WARNING: tab_bar_pos can only have value top/bottom")
+            warn("tab_bar_pos can only have value top/bottom")
             self.tab_bar_pos = "top"
 
         if self.tab_bar_pos.lower() == "top":
