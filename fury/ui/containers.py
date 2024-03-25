@@ -18,7 +18,7 @@ from fury.lib import (
 )
 from fury.ui.core import UI, Rectangle2D, TextBlock2D
 from fury.utils import rotate, set_input
-
+from warnings import warn
 
 class Panel2D(UI):
     """A 2D UI Panel.
@@ -640,6 +640,7 @@ class TabUI(UI):
         inactive_color=(0.5, 0.5, 0.5),
         draggable=False,
         startup_tab_id=None,
+        tab_bar_pos="top",
     ):
         """Init class instance.
 
@@ -661,7 +662,8 @@ class TabUI(UI):
         startup_tab_id : int, optional
             Tab to be activated and uncollapsed on startup.
             by default None is activated/ all collapsed.
-
+        tab_bar_pos : str, optional
+            Position of the Tab Bar in the panel
         """
         self.tabs = []
         self.nb_tabs = nb_tabs
@@ -672,6 +674,7 @@ class TabUI(UI):
         self.inactive_color = inactive_color
         self.active_tab_idx = startup_tab_id
         self.collapsed = True
+        self.tab_bar_pos = tab_bar_pos
 
         super(TabUI, self).__init__()
         self.position = position
@@ -737,8 +740,15 @@ class TabUI(UI):
     def update_tabs(self):
         """Update position, size and callbacks for tab panels."""
         self.tab_panel_size = (self.size[0] // self.nb_tabs, int(0.1 * self.size[1]))
+        if self.tab_bar_pos.lower() not in ['top', 'bottom']:
+            warn("tab_bar_pos can only have value top/bottom")
+            self.tab_bar_pos = "top"
 
-        tab_panel_pos = [0.0, 0.9]
+        if self.tab_bar_pos.lower() == "top":
+            tab_panel_pos = [0.0, 0.9]
+        elif self.tab_bar_pos.lower() == "bottom":
+            tab_panel_pos = [0.0, 0.0]
+
         for tab_panel in self.tabs:
             tab_panel.resize(self.tab_panel_size)
             tab_panel.content_panel.position = self.position
@@ -776,7 +786,12 @@ class TabUI(UI):
 
             tab_panel.content_panel.resize(self.content_size)
             self.parent_panel.add_element(tab_panel, tab_panel_pos)
-            self.parent_panel.add_element(tab_panel.content_panel, (0.0, 0.0))
+            if self.tab_bar_pos.lower() == "top":
+                self.parent_panel.add_element(tab_panel.content_panel,
+                                              (0.0, 0.0))
+            elif self.tab_bar_pos.lower() == "bottom":
+                self.parent_panel.add_element(tab_panel.content_panel,
+                                              (0.0, 0.1))
             tab_panel_pos[0] += 1 / self.nb_tabs
 
     def select_tab_callback(self, iren, _obj, _tab_comp):
