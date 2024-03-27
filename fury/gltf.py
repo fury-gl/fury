@@ -129,7 +129,8 @@ class glTF:
                     base_col_tex = pbr['baseColorTexture']
                     metal_rough_tex = pbr['metallicRoughnessTexture']
 
-                    actor.GetProperty().SetBaseColorTexture(base_col_tex)
+                    # actor.GetProperty().SetBaseColorTexture(base_col_tex)
+                    actor.SetTexture(base_col_tex)
                     actor.GetProperty().SetORMTexture(metal_rough_tex)
 
                 emissive = self.materials[i]['emissive']
@@ -1163,7 +1164,6 @@ def export_scene(scene, filename='default.gltf'):
     primitives = []
     buffer_size = 0
     bview_count = 0
-
     for act in scene.GetActors():
         prim, size, count = _connect_primitives(gltf_obj, act, buffer_file,
                                                 buffer_size, bview_count, name)
