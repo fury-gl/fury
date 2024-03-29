@@ -108,7 +108,7 @@ if __name__ == "__main__":
 
     odf_actor.GetProperty().SetTexture("texture0", texture)
 
-    odf_actor.GetShaderProperty().GetFragmentCustomUniforms().SetUniformi(
+    odf_actor.GetShaderProperty().GetFragmentCustomUniforms().SetUniformf(
         "shDegree", sh_degree
     )
 
@@ -143,15 +143,15 @@ if __name__ == "__main__":
 
     # The index of the highest used band of the spherical harmonics basis. Must
     # be even, at least 2 and at most 12.
-    def_sh_degree = "//#define SH_DEGREE 8"
+    def_sh_degree = "#define SH_DEGREE 4"
 
     # The number of spherical harmonics basis functions
-    # def_sh_count = "#define SH_COUNT (((SH_DEGREE + 1) * (SH_DEGREE + 2)) / 2)"
-    def_sh_count = "#define SH_COUNT (((shDegree + 1) * (shDegree + 2)) / 2)"
+    def_sh_count = "#define SH_COUNT (((SH_DEGREE + 1) * (SH_DEGREE + 2)) / 2)"
+    # def_sh_count = "#define SH_COUNT (((shDegree + 1) * (shDegree + 2)) / 2)"
 
     # Degree of polynomials for which we have to find roots
-    # def_max_degree = "#define MAX_DEGREE (2 * SH_DEGREE + 2)"
-    def_max_degree = "#define MAX_DEGREE (2 * shDegree + 2)"
+    def_max_degree = "#define MAX_DEGREE (2 * SH_DEGREE + 2)"
+    # def_max_degree = "#define MAX_DEGREE (2 * shDegree + 2)"
 
     # If GL_EXT_control_flow_attributes is available, these defines should be
     # defined as [[unroll]] and [[loop]] to give reasonable hints to the
@@ -185,16 +185,7 @@ if __name__ == "__main__":
     in vec3 camUpMCVSOutput;
     """
 
-    coeffs_norm = """
-    float coeffsNorm(float coef)
-    {
-        float min = 0;
-        float max = 1;
-        float newMin = minmaxVSOutput.x;
-        float newMax = minmaxVSOutput.y;
-        return (coef - min) * ((newMax - newMin) / (max - min)) + newMin;
-    }
-    """
+    coeffs_norm = import_fury_shader(os.path.join("utils", "minmax_norm.glsl"))
 
     eval_sh_2 = import_fury_shader(
         os.path.join("rt_odfs", "descoteaux", "eval_sh_2.frag")
@@ -380,7 +371,9 @@ if __name__ == "__main__":
     float i = 1 / (numCoeffs * 2);
     float sh_coeffs[SH_COUNT];
     for(int j=0; j<numCoeffs; j++){
-        sh_coeffs[j] = coeffsNorm(texture(texture0, vec2(i + j / numCoeffs, tcoordVCVSOutput.y)).x);
+        sh_coeffs[j] = rescale(
+            texture(texture0, vec2(i + j / numCoeffs, tcoordVCVSOutput.y)).x,
+            0, 1, minmaxVSOutput.x, minmaxVSOutput.y);
     }
     """
 
