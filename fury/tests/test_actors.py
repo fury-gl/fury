@@ -1958,7 +1958,7 @@ def test_odf_actor(interactive=False):
     coeffs = np.array([[0.282, 0.152, -0.040, -0.112, -0.045, 0.149],
                        [0.285, 0.097, -0.115, 0.125, -0.001, 0.003]])
     npt.assert_raises(ValueError, actor.odf, centers, coeffs)
-    
+
     scene = window.Scene()
     centers = np.array([[0, -1, 0], [1, -1, 0], [2, -1, 0]])
     coeffs = np.array([
@@ -1981,11 +1981,11 @@ def test_odf_actor(interactive=False):
     report = window.analyze_scene(scene)
     npt.assert_equal(report.actors, 1)
     scene.clear()
-    
-    # given degree is not even
-    npt.assert_raises(ValueError, actor.odf, centers, coeffs, degree=3)
 
-    centers= np.array([0, 0, 0])
+    # given degree is not even
+    npt.assert_warns(UserWarning, actor.odf, centers, coeffs, 3)
+
+    centers = np.array([0, 0, 0])
     coeffs = np.array([
         [-0.2739740312099, 0.2526670396328, 1.8922271728516, 0.2878578901291,
          -0.5339795947075, -0.2620058953762, 0.1580424904823, 0.0329004973173,
@@ -1993,7 +1993,7 @@ def test_odf_actor(interactive=False):
          -0.0416776277125, -1.0772529840469,  0.1423762738705, 0.7941166162491,
          0.7490307092667, -0.3428381681442, 0.1024847552180, -0.0219132602215,
          0.0499043911695, 0.2162453681231, 0.0921059995890, -0.2611238956451,
-         0.2549301385880,-0.4534865319729, 0.1922748684883, -0.6200597286224]
+         0.2549301385880, -0.4534865319729, 0.1922748684883, -0.6200597286224]
     ])
     odf_actor = actor.odf(centers=centers, coeffs=coeffs, degree=6)
     scene.add(odf_actor)
@@ -2007,19 +2007,21 @@ def test_odf_actor(interactive=False):
 
     odf_actor = actor.odf(centers=centers, coeffs=coeffs, degree=4)
     scene.add(odf_actor)
-    
+
     if interactive:
         window.show(scene)
-    
+
     report = window.analyze_scene(scene)
     npt.assert_equal(report.actors, 1)
     scene.clear()
-    
+
     odf_actor = actor.odf(centers=centers, coeffs=coeffs, degree=8)
+    # not enough coefficients for given degree
+    npt.assert_warns(UserWarning, actor.odf, centers, coeffs, 8)
     scene.add(odf_actor)
-    
+
     if interactive:
         window.show(scene)
-    
+
     npt.assert_equal(report.actors, 1)
     scene.clear()
