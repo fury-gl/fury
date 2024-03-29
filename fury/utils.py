@@ -1599,7 +1599,7 @@ def set_actor_origin(actor, center=None):
 
 
 def minmax_norm(data, axis=1):
-    """Returns the min-max normalization of data
+    """Returns the min-max normalization of data along an axis.
 
     Parameters
     ----------
@@ -1621,11 +1621,11 @@ def minmax_norm(data, axis=1):
     elif data.ndim > 2:
         raise ValueError('the dimension of the array must be 2.')
 
-    min = data.min(axis=axis)
-    max = data.max(axis=axis)
-    if np.array_equal(min, max):
+    minimum = data.min(axis=axis)
+    maximum = data.max(axis=axis)
+    if np.array_equal(minimum, maximum):
         return data
     if (axis == 0):
-        return (data - min)/(max - min)
+        return (data - minimum)/(maximum - minimum)
     if (axis == 1):
-        return (data - min[:, None])/(max - min)[:, None]
+        return (data - minimum[:, None])/(maximum - minimum)[:, None]

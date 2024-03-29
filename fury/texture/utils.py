@@ -1,4 +1,17 @@
 def uv_calculations(n):
+    """Return UV coordinates based on the number of elements.
+
+    Parameters
+    ----------
+    n : int
+        number of elements.
+
+    Returns
+    -------
+    uvs : ndrray
+        UV coordinates for each element.
+
+    """
     uvs = []
     for i in range(0, n):
         a = (n - (i + 1)) / n
