@@ -185,55 +185,24 @@ if __name__ == "__main__":
     in vec3 camUpMCVSOutput;
     """
 
-    coeffs_norm = import_fury_shader(os.path.join("utils", "minmax_norm.glsl"))
+    minmax_norm = import_fury_shader(os.path.join("utils", "minmax_norm.glsl"))
 
-    eval_sh_2 = import_fury_shader(
-        os.path.join("rt_odfs", "descoteaux", "eval_sh_2.frag")
-    )
+    sh_basis = "descoteaux"
+    # sh_basis = "tournier"
 
-    eval_sh_4 = import_fury_shader(
-        os.path.join("rt_odfs", "descoteaux", "eval_sh_4.frag")
-    )
-
-    eval_sh_6 = import_fury_shader(
-        os.path.join("rt_odfs", "descoteaux", "eval_sh_6.frag")
-    )
-
-    eval_sh_8 = import_fury_shader(
-        os.path.join("rt_odfs", "descoteaux", "eval_sh_8.frag")
-    )
-
-    eval_sh_10 = import_fury_shader(
-        os.path.join("rt_odfs", "descoteaux", "eval_sh_10.frag")
-    )
-
-    eval_sh_12 = import_fury_shader(
-        os.path.join("rt_odfs", "descoteaux", "eval_sh_12.frag")
-    )
-
-    eval_sh_grad_2 = import_fury_shader(
-        os.path.join("rt_odfs", "descoteaux", "eval_sh_grad_2.frag")
-    )
-
-    eval_sh_grad_4 = import_fury_shader(
-        os.path.join("rt_odfs", "descoteaux", "eval_sh_grad_4.frag")
-    )
-
-    eval_sh_grad_6 = import_fury_shader(
-        os.path.join("rt_odfs", "descoteaux", "eval_sh_grad_6.frag")
-    )
-
-    eval_sh_grad_8 = import_fury_shader(
-        os.path.join("rt_odfs", "descoteaux", "eval_sh_grad_8.frag")
-    )
-
-    eval_sh_grad_10 = import_fury_shader(
-        os.path.join("rt_odfs", "descoteaux", "eval_sh_grad_10.frag")
-    )
-
-    eval_sh_grad_12 = import_fury_shader(
-        os.path.join("rt_odfs", "descoteaux", "eval_sh_grad_12.frag")
-    )
+    eval_sh_composed = ""
+    for i in range(2, sh_degree + 1, 2):
+        eval_sh = import_fury_shader(
+            os.path.join("rt_odfs", sh_basis, "eval_sh_" + str(i) + ".frag")
+        )
+        eval_sh_grad = import_fury_shader(
+            os.path.join(
+                "rt_odfs", sh_basis, "eval_sh_grad_" + str(i) + ".frag"
+            )
+        )
+        eval_sh_composed = compose_shader(
+            [eval_sh_composed, eval_sh, eval_sh_grad]
+        )
 
     # Searches a single root of a polynomial within a given interval.
     #   param out_root The location of the found root.
@@ -340,9 +309,7 @@ if __name__ == "__main__":
     fs_dec = compose_shader([
         def_sh_degree, def_sh_count, def_max_degree,
         def_gl_ext_control_flow_attributes, def_no_intersection, def_pis,
-        fs_vs_vars, coeffs_norm, eval_sh_2, eval_sh_4, eval_sh_6, eval_sh_8,
-        eval_sh_10, eval_sh_12, eval_sh_grad_2, eval_sh_grad_4, eval_sh_grad_6,
-        eval_sh_grad_8, eval_sh_grad_10, eval_sh_grad_12, newton_bisection,
+        fs_vs_vars, minmax_norm, eval_sh_composed, newton_bisection,
         find_roots, eval_sh, eval_sh_grad, get_inv_vandermonde,
         ray_sh_glyph_intersections, get_sh_glyph_normal, blinn_phong_model,
         linear_to_srgb, srgb_to_linear, linear_rgb_to_srgb, srgb_to_linear_rgb,
