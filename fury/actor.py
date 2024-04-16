@@ -4025,7 +4025,7 @@ def odf(
     centers,
     coeffs,
     degree=None,
-    basis_type='descoteaux',
+    sh_basis='descoteaux',
     scales=1.0,
     opacity=1.0
 ):
@@ -4044,7 +4044,7 @@ def odf(
         Index of the highest used band of the spherical harmonics basis. Must
         be even, at least 2 and at most 12. If None the degree is set based on
         the number of SH coefficients given.
-    basis_type: str, optional
+    sh_basis: str, optional
         Type of basis (descoteaux, tournier)
         'descoteaux' for the default ``descoteaux07`` DYPY basis.
         'tournier' for the default ``tournier07` DYPY basis.
@@ -4108,4 +4108,4 @@ def odf(
     total = np.sum(abs(coeffs), axis=1)
     coeffs = np.dot(np.diag(1 / total * scales), coeffs) * 1.7
 
-    return sh_odf(centers, coeffs, degree, basis_type, scales, opacity)
+    return sh_odf(centers, coeffs, degree, sh_basis, scales, opacity)

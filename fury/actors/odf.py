@@ -18,7 +18,7 @@ from fury.utils import (
 from fury.texture.utils import uv_calculations
 
 
-def sh_odf(centers, coeffs, degree, basis_type, scales, opacity):
+def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
     """
     Visualize one or many ODFs with different features.
 
@@ -28,7 +28,7 @@ def sh_odf(centers, coeffs, degree, basis_type, scales, opacity):
         ODFs positions.
     coeffs : ndarray
         2D ODFs array in SH coefficients.
-    basis_type: str, optional
+    sh_basis: str, optional
         Type of basis (descoteaux, tournier)
         'descoteaux' for the default ``descoteaux07`` DYPY basis.
         'tournier' for the default ``tournier07` DYPY basis.
@@ -56,11 +56,26 @@ def sh_odf(centers, coeffs, degree, basis_type, scales, opacity):
     big_minmax = np.repeat(minmax, 8, axis=0)
     attribute_to_actor(odf_actor, big_minmax, "minmax")
 
+    odf_actor_pd = odf_actor.GetMapper().GetInput()
+    
+    n_glyphs = coeffs.shape[0]
+    # Coordinates to locate the data of each glyph in the texture.
+    uv_vals = np.array(uv_calculations(n_glyphs))
+    num_pnts = uv_vals.shape[0]
+    
+    # Definition of texture coordinates to be associated with the actor.
+    t_coords = FloatArray()
+    t_coords.SetNumberOfComponents(2)
+    t_coords.SetNumberOfTuples(num_pnts)
+    [t_coords.SetTuple(i, uv_vals[i]) for i in range(num_pnts)]
+
+    set_polydata_tcoords(odf_actor_pd, t_coords)
+    
     # The coefficient data is stored in a texture to be passed to the shaders.
 
     # Data is normalized to a range of 0 to 1.
     arr = minmax_norm(coeffs)
-    # Data is turned into values within the RGB color range, and then coverted
+    # Data is turned into values within the RGB color range, and then converted
     # into a vtk image data.
     arr *= 255
     grid = numpy_to_vtk_image_data(arr.astype(np.uint8))
@@ -72,21 +87,6 @@ def sh_odf(centers, coeffs, degree, basis_type, scales, opacity):
 
     # Texture is associated with the actor
     odf_actor.GetProperty().SetTexture("texture0", texture)
-
-    odf_actor_pd = odf_actor.GetMapper().GetInput()
-
-    n_glyphs = coeffs.shape[0]
-    # Coordinates to locate the data of each glyph in the texture.
-    uv_vals = np.array(uv_calculations(n_glyphs))
-    num_pnts = uv_vals.shape[0]
-
-    # Definition of texture coordinates to be associated with the actor.
-    t_coords = FloatArray()
-    t_coords.SetNumberOfComponents(2)
-    t_coords.SetNumberOfTuples(num_pnts)
-    [t_coords.SetTuple(i, uv_vals[i]) for i in range(num_pnts)]
-
-    set_polydata_tcoords(odf_actor_pd, t_coords)
 
     # The number of coefficients is associated to the order of the SH
     odf_actor.GetShaderProperty().GetFragmentCustomUniforms().SetUniformf(
@@ -169,14 +169,19 @@ def sh_odf(centers, coeffs, degree, basis_type, scales, opacity):
 
     coeffs_norm = import_fury_shader(os.path.join("utils", "minmax_norm.glsl"))
 
-    eval_sh_list = ''
-    for i in range(2, degree+1, 2):
+    eval_sh_composed = ""
+    for i in range(2, degree + 1, 2): #PUT sh_degree
         eval_sh = import_fury_shader(
-            os.path.join("rt_odfs", basis_type, 'eval_sh_' + str(i) + '.frag'))
+            os.path.join("rt_odfs", sh_basis, "eval_sh_" + str(i) + ".frag")
+        )
         eval_sh_grad = import_fury_shader(
-            os.path.join("rt_odfs", basis_type,
-                         'eval_sh_grad_' + str(i) + '.frag'))
-        eval_sh_list = eval_sh_list + '\n\n' + eval_sh + '\n\n' + eval_sh_grad
+            os.path.join(
+                "rt_odfs", sh_basis, "eval_sh_grad_" + str(i) + ".frag"
+            )
+        )
+        eval_sh_composed = compose_shader(
+            [eval_sh_composed, eval_sh, eval_sh_grad]
+        )
 
     # Searches a single root of a polynomial within a given interval.
     #   param out_root The location of the found root.
@@ -283,7 +288,7 @@ def sh_odf(centers, coeffs, degree, basis_type, scales, opacity):
     fs_dec = compose_shader([
         def_sh_degree, def_sh_count, def_max_degree,
         def_gl_ext_control_flow_attributes, def_no_intersection, def_pis,
-        fs_vs_vars, coeffs_norm, eval_sh_list, newton_bisection, find_roots,
+        fs_vs_vars, coeffs_norm, eval_sh_composed, newton_bisection, find_roots,
         eval_sh, eval_sh_grad, get_inv_vandermonde, ray_sh_glyph_intersections,
         get_sh_glyph_normal, blinn_phong_model, linear_to_srgb, srgb_to_linear,
         linear_rgb_to_srgb, srgb_to_linear_rgb, tonemap
@@ -311,10 +316,9 @@ def sh_odf(centers, coeffs, degree, basis_type, scales, opacity):
         float i = 1 / (numCoeffs * 2);
         float sh_coeffs[SH_COUNT];
         for(int j=0; j<numCoeffs; j++){
-            sh_coeffs[j] = coeffsNorm(
-                texture(texture0, vec2(i + j / numCoeffs,
-                tcoordVCVSOutput.y)).x, 0, 1, minmaxVSOutput.x,
-                minmaxVSOutput.y);
+            sh_coeffs[j] = rescale(texture(
+                texture0, vec2(i + j / numCoeffs, tcoordVCVSOutput.y)).x,
+                0, 1, minmaxVSOutput.x, minmaxVSOutput.y);
         }
         """
 
