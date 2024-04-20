@@ -5,9 +5,7 @@ import numpy as np
 import numpy.testing as npt
 import pytest
 
-from fury import actor, interactor, ui
-from fury import utils as vtk_utils
-from fury import window
+from fury import actor, interactor, ui, utils as vtk_utils, window
 from fury.data import DATA_DIR
 from fury.decorators import skip_osx, skip_win
 from fury.lib import VTK_VERSION, Actor2D, PolyDataMapper2D, RegularPolygonSource

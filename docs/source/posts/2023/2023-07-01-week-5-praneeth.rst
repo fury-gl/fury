@@ -12,7 +12,7 @@ What did you do this week?
 Due to ongoing exams, my productivity was limited this week. However, I managed to find some time to explore and review a few PRs submitted by contributors:
 
 1. Ellipsoid PR `#791 <https://github.com/fury-gl/fury/pull/791>`_:
-   This PR focuses on creating a new ellipsoid actor defined with SDF and raymarching techniques. 
+   This PR focuses on creating a new ellipsoid actor defined with SDF and raymarching techniques.
 
 2. Website Improvement PR `#812 <https://github.com/fury-gl/fury/pull/812>`_:
    This PR includes changes for the new compatibility section on the FURY home page.

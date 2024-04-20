@@ -4,9 +4,9 @@ import copy
 import os
 from typing import Dict  # noqa
 
+from PIL import Image
 import numpy as np
 import pygltflib as gltflib
-from PIL import Image
 from pygltflib.utils import glb2gltf, gltf2glb
 
 from fury import actor, io, transform, utils

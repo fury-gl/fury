@@ -1,22 +1,20 @@
 """Fetcher based on dipy."""
 
-import os
-import sys
+import asyncio
 import contextlib
-import warnings
-import json
-
-from os.path import join as pjoin, dirname
 from hashlib import sha256
+import json
+import os
+from os.path import dirname, join as pjoin
+import platform
 from shutil import copyfileobj
-
+import sys
 import tarfile
+from urllib.request import urlopen
+import warnings
 import zipfile
 
-from urllib.request import urlopen
-import asyncio
 import aiohttp
-import platform
 
 # Set a user-writeable file-system location to put files:
 if 'FURY_HOME' in os.environ:

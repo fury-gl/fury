@@ -1,7 +1,7 @@
 import numpy as np
-import vtk
 from scipy.spatial import Delaunay
 from viz_shader_canvas import surface
+import vtk
 
 from fury import window
 

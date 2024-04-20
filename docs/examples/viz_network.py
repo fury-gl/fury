@@ -15,9 +15,7 @@ from os.path import join as pjoin
 
 import numpy as np
 
-from fury import actor
-from fury import colormap as cmap
-from fury import window
+from fury import actor, colormap as cmap, window
 from fury.data import fetch_viz_wiki_nw
 
 ###############################################################################

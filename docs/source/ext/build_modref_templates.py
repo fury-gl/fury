@@ -2,8 +2,8 @@
 """Script to auto-generate our API docs.
 """
 # stdlib imports
-import sys
 from os.path import join as pjoin
+import sys
 
 # local imports
 from apigen import ApiDocWriter

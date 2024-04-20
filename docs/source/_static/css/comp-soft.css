@@ -51,7 +51,7 @@
   width: var(--s);
   min-width: var(--s);
   margin: var(--m) var(--m) 0;
-  height: var(--s); 
+  height: var(--s);
   font-size:initial;
   border-radius: 50%;
   background: white;

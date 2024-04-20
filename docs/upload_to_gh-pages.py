@@ -10,12 +10,12 @@ Use:
 # Imports
 ###############################################################################
 import os
-import re
-import shutil
-import sys
 from os import chdir as cd
 from os.path import join as pjoin
+import re
+import shutil
 from subprocess import PIPE, CalledProcessError, Popen, check_call
+import sys
 
 if sys.version_info < (3, 4):
     raise RuntimeError('Python 3.4 and above is required' ' for running this script')

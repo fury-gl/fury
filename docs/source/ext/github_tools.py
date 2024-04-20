@@ -4,13 +4,13 @@
 Taken from ipython
 """
 import argparse
+from datetime import datetime, timedelta
 import json
 import operator
 import os
 import re
-import sys
-from datetime import datetime, timedelta
 from subprocess import check_output
+import sys
 from urllib.request import Request, urlopen
 
 # ----------------------------------------------------------------------------

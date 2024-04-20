@@ -1,5 +1,5 @@
-import sys
 from collections import namedtuple
+import sys
 
 PY_VERSION_8 = sys.version_info.minor >= 8
 

@@ -1,8 +1,8 @@
+from dataclasses import dataclass, field
 import fnmatch
 import os
-import shutil
-from dataclasses import dataclass, field
 from pathlib import Path
+import shutil
 
 from sphinx.util import logging
 

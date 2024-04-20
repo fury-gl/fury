@@ -10,7 +10,7 @@ Hello everyone, welcome to another weekly blogpost! Let's talk about the current
 
 Last Week's Effort
 ------------------
-Having accomplished a KDE rendering to a billboard last week, I was then tasked with trying a different approach to how the 
+Having accomplished a KDE rendering to a billboard last week, I was then tasked with trying a different approach to how the
 rendering was done. So, to recap, below was how I was doing it:
 
 1. Render one point's KDE offscreen to a single billboard, passing its position and sigma to the fragment shader as uniforms.
@@ -21,7 +21,7 @@ rendering was done. So, to recap, below was how I was doing it:
 6. Apply post processing effects (colormapping).
 7. Render the result to the screen.
 
-This approach was good, but it had some later limitations and issues that would probably take more processing time and attention to details (correct matrix 
+This approach was good, but it had some later limitations and issues that would probably take more processing time and attention to details (correct matrix
 transformations, etc) than the ideal. The different idea is pretty similar, but with some differences:
 
 1. Activate additive blending in OpenGL.
@@ -35,7 +35,7 @@ So I needed to basically do that.
 
 Was it Hard?
 ------------
-Fortunately, it wasn't so hard to do it in the end. Following those steps turned out pretty smooth, and after some days, 
+Fortunately, it wasn't so hard to do it in the end. Following those steps turned out pretty smooth, and after some days,
 I had the below result:
 
 .. image:: https://raw.githubusercontent.com/JoaoDell/gsoc_assets/main/images/final_2d_plot.png
@@ -52,13 +52,13 @@ This is a 2D KDE render of random 1000 points. For this I used the *"viridis"* c
    :align: center
    :alt: 3D KDE render
 
-After those results, I refactored my PR `#804 <https://github.com/fury-gl/fury/pull/804>`_ to better fit its current status, and it is 
+After those results, I refactored my PR `#804 <https://github.com/fury-gl/fury/pull/804>`_ to better fit its current status, and it is
 now ready for review. Success!
 
 
 This Week's Goals
 -----------------
-After finishing the first iteration of my experimental program, the next step is to work on an API for KDE rendering. I plan to meet 
+After finishing the first iteration of my experimental program, the next step is to work on an API for KDE rendering. I plan to meet
 with my mentors and talk about the details of this API, so expect an update next week. Also, I plan to take a better look on my fellow GSoC FURY
 contributors work so when their PRs are ready for review, I will have to be better prepared for it.
 

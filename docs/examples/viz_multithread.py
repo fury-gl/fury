@@ -10,8 +10,8 @@ rotates the camera, thread B prints a counter, and thread C
 adds and removes elements from the scene.
 """
 
-import time
 from threading import Thread
+import time
 
 import numpy as np
 
