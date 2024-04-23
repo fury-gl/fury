@@ -45,7 +45,8 @@ if __name__ == "__main__":
     dataset_dir = os.path.join(dipy_home, "stanford_hardi")
 
     coeffs, affine = load_nifti(
-        os.path.join(dataset_dir, "odf_debug_sh_coeffs_9x11x28(6).nii.gz")
+        # os.path.join(dataset_dir, "odf_debug_sh_coeffs_9x11x28(6).nii.gz")
+        os.path.join(dataset_dir, "odf_slice_2.nii.gz")
     )
 
     max_num_coeffs = coeffs.shape[-1]
@@ -54,7 +55,7 @@ if __name__ == "__main__":
 
     max_poly_degree = 2 * max_sh_degree + 2
 
-    viz_sh_degree = 6
+    viz_sh_degree = max_sh_degree
 
     valid_mask = np.abs(coeffs).max(axis=(-1)) > 0
     indices = np.nonzero(valid_mask)
@@ -112,18 +113,18 @@ if __name__ == "__main__":
 
     odf_actor.GetProperty().SetTexture("texture0", texture)
 
-    odf_actor.GetShaderProperty().GetFragmentCustomUniforms().SetUniformi(
+    odf_actor.GetShaderProperty().GetFragmentCustomUniforms().SetUniformf(
         "shDegree", viz_sh_degree
     )
 
     vs_dec = """
-    uniform int shDegree;
+    uniform float shDegree;
 
     in vec3 center;
     in vec2 minmax;
 
-    flat out int numCoeffsVSOutput;
-    flat out int maxPolyDegreeVSOutput;
+    flat out float numCoeffsVSOutput;
+    flat out float maxPolyDegreeVSOutput;
     out vec4 vertexMCVSOutput;
     out vec3 centerMCVSOutput;
     out vec2 minmaxVSOutput;
@@ -184,8 +185,8 @@ if __name__ == "__main__":
     """
 
     fs_vs_vars = """
-    flat in int numCoeffsVSOutput;
-    flat in int maxPolyDegreeVSOutput;
+    flat in float numCoeffsVSOutput;
+    flat in float maxPolyDegreeVSOutput;
     in vec4 vertexMCVSOutput;
     in vec3 centerMCVSOutput;
     in vec2 minmaxVSOutput;
@@ -273,7 +274,7 @@ if __name__ == "__main__":
     #   param ray_dir The normalized direction vector of the ray.
     # TODO: Pass numCoeffs
     ray_sh_glyph_intersections = import_fury_shader(
-        os.path.join("rt_odfs", "ray_sh_glyph_intersections.frag")
+        os.path.join("ray_traced", "odf", "ray_glyph_intersections.frag")
     )
 
     # Provides a normalized normal vector for a spherical harmonics glyph.
@@ -360,15 +361,17 @@ if __name__ == "__main__":
     # Perform the intersection test
     intersection_test = """
     float ray_params[MAX_DEGREE];
-    ray_sh_glyph_intersections(ray_params, sh_coeffs, ro - centerMCVSOutput, rd);
+    rayGlyphIntersections(
+        ray_params, sh_coeffs, numCoeffsVSOutput, ro - centerMCVSOutput, rd
+    );
     """
 
     # Identify the first intersection
     first_intersection = """
     float first_ray_param = NO_INTERSECTION;
     _unroll_
-    //for (int i = 0; i != MAX_DEGREE; ++i) {
-    for (int i = 0; i != maxPolyDegreeVSOutput; ++i) {
+    for (int i = 0; i != MAX_DEGREE; ++i) {
+    //for (int i = 0; i != maxPolyDegreeVSOutput; ++i) {
         if (ray_params[i] != NO_INTERSECTION && ray_params[i] > 0.0) {
             first_ray_param = ray_params[i];
             break;
