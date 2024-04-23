@@ -19,9 +19,9 @@ is an MIT-licensed project.
 
 # Stdlib imports
 import ast
+from importlib import import_module
 import os
 import re
-from importlib import import_module
 
 # suppress print statements (warnings for empty files)
 DEBUG = True

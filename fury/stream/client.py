@@ -1,12 +1,12 @@
+from functools import partial
 import logging
 import platform
 import time
-from functools import partial
 
 import numpy as np
 import vtk
 
-from fury.stream.constants import _CQUEUE, PY_VERSION_8
+from fury.stream.constants import PY_VERSION_8, _CQUEUE
 from fury.stream.tools import (
     ArrayCircularQueue,
     IntervalTimer,

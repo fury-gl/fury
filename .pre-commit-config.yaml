@@ -14,15 +14,12 @@ repos:
       - id: check-merge-conflict
       - id: check-vcs-permalinks
       - id: detect-aws-credentials
+        args: [--allow-missing-credentials]
       - id: detect-private-key
   # - repo: https://github.com/grantjenks/blue
   #   rev: v0.9.1
   #   hooks:
   #     - id: blue
-  - repo: https://github.com/pycqa/isort
-    rev: 5.12.0
-    hooks:
-      - id: isort
   - repo: https://github.com/pycqa/flake8
     rev: 6.0.0
     hooks:
@@ -49,3 +46,9 @@ repos:
           - importlib_resources
         args: ["fury"]
         pass_filenames: false
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.7
+    hooks:
+      # Run the linter
+      - id: ruff
+        args: [ --fix ]

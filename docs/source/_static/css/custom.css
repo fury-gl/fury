@@ -161,7 +161,7 @@ html[data-theme="light"] {
   --pst-color-navbar-link-hover: rgb(77, 171, 207);
 
 }
-/* Log:3/3/24 
+/* Log:3/3/24
 With updating the pydata-theme, there was issue with the <a> elements (They were underlined and colored by default, unlike previously), adding this code snippet helped fix the issue.
 You wouldn't want the links to be colored as there is a dark mode now, which will conflict with the color that pydata is assigning*/
 

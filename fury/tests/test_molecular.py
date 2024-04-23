@@ -1,8 +1,7 @@
 import numpy as np
 import numpy.testing as npt
 
-from fury import molecular as mol
-from fury import window
+from fury import molecular as mol, window
 
 
 def test_periodic_table():

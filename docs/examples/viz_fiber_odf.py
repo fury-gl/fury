@@ -7,12 +7,12 @@ This example demonstrate how to create a simple viewer for fiber
 orientation distribution functions (ODF) using fury's odf_slicer.
 """
 
+from dipy.data import get_sphere
+from dipy.reconst.shm import sh_to_sf_matrix
 import nibabel as nib
 
 # First, we import some useful modules and methods.
 import numpy as np
-from dipy.data import get_sphere
-from dipy.reconst.shm import sh_to_sf_matrix
 
 from fury import actor, ui, window
 from fury.data import fetch_viz_dmri, fetch_viz_icons, read_viz_dmri

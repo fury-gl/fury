@@ -1,5 +1,5 @@
-import os
 from functools import partial
+import os
 
 from fury import enable_warnings
 from fury.deprecator import deprecate_with_version

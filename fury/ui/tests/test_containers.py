@@ -260,51 +260,51 @@ def test_ui_tab_ui(interactive=False):
     tab_ui.tabs[0].title = 'Tab 1'
     tab_ui.tabs[1].title = 'Tab 2'
     tab_ui.tabs[2].title = 'Tab 3'
-    
+
     npt.assert_equal(tab_ui.tabs[0].title_bold, False)
     npt.assert_equal(tab_ui.tabs[1].title_bold, False)
     npt.assert_equal(tab_ui.tabs[2].title_bold, False)
-    
+
     tab_ui.tabs[0].title_bold = True
     tab_ui.tabs[1].title_bold = False
     tab_ui.tabs[2].title_bold = True
-    
+
     npt.assert_equal(tab_ui.tabs[0].title_bold, True)
     npt.assert_equal(tab_ui.tabs[1].title_bold, False)
     npt.assert_equal(tab_ui.tabs[2].title_bold, True)
-    
+
     npt.assert_equal(tab_ui.tabs[0].title_color, (.0, .0, .0))
     npt.assert_equal(tab_ui.tabs[1].title_color, (.0, .0, .0))
     npt.assert_equal(tab_ui.tabs[2].title_color, (.0, .0, .0))
-    
+
     tab_ui.tabs[0].title_color = (1, 0, 0)
     tab_ui.tabs[1].title_color = (0, 1, 0)
     tab_ui.tabs[2].title_color = (0, 0, 1)
-    
+
     npt.assert_equal(tab_ui.tabs[0].title_color, (1., .0, .0))
     npt.assert_equal(tab_ui.tabs[1].title_color, (.0, 1., .0))
     npt.assert_equal(tab_ui.tabs[2].title_color, (.0, .0, 1.))
-    
+
     npt.assert_equal(tab_ui.tabs[0].title_font_size, 18)
     npt.assert_equal(tab_ui.tabs[1].title_font_size, 18)
     npt.assert_equal(tab_ui.tabs[2].title_font_size, 18)
-    
+
     tab_ui.tabs[0].title_font_size = 10
     tab_ui.tabs[1].title_font_size = 20
     tab_ui.tabs[2].title_font_size = 30
-    
+
     npt.assert_equal(tab_ui.tabs[0].title_font_size, 10)
     npt.assert_equal(tab_ui.tabs[1].title_font_size, 20)
     npt.assert_equal(tab_ui.tabs[2].title_font_size, 30)
-    
+
     npt.assert_equal(tab_ui.tabs[0].title_italic, False)
     npt.assert_equal(tab_ui.tabs[1].title_italic, False)
     npt.assert_equal(tab_ui.tabs[2].title_italic, False)
-    
+
     tab_ui.tabs[0].title_italic = False
     tab_ui.tabs[1].title_italic = True
     tab_ui.tabs[2].title_italic = False
-    
+
     npt.assert_equal(tab_ui.tabs[0].title_italic, False)
     npt.assert_equal(tab_ui.tabs[1].title_italic, True)
     npt.assert_equal(tab_ui.tabs[2].title_italic, False)

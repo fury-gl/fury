@@ -1,6 +1,6 @@
 import numpy as np
-import vtk
 from scipy.spatial import Delaunay
+import vtk
 from vtk.util import numpy_support
 
 from fury.utils import (

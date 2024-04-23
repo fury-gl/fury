@@ -1,3 +1,5 @@
+from vtkmodules.util import colors, numpy_support  # type: ignore # noqa: F401
+from vtkmodules.util.misc import calldata_type  # type: ignore # noqa: F401
 import vtkmodules.vtkCommonCore as ccvtk  # type: ignore
 import vtkmodules.vtkCommonDataModel as cdmvtk  # type: ignore
 import vtkmodules.vtkCommonExecutionModel as cemvtk  # type: ignore
@@ -11,21 +13,19 @@ import vtkmodules.vtkFiltersHybrid as fhvtk  # type: ignore
 import vtkmodules.vtkFiltersModeling as fmvtk  # type: ignore
 import vtkmodules.vtkFiltersSources as fsvtk  # type: ignore
 import vtkmodules.vtkFiltersTexture as ftvtk  # type: ignore
-import vtkmodules.vtkImagingCore as icvtk  # type: ignore
-import vtkmodules.vtkInteractionStyle as isvtk  # type: ignore
 import vtkmodules.vtkIOGeometry as iogvtk  # type: ignore
 import vtkmodules.vtkIOImage as ioivtk  # type: ignore
 import vtkmodules.vtkIOLegacy as iolvtk  # type: ignore
 import vtkmodules.vtkIOMINC as iomincvtk  # type: ignore
 import vtkmodules.vtkIOPLY as ioplyvtk  # type: ignore
 import vtkmodules.vtkIOXML as ioxmlvtk  # type: ignore
+import vtkmodules.vtkImagingCore as icvtk  # type: ignore
+import vtkmodules.vtkInteractionStyle as isvtk  # type: ignore
 import vtkmodules.vtkRenderingAnnotation as ravtk  # type: ignore
 import vtkmodules.vtkRenderingCore as rcvtk  # type: ignore
 import vtkmodules.vtkRenderingFreeType as rftvtk  # type: ignore
 import vtkmodules.vtkRenderingLOD as rlodvtk  # type: ignore
 import vtkmodules.vtkRenderingOpenGL2 as roglvtk  # type: ignore
-from vtkmodules.util import colors, numpy_support  # type: ignore # noqa: F401
-from vtkmodules.util.misc import calldata_type  # type: ignore # noqa: F401
 
 VTK_VERSION = ccvtk.vtkVersion.GetVTKVersion()
 

@@ -7,9 +7,9 @@ First, let's download some available datasets. Here we are using a dataset
 which provides metrics and bundles.
 """
 
-import numpy as np
 from dipy.data import fetch_bundles_2_subjects, read_bundles_2_subjects
 from dipy.tracking.streamline import length, transform_streamlines
+import numpy as np
 
 from fury import actor, window
 

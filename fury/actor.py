@@ -1,12 +1,11 @@
 """Module that provide actors to render."""
 
+from functools import partial
 import os
 import warnings
-from functools import partial
 
 import numpy as np
 
-import fury.primitive as fp
 from fury import layout
 from fury.actors.odf_slicer import OdfSlicerActor
 from fury.actors.peak import PeakActor
@@ -33,8 +32,8 @@ from fury.lib import (
     ImageData,
     ImageMapToColors,
     ImageReslice,
-    LinearExtrusionFilter,
     LODActor,
+    LinearExtrusionFilter,
     LookupTable,
     LoopSubdivisionFilter,
     Matrix4x4,
@@ -49,9 +48,9 @@ from fury.lib import (
     SplineFilter,
     TextActor3D,
     Texture,
+    TextureMapToPlane,
     TexturedActor2D,
     TexturedSphereSource,
-    TextureMapToPlane,
     Transform,
     TransformPolyDataFilter,
     TriangleFilter,
@@ -59,6 +58,7 @@ from fury.lib import (
     VectorText,
     numpy_support,
 )
+import fury.primitive as fp
 from fury.shaders import (
     add_shader_callback,
     attribute_to_actor,

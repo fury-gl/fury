@@ -8,8 +8,8 @@ Here we present an example for visualizing slices from 3D images.
 
 import os
 
-import nibabel as nib
 from dipy.data import fetch_bundles_2_subjects
+import nibabel as nib
 
 from fury import actor, ui, window
 
