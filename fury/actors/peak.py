@@ -91,9 +91,9 @@ class PeakActor(Actor):
                 xyz = np.asarray(center)
             else:
                 xyz = w_pos[idx, :]
-            valid_peaks = np.nonzero(np.abs(valid_dirs[idx, :, :]).max(axis=-1) > 0.0)[
-                0
-            ]
+            valid_peaks = np.nonzero(
+                    np.abs(valid_dirs[idx, :, :]).max(axis=-1) > 0.0
+                    )[0]
             for direction in valid_peaks:
                 if values is not None:
                     pv = values[center][direction]
@@ -152,14 +152,20 @@ class PeakActor(Actor):
             uniform vec3 lowRanges;
             uniform vec3 highRanges;
             """
-        orient_to_rgb = import_fury_shader(pjoin('utils', 'orient_to_rgb.glsl'))
+        orient_to_rgb = import_fury_shader(
+                pjoin('utils', 'orient_to_rgb.glsl')
+                )
         visible_cross_section = import_fury_shader(
             pjoin('interaction', 'visible_cross_section.glsl')
         )
-        visible_range = import_fury_shader(pjoin('interaction', 'visible_range.glsl'))
+        visible_range = import_fury_shader(
+                pjoin('interaction', 'visible_range.glsl')
+                )
 
         vs_dec = compose_shader([vs_var_dec, orient_to_rgb])
-        fs_dec = compose_shader([fs_var_dec, visible_cross_section, visible_range])
+        fs_dec = compose_shader(
+                [fs_var_dec, visible_cross_section, visible_range]
+                )
 
         vs_impl = """
             centerVertexMCVSOutput = center;
@@ -292,11 +298,13 @@ def _orientation_colors(points, cmap='rgb_standard'):
     """
     if cmap.lower() == 'rgb_standard':
         col_list = [
-            orient2rgb(points[i + 1] - points[i]) for i in range(0, len(points), 2)
+                orient2rgb(points[i + 1] - points[i])
+                for i in range(0, len(points), 2)
         ]
     elif cmap.lower() == 'boys_standard':
         col_list = [
-            boys2rgb(points[i + 1] - points[i]) for i in range(0, len(points), 2)
+            boys2rgb(points[i + 1] - points[i])
+            for i in range(0, len(points), 2)
         ]
     else:
         raise ValueError(
@@ -359,7 +367,8 @@ def _peaks_colors_from_points(points, colors=None, points_per_line=2):
         if len(colors) == num_lines:
             pnts_colors = np.repeat(colors, points_per_line, axis=0)
             if colors.ndim == 1:  # Scalar per line
-                color_array = numpy_support.numpy_to_vtk(pnts_colors, deep=True)
+                color_array = \
+                        numpy_support.numpy_to_vtk(pnts_colors, deep=True)
                 colors_are_scalars = True
             elif colors.ndim == 2:  # RGB(A) color per line
                 global_opacity = 1 if colors.shape[1] == 3 else -1
@@ -409,12 +418,18 @@ def _points_to_vtk_cells(points, points_per_line=2):
     this actor the creation of this array requires a 2 points padding
     between indices.
     """
-    offset = np.asarray(list(range(0, num_pnts + 1, points_per_line)), dtype=int)
+    offset = np.asarray(
+            list(range(0, num_pnts + 1, points_per_line)), dtype=int
+            )
 
     vtk_array_type = numpy_support.get_vtk_array_type(connectivity.dtype)
     cell_array.SetData(
-        numpy_support.numpy_to_vtk(offset, deep=True, array_type=vtk_array_type),
-        numpy_support.numpy_to_vtk(connectivity, deep=True, array_type=vtk_array_type),
+        numpy_support.numpy_to_vtk(
+            offset, deep=True, array_type=vtk_array_type
+            ),
+        numpy_support.numpy_to_vtk(
+            connectivity, deep=True, array_type=vtk_array_type
+            ),
     )
 
     cell_array.SetNumberOfCells(num_cells)

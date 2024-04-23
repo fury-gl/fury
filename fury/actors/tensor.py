@@ -422,7 +422,7 @@ def main_dir_uncertainty(evals, evecs, signal, sigma, b_matrix):
     analysis described in [1]_. The idea is to estimate the variance of the
     main eigenvector which corresponds to the main direction of diffusion,
     directly from estimated D and its estimated covariance matrix
-    :math:`\Delta D` (see [2]_, equation 4). The angle :math:`\\Theta`
+    :math:`\\Delta D` (see [2]_, equation 4). The angle :math:`\\Theta`
     between the perturbed principal eigenvector of D,
     :math:`\\epsilon_1+\\Delta\\epsilon_1`, and the estimated eigenvector
     :math:`\\epsilon_1`, measures the angular deviation of the main fiber

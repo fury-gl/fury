@@ -118,7 +118,7 @@ class OdfSlicerActor(Actor):
         (inclusive).
         """
         mask = np.zeros(self.grid_shape, dtype=bool)
-        mask[x1 : x2 + 1, y1 : y2 + 1, z1 : z2 + 1] = True
+        mask[x1: x2 + 1, y1: y2 + 1, z1: z2 + 1] = True
         self.mask = mask
 
         self._update_mapper()
@@ -173,7 +173,10 @@ class OdfSlicerActor(Actor):
         """Dynamically change the sphere used for SH to SF projection.
         """
         if self.B is None:
-            raise ValueError("Can't update sphere when using " 'SF coefficients.')
+            raise ValueError(
+                "Can't update sphere when using "
+                'SF coefficients.'
+                )
         self.vertices = vertices
         if self.affine is not None:
             self.w_verts = self.vertices.dot(self.affine[:3, :3])
@@ -242,8 +245,9 @@ class OdfSlicerActor(Actor):
         if self.radial_scale:
             # apply SF amplitudes to all sphere
             # directions and offset each voxel
-            return np.tile(sph_dirs, (len(offsets), 1)) * sf.reshape(-1, 1) + np.repeat(
-                offsets, len(sph_dirs), axis=0
+            return (
+                np.tile(sph_dirs, (len(offsets), 1)) * sf.reshape(-1, 1)
+                + np.repeat(offsets, len(sph_dirs), axis=0)
             )
         # return scaled spheres offsetted by `offsets`
         return np.tile(sph_dirs, (len(offsets), 1)) * self.scale + np.repeat(
@@ -271,7 +275,8 @@ class OdfSlicerActor(Actor):
                 range_sf = sf.max(axis=-1) - sf.min(axis=-1)
                 rescaled = sf - sf.min(axis=-1, keepdims=True)
                 rescaled[range_sf > 0] /= range_sf[range_sf > 0][..., None]
-                all_colors = create_colormap(rescaled.ravel(), self.colormap) * 255
+                all_colors = create_colormap(rescaled.ravel(), self.colormap) \
+                    * 255
             else:
                 all_colors = np.tile(
                     np.array(self.colormap).reshape(1, 3),
