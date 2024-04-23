@@ -45,12 +45,16 @@ if __name__ == "__main__":
     dataset_dir = os.path.join(dipy_home, "stanford_hardi")
 
     coeffs, affine = load_nifti(
-        os.path.join(dataset_dir, "9x11_debug_sh_coeffs.nii.gz")
+        os.path.join(dataset_dir, "odf_debug_sh_coeffs_9x11x28(6).nii.gz")
     )
 
-    sh_count = coeffs.shape[-1]
+    max_num_coeffs = coeffs.shape[-1]
 
-    sh_degree = int((np.sqrt(8 * sh_count + 1) - 3) / 2)
+    max_sh_degree = int((np.sqrt(8 * max_num_coeffs + 1) - 3) / 2)
+
+    max_poly_degree = 2 * max_sh_degree + 2
+
+    viz_sh_degree = 6
 
     valid_mask = np.abs(coeffs).max(axis=(-1)) > 0
     indices = np.nonzero(valid_mask)
@@ -108,18 +112,18 @@ if __name__ == "__main__":
 
     odf_actor.GetProperty().SetTexture("texture0", texture)
 
-    odf_actor.GetShaderProperty().GetFragmentCustomUniforms().SetUniformf(
-        "shDegree", sh_degree
-    )
-
     odf_actor.GetShaderProperty().GetFragmentCustomUniforms().SetUniformi(
-        "numCoeffs", sh_count
+        "shDegree", viz_sh_degree
     )
 
     vs_dec = """
+    uniform int shDegree;
+
     in vec3 center;
     in vec2 minmax;
 
+    flat out int numCoeffsVSOutput;
+    flat out int maxPolyDegreeVSOutput;
     out vec4 vertexMCVSOutput;
     out vec3 centerMCVSOutput;
     out vec2 minmaxVSOutput;
@@ -129,6 +133,8 @@ if __name__ == "__main__":
     """
 
     vs_impl = """
+    numCoeffsVSOutput = (shDegree + 1) * (shDegree + 2) / 2;
+    maxPolyDegreeVSOutput = 2 * shDegree + 2;
     vertexMCVSOutput = vertexMC;
     centerMCVSOutput = center;
     minmaxVSOutput = minmax;
@@ -143,15 +149,16 @@ if __name__ == "__main__":
 
     # The index of the highest used band of the spherical harmonics basis. Must
     # be even, at least 2 and at most 12.
-    def_sh_degree = "#define SH_DEGREE 4"
+    # def_sh_degree = "#define SH_DEGREE 4"
+    def_sh_degree = f"#define SH_DEGREE {max_sh_degree}"
 
     # The number of spherical harmonics basis functions
-    def_sh_count = "#define SH_COUNT (((SH_DEGREE + 1) * (SH_DEGREE + 2)) / 2)"
-    # def_sh_count = "#define SH_COUNT (((shDegree + 1) * (shDegree + 2)) / 2)"
+    # def_sh_count = "#define SH_COUNT (((SH_DEGREE + 1) * (SH_DEGREE + 2)) / 2)"
+    def_sh_count = f"#define SH_COUNT {max_num_coeffs}"
 
     # Degree of polynomials for which we have to find roots
-    def_max_degree = "#define MAX_DEGREE (2 * SH_DEGREE + 2)"
-    # def_max_degree = "#define MAX_DEGREE (2 * shDegree + 2)"
+    # def_max_degree = "#define MAX_DEGREE (2 * SH_DEGREE + 2)"
+    def_max_degree = f"#define MAX_DEGREE {max_poly_degree}"
 
     # If GL_EXT_control_flow_attributes is available, these defines should be
     # defined as [[unroll]] and [[loop]] to give reasonable hints to the
@@ -177,6 +184,8 @@ if __name__ == "__main__":
     """
 
     fs_vs_vars = """
+    flat in int numCoeffsVSOutput;
+    flat in int maxPolyDegreeVSOutput;
     in vec4 vertexMCVSOutput;
     in vec3 centerMCVSOutput;
     in vec2 minmaxVSOutput;
@@ -191,7 +200,7 @@ if __name__ == "__main__":
     # sh_basis = "tournier"
 
     eval_sh_composed = ""
-    for i in range(2, sh_degree + 1, 2):
+    for i in range(2, max_sh_degree + 1, 2):
         eval_sh = import_fury_shader(
             os.path.join("rt_odfs", sh_basis, "eval_sh_" + str(i) + ".frag")
         )
@@ -262,6 +271,7 @@ if __name__ == "__main__":
     #       glyph. Their exact meaning is defined by eval_sh().
     #   param ray_origin The origin of the ray, relative to the glyph center.
     #   param ray_dir The normalized direction vector of the ray.
+    # TODO: Pass numCoeffs
     ray_sh_glyph_intersections = import_fury_shader(
         os.path.join("rt_odfs", "ray_sh_glyph_intersections.frag")
     )
@@ -335,12 +345,15 @@ if __name__ == "__main__":
 
     # Define SH coefficients (measured up to band 8, noise beyond that)
     sh_coeffs = """
-    float i = 1 / (numCoeffs * 2);
+    float i = 1 / (numCoeffsVSOutput * 2);
     float sh_coeffs[SH_COUNT];
-    for(int j=0; j<numCoeffs; j++){
+    for(int j=0; j < numCoeffsVSOutput; j++){
         sh_coeffs[j] = rescale(
-            texture(texture0, vec2(i + j / numCoeffs, tcoordVCVSOutput.y)).x,
-            0, 1, minmaxVSOutput.x, minmaxVSOutput.y);
+            texture(
+                texture0,
+                vec2(i + j / numCoeffsVSOutput, tcoordVCVSOutput.y)
+            ).x, 0, 1, minmaxVSOutput.x, minmaxVSOutput.y
+        );
     }
     """
 
@@ -354,7 +367,8 @@ if __name__ == "__main__":
     first_intersection = """
     float first_ray_param = NO_INTERSECTION;
     _unroll_
-    for (int i = 0; i != MAX_DEGREE; ++i) {
+    //for (int i = 0; i != MAX_DEGREE; ++i) {
+    for (int i = 0; i != maxPolyDegreeVSOutput; ++i) {
         if (ray_params[i] != NO_INTERSECTION && ray_params[i] > 0.0) {
             first_ray_param = ray_params[i];
             break;

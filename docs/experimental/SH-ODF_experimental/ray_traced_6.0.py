@@ -252,7 +252,7 @@ if __name__ == "__main__":
     #
     #   return true if a root was found, false if no root exists.
     newton_bisection = import_fury_shader(
-        os.path.join("root_finding", "newton_bisection.frag")
+        os.path.join("rt_odfs", "newton_bisection.frag")
     )
 
     # Finds all roots of the given polynomial in the interval [begin, end] and
