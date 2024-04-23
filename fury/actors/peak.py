@@ -298,11 +298,13 @@ def _orientation_colors(points, cmap='rgb_standard'):
     """
     if cmap.lower() == 'rgb_standard':
         col_list = [
-                orient2rgb(points[i + 1] - points[i]) for i in range(0, len(points), 2)
+                orient2rgb(points[i + 1] - points[i])
+                for i in range(0, len(points), 2)
         ]
     elif cmap.lower() == 'boys_standard':
         col_list = [
-            boys2rgb(points[i + 1] - points[i]) for i in range(0, len(points), 2)
+            boys2rgb(points[i + 1] - points[i])
+            for i in range(0, len(points), 2)
         ]
     else:
         raise ValueError(
