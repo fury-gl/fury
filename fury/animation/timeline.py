@@ -33,7 +33,9 @@ class Timeline:
 
     """
 
-    def __init__(self, animations=None, playback_panel=False, loop=True, length=None):
+    def __init__(self, animations=None,
+                 playback_panel=False,
+                 loop=True, length=None):
 
         self._scene = None
         self.playback_panel = None
@@ -365,7 +367,11 @@ class Timeline:
         render_window.SetSize(*size)
 
         if order_transparent:
-            window.antialiasing(scene, render_window, multi_samples, max_peels, 0)
+            window.antialiasing(scene,
+                                render_window,
+                                multi_samples,
+                                max_peels,
+                                0)
 
         window_to_image_filter = WindowToImageFilter()
 

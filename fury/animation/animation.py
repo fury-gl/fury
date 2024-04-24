@@ -42,7 +42,10 @@ class Animation:
 
     """
 
-    def __init__(self, actors=None, length=None, loop=True, motion_path_res=None):
+    def __init__(self, actors=None,
+                 length=None,
+                 loop=True,
+                 motion_path_res=None):
 
         super().__init__()
         self._data = defaultdict(dict)
@@ -81,7 +84,8 @@ class Animation:
         else:
             self._duration = max(
                 self._max_timestamp,
-                max([0] + [anim.update_duration() for anim in self.child_animations]),
+                max([0] + [anim.update_duration()
+                           for anim in self.child_animations]),
             )
 
         return self.duration
@@ -184,7 +188,8 @@ class Animation:
             data[attrib] = {
                 'keyframes': defaultdict(dict),
                 'interpolator': {
-                    'base': linear_interpolator if attrib != 'rotation' else slerp,
+                    'base': (linear_interpolator
+                             if attrib != 'rotation' else slerp),
                     'func': None,
                     'args': defaultdict(),
                 },
@@ -206,7 +211,8 @@ class Animation:
         if attrib is None:
             attribs = data.keys()
             return {
-                attrib: data.get(attrib, {}).get('keyframes', {}) for attrib in attribs
+                attrib: data.get(attrib,
+                                 {}).get('keyframes', {}) for attrib in attribs
             }
         return data.get(attrib, {}).get('keyframes', {})
 
@@ -315,7 +321,8 @@ class Animation:
             parent_in_scene = parent._added_to_scene
 
         if self.is_interpolatable('in_scene'):
-            in_scene = parent_in_scene and self.get_value('in_scene', timestamp)
+            in_scene = parent_in_scene and self.get_value('in_scene',
+                                                          timestamp)
         else:
             in_scene = parent_in_scene
         return in_scene
@@ -360,7 +367,8 @@ class Animation:
                 self._scene.rm(*self._actors)
                 self._added_to_scene = False
 
-    def set_interpolator(self, attrib, interpolator, is_evaluator=False, **kwargs):
+    def set_interpolator(self, attrib, interpolator,
+                         is_evaluator=False, **kwargs):
         """Set keyframes interpolator for a certain property
 
         Parameters
@@ -438,7 +446,8 @@ class Animation:
         data = self._data
         return bool(data.get(attrib, {}).get('interpolator', {}).get('func'))
 
-    def set_position_interpolator(self, interpolator, is_evaluator=False, **kwargs):
+    def set_position_interpolator(self, interpolator,
+                                  is_evaluator=False, **kwargs):
         """Set the position interpolator.
 
         Parameters
@@ -501,7 +510,8 @@ class Animation:
         >>> Animation.set_rotation_interpolator(slerp)
 
         """
-        self.set_interpolator('rotation', interpolator, is_evaluator=is_evaluator)
+        self.set_interpolator('rotation', interpolator,
+                              is_evaluator=is_evaluator)
 
     def set_color_interpolator(self, interpolator, is_evaluator=False):
         """Set the color interpolator.
@@ -539,7 +549,9 @@ class Animation:
         >>> Animation.set_opacity_interpolator(step_interpolator)
 
         """
-        self.set_interpolator('opacity', interpolator, is_evaluator=is_evaluator)
+        self.set_interpolator('opacity',
+                              interpolator,
+                              is_evaluator=is_evaluator)
 
     def get_value(self, attrib, timestamp):
         """Return the value of an attribute at any given timestamp.
@@ -553,7 +565,8 @@ class Animation:
 
         """
         value = (
-            self._data.get(attrib, {}).get('interpolator', {}).get('func')(timestamp)
+            self._data.get(attrib,
+                           {}).get('interpolator', {}).get('func')(timestamp)
         )
         return value
 
@@ -1217,7 +1230,11 @@ class CameraAnimation(Animation):
 
     """
 
-    def __init__(self, camera=None, length=None, loop=True, motion_path_res=None):
+    def __init__(self,
+                 camera=None,
+                 length=None,
+                 loop=True,
+                 motion_path_res=None):
         super(CameraAnimation, self).__init__(
             length=length, loop=loop, motion_path_res=motion_path_res
         )
@@ -1381,7 +1398,8 @@ class CameraAnimation(Animation):
             function that does not depend on keyframes.
 
         """
-        self.set_interpolator('view_up', interpolator, is_evaluator=is_evaluator)
+        self.set_interpolator('view_up', interpolator,
+                              is_evaluator=is_evaluator)
 
     def update_animation(self, time=None):
         """Update the camera animation.
@@ -1406,7 +1424,10 @@ class CameraAnimation(Animation):
                 # camera axis is reverted
                 rot = -self.get_rotation(time, as_quat=True)
                 rot = transform.Rotation.from_quat(rot).as_matrix()
-                rot = np.array([[*rot[0], 0], [*rot[1], 0], [*rot[2], 0], [0, 0, 0, 1]])
+                rot = np.array([[*rot[0], 0],
+                                [*rot[1], 0],
+                                [*rot[2], 0],
+                                [0, 0, 0, 1]])
                 rot = translation @ rot @ np.linalg.inv(translation)
                 self._camera.SetModelTransformMatrix(rot.flatten())
 
