@@ -459,11 +459,13 @@ fetch_viz_new_icons = _make_fetcher(
      "polyline-pressed.png", "polyline.png", "quad-pressed.png", "quad.png",
      "resize-pressed.png", "resize.png", "selection-pressed.png",
      "selection.png"],
+    
     ["circle-pressed.png", "circle.png", "delete-pressed.png", "delete.png",
      "drawing-pressed.png", "drawing.png", "line-pressed.png", "line.png",
      "polyline-pressed.png", "polyline.png", "quad-pressed.png", "quad.png",
      "resize-pressed.png", "resize.png", "selection-pressed.png",
      "selection.png"],
+    
     ["CD859F244DF1BA719C65C869C3FAF6B8563ABF82F457730ADBFBD7CA72DDB7BC",
      "5896BDC9FF9B3D1054134D7D9A854677CE9FA4E64F494F156BB2E3F0E863F207",
      "937C46C25BC38B62021B01C97A4EE3CDE5F7C8C4A6D0DB75BF4E4CACE2AF1226",
@@ -481,6 +483,7 @@ fetch_viz_new_icons = _make_fetcher(
      "54618FDC4589F0A039D531C07A110ED9BC57A256BB15A3B5429CF60E950887C3",
      "CD573F5E4BF4A91A3B21F6124A95FFB3C036F926F8FEC1FD0180F5D27D8F48C0"],
     doc="Download the new icons for DrawPanel"
+    
     )
 
 
@@ -490,11 +493,14 @@ fetch_viz_wiki_nw = _make_fetcher(
     FURY_DATA_URL,
     ['wiki_categories.txt', 'wiki_edges.txt',
      'wiki_positions.txt'],
+    
     ['wiki_categories.txt', 'wiki_edges.txt',
      'wiki_positions.txt'],
+    
     ['1679241B13D2FD01209160F0C186E14AB55855478300B713D5369C12854CFF82',
      '702EE8713994243C8619A29C9ECE32F95305737F583B747C307500F3EC4A6B56',
      '044917A8FBD0EB980D93B6C406A577BEA416FA934E897C26C87E91C218EF4432'],
+    
     doc="Download the following wiki information"
         "Interdisciplinary map of the journals",
     msg=("More information about complex "
@@ -507,11 +513,14 @@ fetch_viz_models = _make_fetcher(
     pjoin(fury_home, "models"),
     MODEL_DATA_URL,
     ['utah.obj', 'suzanne.obj', 'satellite_obj.obj', 'dragon.obj'],
+    
     ['utah.obj', 'suzanne.obj', 'satellite_obj.obj', 'dragon.obj'],
+    
     ['0B50F12CEDCDC27377AC702B1EE331223BECEC59593B3F00A9E06B57A9C1B7C3',
      'BB4FF4E65D65D71D53000E06D2DC7BF89B702223657C1F64748811A3A6C8D621',
      '90213FAC81D89BBB59FA541643304E0D95C2D446157ACE044D46F259454C0E74',
      'A775D6160D04EAB9A4E90180104F148927CEFCCAF9F0BCD748265CB8EE86F41B'],
+    
     doc=" Download the models for shader tutorial"
     )
 
@@ -522,9 +531,11 @@ fetch_viz_dmri = _make_fetcher(
     ['fodf.nii.gz', 'slice_evecs.nii.gz', 'slice_evals.nii.gz',
      'roi_evecs.nii.gz', 'roi_evals.nii.gz', 'whole_brain_evecs.nii.gz',
      'whole_brain_evals.nii.gz'],
+    
     ['fodf.nii.gz', 'slice_evecs.nii.gz', 'slice_evals.nii.gz',
      'roi_evecs.nii.gz', 'roi_evals.nii.gz', 'whole_brain_evecs.nii.gz',
      'whole_brain_evals.nii.gz'],
+    
     ['767ca3e4cd296e78421d83c32201b30be2d859c332210812140caac1b93d492b',
      '8843ECF3224CB8E3315B7251D1E303409A17D7137D3498A8833853C4603C6CC2',
      '3096B190B1146DD0EADDFECC0B4FBBD901F4933692ADD46A83F637F28B22122D',
@@ -532,6 +543,7 @@ fetch_viz_dmri = _make_fetcher(
      'F53C68CCCABF97F1326E93840A8B5CE2E767D66D692FFD955CA747FFF14EC781',
      '8A894F6AB404240E65451FA6D10FB5D74E2D0BDCB2A56AD6BEA38215BF787248',
      '47A73BBE68196381ED790F80F48E46AC07B699B506973FFA45A95A33023C7A77']
+    
 )
 
 fetch_viz_textures = _make_fetcher(
@@ -548,6 +560,7 @@ fetch_viz_textures = _make_fetcher(
      '2k_uranus.jpg', '2k_neptune.jpg',
      '8k_sun.jpg', '1_earth_16k.jpg',
      'clouds.jpg'],
+    
     ['1_earth_8k.jpg', '2_no_clouds_8k.jpg',
      '5_night_8k.jpg', 'earth.ppm',
      'jupiter.jpg', 'masonry.bmp',
@@ -558,6 +571,7 @@ fetch_viz_textures = _make_fetcher(
      '2k_uranus.jpg', '2k_neptune.jpg',
      '8k_sun.jpg', '1_earth_16k.jpg',
      'clouds.jpg'],
+    
     ['0D66DC62768C43D763D3288CE67128AAED27715B11B0529162DC4117F710E26F',
      '5CF740C72287AF7B3ACCF080C3951944ADCB1617083B918537D08CBD9F2C5465',
      'DF443F3E20C7724803690A350D9F6FDB36AD8EBC011B0345FB519A8B321F680A',
@@ -575,7 +589,8 @@ fetch_viz_textures = _make_fetcher(
      'F22B1CFB306DDCE72A7E3B628668A0175B745038CE6268557CB2F7F1BDF98B9D',
      '7DD1DAC926101B5D7B7F2E952E53ACF209421B5CCE57C03168BCE0AAD675998A',
      '85043336E023C4C9394CFD6D48D257A5564B4F895BFCEC01C70E4898CC77F003'],
-    doc="Download textures for fury"
+    
+    doc="Download textures for FURY"
     )
 
 
@@ -616,6 +631,7 @@ def read_viz_cubemap(name, suffix_type=1, ext='.jpg'):
         return None
     cubemap_fnames = []
     folder = pjoin(fury_home, 'cubemaps')
+    
     for dir_conv in conv:
         cubemap_fnames.append(pjoin(folder, name + dir_conv + ext))
     return cubemap_fnames
