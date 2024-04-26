@@ -42,29 +42,28 @@ def tensor_ellipsoid(centers, axes, lengths, colors, scales, opacity):
     n_verts = 8
 
     big_centers = np.repeat(centers, n_verts, axis=0)
-    attribute_to_actor(box_actor, big_centers, 'center')
+    attribute_to_actor(box_actor, big_centers, "center")
 
     big_scales = np.repeat(scales, n_verts, axis=0)
-    attribute_to_actor(box_actor, big_scales, 'scale')
+    attribute_to_actor(box_actor, big_scales, "scale")
 
     big_values = np.repeat(np.array(lengths, dtype=float), n_verts, axis=0)
-    attribute_to_actor(box_actor, big_values, 'evals')
+    attribute_to_actor(box_actor, big_values, "evals")
 
     evec1 = np.array([item[0] for item in axes])
     evec2 = np.array([item[1] for item in axes])
     evec3 = np.array([item[2] for item in axes])
 
     big_vectors_1 = np.repeat(evec1, n_verts, axis=0)
-    attribute_to_actor(box_actor, big_vectors_1, 'evec1')
+    attribute_to_actor(box_actor, big_vectors_1, "evec1")
     big_vectors_2 = np.repeat(evec2, n_verts, axis=0)
-    attribute_to_actor(box_actor, big_vectors_2, 'evec2')
+    attribute_to_actor(box_actor, big_vectors_2, "evec2")
     big_vectors_3 = np.repeat(evec3, n_verts, axis=0)
-    attribute_to_actor(box_actor, big_vectors_3, 'evec3')
+    attribute_to_actor(box_actor, big_vectors_3, "evec3")
 
     # Start of shader implementation
 
-    vs_dec = \
-        """
+    vs_dec = """
         in vec3 center;
         in float scale;
         in vec3 evals;
@@ -80,8 +79,7 @@ def tensor_ellipsoid(centers, axes, lengths, colors, scales, opacity):
         """
 
     # Variables assignment
-    v_assign = \
-        """
+    v_assign = """
         vertexMCVSOutput = vertexMC;
         centerMCVSOutput = center;
         scaleVSOutput = scale;
@@ -94,8 +92,7 @@ def tensor_ellipsoid(centers, axes, lengths, colors, scales, opacity):
     evals = "evalsVSOutput = clamp(evalsVSOutput,0.05,1);"
 
     # Scaling matrix
-    sc_matrix = \
-        """
+    sc_matrix = """
         mat3 S = mat3(1/evalsVSOutput.x, 0.0, 0.0,
                       0.0, 1/evalsVSOutput.y, 0.0,
                       0.0, 0.0, 1/evalsVSOutput.z);
@@ -107,14 +104,14 @@ def tensor_ellipsoid(centers, axes, lengths, colors, scales, opacity):
     # Tensor matrix
     t_matrix = "tensorMatrix = inverse(R) * S * R;"
 
-    vs_impl = compose_shader([v_assign, n_evals, evals, sc_matrix, rot_matrix,
-                              t_matrix])
+    vs_impl = compose_shader(
+        [v_assign, n_evals, evals, sc_matrix, rot_matrix, t_matrix]
+    )
 
     # Adding shader implementation to actor
-    shader_to_actor(box_actor, 'vertex', decl_code=vs_dec, impl_code=vs_impl)
+    shader_to_actor(box_actor, "vertex", decl_code=vs_dec, impl_code=vs_impl)
 
-    fs_vars_dec = \
-        """
+    fs_vars_dec = """
         in vec4 vertexMCVSOutput;
         in vec3 centerMCVSOutput;
         in float scaleVSOutput;
@@ -125,11 +122,10 @@ def tensor_ellipsoid(centers, axes, lengths, colors, scales, opacity):
         """
 
     # Importing the sphere SDF
-    sd_sphere = import_fury_shader(os.path.join('sdf', 'sd_sphere.frag'))
+    sd_sphere = import_fury_shader(os.path.join("sdf", "sd_sphere.frag"))
 
     # SDF definition
-    sdf_map = \
-        """
+    sdf_map = """
         float map(in vec3 position)
         {
             /*
@@ -152,38 +148,48 @@ def tensor_ellipsoid(centers, axes, lengths, colors, scales, opacity):
         """
 
     # Importing central differences function for computing surface normals
-    central_diffs_normal = import_fury_shader(os.path.join(
-        'sdf', 'central_diffs.frag'))
+    central_diffs_normal = import_fury_shader(
+        os.path.join("sdf", "central_diffs.frag")
+    )
 
     # Importing raymarching function
-    cast_ray = import_fury_shader(os.path.join(
-        'ray_marching', 'cast_ray.frag'))
+    cast_ray = import_fury_shader(
+        os.path.join("ray_marching", "cast_ray.frag")
+    )
 
     # Importing the function that generates the ray components
-    ray_generation = import_fury_shader(os.path.join(
-        'ray_marching', 'gen_ray.frag'))
+    ray_generation = import_fury_shader(
+        os.path.join("ray_marching", "gen_ray.frag")
+    )
 
     # Importing Blinn-Phong model for lighting
-    blinn_phong_model = import_fury_shader(os.path.join(
-        'lighting', 'blinn_phong_model.frag'))
+    blinn_phong_model = import_fury_shader(
+        os.path.join("lighting", "blinn_phong_model.frag")
+    )
 
     # Full fragment shader declaration
-    fs_dec = compose_shader([fs_vars_dec, sd_sphere, sdf_map,
-                             central_diffs_normal, cast_ray, ray_generation,
-                             blinn_phong_model])
+    fs_dec = compose_shader(
+        [
+            fs_vars_dec,
+            sd_sphere,
+            sdf_map,
+            central_diffs_normal,
+            cast_ray,
+            ray_generation,
+            blinn_phong_model,
+        ]
+    )
 
-    shader_to_actor(box_actor, 'fragment', decl_code=fs_dec)
+    shader_to_actor(box_actor, "fragment", decl_code=fs_dec)
 
-    ray_components = \
-        """
+    ray_components = """
         vec3 ro; vec3 rd; float t;
         gen_ray(ro, rd, t);
         """
 
     # Fragment shader output definition
     # If surface is detected, color is assigned, otherwise, nothing is painted
-    frag_output_def = \
-        """
+    frag_output_def = """
         if(t < 20)
         {
             vec3 pos = ro + t * rd;
@@ -205,8 +211,9 @@ def tensor_ellipsoid(centers, axes, lengths, colors, scales, opacity):
     # Full fragment shader implementation
     sdf_frag_impl = compose_shader([ray_components, frag_output_def])
 
-    shader_to_actor(box_actor, 'fragment', impl_code=sdf_frag_impl,
-                    block='light')
+    shader_to_actor(
+        box_actor, "fragment", impl_code=sdf_frag_impl, block="light"
+    )
 
     return box_actor
 
@@ -242,29 +249,28 @@ def double_cone(centers, axes, angles, colors, scales, opacity):
     n_verts = 8
 
     big_centers = np.repeat(centers, n_verts, axis=0)
-    attribute_to_actor(box_actor, big_centers, 'center')
+    attribute_to_actor(box_actor, big_centers, "center")
 
     big_scales = np.repeat(scales, n_verts, axis=0)
-    attribute_to_actor(box_actor, big_scales, 'scale')
+    attribute_to_actor(box_actor, big_scales, "scale")
 
     evec1 = np.array([item[0] for item in axes])
     evec2 = np.array([item[1] for item in axes])
     evec3 = np.array([item[2] for item in axes])
 
     big_vectors_1 = np.repeat(evec1, n_verts, axis=0)
-    attribute_to_actor(box_actor, big_vectors_1, 'evec1')
+    attribute_to_actor(box_actor, big_vectors_1, "evec1")
     big_vectors_2 = np.repeat(evec2, n_verts, axis=0)
-    attribute_to_actor(box_actor, big_vectors_2, 'evec2')
+    attribute_to_actor(box_actor, big_vectors_2, "evec2")
     big_vectors_3 = np.repeat(evec3, n_verts, axis=0)
-    attribute_to_actor(box_actor, big_vectors_3, 'evec3')
+    attribute_to_actor(box_actor, big_vectors_3, "evec3")
 
     big_angles = np.repeat(np.array(angles, dtype=float), n_verts, axis=0)
-    attribute_to_actor(box_actor, big_angles, 'angle')
+    attribute_to_actor(box_actor, big_angles, "angle")
 
     # Start of shader implementation
 
-    vs_dec = \
-        """
+    vs_dec = """
         in vec3 center;
         in float scale;
         in vec3 evec1;
@@ -280,8 +286,7 @@ def double_cone(centers, axes, angles, colors, scales, opacity):
         """
 
     # Variables assignment
-    v_assign = \
-        """
+    v_assign = """
         vertexMCVSOutput = vertexMC;
         centerMCVSOutput = center;
         scaleVSOutput = scale;
@@ -289,10 +294,9 @@ def double_cone(centers, axes, angles, colors, scales, opacity):
         """
 
     # Rotation matrix
-    rot_matrix = \
-        """
+    rot_matrix = """
         mat3 R = mat3(normalize(evec1), normalize(evec2), normalize(evec3));
-        float a = radians(90);
+        float a = radians(90.0);
         mat3 rot = mat3(cos(a),-sin(a), 0,
                         sin(a), cos(a), 0,
                             0 ,      0, 1);
@@ -301,11 +305,9 @@ def double_cone(centers, axes, angles, colors, scales, opacity):
 
     vs_impl = compose_shader([v_assign, rot_matrix])
 
-    shader_to_actor(box_actor, 'vertex', decl_code=vs_dec,
-                    impl_code=vs_impl)
+    shader_to_actor(box_actor, "vertex", decl_code=vs_dec, impl_code=vs_impl)
 
-    fs_vars_dec = \
-        """
+    fs_vars_dec = """
         in vec4 vertexMCVSOutput;
         in vec3 centerMCVSOutput;
         in float scaleVSOutput;
@@ -316,14 +318,13 @@ def double_cone(centers, axes, angles, colors, scales, opacity):
         """
 
     # Importing the cone SDF
-    sd_cone = import_fury_shader(os.path.join('sdf', 'sd_cone.frag'))
+    sd_cone = import_fury_shader(os.path.join("sdf", "sd_cone.frag"))
 
     # Importing the union operation SDF
-    sd_union = import_fury_shader(os.path.join('sdf', 'sd_union.frag'))
+    sd_union = import_fury_shader(os.path.join("sdf", "sd_union.frag"))
 
     # SDF definition
-    sdf_map = \
-        """
+    sdf_map = """
         float map(in vec3 position)
         {
             vec3 p = (position - centerMCVSOutput)/scaleVSOutput
@@ -336,38 +337,49 @@ def double_cone(centers, axes, angles, colors, scales, opacity):
         """
 
     # Importing central differences function for computing surface normals
-    central_diffs_normal = import_fury_shader(os.path.join(
-        'sdf', 'central_diffs.frag'))
+    central_diffs_normal = import_fury_shader(
+        os.path.join("sdf", "central_diffs.frag")
+    )
 
     # Importing raymarching function
-    cast_ray = import_fury_shader(os.path.join(
-        'ray_marching', 'cast_ray.frag'))
+    cast_ray = import_fury_shader(
+        os.path.join("ray_marching", "cast_ray.frag")
+    )
 
     # Importing the function that generates the ray components
-    ray_generation = import_fury_shader(os.path.join(
-        'ray_marching', 'gen_ray.frag'))
+    ray_generation = import_fury_shader(
+        os.path.join("ray_marching", "gen_ray.frag")
+    )
 
     # Importing Blinn-Phong model for lighting
-    blinn_phong_model = import_fury_shader(os.path.join(
-        'lighting', 'blinn_phong_model.frag'))
+    blinn_phong_model = import_fury_shader(
+        os.path.join("lighting", "blinn_phong_model.frag")
+    )
 
     # Full fragment shader declaration
-    fs_dec = compose_shader([fs_vars_dec, sd_cone, sd_union, sdf_map,
-                             central_diffs_normal, cast_ray, ray_generation,
-                             blinn_phong_model])
+    fs_dec = compose_shader(
+        [
+            fs_vars_dec,
+            sd_cone,
+            sd_union,
+            sdf_map,
+            central_diffs_normal,
+            cast_ray,
+            ray_generation,
+            blinn_phong_model,
+        ]
+    )
 
-    shader_to_actor(box_actor, 'fragment', decl_code=fs_dec)
+    shader_to_actor(box_actor, "fragment", decl_code=fs_dec)
 
-    ray_components = \
-        """
+    ray_components = """
         vec3 ro; vec3 rd; float t;
         gen_ray(ro, rd, t);
         """
 
     # Fragment shader output definition
     # If surface is detected, color is assigned, otherwise, nothing is painted
-    frag_output_def = \
-        """
+    frag_output_def = """
         if(t < 20)
         {
             vec3 pos = ro + t * rd;
@@ -389,8 +401,9 @@ def double_cone(centers, axes, angles, colors, scales, opacity):
     # Full fragment shader implementation
     sdf_frag_impl = compose_shader([ray_components, frag_output_def])
 
-    shader_to_actor(box_actor, 'fragment', impl_code=sdf_frag_impl,
-                    block='light')
+    shader_to_actor(
+        box_actor, "fragment", impl_code=sdf_frag_impl, block="light"
+    )
 
     return box_actor
 
@@ -449,14 +462,18 @@ def main_dir_uncertainty(evals, evecs, signal, sigma, b_matrix):
     """
     angles = np.ones(evecs.shape[0])
     for i in range(evecs.shape[0]):
-        sigma_e = np.diag(signal[i] / sigma ** 2)
+        sigma_e = np.diag(signal[i] / sigma**2)
         k = np.dot(np.transpose(b_matrix), sigma_e)
         sigma_ = np.dot(k, b_matrix)
 
         dd = np.diag(sigma_)
-        delta_DD = np.array([[dd[0], dd[3], dd[4]],
-                             [dd[3], dd[1], dd[5]],
-                             [dd[4], dd[5], dd[2]]])
+        delta_DD = np.array(
+            [
+                [dd[0], dd[3], dd[4]],
+                [dd[3], dd[1], dd[5]],
+                [dd[4], dd[5], dd[2]],
+            ]
+        )
 
         # perturbation matrix of tensor D
         try:
@@ -467,17 +484,26 @@ def main_dir_uncertainty(evals, evecs, signal, sigma, b_matrix):
         D_ = evecs
         eigen_vals = evals[i]
 
-        e1, e2, e3 = np.array(D_[i, :, 0]), np.array(D_[i, :, 1]), \
-            np.array(D_[i, :, 2])
+        e1, e2, e3 = (
+            np.array(D_[i, :, 0]),
+            np.array(D_[i, :, 1]),
+            np.array(D_[i, :, 2]),
+        )
         lambda1, lambda2, lambda3 = eigen_vals[0], eigen_vals[1], eigen_vals[2]
 
         if lambda1 > lambda2 and lambda1 > lambda3:
             # The perturbation of the eigenvector associated with the largest
             # eigenvalue is given by
-            a = np.dot(np.outer(np.dot(e1, delta_D), np.transpose(e2)) /
-                       (lambda1 - lambda2), e2)
-            b = np.dot(np.outer(np.dot(e1, delta_D), np.transpose(e3)) /
-                       (lambda1 - lambda3), e3)
+            a = np.dot(
+                np.outer(np.dot(e1, delta_D), np.transpose(e2))
+                / (lambda1 - lambda2),
+                e2,
+            )
+            b = np.dot(
+                np.outer(np.dot(e1, delta_D), np.transpose(e3))
+                / (lambda1 - lambda3),
+                e3,
+            )
             delta_e1 = a + b
 
             # The angle \theta between the perturbed principal eigenvector of D
