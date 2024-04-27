@@ -5,6 +5,7 @@ Keyframe animation
 
 Tutorial on making keyframe-based animation in FURY using custom functions.
 """
+
 import numpy as np
 
 from fury import actor, window
@@ -60,7 +61,7 @@ def scale_eval(t):
 anim.set_position_interpolator(pos_eval, is_evaluator=True)
 anim.set_rotation_interpolator(rotation_eval, is_evaluator=True)
 anim.set_color_interpolator(color_eval, is_evaluator=True)
-anim.set_interpolator('scale', scale_eval, is_evaluator=True)
+anim.set_interpolator("scale", scale_eval, is_evaluator=True)
 
 ###############################################################################
 # changing camera position to observe the animation better.
@@ -76,4 +77,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_keyframe_animation_evaluators.png', size=(900, 768))
+window.record(scene, out_path="viz_keyframe_animation_evaluators.png", size=(900, 768))

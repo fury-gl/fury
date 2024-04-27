@@ -44,4 +44,4 @@ interactive = False
 if interactive:
     window.show(scene, size=(600, 600))
 
-window.record(scene, out_path='viz_cone.png', size=(600, 600))
+window.record(scene, out_path="viz_cone.png", size=(600, 600))

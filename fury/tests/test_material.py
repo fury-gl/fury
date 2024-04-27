@@ -1,20 +1,15 @@
-import os
-from tempfile import TemporaryDirectory
-
 import numpy as np
 import numpy.testing as npt
-import pytest
 
 from fury import actor, material, window
-from fury.io import load_image
 from fury.optpkg import optional_package
 
-dipy, have_dipy, _ = optional_package('dipy')
+dipy, have_dipy, _ = optional_package("dipy")
 
 
 def test_manifest_pbr_vtk():
     # Test non-supported property
-    test_actor = actor.text_3d('Test')
+    test_actor = actor.text_3d("Test")
     npt.assert_warns(UserWarning, material.manifest_pbr, test_actor)
 
     # Test non-supported PBR interpolation
@@ -92,24 +87,24 @@ def test_manifest_pbr_vtk():
 
 def test_manifest_principled():
     # Test non-supported property
-    test_actor = actor.text_3d('Test')
+    test_actor = actor.text_3d("Test")
     npt.assert_warns(UserWarning, material.manifest_principled, test_actor)
 
     center = np.array([[0, 0, 0]])
 
     # Test expected parameters
     expected_principled_params = {
-        'subsurface': 0,
-        'metallic': 0,
-        'specular': 0,
-        'specular_tint': 0,
-        'roughness': 0,
-        'anisotropic': 0,
-        'anisotropic_direction': [0, 1, 0.5],
-        'sheen': 0,
-        'sheen_tint': 0,
-        'clearcoat': 0,
-        'clearcoat_gloss': 0,
+        "subsurface": 0,
+        "metallic": 0,
+        "specular": 0,
+        "specular_tint": 0,
+        "roughness": 0,
+        "anisotropic": 0,
+        "anisotropic_direction": [0, 1, 0.5],
+        "sheen": 0,
+        "sheen_tint": 0,
+        "clearcoat": 0,
+        "clearcoat_gloss": 0,
     }
     test_actor = actor.square(center, directions=(1, 1, 1), colors=(0, 0, 1))
     actual_principled_params = material.manifest_principled(test_actor)
@@ -118,7 +113,7 @@ def test_manifest_principled():
 
 def test_manifest_standard():
     # Test non-supported property
-    test_actor = actor.text_3d('Test')
+    test_actor = actor.text_3d("Test")
     npt.assert_warns(UserWarning, material.manifest_standard, test_actor)
 
     center = np.array([[0, 0, 0]])
@@ -126,7 +121,7 @@ def test_manifest_standard():
     # Test non-supported interpolation method
     test_actor = actor.square(center, directions=(1, 1, 1), colors=(0, 0, 1))
     npt.assert_warns(
-        UserWarning, material.manifest_standard, test_actor, interpolation='test'
+        UserWarning, material.manifest_standard, test_actor, interpolation="test"
     )
 
     scene = window.Scene()  # Setup scene

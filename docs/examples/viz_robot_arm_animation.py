@@ -5,6 +5,7 @@ Arm Robot Animation
 
 Tutorial on making a robot arm animation in FURY.
 """
+
 import numpy as np
 
 from fury import actor, window
@@ -118,4 +119,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_robot_arm.png', size=(900, 768))
+window.record(scene, out_path="viz_robot_arm.png", size=(900, 768))

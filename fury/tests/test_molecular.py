@@ -7,15 +7,15 @@ from fury import molecular as mol, window
 def test_periodic_table():
     # Testing class PeriodicTable()
     table = mol.PTable()
-    npt.assert_equal(table.atomic_number('C'), 6)
-    npt.assert_equal(table.element_name(7), 'Nitrogen')
-    npt.assert_equal(table.atomic_symbol(8), 'O')
-    npt.assert_allclose(table.atomic_radius(1, 'VDW'), 1.2, 0.1, 0)
-    npt.assert_allclose(table.atomic_radius(6, 'Covalent'), 0.75, 0.1, 0)
+    npt.assert_equal(table.atomic_number("C"), 6)
+    npt.assert_equal(table.element_name(7), "Nitrogen")
+    npt.assert_equal(table.atomic_symbol(8), "O")
+    npt.assert_allclose(table.atomic_radius(1, "VDW"), 1.2, 0.1, 0)
+    npt.assert_allclose(table.atomic_radius(6, "Covalent"), 0.75, 0.1, 0)
     npt.assert_array_almost_equal(table.atom_color(1), np.array([1, 1, 1]))
 
     # Test errors
-    npt.assert_raises(ValueError, table.atomic_radius, 4, 'test')
+    npt.assert_raises(ValueError, table.atomic_radius, 4, "test")
 
 
 def get_default_molecular_info(all_info=False):
@@ -32,7 +32,7 @@ def get_default_molecular_info(all_info=False):
             [0.6632858893e01, 0.6740709254e01, 0.4090898288e01],
         ]
     )
-    atom_names = np.array(['CA', 'CA', 'H', 'H', 'H', 'H', 'H', 'H'])
+    atom_names = np.array(["CA", "CA", "H", "H", "H", "H", "H", "H"])
     model = np.ones(8)
     residue = np.ones(8)
     chain = np.ones(8) * 65
@@ -66,7 +66,7 @@ def test_molecule_creation():
     elements = np.array([6, 6])
     npt.assert_raises(ValueError, mol.Molecule, elements, atom_coords)
 
-    elements = [i for i in range(8)]
+    elements = list(range(8))
     npt.assert_raises(ValueError, mol.Molecule, elements, atom_coords)
 
 
@@ -149,7 +149,7 @@ def test_sphere_cpk(interactive=False):
     atomic_numbers, atom_coords = get_default_molecular_info()
     molecule = mol.Molecule(atomic_numbers, atom_coords)
     table = mol.PTable()
-    colormodes = ['discrete', 'single']
+    colormodes = ["discrete", "single"]
     colors = np.array(
         [
             [table.atom_color(1), table.atom_color(6)],
@@ -176,7 +176,7 @@ def test_sphere_cpk(interactive=False):
         scene.clear()
 
     # Testing warnings
-    npt.assert_warns(UserWarning, mol.sphere_cpk, molecule, 'multiple')
+    npt.assert_warns(UserWarning, mol.sphere_cpk, molecule, "multiple")
 
 
 def test_bstick(interactive=False):
@@ -188,7 +188,7 @@ def test_bstick(interactive=False):
     npt.assert_raises(ValueError, mol.ball_stick, molecule)
 
     mol.add_bond(molecule, 0, 1, 1)
-    colormodes = ['discrete', 'single']
+    colormodes = ["discrete", "single"]
     atom_scale_factor = [0.3, 0.4]
     bond_thickness = [0.1, 0.2]
     multiple_bonds = [True, False]
@@ -224,7 +224,7 @@ def test_bstick(interactive=False):
         scene.clear()
 
     # Testing warnings
-    npt.assert_warns(UserWarning, mol.ball_stick, molecule, 'multiple')
+    npt.assert_warns(UserWarning, mol.ball_stick, molecule, "multiple")
 
 
 def test_stick(interactive=False):
@@ -236,7 +236,7 @@ def test_stick(interactive=False):
     npt.assert_raises(ValueError, mol.stick, molecule)
     mol.add_bond(molecule, 0, 1, 1)
 
-    colormodes = ['discrete', 'single']
+    colormodes = ["discrete", "single"]
     bond_thickness = [0.1, 0.12]
     table = mol.PTable()
     colors = np.array(
@@ -264,11 +264,10 @@ def test_stick(interactive=False):
         scene.clear()
 
     # Testing warnings
-    npt.assert_warns(UserWarning, mol.stick, molecule, 'multiple')
+    npt.assert_warns(UserWarning, mol.stick, molecule, "multiple")
 
 
 def test_ribbon(interactive=False):
-
     scene = window.Scene()
 
     # Testing if helices and sheets are rendered properly
@@ -299,26 +298,26 @@ def test_ribbon(interactive=False):
     elements = np.array([7, 6, 6, 8, 6, 6, 6, 8, 7, 7, 6, 6, 8, 7, 6, 6, 8, 6, 8, 6])
     atom_names = np.array(
         [
-            'N',
-            'CA',
-            'C',
-            'O',
-            'CB',
-            'CG',
-            'CD',
-            'OE1',
-            'NE2',
-            'N',
-            'CA',
-            'C',
-            'O',
-            'N',
-            'CA',
-            'C',
-            'O',
-            'CB',
-            'OG1',
-            'OG2',
+            "N",
+            "CA",
+            "C",
+            "O",
+            "CB",
+            "CG",
+            "CD",
+            "OE1",
+            "NE2",
+            "N",
+            "CA",
+            "C",
+            "O",
+            "N",
+            "CA",
+            "C",
+            "O",
+            "CB",
+            "OG1",
+            "OG2",
         ]
     )
     model = np.ones(20)

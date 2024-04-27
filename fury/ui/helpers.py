@@ -5,7 +5,7 @@ import numpy as np
 TWO_PI = 2 * np.pi
 
 
-def clip_overflow(textblock, width, side='right'):
+def clip_overflow(textblock, width, side="right"):
     """Clips overflowing text of TextBlock2D with respect to width.
 
     Parameters
@@ -27,7 +27,7 @@ def clip_overflow(textblock, width, side='right'):
     original_str = textblock.message
     prev_bg = textblock.have_bg
 
-    clip_idx = check_overflow(textblock, width, '...', side)
+    clip_idx = check_overflow(textblock, width, "...", side)
 
     if clip_idx == 0:
         return original_str
@@ -36,7 +36,7 @@ def clip_overflow(textblock, width, side='right'):
     return textblock.message
 
 
-def wrap_overflow(textblock, wrap_width, side='right'):
+def wrap_overflow(textblock, wrap_width, side="right"):
     """Wraps overflowing text of TextBlock2D with respect to width.
 
     Parameters
@@ -59,7 +59,7 @@ def wrap_overflow(textblock, wrap_width, side='right'):
     str_copy = textblock.message
     wrap_idxs = []
 
-    wrap_idx = check_overflow(textblock, wrap_width, '', side)
+    wrap_idx = check_overflow(textblock, wrap_width, "", side)
 
     if wrap_idx == 0:
         return original_str
@@ -69,18 +69,18 @@ def wrap_overflow(textblock, wrap_width, side='right'):
     while wrap_idx != 0:
         str_copy = str_copy[wrap_idx:]
         textblock.message = str_copy
-        wrap_idx = check_overflow(textblock, wrap_width, '', side)
+        wrap_idx = check_overflow(textblock, wrap_width, "", side)
         if wrap_idx != 0:
             wrap_idxs.append(wrap_idxs[-1] + wrap_idx + 1)
 
     for idx in wrap_idxs:
-        original_str = original_str[:idx] + '\n' + original_str[idx:]
+        original_str = original_str[:idx] + "\n" + original_str[idx:]
 
     textblock.message = original_str
     return textblock.message
 
 
-def check_overflow(textblock, width, overflow_postfix='', side='right'):
+def check_overflow(textblock, width, overflow_postfix="", side="right"):
     """Checks if the text is overflowing.
 
     Parameters
@@ -99,7 +99,7 @@ def check_overflow(textblock, width, overflow_postfix='', side='right'):
 
     """
     side = side.lower()
-    if side not in ['left', 'right']:
+    if side not in ["left", "right"]:
         raise ValueError("side can only take values 'left' or 'right'")
 
     original_str = textblock.message
@@ -107,7 +107,7 @@ def check_overflow(textblock, width, overflow_postfix='', side='right'):
     mid_ptr = 0
     end_ptr = len(original_str)
 
-    if side == 'left':
+    if side == "left":
         original_str = original_str[::-1]
 
     if textblock.cal_size_from_message()[0] <= width:
@@ -122,9 +122,11 @@ def check_overflow(textblock, width, overflow_postfix='', side='right'):
         elif textblock.cal_size_from_message()[0] > width:
             end_ptr = mid_ptr
 
-        if (mid_ptr == (start_ptr + end_ptr) // 2 or
-           textblock.cal_size_from_message()[0] == width):
-            if side == 'left':
+        if (
+            mid_ptr == (start_ptr + end_ptr) // 2
+            or textblock.cal_size_from_message()[0] == width
+        ):
+            if side == "left":
                 textblock.message = textblock.message[::-1]
             return mid_ptr
 
@@ -139,7 +141,7 @@ def cal_bounding_box_2d(vertices):
 
     """
     if vertices.ndim != 2 or vertices.shape[1] not in [2, 3]:
-        raise IOError('vertices should be a 2D array with shape (n,2) or (n,3).')
+        raise IOError("vertices should be a 2D array with shape (n,2) or (n,3).")
 
     if vertices.shape[1] == 3:
         vertices = vertices[:, :-1]
@@ -157,9 +159,9 @@ def cal_bounding_box_2d(vertices):
         if y > max_y:
             max_y = y
 
-    bounding_box_min = np.asarray([min_x, min_y], dtype='int')
-    bounding_box_max = np.asarray([max_x, max_y], dtype='int')
-    bounding_box_size = np.asarray([max_x - min_x, max_y - min_y], dtype='int')
+    bounding_box_min = np.asarray([min_x, min_y], dtype="int")
+    bounding_box_max = np.asarray([max_x, max_y], dtype="int")
+    bounding_box_size = np.asarray([max_x - min_x, max_y - min_y], dtype="int")
 
     return bounding_box_min, bounding_box_max, bounding_box_size
 
@@ -176,7 +178,7 @@ def rotate_2d(vertices, angle):
 
     """
     if vertices.ndim != 2 or vertices.shape[1] != 3:
-        raise IOError('vertices should be a 2D array with shape (n,3).')
+        raise IOError("vertices should be a 2D array with shape (n,3).")
 
     rotation_matrix = np.array(
         [

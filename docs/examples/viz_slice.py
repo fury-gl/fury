@@ -19,12 +19,12 @@ from fury import actor, ui, window
 fetch_bundles_2_subjects()
 
 fname_t1 = os.path.join(
-    os.path.expanduser('~'),
-    '.dipy',
-    'exp_bundles_and_maps',
-    'bundles_2_subjects',
-    'subj_1',
-    't1_warped.nii.gz',
+    os.path.expanduser("~"),
+    ".dipy",
+    "exp_bundles_and_maps",
+    "bundles_2_subjects",
+    "subj_1",
+    "t1_warped.nii.gz",
 )
 
 
@@ -86,7 +86,7 @@ scene.zoom(1.4)
 ###############################################################################
 # Otherwise, you can save a screenshot using the following command.
 
-window.record(scene, out_path='slices.png', size=(600, 600), reset_camera=False)
+window.record(scene, out_path="slices.png", size=(600, 600), reset_camera=False)
 
 ###############################################################################
 # Render slices from FA with your colormap
@@ -97,12 +97,12 @@ window.record(scene, out_path='slices.png', size=(600, 600), reset_camera=False)
 # colormap.
 
 fname_fa = os.path.join(
-    os.path.expanduser('~'),
-    '.dipy',
-    'exp_bundles_and_maps',
-    'bundles_2_subjects',
-    'subj_1',
-    'fa_1x1x1.nii.gz',
+    os.path.expanduser("~"),
+    ".dipy",
+    "exp_bundles_and_maps",
+    "bundles_2_subjects",
+    "subj_1",
+    "fa_1x1x1.nii.gz",
 )
 
 img = nib.load(fname_fa)
@@ -132,7 +132,7 @@ scene.zoom(1.4)
 
 # window.show(scene, size=(600, 600), reset_camera=False)
 
-window.record(scene, out_path='slices_lut.png', size=(600, 600), reset_camera=False)
+window.record(scene, out_path="slices_lut.png", size=(600, 600), reset_camera=False)
 
 ###############################################################################
 # Now we would like to add the ability to click on a voxel and show its value
@@ -148,14 +148,14 @@ show_m = window.ShowManager(scene, size=(1200, 900))
 ###############################################################################
 # We'll start by creating the panel and adding it to the ``ShowManager``
 
-label_position = ui.TextBlock2D(text='Position:')
-label_value = ui.TextBlock2D(text='Value:')
+label_position = ui.TextBlock2D(text="Position:")
+label_value = ui.TextBlock2D(text="Value:")
 
-result_position = ui.TextBlock2D(text='')
-result_value = ui.TextBlock2D(text='')
+result_position = ui.TextBlock2D(text="")
+result_value = ui.TextBlock2D(text="")
 
 panel_picking = ui.Panel2D(
-    size=(250, 125), position=(20, 20), color=(0, 0, 0), opacity=0.75, align='left'
+    size=(250, 125), position=(20, 20), color=(0, 0, 0), opacity=0.75, align="left"
 )
 
 panel_picking.add_element(label_position, (0.1, 0.55))
@@ -178,12 +178,12 @@ def left_click_callback(obj, _ev):
     obj.picker.Pick(event_pos[0], event_pos[1], 0, show_m.scene)
 
     i, j, k = obj.picker.GetPointIJK()
-    result_position.message = '({}, {}, {})'.format(str(i), str(j), str(k))
-    result_value.message = '%.8f' % data[i, j, k]
+    result_position.message = "({}, {}, {})".format(str(i), str(j), str(k))
+    result_value.message = "%.8f" % data[i, j, k]
 
 
 fa_actor.SetInterpolate(False)
-fa_actor.AddObserver('LeftButtonPressEvent', left_click_callback, 1.0)
+fa_actor.AddObserver("LeftButtonPressEvent", left_click_callback, 1.0)
 
 # show_m.start()
 
@@ -198,10 +198,10 @@ fa_actor.AddObserver('LeftButtonPressEvent', left_click_callback, 1.0)
 # parallel. We'll also need a new show manager and an associated callback.
 
 scene.clear()
-scene.projection('parallel')
+scene.projection("parallel")
 
-result_position.message = ''
-result_value.message = ''
+result_position.message = ""
+result_value.message = ""
 
 show_m_mosaic = window.ShowManager(scene, size=(1200, 900))
 
@@ -213,8 +213,8 @@ def left_click_callback_mosaic(obj, _ev):
     obj.picker.Pick(event_pos[0], event_pos[1], 0, show_m_mosaic.scene)
 
     i, j, k = obj.picker.GetPointIJK()
-    result_position.message = '({}, {}, {})'.format(str(i), str(j), str(k))
-    result_value.message = '%.8f' % data[i, j, k]
+    result_position.message = "({}, {}, {})".format(str(i), str(j), str(k))
+    result_value.message = "%.8f" % data[i, j, k]
 
 
 ###############################################################################
@@ -239,7 +239,7 @@ for j in range(rows):
         )
         slice_mosaic.SetInterpolate(False)
         slice_mosaic.AddObserver(
-            'LeftButtonPressEvent', left_click_callback_mosaic, 1.0
+            "LeftButtonPressEvent", left_click_callback_mosaic, 1.0
         )
         scene.add(slice_mosaic)
         cnt += 1
@@ -260,4 +260,4 @@ scene.zoom(1.0)
 # zoom in/out using the scroll wheel, and pick voxels with left click.
 
 
-window.record(scene, out_path='mosaic.png', size=(900, 600), reset_camera=False)
+window.record(scene, out_path="mosaic.png", size=(900, 600), reset_camera=False)

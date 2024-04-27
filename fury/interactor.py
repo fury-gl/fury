@@ -101,9 +101,9 @@ class CustomInteractorStyle(InteractorStyleUser):
         self.history = deque(maxlen=10)  # Events history.
 
         self.selected_props = {
-            'left_button': set(),
-            'right_button': set(),
-            'middle_button': set(),
+            "left_button": set(),
+            "right_button": set(),
+            "middle_button": set(),
         }
 
     def add_active_prop(self, prop):
@@ -117,10 +117,7 @@ class CustomInteractorStyle(InteractorStyleUser):
         # TODO: return a list of items (i.e. each level of the assembly path).
         event_pos = self.GetInteractor().GetEventPosition()
 
-        self.picker.Pick(event_pos[0],
-                         event_pos[1],
-                         0,
-                         self.GetCurrentRenderer())
+        self.picker.Pick(event_pos[0], event_pos[1], 0, self.GetCurrentRenderer())
 
         path = self.picker.GetPath()
         if path is None:
@@ -144,34 +141,34 @@ class CustomInteractorStyle(InteractorStyleUser):
         self.event.update(evt, self.GetInteractor())
         self.history.append(
             {
-                'event': evt,
-                'pos': self.event.position,
+                "event": evt,
+                "pos": self.event.position,
             }
         )
 
-        if evt == 'LeftButtonPressEvent':
+        if evt == "LeftButtonPressEvent":
             self.on_left_button_down(obj, evt)
-        elif evt == 'LeftButtonReleaseEvent':
+        elif evt == "LeftButtonReleaseEvent":
             self.on_left_button_up(obj, evt)
-        elif evt == 'RightButtonPressEvent':
+        elif evt == "RightButtonPressEvent":
             self.on_right_button_down(obj, evt)
-        elif evt == 'RightButtonReleaseEvent':
+        elif evt == "RightButtonReleaseEvent":
             self.on_right_button_up(obj, evt)
-        elif evt == 'MiddleButtonPressEvent':
+        elif evt == "MiddleButtonPressEvent":
             self.on_middle_button_down(obj, evt)
-        elif evt == 'MiddleButtonReleaseEvent':
+        elif evt == "MiddleButtonReleaseEvent":
             self.on_middle_button_up(obj, evt)
-        elif evt == 'MouseMoveEvent':
+        elif evt == "MouseMoveEvent":
             self.on_mouse_move(obj, evt)
-        elif evt == 'CharEvent':
+        elif evt == "CharEvent":
             self.on_char(obj, evt)
-        elif evt == 'KeyPressEvent':
+        elif evt == "KeyPressEvent":
             self.on_key_press(obj, evt)
-        elif evt == 'KeyReleaseEvent':
+        elif evt == "KeyReleaseEvent":
             self.on_key_release(obj, evt)
-        elif evt == 'MouseWheelForwardEvent':
+        elif evt == "MouseWheelForwardEvent":
             self.on_mouse_wheel_forward(obj, evt)
-        elif evt == 'MouseWheelBackwardEvent':
+        elif evt == "MouseWheelBackwardEvent":
             self.on_mouse_wheel_backward(obj, evt)
 
         self.event.reset()  # Event fully processed.
@@ -180,18 +177,16 @@ class CustomInteractorStyle(InteractorStyleUser):
         if len(self.history) < abs(before_last_event):
             return False
 
-        if self.history[last_event]['event'] != button + 'ButtonReleaseEvent':
+        if self.history[last_event]["event"] != button + "ButtonReleaseEvent":
             return False
 
-        if (self.history[before_last_event]['event'] !=
-                button + 'ButtonPressEvent'):
+        if self.history[before_last_event]["event"] != button + "ButtonPressEvent":
             return False
 
         return True
 
     def _button_double_clicked(self, button):
-        if not (self._button_clicked(button) and
-                self._button_clicked(button, -3, -4)):
+        if not (self._button_clicked(button) and self._button_clicked(button, -3, -4)):
             return False
 
         return True
@@ -200,7 +195,7 @@ class CustomInteractorStyle(InteractorStyleUser):
         self.left_button_down = True
         prop = self.get_prop_at_event_position()
         if prop is not None:
-            self.selected_props['left_button'].add(prop)
+            self.selected_props["left_button"].add(prop)
             self.propagate_event(evt, prop)
 
         if not self.event.abort_flag:
@@ -208,21 +203,21 @@ class CustomInteractorStyle(InteractorStyleUser):
 
     def on_left_button_up(self, _obj, evt):
         self.left_button_down = False
-        self.propagate_event(evt, *self.selected_props['left_button'])
-        self.selected_props['left_button'].clear()
+        self.propagate_event(evt, *self.selected_props["left_button"])
+        self.selected_props["left_button"].clear()
         self.trackball_camera.OnLeftButtonUp()
 
         prop = self.get_prop_at_event_position()
 
-        if self._button_double_clicked('Left'):
-            self.propagate_event('LeftButtonDoubleClickEvent', prop)
+        if self._button_double_clicked("Left"):
+            self.propagate_event("LeftButtonDoubleClickEvent", prop)
             self.history.clear()
 
     def on_right_button_down(self, _obj, evt):
         self.right_button_down = True
         prop = self.get_prop_at_event_position()
         if prop is not None:
-            self.selected_props['right_button'].add(prop)
+            self.selected_props["right_button"].add(prop)
             self.propagate_event(evt, prop)
 
         if not self.event.abort_flag:
@@ -230,20 +225,20 @@ class CustomInteractorStyle(InteractorStyleUser):
 
     def on_right_button_up(self, _obj, evt):
         self.right_button_down = False
-        self.propagate_event(evt, *self.selected_props['right_button'])
-        self.selected_props['right_button'].clear()
+        self.propagate_event(evt, *self.selected_props["right_button"])
+        self.selected_props["right_button"].clear()
         self.trackball_camera.OnRightButtonUp()
 
-        if self._button_double_clicked('Right'):
+        if self._button_double_clicked("Right"):
             prop = self.get_prop_at_event_position()
-            self.propagate_event('RightButtonDoubleClickEvent', prop)
+            self.propagate_event("RightButtonDoubleClickEvent", prop)
             self.history.clear()
 
     def on_middle_button_down(self, _obj, evt):
         self.middle_button_down = True
         prop = self.get_prop_at_event_position()
         if prop is not None:
-            self.selected_props['middle_button'].add(prop)
+            self.selected_props["middle_button"].add(prop)
             self.propagate_event(evt, prop)
 
         if not self.event.abort_flag:
@@ -251,13 +246,13 @@ class CustomInteractorStyle(InteractorStyleUser):
 
     def on_middle_button_up(self, _obj, evt):
         self.middle_button_down = False
-        self.propagate_event(evt, *self.selected_props['middle_button'])
-        self.selected_props['middle_button'].clear()
+        self.propagate_event(evt, *self.selected_props["middle_button"])
+        self.selected_props["middle_button"].clear()
         self.trackball_camera.OnMiddleButtonUp()
 
-        if self._button_double_clicked('Middle'):
+        if self._button_double_clicked("Middle"):
             prop = self.get_prop_at_event_position()
-            self.propagate_event('MiddleButtonDoubleClickEvent', prop)
+            self.propagate_event("MiddleButtonDoubleClickEvent", prop)
             self.history.clear()
 
     def on_mouse_move(self, _obj, evt):
@@ -267,9 +262,9 @@ class CustomInteractorStyle(InteractorStyleUser):
             evt,
             *(
                 self.active_props
-                | self.selected_props['left_button']
-                | self.selected_props['right_button']
-                | self.selected_props['middle_button']
+                | self.selected_props["left_button"]
+                | self.selected_props["right_button"]
+                | self.selected_props["middle_button"]
             ),
         )
 
@@ -330,23 +325,23 @@ class CustomInteractorStyle(InteractorStyleUser):
         #
         # Note: Be sure that no observer has been manually added to the
         # `interactor` before setting the InteractorStyle.
-        interactor.RemoveObservers('TimerEvent')
-        interactor.RemoveObservers('EnterEvent')
-        interactor.RemoveObservers('LeaveEvent')
-        interactor.RemoveObservers('ExposeEvent')
-        interactor.RemoveObservers('ConfigureEvent')
-        interactor.RemoveObservers('CharEvent')
-        interactor.RemoveObservers('KeyPressEvent')
-        interactor.RemoveObservers('KeyReleaseEvent')
-        interactor.RemoveObservers('MouseMoveEvent')
-        interactor.RemoveObservers('LeftButtonPressEvent')
-        interactor.RemoveObservers('RightButtonPressEvent')
-        interactor.RemoveObservers('MiddleButtonPressEvent')
-        interactor.RemoveObservers('LeftButtonReleaseEvent')
-        interactor.RemoveObservers('RightButtonReleaseEvent')
-        interactor.RemoveObservers('MiddleButtonReleaseEvent')
-        interactor.RemoveObservers('MouseWheelForwardEvent')
-        interactor.RemoveObservers('MouseWheelBackwardEvent')
+        interactor.RemoveObservers("TimerEvent")
+        interactor.RemoveObservers("EnterEvent")
+        interactor.RemoveObservers("LeaveEvent")
+        interactor.RemoveObservers("ExposeEvent")
+        interactor.RemoveObservers("ConfigureEvent")
+        interactor.RemoveObservers("CharEvent")
+        interactor.RemoveObservers("KeyPressEvent")
+        interactor.RemoveObservers("KeyReleaseEvent")
+        interactor.RemoveObservers("MouseMoveEvent")
+        interactor.RemoveObservers("LeftButtonPressEvent")
+        interactor.RemoveObservers("RightButtonPressEvent")
+        interactor.RemoveObservers("MiddleButtonPressEvent")
+        interactor.RemoveObservers("LeftButtonReleaseEvent")
+        interactor.RemoveObservers("RightButtonReleaseEvent")
+        interactor.RemoveObservers("MiddleButtonReleaseEvent")
+        interactor.RemoveObservers("MouseWheelForwardEvent")
+        interactor.RemoveObservers("MouseWheelBackwardEvent")
 
         # This class is a `vtkClass` (instead of `object`), so `super()`
         # cannot be used. Also the method `SetInteractor` is not overridden in
@@ -357,18 +352,18 @@ class CustomInteractorStyle(InteractorStyleUser):
         InteractorStyle.SetInteractor(self, interactor)
 
         # Keyboard events.
-        self.AddObserver('CharEvent', self._process_event)
-        self.AddObserver('KeyPressEvent', self._process_event)
-        self.AddObserver('KeyReleaseEvent', self._process_event)
+        self.AddObserver("CharEvent", self._process_event)
+        self.AddObserver("KeyPressEvent", self._process_event)
+        self.AddObserver("KeyReleaseEvent", self._process_event)
 
         # Mouse events.
-        self.AddObserver('MouseMoveEvent', self._process_event)
-        self.AddObserver('LeftButtonPressEvent', self._process_event)
-        self.AddObserver('LeftButtonReleaseEvent', self._process_event)
-        self.AddObserver('RightButtonPressEvent', self._process_event)
-        self.AddObserver('RightButtonReleaseEvent', self._process_event)
-        self.AddObserver('MiddleButtonPressEvent', self._process_event)
-        self.AddObserver('MiddleButtonReleaseEvent', self._process_event)
+        self.AddObserver("MouseMoveEvent", self._process_event)
+        self.AddObserver("LeftButtonPressEvent", self._process_event)
+        self.AddObserver("LeftButtonReleaseEvent", self._process_event)
+        self.AddObserver("RightButtonPressEvent", self._process_event)
+        self.AddObserver("RightButtonReleaseEvent", self._process_event)
+        self.AddObserver("MiddleButtonPressEvent", self._process_event)
+        self.AddObserver("MiddleButtonReleaseEvent", self._process_event)
 
         # Windows and special events.
         # TODO: we ever find them useful we could support them.
@@ -381,14 +376,14 @@ class CustomInteractorStyle(InteractorStyleUser):
         # These observers need to be added directly to the interactor because
         # `vtkInteractorStyleUser` does not support wheel events prior 7.1. See
         # https://github.com/Kitware/VTK/commit/373258ed21f0915c425eddb996ce6ac13404be28
-        interactor.AddObserver('MouseWheelForwardEvent', self._process_event)
-        interactor.AddObserver('MouseWheelBackwardEvent', self._process_event)
+        interactor.AddObserver("MouseWheelForwardEvent", self._process_event)
+        interactor.AddObserver("MouseWheelBackwardEvent", self._process_event)
 
     def force_render(self):
         """Causes the scene to refresh."""
         self.GetInteractor().GetRenderWindow().Render()
 
-    def add_callback(self, prop, event_type, callback, priority=0, args=[]):
+    def add_callback(self, prop, event_type, callback, priority=0, args=None):
         """Add a callback associated to a specific event for a VTK prop.
 
         Parameters
@@ -399,6 +394,8 @@ class CustomInteractorStyle(InteractorStyleUser):
         priority : int
 
         """
+        if args is None:
+            args = []
 
         def _callback(_obj, event_name):
             # Update event information.
@@ -406,8 +403,8 @@ class CustomInteractorStyle(InteractorStyleUser):
             if interactor_ is not None:
                 callback(self, prop, *args)
             else:
-                print('interactor is none')
-                print('event name is', event_name)
+                print("interactor is none")
+                print("event name is", event_name)
 
         # Dealing with custom events not defined in VTK.
         # Check whether the Event is predefined or not.
@@ -415,10 +412,7 @@ class CustomInteractorStyle(InteractorStyleUser):
             if event_type not in self.event2id:
                 # If the event type was not previously defined,
                 # then create an extra user defined event.
-                self.event2id[event_type] = (
-                    Command.UserEvent +
-                    len(self.event2id) +
-                    1)
+                self.event2id[event_type] = Command.UserEvent + len(self.event2id) + 1
 
             event_type = self.event2id[event_type]
 

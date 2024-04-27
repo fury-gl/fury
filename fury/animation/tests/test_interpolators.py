@@ -22,9 +22,9 @@ def assert_not_equal(x, y):
 
 def test_step_interpolator():
     data = {
-        1: {'value': np.array([1, 2, 3])},
-        2: {'value': np.array([0, 0, 0])},
-        3: {'value': np.array([5, 5, 5])},
+        1: {"value": np.array([1, 2, 3])},
+        2: {"value": np.array([0, 0, 0])},
+        3: {"value": np.array([5, 5, 5])},
     }
 
     interpolator = step_interpolator(data)
@@ -44,33 +44,33 @@ def test_step_interpolator():
     npt.assert_equal(interpolator(999), pos_final)
 
     for t in range(-10, 40, 1):
-        npt.assert_equal(interpolator(t / 10).shape, data.get(1).get('value').shape)
+        npt.assert_equal(interpolator(t / 10).shape, data.get(1).get("value").shape)
 
-    for ts, pos in data.items():
-        npt.assert_equal(interpolator(ts), data.get(ts).get('value'))
+    for ts in data.keys():
+        npt.assert_equal(interpolator(ts), data.get(ts).get("value"))
 
     interp = step_interpolator({})
     try:
         interp(1)
-        raise "This shouldn't work since no keyframes were provided!"
+        raise Exception("This shouldn't work since no keyframes were provided!")
     except IndexError:
         ...
 
-    data = {1: {'value': np.array([1, 2, 3])}}
+    data = {1: {"value": np.array([1, 2, 3])}}
     interp = step_interpolator(data)
     npt.assert_equal(interp(-100), np.array([1, 2, 3]))
     npt.assert_equal(interp(100), np.array([1, 2, 3]))
 
-    data = {1: {'value': None}}
+    data = {1: {"value": None}}
     interp = step_interpolator(data)
     npt.assert_equal(interp(-100), None)
 
 
 def test_linear_interpolator():
     data = {
-        1: {'value': np.array([1, 2, 3])},
-        2: {'value': np.array([0, 0, 0])},
-        3: {'value': np.array([5, 5, 5])},
+        1: {"value": np.array([1, 2, 3])},
+        2: {"value": np.array([0, 0, 0])},
+        3: {"value": np.array([5, 5, 5])},
     }
 
     interpolator = linear_interpolator(data)
@@ -79,13 +79,13 @@ def test_linear_interpolator():
     pos2 = interpolator(2.1)
     assert_not_equal(pos1, pos2)
 
-    npt.assert_equal(pos1, data.get(2).get('value'))
+    npt.assert_equal(pos1, data.get(2).get("value"))
 
-    for ts, pos in data.items():
-        npt.assert_equal(interpolator(ts), data.get(ts).get('value'))
+    for ts in data.keys():
+        npt.assert_equal(interpolator(ts), data.get(ts).get("value"))
 
     for t in range(-10, 40, 1):
-        npt.assert_equal(interpolator(t / 10).shape, data.get(1).get('value').shape)
+        npt.assert_equal(interpolator(t / 10).shape, data.get(1).get("value").shape)
 
     pos_initial = interpolator(1)
     pos_final = interpolator(3)
@@ -97,43 +97,43 @@ def test_linear_interpolator():
     interp = linear_interpolator({})
     try:
         interp(1)
-        raise "This shouldn't work since no keyframes were provided!"
+        raise Exception("This shouldn't work since no keyframes were provided!")
     except IndexError:
         ...
 
-    data = {1: {'value': np.array([1, 2, 3])}}
+    data = {1: {"value": np.array([1, 2, 3])}}
     interp = linear_interpolator(data)
     npt.assert_equal(interp(-100), np.array([1, 2, 3]))
     npt.assert_equal(interp(100), np.array([1, 2, 3]))
 
-    data = {1: {'value': None}, 2: {'value': np.array([1, 1, 1])}}
+    data = {1: {"value": None}, 2: {"value": np.array([1, 1, 1])}}
     interp = linear_interpolator(data)
     try:
         interp(1)
-        raise "This shouldn't work since invalid keyframes were provided!"
+        raise Exception("This shouldn't work since invalid keyframes were provided!")
     except TypeError:
         ...
 
 
 def test_cubic_spline_interpolator():
     data = {
-        1: {'value': np.array([1, 2, 3])},
-        2: {'value': np.array([0, 0, 0])},
-        3: {'value': np.array([5, 5, 5])},
-        4: {'value': np.array([7, 7, 7])},
+        1: {"value": np.array([1, 2, 3])},
+        2: {"value": np.array([0, 0, 0])},
+        3: {"value": np.array([5, 5, 5])},
+        4: {"value": np.array([7, 7, 7])},
     }
 
     interpolator = cubic_spline_interpolator(data)
 
     pos1 = interpolator(2)
-    npt.assert_almost_equal(pos1, data.get(2).get('value'))
+    npt.assert_almost_equal(pos1, data.get(2).get("value"))
 
-    for ts, pos in data.items():
-        npt.assert_almost_equal(interpolator(ts), data.get(ts).get('value'))
+    for ts in data.keys():
+        npt.assert_almost_equal(interpolator(ts), data.get(ts).get("value"))
 
     for t in range(-10, 40, 1):
         npt.assert_almost_equal(
-            interpolator(t / 10).shape, data.get(1).get('value').shape
+            interpolator(t / 10).shape, data.get(1).get("value").shape
         )
 
     pos_initial = interpolator(1)
@@ -145,15 +145,15 @@ def test_cubic_spline_interpolator():
 
     try:
         cubic_spline_interpolator({})
-        raise 'At least 4 keyframes must be provided!'
+        raise Exception("At least 4 keyframes must be provided!")
     except ValueError:
         ...
 
     data = {
-        1: {'value': None},
-        2: {'value': np.array([1, 1, 1])},
-        3: {'value': None},
-        4: {'value': None},
+        1: {"value": None},
+        2: {"value": np.array([1, 1, 1])},
+        3: {"value": None},
+        4: {"value": None},
     }
 
     # Interpolator should not work with invalid data!
@@ -162,11 +162,11 @@ def test_cubic_spline_interpolator():
 
 
 def test_cubic_bezier_interpolator():
-    data_1 = {1: {'value': np.array([-2, 0, 0])}, 2: {'value': np.array([18, 0, 0])}}
+    data_1 = {1: {"value": np.array([-2, 0, 0])}, 2: {"value": np.array([18, 0, 0])}}
 
     data_2 = {
-        1: {'value': np.array([-2, 0, 0]), 'out_cp': np.array([-15, 6, 0])},
-        2: {'value': np.array([18, 0, 0]), 'in_cp': np.array([27, 18, 0])},
+        1: {"value": np.array([-2, 0, 0]), "out_cp": np.array([-15, 6, 0])},
+        2: {"value": np.array([18, 0, 0]), "in_cp": np.array([27, 18, 0])},
     }
 
     # with control points
@@ -186,14 +186,14 @@ def test_cubic_bezier_interpolator():
     npt.assert_equal(interp_1(1), interp_2(1))
     npt.assert_equal(interp_1(2), interp_2(2))
 
-    for ts, pos in data_1.items():
-        expected = data_1.get(ts).get('value')
+    for ts in data_1.keys():
+        expected = data_1.get(ts).get("value")
         npt.assert_almost_equal(interp_1(ts), expected)
         npt.assert_almost_equal(interp_2(ts), expected)
 
     for t in range(-10, 40, 1):
         npt.assert_almost_equal(
-            interp_1(t / 10).shape, data_1.get(1).get('value').shape
+            interp_1(t / 10).shape, data_1.get(1).get("value").shape
         )
 
     pos_initial = interp_1(1)
@@ -210,26 +210,26 @@ def test_cubic_bezier_interpolator():
 
     try:
         interp(1)
-        raise "This shouldn't work since no keyframes were provided!"
+        raise Exception("This shouldn't work since no keyframes were provided!")
     except IndexError:
         ...
 
-    data = {1: {'value': np.array([1, 2, 3])}}
+    data = {1: {"value": np.array([1, 2, 3])}}
     interp = cubic_bezier_interpolator(data)
     npt.assert_equal(interp(-10), np.array([1, 2, 3]))
     npt.assert_equal(interp(100), np.array([1, 2, 3]))
 
-    data = {1: {'value': None}, 2: {'value': np.array([1, 1, 1])}}
+    data = {1: {"value": None}, 2: {"value": np.array([1, 1, 1])}}
     interp = cubic_bezier_interpolator(data)
     try:
         interp(1)
-        raise "This shouldn't work since no keyframes were provided!"
+        raise Exception("This shouldn't work since no keyframes were provided!")
     except TypeError:
         ...
 
 
 def test_n_spline_interpolator():
-    data = {i: {'value': np.random.random(3) * 10} for i in range(10)}
+    data = {i: {"value": np.random.random(3) * 10} for i in range(10)}
 
     interps = [spline_interpolator(data, degree=i) for i in range(1, 6)]
 
@@ -237,20 +237,20 @@ def test_n_spline_interpolator():
         npt.assert_equal(i(-999), i(0))
         npt.assert_equal(i(999), i(10))
         for t in range(10):
-            npt.assert_almost_equal(i(t), data.get(t).get('value'))
+            npt.assert_almost_equal(i(t), data.get(t).get("value"))
         for t in range(-100, 100, 1):
             i(t / 10)
     try:
         spline_interpolator({}, 5)
-        raise 'At least 6 keyframes must be provided!'
+        raise Exception("At least 6 keyframes must be provided!")
     except ValueError:
         ...
 
     data = {
-        1: {'value': None},
-        2: {'value': np.array([1, 1, 1])},
-        3: {'value': None},
-        4: {'value': None},
+        1: {"value": None},
+        2: {"value": np.array([1, 1, 1])},
+        3: {"value": None},
+        4: {"value": None},
     }
 
     # Interpolator should not work with invalid data!
@@ -259,7 +259,7 @@ def test_n_spline_interpolator():
 
 
 def test_color_interpolators():
-    data = {1: {'value': np.array([1, 0.5, 0])}, 2: {'value': np.array([0.5, 0, 1])}}
+    data = {1: {"value": np.array([1, 0.5, 0])}, 2: {"value": np.array([0.5, 0, 1])}}
 
     color_interps = [
         hsv_color_interpolator(data),
@@ -289,22 +289,22 @@ def test_color_interpolators():
             interp = interpolator({})
             try:
                 interp(1)
-                raise "This shouldn't work since no keyframes were provided!"
+                raise Exception("This shouldn't work since no keyframes were provided!")
             except IndexError:
                 ...
 
-            data = {1: {'value': np.array([1, 2, 3])}}
+            data = {1: {"value": np.array([1, 2, 3])}}
             interp = interpolator(data)
             npt.assert_equal(interp(-10), np.array([1, 2, 3]))
             npt.assert_equal(interp(10), np.array([1, 2, 3]))
 
-            data = {1: {'value': None}, 2: {'value': np.array([1, 1, 1])}}
+            data = {1: {"value": None}, 2: {"value": np.array([1, 1, 1])}}
             try:
                 interpolator(data)
-                msg =  "This shouldn't work since invalid keyframes "
+                msg = "This shouldn't work since invalid keyframes "
                 msg += "were provided! and hence can't be converted to"
                 msg += "targeted color space."
-                raise  msg
+                raise msg
             except (
                 TypeError,
                 AttributeError,
@@ -314,8 +314,8 @@ def test_color_interpolators():
 
 def test_slerp():
     data = {
-        1: {'value': np.array([0, 0, 0, 1])},
-        2: {'value': np.array([0, 0.7071068, 0, 0.7071068])},
+        1: {"value": np.array([0, 0, 0, 1])},
+        2: {"value": np.array([0, 0.7071068, 0, 0.7071068])},
     }
 
     interp_slerp = slerp(data)
@@ -335,19 +335,19 @@ def test_slerp():
     try:
         interp = slerp({})
         interp(1)
-        raise "This shouldn't work since no keyframes were provided!"
+        raise Exception("This shouldn't work since no keyframes were provided!")
     except ValueError:
         ...
 
-    data = {1: {'value': np.array([1, 2, 3, 1])}}
+    data = {1: {"value": np.array([1, 2, 3, 1])}}
     interp = slerp(data)
     npt.assert_equal(interp(-100), np.array([1, 2, 3, 1]))
     npt.assert_equal(interp(100), np.array([1, 2, 3, 1]))
 
-    data = {1: {'value': None}, 2: {'value': np.array([1, 1, 1])}}
+    data = {1: {"value": None}, 2: {"value": np.array([1, 1, 1])}}
     try:
         interp = slerp(data)
         interp(1)
-        raise "This shouldn't work since invalid keyframes were provided!"
+        raise Exception("This shouldn't work since invalid keyframes were provided!")
     except ValueError:
         ...

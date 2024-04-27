@@ -46,19 +46,19 @@ fetch_bundles_2_subjects()
 # ``af left`` (left arcuate fasciculus) and maps, e.g. FA for a specific
 # subject.
 
-res = read_bundles_2_subjects('subj_1', ['t1', 'fa'], ['af.left', 'cst.right', 'cc_1'])
+res = read_bundles_2_subjects("subj_1", ["t1", "fa"], ["af.left", "cst.right", "cc_1"])
 
 ###############################################################################
 # We will use 3 bundles, FA and the affine transformation that brings the voxel
 # coordinates to world coordinates (RAS 1mm).
 
-streamlines = Streamlines(res['af.left'])
-streamlines.extend(res['cst.right'])
-streamlines.extend(res['cc_1'])
+streamlines = Streamlines(res["af.left"])
+streamlines.extend(res["cst.right"])
+streamlines.extend(res["cc_1"])
 
-data = res['fa']
+data = res["fa"]
 shape = data.shape
-affine = res['affine']
+affine = res["affine"]
 
 ###############################################################################
 # With our current design it is easy to decide in which space you want the
@@ -134,7 +134,7 @@ line_slider_z = ui.LineSlider2D(
     min_value=0,
     max_value=shape[2] - 1,
     initial_value=shape[2] / 2,
-    text_template='{value:.0f}',
+    text_template="{value:.0f}",
     length=140,
 )
 
@@ -142,7 +142,7 @@ line_slider_x = ui.LineSlider2D(
     min_value=0,
     max_value=shape[0] - 1,
     initial_value=shape[0] / 2,
-    text_template='{value:.0f}',
+    text_template="{value:.0f}",
     length=140,
 )
 
@@ -150,7 +150,7 @@ line_slider_y = ui.LineSlider2D(
     min_value=0,
     max_value=shape[1] - 1,
     initial_value=shape[1] / 2,
-    text_template='{value:.0f}',
+    text_template="{value:.0f}",
     length=140,
 )
 
@@ -197,8 +197,8 @@ def build_label(text):
     label = ui.TextBlock2D()
     label.message = text
     label.font_size = 18
-    label.font_family = 'Arial'
-    label.justification = 'left'
+    label.font_family = "Arial"
+    label.justification = "left"
     label.bold = False
     label.italic = False
     label.shadow = False
@@ -208,15 +208,15 @@ def build_label(text):
     return label
 
 
-line_slider_label_z = build_label(text='Z Slice')
-line_slider_label_x = build_label(text='X Slice')
-line_slider_label_y = build_label(text='Y Slice')
-opacity_slider_label = build_label(text='Opacity')
+line_slider_label_z = build_label(text="Z Slice")
+line_slider_label_x = build_label(text="X Slice")
+line_slider_label_y = build_label(text="Y Slice")
+opacity_slider_label = build_label(text="Opacity")
 
 ###############################################################################
 # Now we will create a ``panel`` to contain the sliders and labels.
 
-panel = ui.Panel2D(size=(300, 200), color=(1, 1, 1), opacity=0.1, align='right')
+panel = ui.Panel2D(size=(300, 200), color=(1, 1, 1), opacity=0.1, align="right")
 panel.center = (1030, 120)
 
 panel.add_element(line_slider_label_x, (0.1, 0.75))
@@ -262,15 +262,13 @@ scene.zoom(1.5)
 scene.reset_clipping_range()
 
 if interactive:
-
     show_m.add_window_callback(win_callback)
     show_m.render()
     show_m.start()
 
 else:
-
     window.record(
-        scene, out_path='bundles_and_3_slices.png', size=(1200, 900), reset_camera=False
+        scene, out_path="bundles_and_3_slices.png", size=(1200, 900), reset_camera=False
     )
 
 del show_m

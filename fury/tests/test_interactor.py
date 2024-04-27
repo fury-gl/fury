@@ -7,16 +7,16 @@ import pytest
 
 from fury import actor, interactor, ui, utils as vtk_utils, window
 from fury.data import DATA_DIR
-from fury.decorators import skip_osx, skip_win
+from fury.decorators import skip_win
 from fury.lib import VTK_VERSION, Actor2D, PolyDataMapper2D, RegularPolygonSource
 
 
 @pytest.mark.skipif(
-    skip_win, reason='This test does not work on Windows.' ' Need to be introspected'
+    skip_win, reason="This test does not work on Windows." " Need to be introspected"
 )
 def test_custom_interactor_style_events(recording=False):
-    print('Using VTK {}'.format(VTK_VERSION))
-    filename = 'test_custom_interactor_style_events.log.gz'
+    print("Using VTK {}".format(VTK_VERSION))
+    filename = "test_custom_interactor_style_events.log.gz"
     recording_filename = pjoin(DATA_DIR, filename)
     scene = window.Scene()
 
@@ -48,7 +48,7 @@ def test_custom_interactor_style_events(recording=False):
         iren.force_render()
 
     interactor_style.add_active_prop(cursor)
-    interactor_style.add_callback(cursor, 'MouseMoveEvent', follow_mouse)
+    interactor_style.add_callback(cursor, "MouseMoveEvent", follow_mouse)
 
     # create some minimalistic streamlines
     lines = [
@@ -69,16 +69,16 @@ def test_custom_interactor_style_events(recording=False):
 
     # Assign the counter callback to every possible event.
     for event in [
-        'CharEvent',
-        'MouseMoveEvent',
-        'KeyPressEvent',
-        'KeyReleaseEvent',
-        'LeftButtonPressEvent',
-        'LeftButtonReleaseEvent',
-        'RightButtonPressEvent',
-        'RightButtonReleaseEvent',
-        'MiddleButtonPressEvent',
-        'MiddleButtonReleaseEvent',
+        "CharEvent",
+        "MouseMoveEvent",
+        "KeyPressEvent",
+        "KeyReleaseEvent",
+        "LeftButtonPressEvent",
+        "LeftButtonReleaseEvent",
+        "RightButtonPressEvent",
+        "RightButtonReleaseEvent",
+        "MiddleButtonPressEvent",
+        "MiddleButtonReleaseEvent",
     ]:
         interactor_style.add_callback(tube1, event, counter)
 
@@ -97,20 +97,20 @@ def test_custom_interactor_style_events(recording=False):
         iren.force_render()
         iren.event.abort()  # Stop propagating the event.
 
-    interactor_style.add_callback(tube2, 'MouseWheelForwardEvent', scale_up_obj)
-    interactor_style.add_callback(tube2, 'MouseWheelBackwardEvent', scale_down_obj)
+    interactor_style.add_callback(tube2, "MouseWheelForwardEvent", scale_up_obj)
+    interactor_style.add_callback(tube2, "MouseWheelBackwardEvent", scale_down_obj)
 
     # Add callback to hide/show tube1.
     def toggle_visibility(iren, obj):
         key = iren.event.key
-        if key.lower() == 'v':
+        if key.lower() == "v":
             obj.SetVisibility(not obj.GetVisibility())
             iren.force_render()
 
     interactor_style.add_active_prop(tube1)
     interactor_style.add_active_prop(tube2)
     interactor_style.remove_active_prop(tube2)
-    interactor_style.add_callback(tube1, 'CharEvent', toggle_visibility)
+    interactor_style.add_callback(tube1, "CharEvent", toggle_visibility)
 
     if recording:
         show_manager.record_events_to_file(recording_filename)
@@ -119,40 +119,40 @@ def test_custom_interactor_style_events(recording=False):
         show_manager.play_events_from_file(recording_filename)
         msg = "Wrong count for '{}'."
         expected = [
-            ('CharEvent', 6),
-            ('KeyPressEvent', 6),
-            ('KeyReleaseEvent', 6),
-            ('MouseMoveEvent', 1652),
-            ('LeftButtonPressEvent', 1),
-            ('RightButtonPressEvent', 1),
-            ('MiddleButtonPressEvent', 2),
-            ('LeftButtonReleaseEvent', 1),
-            ('MouseWheelForwardEvent', 3),
-            ('MouseWheelBackwardEvent', 1),
-            ('MiddleButtonReleaseEvent', 2),
-            ('RightButtonReleaseEvent', 1),
+            ("CharEvent", 6),
+            ("KeyPressEvent", 6),
+            ("KeyReleaseEvent", 6),
+            ("MouseMoveEvent", 1652),
+            ("LeftButtonPressEvent", 1),
+            ("RightButtonPressEvent", 1),
+            ("MiddleButtonPressEvent", 2),
+            ("LeftButtonReleaseEvent", 1),
+            ("MouseWheelForwardEvent", 3),
+            ("MouseWheelBackwardEvent", 1),
+            ("MiddleButtonReleaseEvent", 2),
+            ("RightButtonReleaseEvent", 1),
         ]
 
         # Useful loop for debugging.
         for event, count in expected:
             if states[event] != count:
-                print('{}: {} vs. {} (expected)'.format(event, states[event], count))
+                print("{}: {} vs. {} (expected)".format(event, states[event], count))
 
         for event, count in expected:
             npt.assert_equal(states[event], count, err_msg=msg.format(event))
 
 
 def test_double_click_events(recording=False):
-    filename = 'test_double_click_events.log.gz'
+    filename = "test_double_click_events.log.gz"
     recording_filename = pjoin(DATA_DIR, filename)
 
     label = ui.TextBlock2D(
         position=(400, 780),
         font_size=40,
         color=(1, 0.5, 0),
-        justification='center',
-        vertical_justification='top',
-        text='FURY rocks!!!',
+        justification="center",
+        vertical_justification="top",
+        text="FURY rocks!!!",
     )
 
     cube = actor.cube(
@@ -165,43 +165,43 @@ def test_double_click_events(recording=False):
     states = defaultdict(lambda: 0)
 
     def left_single_click(iren, obj):
-        states['LeftButtonPressEvent'] += 1
+        states["LeftButtonPressEvent"] += 1
         iren.force_render()
 
     def left_double_click(iren, obj):
-        states['LeftButtonDoubleClickEvent'] += 1
+        states["LeftButtonDoubleClickEvent"] += 1
         label.color = (1, 0, 0)
         iren.force_render()
 
     def right_single_click(iren, obj):
-        states['RightButtonPressEvent'] += 1
+        states["RightButtonPressEvent"] += 1
         iren.force_render()
 
     def right_double_click(iren, obj):
-        states['RightButtonDoubleClickEvent'] += 1
+        states["RightButtonDoubleClickEvent"] += 1
         label.color = (0, 1, 0)
         iren.force_render()
 
     def middle_single_click(iren, obj):
-        states['MiddleButtonPressEvent'] += 1
+        states["MiddleButtonPressEvent"] += 1
         iren.force_render()
 
     def middle_double_click(iren, obj):
-        states['MiddleButtonDoubleClickEvent'] += 1
+        states["MiddleButtonDoubleClickEvent"] += 1
         label.color = (0, 0, 1)
         iren.force_render()
 
     test_events = {
-        'LeftButtonPressEvent': left_single_click,
-        'LeftButtonDoubleClickEvent': left_double_click,
-        'RightButtonPressEvent': right_single_click,
-        'RightButtonDoubleClickEvent': right_double_click,
-        'MiddleButtonPressEvent': middle_single_click,
-        'MiddleButtonDoubleClickEvent': middle_double_click,
+        "LeftButtonPressEvent": left_single_click,
+        "LeftButtonDoubleClickEvent": left_double_click,
+        "RightButtonPressEvent": right_single_click,
+        "RightButtonDoubleClickEvent": right_double_click,
+        "MiddleButtonPressEvent": middle_single_click,
+        "MiddleButtonDoubleClickEvent": middle_double_click,
     }
 
     current_size = (800, 800)
-    showm = window.ShowManager(size=current_size, title='Double Click Test')
+    showm = window.ShowManager(size=current_size, title="Double Click Test")
     showm.scene.add(cube)
     showm.scene.add(label)
 
@@ -215,23 +215,23 @@ def test_double_click_events(recording=False):
         showm.play_events_from_file(recording_filename)
         msg = "Wrong count for '{}'."
         expected = [
-            ('LeftButtonPressEvent', 3),
-            ('LeftButtonDoubleClickEvent', 1),
-            ('MiddleButtonPressEvent', 3),
-            ('MiddleButtonDoubleClickEvent', 1),
-            ('RightButtonPressEvent', 2),
-            ('RightButtonDoubleClickEvent', 1),
+            ("LeftButtonPressEvent", 3),
+            ("LeftButtonDoubleClickEvent", 1),
+            ("MiddleButtonPressEvent", 3),
+            ("MiddleButtonDoubleClickEvent", 1),
+            ("RightButtonPressEvent", 2),
+            ("RightButtonDoubleClickEvent", 1),
         ]
 
         # Useful loop for debugging.
         for event, count in expected:
             if states[event] != count:
-                print('{}: {} vs. {} (expected)'.format(event, states[event], count))
+                print("{}: {} vs. {} (expected)".format(event, states[event], count))
 
         for event, count in expected:
             npt.assert_equal(states[event], count, err_msg=msg.format(event))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_custom_interactor_style_events(recording=False)
     test_double_click_events(recording=False)
