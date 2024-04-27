@@ -3,10 +3,10 @@ import time
 import numpy as np
 import numpy.testing as npt
 
-from fury.animation import Animation, Timeline
 import fury.testing as ft
+from fury.animation import Animation, Timeline
 from fury.ui import PlaybackPanel
-from fury.window import Scene, ShowManager
+from fury.window import ShowManager, Scene
 
 
 def assert_not_equal(x, y):

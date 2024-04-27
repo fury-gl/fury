@@ -83,7 +83,8 @@ def get_values_from_keyframes(keyframes):
 
     """
     return np.asarray(
-        [keyframes.get(t, {}).get('value', None) for t in sorted(keyframes.keys())]
+        [keyframes.get(t, {}).get('value', None)
+         for t in sorted(keyframes.keys())]
     )
 
 
