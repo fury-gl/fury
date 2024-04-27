@@ -1,5 +1,5 @@
-import vtk
 from viz_shader_canvas import cube
+import vtk
 
 from fury import window
 

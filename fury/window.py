@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 import gzip
-import time
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 from threading import Lock
+import time
 from warnings import warn
 
 import numpy as np
 from scipy import ndimage
 
-import fury.animation as anim
 from fury import __version__ as fury_version
+import fury.animation as anim
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image, save_image
 from fury.lib import (

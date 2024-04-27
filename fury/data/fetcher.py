@@ -1,22 +1,20 @@
 """Fetcher based on dipy."""
 
-import os
-import sys
+import asyncio
 import contextlib
-import warnings
-import json
-
-from os.path import join as pjoin, dirname
 from hashlib import sha256
+import json
+import os
+from os.path import dirname, join as pjoin
+import platform
 from shutil import copyfileobj
-
+import sys
 import tarfile
+from urllib.request import urlopen
+import warnings
 import zipfile
 
-from urllib.request import urlopen
-import asyncio
 import aiohttp
-import platform
 
 # Set a user-writeable file-system location to put files:
 if 'FURY_HOME' in os.environ:
@@ -28,8 +26,10 @@ else:
 UW_RW_URL = \
     "https://digital.lib.washington.edu/researchworks/bitstream/handle/"
 
-NEW_ICONS_DATA_URL = \
-    "https://raw.githubusercontent.com/fury-gl/fury-data/master/icons/new_icons/"
+NEW_ICONS_DATA_URL = (
+    "https://raw.githubusercontent.com/fury-gl/fury-data/master/icons/"
+    "new_icons/"
+)
 
 CUBEMAP_DATA_URL = \
     "https://raw.githubusercontent.com/fury-gl/fury-data/master/cubemaps/"
@@ -183,7 +183,7 @@ def fetch_data(files, folder, data_size=None):
 
         Raises if the sha checksum of the file does not match the expected
         value. The downloaded file is not deleted when this error is raised.
-    
+
     """
     if not os.path.exists(folder):
         print("Creating new folder %s" % (folder))
@@ -318,7 +318,6 @@ async def _download(session, url, filename, size=None):
         Name of the downloaded file (e.g. BoxTextured.gltf)
     size : int, optional
         Length of the content in bytes
-    
     """
     if not os.path.exists(filename):
         print(f'Downloading: {filename}')
@@ -414,7 +413,7 @@ def fetch_gltf(name=None, mode='glTF'):
     -------
     filenames : tuple
         tuple of feteched filenames (list) and folder (str) path.
-    
+
     """
     if platform.system().lower() == "windows":
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -458,11 +457,13 @@ fetch_viz_new_icons = _make_fetcher(
     ["circle-pressed.png", "circle.png", "delete-pressed.png", "delete.png",
      "drawing-pressed.png", "drawing.png", "line-pressed.png", "line.png",
      "polyline-pressed.png", "polyline.png", "quad-pressed.png", "quad.png",
-     "resize-pressed.png", "resize.png", "selection-pressed.png", "selection.png"],
+     "resize-pressed.png", "resize.png", "selection-pressed.png",
+     "selection.png"],
     ["circle-pressed.png", "circle.png", "delete-pressed.png", "delete.png",
      "drawing-pressed.png", "drawing.png", "line-pressed.png", "line.png",
      "polyline-pressed.png", "polyline.png", "quad-pressed.png", "quad.png",
-     "resize-pressed.png", "resize.png", "selection-pressed.png", "selection.png"],
+     "resize-pressed.png", "resize.png", "selection-pressed.png",
+     "selection.png"],
     ["CD859F244DF1BA719C65C869C3FAF6B8563ABF82F457730ADBFBD7CA72DDB7BC",
      "5896BDC9FF9B3D1054134D7D9A854677CE9FA4E64F494F156BB2E3F0E863F207",
      "937C46C25BC38B62021B01C97A4EE3CDE5F7C8C4A6D0DB75BF4E4CACE2AF1226",
@@ -720,7 +721,7 @@ def read_viz_gltf(fname, mode='glTF'):
     -------
     path : str
         Complete path of models.
-    
+
     """
     folder = pjoin(fury_home, 'glTF')
     model = pjoin(folder, fname)
@@ -743,7 +744,7 @@ def list_gltf_sample_models():
     model_names : list
         Lists the name of glTF sample from
         https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0
-    
+
     """
     DATA_DIR = pjoin(dirname(__file__), 'files')
     with open(pjoin(DATA_DIR, 'KhronosGltfSamples.json'), 'r') as f:

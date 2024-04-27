@@ -1,10 +1,10 @@
 import os
-import warnings
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 from urllib.request import urlretrieve
+import warnings
 
-import numpy as np
 from PIL import Image
+import numpy as np
 
 from fury.lib import (
     BMPReader,
@@ -24,9 +24,9 @@ from fury.lib import (
     PolyDataWriter,
     STLReader,
     STLWriter,
-    Texture,
     TIFFReader,
     TIFFWriter,
+    Texture,
     XMLPolyDataReader,
     XMLPolyDataWriter,
     numpy_support,

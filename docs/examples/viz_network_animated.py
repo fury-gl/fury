@@ -18,9 +18,7 @@ from os.path import join as pjoin
 
 import numpy as np
 
-from fury import actor
-from fury import colormap as cmap
-from fury import window
+from fury import actor, colormap as cmap, window
 from fury.utils import compute_bounds, update_actor, vertices_from_actor
 
 ###############################################################################

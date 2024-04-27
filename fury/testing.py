@@ -1,17 +1,17 @@
 """Utilities for testing."""
 
+from contextlib import contextmanager
+from distutils.version import LooseVersion
+from functools import partial
 import io
 import json
 import operator
 import sys
 import warnings
-from contextlib import contextmanager
-from distutils.version import LooseVersion
-from functools import partial
 
 import numpy as np
-import scipy  # type: ignore
 from numpy.testing import assert_array_equal
+import scipy  # type: ignore
 
 
 @contextmanager

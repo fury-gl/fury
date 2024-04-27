@@ -12,12 +12,11 @@ We start by importing the necessary modules:
 """
 import itertools
 
+from dipy.io.image import load_nifti
 import numpy as np
 
-from dipy.io.image import load_nifti
-
-from fury import window, actor, ui
-from fury.actor import _fa, _color_fa
+from fury import actor, ui, window
+from fury.actor import _color_fa, _fa
 from fury.data import fetch_viz_dmri, read_viz_dmri
 from fury.primitive import prim_sphere
 

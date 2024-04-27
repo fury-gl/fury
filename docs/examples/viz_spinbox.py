@@ -9,9 +9,10 @@ a SpinBox UI.
 
 First, some imports.
 """
+import numpy as np
+
 from fury import actor, ui, utils, window
 from fury.data import fetch_viz_icons
-import numpy as np
 
 ##############################################################################
 # First we need to fetch some icons that are included in FURY.

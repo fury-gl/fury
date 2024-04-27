@@ -11,7 +11,6 @@ for backwards compatibility but now there is a more comprehensive way to access
 the main functions using the following modules.
 """
 
-import numpy as np
 from dipy.data.fetcher import fetch_bundles_2_subjects, read_bundles_2_subjects
 
 ###############################################################################
@@ -36,6 +35,7 @@ from dipy.data.fetcher import fetch_bundles_2_subjects, read_bundles_2_subjects
 #
 # First we need to fetch and load some datasets.
 from dipy.tracking.streamline import Streamlines
+import numpy as np
 
 from fury import actor, ui, window
 

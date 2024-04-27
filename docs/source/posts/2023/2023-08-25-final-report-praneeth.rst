@@ -45,7 +45,7 @@ Objectives Completed
 
 - **SpinBoxUI:**
 	The ``SpinBoxUI`` element is essential for user interfaces as it allows users to pick a numeric value from a set range. While we had an active pull request (PR) to add this element, updates in the main code caused conflicts and required further changes for added features. At one point, we noticed that text alignment wasn't centered properly within the box due to a flaw. To fix this, we began a PR to adjust the alignment, but it turned into a larger refactoring of the ``TextBlock2D``, a core component connected to various parts. This was a complex task that needed careful handling. After sorting out the ``TextBlock2D``, we returned to the ``SpinBoxUI`` and made a few tweaks. Once we were confident with the changes, the PR was successfully merged after thorough review and testing.
-	
+
 	**Pull Requests:**
   - **SpinBoxUI (Merged)** - https://github.com/fury-gl/fury/pull/499
 
@@ -53,28 +53,28 @@ Objectives Completed
         :height: 500
         :align: center
         :alt: SpinBoxUI
-	
+
 
 
 - **`TextBlock2D` Refactoring:**
 	This was a significant aspect of the GSoC period and occupied a substantial portion of the timeline. The process began when we observed misaligned text in the ``SpinBoxUI``, as previously discussed. The root cause of the alignment issue was the mispositioning of the text actor concerning the background actor. The text actor's independent repositioning based on justification conflicted with the static position of the background actor, leading to the alignment problem.
-	
+
 	To address this, the initial focus was on resolving the justification issue. However, as the work progressed, we recognized that solely adjusting justification would not suffice. The alignment was inherently linked to the UI's size, which was currently retrieved only when a valid scene was present. This approach lacked scalability and efficiency, as it constrained size retrieval to scene availability.
-	
+
 	To overcome these challenges, we devised a solution involving the creation of a bounding box around the ``TextBlock2D``. This bounding box would encapsulate the size information, enabling proper text alignment. This endeavor spanned several weeks of development, culminating in a finalized solution that underwent rigorous testing before being merged.
-	
+
 	As a result of this refactoring effort, the ``TextBlock2D`` now offers three distinct modes:
-  
+
 	1. **Fully Static Background:** This mode requires background setup during initialization.
 	2. **Dynamic Background:** The background dynamically scales based on the text content.
 	3. **Auto Font Scale Mode:** The font within the background box automatically scales to fill the available space.
-	
+
 	An issue has been identified with ``TextBlock2D`` where its text actor aligns with the top boundary of the background actor, especially noticeable with letters like "g," "y," and "j". These letters extend beyond the baseline of standard alphabets, causing the text box to shift upwards.
-	
+
 	However, resolving this matter is complex. Adjusting the text's position might lead to it touching the bottom boundary, especially in font scale mode, resulting in unexpected positioning and transformations. To address this, the plan is to defer discussions about this matter until after GSoC, allowing for thorough consideration and solutions.
-	
+
 	For more detailed insights into the individual steps and nuances of this process, you can refer to the comprehensive weekly blog post provided below. It delves into the entire journey of this ``TextBlock2D`` refactoring effort.
-	
+
 	**Pull Requests:**
   - **Fixing Justification Issue - 1st Draft (Closed)** - https://github.com/fury-gl/fury/pull/790
   - **Adding BoundingBox and fixing Justificaiton (Merged)** - https://github.com/fury-gl/fury/pull/803
@@ -86,7 +86,7 @@ Objectives Completed
         :height: 500
         :align: center
         :alt: TextBlock2D Feature Demo
-    
+
     .. image:: https://github-production-user-asset-6210df.s3.amazonaws.com/64432063/254652569-94212105-7259-48da-8fdc-41ee987bda84.png
         :height: 500
         :align: center
@@ -96,7 +96,7 @@ Objectives Completed
 	We initially planned to make the scrollbar independent based on PR `#16 <https://github.com/fury-gl/fury/pull/16>`_. The main goal was to avoid redundancy by not rewriting the scrollbar code for each element that requires it, such as the ``FileMenu2D``. However, upon further analysis, we realized that elements like the ``FileMenu2D`` and others utilize the ``Listbox2D``, which already includes an integrated scrollbar. We also examined other UI libraries and found that they also have independent scrollbars but lack a proper use case. Typically, display containers like ``Listbox2D`` are directly used instead of utilizing an independent scrollbar.
 
 	Based on these findings, we have decided to close all related issues and pull requests for now. If the need arises in the future, we can revisit this topic.
-	
+
 	**Topic:** - https://github.com/fury-gl/fury/discussions/816
 
 
@@ -115,13 +115,13 @@ Other Objectives
 	**Pull Requests:**
   - **CardUI (Merged)** - https://github.com/fury-gl/fury/pull/398
   - **ComboBox Flaw (Merged)** - https://github.com/fury-gl/fury/pull/768
-	
+
 
     .. image:: https://user-images.githubusercontent.com/54466356/112532305-b090ef80-8dce-11eb-90a0-8d06eed55993.png
         :height: 500
         :align: center
         :alt: CardUI
-	
+
 
 - **Updating Broken Website Links:**
 	I addressed an issue with malfunctioning links in the Scientific Section of the website. The problem emerged from alterations introduced in PR `#769 <https://github.com/fury-gl/fury/pull/769>`_. These changes consolidated demos and examples into a unified "auto_examples" folder, and a toml file was utilized to retrieve this data and construct examples. However, this led to challenges with the paths employed in website generation. My responsibility was to rectify these links, ensuring they accurately direct users to the intended content.
@@ -135,11 +135,11 @@ Objectives in Progress
 
 - **FileDialogUI:**
 	An existing ``FileDialog`` PR by Soham (`#294 <https://github.com/fury-gl/fury/pull/294>`_) was worked upon. The primary task was to rebase the PR to match the current UI structure, resolving compatibility concerns with the older base. In PR `#832 <https://github.com/fury-gl/fury/pull/832>`_, we detailed issues encompassing resizing ``FileDialog`` and components, addressing text overflow, fixing ``ZeroDivisionError``, and correcting ``ListBox2D`` item positioning. The PR is complete with comprehensive testing and documentation. Presently, it's undergoing review, and upon approval, it will be prepared for integration.
-	
+
 	**Pull Requests:**
   - **Soham's FileDialog (Closed)** - https://github.com/fury-gl/fury/pull/294
   - **FileDialogUI (Under Review)** - https://github.com/fury-gl/fury/pull/832
-	
+
 
     .. image:: https://user-images.githubusercontent.com/64432063/263189092-6b0891d5-f0ef-4185-8b17-c7104f1a7d60.gif
         :height: 500
@@ -149,10 +149,10 @@ Objectives in Progress
 
 - **TreeUI:**
 	Continuing Antriksh's initial PR for ``TreeUI`` posed some challenges. Antriksh had set the foundation, and I picked up from there. The main issue was with the visibility of TreeUI due to updates in the ``set_visibility`` method of ``Panel2D``. These updates affected how ``TreeUI`` was displayed, and after investigating the actors involved, it was clear that the visibility features had changed. This took some time to figure out, and I had a helpful pair programming session with my mentor, Serge, to narrow down the problem. Now, I've updated the code to address this issue. However, I'm still a bit cautious about potential future problems. The PR is now ready for review.
-	
+
 	**Pull Requests:**
   - **TreeUI (In Progress)** - https://github.com/fury-gl/fury/pull/821
-	
+
 
     .. image:: https://user-images.githubusercontent.com/64432063/263237308-70e77ba0-1ce8-449e-a79c-d5e0fbb58b45.gif
         :height: 500

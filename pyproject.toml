@@ -74,7 +74,7 @@ doc = [
     "texext",
     "tomli; python_version < \"3.11\"",
     ]
-style = ["flake8", "blue", "isort", "pre-commit"]
+style = ["flake8", "blue", "ruff", "pre-commit"]
 typing = ["mypy", "types-Pillow", "data-science-types"]
 test = [
     "coverage",
@@ -107,10 +107,9 @@ force-exclude = """
 )
 """
 
-[tool.isort]
-profile = "black"
-line_length = 88
-extend_skip = ["_version.py", "externals", "*docs/experimental*"]
+[flake8]
+max-line-length = 88
+extend-exclude = ["_version.py", "externals", "*docs/experimental*"]
 
 [tool.mypy]
 python_version = "3.11"

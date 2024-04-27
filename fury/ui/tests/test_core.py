@@ -1,6 +1,6 @@
 """Core module testing."""
-import warnings
 from os.path import join as pjoin
+import warnings
 
 import numpy as np
 import numpy.testing as npt

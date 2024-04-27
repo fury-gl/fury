@@ -2,10 +2,10 @@ import os
 from os.path import join as pjoin
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 
+from PIL import Image
 import numpy as np
 import numpy.testing as npt
 import pytest
-from PIL import Image
 
 from fury.decorators import skip_osx
 from fury.io import (

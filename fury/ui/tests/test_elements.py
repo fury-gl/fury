@@ -1,8 +1,8 @@
 """Test for components module."""
 import itertools
 import os
-import shutil
 from os.path import join as pjoin
+import shutil
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 
 import numpy as np

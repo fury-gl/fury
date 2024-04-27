@@ -12,8 +12,8 @@
 ### Installing requirements
 
 ```bash
-$ pip install -U -r requirements/default.txt
-$ pip install -U -r requirements/optional.txt
+pip install -U -r requirements/default.txt
+pip install -U -r requirements/optional.txt
 ```
 
 or
@@ -25,8 +25,8 @@ conda install --yes --file=requirements/default.txt --file=requirements/optional
 ### Running the tests
 
 ```bash
-$ pip install -U -r requirements/default.txt
-$ pip install -U -r requirements/test.txt
+pip install -U -r requirements/default.txt
+pip install -U -r requirements/test.txt
 ```
 
 or
@@ -38,7 +38,7 @@ conda install --yes --file=requirements/default.txt --file=requirements/test.txt
 ### Running the Docs
 
 ```bash
-$ pip install -U -r requirements/default.txt
-$ pip install -U -r requirements/optional.txt
-$ pip install -U -r requirements/docs.txt
+pip install -U -r requirements/default.txt
+pip install -U -r requirements/optional.txt
+pip install -U -r requirements/docs.txt
 ```

@@ -1,13 +1,13 @@
+from abc import ABC, abstractmethod
 import asyncio
 import io
 import logging
 import multiprocessing
-import time
-from abc import ABC, abstractmethod
 from threading import Timer
+import time
 
-import numpy as np
 from PIL import Image, ImageDraw
+import numpy as np
 
 from fury.stream.constants import PY_VERSION_8
 
