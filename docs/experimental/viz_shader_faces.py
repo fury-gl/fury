@@ -1,6 +1,6 @@
 import numpy as np
-import vtk
 from viz_shader_canvas import glyph_dot
+import vtk
 
 from fury import actor, window
 

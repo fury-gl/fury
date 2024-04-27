@@ -18,8 +18,8 @@ def get_info(verbose=False):
        with named parameters of interest
 
     """
-    import sys
     from os.path import dirname
+    import sys
 
     import numpy
     import scipy

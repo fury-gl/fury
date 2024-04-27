@@ -2,8 +2,8 @@ import numpy as np
 import vtk
 from vtk.util import numpy_support
 
-import fury.primitive as fp
 from fury import actor, window
+import fury.primitive as fp
 from fury.utils import (
     get_actor_from_polydata,
     numpy_to_vtk_colors,

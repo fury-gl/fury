@@ -12,9 +12,7 @@ from os.path import join as pjoin
 # multiprocessing.set_start_method('spawn')
 import numpy as np
 
-from fury import actor
-from fury import colormap as cmap
-from fury import window
+from fury import actor, colormap as cmap, window
 from fury.data.fetcher import fetch_viz_wiki_nw
 from fury.stream.client import FuryStreamClient
 from fury.stream.server.main import web_server_raw_array

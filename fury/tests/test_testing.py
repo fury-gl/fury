@@ -5,9 +5,9 @@ import warnings
 import numpy as np
 import numpy.testing as npt
 
-import fury.testing as ft
 from fury import window
 from fury.lib import Actor2D
+import fury.testing as ft
 from fury.ui.core import UI
 
 

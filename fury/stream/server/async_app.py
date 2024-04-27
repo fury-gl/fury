@@ -1,12 +1,12 @@
 import asyncio
+from functools import partial
 import json
 import os
 import weakref
-from functools import partial
 
 import aiohttp
-import numpy as np
 from aiohttp import MultipartWriter, WSCloseCode, web
+import numpy as np
 
 try:
     from aiortc import RTCPeerConnection, RTCSessionDescription

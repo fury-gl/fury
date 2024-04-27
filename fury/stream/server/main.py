@@ -1,10 +1,10 @@
 # import os
 # os.environ['PYTHONASYNCIODEBUG'] = '1'
 # import logging
-import numpy as np
 from aiohttp import web
+import numpy as np
 
-from fury.stream.constants import _CQUEUE, PY_VERSION_8
+from fury.stream.constants import PY_VERSION_8, _CQUEUE
 from fury.stream.server.async_app import get_app
 from fury.stream.tools import (
     ArrayCircularQueue,

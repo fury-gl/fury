@@ -18,6 +18,7 @@ defaults:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
     defaults:
       run:
         shell: bash

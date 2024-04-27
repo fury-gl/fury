@@ -13,9 +13,7 @@ from fury.lib import (
     VTK_UNSIGNED_SHORT,
     Actor,
     DataSetAttributes,
-)
-from fury.lib import Molecule as Mol
-from fury.lib import (
+    Molecule as Mol,
     OpenGLMoleculeMapper,
     PeriodicTable,
     PolyData,
@@ -23,8 +21,8 @@ from fury.lib import (
     ProteinRibbonFilter,
     SimpleBondPerceiver,
     StringArray,
+    numpy_support as nps,
 )
-from fury.lib import numpy_support as nps
 from fury.utils import numpy_to_vtk_points
 
 
