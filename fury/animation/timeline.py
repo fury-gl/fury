@@ -1,8 +1,8 @@
 import os
 from time import perf_counter
 
-import numpy as np
 from PIL import Image
+import numpy as np
 
 from fury import window
 from fury.animation.animation import Animation
