@@ -138,7 +138,13 @@ def set_mouse(data, circular_queue):
     circular_queue = circular_queue
     ok = circular_queue.enqueue(
         np.array(
-            [EVENT_IDs.mouse_move, 0, x, y, ctrl_key, shift_key, user_envent_ms, 0],
+            [EVENT_IDs.mouse_move,
+             0,
+             x,
+             y,
+             ctrl_key,
+             shift_key,
+             user_envent_ms, 0],
             dtype='float64',
         )
     )
@@ -168,7 +174,8 @@ def set_mouse_click(data, circular_queue):
 
     event_id = (mouse_button + 1) * 2 + on + 1
     ok = circular_queue.enqueue(
-        np.array([event_id, 0, x, y, ctrl, shift, user_envent_ms, 0], dtype='float64')
+        np.array([event_id, 0, x, y, ctrl, shift, user_envent_ms, 0],
+                 dtype='float64')
     )
 
     return ok
@@ -200,7 +207,8 @@ async def websocket_handler(request, **kwargs):
                     if data['type'] == 'weel':
                         ts = time.time() * 1000
                         interval = ts - data['timestampInMs']
-                        logging.info('WEEL request time approx ' + f'{interval:.2f} ms')
+                        logging.info('WEEL request time approx ' +
+                                     f'{interval:.2f} ms')
                         set_weel(data, circular_queue)
                     elif data['type'] == 'mouseMove':
                         set_mouse(data, circular_queue)
@@ -251,7 +259,9 @@ def get_app(
         'interaction.js',
     ]
     for js in js_files:
-        app.router.add_get('/js/%s' % js, partial(javascript, folder=folder, js=js))
+        app.router.add_get('/js/%s' % js, partial(javascript,
+                                                  folder=folder,
+                                                  js=js))
 
     app['image_buffer_manager'] = image_buffer_manager
     if provides_mjpeg:
@@ -264,7 +274,8 @@ def get_app(
 
     if circular_queue is not None:
         app.add_routes(
-            [web.get('/ws', partial(websocket_handler, circular_queue=circular_queue))]
+            [web.get('/ws', partial(websocket_handler,
+                                    circular_queue=circular_queue))]
         )
 
     return app
