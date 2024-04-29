@@ -57,7 +57,8 @@ async def mjpeg_handler(request):
         status=200,
         reason='OK',
         headers={
-            'Content-Type': 'multipart/x-mixed-replace;boundary={}'.format(my_boundary)
+            'Content-Type': 'multipart/x-mixed-replace;boundary={}'.format(
+                my_boundary)
         },
     )
     await response.prepare(request)
@@ -217,7 +218,9 @@ async def websocket_handler(request, **kwargs):
                     # await ws.send_str(msg.data + '/answer')
 
             elif msg.type == aiohttp.WSMsgType.ERROR:
-                print('ws connection closed with exception %s' % ws.exception())
+                print('ws connection closed with exception {}'.format(
+                    ws.exception())
+                )
     finally:
         request.app['websockets'].discard(ws)
 
