@@ -228,7 +228,9 @@ def test_ui_2d_line_slider_hooks(recording=False):
     event_counter = EventCounter()
     event_counter.monitor(line_slider_2d)
 
-    show_manager = window.ShowManager(size=(600, 600), title='FURY Line Slider hooks')
+    show_manager = window.ShowManager(
+        size=(600, 600),
+        title='FURY Line Slider hooks')
 
     # counters for the hooks to increment
     changed = value_changed = slider_moved = 0
@@ -278,9 +280,17 @@ def test_ui_line_double_slider_2d(interactive=False):
         max_value=10,
         initial_values=(-10, 10),
     )
-    npt.assert_equal(line_double_slider_2d_horizontal_test.handles[0].size, (30, 30))
-    npt.assert_equal(line_double_slider_2d_horizontal_test.left_disk_value, -10)
-    npt.assert_equal(line_double_slider_2d_horizontal_test.right_disk_value, 10)
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.handles[0].size,
+        (30, 30))
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.left_disk_value,
+        -10
+        )
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.right_disk_value,
+        10
+        )
 
     line_double_slider_2d_vertical_test = ui.LineDoubleSlider2D(
         center=(300, 300),
@@ -290,9 +300,16 @@ def test_ui_line_double_slider_2d(interactive=False):
         max_value=10,
         initial_values=(-10, 10),
     )
-    npt.assert_equal(line_double_slider_2d_vertical_test.handles[0].size, (30, 30))
-    npt.assert_equal(line_double_slider_2d_vertical_test.bottom_disk_value, -10)
-    npt.assert_equal(line_double_slider_2d_vertical_test.top_disk_value, 10)
+    npt.assert_equal(
+        line_double_slider_2d_vertical_test.handles[0].size,
+        (30, 30)
+        )
+    npt.assert_equal(
+        line_double_slider_2d_vertical_test.bottom_disk_value,
+        -10)
+    npt.assert_equal(
+        line_double_slider_2d_vertical_test.top_disk_value,
+        10)
 
     if interactive:
         show_manager = window.ShowManager(
@@ -309,9 +326,13 @@ def test_ui_line_double_slider_2d(interactive=False):
         orientation='horizontal',
         initial_values=(50, 40),
     )
-    npt.assert_equal(line_double_slider_2d_horizontal_test.handles[0].size, (5, 5))
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.handles[0].size,
+        (5, 5))
     npt.assert_equal(line_double_slider_2d_horizontal_test.left_disk_value, 39)
-    npt.assert_equal(line_double_slider_2d_horizontal_test.right_disk_value, 40)
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.right_disk_value,
+                    40)
     npt.assert_equal(line_double_slider_2d_horizontal_test.left_disk_ratio, 0.39)
     npt.assert_equal(line_double_slider_2d_horizontal_test.right_disk_ratio, 0.4)
 
@@ -1103,8 +1124,11 @@ def test_ui_combobox_2d_dropdown_visibility(interactive=False):
 
     values = ['An Item' + str(i) for i in range(0, 5)]
 
-    tab_ui = ui.TabUI(position=(49, 94), size=(400, 400), nb_tabs=1 , draggable=True)
-    combobox = ui.ComboBox2D(items=values, position=(400, 400), size=(300, 200))
+    tab_ui = ui.TabUI(position=(49, 94), size=(400, 400), nb_tabs=1, draggable=True)
+    combobox = ui.ComboBox2D(
+        items=values,
+        position=(400, 400), size=(300, 200)
+        )
 
     tab_ui.add_element(0, combobox, (0.1, 0.3))
 
@@ -1119,23 +1143,35 @@ def test_ui_combobox_2d_dropdown_visibility(interactive=False):
 
     tab_ui.tabs[0].content_panel.set_visibility(True)
     npt.assert_equal(False, combobox._menu_visibility)
-    npt.assert_equal(False, combobox.drop_down_menu.panel.actors[0].GetVisibility())
+    npt.assert_equal(
+        False,
+        combobox.drop_down_menu.panel.actors[0].GetVisibility()
+        )
     npt.assert_equal(0, combobox.drop_down_button.current_icon_id)
     npt.assert_equal(True, combobox.drop_down_button.actors[0].GetVisibility())
     npt.assert_equal(True, combobox.selection_box.actors[0].GetVisibility())
 
     tab_ui.tabs[0].content_panel.set_visibility(False)
     npt.assert_equal(False, combobox._menu_visibility)
-    npt.assert_equal(False, combobox.drop_down_menu.panel.actors[0].GetVisibility())
+    npt.assert_equal(
+        False,
+        combobox.drop_down_menu.panel.actors[0].GetVisibility()
+        )
     npt.assert_equal(0, combobox.drop_down_button.current_icon_id)
-    npt.assert_equal(False, combobox.drop_down_button.actors[0].GetVisibility())
+    npt.assert_equal(
+        False,
+        combobox.drop_down_button.actors[0].GetVisibility()
+        )
     npt.assert_equal(False, combobox.selection_box.actors[0].GetVisibility())
 
     iren = show_manager.scene.GetRenderWindow().GetInteractor().GetInteractorStyle()
     combobox.menu_toggle_callback(iren, None, None)
     tab_ui.tabs[0].content_panel.set_visibility(True)
     npt.assert_equal(True, combobox._menu_visibility)
-    npt.assert_equal(True, combobox.drop_down_menu.panel.actors[0].GetVisibility())
+    npt.assert_equal(
+        True,
+        combobox.drop_down_menu.panel.actors[0].GetVisibility()
+        )
     npt.assert_equal(1, combobox.drop_down_button.current_icon_id)
     npt.assert_equal(True, combobox.drop_down_button.actors[0].GetVisibility())
     npt.assert_equal(True, combobox.selection_box.actors[0].GetVisibility())
@@ -1411,7 +1447,9 @@ def test_ui_spinbox(interactive=False):
     event_counter.monitor(spinbox)
 
     current_size = (800, 800)
-    show_manager = window.ShowManager(size=current_size, title="SpinBox UI Example")
+    show_manager = window.ShowManager(
+        size=current_size,
+        title="SpinBox UI Example")
     show_manager.scene.add(spinbox)
 
     if interactive:
