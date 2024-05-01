@@ -9,9 +9,9 @@ the Nibabel package for the copyright and license terms.
 """
 
 import functools
+from inspect import signature
 import re
 import warnings
-from inspect import signature
 
 from fury import __version__
 from fury.optpkg import optional_package

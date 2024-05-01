@@ -20,14 +20,14 @@ __all__ = [
     'SpinBox'
 ]
 
-import os
 from collections import OrderedDict
 from numbers import Number
+import os
 from string import printable
 from urllib.request import urlopen
 
-import numpy as np
 from PIL import Image, UnidentifiedImageError
+import numpy as np
 
 from fury.data import read_viz_icons
 from fury.lib import Command

@@ -12,9 +12,9 @@ Hello everybody, welcome to the week 2 of this project! I must admit I thought t
 This Last Week's Effort
 -----------------------
 
-Last week, I was facing some issues with a VTK feature essential so I could move forward with my project: Framebuffer Objects. 
+Last week, I was facing some issues with a VTK feature essential so I could move forward with my project: Framebuffer Objects.
 As described in my :doc:`last blogpost <2023-06-05-week-1-joaodellagli>`, for some reason the 2D allocation methods for it weren't working.
-In a meeting with my mentors, while we were discussing and searching through VTK's FramebufferObject and TextureObject documentation, and the code itself for the problem, 
+In a meeting with my mentors, while we were discussing and searching through VTK's FramebufferObject and TextureObject documentation, and the code itself for the problem,
 one TextureObject method caught my attention: `vtkTextureObject.SetContext() <https://vtk.org/doc/nightly/html/classvtkTextureObject.html#a0988fa2a30b640c93392c2188030537e>`_.
 
 Where the Problem Was
@@ -39,18 +39,18 @@ will be present, so it lacked a line, that should be added after ``Bind()``:
 
 ::
 
-   color_texture = vtk.vtkTextureObject() 
-   color_texture.Bind() 
+   color_texture = vtk.vtkTextureObject()
+   color_texture.Bind()
 
    color_texture.SetContext(manager.window) # set the context where the texture object will be present
 
-   color_texture.SetDataType(vtk.VTK_UNSIGNED_CHAR) 
-   color_texture.SetInternalFormat(vtk.VTK_RGB) 
+   color_texture.SetDataType(vtk.VTK_UNSIGNED_CHAR)
+   color_texture.SetInternalFormat(vtk.VTK_RGB)
    color_texture.SetFormat(vtk.VTK_RGB)
-   color_texture.SetMinificationFilter(0) 
-   color_texture.SetMagnificationFilter(0) 
+   color_texture.SetMinificationFilter(0)
+   color_texture.SetMagnificationFilter(0)
 
-The code worked fine. But as my last blogpost showed, ``Allocate3D()`` method worked just fine without a (visible) problem, why is that? 
+The code worked fine. But as my last blogpost showed, ``Allocate3D()`` method worked just fine without a (visible) problem, why is that?
 Well, in fact, it **didn't work**. If we check the code for the ``Allocate2D()`` and ``Allocate3D()``, one difference can be spotted:
 
 
@@ -78,9 +78,9 @@ implementation made it harder for me and my mentors to realise what was happenin
 
 This Week's Goals
 -----------------
-After making that work, this week's goal is to render something to the Framebuffer Object, now that is working. To do that, 
+After making that work, this week's goal is to render something to the Framebuffer Object, now that is working. To do that,
 first I will need to do some offscreen rendering to it, and afterwards render what it was drawn to its color attachment, the Texture Object I
-was struggling to make work, into the screen, drawing its texture to a billboard. Also, I plan to start using vtkErrorMacro, as it seems like 
+was struggling to make work, into the screen, drawing its texture to a billboard. Also, I plan to start using vtkErrorMacro, as it seems like
 the main error interface when working with VTK, and that may make my life easier.
 
 See you next week!

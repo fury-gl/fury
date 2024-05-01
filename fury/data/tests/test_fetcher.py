@@ -1,9 +1,11 @@
+import json
 import os
 from os.path import join as pjoin
-import json
 from urllib.request import urlopen
+
 import numpy.testing as npt
-from fury.data import (fetch_gltf, read_viz_gltf, list_gltf_sample_models)
+
+from fury.data import fetch_gltf, list_gltf_sample_models, read_viz_gltf
 
 if 'FURY_HOME' in os.environ:
     fury_home = os.environ['FURY_HOME']

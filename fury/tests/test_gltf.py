@@ -2,11 +2,11 @@ import itertools
 import os
 import sys
 
+from PIL import Image
 import numpy as np
 import numpy.testing as npt
-import pytest
 from packaging.version import parse
-from PIL import Image
+import pytest
 from scipy.ndimage import center_of_mass
 from scipy.version import short_version
 

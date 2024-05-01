@@ -17,7 +17,7 @@ Text background greater than the actual maximum size:
    :align: center
    :alt: Text background greater than the actual maximum size in ComboBox2D
 
-Text offset from center: 
+Text offset from center:
 
 .. image:: https://github.com/fury-gl/fury/assets/64432063/0a3bc1e6-a566-4c08-9ca4-a191525b9c97
    :align: center

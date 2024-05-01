@@ -1,7 +1,7 @@
 import asyncio
+from importlib import reload
 import sys
 import time
-from importlib import reload
 from unittest import mock
 
 import numpy as np

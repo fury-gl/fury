@@ -7,9 +7,7 @@ import numpy.testing as npt
 import pytest
 from scipy.ndimage import center_of_mass
 
-from fury import actor
-from fury import primitive as fp
-from fury import shaders, window
+from fury import actor, primitive as fp, shaders, window
 from fury.actor import grid
 from fury.decorators import skip_linux, skip_osx, skip_win
 from fury.deprecator import ExpiredDeprecationError

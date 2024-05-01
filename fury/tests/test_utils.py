@@ -3,7 +3,6 @@ import numpy as np
 import numpy.testing as npt
 import pytest
 
-import fury.primitive as fp
 from fury import actor, utils, window
 from fury.lib import (
     VTK_DOUBLE,
@@ -21,6 +20,7 @@ from fury.lib import (
     numpy_support,
 )
 from fury.optpkg import optional_package
+import fury.primitive as fp
 from fury.ui.containers import Panel2D
 from fury.ui.core import UI
 from fury.utils import (

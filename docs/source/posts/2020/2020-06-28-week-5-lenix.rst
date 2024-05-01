@@ -13,7 +13,7 @@ This week, Spherical harmonics!
 
 What did you do this week?
 --------------------------
-The main task for the week was to include an implementation of spherical harmonics (upto the order of 4) as a FURY actor. This was the initial milestone to be achieved to work towards the support of using spherical harmonics as an visualization technique. I have added the GIFs for both the renders below. I also worked on a occlusion based lighting model.
+The main task for the week was to include an implementation of spherical harmonics (up to the order of 4) as a FURY actor. This was the initial milestone to be achieved to work towards the support of using spherical harmonics as an visualization technique. I have added the GIFs for both the renders below. I also worked on a occlusion based lighting model.
 
 Spherical harmonics for different values of order and degree:
 
