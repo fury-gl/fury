@@ -3964,19 +3964,19 @@ def texture_on_cube(negx, negy, negz, posx, posy, posz, centers=(0, 0, 0)):
     Parameters
     ----------
     negx : ndarray
-        Input 2D RGB or RGBA array. Dtype should be uint8.
+        Input 2D RGB or RGBA array.
     negy : ndarray
-        Input 2D RGB or RGBA array. Dtype should be uint8.
+        Input 2D RGB or RGBA array.
     negz : ndarray
-        Input 2D RGB or RGBA array. Dtype should be uint8.
+        Input 2D RGB or RGBA array.
     posx : ndarray
-        Input 2D RGB or RGBA array. Dtype should be uint8.
+        Input 2D RGB or RGBA array.
     posy : ndarray
-        Input 2D RGB or RGBA array. Dtype should be uint8.
+        Input 2D RGB or RGBA array.
     posz : ndarray
-        Input 2D RGB or RGBA array. Dtype should be uint8.
-    centers : tuple (3,)
-        The X, Y and Z coordinate of the cube, optional.
+        Input 2D RGB or RGBA array.
+    centers : tuple (3,), optional
+        The X, Y and Z coordinate of the cube.
 
          |----|
          | +Y |
@@ -3989,11 +3989,7 @@ def texture_on_cube(negx, negy, negz, posx, posy, posz, centers=(0, 0, 0)):
     Returns
     -------
     actors : list[Actor]
-        A list of Actor objects, one for each face of the cube, in order.
-
-    Implementation
-    --------------
-    Check docs/examples/viz_play_cube.py
+        A list of 6 Actor objects, one for each face of the cube, in order.
 
     """
     plane_objects = [PlaneSource() for _ in range(6)]

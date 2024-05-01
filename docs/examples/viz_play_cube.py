@@ -16,17 +16,17 @@ import cv2
 # There'll be a significant delay if your internet connectivity is poor,
 # use local directory paths for fast rendering.
 sources = [
-    'http://commondatastorage.googleapis.com/gtv-videos-bucket/'
+    'https://commondatastorage.googleapis.com/gtv-videos-bucket/'
     + 'sample/BigBuckBunny.mp4',
-    'http://commondatastorage.googleapis.com/gtv-videos-bucket/'
+    'https://commondatastorage.googleapis.com/gtv-videos-bucket/'
     + 'sample/BigBuckBunny.mp4',
-    'http://commondatastorage.googleapis.com/gtv-videos-bucket/'
+    'https://commondatastorage.googleapis.com/gtv-videos-bucket/'
     + 'sample/BigBuckBunny.mp4',
-    'http://commondatastorage.googleapis.com/gtv-videos-bucket/'
+    'https://commondatastorage.googleapis.com/gtv-videos-bucket/'
     + 'sample/BigBuckBunny.mp4',
-    'http://commondatastorage.googleapis.com/gtv-videos-bucket/'
+    'https://commondatastorage.googleapis.com/gtv-videos-bucket/'
     + 'sample/BigBuckBunny.mp4',
-    'http://commondatastorage.googleapis.com/gtv-videos-bucket/'
+    'https://commondatastorage.googleapis.com/gtv-videos-bucket/'
     + 'sample/BigBuckBunny.mp4'
 ]
 
