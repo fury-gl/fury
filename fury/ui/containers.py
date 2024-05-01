@@ -2,6 +2,8 @@
 
 __all__ = ['Panel2D', 'TabPanel2D', 'TabUI', 'ImageContainer2D', 'GridUI']
 
+from warnings import warn
+
 import numpy as np
 
 from fury.actor import grid
@@ -18,7 +20,7 @@ from fury.lib import (
 )
 from fury.ui.core import UI, Rectangle2D, TextBlock2D
 from fury.utils import rotate, set_input
-from warnings import warn
+
 
 class Panel2D(UI):
     """A 2D UI Panel.
