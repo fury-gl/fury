@@ -332,7 +332,7 @@ def test_ui_line_double_slider_2d(interactive=False):
     npt.assert_equal(line_double_slider_2d_horizontal_test.left_disk_value, 39)
     npt.assert_equal(
         line_double_slider_2d_horizontal_test.right_disk_value,
-                    40)
+        40)
     npt.assert_equal(line_double_slider_2d_horizontal_test.left_disk_ratio, 0.39)
     npt.assert_equal(line_double_slider_2d_horizontal_test.right_disk_ratio, 0.4)
 
