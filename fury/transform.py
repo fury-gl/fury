@@ -252,7 +252,10 @@ def translate(translation):
     iden = np.identity(4)
     translation = np.append(translation, 0).reshape(-1, 1)
 
-    t = np.array([[0, 0, 0, 1], [0, 0, 0, 1], [0, 0, 0, 1], [0, 0, 0, 1]], np.float32)
+    t = np.array(
+        [[0, 0, 0, 1], [0, 0, 0, 1], [0, 0, 0, 1], [0, 0, 0, 1]],
+        np.float32
+        )
     translation = np.multiply(t, translation)
     translation = np.add(iden, translation)
 

@@ -46,7 +46,12 @@ def faces_from_sphere_vertices(vertices):
 
 
 def repeat_primitive_function(
-    func, centers, func_args=[], directions=(1, 0, 0), colors=(1, 0, 0), scales=1
+    func,
+    centers,
+    func_args=[],
+    directions=(1, 0, 0),
+    colors=(1, 0, 0),
+    scales=1
 ):
     """Repeat Vertices and triangles of a specific primitive function.
 
@@ -162,7 +167,8 @@ def repeat_primitive(
     big_vertices *= scales
 
     # update triangles
-    big_triangles = np.array(np.tile(faces, (centers.shape[0], 1)), dtype=np.int32)
+    big_triangles = np.array(
+        np.tile(faces, (centers.shape[0], 1)), dtype=np.int32)
     big_triangles += np.repeat(
         np.arange(0, centers.shape[0] * unit_verts_size, step=unit_verts_size),
         unit_triangles_size,
@@ -217,10 +223,12 @@ def repeat_primitive(
         else:
             rotation_matrix = np.identity(3)
 
-        big_vertices[pts * unit_verts_size : (pts + 1) * unit_verts_size] = np.dot(
-            rotation_matrix[:3, :3],
-            big_vertices[pts * unit_verts_size : (pts + 1) * unit_verts_size].T,
-        ).T
+        big_vertices[pts * unit_verts_size: (pts + 1) * unit_verts_size] = (
+            np.dot(rotation_matrix[:3, :3],
+                   big_vertices[pts * unit_verts_size: (
+                       pts + 1) * unit_verts_size].T,
+                   ).T
+                   )
 
     # apply centers position
     big_centers = np.repeat(centers, unit_verts_size, axis=0)
@@ -241,7 +249,12 @@ def prim_square():
 
     """
     vertices = np.array(
-        [[-0.5, -0.5, 0.0], [-0.5, 0.5, 0.0], [0.5, 0.5, 0.0], [0.5, -0.5, 0.0]]
+        [
+            [-0.5, -0.5, 0.0],
+            [-0.5, 0.5, 0.0],
+            [0.5, 0.5, 0.0],
+            [0.5, -0.5, 0.0]
+            ]
     )
     triangles = np.array([[0, 1, 2], [2, 3, 0]], dtype='i8')
     return vertices, triangles
@@ -336,7 +349,8 @@ def prim_sphere(name='symmetric362', gen_faces=False, phi=None, theta=None):
         res = np.load(fname)
 
         verts = res['vertices'].copy()
-        faces = faces_from_sphere_vertices(verts) if gen_faces else res['faces']
+        faces = (faces_from_sphere_vertices(verts)
+                 if gen_faces else res['faces'])
         faces = fix_winding_order(res['vertices'], faces, clockwise=True)
         return verts, faces
     else:
@@ -436,10 +450,17 @@ def prim_tetrahedron():
 
     """
     pyramid_vert = np.array(
-        [[0.5, 0.5, 0.5], [0.5, -0.5, -0.5], [-0.5, 0.5, -0.5], [-0.5, -0.5, 0.5]]
+        [
+            [0.5, 0.5, 0.5],
+            [0.5, -0.5, -0.5],
+            [-0.5, 0.5, -0.5],
+            [-0.5, -0.5, 0.5]
+            ]
     )
 
-    pyramid_triag = np.array([[2, 0, 1], [0, 2, 3], [0, 3, 1], [1, 3, 2]], dtype='i8')
+    pyramid_triag = np.array(
+        [[2, 0, 1], [0, 2, 3], [0, 3, 1], [1, 3, 2]],
+        dtype='i8')
 
     return pyramid_vert, pyramid_triag
 
@@ -987,7 +1008,9 @@ def prim_cylinder(radius=0.5, height=1, sectors=36, capped=True):
                 k += 3
 
     if capped:
-        vertices = np.array(vertices).reshape(2 * (sectors + 1) + 2 * sectors + 2, 3)
+        vertices = np.array(vertices).reshape(
+            2 * (sectors + 1) + 2 * sectors + 2, 3
+            )
     else:
         vertices = np.array(vertices).reshape(2 * (sectors + 1), 3)
 
@@ -1041,7 +1064,11 @@ def prim_cylinder(radius=0.5, height=1, sectors=36, capped=True):
 
 
 def prim_arrow(
-    height=1.0, resolution=10, tip_length=0.35, tip_radius=0.1, shaft_radius=0.03
+    height=1.0,
+    resolution=10,
+    tip_length=0.35,
+    tip_radius=0.1,
+    shaft_radius=0.03
 ):
     """Return vertices and triangle for arrow geometry.
 

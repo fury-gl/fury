@@ -117,7 +117,10 @@ class CustomInteractorStyle(InteractorStyleUser):
         # TODO: return a list of items (i.e. each level of the assembly path).
         event_pos = self.GetInteractor().GetEventPosition()
 
-        self.picker.Pick(event_pos[0], event_pos[1], 0, self.GetCurrentRenderer())
+        self.picker.Pick(event_pos[0],
+                         event_pos[1],
+                         0,
+                         self.GetCurrentRenderer())
 
         path = self.picker.GetPath()
         if path is None:
@@ -180,13 +183,15 @@ class CustomInteractorStyle(InteractorStyleUser):
         if self.history[last_event]['event'] != button + 'ButtonReleaseEvent':
             return False
 
-        if self.history[before_last_event]['event'] != button + 'ButtonPressEvent':
+        if (self.history[before_last_event]['event'] !=
+                button + 'ButtonPressEvent'):
             return False
 
         return True
 
     def _button_double_clicked(self, button):
-        if not (self._button_clicked(button) and self._button_clicked(button, -3, -4)):
+        if not (self._button_clicked(button) and
+                self._button_clicked(button, -3, -4)):
             return False
 
         return True
@@ -410,7 +415,10 @@ class CustomInteractorStyle(InteractorStyleUser):
             if event_type not in self.event2id:
                 # If the event type was not previously defined,
                 # then create an extra user defined event.
-                self.event2id[event_type] = Command.UserEvent + len(self.event2id) + 1
+                self.event2id[event_type] = (
+                    Command.UserEvent +
+                    len(self.event2id) +
+                    1)
 
             event_type = self.event2id[event_type]
 

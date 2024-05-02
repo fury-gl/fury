@@ -116,7 +116,8 @@ def cmp_pkg_version(version_str, pkg_version_str=__version__):
     """
     version_cmp = packaging.version.parse if have_pkg else None
 
-    if any([re.match(r'^[a-z, A-Z]', v) for v in [version_str, pkg_version_str]]):
+    if any([re.match(r'^[a-z, A-Z]', v)
+            for v in [version_str, pkg_version_str]]):
         msg = 'Invalid version {0} or {1}'.format(version_str, pkg_version_str)
         raise ValueError(msg)
     elif version_cmp(version_str) > version_cmp(pkg_version_str):
@@ -186,7 +187,8 @@ def deprecate_with_version(
     if until:
         messages.append(
             '* {0} {1} as of version: {2}'.format(
-                'Raises' if is_bad_version(until) else 'Will raise', error_class, until
+                'Raises' if is_bad_version(until)
+                else 'Will raise', error_class, until
             )
         )
     message = '\n'.join(messages)
@@ -199,7 +201,8 @@ def deprecate_with_version(
             warnings.warn(message, warn_class, stacklevel=2)
             return func(*args, **kwargs)
 
-        deprecated_func.__doc__ = _add_dep_doc(deprecated_func.__doc__, message)
+        deprecated_func.__doc__ = _add_dep_doc(deprecated_func.__doc__,
+                                               message)
         return deprecated_func
 
     return deprecator
@@ -381,11 +384,13 @@ def deprecated_params(
                 if (since[i], until[i]) != ('', ''):
                     messages.append('')
                 if since[i]:
-                    messages.append('* deprecated from version: ' + str(since[i]))
+                    messages.append('* deprecated from version: ' +
+                                    str(since[i]))
                 if until[i]:
                     messages.append(
                         '* {0} {1} as of version: {2}'.format(
-                            'Raises' if is_bad_version(until[i]) else 'Will raise',
+                            'Raises' if is_bad_version(until[i])
+                            else 'Will raise',
                             error_class,
                             until[i],
                         )
@@ -416,11 +421,14 @@ def deprecated_params(
                     kwargs[key] = value
 
                     if n_name is not None:
-                        message += '* Use argument "{}" instead.'.format(n_name)
+                        message += '* Use argument "{}" instead.'.format(
+                            n_name
+                            )
                     elif alternative:
                         message += '* Use {} instead.'.format(alternative)
 
-                    if until[i] and is_bad_version(until[i], version_comparator):
+                    if until[i] and is_bad_version(until[i],
+                                                   version_comparator):
                         raise error_class(message)
                     warnings.warn(message, warn_class, stacklevel=2)
 
@@ -429,7 +437,8 @@ def deprecated_params(
                 elif not n_name and positions[i] and len(args) > positions[i]:
                     if alternative:
                         message += '* Use {} instead.'.format(alternative)
-                    if until[i] and is_bad_version(until[i], version_comparator):
+                    if until[i] and is_bad_version(until[i],
+                                                   version_comparator):
                         raise error_class(message)
 
                     warnings.warn(message, warn_class, stacklevel=2)

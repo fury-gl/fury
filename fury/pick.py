@@ -16,7 +16,12 @@ from fury.lib import (
 class PickingManager:
     """Picking Manager helps with picking 3D objects."""
 
-    def __init__(self, vertices=True, faces=True, actors=True, world_coords=True):
+    def __init__(
+            self,
+            vertices=True,
+            faces=True,
+            actors=True,
+            world_coords=True):
         """Initialize Picking Manager.
 
         Parameters
@@ -202,28 +207,48 @@ class SelectionManager:
             res = self.hsel.Select()
 
         except OverflowError:
-            return {0: {'node': None, 'vertex': None, 'face': None, 'actor': None}}
+            return {0: {
+                'node': None,
+                'vertex': None,
+                'face': None,
+                'actor': None
+                }}
 
         num_nodes = res.GetNumberOfNodes()
         if num_nodes < 1:
             sel_node = None
-            return {0: {'node': None, 'vertex': None, 'face': None, 'actor': None}}
+            return {0: {
+                'node': None,
+                'vertex': None,
+                'face': None,
+                'actor': None
+                }
+                }
         else:
 
             for i in range(num_nodes):
 
                 sel_node = res.GetNode(i)
-                info = {'node': None, 'vertex': None, 'face': None, 'actor': None}
+                info = {
+                    'node': None,
+                    'vertex': None,
+                    'face': None,
+                    'actor': None
+                    }
 
                 if sel_node is not None:
                     selected_nodes = set(
                         np.floor(
-                            numpy_support.vtk_to_numpy(sel_node.GetSelectionList())
+                            numpy_support.vtk_to_numpy(
+                                sel_node.GetSelectionList()
+                                )
                         ).astype(int)
                     )
 
                     info['node'] = sel_node
-                    info['actor'] = sel_node.GetProperties().Get(sel_node.PROP())
+                    info['actor'] = sel_node.GetProperties().Get(
+                        sel_node.PROP()
+                        )
                     if self.selected_type == 'faces':
                         info['face'] = list(selected_nodes)
                     if self.selected_type == 'vertex':
