@@ -54,7 +54,11 @@ def matplotlib_figure_to_numpy(
             arr = load_image(fname)
     else:
         fig.savefig(
-            fname, dpi=dpi, transparent=transparent, bbox_inches='tight', pad_inches=0
+            fname,
+            dpi=dpi,
+            transparent=transparent,
+            bbox_inches='tight',
+            pad_inches=0
         )
         arr = load_image(fname)
 

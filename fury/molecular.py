@@ -107,7 +107,8 @@ class Molecule(Mol):
             self.helix = helix
             self.is_hetatm = is_hetatm
             coords = numpy_to_vtk_points(coords)
-            atom_nums = nps.numpy_to_vtk(atomic_numbers, array_type=VTK_UNSIGNED_SHORT)
+            atom_nums = nps.numpy_to_vtk(atomic_numbers,
+                                         array_type=VTK_UNSIGNED_SHORT)
             atom_nums.SetName('Atomic Numbers')
             fieldData = DataSetAttributes()
             fieldData.AddArray(atom_nums)
@@ -623,7 +624,8 @@ def stick(molecule, colormode='discrete', bond_thickness=0.1):
     """
     if molecule.total_num_bonds == 0:
         raise ValueError(
-            'No bonding data available for the molecule! Stick ' 'model cannot be made!'
+            'No bonding data available for the molecule! Stick '
+            'model cannot be made!'
         )
     colormode = colormode.lower()
     mst_mapper = OpenGLMoleculeMapper()
@@ -677,13 +679,15 @@ def ribbon(molecule):
         resi = molecule.residue_seq[i]
         for j, _ in enumerate(molecule.sheet):
             sheet = molecule.sheet[j]
-            if molecule.chain[i] != sheet[0] or resi < sheet[1] or resi > sheet[3]:
+            if (molecule.chain[i] != sheet[0] or
+                    resi < sheet[1] or resi > sheet[3]):
                 continue
             secondary_structures[i] = ord('s')
 
         for j, _ in enumerate(molecule.helix):
             helix = molecule.helix[j]
-            if molecule.chain[i] != helix[0] or resi < helix[1] or resi > helix[3]:
+            if (molecule.chain[i] != helix[0] or
+                    resi < helix[1] or resi > helix[3]):
                 continue
             secondary_structures[i] = ord('h')
 
@@ -735,13 +739,17 @@ def ribbon(molecule):
 
     # for secondary structures begin
     newarr = np.ones(num_total_atoms)
-    s_sb = nps.numpy_to_vtk(num_array=newarr, deep=True, array_type=VTK_UNSIGNED_CHAR)
+    s_sb = nps.numpy_to_vtk(num_array=newarr,
+                            deep=True,
+                            array_type=VTK_UNSIGNED_CHAR)
     s_sb.SetName('secondary_structures_begin')
     output.GetPointData().AddArray(s_sb)
 
     # for secondary structures end
     newarr = np.ones(num_total_atoms)
-    s_se = nps.numpy_to_vtk(num_array=newarr, deep=True, array_type=VTK_UNSIGNED_CHAR)
+    s_se = nps.numpy_to_vtk(num_array=newarr,
+                            deep=True,
+                            array_type=VTK_UNSIGNED_CHAR)
     s_se.SetName('secondary_structures_end')
     output.GetPointData().AddArray(s_se)
 
@@ -766,10 +774,14 @@ def ribbon(molecule):
     rgb = np.ones((num_total_atoms, 3))
 
     for i in range(num_total_atoms):
-        radii[i] = np.repeat(table.atomic_radius(all_atomic_numbers[i], 'VDW'), 3)
+        radii[i] = np.repeat(table.atomic_radius(
+            all_atomic_numbers[i],
+            'VDW'), 3)
         rgb[i] = table.atom_color(all_atomic_numbers[i])
 
-    Rgb = nps.numpy_to_vtk(num_array=rgb, deep=True, array_type=VTK_UNSIGNED_CHAR)
+    Rgb = nps.numpy_to_vtk(num_array=rgb,
+                           deep=True,
+                           array_type=VTK_UNSIGNED_CHAR)
     Rgb.SetName('rgb_colors')
     output.GetPointData().SetScalars(Rgb)
 

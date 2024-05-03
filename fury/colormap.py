@@ -238,7 +238,8 @@ def orient2rgb(v):
         orient = np.abs(np.divide(v, orientn, where=orientn != 0))
     else:
         raise IOError(
-            'Wrong vector dimension, It should be an array' ' with a shape (N, 3)'
+            'Wrong vector dimension, It should be an array'
+            ' with a shape (N, 3)'
         )
 
     return orient
@@ -259,12 +260,14 @@ def line_colors(streamlines, cmap='rgb_standard'):
     """
     if cmap == 'rgb_standard':
         col_list = [
-            orient2rgb(streamline[-1] - streamline[0]) for streamline in streamlines
+            orient2rgb(streamline[-1] - streamline[0])
+            for streamline in streamlines
         ]
 
     if cmap == 'boys_standard':
         col_list = [
-            boys2rgb(streamline[-1] - streamline[0]) for streamline in streamlines
+            boys2rgb(streamline[-1] - streamline[0])
+            for streamline in streamlines
         ]
 
     return np.vstack(col_list)

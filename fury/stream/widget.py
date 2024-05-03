@@ -156,7 +156,8 @@ class Widget:
             use_raw_array=False,
         )
 
-        self.stream_interaction.start(ms=self.ms_interaction, use_asyncio=use_asyncio)
+        self.stream_interaction.start(ms=self.ms_interaction,
+                                      use_asyncio=use_asyncio)
         self.stream.start(self.ms_stream, use_asyncio=use_asyncio)
         self._server_started = True
         self.pserver = None
