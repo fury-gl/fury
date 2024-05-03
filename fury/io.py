@@ -92,9 +92,8 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
         desired image array
 
     """
-    is_url = filename.lower().startswith('http://') or filename.lower().startswith(
-        'https://'
-    )
+    is_url = (filename.lower().startswith('http://') or
+              filename.lower().startswith('https://'))
 
     if is_url:
         image_name = os.path.basename(filename)
@@ -121,7 +120,8 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
                 try:
                     image = pil_image.convert('RGBA')
                 except ValueError:
-                    raise RuntimeError('Unknown image mode {}'.format(pil_image.mode))
+                    raise RuntimeError('Unknown image mode {}'.format(
+                        pil_image.mode))
                 image = np.asarray(pil_image)
 
         if as_vtktype:
@@ -133,7 +133,12 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
 
             # width, height
             vtk_image.SetDimensions(image.shape[1], image.shape[0], depth)
-            vtk_image.SetExtent(0, image.shape[1] - 1, 0, image.shape[0] - 1, 0, 0)
+            vtk_image.SetExtent(0,
+                                image.shape[1] - 1,
+                                0,
+                                image.shape[0] - 1,
+                                0,
+                                0)
             vtk_image.SetSpacing(1.0, 1.0, 1.0)
             vtk_image.SetOrigin(0.0, 0.0, 0.0)
 
@@ -268,7 +273,9 @@ def save_image(
         im = Image.fromarray(arr)
         im.save(filename, quality=compression_quality, dpi=dpi)
     else:
-        warnings.warn(UserWarning('DPI value is ignored while saving images via vtk.'))
+        warnings.warn(
+            UserWarning('DPI value is ignored while saving images via vtk.')
+            )
         if arr.ndim == 2:
             arr = arr[..., None]
 
@@ -302,7 +309,11 @@ def save_image(
             writer.SetQuality(compression_quality)
         if extension.lower() in ['.tif', '.tiff']:
             compression_type = compression_type or 'nocompression'
-            l_compression = ['nocompression', 'packbits', 'jpeg', 'deflate', 'lzw']
+            l_compression = ['nocompression',
+                             'packbits',
+                             'jpeg',
+                             'deflate',
+                             'lzw']
 
             if compression_type.lower() in l_compression:
                 comp_id = l_compression.index(compression_type.lower())
@@ -445,13 +456,14 @@ def load_sprite_sheet(sheet_path, nb_rows, nb_cols, as_vtktype=False):
             nxt_col * sprite_size_y,
         )
 
-        sprite_arr = sprite_sheet[box[0] : box[2], box[1] : box[3]]
+        sprite_arr = sprite_sheet[box[0]: box[2], box[1]: box[3]]
         if as_vtktype:
             with InTemporaryDirectory() as tdir:
                 tmp_img_path = os.path.join(tdir, f'{row}{col}.png')
                 save_image(sprite_arr, tmp_img_path, compression_quality=100)
 
-                sprite_dicts[(row, col)] = load_image(tmp_img_path, as_vtktype=True)
+                sprite_dicts[(row, col)] = load_image(tmp_img_path,
+                                                      as_vtktype=True)
         else:
             sprite_dicts[(row, col)] = sprite_arr
 

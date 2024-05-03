@@ -88,7 +88,7 @@ class RTCServer(VideoStreamTrack):
             # if the buffer it's already flipped
             # self.frame.planes[0].update(self.image)
             self.image = np.frombuffer(self.image, 'uint8')[
-                0 : width * height * 3
+                0: width * height * 3
             ].reshape((height, width, 3))
             self.image = np.flipud(self.image)
             self.frame = VideoFrame.from_ndarray(self.image)
@@ -261,7 +261,8 @@ def web_server(
         remove_shm_from_resource_tracker()
 
     image_buffer_manager = SharedMemImageBufferManager(
-        image_buffer_names=image_buffer_names, info_buffer_name=info_buffer_name
+        image_buffer_names=image_buffer_names,
+        info_buffer_name=info_buffer_name
     )
 
     rtc_server = None

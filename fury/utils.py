@@ -83,7 +83,11 @@ def numpy_to_vtk_points(points):
 
     """
     vtk_points = Points()
-    vtk_points.SetData(numpy_support.numpy_to_vtk(np.asarray(points), deep=True))
+    vtk_points.SetData(
+        numpy_support.numpy_to_vtk(
+            np.asarray(points),
+            deep=True)
+            )
     return vtk_points
 
 
@@ -164,8 +168,14 @@ def numpy_to_vtk_cells(data, is_coords=True):
 
     vtk_array_type = numpy_support.get_vtk_array_type(offsets_dtype)
     cell_array.SetData(
-        numpy_support.numpy_to_vtk(offset, deep=True, array_type=vtk_array_type),
-        numpy_support.numpy_to_vtk(connectivity, deep=True, array_type=vtk_array_type),
+        numpy_support.numpy_to_vtk(
+            offset,
+            deep=True,
+            array_type=vtk_array_type),
+        numpy_support.numpy_to_vtk(
+            connectivity,
+            deep=True,
+            array_type=vtk_array_type),
     )
 
     cell_array.SetNumberOfCells(nb_cells)
@@ -238,7 +248,10 @@ def map_coordinates_3d_4d(input_array, indices):
     if input_array.ndim == 4:
         values_4d = []
         for i in range(input_array.shape[-1]):
-            values_tmp = map_coordinates(input_array[..., i], indices.T, order=1)
+            values_tmp = map_coordinates(
+                input_array[..., i],
+                indices.T,
+                order=1)
             values_4d.append(values_tmp)
         return np.ascontiguousarray(np.array(values_4d).T)
 
@@ -320,7 +333,10 @@ def lines_to_vtk_polydata(lines, colors=None):
             else:
                 if len(cols_arr) == nb_points:
                     if cols_arr.ndim == 1:  # values for every point
-                        vtk_colors = numpy_support.numpy_to_vtk(cols_arr, deep=True)
+                        vtk_colors = numpy_support.numpy_to_vtk(
+                            cols_arr,
+                            deep=True
+                            )
                         color_is_scalar = True
                     elif cols_arr.ndim == 2:  # map color to each point
                         vtk_colors = numpy_to_vtk_colors(255 * cols_arr)
@@ -331,7 +347,10 @@ def lines_to_vtk_polydata(lines, colors=None):
                         for (i, value) in enumerate(colors):
                             cols_arrx += lines[i].shape[0] * [value]
                         cols_arrx = np.array(cols_arrx)
-                        vtk_colors = numpy_support.numpy_to_vtk(cols_arrx, deep=True)
+                        vtk_colors = numpy_support.numpy_to_vtk(
+                            cols_arrx,
+                            deep=True
+                            )
                         color_is_scalar = True
                     else:  # the same colors for all points
                         vtk_colors = numpy_to_vtk_colors(
@@ -339,12 +358,21 @@ def lines_to_vtk_polydata(lines, colors=None):
                         )
 
                 elif cols_arr.ndim == 2:  # map color to each line
-                    colors_mapper = np.repeat(lines_range, points_per_line, axis=0)
-                    vtk_colors = numpy_to_vtk_colors(255 * cols_arr[colors_mapper])
+                    colors_mapper = np.repeat(
+                        lines_range,
+                        points_per_line,
+                        axis=0
+                        )
+                    vtk_colors = numpy_to_vtk_colors(
+                        255 * cols_arr[colors_mapper]
+                        )
                 else:  # colormap
                     #  get colors for each vertex
                     cols_arr = map_coordinates_3d_4d(cols_arr, points_array)
-                    vtk_colors = numpy_support.numpy_to_vtk(cols_arr, deep=True)
+                    vtk_colors = numpy_support.numpy_to_vtk(
+                        cols_arr,
+                        deep=True
+                        )
                     color_is_scalar = True
 
         vtk_colors.SetName('colors')
@@ -366,7 +394,9 @@ def get_polydata_lines(line_polydata):
         List of N curves represented as 2D ndarrays
 
     """
-    lines_vertices = numpy_support.vtk_to_numpy(line_polydata.GetPoints().GetData())
+    lines_vertices = numpy_support.vtk_to_numpy(
+        line_polydata.GetPoints().GetData()
+        )
     lines_idx = numpy_support.vtk_to_numpy(line_polydata.GetLines().GetData())
 
     lines = []
@@ -375,7 +405,7 @@ def get_polydata_lines(line_polydata):
         line_len = lines_idx[current_idx]
 
         next_idx = current_idx + line_len + 1
-        line_range = lines_idx[current_idx + 1 : next_idx]
+        line_range = lines_idx[current_idx + 1: next_idx]
 
         lines += [lines_vertices[line_range]]
         current_idx = next_idx
@@ -526,7 +556,12 @@ def get_polydata_field(polydata, field_name, as_vtk=False):
     return numpy_support.vtk_to_numpy(vtk_field_data)
 
 
-def add_polydata_numeric_field(polydata, field_name, field_data, array_type=VTK_INT):
+def add_polydata_numeric_field(
+        polydata,
+        field_name,
+        field_data,
+        array_type=VTK_INT
+        ):
     """Add a field to a vtk polydata.
 
     Parameters
@@ -660,7 +695,11 @@ def set_polydata_tangents(polydata, tangents):
     tangents : tangents, represented as 2D ndarrays (Nx3) (one per vertex)
 
     """
-    vtk_tangents = numpy_support.numpy_to_vtk(tangents, deep=True, array_type=VTK_FLOAT)
+    vtk_tangents = numpy_support.numpy_to_vtk(
+        tangents,
+        deep=True,
+        array_type=VTK_FLOAT
+        )
     # VTK does not require a specific name for the tangents array, however, for
     # readability purposes, we set it to "Tangents"
     vtk_tangents.SetName('Tangents')
@@ -689,7 +728,8 @@ def set_polydata_colors(polydata, colors, array_name='colors'):
 
 
 def set_polydata_tcoords(polydata, tcoords):
-    """Set polydata texture coordinates with a numpy array (ndarrays Nx2 float).
+    """
+    Set polydata texture coordinates with a numpy array (ndarrays Nx2 float).
 
     Parameters
     ----------
@@ -698,7 +738,11 @@ def set_polydata_tcoords(polydata, tcoords):
         (one per vertex range (0, 1))
 
     """
-    vtk_tcoords = numpy_support.numpy_to_vtk(tcoords, deep=True, array_type=VTK_FLOAT)
+    vtk_tcoords = numpy_support.numpy_to_vtk(
+        tcoords,
+        deep=True,
+        array_type=VTK_FLOAT
+        )
     polydata.GetPointData().SetTCoords(vtk_tcoords)
     return polydata
 
@@ -781,7 +825,12 @@ def get_actor_from_polydata(polydata):
 
 
 def get_actor_from_primitive(
-    vertices, triangles, colors=None, normals=None, backface_culling=True, prim_count=1
+    vertices,
+    triangles,
+    colors=None,
+    normals=None,
+    backface_culling=True,
+    prim_count=1
 ):
     """Get actor from a vtkPolyData.
 
@@ -1091,7 +1140,12 @@ def get_grid_cells_position(shapes, aspect_ratio=16 / 9.0, dim=None):
 
     # Use indexing="xy" so the cells are in row-major (C-order). Also,
     # the Y coordinates are negative so the cells are order from top to bottom.
-    X, Y, Z = np.meshgrid(np.arange(n_cols), -np.arange(n_rows), [0], indexing='xy')
+    X, Y, Z = np.meshgrid(
+        np.arange(n_cols),
+        -np.arange(n_rows),
+        [0],
+        indexing='xy'
+        )
     return cell_shape * np.array([X.flatten(), Y.flatten(), Z.flatten()]).T
 
 
@@ -1406,7 +1460,9 @@ def array_from_actor(actor, array_name, as_vtk=False):
     output : array (N, 3)
 
     """
-    vtk_array = actor.GetMapper().GetInput().GetPointData().GetArray(array_name)
+    vtk_array = actor.GetMapper().GetInput().GetPointData().GetArray(
+        array_name
+        )
     if vtk_array is None:
         return None
     if as_vtk:

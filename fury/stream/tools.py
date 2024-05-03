@@ -14,13 +14,13 @@ from fury.stream.constants import PY_VERSION_8
 if PY_VERSION_8:
     from multiprocessing import resource_tracker, shared_memory
 else:
-    shared_memory = None   # type: ignore
+    shared_memory = None  # type: ignore
 
 
-_FLOAT_ShM_TYPE = 'd'
-_INT_ShM_TYPE = 'i'
-_UINT_ShM_TYPE = 'I'
-_BYTE_ShM_TYPE = 'B'
+_FLOAT_ShM_TYPE = "d"
+_INT_ShM_TYPE = "i"
+_UINT_ShM_TYPE = "I"
+_BYTE_ShM_TYPE = "B"
 
 _FLOAT_SIZE = np.dtype(_FLOAT_ShM_TYPE).itemsize
 _INT_SIZE = np.dtype(_INT_ShM_TYPE).itemsize
@@ -39,27 +39,31 @@ def remove_shm_from_resource_tracker():
     """
 
     def fix_register(name, rtype):
-        if rtype == 'shared_memory':
+        if rtype == "shared_memory":
             return
         try:
-            return resource_tracker._resource_tracker.register(self, name, rtype)
+            return resource_tracker._resource_tracker.register(
+                self, name, rtype
+                )
         except NameError:
             return None
 
     resource_tracker.register = fix_register
 
     def fix_unregister(name, rtype):
-        if rtype == 'shared_memory':
+        if rtype == "shared_memory":
             return
         try:
-            return resource_tracker._resource_tracker.unregister(self, name, rtype)
+            return resource_tracker._resource_tracker.unregister(
+                self, name, rtype
+                )
         except NameError:
             return None
 
     resource_tracker.unregister = fix_unregister
 
-    if 'shared_memory' in resource_tracker._CLEANUP_FUNCS:
-        del resource_tracker._CLEANUP_FUNCS['shared_memory']
+    if "shared_memory" in resource_tracker._CLEANUP_FUNCS:
+        del resource_tracker._CLEANUP_FUNCS["shared_memory"]
 
 
 class GenericMultiDimensionalBuffer(ABC):
@@ -101,12 +105,12 @@ class GenericMultiDimensionalBuffer(ABC):
 
     def __getitem__(self, idx):
         start, end = self.get_start_end(idx)
-        logging.info(f'dequeue start {int(time.time()*1000)}')
+        logging.info(f"dequeue start {int(time.time()*1000)}")
         ts = time.time() * 1000
 
         items = self._buffer_repr[start:end]
         te = time.time() * 1000
-        logging.info(f'dequeue frombuffer cost {te-ts:.2f}')
+        logging.info(f"dequeue frombuffer cost {te-ts:.2f}")
         return items
 
     def __setitem__(self, idx, data):
@@ -117,16 +121,13 @@ class GenericMultiDimensionalBuffer(ABC):
                 self._buffer_repr[start:end] = data
 
     @abstractmethod
-    def load_mem_resource(self):
-        ...  # pragma: no cover
+    def load_mem_resource(self): ...  # pragma: no cover
 
     @abstractmethod
-    def create_mem_resource(self):
-        ...  # pragma: no cover
+    def create_mem_resource(self): ...  # pragma: no cover
 
     @abstractmethod
-    def cleanup(self):
-        ...  # pragma: no cover
+    def cleanup(self): ...  # pragma: no cover
 
 
 class RawArrayMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
@@ -210,29 +211,35 @@ class SharedMemMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
     def create_mem_resource(self):
         self._num_el = self.dimension * (self.max_size + 1)
         buffer_arr = np.zeros(self._num_el + 2, dtype=_FLOAT_ShM_TYPE)
-        self._buffer = shared_memory.SharedMemory(create=True, size=buffer_arr.nbytes)
+        self._buffer = shared_memory.SharedMemory(
+            create=True, size=buffer_arr.nbytes
+            )
         sizes = np.ndarray(
-            2, dtype=_FLOAT_ShM_TYPE, buffer=self._buffer.buf[0 : _FLOAT_SIZE * 2]
+            2,
+            dtype=_FLOAT_ShM_TYPE,
+            buffer=self._buffer.buf[0: _FLOAT_SIZE * 2]
         )
         sizes[0] = self.max_size
         sizes[1] = self.dimension
         self.buffer_name = self._buffer.name
         logging.info(
             [
-                'create repr multidimensional buffer ',
+                "create repr multidimensional buffer ",
             ]
         )
 
     def load_mem_resource(self):
         self._buffer = shared_memory.SharedMemory(self.buffer_name)
-        sizes = np.ndarray(2, dtype='d', buffer=self._buffer.buf[0 : _FLOAT_SIZE * 2])
+        sizes = np.ndarray(
+            2, dtype="d", buffer=self._buffer.buf[0: _FLOAT_SIZE * 2]
+            )
         self.max_size = int(sizes[0])
         self.dimension = int(sizes[1])
         num_el = int((sizes[0] + 1) * sizes[1])
         self._num_el = num_el
         logging.info(
             [
-                'load repr multidimensional buffer',
+                "load repr multidimensional buffer",
             ]
         )
 
@@ -240,15 +247,17 @@ class SharedMemMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
         start = _FLOAT_SIZE * 2
         end = (self._num_el + 2) * _FLOAT_SIZE
         self._buffer_repr = np.ndarray(
-            self._num_el, dtype=_FLOAT_ShM_TYPE, buffer=self._buffer.buf[start:end]
+            self._num_el,
+            dtype=_FLOAT_ShM_TYPE,
+            buffer=self._buffer.buf[start:end]
         )
         logging.info(
             [
-                'create repr multidimensional buffer',
+                "create repr multidimensional buffer",
                 self._buffer_repr.shape,
-                'max size',
+                "max size",
                 self.max_size,
-                'dimension',
+                "dimension",
                 self.dimension,
             ]
         )
@@ -264,8 +273,8 @@ class SharedMemMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
                 self._buffer.unlink()
             except FileNotFoundError:
                 print(
-                    f'Shared Memory {self.buffer_name}(queue_event_buffer)\
-                    File not found'
+                    f"Shared Memory {self.buffer_name}(queue_event_buffer)\
+                    File not found"
                 )
 
 
@@ -318,7 +327,9 @@ class GenericCircularQueue(ABC):
         if self._use_shared_mem:
             return self.head_tail_buffer_repr[0]
         else:
-            return np.frombuffer(self.head_tail_buffer.get_obj(), _INT_ShM_TYPE)[0]
+            return np.frombuffer(
+                self.head_tail_buffer.get_obj(), _INT_ShM_TYPE
+                )[0]
 
     @head.setter
     def head(self, value):
@@ -329,7 +340,9 @@ class GenericCircularQueue(ABC):
         if self._use_shared_mem:
             return self.head_tail_buffer_repr[1]
         else:
-            return np.frombuffer(self.head_tail_buffer.get_obj(), _INT_ShM_TYPE)[1]
+            return np.frombuffer(
+                self.head_tail_buffer.get_obj(), _INT_ShM_TYPE
+                )[1]
 
     @tail.setter
     def tail(self, value):
@@ -392,7 +405,12 @@ class ArrayCircularQueue(GenericCircularQueue):
     Arrays and RawArrays.
     """
 
-    def __init__(self, max_size=10, dimension=6, head_tail_buffer=None, buffer=None):
+    def __init__(
+            self,
+            max_size=10,
+            dimension=6,
+            head_tail_buffer=None,
+            buffer=None):
         """Stream system uses that to implement user interactions
 
         Parameters
@@ -413,7 +431,11 @@ class ArrayCircularQueue(GenericCircularQueue):
             RawArray to store the data
 
         """
-        super().__init__(max_size, dimension, use_shared_mem=False, buffer=buffer)
+        super().__init__(
+            max_size,
+            dimension,
+            use_shared_mem=False,
+            buffer=buffer)
 
         if head_tail_buffer is None:
             self.create_mem_resource()
@@ -460,7 +482,11 @@ class SharedMemCircularQueue(GenericCircularQueue):
     """
 
     def __init__(
-        self, max_size=10, dimension=6, head_tail_buffer_name=None, buffer_name=None
+        self,
+        max_size=10,
+        dimension=6,
+        head_tail_buffer_name=None,
+        buffer_name=None
     ):
         """Stream system uses that to implement user interactions
 
@@ -494,14 +520,16 @@ class SharedMemCircularQueue(GenericCircularQueue):
             self._created = False
 
         self.head_tail_buffer_repr = np.ndarray(
-            3, dtype=_INT_ShM_TYPE, buffer=self.head_tail_buffer.buf[0 : 3 * _INT_SIZE]
+            3,
+            dtype=_INT_ShM_TYPE,
+            buffer=self.head_tail_buffer.buf[0: 3 * _INT_SIZE]
         )
         logging.info(
             [
-                'create shared mem',
-                'size repr',
+                "create shared mem",
+                "size repr",
                 self.head_tail_buffer_repr.shape,
-                'size buffer',
+                "size buffer",
                 self.head_tail_buffer.size / _INT_SIZE,
             ]
         )
@@ -509,7 +537,8 @@ class SharedMemCircularQueue(GenericCircularQueue):
             self.set_head_tail(-1, -1, 0)
 
     def load_mem_resource(self):
-        self.head_tail_buffer = shared_memory.SharedMemory(self.head_tail_buffer_name)
+        self.head_tail_buffer = shared_memory.SharedMemory(
+            self.head_tail_buffer_name)
 
     def create_mem_resource(self):
         # head_tail_arr[0] int; head position
@@ -557,8 +586,8 @@ class SharedMemCircularQueue(GenericCircularQueue):
                 self.head_tail_buffer.unlink()
             except FileNotFoundError:
                 print(
-                    f'Shared Memory {self.head_tail_buffer_name}(head_tail)\
-                     File not found'
+                    f"Shared Memory {self.head_tail_buffer_name}(head_tail)\
+                     File not found"
                 )
 
 
@@ -567,7 +596,10 @@ class GenericImageBufferManager(ABC):
     the n-buffer technique.
     """
 
-    def __init__(self, max_window_size=None, num_buffers=2, use_shared_mem=False):
+    def __init__(self,
+                 max_window_size=None,
+                 num_buffers=2,
+                 use_shared_mem=False):
         """Initialize the ImageBufferManager.
 
         Parameters
@@ -596,12 +628,13 @@ class GenericImageBufferManager(ABC):
         self._created = False
 
         size = (self.max_window_size[0], self.max_window_size[1])
-        img = Image.new('RGB', size, color=(0, 0, 0))
+        img = Image.new("RGB", size, color=(0, 0, 0))
 
         d = ImageDraw.Draw(img)
         pos_text = (12, size[1] // 2)
         d.text(
-            pos_text, 'Image size have exceed the Buffer Max Size', fill=(255, 255, 0)
+            pos_text, "Image size have exceed the Buffer Max Size",
+            fill=(255, 255, 0)
         )
         img = np.flipud(img)
         self.img_exceed = np.asarray(img).flatten()
@@ -625,7 +658,8 @@ class GenericImageBufferManager(ABC):
         elif buffer_size < self.max_size:
             self.image_reprs[next_buffer_index][0:buffer_size] = np_arr
         else:
-            self.image_reprs[next_buffer_index][0 : self.max_size] = self.img_exceed
+            self.image_reprs[next_buffer_index][0: self.max_size] = (
+                self.img_exceed)
             w = self.max_window_size[0]
             h = self.max_window_size[1]
 
@@ -663,11 +697,11 @@ class GenericImageBufferManager(ABC):
         if self._use_shared_mem:
             image = np.frombuffer(image, _BYTE_ShM_TYPE)
 
-        image = image[0 : width * height * 3].reshape((height, width, 3))
+        image = image[0: width * height * 3].reshape((height, width, 3))
         image = np.flipud(image)
-        image_encoded = Image.fromarray(image, mode='RGB')
+        image_encoded = Image.fromarray(image, mode="RGB")
         bytes_img_data = io.BytesIO()
-        image_encoded.save(bytes_img_data, format='jpeg')
+        image_encoded.save(bytes_img_data, format="jpeg")
         bytes_img = bytes_img_data.getvalue()
 
         return bytes_img
@@ -733,7 +767,10 @@ class RawArrayImageBufferManager(GenericImageBufferManager):
             buffer = multiprocessing.RawArray(
                 _BYTE_ShM_TYPE,
                 np.ctypeslib.as_ctypes(
-                    np.random.randint(0, 255, size=self.max_size, dtype=_BYTE_ShM_TYPE)
+                    np.random.randint(0,
+                                      255,
+                                      size=self.max_size,
+                                      dtype=_BYTE_ShM_TYPE)
                 ),
             )
             self.image_buffers.append(buffer)
@@ -813,10 +850,14 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
         self.max_size *= self.num_components
         self.max_size = int(self.max_size)
         for _ in range(self.num_buffers):
-            buffer = shared_memory.SharedMemory(create=True, size=self.max_size)
+            buffer = shared_memory.SharedMemory(
+                create=True,
+                size=self.max_size)
             self.image_buffers.append(buffer)
             self.image_reprs.append(
-                np.ndarray(self.max_size, dtype=_BYTE_ShM_TYPE, buffer=buffer.buf)
+                np.ndarray(self.max_size,
+                           dtype=_BYTE_ShM_TYPE,
+                           buffer=buffer.buf)
             )
             self.image_buffer_names.append(buffer.name)
 
@@ -830,21 +871,23 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
             create=True, size=info_list.nbytes
         )
         sizes = np.ndarray(
-            2, dtype=_UINT_ShM_TYPE, buffer=self.info_buffer.buf[0 : _UINT_SIZE * 2]
+            2,
+            dtype=_UINT_ShM_TYPE,
+            buffer=self.info_buffer.buf[0: _UINT_SIZE * 2]
         )
         sizes[0] = info_list[0]
         sizes[1] = 1
         self.info_buffer_repr = np.ndarray(
             sizes[0],
             dtype=_UINT_ShM_TYPE,
-            buffer=self.info_buffer.buf[2 * _UINT_SIZE :],
+            buffer=self.info_buffer.buf[2 * _UINT_SIZE:],
         )
         logging.info(
             [
-                'info buffer create',
-                'buffer size',
+                "info buffer create",
+                "buffer size",
                 sizes[0],
-                'repr size',
+                "repr size",
                 self.info_buffer_repr.shape,
             ]
         )
@@ -853,19 +896,21 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
     def load_mem_resource(self):
         self.info_buffer = shared_memory.SharedMemory(self.info_buffer_name)
         sizes = np.ndarray(
-            2, dtype=_UINT_ShM_TYPE, buffer=self.info_buffer.buf[0 : _UINT_SIZE * 2]
+            2,
+            dtype=_UINT_ShM_TYPE,
+            buffer=self.info_buffer.buf[0: _UINT_SIZE * 2]
         )
         self.info_buffer_repr = np.ndarray(
             sizes[0],
             dtype=_UINT_ShM_TYPE,
-            buffer=self.info_buffer.buf[2 * _UINT_SIZE :],
+            buffer=self.info_buffer.buf[2 * _UINT_SIZE:],
         )
         logging.info(
             [
-                'info buffer load',
-                'buffer size',
+                "info buffer load",
+                "buffer size",
                 sizes[0],
-                'repr size',
+                "repr size",
                 self.info_buffer_repr.shape,
             ]
         )
@@ -874,7 +919,9 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
             self.image_buffers.append(buffer)
             self.image_reprs.append(
                 np.ndarray(
-                    buffer.size // _BYTE_SIZE, dtype=_BYTE_ShM_TYPE, buffer=buffer.buf
+                    buffer.size // _BYTE_SIZE,
+                    dtype=_BYTE_ShM_TYPE,
+                    buffer=buffer.buf
                 )
             )
 
@@ -890,8 +937,8 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
                 self.info_buffer.unlink()
             except FileNotFoundError:
                 print(
-                    f'Shared Memory {self.info_buffer_name}\
-                        (info_buffer) File not found'
+                    f"Shared Memory {self.info_buffer_name}\
+                        (info_buffer) File not found"
                 )
         for buffer, name in zip(self.image_buffers, self.image_buffer_names):
             buffer.close()
@@ -899,7 +946,7 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
                 try:
                     buffer.unlink()
                 except FileNotFoundError:
-                    print(f'Shared Memory {name}(buffer image) File not found')
+                    print(f"Shared Memory {name}(buffer image) File not found")
 
 
 class IntervalTimerThreading:
