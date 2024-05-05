@@ -44,7 +44,7 @@ from fury.stream.client import FuryStreamClient, FuryStreamInteraction
 # multiprocessing.set_start_method('spawn')
 from fury.stream.server.main import WEBRTC_AVAILABLE, web_server, web_server_raw_array
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     interactive = False
     # `use_raw_array` is a flag to tell the server to use python RawArray
     # instead of SharedMemory which is a new feature in python 3.8
@@ -100,7 +100,7 @@ if __name__ == '__main__':
                 stream_interaction.circular_queue.head_tail_buffer,
                 stream_interaction.circular_queue.buffer._buffer,
                 8000,
-                'localhost',
+                "localhost",
                 True,
                 WEBRTC_AVAILABLE,
             ),
@@ -115,7 +115,7 @@ if __name__ == '__main__':
                 stream_interaction.circular_queue.head_tail_buffer_name,
                 stream_interaction.circular_queue.buffer.buffer_name,
                 8000,
-                'localhost',
+                "localhost",
                 True,
                 WEBRTC_AVAILABLE,
             ),
@@ -143,4 +143,4 @@ if __name__ == '__main__':
     stream.cleanup()
     stream_interaction.cleanup()
 
-    window.record(showm.scene, size=window_size, out_path='viz_interaction.png')
+    window.record(showm.scene, size=window_size, out_path="viz_interaction.png")

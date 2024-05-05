@@ -9,6 +9,7 @@ under Domino Effect.
 
 First some imports.
 """
+
 import itertools
 
 import numpy as np
@@ -173,7 +174,7 @@ def sync_domino(object_index, multibody):
 
 fpss = np.array([])
 tb = ui.TextBlock2D(
-    text='Avg. FPS: \nSim Steps: ', position=(0, 680), font_size=30, color=(1, 0.5, 0)
+    text="Avg. FPS: \nSim Steps: ", position=(0, 680), font_size=30, color=(1, 0.5, 0)
 )
 scene.add(tb)
 
@@ -202,7 +203,7 @@ def timer_callback(_obj, _event):
         fps = showm.frame_rate
         fpss = np.append(fpss, fps)
         tb.message = (
-            'Avg. FPS: ' + str(np.round(np.mean(fpss), 0)) + '\nSim Steps: ' + str(cnt)
+            "Avg. FPS: " + str(np.round(np.mean(fpss), 0)) + "\nSim Steps: " + str(cnt)
         )
 
     # Get the position and orientation of the first domino.
@@ -243,4 +244,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_domino.png', size=(900, 768))
+window.record(scene, out_path="viz_domino.png", size=(900, 768))

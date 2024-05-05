@@ -46,7 +46,7 @@ fetch_viz_icons()
 # Now we can create an image container.
 
 img = ui.ImageContainer2D(
-    img_path=read_viz_icons(fname='home3.png'), position=(450, 350)
+    img_path=read_viz_icons(fname="home3.png"), position=(450, 350)
 )
 
 ###############################################################################
@@ -56,15 +56,15 @@ img = ui.ImageContainer2D(
 # Let's create some buttons and text and put them in a panel. First we'll
 # make the panel.
 
-panel = ui.Panel2D(size=(300, 150), color=(1, 1, 1), align='right')
+panel = ui.Panel2D(size=(300, 150), color=(1, 1, 1), align="right")
 panel.center = (500, 400)
 
 ###############################################################################
 # Then we'll make two text labels and place them on the panel.
 # Note that we specify the position with integer numbers of pixels.
 
-text = ui.TextBlock2D(text='Click me')
-text2 = ui.TextBlock2D(text='Me too')
+text = ui.TextBlock2D(text="Click me")
+text2 = ui.TextBlock2D(text="Me too")
 panel.add_element(text, (50, 100))
 panel.add_element(text2, (180, 100))
 
@@ -76,14 +76,14 @@ panel.add_element(text2, (180, 100))
 
 
 button_example = ui.Button2D(
-    icon_fnames=[('square', read_viz_icons(fname='stop2.png'))]
+    icon_fnames=[("square", read_viz_icons(fname="stop2.png"))]
 )
 
 icon_files = []
-icon_files.append(('down', read_viz_icons(fname='circle-down.png')))
-icon_files.append(('left', read_viz_icons(fname='circle-left.png')))
-icon_files.append(('up', read_viz_icons(fname='circle-up.png')))
-icon_files.append(('right', read_viz_icons(fname='circle-right.png')))
+icon_files.append(("down", read_viz_icons(fname="circle-down.png")))
+icon_files.append(("left", read_viz_icons(fname="circle-left.png")))
+icon_files.append(("up", read_viz_icons(fname="circle-up.png")))
+icon_files.append(("right", read_viz_icons(fname="circle-right.png")))
 
 second_button_example = ui.Button2D(icon_fnames=icon_files)
 
@@ -95,7 +95,7 @@ panel.add_element(second_button_example, (0.66, 0.33))
 
 
 def change_text_callback(i_ren, _obj, _button):
-    text.message = 'Clicked!'
+    text.message = "Clicked!"
     i_ren.force_render()
 
 
@@ -125,7 +125,7 @@ cube = actor.cube(
 # Now we'll add three sliders: one circular and two linear.
 
 ring_slider = ui.RingSlider2D(
-    center=(740, 400), initial_value=0, text_template='{angle:5.1f}°'
+    center=(740, 400), initial_value=0, text_template="{angle:5.1f}°"
 )
 
 line_slider_x = ui.LineSlider2D(
@@ -133,7 +133,7 @@ line_slider_x = ui.LineSlider2D(
     initial_value=0,
     min_value=-10,
     max_value=10,
-    orientation='horizontal',
+    orientation="horizontal",
 )
 
 line_slider_y = ui.LineSlider2D(
@@ -141,7 +141,7 @@ line_slider_y = ui.LineSlider2D(
     initial_value=0,
     min_value=-10,
     max_value=10,
-    orientation='vertical',
+    orientation="vertical",
 )
 
 ###############################################################################
@@ -198,7 +198,7 @@ range_slider_x = ui.RangeSlider(
     font_size=18,
     range_precision=2,
     value_precision=4,
-    shape='square',
+    shape="square",
 )
 
 range_slider_y = ui.RangeSlider(
@@ -212,8 +212,8 @@ range_slider_y = ui.RangeSlider(
     font_size=18,
     range_precision=2,
     value_precision=4,
-    orientation='vertical',
-    shape='square',
+    orientation="vertical",
+    shape="square",
 )
 ###############################################################################
 # Select menu
@@ -252,12 +252,12 @@ hide_all_examples()
 # correspond with the examples.
 
 values = [
-    'Rectangle',
-    'Disks',
-    'Image',
-    'Button Panel',
-    'Line & Ring Slider',
-    'Range Slider',
+    "Rectangle",
+    "Disks",
+    "Image",
+    "Button Panel",
+    "Line & Ring Slider",
+    "Range Slider",
 ]
 
 ###############################################################################
@@ -291,7 +291,7 @@ listbox.on_change = display_element
 # manager.
 
 current_size = (800, 800)
-show_manager = window.ShowManager(size=current_size, title='FURY UI Example')
+show_manager = window.ShowManager(size=current_size, title="FURY UI Example")
 
 show_manager.scene.add(listbox)
 for example in examples:
@@ -309,4 +309,4 @@ interactive = False
 if interactive:
     show_manager.start()
 
-window.record(show_manager.scene, size=current_size, out_path='viz_ui.png')
+window.record(show_manager.scene, size=current_size, out_path="viz_ui.png")

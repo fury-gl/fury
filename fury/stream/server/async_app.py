@@ -15,7 +15,7 @@ try:
     WEBRTC_AVAILABLE = True
 except ImportError:
     WEBRTC_AVAILABLE = False
-    print('webrtc not available')
+    print("webrtc not available")
 
 import logging
 import time
@@ -27,20 +27,20 @@ pcs = set()
 
 
 async def index(request, **kwargs):
-    folder = kwargs['folder']
-    just_mjpeg = kwargs['just_mjpeg']
-    index_file = 'index.html'
+    folder = kwargs["folder"]
+    just_mjpeg = kwargs["just_mjpeg"]
+    index_file = "index.html"
     if just_mjpeg:
-        index_file = 'index_mjpeg.html'
-    content = open(os.path.join(folder, index_file), 'r').read()
-    return web.Response(content_type='text/html', text=content)
+        index_file = "index_mjpeg.html"
+    content = open(os.path.join(folder, index_file), "r").read()
+    return web.Response(content_type="text/html", text=content)
 
 
 async def javascript(request, **kwargs):
-    folder = kwargs['folder']
-    js = kwargs['js']
-    content = open(os.path.join(folder, 'js/%s' % js), 'r').read()
-    return web.Response(content_type='application/javascript', text=content)
+    folder = kwargs["folder"]
+    js = kwargs["js"]
+    content = open(os.path.join(folder, "js/%s" % js), "r").read()
+    return web.Response(content_type="application/javascript", text=content)
 
 
 async def mjpeg_handler(request):
@@ -52,45 +52,44 @@ async def mjpeg_handler(request):
     endpoint : /video/mjpeg
 
     """
-    my_boundary = 'image-boundary'
+    my_boundary = "image-boundary"
     response = web.StreamResponse(
         status=200,
-        reason='OK',
+        reason="OK",
         headers={
-            'Content-Type': 'multipart/x-mixed-replace;boundary={}'.format(
-                my_boundary)
+            "Content-Type": "multipart/x-mixed-replace;boundary={}".format(my_boundary)
         },
     )
     await response.prepare(request)
-    image_buffer_manager = request.app['image_buffer_manager']
+    image_buffer_manager = request.app["image_buffer_manager"]
     while True:
         jpeg_bytes = await image_buffer_manager.async_get_jpeg()
-        with MultipartWriter('image/jpeg', boundary=my_boundary) as mpwriter:
-            mpwriter.append(jpeg_bytes, {'Content-Type': 'image/jpeg'})
+        with MultipartWriter("image/jpeg", boundary=my_boundary) as mpwriter:
+            mpwriter.append(jpeg_bytes, {"Content-Type": "image/jpeg"})
             try:
                 await mpwriter.write(response, close_boundary=False)
             except ConnectionResetError:
-                logging.info('Client connection closed')
+                logging.info("Client connection closed")
                 break
-        await response.write(b'\r\n')
+        await response.write(b"\r\n")
 
 
 async def offer(request, **kwargs):
-    video = kwargs['video']
-    if 'broadcast' in kwargs and kwargs['broadcast']:
+    video = kwargs["video"]
+    if "broadcast" in kwargs and kwargs["broadcast"]:
         video = MediaRelay().subscribe(video)
 
     params = await request.json()
 
-    offer = RTCSessionDescription(sdp=params['sdp'], type=params['type'])
+    offer = RTCSessionDescription(sdp=params["sdp"], type=params["type"])
 
     pc = RTCPeerConnection()
     pcs.add(pc)
 
-    @pc.on('connectionstatechange')
+    @pc.on("connectionstatechange")
     async def on_connectionstatechange():
-        print('Connection state is %s' % pc.connectionState)
-        if pc.connectionState == 'failed':
+        print("Connection state is %s" % pc.connectionState)
+        if pc.connectionState == "failed":
             await pc.close()
             pcs.discard(pc)
 
@@ -99,54 +98,48 @@ async def offer(request, **kwargs):
 
     await pc.setRemoteDescription(offer)
     for t in pc.getTransceivers():
-        if t.kind == 'audio' and audio:
+        if t.kind == "audio" and audio:
             pc.addTrack(audio)
-        elif t.kind == 'video' and video:
+        elif t.kind == "video" and video:
             pc.addTrack(video)
 
     answer = await pc.createAnswer()
     await pc.setLocalDescription(answer)
 
     return web.Response(
-        content_type='application/json',
+        content_type="application/json",
         text=json.dumps(
-            {'sdp': pc.localDescription.sdp, 'type': pc.localDescription.type}
+            {"sdp": pc.localDescription.sdp, "type": pc.localDescription.type}
         ),
     )
 
 
 def set_weel(data, circular_queue):
-    deltaY = float(data['deltaY'])
-    user_envent_ms = float(data['timestampInMs'])
+    deltaY = float(data["deltaY"])
+    user_envent_ms = float(data["timestampInMs"])
     ok = circular_queue.enqueue(
         np.array(
             [EVENT_IDs.mouse_weel, deltaY, 0, 0, 0, 0, user_envent_ms, 0],
-            dtype='float64',
+            dtype="float64",
         )
     )
     ts = time.time() * 1000
-    logging.info(f'WEEL Time until enqueue {ts-user_envent_ms:.2f} ms')
+    logging.info(f"WEEL Time until enqueue {ts-user_envent_ms:.2f} ms")
     return ok
 
 
 def set_mouse(data, circular_queue):
-    x = float(data['x'])
-    y = float(data['y'])
-    ctrl_key = int(data['ctrlKey'])
-    shift_key = int(data['shiftKey'])
+    x = float(data["x"])
+    y = float(data["y"])
+    ctrl_key = int(data["ctrlKey"])
+    shift_key = int(data["shiftKey"])
 
-    user_envent_ms = float(data['timestampInMs'])
+    user_envent_ms = float(data["timestampInMs"])
     circular_queue = circular_queue
     ok = circular_queue.enqueue(
         np.array(
-            [EVENT_IDs.mouse_move,
-             0,
-             x,
-             y,
-             ctrl_key,
-             shift_key,
-             user_envent_ms, 0],
-            dtype='float64',
+            [EVENT_IDs.mouse_move, 0, x, y, ctrl_key, shift_key, user_envent_ms, 0],
+            dtype="float64",
         )
     )
 
@@ -161,13 +154,13 @@ def set_mouse_click(data, circular_queue):
     7 | RightButtonPressEvent
     8 | RightButtonReleaseEvent
     """
-    on = 0 if data['on'] == 1 else 1
-    ctrl = int(data['ctrlKey'])
-    shift = int(data['shiftKey'])
-    user_envent_ms = float(data['timestampInMs'])
-    x = float(data['x'])
-    y = float(data['y'])
-    mouse_button = int(data['mouseButton'])
+    on = 0 if data["on"] == 1 else 1
+    ctrl = int(data["ctrlKey"])
+    shift = int(data["shiftKey"])
+    user_envent_ms = float(data["timestampInMs"])
+    x = float(data["x"])
+    y = float(data["y"])
+    mouse_button = int(data["mouseButton"])
     if mouse_button not in [0, 1, 2]:
         return False
     if ctrl not in [0, 1] or shift not in [0, 1]:
@@ -175,8 +168,7 @@ def set_mouse_click(data, circular_queue):
 
     event_id = (mouse_button + 1) * 2 + on + 1
     ok = circular_queue.enqueue(
-        np.array([event_id, 0, x, y, ctrl, shift, user_envent_ms, 0],
-                 dtype='float64')
+        np.array([event_id, 0, x, y, ctrl, shift, user_envent_ms, 0], dtype="float64")
     )
 
     return ok
@@ -187,42 +179,38 @@ async def on_shutdown(app):
     coros = [pc.close() for pc in pcs]
     await asyncio.gather(*coros)
     pcs.clear()
-    for ws in set(app['websockets']):
-        await ws.close(code=WSCloseCode.GOING_AWAY, message='Server shutdown')
+    for ws in set(app["websockets"]):
+        await ws.close(code=WSCloseCode.GOING_AWAY, message="Server shutdown")
 
 
 async def websocket_handler(request, **kwargs):
-
-    circular_queue = kwargs['circular_queue']
+    circular_queue = kwargs["circular_queue"]
     ws = web.WebSocketResponse()
     await ws.prepare(request)
-    request.app['websockets'].add(ws)
+    request.app["websockets"].add(ws)
     try:
         async for msg in ws:
             if msg.type == aiohttp.WSMsgType.TEXT:
-                if msg.data == 'close':
+                if msg.data == "close":
                     await ws.close()
                 else:
                     data = json.loads(msg.data)
                     logging.info(f'\nuser event time {data["timestampInMs"]}')
-                    if data['type'] == 'weel':
+                    if data["type"] == "weel":
                         ts = time.time() * 1000
-                        interval = ts - data['timestampInMs']
-                        logging.info('WEEL request time approx ' +
-                                     f'{interval:.2f} ms')
+                        interval = ts - data["timestampInMs"]
+                        logging.info("WEEL request time approx " + f"{interval:.2f} ms")
                         set_weel(data, circular_queue)
-                    elif data['type'] == 'mouseMove':
+                    elif data["type"] == "mouseMove":
                         set_mouse(data, circular_queue)
-                    elif data['type'] == 'mouseLeftClick':
+                    elif data["type"] == "mouseLeftClick":
                         set_mouse_click(data, circular_queue)
                     # await ws.send_str(msg.data + '/answer')
 
             elif msg.type == aiohttp.WSMsgType.ERROR:
-                print('ws connection closed with exception {}'.format(
-                    ws.exception())
-                )
+                print("ws connection closed with exception {}".format(ws.exception()))
     finally:
-        request.app['websockets'].discard(ws)
+        request.app["websockets"].discard(ws)
 
     return ws
 
@@ -235,12 +223,11 @@ def get_app(
     provides_mjpeg=False,
     broadcast=True,
 ):
-
     if folder is None:
-        folder = f'{os.path.dirname(__file__)}/www/'
+        folder = f"{os.path.dirname(__file__)}/www/"
 
     app = web.Application()
-    app['websockets'] = weakref.WeakSet()
+    app["websockets"] = weakref.WeakSet()
 
     app.on_shutdown.append(on_shutdown)
 
@@ -252,33 +239,30 @@ def get_app(
     #     )
     # )
     app.router.add_get(
-        '/', partial(index, folder=folder, just_mjpeg=rtc_server is None)
+        "/", partial(index, folder=folder, just_mjpeg=rtc_server is None)
     )
     js_files = [
-        'main.js',
-        'main_just_mjpeg.js',
-        'webrtc.js',
-        'constants.js',
-        'interaction.js',
+        "main.js",
+        "main_just_mjpeg.js",
+        "webrtc.js",
+        "constants.js",
+        "interaction.js",
     ]
     for js in js_files:
-        app.router.add_get('/js/%s' % js, partial(javascript,
-                                                  folder=folder,
-                                                  js=js))
+        app.router.add_get("/js/%s" % js, partial(javascript, folder=folder, js=js))
 
-    app['image_buffer_manager'] = image_buffer_manager
+    app["image_buffer_manager"] = image_buffer_manager
     if provides_mjpeg:
-        app.router.add_get('/video/mjpeg', mjpeg_handler)
+        app.router.add_get("/video/mjpeg", mjpeg_handler)
 
     if rtc_server is not None:
         app.router.add_post(
-            '/offer', partial(offer, video=rtc_server, broadcast=broadcast)
+            "/offer", partial(offer, video=rtc_server, broadcast=broadcast)
         )
 
     if circular_queue is not None:
         app.add_routes(
-            [web.get('/ws', partial(websocket_handler,
-                                    circular_queue=circular_queue))]
+            [web.get("/ws", partial(websocket_handler, circular_queue=circular_queue))]
         )
 
     return app

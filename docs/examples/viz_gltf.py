@@ -17,8 +17,8 @@ scene.SetBackground(0.1, 0.1, 0.4)
 
 ##############################################################################
 # Retrieving the gltf model.
-fetch_gltf('Duck', 'glTF')
-filename = read_viz_gltf('Duck')
+fetch_gltf("Duck", "glTF")
+filename = read_viz_gltf("Duck")
 
 ##############################################################################
 # Initialize the glTF object and get actors using `actors` method.
@@ -46,4 +46,4 @@ interactive = False
 if interactive:
     window.show(scene, size=(1280, 720))
 
-window.record(scene, out_path='viz_gltf.png', size=(1280, 720))
+window.record(scene, out_path="viz_gltf.png", size=(1280, 720))

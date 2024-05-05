@@ -12,6 +12,7 @@ create Tabs for:
 
 First, some imports.
 """
+
 import numpy as np
 
 from fury import actor, ui, window
@@ -31,7 +32,7 @@ tab_ui = ui.TabUI(position=(49, 94), size=(300, 300), nb_tabs=3, draggable=True)
 # We can also define the position of the Tab Bar.
 # By default the Tab Bar is positioned at top
 
-tab_ui.tab_bar_pos = 'bottom'
+tab_ui.tab_bar_pos = "bottom"
 
 ###############################################################################
 # Slider Controls for a Cube for Tab Index 0
@@ -39,22 +40,22 @@ tab_ui.tab_bar_pos = 'bottom'
 #
 # Now we prepare content for the first tab.
 
-ring_slider = ui.RingSlider2D(initial_value=0, text_template='{angle:5.1f}°')
+ring_slider = ui.RingSlider2D(initial_value=0, text_template="{angle:5.1f}°")
 
 line_slider_x = ui.LineSlider2D(
     initial_value=0,
     min_value=-10,
     max_value=10,
-    orientation='horizontal',
-    text_alignment='Top',
+    orientation="horizontal",
+    text_alignment="Top",
 )
 
 line_slider_y = ui.LineSlider2D(
     initial_value=0,
     min_value=-10,
     max_value=10,
-    orientation='vertical',
-    text_alignment='Right',
+    orientation="vertical",
+    text_alignment="Right",
 )
 
 cube = actor.box(
@@ -93,7 +94,7 @@ line_slider_y.on_change = translate_cube_y
 ###############################################################################
 # After defining content, we define properties for the tab.
 
-tab_ui.tabs[0].title = 'Sliders'
+tab_ui.tabs[0].title = "Sliders"
 tab_ui.add_element(0, ring_slider, (0.3, 0.3))
 tab_ui.add_element(0, line_slider_x, (0.0, 0.0))
 tab_ui.add_element(0, line_slider_y, (0.0, 0.1))
@@ -113,8 +114,8 @@ cylinder = actor.cylinder(
 
 sphere = actor.sphere(centers=np.array([[5, 0, 0]]), colors=(1, 1, 0))
 
-figure_dict = {'cylinder': cylinder, 'sphere': sphere}
-checkbox = ui.Checkbox(labels=['cylinder', 'sphere'])
+figure_dict = {"cylinder": cylinder, "sphere": sphere}
+checkbox = ui.Checkbox(labels=["cylinder", "sphere"])
 
 
 # Get difference between two lists.
@@ -139,7 +140,7 @@ checkbox.on_change = set_figure_visiblity
 ###############################################################################
 # After defining content, we define properties for the tab.
 
-tab_ui.tabs[1].title = 'Checkbox'
+tab_ui.tabs[1].title = "Checkbox"
 tab_ui.add_element(1, checkbox, (0.2, 0.2))
 
 ###############################################################################
@@ -152,24 +153,24 @@ label = ui.TextBlock2D(
     position=(600, 300),
     font_size=40,
     color=(1, 0.5, 0),
-    justification='center',
-    vertical_justification='top',
-    text='FURY rocks!!!',
+    justification="center",
+    vertical_justification="top",
+    text="FURY rocks!!!",
 )
 
 colors = {
-    'Violet': (0.6, 0, 0.8),
-    'Indigo': (0.3, 0, 0.5),
-    'Blue': (0, 0, 1),
-    'Green': (0, 1, 0),
-    'Yellow': (1, 1, 0),
-    'Orange': (1, 0.5, 0),
-    'Red': (1, 0, 0),
+    "Violet": (0.6, 0, 0.8),
+    "Indigo": (0.3, 0, 0.5),
+    "Blue": (0, 0, 1),
+    "Green": (0, 1, 0),
+    "Yellow": (1, 1, 0),
+    "Orange": (1, 0.5, 0),
+    "Red": (1, 0, 0),
 }
 
 color_combobox = ui.ComboBox2D(
     items=list(colors.keys()),
-    placeholder='Choose Text Color',
+    placeholder="Choose Text Color",
     size=(250, 150),
     draggable=True,
 )
@@ -184,7 +185,7 @@ color_combobox.on_change = change_color
 ###############################################################################
 # After defining content, we define properties for the tab.
 
-tab_ui.tabs[2].title = 'Colors'
+tab_ui.tabs[2].title = "Colors"
 tab_ui.add_element(2, color_combobox, (0.1, 0.3))
 
 ###############################################################################
@@ -194,13 +195,13 @@ tab_ui.add_element(2, color_combobox, (0.1, 0.3))
 
 
 def hide_actors(tab_ui):
-    if tab_ui.tabs[tab_ui.active_tab_idx].title == 'Sliders':
+    if tab_ui.tabs[tab_ui.active_tab_idx].title == "Sliders":
         cube.SetVisibility(True)
         cylinder.SetVisibility(False)
         sphere.SetVisibility(False)
         label.set_visibility(False)
 
-    elif tab_ui.tabs[tab_ui.active_tab_idx].title == 'Checkbox':
+    elif tab_ui.tabs[tab_ui.active_tab_idx].title == "Checkbox":
         cube.SetVisibility(False)
         set_figure_visiblity(checkbox)
         label.set_visibility(False)
@@ -227,7 +228,7 @@ tab_ui.on_collapse = collapse
 ###############################################################################
 # Next we prepare the scene and render it with the help of show manager.
 
-sm = window.ShowManager(size=(800, 500), title='Viz Tab')
+sm = window.ShowManager(size=(800, 500), title="Viz Tab")
 sm.scene.add(tab_ui, cube, cylinder, sphere, label)
 
 # To interact with the ui set interactive = True
@@ -236,4 +237,4 @@ interactive = False
 if interactive:
     sm.start()
 
-window.record(sm.scene, size=(500, 500), out_path='viz_tab.png')
+window.record(sm.scene, size=(500, 500), out_path="viz_tab.png")

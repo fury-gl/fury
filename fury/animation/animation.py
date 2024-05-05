@@ -42,11 +42,7 @@ class Animation:
 
     """
 
-    def __init__(self, actors=None,
-                 length=None,
-                 loop=True,
-                 motion_path_res=None):
-
+    def __init__(self, actors=None, length=None, loop=True, motion_path_res=None):
         super().__init__()
         self._data = defaultdict(dict)
         self._animations = []
@@ -84,8 +80,7 @@ class Animation:
         else:
             self._duration = max(
                 self._max_timestamp,
-                max([0] + [anim.update_duration()
-                           for anim in self.child_animations]),
+                max([0] + [anim.update_duration() for anim in self.child_animations]),
             )
 
         return self.duration
@@ -132,10 +127,10 @@ class Animation:
 
         lines = []
         colors = []
-        if self.is_interpolatable('position'):
+        if self.is_interpolatable("position"):
             ts = np.linspace(0, self.duration, res)
             [lines.append(self.get_position(t).tolist()) for t in ts]
-            if self.is_interpolatable('color'):
+            if self.is_interpolatable("color"):
                 [colors.append(self.get_color(t)) for t in ts]
             elif len(self._actors) >= 1:
                 colors = sum([i.vcolors[0] / 255 for i in self._actors]) / len(
@@ -186,14 +181,13 @@ class Animation:
 
         if attrib not in data:
             data[attrib] = {
-                'keyframes': defaultdict(dict),
-                'interpolator': {
-                    'base': (linear_interpolator
-                             if attrib != 'rotation' else slerp),
-                    'func': None,
-                    'args': defaultdict(),
+                "keyframes": defaultdict(dict),
+                "interpolator": {
+                    "base": (linear_interpolator if attrib != "rotation" else slerp),
+                    "func": None,
+                    "args": defaultdict(),
                 },
-                'callbacks': [],
+                "callbacks": [],
             }
         return data.get(attrib)
 
@@ -211,10 +205,9 @@ class Animation:
         if attrib is None:
             attribs = data.keys()
             return {
-                attrib: data.get(attrib,
-                                 {}).get('keyframes', {}) for attrib in attribs
+                attrib: data.get(attrib, {}).get("keyframes", {}) for attrib in attribs
             }
-        return data.get(attrib, {}).get('keyframes', {})
+        return data.get(attrib, {}).get("keyframes", {})
 
     def set_keyframe(
         self, attrib, timestamp, value, update_interpolator=True, **kwargs
@@ -245,10 +238,10 @@ class Animation:
 
         """
         attrib_data = self._get_attribute_data(attrib)
-        keyframes = attrib_data.get('keyframes')
+        keyframes = attrib_data.get("keyframes")
 
         keyframes[timestamp] = {
-            'value': np.array(value).astype(float),
+            "value": np.array(value).astype(float),
             **{
                 par: np.array(val).astype(float)
                 for par, val in kwargs.items()
@@ -257,11 +250,11 @@ class Animation:
         }
 
         if update_interpolator:
-            interp = attrib_data.get('interpolator')
+            interp = attrib_data.get("interpolator")
             interp_base = interp.get(
-                'base', linear_interpolator if attrib != 'rotation' else slerp
+                "base", linear_interpolator if attrib != "rotation" else slerp
             )
-            args = interp.get('args', {})
+            args = interp.get("args", {})
             self.set_interpolator(attrib, interp_base, **args)
 
         if timestamp > self._max_timestamp:
@@ -320,9 +313,8 @@ class Animation:
         if parent is not None:
             parent_in_scene = parent._added_to_scene
 
-        if self.is_interpolatable('in_scene'):
-            in_scene = parent_in_scene and self.get_value('in_scene',
-                                                          timestamp)
+        if self.is_interpolatable("in_scene"):
+            in_scene = parent_in_scene and self.get_value("in_scene", timestamp)
         else:
             in_scene = parent_in_scene
         return in_scene
@@ -336,11 +328,11 @@ class Animation:
             Timestamp of the event.
 
         """
-        if not self.is_interpolatable('in_scene'):
-            self.set_keyframe('in_scene', timestamp, True)
-            self.set_interpolator('in_scene', step_interpolator)
+        if not self.is_interpolatable("in_scene"):
+            self.set_keyframe("in_scene", timestamp, True)
+            self.set_interpolator("in_scene", step_interpolator)
         else:
-            self.set_keyframe('in_scene', timestamp, True)
+            self.set_keyframe("in_scene", timestamp, True)
 
     def remove_from_scene_at(self, timestamp):
         """Set timestamp for removing Animation to scene event.
@@ -351,11 +343,11 @@ class Animation:
             Timestamp of the event.
 
         """
-        if not self.is_interpolatable('in_scene'):
-            self.set_keyframe('in_scene', timestamp, False)
-            self.set_interpolator('in_scene', step_interpolator)
+        if not self.is_interpolatable("in_scene"):
+            self.set_keyframe("in_scene", timestamp, False)
+            self.set_interpolator("in_scene", step_interpolator)
         else:
-            self.set_keyframe('in_scene', timestamp, False)
+            self.set_keyframe("in_scene", timestamp, False)
 
     def _handle_scene_event(self, timestamp):
         should_be_in_scene = self.is_inside_scene_at(timestamp)
@@ -367,8 +359,7 @@ class Animation:
                 self._scene.rm(*self._actors)
                 self._added_to_scene = False
 
-    def set_interpolator(self, attrib, interpolator,
-                         is_evaluator=False, **kwargs):
+    def set_interpolator(self, attrib, interpolator, is_evaluator=False, **kwargs):
         """Set keyframes interpolator for a certain property
 
         Parameters
@@ -406,19 +397,19 @@ class Animation:
 
         """
         attrib_data = self._get_attribute_data(attrib)
-        keyframes = attrib_data.get('keyframes', {})
-        interp_data = attrib_data.get('interpolator', {})
+        keyframes = attrib_data.get("keyframes", {})
+        interp_data = attrib_data.get("interpolator", {})
         if is_evaluator:
-            interp_data['base'] = None
-            interp_data['func'] = interpolator
+            interp_data["base"] = None
+            interp_data["func"] = interpolator
         else:
-            interp_data['base'] = interpolator
-            interp_data['args'] = kwargs
+            interp_data["base"] = interpolator
+            interp_data["args"] = kwargs
             # Maintain interpolator base in case new keyframes are added.
             if len(keyframes) == 0:
                 return
             new_interp = interpolator(keyframes, **kwargs)
-            interp_data['func'] = new_interp
+            interp_data["func"] = new_interp
 
         # update motion path
         self.update_duration()
@@ -444,10 +435,9 @@ class Animation:
 
         """
         data = self._data
-        return bool(data.get(attrib, {}).get('interpolator', {}).get('func'))
+        return bool(data.get(attrib, {}).get("interpolator", {}).get("func"))
 
-    def set_position_interpolator(self, interpolator,
-                                  is_evaluator=False, **kwargs):
+    def set_position_interpolator(self, interpolator, is_evaluator=False, **kwargs):
         """Set the position interpolator.
 
         Parameters
@@ -471,7 +461,7 @@ class Animation:
 
         """
         self.set_interpolator(
-            'position', interpolator, is_evaluator=is_evaluator, **kwargs
+            "position", interpolator, is_evaluator=is_evaluator, **kwargs
         )
 
     def set_scale_interpolator(self, interpolator, is_evaluator=False):
@@ -491,7 +481,7 @@ class Animation:
         >>> Animation.set_scale_interpolator(step_interpolator)
 
         """
-        self.set_interpolator('scale', interpolator, is_evaluator=is_evaluator)
+        self.set_interpolator("scale", interpolator, is_evaluator=is_evaluator)
 
     def set_rotation_interpolator(self, interpolator, is_evaluator=False):
         """Set the rotation interpolator .
@@ -510,8 +500,7 @@ class Animation:
         >>> Animation.set_rotation_interpolator(slerp)
 
         """
-        self.set_interpolator('rotation', interpolator,
-                              is_evaluator=is_evaluator)
+        self.set_interpolator("rotation", interpolator, is_evaluator=is_evaluator)
 
     def set_color_interpolator(self, interpolator, is_evaluator=False):
         """Set the color interpolator.
@@ -530,7 +519,7 @@ class Animation:
         >>> Animation.set_color_interpolator(lab_color_interpolator)
 
         """
-        self.set_interpolator('color', interpolator, is_evaluator=is_evaluator)
+        self.set_interpolator("color", interpolator, is_evaluator=is_evaluator)
 
     def set_opacity_interpolator(self, interpolator, is_evaluator=False):
         """Set the opacity interpolator.
@@ -549,9 +538,7 @@ class Animation:
         >>> Animation.set_opacity_interpolator(step_interpolator)
 
         """
-        self.set_interpolator('opacity',
-                              interpolator,
-                              is_evaluator=is_evaluator)
+        self.set_interpolator("opacity", interpolator, is_evaluator=is_evaluator)
 
     def get_value(self, attrib, timestamp):
         """Return the value of an attribute at any given timestamp.
@@ -565,8 +552,7 @@ class Animation:
 
         """
         value = (
-            self._data.get(attrib,
-                           {}).get('interpolator', {}).get('func')(timestamp)
+            self._data.get(attrib, {}).get("interpolator", {}).get("func")(timestamp)
         )
         return value
 
@@ -581,8 +567,8 @@ class Animation:
         """
         return (
             self._data.get(attrib)
-            .get('interpolator')
-            .get('func')(self._timeline.current_timestamp)
+            .get("interpolator")
+            .get("func")(self._timeline.current_timestamp)
         )
 
     def set_position(self, timestamp, position, **kwargs):
@@ -614,7 +600,7 @@ class Animation:
         interpolation method.
 
         """
-        self.set_keyframe('position', timestamp, position, **kwargs)
+        self.set_keyframe("position", timestamp, position, **kwargs)
 
     def set_position_keyframes(self, keyframes):
         """Set a dict of position keyframes at once.
@@ -632,7 +618,7 @@ class Animation:
         >>> Animation.set_position_keyframes(pos_keyframes)
 
         """
-        self.set_keyframes('position', keyframes)
+        self.set_keyframes("position", keyframes)
 
     def set_rotation(self, timestamp, rotation, **kwargs):
         """Set a rotation keyframe at a specific timestamp.
@@ -653,19 +639,20 @@ class Animation:
         """
         no_components = len(np.array(rotation).flatten())
         if no_components == 4:
-            self.set_keyframe('rotation', timestamp, rotation, **kwargs)
+            self.set_keyframe("rotation", timestamp, rotation, **kwargs)
         elif no_components == 3:
             # user is expected to set rotation order by default as setting
             # orientation of a `vtkActor` ordered as z->x->y.
             rotation = np.asarray(rotation, dtype=float)
             rotation = transform.Rotation.from_euler(
-                'zxy', rotation[[2, 0, 1]], degrees=True
+                "zxy", rotation[[2, 0, 1]], degrees=True
             ).as_quat()
-            self.set_keyframe('rotation', timestamp, rotation, **kwargs)
+            self.set_keyframe("rotation", timestamp, rotation, **kwargs)
         else:
             warn(
-                f'Keyframe with {no_components} components is not a '
-                f'valid rotation data. Skipped!'
+                f"Keyframe with {no_components} components is not a "
+                f"valid rotation data. Skipped!",
+                stacklevel=2,
             )
 
     def set_rotation_as_vector(self, timestamp, vector, **kwargs):
@@ -680,7 +667,7 @@ class Animation:
 
         """
         quat = transform.Rotation.from_rotvec(vector).as_quat()
-        self.set_keyframe('rotation', timestamp, quat, **kwargs)
+        self.set_keyframe("rotation", timestamp, quat, **kwargs)
 
     def set_scale(self, timestamp, scalar, **kwargs):
         """Set a scale keyframe at a specific timestamp.
@@ -693,7 +680,7 @@ class Animation:
             Scale keyframe value associated with the timestamp.
 
         """
-        self.set_keyframe('scale', timestamp, scalar, **kwargs)
+        self.set_keyframe("scale", timestamp, scalar, **kwargs)
 
     def set_scale_keyframes(self, keyframes):
         """Set a dict of scale keyframes at once.
@@ -711,7 +698,7 @@ class Animation:
         >>> Animation.set_scale_keyframes(scale_keyframes)
 
         """
-        self.set_keyframes('scale', keyframes)
+        self.set_keyframes("scale", keyframes)
 
     def set_color(self, timestamp, color, **kwargs):
         """Set color keyframe at a specific timestamp.
@@ -724,7 +711,7 @@ class Animation:
             Color keyframe value associated with the timestamp.
 
         """
-        self.set_keyframe('color', timestamp, color, **kwargs)
+        self.set_keyframe("color", timestamp, color, **kwargs)
 
     def set_color_keyframes(self, keyframes):
         """Set a dict of color keyframes at once.
@@ -742,7 +729,7 @@ class Animation:
         >>> Animation.set_color_keyframes(color_keyframes)
 
         """
-        self.set_keyframes('color', keyframes)
+        self.set_keyframes("color", keyframes)
 
     def set_opacity(self, timestamp, opacity, **kwargs):
         """Set opacity keyframe at a specific timestamp.
@@ -755,7 +742,7 @@ class Animation:
             Opacity keyframe value associated with the timestamp.
 
         """
-        self.set_keyframe('opacity', timestamp, opacity, **kwargs)
+        self.set_keyframe("opacity", timestamp, opacity, **kwargs)
 
     def set_opacity_keyframes(self, keyframes):
         """Set a dict of opacity keyframes at once.
@@ -777,7 +764,7 @@ class Animation:
         >>> Animation.set_scale_keyframes(opacity)
 
         """
-        self.set_keyframes('opacity', keyframes)
+        self.set_keyframes("opacity", keyframes)
 
     def get_position(self, t):
         """Return the interpolated position.
@@ -793,7 +780,7 @@ class Animation:
             The interpolated position.
 
         """
-        return self.get_value('position', t)
+        return self.get_value("position", t)
 
     def get_rotation(self, t, as_quat=False):
         """Return the interpolated rotation.
@@ -811,17 +798,17 @@ class Animation:
             The interpolated rotation as Euler degrees by default.
 
         """
-        rot = self.get_value('rotation', t)
+        rot = self.get_value("rotation", t)
         if len(rot) == 4:
             if as_quat:
                 return rot
             r = transform.Rotation.from_quat(rot)
-            degrees = r.as_euler('zxy', degrees=True)[[1, 2, 0]]
+            degrees = r.as_euler("zxy", degrees=True)[[1, 2, 0]]
             return degrees
         elif not as_quat:
             return rot
         return transform.Rotation.from_euler(
-            'zxy', rot[[2, 0, 1]], degrees=True
+            "zxy", rot[[2, 0, 1]], degrees=True
         ).as_quat()
 
     def get_scale(self, t):
@@ -838,7 +825,7 @@ class Animation:
             The interpolated scale.
 
         """
-        return self.get_value('scale', t)
+        return self.get_value("scale", t)
 
     def get_color(self, t):
         """Return the interpolated color.
@@ -854,7 +841,7 @@ class Animation:
             The interpolated color.
 
         """
-        return self.get_value('color', t)
+        return self.get_value("color", t)
 
     def get_opacity(self, t):
         """Return the opacity value.
@@ -870,7 +857,7 @@ class Animation:
             The interpolated opacity.
 
         """
-        return self.get_value('opacity', t)
+        return self.get_value("opacity", t)
 
     def add(self, item):
         """Add an item to the Animation.
@@ -1002,7 +989,7 @@ class Animation:
         return self._actors
 
     @property
-    def child_animations(self) -> 'list[Animation]':
+    def child_animations(self) -> "list[Animation]":
         """Return a list of child Animations.
 
         Returns
@@ -1105,7 +1092,7 @@ class Animation:
             self._general_callbacks.append(callback)
             return
         attrib = self._get_attribute_data(prop)
-        attrib.get('callbacks', []).append(callback)
+        attrib.get("callbacks", []).append(callback)
 
     def update_animation(self, time=None):
         """Update the animation.
@@ -1143,26 +1130,26 @@ class Animation:
 
         # actors properties
         if in_scene:
-            if self.is_interpolatable('position'):
+            if self.is_interpolatable("position"):
                 position = self.get_position(time)
                 self._transform.Translate(*position)
 
-            if self.is_interpolatable('opacity'):
+            if self.is_interpolatable("opacity"):
                 opacity = self.get_opacity(time)
                 [act.GetProperty().SetOpacity(opacity) for act in self.actors]
 
-            if self.is_interpolatable('rotation'):
+            if self.is_interpolatable("rotation"):
                 x, y, z = self.get_rotation(time)
                 # Rotate in the same order as VTK defaults.
                 self._transform.RotateZ(z)
                 self._transform.RotateX(x)
                 self._transform.RotateY(y)
 
-            if self.is_interpolatable('scale'):
+            if self.is_interpolatable("scale"):
                 scale = self.get_scale(time)
                 self._transform.Scale(*scale)
 
-            if self.is_interpolatable('color'):
+            if self.is_interpolatable("color"):
                 color = self.get_color(time)
                 for act in self.actors:
                     act.vcolors[:] = color * 255
@@ -1172,7 +1159,7 @@ class Animation:
             [act.SetUserTransform(self._transform) for act in self.actors]
 
         for attrib in self._data:
-            callbacks = self._data.get(attrib, {}).get('callbacks', [])
+            callbacks = self._data.get(attrib, {}).get("callbacks", [])
             if callbacks != [] and self.is_interpolatable(attrib):
                 value = self.get_value(attrib, time)
                 [cbk(value) for cbk in callbacks]
@@ -1230,11 +1217,7 @@ class CameraAnimation(Animation):
 
     """
 
-    def __init__(self,
-                 camera=None,
-                 length=None,
-                 loop=True,
-                 motion_path_res=None):
+    def __init__(self, camera=None, length=None, loop=True, motion_path_res=None):
         super(CameraAnimation, self).__init__(
             length=length, loop=loop, motion_path_res=motion_path_res
         )
@@ -1275,7 +1258,7 @@ class CameraAnimation(Animation):
             The camera position
 
         """
-        self.set_keyframe('focal', timestamp, position, **kwargs)
+        self.set_keyframe("focal", timestamp, position, **kwargs)
 
     def set_view_up(self, timestamp, direction, **kwargs):
         """Set the camera view-up direction keyframe.
@@ -1288,7 +1271,7 @@ class CameraAnimation(Animation):
             The camera view-up direction
 
         """
-        self.set_keyframe('view_up', timestamp, direction, **kwargs)
+        self.set_keyframe("view_up", timestamp, direction, **kwargs)
 
     def set_focal_keyframes(self, keyframes):
         """Set multiple camera focal position keyframes at once.
@@ -1307,7 +1290,7 @@ class CameraAnimation(Animation):
         >>> CameraAnimation.set_focal_keyframes(focal_pos)
 
         """
-        self.set_keyframes('focal', keyframes)
+        self.set_keyframes("focal", keyframes)
 
     def set_view_up_keyframes(self, keyframes):
         """Set multiple camera view up direction keyframes.
@@ -1326,7 +1309,7 @@ class CameraAnimation(Animation):
         >>> CameraAnimation.set_view_up_keyframes(view_ups)
 
         """
-        self.set_keyframes('view_up', keyframes)
+        self.set_keyframes("view_up", keyframes)
 
     def get_focal(self, t):
         """Return the interpolated camera's focal position.
@@ -1347,7 +1330,7 @@ class CameraAnimation(Animation):
         camera's focal position, but the expected one.
 
         """
-        return self.get_value('focal', t)
+        return self.get_value("focal", t)
 
     def get_view_up(self, t):
         """Return the interpolated camera's view-up directional vector.
@@ -1368,7 +1351,7 @@ class CameraAnimation(Animation):
         camera view up directional vector, but the expected one.
 
         """
-        return self.get_value('view_up', t)
+        return self.get_value("view_up", t)
 
     def set_focal_interpolator(self, interpolator, is_evaluator=False):
         """Set the camera focal position interpolator.
@@ -1383,7 +1366,7 @@ class CameraAnimation(Animation):
             function that does not depend on keyframes.
 
         """
-        self.set_interpolator('focal', interpolator, is_evaluator=is_evaluator)
+        self.set_interpolator("focal", interpolator, is_evaluator=is_evaluator)
 
     def set_view_up_interpolator(self, interpolator, is_evaluator=False):
         """Set the camera up-view vector animation interpolator.
@@ -1398,8 +1381,7 @@ class CameraAnimation(Animation):
             function that does not depend on keyframes.
 
         """
-        self.set_interpolator('view_up', interpolator,
-                              is_evaluator=is_evaluator)
+        self.set_interpolator("view_up", interpolator, is_evaluator=is_evaluator)
 
     def update_animation(self, time=None):
         """Update the camera animation.
@@ -1417,32 +1399,29 @@ class CameraAnimation(Animation):
                 self.update_animation(time)
                 return
         else:
-            if self.is_interpolatable('rotation'):
+            if self.is_interpolatable("rotation"):
                 pos = self._camera.GetPosition()
                 translation = np.identity(4)
                 translation[:3, 3] = pos
                 # camera axis is reverted
                 rot = -self.get_rotation(time, as_quat=True)
                 rot = transform.Rotation.from_quat(rot).as_matrix()
-                rot = np.array([[*rot[0], 0],
-                                [*rot[1], 0],
-                                [*rot[2], 0],
-                                [0, 0, 0, 1]])
+                rot = np.array([[*rot[0], 0], [*rot[1], 0], [*rot[2], 0], [0, 0, 0, 1]])
                 rot = translation @ rot @ np.linalg.inv(translation)
                 self._camera.SetModelTransformMatrix(rot.flatten())
 
-            if self.is_interpolatable('position'):
+            if self.is_interpolatable("position"):
                 cam_pos = self.get_position(time)
                 self._camera.SetPosition(cam_pos)
 
-            if self.is_interpolatable('focal'):
+            if self.is_interpolatable("focal"):
                 cam_foc = self.get_focal(time)
                 self._camera.SetFocalPoint(cam_foc)
 
-            if self.is_interpolatable('view_up'):
+            if self.is_interpolatable("view_up"):
                 cam_up = self.get_view_up(time)
                 self._camera.SetViewUp(cam_up)
-            elif not self.is_interpolatable('view_up'):
+            elif not self.is_interpolatable("view_up"):
                 # to preserve up-view as default after user interaction
                 self._camera.SetViewUp(0, 1, 0)
             if self._scene:

@@ -16,15 +16,6 @@ repos:
       - id: detect-aws-credentials
         args: [--allow-missing-credentials]
       - id: detect-private-key
-  # - repo: https://github.com/grantjenks/blue
-  #   rev: v0.9.1
-  #   hooks:
-  #     - id: blue
-  - repo: https://github.com/pycqa/flake8
-    rev: 6.0.0
-    hooks:
-      - id: flake8
-        exclude: "^(docs/experimental|tools)/"
   - repo: https://github.com/codespell-project/codespell
     rev: v2.2.2
     hooks:
@@ -47,8 +38,10 @@ repos:
         args: ["fury"]
         pass_filenames: false
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.7
+    rev: v0.4.3
     hooks:
       # Run the linter
       - id: ruff
-        args: [ --fix ]
+        args: [ --fix]
+      # Run the formatter
+      - id: ruff-format

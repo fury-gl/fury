@@ -81,14 +81,14 @@ class RTCServer(VideoStreamTrack):
             or self.frame.planes[0].height != height
         ):
             if CYTHON_AVAILABLE:
-                self.frame = FuryVideoFrame(width, height, 'rgb24')
+                self.frame = FuryVideoFrame(width, height, "rgb24")
         self.image = image
 
         if not CYTHON_AVAILABLE:
             # if the buffer it's already flipped
             # self.frame.planes[0].update(self.image)
-            self.image = np.frombuffer(self.image, 'uint8')[
-                0: width * height * 3
+            self.image = np.frombuffer(self.image, "uint8")[
+                0 : width * height * 3
             ].reshape((height, width, 3))
             self.image = np.flipud(self.image)
             self.frame = VideoFrame.from_ndarray(self.image)
@@ -117,7 +117,7 @@ def web_server_raw_array(
     queue_head_tail_buffer=None,
     queue_buffer=None,
     port=8000,
-    host='localhost',
+    host="localhost",
     provides_mjpeg=True,
     provides_webrtc=True,
     ms_jpeg=16,
@@ -207,7 +207,7 @@ def web_server(
     queue_head_tail_buffer_name=None,
     queue_buffer_name=None,
     port=8000,
-    host='localhost',
+    host="localhost",
     provides_mjpeg=True,
     provides_webrtc=True,
     avoid_unlink_shared_mem=True,
@@ -261,8 +261,7 @@ def web_server(
         remove_shm_from_resource_tracker()
 
     image_buffer_manager = SharedMemImageBufferManager(
-        image_buffer_names=image_buffer_names,
-        info_buffer_name=info_buffer_name
+        image_buffer_names=image_buffer_names, info_buffer_name=info_buffer_name
     )
 
     rtc_server = None

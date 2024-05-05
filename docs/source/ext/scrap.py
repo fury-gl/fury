@@ -14,11 +14,11 @@ class ImageFileScraper:
 
     def __call__(self, block, block_vars, gallery_conf):
         # Find all image files in the current directory.
-        path_example = os.path.dirname(block_vars['src_file'])
+        path_example = os.path.dirname(block_vars["src_file"])
         image_files = _find_images(path_example)
         # Iterate through files, copy them to the SG output directory
         image_names = []
-        image_path_iterator = block_vars['image_path_iterator']
+        image_path_iterator = block_vars["image_path_iterator"]
         for path_orig in image_files:
             # If we already know about this image and it hasn't been modified
             # since starting, then skip it
@@ -37,15 +37,18 @@ class ImageFileScraper:
             shutil.copyfile(path_orig, path_new)
 
         if not image_names:
-            return ''
+            return ""
 
-        return figure_rst(image_names, gallery_conf['src_dir'])
+        return figure_rst(image_names, gallery_conf["src_dir"])
 
 
-def _find_images(path, image_extensions=['jpg', 'jpeg', 'png', 'gif']):
+def _find_images(path, image_extensions=None):
     """Find all unique image paths for a set of extensions."""
+    if image_extensions is None:
+        image_extensions = ["jpg", "jpeg", "png", "gif"]
+
     image_files = set()
     for ext in image_extensions:
-        this_ext_files = set(glob.glob(os.path.join(path, '*.' + ext)))
+        this_ext_files = set(glob.glob(os.path.join(path, "*." + ext)))
         image_files = image_files.union(this_ext_files)
     return image_files

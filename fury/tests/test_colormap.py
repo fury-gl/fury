@@ -6,7 +6,7 @@ import numpy.testing as npt
 from fury import colormap
 from fury.optpkg import optional_package
 
-cm, have_matplotlib, _ = optional_package('matplotlib.cm')
+cm, have_matplotlib, _ = optional_package("matplotlib.cm")
 
 
 def test_boys2rgb():
@@ -35,8 +35,8 @@ def test_orient2rgb():
 
 
 def test_get_cmap():
-    npt.assert_equal(colormap.get_cmap(''), None)
-    npt.assert_equal(colormap.get_cmap('blues'), None)
+    npt.assert_equal(colormap.get_cmap(""), None)
+    npt.assert_equal(colormap.get_cmap("blues"), None)
 
     expected = np.array(
         [
@@ -52,11 +52,11 @@ def test_get_cmap():
             [0.498039, 0.788235, 0.498039, 1],
         ]
     )
-    cmap = colormap.get_cmap('Blues')
+    cmap = colormap.get_cmap("Blues")
     npt.assert_array_almost_equal(cmap((1, 0, 0)), expected)
 
     with npt.assert_warns(PendingDeprecationWarning):
-        cmap = colormap.get_cmap('Accent')
+        cmap = colormap.get_cmap("Accent")
     npt.assert_array_almost_equal(cmap((1, 0, 0)), expected2)
 
 
@@ -65,19 +65,19 @@ def test_line_colors():
     s2 = np.array([np.arange(5)] * 4)  # 5x4
     streamlines = [s1, s2]
 
-    s_color = colormap.line_colors(streamlines, cmap='boys_standard')
+    s_color = colormap.line_colors(streamlines, cmap="boys_standard")
     npt.assert_equal(s_color.shape, (2, 3))
 
 
 def test_create_colormap():
     value = np.arange(25)
     npt.assert_raises(ValueError, colormap.create_colormap, value.reshape((5, 5)))
-    npt.assert_raises(AttributeError, colormap.create_colormap, value, name='fake')
+    npt.assert_raises(AttributeError, colormap.create_colormap, value, name="fake")
     npt.assert_warns(
         PendingDeprecationWarning,
         colormap.create_colormap,
         value,
-        name='jet',
+        name="jet",
         auto=False,
     )
 
@@ -134,17 +134,16 @@ def test_lab2rgb():
 def test_hex_to_rgb():
     expected = np.array([1, 1, 1])
 
-    hexcode = '#FFFFFF'
+    hexcode = "#FFFFFF"
     res = colormap.hex_to_rgb(hexcode)
     npt.assert_array_almost_equal(res, expected)
 
-    hashed_hexcode = 'FFFFFF'
+    hashed_hexcode = "FFFFFF"
     res = colormap.hex_to_rgb(hashed_hexcode)
     npt.assert_array_almost_equal(res, expected)
 
 
 def test_color_converters():
-
     color = np.array([1, 1, 1])
     colors = np.array([[1, 1, 1], [0, 0, 0], [0.2, 0.3, 0.4]])
 
@@ -161,8 +160,8 @@ def test_color_converters():
         npt.assert_almost_equal(rgb_from_xyz_color, color)
 
     # testing rgb2lab and lab2rgb
-    illuminant = 'D65'
-    observer = '2'
+    illuminant = "D65"
+    observer = "2"
     expected_lab = np.array([31.57976662, -1.86550104, -17.84845331])
     lab_color = colormap.rgb2lab(color, illuminant, observer)
     rgb_color = colormap.lab2rgb(expected_lab, illuminant, observer)

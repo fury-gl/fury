@@ -1,4 +1,5 @@
 """Module for testing primitive."""
+
 import numpy as np
 import numpy.testing as npt
 import pytest
@@ -55,16 +56,16 @@ from fury.utils import (
     vtk_matrix_to_numpy,
 )
 
-dipy, have_dipy, _ = optional_package('dipy')
+dipy, have_dipy, _ = optional_package("dipy")
 
 
 def test_apply_affine_to_actor(interactive=False):
     text_act = actor.text_3d(
-        'ALIGN TOP RIGHT', justification='right', vertical_justification='top'
+        "ALIGN TOP RIGHT", justification="right", vertical_justification="top"
     )
 
     text_act2 = TextActor3D()
-    text_act2.SetInput('ALIGN TOP RIGHT')
+    text_act2.SetInput("ALIGN TOP RIGHT")
     text_act2.GetTextProperty().SetFontFamilyToArial()
     text_act2.GetTextProperty().SetFontSize(24)
     text_act2.SetScale((1.0 / 24.0 * 12,) * 3)
@@ -76,7 +77,7 @@ def test_apply_affine_to_actor(interactive=False):
 
     text_bounds = [0, 0, 0, 0]
     text_act2.GetBoundingBox(text_bounds)
-    initial_bounds = text_act2.GetBounds()
+    _ = text_act2.GetBounds()
 
     affine = np.eye(4)
     affine[:3, -1] += (-text_bounds[1], 0, 0)
@@ -163,7 +164,7 @@ def test_polydata_polygon(interactive=False):
             [1, 5, 7],
             [1, 7, 3],
         ],
-        dtype='i8',
+        dtype="i8",
     )
     my_vertices = np.array(
         [
@@ -251,60 +252,60 @@ def test_add_polydata_numeric_field():
     poly_field_data = my_polydata.GetFieldData()
     npt.assert_equal(poly_field_data.GetNumberOfArrays(), 0)
     bool_data = True
-    add_polydata_numeric_field(my_polydata, 'Test Bool', bool_data)
+    add_polydata_numeric_field(my_polydata, "Test Bool", bool_data)
     npt.assert_equal(poly_field_data.GetNumberOfArrays(), 1)
-    npt.assert_equal(poly_field_data.GetArray('Test Bool').GetValue(0), bool_data)
-    poly_field_data.RemoveArray('Test Bool')
+    npt.assert_equal(poly_field_data.GetArray("Test Bool").GetValue(0), bool_data)
+    poly_field_data.RemoveArray("Test Bool")
     npt.assert_equal(poly_field_data.GetNumberOfArrays(), 0)
     int_data = 1
-    add_polydata_numeric_field(my_polydata, 'Test Int', int_data)
+    add_polydata_numeric_field(my_polydata, "Test Int", int_data)
     npt.assert_equal(poly_field_data.GetNumberOfArrays(), 1)
-    npt.assert_equal(poly_field_data.GetArray('Test Int').GetValue(0), int_data)
-    poly_field_data.RemoveArray('Test Int')
+    npt.assert_equal(poly_field_data.GetArray("Test Int").GetValue(0), int_data)
+    poly_field_data.RemoveArray("Test Int")
     npt.assert_equal(poly_field_data.GetNumberOfArrays(), 0)
     float_data = 0.1
     add_polydata_numeric_field(
-        my_polydata, 'Test Float', float_data, array_type=VTK_FLOAT
+        my_polydata, "Test Float", float_data, array_type=VTK_FLOAT
     )
     npt.assert_equal(poly_field_data.GetNumberOfArrays(), 1)
     npt.assert_almost_equal(
-        poly_field_data.GetArray('Test Float').GetValue(0), float_data
+        poly_field_data.GetArray("Test Float").GetValue(0), float_data
     )
-    poly_field_data.RemoveArray('Test Float')
+    poly_field_data.RemoveArray("Test Float")
     npt.assert_equal(poly_field_data.GetNumberOfArrays(), 0)
     double_data = 0.1
     add_polydata_numeric_field(
-        my_polydata, 'Test Double', double_data, array_type=VTK_DOUBLE
+        my_polydata, "Test Double", double_data, array_type=VTK_DOUBLE
     )
     npt.assert_equal(poly_field_data.GetNumberOfArrays(), 1)
-    npt.assert_equal(poly_field_data.GetArray('Test Double').GetValue(0), double_data)
-    poly_field_data.RemoveArray('Test Double')
+    npt.assert_equal(poly_field_data.GetArray("Test Double").GetValue(0), double_data)
+    poly_field_data.RemoveArray("Test Double")
     npt.assert_equal(poly_field_data.GetNumberOfArrays(), 0)
     array_data = [-1, 0, 1]
-    add_polydata_numeric_field(my_polydata, 'Test Array', array_data)
+    add_polydata_numeric_field(my_polydata, "Test Array", array_data)
     npt.assert_equal(poly_field_data.GetNumberOfArrays(), 1)
     npt.assert_equal(
-        numpy_support.vtk_to_numpy(poly_field_data.GetArray('Test Array')), array_data
+        numpy_support.vtk_to_numpy(poly_field_data.GetArray("Test Array")), array_data
     )
-    poly_field_data.RemoveArray('Test Array')
+    poly_field_data.RemoveArray("Test Array")
     npt.assert_equal(poly_field_data.GetNumberOfArrays(), 0)
     ndarray_data = np.array([[-0.1, -0.1], [0, 0], [0.1, 0.1]])
     add_polydata_numeric_field(
-        my_polydata, 'Test NDArray', ndarray_data, array_type=VTK_FLOAT
+        my_polydata, "Test NDArray", ndarray_data, array_type=VTK_FLOAT
     )
     npt.assert_equal(poly_field_data.GetNumberOfArrays(), 1)
     npt.assert_almost_equal(
-        numpy_support.vtk_to_numpy(poly_field_data.GetArray('Test NDArray')),
+        numpy_support.vtk_to_numpy(poly_field_data.GetArray("Test NDArray")),
         ndarray_data,
     )
 
 
 def test_get_polydata_field():
     my_polydata = PolyData()
-    field_data = get_polydata_field(my_polydata, 'Test')
+    field_data = get_polydata_field(my_polydata, "Test")
     npt.assert_equal(field_data, None)
     data = 1
-    field_name = 'Test'
+    field_name = "Test"
     vtk_data = numpy_support.numpy_to_vtk(data)
     vtk_data.SetName(field_name)
     my_polydata.GetFieldData().AddArray(vtk_data)
@@ -331,20 +332,20 @@ def test_set_polydata_tangents():
     array = np.array([[0, 0, 0], [1, 1, 1]])
     set_polydata_tangents(my_polydata, array)
     npt.assert_equal(poly_point_data.GetNumberOfArrays(), 1)
-    npt.assert_equal(poly_point_data.HasArray('Tangents'), True)
+    npt.assert_equal(poly_point_data.HasArray("Tangents"), True)
 
 
 def test_asbytes():
-    text = [b'test', 'test']
+    text = [b"test", "test"]
 
     for t in text:
-        npt.assert_equal(utils.asbytes(t), b'test')
+        npt.assert_equal(utils.asbytes(t), b"test")
 
 
 def trilinear_interp_numpy(input_array, indices):
     """Evaluate the input_array data at the given indices."""
     if input_array.ndim <= 2 or input_array.ndim >= 5:
-        raise ValueError('Input array can only be 3d or 4d')
+        raise ValueError("Input array can only be 3d or 4d")
 
     x_indices = indices[:, 0]
     y_indices = indices[:, 1]
@@ -387,7 +388,6 @@ def trilinear_interp_numpy(input_array, indices):
 
 
 def test_trilinear_interp():
-
     A = np.zeros((5, 5, 5))
     A[2, 2, 2] = 1
 
@@ -406,7 +406,6 @@ def test_trilinear_interp():
 
 
 def test_vtk_matrix_to_numpy():
-
     A = np.array([[2.0, 0, 0, 0], [0, 2, 0, 0], [0, 0, 2, 0], [0, 0, 0, 1]])
 
     for shape in [3, 4]:
@@ -445,7 +444,6 @@ def test_numpy_to_vtk_image_data():
 
 
 def test_get_grid_cell_position():
-
     shapes = 10 * [(50, 50), (50, 50), (50, 50), (80, 50)]
 
     npt.assert_raises(ValueError, get_grid_cells_position, shapes=shapes, dim=(1, 1))
@@ -456,7 +454,6 @@ def test_get_grid_cell_position():
 
 
 def test_rotate(interactive=False):
-
     A = np.zeros((50, 50, 50))
 
     A[20:30, 20:30, 10:40] = 100
@@ -495,14 +492,12 @@ def test_rotate(interactive=False):
     if interactive:
         window.show(scene)
     else:
-
         arr = window.snapshot(scene, offscreen=True)
         red_sum_new = arr[..., 0].sum()
         npt.assert_equal(red_sum_new > red_sum, True)
 
 
 def test_triangle_order():
-
     test_vert = np.array([[-1, -2, 0], [1, -1, 0], [2, 1, 0], [3, 0, 0]])
 
     test_tri = np.array([[0, 1, 2], [2, 1, 0]])
@@ -515,7 +510,6 @@ def test_triangle_order():
 
 
 def test_change_vertices_order():
-
     triangles = np.array([[1, 2, 3], [3, 2, 1], [5, 4, 3], [3, 4, 5]])
 
     npt.assert_equal(triangles[0], utils.change_vertices_order(triangles[1]))
@@ -523,7 +517,6 @@ def test_change_vertices_order():
 
 
 def test_winding_order():
-
     vertices = np.array([[0, 0, 0], [1, 2, 0], [3, 0, 0], [2, 0, 0]])
 
     triangles = np.array([[0, 1, 3], [2, 1, 0]])
@@ -534,7 +527,6 @@ def test_winding_order():
 
 
 def test_vertices_from_actor(interactive=False):
-
     expected = np.array(
         [
             [1.5, -0.5, 0.0],
@@ -578,15 +570,15 @@ def test_vertices_from_actor(interactive=False):
     # test colors_from_actor:
     l_colors = utils.colors_from_actor(actr)
     l_colors_vtk = utils.colors_from_actor(actr, as_vtk=True)
-    l_colors_none = utils.colors_from_actor(actr, array_name='col')
+    l_colors_none = utils.colors_from_actor(actr, array_name="col")
 
     npt.assert_equal(l_colors_none, None)
     npt.assert_equal(isinstance(l_colors_vtk, UnsignedCharArray), True)
     npt.assert_equal(np.unique(l_colors, axis=0).shape, colors.shape)
 
-    l_array = utils.array_from_actor(actr, 'colors')
-    l_array_vtk = utils.array_from_actor(actr, 'colors', as_vtk=True)
-    l_array_none = utils.array_from_actor(actr, 'col')
+    l_array = utils.array_from_actor(actr, "colors")
+    l_array_vtk = utils.array_from_actor(actr, "colors", as_vtk=True)
+    l_array_none = utils.array_from_actor(actr, "col")
 
     npt.assert_array_equal(l_array, l_colors)
     npt.assert_equal(l_array_none, None)
@@ -608,11 +600,11 @@ def test_normals_from_actor():
 def test_normals_to_actor():
     my_actor = actor.square(np.array([[0, 0, 0]]))
     poly_point_data = my_actor.GetMapper().GetInput().GetPointData()
-    npt.assert_equal(poly_point_data.HasArray('Normals'), False)
+    npt.assert_equal(poly_point_data.HasArray("Normals"), False)
     array = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2], [3, 3, 3]])
     normals_to_actor(my_actor, array)
-    npt.assert_equal(poly_point_data.HasArray('Normals'), True)
-    normals = numpy_support.vtk_to_numpy(poly_point_data.GetArray('Normals'))
+    npt.assert_equal(poly_point_data.HasArray("Normals"), True)
+    normals = numpy_support.vtk_to_numpy(poly_point_data.GetArray("Normals"))
     npt.assert_array_equal(normals, array)
 
 
@@ -639,11 +631,11 @@ def test_tangents_from_direction_of_anisotropy():
 def test_tangents_to_actor():
     my_actor = actor.square(np.array([[0, 0, 0]]))
     poly_point_data = my_actor.GetMapper().GetInput().GetPointData()
-    npt.assert_equal(poly_point_data.HasArray('Tangents'), False)
+    npt.assert_equal(poly_point_data.HasArray("Tangents"), False)
     array = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2], [3, 3, 3]])
     tangents_to_actor(my_actor, array)
-    npt.assert_equal(poly_point_data.HasArray('Tangents'), True)
-    tangents = numpy_support.vtk_to_numpy(poly_point_data.GetArray('Tangents'))
+    npt.assert_equal(poly_point_data.HasArray("Tangents"), True)
+    tangents = numpy_support.vtk_to_numpy(poly_point_data.GetArray("Tangents"))
     npt.assert_array_equal(tangents, array)
 
 
@@ -877,7 +869,7 @@ def test_color_check():
 def test_is_ui():
     panel = Panel2D(position=(0, 0), size=(100, 100))
     valid_ui = DummyUI(act=[])
-    invalid_ui = DummyActor(act='act')
+    invalid_ui = DummyActor(act="act")
 
     npt.assert_equal(True, is_ui(panel))
     npt.assert_equal(True, is_ui(valid_ui))
@@ -894,7 +886,7 @@ def test_empty_array_to_polydata():
     npt.assert_raises(ValueError, utils.lines_to_vtk_polydata, lines)
 
 
-@pytest.mark.skipif(not have_dipy, reason='Requires DIPY')
+@pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
 def test_empty_array_sequence_to_polydata():
     from dipy.tracking.streamline import Streamlines
 
@@ -906,13 +898,13 @@ def test_set_polydata_primitives_count():
     polydata = PolyData()
 
     set_polydata_primitives_count(polydata, 1)
-    prim_count = get_polydata_field(polydata, 'prim_count')[0]
+    prim_count = get_polydata_field(polydata, "prim_count")[0]
     npt.assert_equal(prim_count, 1)
 
 
 def test_get_polydata_primitives_count():
     polydata = PolyData()
-    add_polydata_numeric_field(polydata, 'prim_count', 1, array_type=VTK_INT)
+    add_polydata_numeric_field(polydata, "prim_count", 1, array_type=VTK_INT)
 
     prim_count = get_polydata_primitives_count(polydata)
     npt.assert_equal(prim_count, 1)
@@ -922,14 +914,14 @@ def test_primitives_count_to_actor():
     act = actor.axes()
     primitives_count_to_actor(act, 1)
     polydata = act.GetMapper().GetInput()
-    prim_count = get_polydata_field(polydata, 'prim_count')[0]
+    prim_count = get_polydata_field(polydata, "prim_count")[0]
     npt.assert_equal(prim_count, 1)
 
 
 def test_primitives_count_from_actor():
     act = actor.axes()
     polydata = act.GetMapper().GetInput()
-    add_polydata_numeric_field(polydata, 'prim_count', 1, array_type=VTK_INT)
+    add_polydata_numeric_field(polydata, "prim_count", 1, array_type=VTK_INT)
     prim_count = primitives_count_from_actor(act)
     npt.assert_equal(prim_count, 1)
 

@@ -4,6 +4,7 @@ Exporting scene as a glTF file
 ==============================
 In this tutorial, we will show how to create a glTF file for a scene.
 """
+
 import numpy as np
 
 from fury import actor, gltf, window
@@ -30,8 +31,8 @@ scene.add(cube)
 sphere = actor.sphere(np.add(centers, np.array([0, 2, 0])), colors=colors)
 scene.add(sphere)
 
-fetch_gltf('BoxTextured', 'glTF')
-filename = read_viz_gltf('BoxTextured')
+fetch_gltf("BoxTextured", "glTF")
+filename = read_viz_gltf("BoxTextured")
 gltf_obj = gltf.glTF(filename)
 box_actor = gltf_obj.actors()
 scene.add(box_actor[0])
@@ -46,12 +47,12 @@ scene.set_camera(
 ##############################################################################
 # Exporting scene as a glTF file
 
-gltf.export_scene(scene, filename='viz_gltf_export.gltf')
+gltf.export_scene(scene, filename="viz_gltf_export.gltf")
 
 ##############################################################################
 # Reading the newly created glTF file and get actors.
 
-gltf_obj = gltf.glTF('viz_gltf_export.gltf')
+gltf_obj = gltf.glTF("viz_gltf_export.gltf")
 actors = gltf_obj.actors()
 
 ##############################################################################
@@ -64,4 +65,4 @@ interactive = False
 if interactive:
     window.show(scene, size=(1280, 720))
 
-window.record(scene, out_path='viz_gltf_export.png', size=(1280, 720))
+window.record(scene, out_path="viz_gltf_export.png", size=(1280, 720))

@@ -85,9 +85,9 @@ class VideoPlayer:
 
 # Create VideoPlayer Object and run it
 video_url = (
-    'http://commondatastorage.googleapis.com/'
-    + 'gtv-videos-bucket/sample/BigBuckBunny.mp4'
+    "http://commondatastorage.googleapis.com/"
+    + "gtv-videos-bucket/sample/BigBuckBunny.mp4"
 )
 vp = VideoPlayer(video_url)
 vp.run()
-window.record(vp.show_manager.scene, out_path='viz_play_video.png', size=(600, 600))
+window.record(vp.show_manager.scene, out_path="viz_play_video.png", size=(600, 600))

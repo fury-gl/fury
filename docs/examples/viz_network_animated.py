@@ -255,4 +255,4 @@ showm.add_timer_callback(True, 16, timer_callback)
 
 showm.start()
 
-window.record(showm.scene, size=(900, 768), out_path='viz_animated_networks.png')
+window.record(showm.scene, size=(900, 768), out_path="viz_animated_networks.png")

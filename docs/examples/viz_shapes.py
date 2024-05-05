@@ -39,7 +39,7 @@ ring = ui.Disk2D(outer_radius=50, inner_radius=45, center=(500, 600), color=(0, 
 # manager.
 
 current_size = (800, 800)
-show_manager = window.ShowManager(size=current_size, title='FURY Shapes Example')
+show_manager = window.ShowManager(size=current_size, title="FURY Shapes Example")
 
 show_manager.scene.add(rect)
 show_manager.scene.add(disk)
@@ -50,4 +50,4 @@ interactive = False
 if interactive:
     show_manager.start()
 
-window.record(show_manager.scene, size=current_size, out_path='viz_shapes.png')
+window.record(show_manager.scene, size=current_size, out_path="viz_shapes.png")

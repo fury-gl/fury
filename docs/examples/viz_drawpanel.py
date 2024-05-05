@@ -8,6 +8,7 @@ create Various shapes and transform them.
 
 First, some imports.
 """
+
 from fury import ui, window
 from fury.data import fetch_viz_new_icons
 
@@ -28,7 +29,7 @@ drawing_canvas = ui.DrawPanel(size=(560, 560), position=(40, 10))
 # Now we add DrawPanel to the scene.
 
 current_size = (650, 650)
-showm = window.ShowManager(size=current_size, title='DrawPanel UI Example')
+showm = window.ShowManager(size=current_size, title="DrawPanel UI Example")
 
 showm.scene.add(drawing_canvas)
 
@@ -38,8 +39,8 @@ if interactive:
     showm.start()
 else:
     # If the UI isn't interactive, then adding a circle to the canvas
-    drawing_canvas.current_mode = 'circle'
-    drawing_canvas.draw_shape(shape_type='circle', current_position=(275, 275))
+    drawing_canvas.current_mode = "circle"
+    drawing_canvas.draw_shape(shape_type="circle", current_position=(275, 275))
     drawing_canvas.shape_list[-1].resize((50, 50))
 
-    window.record(showm.scene, size=current_size, out_path='viz_drawpanel.png')
+    window.record(showm.scene, size=current_size, out_path="viz_drawpanel.png")

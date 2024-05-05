@@ -6,7 +6,6 @@ import numpy.testing as npt
 from fury.animation import Animation, Timeline
 import fury.testing as ft
 from fury.ui import PlaybackPanel
-from fury.window import Scene, ShowManager
 
 
 def assert_not_equal(x, y):

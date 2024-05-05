@@ -24,7 +24,7 @@ from fury.utils import fix_winding_order
 fetch_viz_dmri()
 fetch_viz_icons()
 
-fodf_img = nib.load(read_viz_dmri('fodf.nii.gz'))
+fodf_img = nib.load(read_viz_dmri("fodf.nii.gz"))
 sh = fodf_img.get_fdata()
 affine = fodf_img.affine
 grid_shape = sh.shape[:-1]
@@ -33,7 +33,7 @@ grid_shape = sh.shape[:-1]
 # We then define a low resolution sphere used to visualize SH coefficients
 # as spherical functions (SF) as well as a matrix `B_low` to project SH
 # onto the sphere.
-sphere_low = get_sphere('repulsion100')
+sphere_low = get_sphere("repulsion100")
 B_low = sh_to_sf_matrix(sphere_low, 8, return_inv=False)
 
 ###############################################################################
@@ -111,7 +111,7 @@ line_slider_z = ui.LineSlider2D(
     min_value=0,
     max_value=grid_shape[2] - 1,
     initial_value=grid_shape[2] / 2,
-    text_template='{value:.0f}',
+    text_template="{value:.0f}",
     length=140,
 )
 
@@ -119,7 +119,7 @@ line_slider_y = ui.LineSlider2D(
     min_value=0,
     max_value=grid_shape[1] - 1,
     initial_value=grid_shape[1] / 2,
-    text_template='{value:.0f}',
+    text_template="{value:.0f}",
     length=140,
 )
 
@@ -127,14 +127,14 @@ line_slider_x = ui.LineSlider2D(
     min_value=0,
     max_value=grid_shape[0] - 1,
     initial_value=grid_shape[0] / 2,
-    text_template='{value:.0f}',
+    text_template="{value:.0f}",
     length=140,
 )
 
 ###############################################################################
 # We also define a high resolution sphere to demonstrate the capability to
 # dynamically change the sphere used for SH to SF projection.
-sphere_high = get_sphere('symmetric362')
+sphere_high = get_sphere("symmetric362")
 
 # We fix the order of the faces' three vertices to a clockwise winding. This
 # ensures all faces have a normal going away from the center of the sphere.
@@ -144,8 +144,8 @@ B_high = sh_to_sf_matrix(sphere_high, 8, return_inv=False)
 ###############################################################################
 # We add a combobox for choosing the sphere resolution during execution.
 sphere_dict = {
-    'Low resolution': (sphere_low, B_low),
-    'High resolution': (sphere_high, B_high),
+    "Low resolution": (sphere_low, B_low),
+    "High resolution": (sphere_high, B_high),
 }
 combobox = ui.ComboBox2D(items=list(sphere_dict))
 scene.add(combobox)
@@ -161,12 +161,12 @@ def change_slice_z(slider):
 
 def change_slice_y(slider):
     i = int(np.round(slider.value))
-    odf_actor_y.slice_along_axis(i, 'yaxis')
+    odf_actor_y.slice_along_axis(i, "yaxis")
 
 
 def change_slice_x(slider):
     i = int(np.round(slider.value))
-    odf_actor_x.slice_along_axis(i, 'xaxis')
+    odf_actor_x.slice_along_axis(i, "xaxis")
 
 
 def change_sphere(combobox):
@@ -189,8 +189,8 @@ def build_label(text):
     label = ui.TextBlock2D()
     label.message = text
     label.font_size = 18
-    label.font_family = 'Arial'
-    label.justification = 'left'
+    label.font_family = "Arial"
+    label.justification = "left"
     label.bold = False
     label.italic = False
     label.shadow = False
@@ -200,11 +200,11 @@ def build_label(text):
     return label
 
 
-line_slider_label_z = build_label(text='Z Slice')
-line_slider_label_y = build_label(text='Y Slice')
-line_slider_label_x = build_label(text='X Slice')
+line_slider_label_z = build_label(text="Z Slice")
+line_slider_label_y = build_label(text="Y Slice")
+line_slider_label_x = build_label(text="X Slice")
 
-panel = ui.Panel2D(size=(300, 200), color=(1, 1, 1), opacity=0.1, align='right')
+panel = ui.Panel2D(size=(300, 200), color=(1, 1, 1), opacity=0.1, align="right")
 panel.center = (1030, 120)
 
 panel.add_element(line_slider_label_x, (0.1, 0.75))
@@ -246,7 +246,7 @@ if interactive:
     show_m.start()
 else:
     window.record(
-        scene, out_path='odf_slicer_3D.png', size=(1200, 900), reset_camera=False
+        scene, out_path="odf_slicer_3D.png", size=(1200, 900), reset_camera=False
     )
 
 del show_m

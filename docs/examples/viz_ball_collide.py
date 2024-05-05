@@ -9,6 +9,7 @@ ball and also display a message by confirming the collision.
 
 First some imports.
 """
+
 import itertools
 
 import numpy as np
@@ -86,7 +87,7 @@ def sync_actor(actor, multibody):
 
 
 apply_force = True
-tb = ui.TextBlock2D(position=(0, 600), font_size=30, color=(1, 0.5, 0), text='')
+tb = ui.TextBlock2D(position=(0, 600), font_size=30, color=(1, 0.5, 0), text="")
 scene.add(tb)
 scene.set_camera(
     position=(0.30, -18.78, 0.89), focal_point=(0.15, 0.25, 0.40), view_up=(0, 0, 1.00)
@@ -122,7 +123,7 @@ def timer_callback(_obj, _event):
     # Get various collision information using `p.getContactPoints`.
     contact = p.getContactPoints(red_ball, blue_ball, -1, -1)
     if len(contact) != 0:
-        tb.message = 'Collision!!'
+        tb.message = "Collision!!"
 
     p.stepSimulation()
 
@@ -137,4 +138,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, size=(900, 700), out_path='viz_ball_collide.png')
+window.record(scene, size=(900, 700), out_path="viz_ball_collide.png")

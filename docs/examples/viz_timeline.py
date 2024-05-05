@@ -16,7 +16,6 @@ animations.
 # ``Timeline`` has playback methods such as ``play``, ``pause``, ``stop``, ...
 # which can be used to control the animation.
 
-
 import numpy as np
 
 from fury import actor, window
@@ -89,4 +88,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_keyframe_animation_timeline.png', size=(900, 768))
+window.record(scene, out_path="viz_keyframe_animation_timeline.png", size=(900, 768))

@@ -145,10 +145,10 @@ frag_impl = """
 def generate_cube_with_effect():
     cube = actor.cube(np.array([[0, 0, 0]]))
     shader_to_actor(
-        cube, 'vertex', impl_code=vertex_impl, decl_code=vertex_dec, block='valuepass'
+        cube, "vertex", impl_code=vertex_impl, decl_code=vertex_dec, block="valuepass"
     )
     shader_to_actor(
-        cube, 'fragment', impl_code=frag_impl, decl_code=frag_dec, block='light'
+        cube, "fragment", impl_code=frag_impl, decl_code=frag_dec, block="light"
     )
     return cube
 
@@ -210,7 +210,7 @@ def test_add_shader_callback():
 
         if program is not None:
             try:
-                program.SetUniformf('time', timer.idx)
+                program.SetUniformf("time", timer.idx)
             except ValueError:
                 pass
 
@@ -234,8 +234,8 @@ def test_add_shader_callback():
 
     id_observer = add_shader_callback(cone_actor, callbackLow, 0)
 
-    with pytest.raises(Exception):
-        add_shader_callback(cone_actor, callbackLow, priority='str')
+    with pytest.raises(Exception):  # noqa: B017
+        add_shader_callback(cone_actor, callbackLow, priority="str")
 
     mapper = cone_actor.GetMapper()
     mapper.RemoveObserver(id_observer)
@@ -243,7 +243,7 @@ def test_add_shader_callback():
     scene = window.Scene()
     scene.add(cone_actor)
 
-    arr1 = window.snapshot(scene, size=(200, 200))
+    window.snapshot(scene, size=(200, 200))
     assert len(test_values) == 0
 
     test_values = []
@@ -264,7 +264,7 @@ def test_add_shader_callback():
     id_mean = add_shader_callback(cone_actor, callbackMean, 500)
 
     # check the priority of each call
-    arr2 = window.snapshot(scene, size=(200, 200))
+    window.snapshot(scene, size=(200, 200))
     assert (
         np.abs([test_values[0] - 999, test_values[1] - 500, test_values[2] - 0]).sum()
         == 0
@@ -274,7 +274,7 @@ def test_add_shader_callback():
     mapper.RemoveObserver(id_mean)
     test_values = []
 
-    arr3 = window.snapshot(scene, size=(200, 200))
+    window.snapshot(scene, size=(200, 200))
     assert np.abs([test_values[0] - 999, test_values[1] - 0]).sum() == 0
 
 
@@ -282,20 +282,20 @@ def test_attribute_to_actor():
     cube = generate_cube_with_effect()
     test_arr = np.arange(24).reshape((8, 3))
 
-    attribute_to_actor(cube, test_arr, 'test_arr')
+    attribute_to_actor(cube, test_arr, "test_arr")
 
-    arr = cube.GetMapper().GetInput().GetPointData().GetArray('test_arr')
+    arr = cube.GetMapper().GetInput().GetPointData().GetArray("test_arr")
     npt.assert_array_equal(test_arr, numpy_support.vtk_to_numpy(arr))
 
 
 def test_compose_shader():
-    str_test1 = 'Test1'
-    str_test2 = 'Test2'
+    str_test1 = "Test1"
+    str_test2 = "Test2"
     list_str1 = [str_test1, None]
     list_str2 = [str_test1, str_test2]
     # Test empty parameter
     code = compose_shader(None)
-    npt.assert_equal(code, '')
+    npt.assert_equal(code, "")
     # Test invalid list
     npt.assert_raises(IOError, compose_shader, list_str1)
     # Test str code
@@ -303,13 +303,13 @@ def test_compose_shader():
     npt.assert_equal(code, str_test1)
     # Test list of str code
     code = compose_shader(list_str2)
-    npt.assert_equal(code, '\n' + '\n'.join(list_str2))
+    npt.assert_equal(code, "\n" + "\n".join(list_str2))
 
 
 def test_import_fury_shader():
-    str_test1 = 'Test1'
-    fname_test1 = 'test1.frag'
-    fname_test2 = 'test2.txt'
+    str_test1 = "Test1"
+    fname_test1 = "test1.frag"
+    fname_test2 = "test2.txt"
     pname_test1 = os.path.join(SHADERS_DIR, fname_test1)
 
     # Test invalid file extension
@@ -319,7 +319,7 @@ def test_import_fury_shader():
     npt.assert_raises(IOError, import_fury_shader, pname_test1)
 
     # Test valid file
-    with open(pname_test1, 'w') as f:
+    with open(pname_test1, "w") as f:
         f.write(str_test1)
     code = import_fury_shader(fname_test1)
     npt.assert_equal(code, str_test1)
@@ -328,16 +328,16 @@ def test_import_fury_shader():
 
 
 def test_load_shader():
-    fname_test = 'test.text'
+    fname_test = "test.text"
 
     # Test invalid file extension
     npt.assert_raises(IOError, load_shader, fname_test)
 
     with InTemporaryDirectory() as tdir:
-        fname_test = 'test.frag'
+        fname_test = "test.frag"
         fname_test = os.path.join(tdir, fname_test)
-        str_test = 'Test1'
-        test_file = open(fname_test, 'w')
+        str_test = "Test1"
+        test_file = open(fname_test, "w")
         test_file.write(str_test)
         test_file.close()
 
@@ -345,10 +345,10 @@ def test_load_shader():
 
 
 def test_load():
-    dummy_file_name = 'dummy.txt'
-    dummy_file_contents = 'This is some dummy text.'
+    dummy_file_name = "dummy.txt"
+    dummy_file_contents = "This is some dummy text."
 
-    dummy_file = open(os.path.join(SHADERS_DIR, dummy_file_name), 'w')
+    dummy_file = open(os.path.join(SHADERS_DIR, dummy_file_name), "w")
     dummy_file.write(dummy_file_contents)
     dummy_file.close()
 
@@ -370,7 +370,7 @@ def test_replace_shader_in_actor(interactive=False):
     actual = ss[160, 40, :]
     npt.assert_array_equal(actual, [0, 0, 0])
     scene.clear()
-    replace_shader_in_actor(test_actor, 'geometry', geometry_code)
+    replace_shader_in_actor(test_actor, "geometry", geometry_code)
     scene.add(test_actor)
     if interactive:
         window.show(scene)
@@ -397,9 +397,9 @@ def test_shader_to_actor(interactive=False):
     npt.assert_equal(report.objects, 1)
 
     # test errors
-    npt.assert_raises(ValueError, shader_to_actor, cube, 'error', vertex_impl)
-    npt.assert_raises(ValueError, shader_to_actor, cube, 'geometry', vertex_impl)
+    npt.assert_raises(ValueError, shader_to_actor, cube, "error", vertex_impl)
+    npt.assert_raises(ValueError, shader_to_actor, cube, "geometry", vertex_impl)
     npt.assert_raises(
-        ValueError, shader_to_actor, cube, 'vertex', vertex_impl, block='error'
+        ValueError, shader_to_actor, cube, "vertex", vertex_impl, block="error"
     )
-    npt.assert_raises(ValueError, replace_shader_in_actor, cube, 'error', vertex_impl)
+    npt.assert_raises(ValueError, replace_shader_in_actor, cube, "error", vertex_impl)

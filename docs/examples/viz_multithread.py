@@ -44,16 +44,16 @@ scene.ResetCamera()
 
 # Create a function to print a counter to the console
 def print_counter():
-    print('')
+    print("")
     for i in range(100):
-        print('\rCounter: %d' % i, end='')
+        print("\rCounter: %d" % i, end="")
         message = "Let's count up to 100 and exit :" + str(i + 1)
         tb.message = message
         time.sleep(0.05)
         if showm.is_done():
             break
     showm.exit()
-    print('')
+    print("")
 
 
 # Create a function to rotate the camera

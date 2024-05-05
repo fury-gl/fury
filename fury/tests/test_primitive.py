@@ -45,7 +45,7 @@ def test_vertices_primitives_octagonalprism():
     # Testing the default vertices of the primitive octagonal prism.
     vertices, _ = fp.prim_octagonalprism()
     shape = (16, 3)
-    two = (1 + float('{:.7f}'.format(math.sqrt(2)))) / 4
+    two = (1 + float("{:.7f}".format(math.sqrt(2)))) / 4
 
     npt.assert_equal(vertices.shape, shape)
     npt.assert_equal(np.mean(vertices), 0)
@@ -56,12 +56,8 @@ def test_vertices_primitives_octagonalprism():
 def test_vertices_primitives_pentagonalprism():
     # Testing the default vertices of the primitive pentagonal prism.
     vertices, _ = fp.prim_pentagonalprism()
-    lower_face = vertices[:, 0:2][
-        0:5,
-    ]
-    upper_face = vertices[:, 0:2][
-        5:10,
-    ]
+    lower_face = vertices[:, 0:2][0:5,]
+    upper_face = vertices[:, 0:2][5:10,]
     centroid_upper = np.mean(upper_face, 0)
     centroid_lower = np.mean(lower_face, 0)
     shape = (10, 3)
@@ -78,7 +74,7 @@ def test_vertices_primitives_triangularprism():
     # Testing the default vertices of the primitive triangular prism.
     vertices, _ = fp.prim_triangularprism()
     shape = (6, 3)
-    three = float('{:.7f}'.format(math.sqrt(3)))
+    three = float("{:.7f}".format(math.sqrt(3)))
     npt.assert_equal(vertices.shape, shape)
     npt.assert_equal(np.mean(vertices), 0)
     npt.assert_equal(vertices.min(), -1 / three)
@@ -103,12 +99,12 @@ def test_triangles_primitives():
 
 def test_spheres_primitives():
     l_primitives = [
-        ('symmetric362', 362, 720),
-        ('symmetric642', 642, 1280),
-        ('symmetric724', 724, 1444),
-        ('repulsion724', 724, 1444),
-        ('repulsion100', 100, 196),
-        ('repulsion200', 200, 396),
+        ("symmetric362", 362, 720),
+        ("symmetric642", 642, 1280),
+        ("symmetric724", 724, 1444),
+        ("repulsion724", 724, 1444),
+        ("repulsion100", 100, 196),
+        ("repulsion200", 200, 396),
     ]
 
     for name, nb_verts, nb_triangles in l_primitives:
@@ -120,7 +116,7 @@ def test_spheres_primitives():
             list(set(np.concatenate(faces, axis=None))), list(range(len(verts)))
         )
 
-    npt.assert_raises(ValueError, fp.prim_sphere, 'sym362')
+    npt.assert_raises(ValueError, fp.prim_sphere, "sym362")
 
     l_primitives = [
         (10, 10, 82, 160),
@@ -142,7 +138,7 @@ def test_spheres_primitives():
 def test_superquadric_primitives():
     # test default, should be like a sphere 362
     sq_verts, sq_faces = fp.prim_superquadric()
-    s_verts, s_faces = fp.prim_sphere('symmetric362')
+    s_verts, s_faces = fp.prim_sphere("symmetric362")
 
     npt.assert_equal(sq_verts.shape, s_verts.shape)
     npt.assert_equal(sq_faces.shape, s_faces.shape)
@@ -266,7 +262,7 @@ def test_repeat_primitive_function():
     colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]) * 255
     phi_theta = np.array([[1, 1], [1, 2], [2, 1]])
 
-    res = fp.repeat_primitive_function(
+    _ = fp.repeat_primitive_function(
         func=fp.prim_superquadric,
         centers=centers,
         func_args=phi_theta,

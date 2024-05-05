@@ -24,8 +24,7 @@ from fury import actor, colormap, ui, utils, window
 # the z coordinate is a function of time.
 
 
-def update_surface(x, y, equation, cmap_name='viridis'):
-
+def update_surface(x, y, equation, cmap_name="viridis"):
     # z is the function F i.e. F(x, y, t)
     z = eval(equation)
     xyz = np.vstack([x, y, z]).T
@@ -100,17 +99,17 @@ def create_surface(x, y, equation, colormap_name):
 
 ###############################################################################
 # Equations to be plotted
-eq1 = 'np.abs(np.sin(x*2*np.pi*np.cos(time/2)))**1*np.cos(time/2)*\
-      np.abs(np.cos(y*2*np.pi*np.sin(time/2)))**1*np.sin(time/2)*1.2'
-eq2 = '((x**2 - y**2)/(x**2 + y**2))**(2)*np.cos(6*np.pi*x*y-1.8*time)*0.24'
-eq3 = '(np.sin(np.pi*2*x-np.sin(1.8*time))*np.cos(np.pi*2*y+np.cos(1.8*time)))\
-      *0.48'
-eq4 = 'np.cos(24*np.sqrt(x**2 + y**2) - 2*time)*0.18'
+eq1 = "np.abs(np.sin(x*2*np.pi*np.cos(time/2)))**1*np.cos(time/2)*\
+      np.abs(np.cos(y*2*np.pi*np.sin(time/2)))**1*np.sin(time/2)*1.2"
+eq2 = "((x**2 - y**2)/(x**2 + y**2))**(2)*np.cos(6*np.pi*x*y-1.8*time)*0.24"
+eq3 = "(np.sin(np.pi*2*x-np.sin(1.8*time))*np.cos(np.pi*2*y+np.cos(1.8*time)))\
+      *0.48"
+eq4 = "np.cos(24*np.sqrt(x**2 + y**2) - 2*time)*0.18"
 equations = [eq1, eq2, eq3, eq4]
 
 ###############################################################################
 # List of colormaps to be used for the various functions.
-cmap_names = ['hot', 'plasma', 'viridis', 'ocean']
+cmap_names = ["hot", "plasma", "viridis", "ocean"]
 
 ###############################################################################
 # Creating a list of surfaces.
@@ -137,7 +136,7 @@ showm = window.ShowManager(scene, size=(600, 600))
 text = []
 for i in range(4):
     t_actor = actor.vector_text(
-        'Function ' + str(i + 1), pos=(0, 0, 0), scale=(0.17, 0.2, 0.2)
+        "Function " + str(i + 1), pos=(0, 0, 0), scale=(0.17, 0.2, 0.2)
     )
     text.append(t_actor)
 
@@ -159,7 +158,7 @@ showm.scene.add(actor.axes())
 ###############################################################################
 # Initializing text box to print the title of the animation
 tb = ui.TextBlock2D(bold=True, position=(200, 60))
-tb.message = 'Animated 2D functions'
+tb.message = "Animated 2D functions"
 scene.add(tb)
 
 ###############################################################################
@@ -207,4 +206,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(showm.scene, size=(600, 600), out_path='viz_animated_surfaces.png')
+window.record(showm.scene, size=(600, 600), out_path="viz_animated_surfaces.png")

@@ -51,9 +51,9 @@ class Widget:
         showm,
         ms_stream=33,
         ms_interaction=33,
-        host='localhost',
+        host="localhost",
         port=None,
-        encoding='mjpeg',
+        encoding="mjpeg",
         ms_jpeg=33,
         queue_size=20,
     ):
@@ -80,8 +80,8 @@ class Widget:
         """
         if not PY_VERSION_8:
             raise ImportError(
-                'Python 3.8 or greater is required to use the\
-                widget class'
+                "Python 3.8 or greater is required to use the\
+                widget class"
             )
         self.showm = showm
         self.window_size = self.showm.size
@@ -113,21 +113,21 @@ class Widget:
         command_string : str
 
         """
-        s = 'from fury.stream.server import web_server;'
-        s += 'web_server(image_buffer_names='
-        s += f'{self.stream.img_manager.image_buffer_names}'
+        s = "from fury.stream.server import web_server;"
+        s += "web_server(image_buffer_names="
+        s += f"{self.stream.img_manager.image_buffer_names}"
         s += f",info_buffer_name='{self.stream.img_manager.info_buffer_name}',"
         s += "queue_head_tail_buffer_name='"
         s += f"{self.stream_interaction.circular_queue.head_tail_buffer_name}'"
         s += ",queue_buffer_name='"
         s += f"{self.stream_interaction.circular_queue.buffer.buffer_name}'"
-        if self.encoding == 'mjpeg':
-            s += ',provides_mjpeg=True'
-            s += f',ms_jpeg={self.ms_jpeg}'
-            s += ',provides_webrtc=False'
+        if self.encoding == "mjpeg":
+            s += ",provides_mjpeg=True"
+            s += f",ms_jpeg={self.ms_jpeg}"
+            s += ",provides_webrtc=False"
         s += f",port={self._port},host='{self._host}',"
-        s += 'avoid_unlink_shared_mem=True'
-        s += ')'
+        s += "avoid_unlink_shared_mem=True"
+        s += ")"
         return s
 
     def _start_fury_client(self, use_asyncio=False):
@@ -156,8 +156,7 @@ class Widget:
             use_raw_array=False,
         )
 
-        self.stream_interaction.start(ms=self.ms_interaction,
-                                      use_asyncio=use_asyncio)
+        self.stream_interaction.start(ms=self.ms_interaction, use_asyncio=use_asyncio)
         self.stream.start(self.ms_stream, use_asyncio=use_asyncio)
         self._server_started = True
         self.pserver = None
@@ -177,7 +176,7 @@ class Widget:
             return False
 
         if self._server_started:
-            args = [sys.executable, '-c', self.command_string]
+            args = [sys.executable, "-c", self.command_string]
             self.pserver = subprocess.Popen(
                 args,
                 # f'python -c "{self.command_string}"',
@@ -190,14 +189,14 @@ class Widget:
     @property
     def url(self):
         """Return the url to access the server"""
-        url = f'http://{self._host}:{self._port}'
-        url += f'?iframe=1&encoding={self.encoding}'
+        url = f"http://{self._host}:{self._port}"
+        url += f"?iframe=1&encoding={self.encoding}"
         return url
 
     def return_iframe(self, height=200):
         """Return the jupyter div iframe used to show the stream"""
         if IPYTHON_AVAILABLE:
-            display(IFrame(self.url, '100%', f'{int(height)}px'))
+            display(IFrame(self.url, "100%", f"{int(height)}px"))
 
     def start(self, use_asyncio=False):
         """Start the fury client and the interaction client and return the url
@@ -214,7 +213,7 @@ class Widget:
         if not ok:
             self.stop()
             return False
-        print(f'url: {self.url}')
+        print(f"url: {self.url}")
 
     def display(self, height=150):
         """Start the server and display the url in an iframe"""
