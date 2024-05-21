@@ -145,7 +145,7 @@ def test_timer():
 
     sphere_actor = actor.sphere(centers=xyzr[:, :3], colors=colors[:], radii=xyzr[:, 3])
 
-    vertices, faces = prim_sphere("repulsion724")
+    vertices, faces = prim_sphere(name="repulsion724")
 
     sphere_actor2 = actor.sphere(
         centers=xyzr2[:, :3],

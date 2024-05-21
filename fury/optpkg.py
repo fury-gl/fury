@@ -2,6 +2,8 @@
 
 import importlib
 
+from fury.decorators import keyword_only
+
 try:
     import pytest
 except ImportError:
@@ -46,7 +48,7 @@ class TripWire:
     ... except ImportError:
     ...    silly_module_name = TripWire('We do not have silly_module_name')
     >>> msg = 'with silly string'
-    >>> silly_module_name.do_silly_thing(msg) #doctest: +IGNORE_EXCEPTION_DETAIL
+    >>> silly_module_name.do_silly_thing(msg) #doctest: +IGNORE_EXCEPTION_DETAIL # noqa
     Traceback (most recent call last):
         ...
     TripWireError: We do not have silly_module_name
@@ -65,7 +67,8 @@ class TripWire:
         raise TripWireError(self._msg)
 
 
-def optional_package(name, trip_msg=None):
+@keyword_only
+def optional_package(name, *, trip_msg=None):
     """Return package-like thing and module setup for package `name`.
 
     Parameters

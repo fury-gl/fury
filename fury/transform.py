@@ -3,6 +3,8 @@ import math
 import numpy as np
 from scipy.spatial.transform import Rotation as Rot  # type: ignore
 
+from fury.decorators import keyword_only
+
 # axis sequences for Euler angles
 _NEXT_AXIS = [1, 2, 0, 1]
 
@@ -37,7 +39,8 @@ _AXES2TUPLE = {
 _TUPLE2AXES = {v: k for k, v in _AXES2TUPLE.items()}
 
 
-def euler_matrix(ai, aj, ak, axes="sxyz"):
+@keyword_only
+def euler_matrix(ai, aj, ak, *, axes="sxyz"):
     """Return homogeneous rotation matrix from Euler angles and axis sequence.
 
     Code modified from the work of Christoph Gohlke link provided here
@@ -252,7 +255,10 @@ def translate(translation):
     iden = np.identity(4)
     translation = np.append(translation, 0).reshape(-1, 1)
 
-    t = np.array([[0, 0, 0, 1], [0, 0, 0, 1], [0, 0, 0, 1], [0, 0, 0, 1]], np.float32)
+    t = np.array(
+        [[0, 0, 0, 1], [0, 0, 0, 1], [0, 0, 0, 1], [0, 0, 0, 1]],
+        np.float32,
+    )
     translation = np.multiply(t, translation)
     translation = np.add(iden, translation)
 

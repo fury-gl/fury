@@ -13,6 +13,8 @@ import numpy as np
 from numpy.testing import assert_array_equal
 import scipy  # type: ignore
 
+from fury.decorators import keyword_only
+
 
 @contextmanager
 def captured_output():
@@ -37,13 +39,18 @@ def captured_output():
         sys.stdout, sys.stderr = old_out, old_err
 
 
-def assert_operator(value1, value2, msg="", op=operator.eq):
+@keyword_only
+def assert_operator(value1, value2, *, msg="", op=operator.eq):
     """Check Boolean statement."""
     if not op(value1, value2):
         raise AssertionError(msg.format(str(value2), str(value1)))
 
 
-assert_greater_equal = partial(assert_operator, op=operator.ge, msg="{0} >= {1}")
+assert_greater_equal = partial(
+    assert_operator,
+    op=operator.ge,
+    msg="{0} >= {1}",
+)
 assert_greater = partial(assert_operator, op=operator.gt, msg="{0} > {1}")
 assert_less_equal = partial(assert_operator, op=operator.le, msg="{0} =< {1}")
 assert_less = partial(assert_operator, op=operator.lt, msg="{0} < {1}")
@@ -63,7 +70,8 @@ def assert_arrays_equal(arrays1, arrays2):
 
 
 class EventCounter:
-    def __init__(self, events_names=None):
+    @keyword_only
+    def __init__(self, *, events_names=None):
         if events_names is None:
             events_names = [
                 "CharEvent",
@@ -113,7 +121,11 @@ class EventCounter:
 
         msg = "Wrong count for '{}'."
         for event, count in expected.events_counts.items():
-            assert_equal(self.events_counts[event], count, msg=msg.format(event))
+            assert_equal(
+                self.events_counts[event],
+                count,
+                msg=msg.format(event),
+            )
 
 
 class clear_and_catch_warnings(warnings.catch_warnings):
@@ -161,7 +173,8 @@ class clear_and_catch_warnings(warnings.catch_warnings):
 
     class_modules = ()
 
-    def __init__(self, record=True, modules=()):
+    @keyword_only
+    def __init__(self, *, record=True, modules=()):
         self.modules = set(modules).union(self.class_modules)
         self._warnreg_copies = {}
         super(clear_and_catch_warnings, self).__init__(record=record)

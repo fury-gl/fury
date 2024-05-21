@@ -2,6 +2,7 @@ import numpy as np
 from scipy.ndimage import map_coordinates
 
 from fury.colormap import line_colors
+from fury.decorators import keyword_only
 from fury.lib import (
     VTK_DOUBLE,
     VTK_FLOAT,
@@ -116,7 +117,8 @@ def numpy_to_vtk_colors(colors):
     return vtk_colors
 
 
-def numpy_to_vtk_cells(data, is_coords=True):
+@keyword_only
+def numpy_to_vtk_cells(data, *, is_coords=True):
     """Convert numpy array to a vtk cell array.
 
     Parameters
@@ -172,8 +174,9 @@ def numpy_to_vtk_cells(data, is_coords=True):
     return cell_array
 
 
+@keyword_only
 def numpy_to_vtk_image_data(
-    array, spacing=(1.0, 1.0, 1.0), origin=(0.0, 0.0, 0.0), deep=True
+    array, *, spacing=(1.0, 1.0, 1.0), origin=(0.0, 0.0, 0.0), deep=True
 ):
     """Convert numpy array to a vtk image data.
 
@@ -243,7 +246,8 @@ def map_coordinates_3d_4d(input_array, indices):
         return np.ascontiguousarray(np.array(values_4d).T)
 
 
-def lines_to_vtk_polydata(lines, colors=None):
+@keyword_only
+def lines_to_vtk_polydata(lines, *, colors=None):
     """Create a vtkPolyData with lines and colors.
 
     Parameters
@@ -501,7 +505,8 @@ def get_polydata_colors(polydata):
     return numpy_support.vtk_to_numpy(vtk_colors)
 
 
-def get_polydata_field(polydata, field_name, as_vtk=False):
+@keyword_only
+def get_polydata_field(polydata, field_name, *, as_vtk=False):
     """Get a field from a vtk polydata.
 
     Parameters
@@ -526,7 +531,8 @@ def get_polydata_field(polydata, field_name, as_vtk=False):
     return numpy_support.vtk_to_numpy(vtk_field_data)
 
 
-def add_polydata_numeric_field(polydata, field_name, field_data, array_type=VTK_INT):
+@keyword_only
+def add_polydata_numeric_field(polydata, field_name, field_data, *, array_type=VTK_INT):
     """Add a field to a vtk polydata.
 
     Parameters
@@ -668,7 +674,8 @@ def set_polydata_tangents(polydata, tangents):
     return polydata
 
 
-def set_polydata_colors(polydata, colors, array_name="colors"):
+@keyword_only
+def set_polydata_colors(polydata, colors, *, array_name="colors"):
     """Set polydata colors with a numpy array (ndarrays Nx3 int).
 
     Parameters
@@ -781,8 +788,15 @@ def get_actor_from_polydata(polydata):
     return get_actor_from_polymapper(poly_mapper)
 
 
+@keyword_only
 def get_actor_from_primitive(
-    vertices, triangles, colors=None, normals=None, backface_culling=True, prim_count=1
+    vertices,
+    triangles,
+    *,
+    colors=None,
+    normals=None,
+    backface_culling=True,
+    prim_count=1,
 ):
     """Get actor from a vtkPolyData.
 
@@ -831,9 +845,11 @@ def get_actor_from_primitive(
     return current_actor
 
 
+@keyword_only
 def repeat_sources(
     centers,
     colors,
+    *,
     active_scalars=1.0,
     directions=None,
     source=None,
@@ -1103,7 +1119,8 @@ def shallow_copy(vtk_object):
     return copy
 
 
-def rotate(actor, rotation=(90, 1, 0, 0)):
+@keyword_only
+def rotate(actor, *, rotation=(90, 1, 0, 0)):
     """Rotate actor around axis by angle.
 
     Parameters
@@ -1286,7 +1303,8 @@ def change_vertices_order(triangle):
     return np.array([triangle[2], triangle[1], triangle[0]])
 
 
-def fix_winding_order(vertices, triangles, clockwise=False):
+@keyword_only
+def fix_winding_order(vertices, triangles, *, clockwise=False):
     """Return corrected triangles.
 
     Given an ordering of the triangle's three vertices, a triangle can appear
@@ -1318,7 +1336,8 @@ def fix_winding_order(vertices, triangles, clockwise=False):
     return corrected_triangles
 
 
-def vertices_from_actor(actor, as_vtk=False):
+@keyword_only
+def vertices_from_actor(actor, *, as_vtk=False):
     """Access to vertices from actor.
 
     Parameters
@@ -1339,7 +1358,8 @@ def vertices_from_actor(actor, as_vtk=False):
     return numpy_support.vtk_to_numpy(vtk_array)
 
 
-def colors_from_actor(actor, array_name="colors", as_vtk=False):
+@keyword_only
+def colors_from_actor(actor, *, array_name="colors", as_vtk=False):
     """Access colors from actor which uses polydata.
 
     Parameters

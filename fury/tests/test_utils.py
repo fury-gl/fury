@@ -135,7 +135,7 @@ def test_polydata_lines():
     line_2 = line_1 + np.array([0.5, 0.0, 0.0])
     lines = [line_1, line_2]
 
-    pd_lines, is_cmap = utils.lines_to_vtk_polydata(lines, colors)
+    pd_lines, is_cmap = utils.lines_to_vtk_polydata(lines, colors=colors)
     res_lines = utils.get_polydata_lines(pd_lines)
     npt.assert_array_equal(lines, res_lines)
     npt.assert_equal(is_cmap, False)
@@ -440,7 +440,14 @@ def test_numpy_to_vtk_image_data():
     numpy_img_array = numpy_support.vtk_to_numpy(vtk_img_array)
     npt.assert_equal(np.flipud(array), numpy_img_array.reshape(h, w, elements))
 
-    npt.assert_raises(IOError, utils.numpy_to_vtk_image_data, np.array([1, 2, 3]))
+    npt.assert_raises(
+        IOError,
+        utils.numpy_to_vtk_image_data,
+        np.array([1, 2, 3]),
+        spacing=(1, 1, 1),
+        origin=(0, 0, 0),
+        deep=True,
+    )
 
 
 def test_get_grid_cell_position():
@@ -475,7 +482,7 @@ def test_rotate(interactive=False):
 
     rot = (90, 1, 0, 0)
 
-    rotate(act2, rot)
+    rotate(act2, rotation=rot)
 
     act3 = utils.shallow_copy(act)
 
@@ -483,7 +490,7 @@ def test_rotate(interactive=False):
 
     rot = (90, 0, 1, 0)
 
-    rotate(act3, rot)
+    rotate(act3, rotation=rot)
 
     scene.add(act3)
 
@@ -554,7 +561,7 @@ def test_vertices_from_actor(interactive=False):
     big_verts = res[0]
     big_faces = res[1]
     big_colors = res[2]
-    actr = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    actr = get_actor_from_primitive(big_verts, big_faces, colors=big_colors)
     actr.GetProperty().BackfaceCullingOff()
     if interactive:
         scene = window.Scene()
@@ -643,7 +650,14 @@ def test_get_actor_from_primitive():
     vertices, triangles = fp.prim_frustum()
     colors = np.array([1, 0, 0])
     npt.assert_raises(
-        ValueError, get_actor_from_primitive, vertices, triangles, colors=colors
+        ValueError,
+        get_actor_from_primitive,
+        vertices,
+        triangles,
+        colors=colors,
+        normals=None,
+        backface_culling=True,
+        prim_count=1,
     )
 
 
@@ -878,12 +892,17 @@ def test_is_ui():
 
 def test_empty_list_to_polydata():
     lines = [[]]
-    npt.assert_raises(ValueError, utils.lines_to_vtk_polydata, lines)
+    npt.assert_raises(
+        ValueError,
+        utils.lines_to_vtk_polydata,
+        lines,
+        colors=None,
+    )
 
 
 def test_empty_array_to_polydata():
     lines = np.array([[]])
-    npt.assert_raises(ValueError, utils.lines_to_vtk_polydata, lines)
+    npt.assert_raises(ValueError, utils.lines_to_vtk_polydata, lines, colors=None)
 
 
 @pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
@@ -891,7 +910,7 @@ def test_empty_array_sequence_to_polydata():
     from dipy.tracking.streamline import Streamlines
 
     lines = Streamlines()
-    npt.assert_raises(ValueError, utils.lines_to_vtk_polydata, lines)
+    npt.assert_raises(ValueError, utils.lines_to_vtk_polydata, lines, colors=None)
 
 
 def test_set_polydata_primitives_count():
