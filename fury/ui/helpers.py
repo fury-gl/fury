@@ -2,10 +2,13 @@
 
 import numpy as np
 
+from fury.decorators import keyword_only
+
 TWO_PI = 2 * np.pi
 
 
-def clip_overflow(textblock, width, side="right"):
+@keyword_only
+def clip_overflow(textblock, width, *, side="right"):
     """Clips overflowing text of TextBlock2D with respect to width.
 
     Parameters
@@ -27,7 +30,7 @@ def clip_overflow(textblock, width, side="right"):
     original_str = textblock.message
     prev_bg = textblock.have_bg
 
-    clip_idx = check_overflow(textblock, width, "...", side)
+    clip_idx = check_overflow(textblock, width, overflow_postfix="...", side=side)
 
     if clip_idx == 0:
         return original_str
@@ -36,7 +39,8 @@ def clip_overflow(textblock, width, side="right"):
     return textblock.message
 
 
-def wrap_overflow(textblock, wrap_width, side="right"):
+@keyword_only
+def wrap_overflow(textblock, wrap_width, *, side="right"):
     """Wraps overflowing text of TextBlock2D with respect to width.
 
     Parameters
@@ -59,7 +63,7 @@ def wrap_overflow(textblock, wrap_width, side="right"):
     str_copy = textblock.message
     wrap_idxs = []
 
-    wrap_idx = check_overflow(textblock, wrap_width, "", side)
+    wrap_idx = check_overflow(textblock, wrap_width, overflow_postfix="", side=side)
 
     if wrap_idx == 0:
         return original_str
@@ -69,7 +73,7 @@ def wrap_overflow(textblock, wrap_width, side="right"):
     while wrap_idx != 0:
         str_copy = str_copy[wrap_idx:]
         textblock.message = str_copy
-        wrap_idx = check_overflow(textblock, wrap_width, "", side)
+        wrap_idx = check_overflow(textblock, wrap_width, overflow_postfix="", side=side)
         if wrap_idx != 0:
             wrap_idxs.append(wrap_idxs[-1] + wrap_idx + 1)
 
@@ -80,7 +84,8 @@ def wrap_overflow(textblock, wrap_width, side="right"):
     return textblock.message
 
 
-def check_overflow(textblock, width, overflow_postfix="", side="right"):
+@keyword_only
+def check_overflow(textblock, width, *, overflow_postfix="", side="right"):
     """Checks if the text is overflowing.
 
     Parameters
