@@ -17,6 +17,7 @@ from fury.animation.interpolator import (
     step_interpolator,
     tan_cubic_spline_interpolator,
 )
+from fury.decorators import keyword_only
 from fury.lib import Camera, Matrix4x4, Texture, Transform, numpy_support
 
 comp_type = {
@@ -32,7 +33,8 @@ acc_type = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4, "MAT4": 16}
 
 
 class glTF:
-    def __init__(self, filename, apply_normals=False):
+    @keyword_only
+    def __init__(self, filename, *, apply_normals=False):
         """Read and generate actors from glTF files.
 
         Parameters
@@ -87,7 +89,7 @@ class glTF:
         self.morph_vertices = []
         self.morph_weights = []
 
-        self.inspect_scene(0)
+        self.inspect_scene(scene_id=0)
         self._actors = []
         self._bactors = {}
 
@@ -121,7 +123,8 @@ class glTF:
 
         return self._actors
 
-    def inspect_scene(self, scene_id=0):
+    @keyword_only
+    def inspect_scene(self, *, scene_id=0):
         """Loop over nodes in a scene.
 
         Parameters
@@ -138,7 +141,8 @@ class glTF:
         for i, animation in enumerate(self.gltf.animations):
             self.transverse_channels(animation, i)
 
-    def transverse_node(self, nextnode_id, matrix, parent=None, is_joint=False):
+    @keyword_only
+    def transverse_node(self, nextnode_id, matrix, *, parent=None, is_joint=False):
         """Load mesh and generates transformation matrix.
 
         Parameters
@@ -204,7 +208,9 @@ class glTF:
             for bone, ibm in zip(joints, ibms):
                 self.bones.append(bone)
                 self.ibms[bone] = ibm
-            self.transverse_node(joints[0], np.identity(4), parent, is_joint=True)
+            self.transverse_node(
+                joints[0], np.identity(4), parent=parent, is_joint=True
+            )
 
         if node.camera is not None:
             camera_id = node.camera
@@ -212,7 +218,12 @@ class glTF:
 
         if node.children:
             for child_id in node.children:
-                self.transverse_node(child_id, next_matrix, parent, is_joint)
+                self.transverse_node(
+                    child_id,
+                    next_matrix,
+                    parent=parent,
+                    is_joint=is_joint,
+                )
 
     def load_mesh(self, mesh_id, transform_mat, parent):
         """Load the mesh data from accessor and applies the transformation.
@@ -645,12 +656,14 @@ class glTF:
             matrix = transf
         return matrix
 
+    @keyword_only
     def transverse_animations(
         self,
         animation,
         bone_id,
         timestamp,
         joint_matrices,
+        *,
         parent_bone_deform=None,
     ):
         """Calculate skinning matrix (Joint Matrices) and transform bone for
@@ -696,7 +709,11 @@ class glTF:
             c_bones = node.children
             for c_anim, c_bone in zip(c_animations, c_bones):
                 self.transverse_animations(
-                    c_anim, c_bone, timestamp, joint_matrices, new_deform
+                    c_anim,
+                    c_bone,
+                    timestamp,
+                    joint_matrices,
+                    parent_bone_deform=new_deform,
                 )
 
     def update_skin(self, animation):
@@ -722,16 +739,25 @@ class glTF:
             parent_transform = np.identity(4)
         for child in _animation.child_animations:
             self.transverse_animations(
-                child, self.bones[0], timestamp, joint_matrices, parent_transform
+                child,
+                self.bones[0],
+                timestamp,
+                joint_matrices,
+                parent_bone_deform=parent_transform,
             )
         for i, vertex in enumerate(self._vertices):
-            vertex[:] = self.apply_skin_matrix(self._vcopy[i], joint_matrices, i)
+            vertex[:] = self.apply_skin_matrix(
+                self._vcopy[i],
+                joint_matrices,
+                actor_index=i,
+            )
             actor_transf = self.transformations[i]
             vertex[:] = transform.apply_transformation(vertex, actor_transf)
             utils.update_actor(self._actors[i])
             utils.compute_bounds(self._actors[i])
 
-    def initialize_skin(self, animation, bones=False, length=0.2):
+    @keyword_only
+    def initialize_skin(self, animation, *, bones=False, length=0.2):
         """Create bones and add to the animation and initialise `update_skin`
 
         Parameters
@@ -748,11 +774,12 @@ class glTF:
         """
         self.show_bones = bones
         if bones:
-            self.get_joint_actors(length, False)
+            self.get_joint_actors(length=length, with_transforms=False)
             animation.add_actor(list(self._bactors.values()))
         self.update_skin(animation)
 
-    def apply_skin_matrix(self, vertices, joint_matrices, actor_index=0):
+    @keyword_only
+    def apply_skin_matrix(self, vertices, joint_matrices, *, actor_index=0):
         """Apply the skinnig matrix, that transform the vertices.
 
         Parameters
@@ -845,7 +872,8 @@ class glTF:
             root_animation.add_actor(self._actors)
         return root_animations
 
-    def get_joint_actors(self, length=0.5, with_transforms=False):
+    @keyword_only
+    def get_joint_actors(self, *, length=0.5, with_transforms=False):
         """Create an arrow actor for each bone in a skinned model.
 
         Parameters
@@ -1039,7 +1067,8 @@ class glTF:
         return main_animation
 
 
-def export_scene(scene, filename="default.gltf"):
+@keyword_only
+def export_scene(scene, *, filename="default.gltf"):
     """Generate gltf from FURY scene.
 
     Parameters
@@ -1175,8 +1204,8 @@ def _connect_primitives(gltf, actor, buff_file, byteoffset, count, name):
             gltflib.FLOAT,
             len(vertices) // atype,
             gltflib.VEC3,
-            amax,
-            amin,
+            max=amax,
+            min=amin,
         )
         byteoffset += blength
         vertex = count
@@ -1200,8 +1229,8 @@ def _connect_primitives(gltf, actor, buff_file, byteoffset, count, name):
             gltflib.FLOAT,
             len(normals) // atype,
             gltflib.VEC3,
-            amax,
-            amin,
+            max=amax,
+            min=amin,
         )
         byteoffset += blength
         normal = count
@@ -1251,7 +1280,7 @@ def _connect_primitives(gltf, actor, buff_file, byteoffset, count, name):
         color = count
         count += 1
     material = None if tcoords is None else 0
-    prim = get_prim(vertex, index, color, tcoord, normal, material, mode)
+    prim = get_prim(vertex, index, color, tcoord, normal, material, mode=mode)
     return prim, byteoffset, count
 
 
@@ -1271,7 +1300,8 @@ def write_scene(gltf, nodes):
     gltf.scenes.append(scene)
 
 
-def write_node(gltf, mesh_id=None, camera_id=None):
+@keyword_only
+def write_node(gltf, *, mesh_id=None, camera_id=None):
     """Create node
 
     Parameters
@@ -1339,7 +1369,8 @@ def write_camera(gltf, camera):
     gltf.cameras.append(cam)
 
 
-def get_prim(vertex, index, color, tcoord, normal, material, mode=4):
+@keyword_only
+def get_prim(vertex, index, color, tcoord, normal, material, *, mode=4):
     """Return a Primitive object.
 
     Parameters
@@ -1409,8 +1440,9 @@ def write_material(gltf, basecolortexture: int, uri: str):
     gltf.images.append(image)
 
 
+@keyword_only
 def write_accessor(
-    gltf, bufferview, byte_offset, comp_type, count, accssor_type, max=None, min=None
+    gltf, bufferview, byte_offset, comp_type, count, accssor_type, *, max=None, min=None
 ):
     """Write accessor in the gltf.
 
@@ -1447,7 +1479,8 @@ def write_accessor(
     gltf.accessors.append(accessor)
 
 
-def write_bufferview(gltf, buffer, byte_offset, byte_length, byte_stride=None):
+@keyword_only
+def write_bufferview(gltf, buffer, byte_offset, byte_length, *, byte_stride=None):
     """Write bufferview in the gltf.
 
     Parameters

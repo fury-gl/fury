@@ -32,26 +32,26 @@ def test_clip_overflow():
     npt.assert_equal("A ...", text.message)
 
     text.message = "Hello"
-    clip_overflow(text, text.size[0], "left")
+    clip_overflow(text, text.size[0], side="left")
     npt.assert_equal("Hello", text.message)
 
     text.message = "Hello wassup"
-    clip_overflow(text, text.size[0], "left")
+    clip_overflow(text, text.size[0], side="left")
     npt.assert_equal("...up", text.message)
 
     text.message = "A very very long message to clip text overflow"
-    clip_overflow(text, text.size[0], "left")
+    clip_overflow(text, text.size[0], side="left")
     npt.assert_equal("...ow", text.message)
 
     text.message = "A very very long message to clip text overflow"
-    clip_overflow(text, text.size[0], "LeFT")
+    clip_overflow(text, text.size[0], side="LeFT")
     npt.assert_equal("...ow", text.message)
 
     text.message = "A very very long message to clip text overflow"
-    clip_overflow(text, text.size[0], "RigHT")
+    clip_overflow(text, text.size[0], side="RigHT")
     npt.assert_equal("A ...", text.message)
 
-    npt.assert_raises(ValueError, clip_overflow, text, text.size[0], "middle")
+    npt.assert_raises(ValueError, clip_overflow, text, text.size[0], side="middle")
 
 
 def test_wrap_overflow():
@@ -97,7 +97,7 @@ def test_check_overflow():
 
     text.message = "A very very long message to clip text overflow"
 
-    overflow_idx = check_overflow(text, 100, "~")
+    overflow_idx = check_overflow(text, 100, overflow_postfix="~")
 
     npt.assert_equal(4, overflow_idx)
     npt.assert_equal("A ve~", text.message)

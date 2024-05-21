@@ -2,6 +2,7 @@ import math
 
 import numpy as np
 
+from fury.decorators import keyword_only
 from fury.utils import get_bounding_box_sizes, get_grid_cells_position, is_ui
 
 
@@ -32,8 +33,10 @@ class GridLayout(Layout):
 
     """
 
+    @keyword_only
     def __init__(
         self,
+        *,
         cell_padding=0,
         cell_shape="rect",
         aspect_ratio=16 / 9.0,
@@ -88,11 +91,25 @@ class GridLayout(Layout):
 
         """
         if self.cell_shape == "rect":
-            bounding_box_sizes = np.asarray(list(map(self.compute_sizes, actors)))
+            bounding_box_sizes = np.asarray(
+                list(
+                    map(
+                        self.compute_sizes,
+                        actors,
+                    )
+                )
+            )
             cell_shape = np.max(bounding_box_sizes, axis=0)[:2]
             shapes = [cell_shape] * len(actors)
         elif self.cell_shape == "square":
-            bounding_box_sizes = np.asarray(list(map(self.compute_sizes, actors)))
+            bounding_box_sizes = np.asarray(
+                list(
+                    map(
+                        self.compute_sizes,
+                        actors,
+                    )
+                )
+            )
             cell_shape = np.max(bounding_box_sizes, axis=0)[:2]
             shapes = [(max(cell_shape),) * 2] * len(actors)
         elif self.cell_shape == "diagonal":
@@ -110,7 +127,11 @@ class GridLayout(Layout):
             longest_diagonal = np.max(diagonals)
             shapes = [(longest_diagonal, longest_diagonal)] * len(actors)
         else:
-            raise ValueError("Unknown cell shape: '{0}'".format(self.cell_shape))
+            raise ValueError(
+                "Unknown cell shape: '{0}'".format(
+                    self.cell_shape,
+                )
+            )
 
         return shapes
 
@@ -133,7 +154,11 @@ class GridLayout(Layout):
 
         # Add padding, if any, around every cell.
         shapes = [np.array(self.cell_padding) / 2.0 + s for s in shapes]
-        positions = get_grid_cells_position(shapes, self.aspect_ratio, self.dim)
+        positions = get_grid_cells_position(
+            shapes,
+            self.aspect_ratio,
+            self.dim,
+        )
 
         positions += self.position_offset
         return positions
@@ -161,7 +186,8 @@ class GridLayout(Layout):
 class HorizontalLayout(GridLayout):
     """Provide functionalities for laying out actors in a horizontal layout."""
 
-    def __init__(self, cell_padding=0, cell_shape="rect"):
+    @keyword_only
+    def __init__(self, *, cell_padding=0, cell_shape="rect"):
         """Initialize the Horizontal layout.
 
         Parameters
@@ -216,7 +242,8 @@ class HorizontalLayout(GridLayout):
 class VerticalLayout(GridLayout):
     """Provide functionalities for laying out actors in a vertical stack."""
 
-    def __init__(self, cell_padding=0, cell_shape="rect"):
+    @keyword_only
+    def __init__(self, *, cell_padding=0, cell_shape="rect"):
         """Initialize the Vertical layout.
 
         Parameters
@@ -270,7 +297,8 @@ class VerticalLayout(GridLayout):
 class XLayout(HorizontalLayout):
     """Provide functionalities for laying out actors along x-axis."""
 
-    def __init__(self, direction="x+", cell_padding=0, cell_shape="rect"):
+    @keyword_only
+    def __init__(self, *, direction="x+", cell_padding=0, cell_shape="rect"):
         """Initialize the X layout.
 
         Parameters
@@ -297,7 +325,10 @@ class XLayout(HorizontalLayout):
         if self.direction not in ["x+", "x-"]:
             raise ValueError(f"{direction} is not a valid direction")
 
-        super(XLayout, self).__init__(cell_padding=cell_padding, cell_shape=cell_shape)
+        super(XLayout, self).__init__(
+            cell_padding=cell_padding,
+            cell_shape=cell_shape,
+        )
 
     def get_cells_shape(self, actors):
         """Get the 2D shape (on the xy-plane) of some actors according to
@@ -352,7 +383,8 @@ class XLayout(HorizontalLayout):
 class YLayout(VerticalLayout):
     """Provide functionalities for laying out actors along y-axis."""
 
-    def __init__(self, direction="y+", cell_padding=0, cell_shape="rect"):
+    @keyword_only
+    def __init__(self, *, direction="y+", cell_padding=0, cell_shape="rect"):
         """Initialize the Y layout.
 
         Parameters
@@ -379,7 +411,10 @@ class YLayout(VerticalLayout):
         if self.direction not in ["y+", "y-"]:
             raise ValueError(f"{direction} is not a valid direction")
 
-        super(YLayout, self).__init__(cell_padding=cell_padding, cell_shape=cell_shape)
+        super(YLayout, self).__init__(
+            cell_padding=cell_padding,
+            cell_shape=cell_shape,
+        )
 
     def get_cells_shape(self, actors):
         """Get the 2D shape (on the xy-plane) of some actors according to
@@ -434,7 +469,8 @@ class YLayout(VerticalLayout):
 class ZLayout(GridLayout):
     """Provide functionalities for laying out actors along z-axis."""
 
-    def __init__(self, direction="z+", cell_padding=0, cell_shape="rect"):
+    @keyword_only
+    def __init__(self, *, direction="z+", cell_padding=0, cell_shape="rect"):
         """Initialize the Z layout.
 
         Parameters
@@ -461,7 +497,10 @@ class ZLayout(GridLayout):
         if self.direction not in ["z+", "z-"]:
             raise ValueError(f"{direction} is not a valid direction")
 
-        super(ZLayout, self).__init__(cell_padding=cell_padding, cell_shape=cell_shape)
+        super(ZLayout, self).__init__(
+            cell_padding=cell_padding,
+            cell_shape=cell_shape,
+        )
 
     def get_cells_shape(self, actors):
         """Get the shape (on the z-plane) of some actors according to
@@ -482,7 +521,14 @@ class ZLayout(GridLayout):
             actors = actors[::-1]
 
         if self.cell_shape == "rect" or self.cell_shape == "square":
-            bounding_box_sizes = np.asarray(list(map(get_bounding_box_sizes, actors)))
+            bounding_box_sizes = np.asarray(
+                list(
+                    map(
+                        get_bounding_box_sizes,
+                        actors,
+                    )
+                )
+            )
             cell_shape = np.max(bounding_box_sizes, axis=0)[2]
             shapes = [cell_shape] * len(actors)
         elif self.cell_shape == "diagonal":
@@ -491,7 +537,11 @@ class ZLayout(GridLayout):
             longest_diagonal = np.max([a.GetLength() for a in actors])
             shapes = [longest_diagonal] * len(actors)
         else:
-            raise ValueError("Unknown cell shape: '{0}'".format(self.cell_shape))
+            raise ValueError(
+                "Unknown cell shape: '{0}'".format(
+                    self.cell_shape,
+                )
+            )
 
         return shapes
 

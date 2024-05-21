@@ -1,6 +1,7 @@
 import os
 import warnings
 
+from fury.decorators import keyword_only
 from fury.lib import VTK_OBJECT, calldata_type
 from fury.shaders import (
     add_shader_callback,
@@ -134,8 +135,10 @@ class __PBRParams:
         self.__actor_properties.SetCoatIOR(coat_ior)
 
 
+@keyword_only
 def manifest_pbr(
     actor,
+    *,
     metallic=0,
     roughness=0.5,
     anisotropy=0,
@@ -208,8 +211,10 @@ def manifest_pbr(
         return None
 
 
+@keyword_only
 def manifest_principled(
     actor,
+    *,
     subsurface=0,
     metallic=0,
     specular=0,
@@ -284,20 +289,40 @@ def manifest_principled(
         @calldata_type(VTK_OBJECT)
         def uniforms_callback(_caller, _event, calldata=None):
             if calldata is not None:
-                calldata.SetUniformf("subsurface", principled_params["subsurface"])
-                calldata.SetUniformf("metallic", principled_params["metallic"])
-                calldata.SetUniformf("specularTint", principled_params["specular_tint"])
-                calldata.SetUniformf("roughness", principled_params["roughness"])
-                calldata.SetUniformf("anisotropic", principled_params["anisotropic"])
-                calldata.SetUniformf("sheen", principled_params["sheen"])
-                calldata.SetUniformf("sheenTint", principled_params["sheen_tint"])
-                calldata.SetUniformf("clearcoat", principled_params["clearcoat"])
                 calldata.SetUniformf(
-                    "clearcoatGloss", principled_params["clearcoat_gloss"]
+                    "subsurface",
+                    principled_params["subsurface"],
+                )
+                calldata.SetUniformf("metallic", principled_params["metallic"])
+                calldata.SetUniformf(
+                    "specularTint",
+                    principled_params["specular_tint"],
+                )
+                calldata.SetUniformf(
+                    "roughness",
+                    principled_params["roughness"],
+                )
+                calldata.SetUniformf(
+                    "anisotropic",
+                    principled_params["anisotropic"],
+                )
+                calldata.SetUniformf("sheen", principled_params["sheen"])
+                calldata.SetUniformf(
+                    "sheenTint",
+                    principled_params["sheen_tint"],
+                )
+                calldata.SetUniformf(
+                    "clearcoat",
+                    principled_params["clearcoat"],
+                )
+                calldata.SetUniformf(
+                    "clearcoatGloss",
+                    principled_params["clearcoat_gloss"],
                 )
 
                 calldata.SetUniform3f(
-                    "anisotropicDirection", principled_params["anisotropic_direction"]
+                    "anisotropicDirection",
+                    principled_params["anisotropic_direction"],
                 )
 
         add_shader_callback(actor, uniforms_callback)
@@ -374,7 +399,13 @@ def manifest_principled(
         # Importing Geometry Shadowing and Masking Function (GF): Smith Ground
         # Glass Unknown (G_{GGX}) needed for the Isotropic Specular and Clear
         # Coat lobes
-        smith_ggx = import_fury_shader(os.path.join("lighting", "gf", "smith_ggx.frag"))
+        smith_ggx = import_fury_shader(
+            os.path.join(
+                "lighting",
+                "gf",
+                "smith_ggx.frag",
+            )
+        )
 
         # Importing Geometry Shadowing and Masking Function (GF): Anisotropic
         # form of the Smith Ground Glass Unknown (G_{GGXanisotropic}) needed
@@ -390,7 +421,13 @@ def manifest_principled(
         subsurface = import_fury_shader(
             os.path.join("lighting", "principled", "subsurface.frag")
         )
-        sheen = import_fury_shader(os.path.join("lighting", "principled", "sheen.frag"))
+        sheen = import_fury_shader(
+            os.path.join(
+                "lighting",
+                "principled",
+                "sheen.frag",
+            )
+        )
         specular_isotropic = import_fury_shader(
             os.path.join("lighting", "principled", "specular_isotropic.frag")
         )
@@ -574,8 +611,10 @@ def manifest_principled(
         return None
 
 
+@keyword_only
 def manifest_standard(
     actor,
+    *,
     ambient_level=0,
     ambient_color=(1, 1, 1),
     diffuse_level=1,
