@@ -2,6 +2,7 @@ from collections.abc import Sequence
 
 import numpy as np
 
+from fury.decorators import keyword_only
 from fury.lib import (
     CellPicker,
     DataObject,
@@ -16,7 +17,15 @@ from fury.lib import (
 class PickingManager:
     """Picking Manager helps with picking 3D objects."""
 
-    def __init__(self, vertices=True, faces=True, actors=True, world_coords=True):
+    @keyword_only
+    def __init__(
+        self,
+        *,
+        vertices=True,
+        faces=True,
+        actors=True,
+        world_coords=True,
+    ):
         """Initialize Picking Manager.
 
         Parameters
@@ -120,7 +129,8 @@ class PickingManager:
 class SelectionManager:
     """Selection Manager helps with picking many objects simultaneously."""
 
-    def __init__(self, select="faces"):
+    @keyword_only
+    def __init__(self, *, select="faces"):
         """Initialize Selection Manager.
 
         Parameters
@@ -171,7 +181,8 @@ class SelectionManager:
         """
         return self.select(disp_xy, sc, area=0)[0]
 
-    def select(self, disp_xy, sc, area=0):
+    @keyword_only
+    def select(self, disp_xy, sc, *, area=0):
         """Select multiple objects using display coordinates.
 
         Parameters
@@ -202,26 +213,49 @@ class SelectionManager:
             res = self.hsel.Select()
 
         except OverflowError:
-            return {0: {"node": None, "vertex": None, "face": None, "actor": None}}
+            return {
+                0: {
+                    "node": None,
+                    "vertex": None,
+                    "face": None,
+                    "actor": None,
+                }
+            }
 
         num_nodes = res.GetNumberOfNodes()
         if num_nodes < 1:
             sel_node = None
-            return {0: {"node": None, "vertex": None, "face": None, "actor": None}}
+            return {
+                0: {
+                    "node": None,
+                    "vertex": None,
+                    "face": None,
+                    "actor": None,
+                }
+            }
         else:
             for i in range(num_nodes):
                 sel_node = res.GetNode(i)
-                info = {"node": None, "vertex": None, "face": None, "actor": None}
+                info = {
+                    "node": None,
+                    "vertex": None,
+                    "face": None,
+                    "actor": None,
+                }
 
                 if sel_node is not None:
                     selected_nodes = set(
                         np.floor(
-                            numpy_support.vtk_to_numpy(sel_node.GetSelectionList())
+                            numpy_support.vtk_to_numpy(
+                                sel_node.GetSelectionList(),
+                            )
                         ).astype(int)
                     )
 
                     info["node"] = sel_node
-                    info["actor"] = sel_node.GetProperties().Get(sel_node.PROP())
+                    info["actor"] = sel_node.GetProperties().Get(
+                        sel_node.PROP(),
+                    )
                     if self.selected_type == "faces":
                         info["face"] = list(selected_nodes)
                     if self.selected_type == "vertex":

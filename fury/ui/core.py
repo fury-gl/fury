@@ -175,7 +175,9 @@ class UI(object, metaclass=abc.ABCMeta):
             if callback[0] == self._scene:
                 iren.add_callback(iren, callback[1], callback[2], args=[self])
             else:
-                iren.add_callback(*callback, args=[self])
+                # iren.add_callback(*callback, args=[self])
+                if len(callback) > 3:
+                    iren.add_callback(*callback[:3], priority=callback[3], args=[self])
 
     def add_callback(self, prop, event_type, callback, priority=0):
         """Add a callback to a specific event for this UI component.

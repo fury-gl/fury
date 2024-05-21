@@ -10,12 +10,12 @@ def test_periodic_table():
     npt.assert_equal(table.atomic_number("C"), 6)
     npt.assert_equal(table.element_name(7), "Nitrogen")
     npt.assert_equal(table.atomic_symbol(8), "O")
-    npt.assert_allclose(table.atomic_radius(1, "VDW"), 1.2, 0.1, 0)
-    npt.assert_allclose(table.atomic_radius(6, "Covalent"), 0.75, 0.1, 0)
+    npt.assert_allclose(table.atomic_radius(1, radius_type="VDW"), 1.2, 0.1, 0)
+    npt.assert_allclose(table.atomic_radius(6, radius_type="Covalent"), 0.75, 0.1, 0)
     npt.assert_array_almost_equal(table.atom_color(1), np.array([1, 1, 1]))
 
     # Test errors
-    npt.assert_raises(ValueError, table.atomic_radius, 4, "test")
+    npt.assert_raises(ValueError, table.atomic_radius, 4, radius_type="test")
 
 
 def get_default_molecular_info(all_info=False):
@@ -64,17 +64,41 @@ def test_molecule_creation():
 
     # Test errors
     elements = np.array([6, 6])
-    npt.assert_raises(ValueError, mol.Molecule, elements, atom_coords)
+    npt.assert_raises(
+        ValueError,
+        mol.Molecule,
+        atomic_numbers=elements,
+        coords=atom_coords,
+        atom_names=None,
+        model=None,
+        residue_seq=None,
+        chain=None,
+        sheet=None,
+        helix=None,
+        is_hetatm=None,
+    )
 
     elements = list(range(8))
-    npt.assert_raises(ValueError, mol.Molecule, elements, atom_coords)
+    npt.assert_raises(
+        ValueError,
+        mol.Molecule,
+        atomic_numbers=elements,
+        coords=atom_coords,
+        atom_names=None,
+        model=None,
+        residue_seq=None,
+        chain=None,
+        sheet=None,
+        helix=None,
+        is_hetatm=None,
+    )
 
 
 def test_add_atom_bond_creation():
     molecule = mol.Molecule()
     mol.add_atom(molecule, 6, 0, 0, 0)
     mol.add_atom(molecule, 6, 1, 0, 0)
-    mol.add_bond(molecule, 0, 1, 1)
+    mol.add_bond(molecule, 0, 1, bond_order=1)
     npt.assert_equal(molecule.total_num_bonds, 1)
     npt.assert_equal(molecule.total_num_atoms, 2)
 
@@ -116,7 +140,7 @@ def test_bond_order():
     molecule = mol.Molecule()
     mol.add_atom(molecule, 6, 0, 0, 0)
     mol.add_atom(molecule, 6, 1, 0, 0)
-    mol.add_bond(molecule, 0, 1, 3)
+    mol.add_bond(molecule, 0, 1, bond_order=3)
     npt.assert_equal(mol.get_bond_order(molecule, 0), 3)
 
     # Testing set_bond_order
@@ -131,7 +155,7 @@ def test_deep_copy_molecule():
     molecule1 = mol.Molecule()
     mol.add_atom(molecule1, 6, 0, 0, 0)
     mol.add_atom(molecule1, 6, 1, 0, 0)
-    mol.add_bond(molecule1, 0, 1, 1)
+    mol.add_bond(molecule1, 0, 1, bond_order=1)
     molecule2 = mol.Molecule()
     mol.deep_copy_molecule(molecule2, molecule1)
     npt.assert_equal(molecule2.total_num_bonds, 1)
@@ -140,14 +164,14 @@ def test_deep_copy_molecule():
 
 def test_compute_bonding():
     atomic_numbers, atom_coords = get_default_molecular_info()
-    molecule = mol.Molecule(atomic_numbers, atom_coords)
+    molecule = mol.Molecule(atomic_numbers=atomic_numbers, coords=atom_coords)
     mol.compute_bonding(molecule)
     npt.assert_equal(molecule.total_num_bonds, 7)
 
 
 def test_sphere_cpk(interactive=False):
     atomic_numbers, atom_coords = get_default_molecular_info()
-    molecule = mol.Molecule(atomic_numbers, atom_coords)
+    molecule = mol.Molecule(atomic_numbers=atomic_numbers, coords=atom_coords)
     table = mol.PTable()
     colormodes = ["discrete", "single"]
     colors = np.array(
@@ -159,7 +183,7 @@ def test_sphere_cpk(interactive=False):
     )
     scene = window.Scene()
     for i, colormode in enumerate(colormodes):
-        test_actor = mol.sphere_cpk(molecule, colormode)
+        test_actor = mol.sphere_cpk(molecule, colormode=colormode)
 
         scene.add(test_actor)
         scene.reset_camera()
@@ -176,7 +200,7 @@ def test_sphere_cpk(interactive=False):
         scene.clear()
 
     # Testing warnings
-    npt.assert_warns(UserWarning, mol.sphere_cpk, molecule, "multiple")
+    npt.assert_warns(UserWarning, mol.sphere_cpk, molecule, colormode="multiple")
 
 
 def test_bstick(interactive=False):
@@ -185,9 +209,17 @@ def test_bstick(interactive=False):
     mol.add_atom(molecule, 6, 2, 0, 0)
 
     # Test errors for inadequate bonding data
-    npt.assert_raises(ValueError, mol.ball_stick, molecule)
+    npt.assert_raises(
+        ValueError,
+        mol.ball_stick,
+        molecule,
+        colormode="discrete",
+        atom_scale_factor=0.3,
+        bond_thickness=0.1,
+        multiple_bonds=True,
+    )
 
-    mol.add_bond(molecule, 0, 1, 1)
+    mol.add_bond(molecule, 0, 1, bond_order=1)
     colormodes = ["discrete", "single"]
     atom_scale_factor = [0.3, 0.4]
     bond_thickness = [0.1, 0.2]
@@ -204,10 +236,10 @@ def test_bstick(interactive=False):
     for i, colormode in enumerate(colormodes):
         test_actor = mol.ball_stick(
             molecule,
-            colormode,
-            atom_scale_factor[i],
-            bond_thickness[i],
-            multiple_bonds[i],
+            colormode=colormode,
+            atom_scale_factor=atom_scale_factor[i],
+            bond_thickness=bond_thickness[i],
+            multiple_bonds=multiple_bonds[i],
         )
         scene.add(test_actor)
         scene.reset_camera()
@@ -224,7 +256,15 @@ def test_bstick(interactive=False):
         scene.clear()
 
     # Testing warnings
-    npt.assert_warns(UserWarning, mol.ball_stick, molecule, "multiple")
+    npt.assert_warns(
+        UserWarning,
+        mol.ball_stick,
+        molecule,
+        colormode="multiple",
+        atom_scale_factor=0.3,
+        bond_thickness=0.1,
+        multiple_bonds=True,
+    )
 
 
 def test_stick(interactive=False):
@@ -233,8 +273,10 @@ def test_stick(interactive=False):
     mol.add_atom(molecule, 6, 2, 0, 0)
 
     # Test errors for inadequate bonding data
-    npt.assert_raises(ValueError, mol.stick, molecule)
-    mol.add_bond(molecule, 0, 1, 1)
+    npt.assert_raises(
+        ValueError, mol.stick, molecule, colormode="discrete", bond_thickness=0.1
+    )
+    mol.add_bond(molecule, 0, 1, bond_order=1)
 
     colormodes = ["discrete", "single"]
     bond_thickness = [0.1, 0.12]
@@ -248,7 +290,11 @@ def test_stick(interactive=False):
     )
     scene = window.Scene()
     for i, colormode in enumerate(colormodes):
-        test_actor = mol.stick(molecule, colormode, bond_thickness[i])
+        test_actor = mol.stick(
+            molecule,
+            colormode=colormode,
+            bond_thickness=bond_thickness[i],
+        )
         scene.add(test_actor)
         scene.reset_camera()
         scene.reset_clipping_range()
@@ -264,7 +310,9 @@ def test_stick(interactive=False):
         scene.clear()
 
     # Testing warnings
-    npt.assert_warns(UserWarning, mol.stick, molecule, "multiple")
+    npt.assert_warns(
+        UserWarning, mol.stick, molecule, colormode="multiple", bond_thickness=0.1
+    )
 
 
 def test_ribbon(interactive=False):
@@ -337,15 +385,15 @@ def test_ribbon(interactive=False):
             helix = secondary_structure
             sheet = []
         molecule = mol.Molecule(
-            elements,
-            atom_coords,
-            atom_names,
-            model,
-            residue_seq,
-            chain,
-            sheet,
-            helix,
-            is_hetatm,
+            atomic_numbers=elements,
+            coords=atom_coords,
+            atom_names=atom_names,
+            model=model,
+            residue_seq=residue_seq,
+            chain=chain,
+            sheet=sheet,
+            helix=helix,
+            is_hetatm=is_hetatm,
         )
         test_actor = mol.ribbon(molecule)
         scene.set_camera((28, 113, 74), (34, 106, 70), (-0.37, 0.29, -0.88))
@@ -367,7 +415,7 @@ def test_bounding_box(interactive=False):
     molecule = mol.Molecule()
     mol.add_atom(molecule, 6, 0, 0, 0)
     mol.add_atom(molecule, 6, 1, 1, 1)
-    mol.add_bond(molecule, 0, 1, 1)
+    mol.add_bond(molecule, 0, 1, bond_order=1)
 
     molecule_actor = mol.stick(molecule)
     test_box = mol.bounding_box(molecule, colors=(0, 1, 1), linewidth=0.1)

@@ -452,7 +452,7 @@ def test_odf_slicer(interactive=False):
     # vertices and faces of a sphere rather that needing
     # a specific type of sphere. We can use prim_sphere
     # as an alternative to get_sphere.
-    vertices, faces = prim_sphere("repulsion100", True)
+    vertices, faces = prim_sphere(name="repulsion100", gen_faces=True)
     sphere = Sphere()
     sphere.vertices = vertices
     sphere.faces = faces
@@ -562,7 +562,7 @@ def test_odf_slicer(interactive=False):
         global_cm=True,
     )
 
-    vertices2, faces2 = prim_sphere("repulsion200", True)
+    vertices2, faces2 = prim_sphere(name="repulsion200", gen_faces=True)
     sphere2 = Sphere()
     sphere2.vertices = vertices2
     sphere2.faces = faces2
@@ -739,7 +739,7 @@ def test_tensor_slicer(interactive=False):
     mevals[..., :] = evals
     mevecs[..., :, :] = evecs
 
-    vertices, faces = prim_sphere("symmetric724", True)
+    vertices, faces = prim_sphere(name="symmetric724", gen_faces=True)
     sphere = Sphere()
     sphere.vertices = vertices
     sphere.faces = faces

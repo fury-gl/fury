@@ -3,11 +3,13 @@ from tempfile import TemporaryDirectory
 
 import numpy as np
 
+from fury.decorators import keyword_only
 from fury.io import load_image
 
 
+@keyword_only
 def matplotlib_figure_to_numpy(
-    fig, dpi=100, fname=None, flip_up_down=True, transparent=False
+    fig, *, dpi=100, fname=None, flip_up_down=True, transparent=False
 ):
     """Convert a Matplotlib figure to a 3D numpy array with RGBA channels.
 
@@ -54,7 +56,11 @@ def matplotlib_figure_to_numpy(
             arr = load_image(fname)
     else:
         fig.savefig(
-            fname, dpi=dpi, transparent=transparent, bbox_inches="tight", pad_inches=0
+            fname,
+            dpi=dpi,
+            transparent=transparent,
+            bbox_inches="tight",
+            pad_inches=0,
         )
         arr = load_image(fname)
 
