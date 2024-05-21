@@ -2,7 +2,7 @@
 
 import numpy.testing as npt
 
-from fury.decorators import doctest_skip_parser
+from fury.decorators import doctest_skip_parser, keyword_only
 from fury.testing import assert_true
 
 HAVE_AMODULE = False
@@ -49,3 +49,20 @@ def test_skipper():
     del HAVE_AMODULE
     f.__doc__ = docstring
     npt.assert_raises(NameError, doctest_skip_parser, f)
+
+
+def test_keyword_only():
+    @keyword_only
+    def f(*, a, b):
+        return a + b
+
+    npt.assert_equal(f(a=1, b=2), 3)
+    npt.assert_raises(TypeError, f, a=1, b=2, c=2)
+    npt.assert_raises(TypeError, f, 1, 2)
+    npt.assert_raises(TypeError, f, 1, b=2)
+    npt.assert_raises(TypeError, f, a=1, b=2)
+    npt.assert_raises(
+        TypeError,
+        f,
+        a=1,
+    )

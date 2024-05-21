@@ -1,5 +1,7 @@
 """Decorators for FURY tests."""
 
+from functools import wraps
+from inspect import signature
 import platform
 import re
 import sys
@@ -43,3 +45,109 @@ def doctest_skip_parser(func):
         new_lines.append(code)
     func.__doc__ = "\n".join(new_lines)
     return func
+
+
+def keyword_only(func):
+    """A decorator to enforce keyword-only arguments.
+
+    This decorator is used to enforce that certain arguments of a function
+    are passed as keyword arguments. This is useful to prevent users from
+    passing arguments in the wrong order.
+
+    Parameters
+    ----------
+    func : callable
+        The function to decorate.
+
+    Returns
+    -------
+    callable
+        The decorated function.
+
+    Examples
+    --------
+    >>> @keyword_only
+    ... def add(*, a, b):
+    ...     return a + b
+    >>> add(a=1, b=2)
+    3
+    >>> add(b=2, a=1, c=3)
+    Traceback (most recent call last):
+    ...
+    TypeError: add() got an unexpected keyword arguments: c
+    Usage: add(a=[your_value], b=[your_value])
+    Please Provide keyword-only arguments: a=[your_value], b=[your_value]
+    >>> add(1, 2)
+    Traceback (most recent call last):
+    ...
+    TypeError: add() takes 0 positional arguments but 2 were given
+    Usage: add(a=[your_value], b=[your_value])
+    Please Provide keyword-only arguments: a=[your_value], b=[your_value]
+    >>> add(a=1)
+    Traceback (most recent call last):
+    ...
+    TypeError: add() missing 1 required keyword-only arguments: b
+    Usage: add(a=[your_value], b=[your_value])
+    Please Provide keyword-only arguments: a=[your_value], b=[your_value]
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        sig = signature(func)
+        params = sig.parameters
+        missing_params = [
+            arg.name
+            for arg in params.values()
+            if arg.name not in kwargs and arg.kind == arg.KEYWORD_ONLY
+        ]
+        params_sample = [
+            f"{arg}=[your_value]"
+            for arg in params.values()
+            if arg.kind == arg.KEYWORD_ONLY
+        ]
+        params_sample_str = ", ".join(params_sample)
+        unexpected_params = ", ".join([arg for arg in kwargs if arg not in params])
+        if args:
+            raise TypeError(
+                (
+                    "{}() takes 0 positional arguments but {} were given\n"
+                    "Usage: {}({})\n"
+                    "Please Provide keyword-only arguments: {}"
+                ).format(
+                    func.__name__,
+                    len(args),
+                    func.__name__,
+                    params_sample_str,
+                    params_sample_str,
+                )
+            )
+        else:
+            if unexpected_params:
+                raise TypeError(
+                    "{}() got an unexpected keyword arguments: {}\n"
+                    "Usage: {}({})\n"
+                    "Please Provide keyword-only arguments: {}".format(
+                        func.__name__,
+                        unexpected_params,
+                        func.__name__,
+                        params_sample_str,
+                        params_sample_str,
+                    )
+                )
+
+            elif missing_params:
+                raise TypeError(
+                    "{}() missing {} required keyword-only arguments: {}\n"
+                    "Usage: {}({})\n"
+                    "Please Provide keyword-only arguments: {}".format(
+                        func.__name__,
+                        len(missing_params),
+                        ", ".join(missing_params),
+                        func.__name__,
+                        params_sample_str,
+                        params_sample_str,
+                    )
+                )
+            return func(*args, **kwargs)
+
+    return wrapper
