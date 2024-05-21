@@ -321,7 +321,12 @@ def slicer(
         lut = lookup_colormap
         if lookup_colormap is None:
             # Create a black/white lookup table.
-            lut = colormap_lookup_table((r1, r2), (0, 0), (0, 0), (0, 1))
+            lut = colormap_lookup_table(
+                scale_range=(r1, r2),
+                hue_range=(0, 0),
+                saturation_range=(0, 0),
+                value_range=(0, 1),
+            )
 
         plane_colors = ImageMapToColors()
         plane_colors.SetOutputFormatToRGB()
@@ -687,7 +692,7 @@ def streamtube(
 
     """
     # Poly data with lines and colors
-    poly_data, color_is_scalar = lines_to_vtk_polydata(lines, colors)
+    poly_data, color_is_scalar = lines_to_vtk_polydata(lines, colors=colors)
     next_input = poly_data
 
     # set primitives count
@@ -838,7 +843,7 @@ def line(
 
     """
     # Poly data with lines and colors
-    poly_data, color_is_scalar = lines_to_vtk_polydata(lines, colors)
+    poly_data, color_is_scalar = lines_to_vtk_polydata(lines, colors=colors)
     next_input = poly_data
 
     # set primitives count
@@ -1032,7 +1037,7 @@ def odf_slicer(
 
     if sphere is None:
         # Use a default sphere with 100 vertices
-        vertices, faces = fp.prim_sphere("repulsion100")
+        vertices, faces = fp.prim_sphere(name="repulsion100")
     else:
         vertices = sphere.vertices
         faces = fix_winding_order(vertices, sphere.faces, clockwise=True)
@@ -1863,7 +1868,7 @@ def sphere(
     big_verts, big_faces, big_colors, _ = res
     prim_count = len(centers)
     sphere_actor = get_actor_from_primitive(
-        big_verts, big_faces, big_colors, prim_count=prim_count
+        big_verts, big_faces, colors=big_colors, prim_count=prim_count
     )
     sphere_actor.GetProperty().SetOpacity(opacity)
     return sphere_actor
@@ -1948,7 +1953,7 @@ def cylinder(
         big_verts, big_faces, big_colors, _ = res
         prim_count = len(centers)
         cylinder_actor = get_actor_from_primitive(
-            big_verts, big_faces, big_colors, prim_count=prim_count
+            big_verts, big_faces, colors=big_colors, prim_count=prim_count
         )
 
     else:
@@ -2095,7 +2100,7 @@ def square(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     big_verts, big_faces, big_colors, _ = res
     prim_count = len(centers)
     sq_actor = get_actor_from_primitive(
-        big_verts, big_faces, big_colors, prim_count=prim_count
+        big_verts, big_faces, colors=big_colors, prim_count=prim_count
     )
     sq_actor.GetProperty().BackfaceCullingOff()
     return sq_actor
@@ -2180,7 +2185,7 @@ def box(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 3)):
     big_verts, big_faces, big_colors, _ = res
     prim_count = len(centers)
     box_actor = get_actor_from_primitive(
-        big_verts, big_faces, big_colors, prim_count=prim_count
+        big_verts, big_faces, colors=big_colors, prim_count=prim_count
     )
     return box_actor
 
@@ -2288,7 +2293,7 @@ def arrow(
         big_vertices, big_faces, big_colors, _ = res
         prim_count = len(centers)
         arrow_actor = get_actor_from_primitive(
-            big_vertices, big_faces, big_colors, prim_count=prim_count
+            big_vertices, big_faces, colors=big_colors, prim_count=prim_count
         )
         return arrow_actor
 
@@ -2389,7 +2394,7 @@ def cone(
     big_verts, big_faces, big_colors, _ = res
     prim_count = len(centers)
     cone_actor = get_actor_from_primitive(
-        big_verts, big_faces, big_colors, prim_count=prim_count
+        big_verts, big_faces, colors=big_colors, prim_count=prim_count
     )
 
     return cone_actor
@@ -2438,7 +2443,7 @@ def triangularprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     big_verts, big_faces, big_colors, _ = res
     prim_count = len(centers)
     tprism_actor = get_actor_from_primitive(
-        big_verts, big_faces, big_colors, prim_count=prim_count
+        big_verts, big_faces, colors=big_colors, prim_count=prim_count
     )
     return tprism_actor
 
@@ -2486,7 +2491,7 @@ def rhombicuboctahedron(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=
     big_verts, big_faces, big_colors, _ = res
     prim_count = len(centers)
     rcoh_actor = get_actor_from_primitive(
-        big_verts, big_faces, big_colors, prim_count=prim_count
+        big_verts, big_faces, colors=big_colors, prim_count=prim_count
     )
     return rcoh_actor
 
@@ -2536,7 +2541,7 @@ def pentagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     big_verts, big_faces, big_colors, _ = res
     prim_count = len(centers)
     pent_actor = get_actor_from_primitive(
-        big_verts, big_faces, big_colors, prim_count=prim_count
+        big_verts, big_faces, colors=big_colors, prim_count=prim_count
     )
     return pent_actor
 
@@ -2585,7 +2590,7 @@ def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     big_verts, big_faces, big_colors, _ = res
     prim_count = len(centers)
     oct_actor = get_actor_from_primitive(
-        big_verts, big_faces, big_colors, prim_count=prim_count
+        big_verts, big_faces, colors=big_colors, prim_count=prim_count
     )
     return oct_actor
 
@@ -2634,7 +2639,7 @@ def frustum(centers, directions=(1, 0, 0), colors=(0, 1, 0), scales=1):
     big_verts, big_faces, big_colors, _ = res
     prim_count = len(centers)
     frustum_actor = get_actor_from_primitive(
-        big_verts, big_faces, big_colors, prim_count=prim_count
+        big_verts, big_faces, colors=big_colors, prim_count=prim_count
     )
     return frustum_actor
 
@@ -2705,7 +2710,7 @@ def superquadric(
     big_verts, big_faces, big_colors, _ = res
     prim_count = len(centers)
     spq_actor = get_actor_from_primitive(
-        big_verts, big_faces, big_colors, prim_count=prim_count
+        big_verts, big_faces, colors=big_colors, prim_count=prim_count
     )
     return spq_actor
 
@@ -2766,7 +2771,7 @@ def billboard(
 
     prim_count = len(centers)
     bb_actor = get_actor_from_primitive(
-        big_verts, big_faces, big_colors, prim_count=prim_count
+        big_verts, big_faces, colors=big_colors, prim_count=prim_count
     )
     bb_actor.GetMapper().SetVBOShiftScaleMethod(False)
     bb_actor.GetProperty().BackfaceCullingOff()
@@ -3597,7 +3602,7 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives="torus", sca
     rep_verts, rep_faces, rep_colors, rep_centers = repeated
     prim_count = len(centers)
     box_actor = get_actor_from_primitive(
-        rep_verts, rep_faces, rep_colors, prim_count=prim_count
+        rep_verts, rep_faces, colors=rep_colors, prim_count=prim_count
     )
     box_actor.GetMapper().SetVBOShiftScaleMethod(False)
 
@@ -3707,7 +3712,7 @@ def markers(
     big_verts, big_faces, big_colors, big_centers = res
     prim_count = len(centers)
     sq_actor = get_actor_from_primitive(
-        big_verts, big_faces, big_colors, prim_count=prim_count
+        big_verts, big_faces, colors=big_colors, prim_count=prim_count
     )
     sq_actor.GetMapper().SetVBOShiftScaleMethod(False)
     sq_actor.GetProperty().BackfaceCullingOff()

@@ -129,14 +129,14 @@ def test_export_gltf():
 
     cube = actor.cube(np.add(centers, np.array([2, 0, 0])), colors=colors)
     scene.add(cube)
-    export_scene(scene, "test.gltf")
+    export_scene(scene, filename="test.gltf")
     gltf_obj = glTF("test.gltf")
     actors = gltf_obj.actors()
     npt.assert_equal(len(actors), 1)
 
     sphere = actor.sphere(centers, np.array([1, 0, 0]), use_primitive=False)
     scene.add(sphere)
-    export_scene(scene, "test.gltf")
+    export_scene(scene, filename="test.gltf")
     gltf_obj = glTF("test.gltf")
     actors = gltf_obj.actors()
 
@@ -149,7 +149,7 @@ def test_export_gltf():
         focal_point=(0.0, 0.0, 0.0),
         view_up=(0.0, 0.0, 1.0),
     )
-    export_scene(scene, "test.gltf")
+    export_scene(scene, filename="test.gltf")
     gltf_obj = glTF("test.gltf")
     actors = gltf_obj.actors()
 
@@ -167,7 +167,7 @@ def test_export_gltf():
     gltf_obj = glTF(filename)
     box_actor = gltf_obj.actors()
     scene.add(*box_actor)
-    export_scene(scene, "test.gltf")
+    export_scene(scene, filename="test.gltf")
     scene.clear()
 
     gltf_obj = glTF("test.gltf")

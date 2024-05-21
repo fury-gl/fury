@@ -254,14 +254,14 @@ class OdfSlicerActor(Actor):
             if self.colormap is None:
                 raise IOError("if global_cm=True, colormap must be defined.")
             else:
-                all_colors = create_colormap(sf.ravel(), self.colormap) * 255
+                all_colors = create_colormap(sf.ravel(), name=self.colormap) * 255
         elif self.colormap is not None:
             if isinstance(self.colormap, str):
                 # Map ODFs values [min, max] to [0, 1] for each ODF
                 range_sf = sf.max(axis=-1) - sf.min(axis=-1)
                 rescaled = sf - sf.min(axis=-1, keepdims=True)
                 rescaled[range_sf > 0] /= range_sf[range_sf > 0][..., None]
-                all_colors = create_colormap(rescaled.ravel(), self.colormap) * 255
+                all_colors = create_colormap(rescaled.ravel(), name=self.colormap) * 255
             else:
                 all_colors = np.tile(
                     np.array(self.colormap).reshape(1, 3),
