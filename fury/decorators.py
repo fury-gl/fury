@@ -51,107 +51,103 @@ def doctest_skip_parser(func):
 
 
 def keyword_only(func):
-    """A decorator to enforce keyword-only arguments.
+    """Decorator to enforce keyword-only arguments.
 
-    This decorator is used to enforce that certain arguments of a function
-    are passed as keyword arguments. This is useful to prevent users from
-    passing arguments in the wrong order.
+    This decorator enforces that all arguments after the first one are
+    keyword-only arguments. It also checks that all keyword arguments are
+    expected by the function.
 
-    Parameters
-    ----------
-    func : callable
-        The function to decorate.
+    Parameters:
+    -----------
+    func: function
+        Function to be decorated.
 
-    Returns
-    -------
-    callable
-        The decorated function.
-
-    Examples
+    Returns:
     --------
+    wrapper: function
+        Decorated function.
+
+    Examples:
+    ---------
     >>> @keyword_only
-    ... def add(*, a, b):
-    ...     return a + b
-    >>> add(a=1, b=2)
-    3
-    >>> add(b=2, a=1, c=3)
+    ... def f(a, b, *, c, d=1, e=1):
+    ...     return a + b + c + d + e
+    >>> f(1, 2, 3, 4, 5)
+    15
+    >>> f(1, 2, c=3, d=4, e=5)
+    15
+    >>> f(1, 2, 2, 4, e=5)
+    14
+    >>> f(1, 2, c=3, d=4)
+    11
+    >>> f(1, 2, d=3, e=5)
     Traceback (most recent call last):
     ...
-    TypeError: add() got an unexpected keyword arguments: c
-    Usage: add(a=[your_value], b=[your_value])
-    Please Provide keyword-only arguments: a=[your_value], b=[your_value]
-    >>> add(1, 2)
+    TypeError: f() missing 1 required keyword-only argument: 'c'
+    >>> f(1, 2, c=3, d=4, e=5, f=6)
     Traceback (most recent call last):
     ...
-    TypeError: add() takes 0 positional arguments but 2 were given
-    Usage: add(a=[your_value], b=[your_value])
-    Please Provide keyword-only arguments: a=[your_value], b=[your_value]
-    >>> add(a=1)
+    TypeError: f() got an unexpected keyword argument 'f'
+    >>> f(1, c=3, d=4, e=5)
     Traceback (most recent call last):
     ...
-    TypeError: add() missing 1 required keyword-only arguments: b
-    Usage: add(a=[your_value], b=[your_value])
-    Please Provide keyword-only arguments: a=[your_value], b=[your_value]
+    TypeError: f() missing 1 required positional argument: 'b'
+    >>> f(1, 2, 3, 4, 5, 6)
+    Traceback (most recent call last):
+    ...
+    TypeError: f() takes 2 positional arguments but 6 were given
     """
 
     @wraps(func)
     def wrapper(*args, **kwargs):
         sig = signature(func)
         params = sig.parameters
-        missing_params = [
+        # args_names = [param.name for param in params.values()]
+        KEYWORD_ONLY_ARGS = [
+            arg.name for arg in params.values() if arg.kind == arg.KEYWORD_ONLY
+        ]
+        POSITIONAL_ARGS = [
             arg.name
             for arg in params.values()
-            if arg.name not in kwargs and arg.kind == arg.KEYWORD_ONLY
+            if arg.kind in (arg.POSITIONAL_OR_KEYWORD, arg.POSITIONAL_ONLY)
         ]
-        params_sample = [
-            f"{arg}=[your_value]"
-            for arg in params.values()
-            if arg.kind == arg.KEYWORD_ONLY
+        missing_kwargs = [
+            arg
+            for arg in KEYWORD_ONLY_ARGS
+            if arg not in kwargs and params[arg].default == params[arg].empty
         ]
-        params_sample_str = ", ".join(params_sample)
-        unexpected_params_list = [arg for arg in kwargs if arg not in params]
-        unexpected_params = ", ".join(unexpected_params_list)
-        if args:
-            raise TypeError(
-                (
-                    "{}() takes 0 positional arguments but {} were given\n"
-                    "Usage: {}({})\n"
-                    "Please Provide keyword-only arguments: {}"
-                ).format(
-                    func.__name__,
-                    len(args),
-                    func.__name__,
-                    params_sample_str,
-                    params_sample_str,
-                )
-            )
-        else:
-            if unexpected_params:
-                raise TypeError(
-                    "{}() got an unexpected keyword arguments: {}\n"
-                    "Usage: {}({})\n"
-                    "Please Provide keyword-only arguments: {}".format(
-                        func.__name__,
-                        unexpected_params,
-                        func.__name__,
-                        params_sample_str,
-                        params_sample_str,
-                    )
-                )
-
-            elif missing_params:
-                raise TypeError(
-                    "{}() missing {} required keyword-only arguments: {}\n"
-                    "Usage: {}({})\n"
-                    "Please Provide keyword-only arguments: {}".format(
-                        func.__name__,
-                        len(missing_params),
-                        ", ".join(missing_params),
-                        func.__name__,
-                        params_sample_str,
-                        params_sample_str,
-                    )
-                )
+        ARG_DEFAULT = [
+            arg
+            for arg in KEYWORD_ONLY_ARGS
+            if arg not in kwargs and params[arg].default != params[arg].empty
+        ]
+        func_params_sample = []
+        for arg in params.values():
+            if arg.kind in (arg.POSITIONAL_OR_KEYWORD, arg.POSITIONAL_ONLY):
+                func_params_sample.append(f"{arg.name}_value")
+            elif arg.kind == arg.KEYWORD_ONLY:
+                func_params_sample.append(f"{arg.name}='value'")
+        func_params_sample = ", ".join(func_params_sample)
+        args_kwargs_len = len(args) + len(kwargs)
+        params_len = len(params)
+        try:
             return func(*args, **kwargs)
+        except Exception:
+            if ARG_DEFAULT:
+                missing_kwargs += ARG_DEFAULT
+            if missing_kwargs and params_len >= args_kwargs_len:
+                positional_args_len = len(POSITIONAL_ARGS)
+                args_k = list(args[positional_args_len:])
+                args = list(args[:positional_args_len])
+                kwargs.update(dict(zip(missing_kwargs, args_k)))
+                warn(
+                    "Here's how to call the Function {}: {}({})".format(
+                        func.__name__, func.__name__, func_params_sample
+                    ),
+                    UserWarning,
+                    stacklevel=3,
+                )
+            result = func(*args, **kwargs)
+            return result
 
     return wrapper
