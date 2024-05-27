@@ -807,7 +807,7 @@ def ribbon(molecule):
 
     for i in range(num_total_atoms):
         radii[i] = np.repeat(
-            table.atomic_radius(all_atomic_numbers[i], radius_type="VDW"),
+            table.atomic_radius(all_atomic_numbers[i], "VDW"),
             3,
         )
         rgb[i] = table.atom_color(all_atomic_numbers[i])
