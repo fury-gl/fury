@@ -5,6 +5,7 @@ from collections import deque
 import numpy as np
 
 from fury.decorators import keyword_only
+from fury.decorators import keyword_only
 from fury.lib import (
     Command,
     InteractorStyle,
@@ -124,6 +125,12 @@ class CustomInteractorStyle(InteractorStyleUser):
             0,
             self.GetCurrentRenderer(),
         )
+        self.picker.Pick(
+            event_pos[0],
+            event_pos[1],
+            0,
+            self.GetCurrentRenderer(),
+        )
 
         path = self.picker.GetPath()
         if path is None:
@@ -181,12 +188,15 @@ class CustomInteractorStyle(InteractorStyleUser):
 
     @keyword_only
     def _button_clicked(self, button, *, last_event=-1, before_last_event=-2):
+    @keyword_only
+    def _button_clicked(self, button, *, last_event=-1, before_last_event=-2):
         if len(self.history) < abs(before_last_event):
             return False
 
         if self.history[last_event]["event"] != button + "ButtonReleaseEvent":
             return False
 
+        if (self.history[before_last_event]["event"]) != (button + "ButtonPressEvent"):  # noqa
         if (self.history[before_last_event]["event"]) != (button + "ButtonPressEvent"):  # noqa
             return False
 
@@ -198,8 +208,8 @@ class CustomInteractorStyle(InteractorStyleUser):
             and (
                 self._button_clicked(
                     button,
-                    last_event=-3,
-                    before_last_event=-4,
+                    -3,
+                    -4,
                 )
             )
         ):
@@ -409,6 +419,16 @@ class CustomInteractorStyle(InteractorStyleUser):
         priority=0,
         args=None,
     ):
+    @keyword_only
+    def add_callback(
+        self,
+        prop,
+        event_type,
+        callback,
+        *,
+        priority=0,
+        args=None,
+    ):
         """Add a callback associated to a specific event for a VTK prop.
 
         Parameters
@@ -437,6 +457,9 @@ class CustomInteractorStyle(InteractorStyleUser):
             if event_type not in self.event2id:
                 # If the event type was not previously defined,
                 # then create an extra user defined event.
+                self.event2id[event_type] = (Command.UserEvent) + (
+                    len(self.event2id) + 1
+                )
                 self.event2id[event_type] = (Command.UserEvent) + (
                     len(self.event2id) + 1
                 )
