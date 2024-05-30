@@ -54,9 +54,9 @@ def test_load_texture():
     scene.add(actor)
     display = window.snapshot(scene)
     res = window.analyze_snapshot(
-        display, bg_color=(0, 0, 0), colors=[(255, 216, 0)], find_objects=False
+        display, bg_color=(0, 0, 0), colors=[(149, 126, 19), (136, 115, 19), (143, 121, 19)], find_objects=False
     )
-    npt.assert_equal(res.colors_found, [True])
+    npt.assert_equal(res.colors_found, [True, True, True])
     scene.clear()
 
 
@@ -106,13 +106,17 @@ def test_orientation():
     # if oriented correctly avg of blues on top half will be greater
     # than the bottom half
     display = window.snapshot(scene)
+
+    # save screenshot
+    img = Image.fromarray(display)
+    img.save('test_orientation.png')
     res = window.analyze_snapshot(
         display,
         bg_color=(0, 0, 0),
-        colors=[(108, 173, 223), (92, 135, 39)],
+        colors=[(128, 128, 128), (56, 79, 30), (64, 101, 130)],
         find_objects=False,
     )
-    npt.assert_equal(res.colors_found, [True, True])
+    npt.assert_equal(res.colors_found, [True, True, True])
     blue = display[:, :, -1:].reshape((300, 300))
     upper, lower = np.split(blue, 2)
     upper = np.mean(upper)
@@ -204,16 +208,19 @@ def test_simple_animation():
 
     timeline.seek(2.57)
     showm.save_screenshot('keyframe2.png')
-    res1 = window.analyze_snapshot(
-        'keyframe1.png', colors=[(77, 136, 204), (204, 106, 203)]
-    )
-    res2 = window.analyze_snapshot(
-        'keyframe2.png', colors=[(77, 136, 204), (204, 106, 203)]
-    )
 
-    assert_greater(res2.objects, res1.objects)
-    npt.assert_equal(res1.colors_found, [True, False])
-    npt.assert_equal(res2.colors_found, [True, True])
+    res_1 = window.analyze_snapshot(
+        "keyframe1.png", colors=[(87, 112, 134), (134, 100, 133)]
+    )
+    res_2 = window.analyze_snapshot(
+        "keyframe2.png", colors=[(87, 112, 134), (134, 100, 133)]
+    )
+    # inside box adds more colors
+    assert_greater(res_2.objects, res_1.objects)
+    # bluish box should exist in both images, but
+    # not the purple one in the first image
+    npt.assert_equal(res_1.colors_found, [True, False])
+    npt.assert_equal(res_2.colors_found, [True, True])
 
 
 def test_skinning():
