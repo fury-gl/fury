@@ -20,10 +20,10 @@ from fury.animation import Animation
 from fury.animation.interpolator import cubic_spline_interpolator
 
 keyframes = {
-    1.0: {'value': np.array([0, 0, 0])},
-    2.0: {'value': np.array([-4, 1, 0])},
-    5.0: {'value': np.array([0, 0, 12])},
-    6.0: {'value': np.array([25, 0, 12])},
+    1.0: {"value": np.array([0, 0, 0])},
+    2.0: {"value": np.array([-4, 1, 0])},
+    5.0: {"value": np.array([0, 0, 12])},
+    6.0: {"value": np.array([25, 0, 12])},
 }
 
 ###############################################################################
@@ -133,4 +133,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_keyframe_interpolator.png', size=(900, 768))
+window.record(scene, out_path="viz_keyframe_interpolator.png", size=(900, 768))

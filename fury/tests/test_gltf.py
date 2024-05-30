@@ -1,12 +1,11 @@
 import itertools
 import os
-import sys
 
+from PIL import Image
 import numpy as np
 import numpy.testing as npt
-import pytest
 from packaging.version import parse
-from PIL import Image
+import pytest
 from scipy.ndimage import center_of_mass
 from scipy.version import short_version
 
@@ -16,7 +15,7 @@ from fury.data import fetch_gltf, read_viz_gltf
 from fury.gltf import export_scene, glTF
 from fury.testing import assert_equal, assert_greater
 
-SCIPY_1_8_PLUS = parse(short_version) >= parse('1.8.0')
+SCIPY_1_8_PLUS = parse(short_version) >= parse("1.8.0")
 
 if SCIPY_1_8_PLUS:
     from scipy.ndimage._measurements import _stats
@@ -25,8 +24,8 @@ else:
 
 
 def test_load_gltf():
-    fetch_gltf('Duck')
-    filename = read_viz_gltf('Duck', 'glTF')
+    fetch_gltf("Duck")
+    filename = read_viz_gltf("Duck", "glTF")
     importer = glTF(filename)
     polydatas = importer.polydatas
     vertices = utils.get_polydata_vertices(polydatas[0])
@@ -45,8 +44,8 @@ def test_load_gltf():
 
 
 def test_load_texture():
-    fetch_gltf('Duck')
-    filename = read_viz_gltf('Duck', 'glTF')
+    fetch_gltf("Duck")
+    filename = read_viz_gltf("Duck", "glTF")
     importer = glTF(filename)
     actor = importer.actors()[0]
 
@@ -63,8 +62,8 @@ def test_load_texture():
 @pytest.mark.skipif(True, reason="This test is failing on CI, not sure why yet")
 def test_colors():
     # vertex colors
-    fetch_gltf('BoxVertexColors')
-    file = read_viz_gltf('BoxVertexColors', 'glTF')
+    fetch_gltf("BoxVertexColors")
+    file = read_viz_gltf("BoxVertexColors", "glTF")
     importer = glTF(file)
     actor = importer.actors()[0]
     scene = window.Scene()
@@ -80,8 +79,8 @@ def test_colors():
     scene.clear()
 
     # material colors
-    fetch_gltf('BoxAnimated')
-    file = read_viz_gltf('BoxAnimated', 'glTF')
+    fetch_gltf("BoxAnimated")
+    file = read_viz_gltf("BoxAnimated", "glTF")
     importer = glTF(file)
     actors = importer.actors()
     scene.add(*actors)
@@ -96,8 +95,8 @@ def test_colors():
 
 
 def test_orientation():
-    fetch_gltf('BoxTextured', 'glTF-Embedded')
-    file = read_viz_gltf('BoxTextured', 'glTF-Embedded')
+    fetch_gltf("BoxTextured", "glTF-Embedded")
+    file = read_viz_gltf("BoxTextured", "glTF-Embedded")
     importer = glTF(file)
     actor = importer.actors()[0]
 
@@ -134,15 +133,15 @@ def test_export_gltf():
 
     cube = actor.cube(np.add(centers, np.array([2, 0, 0])), colors=colors)
     scene.add(cube)
-    export_scene(scene, 'test.gltf')
-    gltf_obj = glTF('test.gltf')
+    export_scene(scene, "test.gltf")
+    gltf_obj = glTF("test.gltf")
     actors = gltf_obj.actors()
     npt.assert_equal(len(actors), 1)
 
     sphere = actor.sphere(centers, np.array([1, 0, 0]), use_primitive=False)
     scene.add(sphere)
-    export_scene(scene, 'test.gltf')
-    gltf_obj = glTF('test.gltf')
+    export_scene(scene, "test.gltf")
+    gltf_obj = glTF("test.gltf")
     actors = gltf_obj.actors()
 
     scene.clear()
@@ -154,8 +153,8 @@ def test_export_gltf():
         focal_point=(0.0, 0.0, 0.0),
         view_up=(0.0, 0.0, 1.0),
     )
-    export_scene(scene, 'test.gltf')
-    gltf_obj = glTF('test.gltf')
+    export_scene(scene, "test.gltf")
+    gltf_obj = glTF("test.gltf")
     actors = gltf_obj.actors()
 
     scene.clear()
@@ -167,15 +166,15 @@ def test_export_gltf():
     scene.reset_camera_tight()
     scene.clear()
 
-    fetch_gltf('BoxTextured', 'glTF')
-    filename = read_viz_gltf('BoxTextured')
+    fetch_gltf("BoxTextured", "glTF")
+    filename = read_viz_gltf("BoxTextured")
     gltf_obj = glTF(filename)
     box_actor = gltf_obj.actors()
     scene.add(*box_actor)
-    export_scene(scene, 'test.gltf')
+    export_scene(scene, "test.gltf")
     scene.clear()
 
-    gltf_obj = glTF('test.gltf')
+    gltf_obj = glTF("test.gltf")
     actors = gltf_obj.actors()
     scene.add(*actors)
 
@@ -190,8 +189,8 @@ def test_export_gltf():
 
 
 def test_simple_animation():
-    fetch_gltf('BoxAnimated', 'glTF')
-    file = read_viz_gltf('BoxAnimated')
+    fetch_gltf("BoxAnimated", "glTF")
+    file = read_viz_gltf("BoxAnimated")
     gltf_obj = glTF(file)
     timeline = Timeline()
     animation = gltf_obj.main_animation()
@@ -204,7 +203,7 @@ def test_simple_animation():
 
     # timestamp animation seek
     timeline.seek(0.0)
-    showm.save_screenshot('keyframe1.png')
+    showm.save_screenshot("keyframe1.png")
 
     timeline.seek(2.57)
     showm.save_screenshot('keyframe2.png')
@@ -225,10 +224,10 @@ def test_simple_animation():
 
 def test_skinning():
     # animation test
-    fetch_gltf('SimpleSkin', 'glTF')
-    file = read_viz_gltf('SimpleSkin')
+    fetch_gltf("SimpleSkin", "glTF")
+    file = read_viz_gltf("SimpleSkin")
     gltf_obj = glTF(file)
-    animation = gltf_obj.skin_animation()['anim_0']
+    animation = gltf_obj.skin_animation()["anim_0"]
     timeline = Timeline(animation)
     # checking weights and joints
     weights = np.array(
@@ -274,9 +273,9 @@ def test_skinning():
     timeline.seek(1.0)
 
     timeline.seek(4.00)
-    showm.save_screenshot('keyframe2.png')
-    res1 = np.asarray(Image.open('keyframe1.png'))
-    res2 = np.asarray(Image.open('keyframe2.png'))
+    showm.save_screenshot("keyframe2.png")
+    res1 = np.asarray(Image.open("keyframe1.png"))
+    res2 = np.asarray(Image.open("keyframe2.png"))
 
     avg = center_of_mass(res1)
     print(avg)
@@ -299,9 +298,9 @@ def test_skinning():
         joint_matrices = []
         ibms = []
         for i, bone in enumerate(gltf_obj.bones[0]):
-            if animation.is_interpolatable(f'transform{bone}'):
+            if animation.is_interpolatable(f"transform{bone}"):
                 deform = animation.get_value(
-                    f'transform{bone}', animation.current_timestamp
+                    f"transform{bone}", animation.current_timestamp
                 )
                 ibm = gltf_obj.ibms[0][i].T
                 ibms.append(ibm)
@@ -316,9 +315,9 @@ def test_skinning():
         showm.render()
 
         if cnt == 10:
-            showm.save_screenshot('keyframe1.png')
+            showm.save_screenshot("keyframe1.png")
         if cnt == 100:
-            showm.save_screenshot('keyframe2.png')
+            showm.save_screenshot("keyframe2.png")
 
         if cnt == 150:
             showm.destroy_timer(timer_id)
@@ -329,15 +328,15 @@ def test_skinning():
 
 
 def test_morphing():
-    fetch_gltf('MorphStressTest', 'glTF')
-    file = read_viz_gltf('MorphStressTest')
+    fetch_gltf("MorphStressTest", "glTF")
+    file = read_viz_gltf("MorphStressTest")
     gltf_obj = glTF(file)
     animations = gltf_obj.morph_animation()
 
     npt.assert_equal(len(gltf_obj._actors), 2)
     npt.assert_equal(len(gltf_obj.morph_weights), 16)
-    npt.assert_equal(list(animations.keys()), ['Individuals', 'TheWave', 'Pulse'])
-    anim_1 = animations['TheWave']
+    npt.assert_equal(list(animations.keys()), ["Individuals", "TheWave", "Pulse"])
+    anim_1 = animations["TheWave"]
     gltf_obj.update_morph(anim_1)
 
     scene = window.Scene()
@@ -350,18 +349,18 @@ def test_morphing():
 
     timeline_1.seek(0.1)
     gltf_obj.update_morph(anim_1)
-    showm.save_screenshot('keyframe1.png')
-    res_1 = window.analyze_snapshot('keyframe1.png')
+    showm.save_screenshot("keyframe1.png")
+    res_1 = window.analyze_snapshot("keyframe1.png")
 
     timeline_1.seek(1.50)
     gltf_obj.update_morph(anim_1)
-    showm.save_screenshot('keyframe2.png')
-    res_2 = window.analyze_snapshot('keyframe2.png')
+    showm.save_screenshot("keyframe2.png")
+    res_2 = window.analyze_snapshot("keyframe2.png")
 
     npt.assert_equal(res_1.colors_found, res_2.colors_found)
 
-    img_1 = np.asarray(Image.open('keyframe1.png').convert('L'))
-    img_2 = np.asarray(Image.open('keyframe2.png').convert('L'))
+    img_1 = np.asarray(Image.open("keyframe1.png").convert("L"))
+    img_2 = np.asarray(Image.open("keyframe2.png").convert("L"))
     stats_1, stats_2 = _stats(img_1), _stats(img_2)
     # Assert right image size
     assert_equal(stats_1[0], stats_2[0])

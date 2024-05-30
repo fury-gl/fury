@@ -13,12 +13,18 @@ from fury.layout import (
 )
 from fury.ui.containers import Panel2D
 
+# Define module-level singleton variables
+DEFAULT_CENTERS = np.asarray([[[0, 0, 0]], [[5, 5, 5]]])
+DEFAULT_DIRECTIONS = np.asarray([[[0, 0, 0]], [[0, 0, 0]]])
+DEFAULT_COLORS = np.random.rand(2, 3)
+DEFAULT_SCALES = [1, 1.5]
+
 
 def get_default_cubes(
-    centers=np.asarray([[[0, 0, 0]], [[5, 5, 5]]]),
-    directions=np.asarray([[[0, 0, 0]], [[0, 0, 0]]]),
-    colors=np.random.rand(2, 3),
-    scales=[1, 1.5],
+    centers=DEFAULT_CENTERS,
+    directions=DEFAULT_DIRECTIONS,
+    colors=DEFAULT_COLORS,
+    scales=DEFAULT_SCALES,
 ):
     """Provides cube actors with default parameters
 
@@ -32,6 +38,7 @@ def get_default_cubes(
         RGB or RGBA (for opacity)
     scales: list of 2 floats
         Cube Sizes
+
     """
     cube_first_center, cube_second_center = centers
     cube_first_direction, cube_second_direction = directions
@@ -49,7 +56,7 @@ def get_default_cubes(
     return (cube_first, cube_second)
 
 
-def get_default_panels(sizes=[(100, 100), (200, 200)], colors=np.random.rand(2, 3)):
+def get_default_panels(sizes=None, colors=None):
     """Provides Panels with default parameters
 
     Parameters
@@ -58,7 +65,13 @@ def get_default_panels(sizes=[(100, 100), (200, 200)], colors=np.random.rand(2, 
         Sizes of the two panels
     colors: ndarray ndarray (2,3) or (2, 4)
         RGB or RGBA (for opacity)
+
     """
+    if sizes is None:
+        sizes = [(100, 100), (200, 200)]
+    if colors is None:
+        colors = np.random.rand(2, 3)
+
     panel_first_size, panel_second_size = sizes
     panel_first_color, panel_second_color = colors
 
@@ -69,7 +82,6 @@ def get_default_panels(sizes=[(100, 100), (200, 200)], colors=np.random.rand(2, 
 
 
 def test_layout_apply():
-
     cube_first, cube_second = get_default_cubes()
     panel_first, panel_second = get_default_panels()
 
@@ -93,7 +105,6 @@ def test_layout_apply():
 
 
 def test_layout_compute_postions():
-
     cube_first, cube_second = get_default_cubes()
     panel_first, panel_second = get_default_panels()
 
@@ -107,14 +118,13 @@ def test_layout_compute_postions():
 
 
 def test_grid_layout_get_cell_shape():
-
     cube_first, cube_second = get_default_cubes()
     panel_first, panel_second = get_default_panels()
 
     grid = GridLayout()
-    grid_square = GridLayout(cell_shape='square')
-    grid_diagonal = GridLayout(cell_shape='diagonal')
-    invalid_gird = GridLayout(cell_shape='invalid')
+    grid_square = GridLayout(cell_shape="square")
+    grid_diagonal = GridLayout(cell_shape="diagonal")
+    invalid_gird = GridLayout(cell_shape="invalid")
 
     shape = grid.get_cells_shape([cube_first, cube_second])
     shape_square = grid_square.get_cells_shape([cube_first, cube_second])
@@ -157,13 +167,12 @@ def test_grid_layout_get_cell_shape():
 
 
 def test_grid_layout_compute_positions():
-
     cube_first, cube_second = get_default_cubes()
     panel_first, panel_second = get_default_panels()
 
     grid = GridLayout()
-    grid_square = GridLayout(cell_shape='square')
-    grid_diagonal = GridLayout(cell_shape='diagonal')
+    grid_square = GridLayout(cell_shape="square")
+    grid_diagonal = GridLayout(cell_shape="diagonal")
 
     position_rect = grid.compute_positions([cube_first, cube_second])
     position_square = grid_square.compute_positions([cube_first, cube_second])
@@ -188,11 +197,10 @@ def test_grid_layout_compute_positions():
 
 
 def test_grid_layout_apply():
-
     cube_first, cube_second = get_default_cubes()
     panel_first, panel_second = get_default_panels()
 
-    grid_diagonal = GridLayout(cell_shape='diagonal')
+    grid_diagonal = GridLayout(cell_shape="diagonal")
     grid_diagonal.apply([cube_first, cube_second])
     grid_diagonal.apply([panel_first, panel_second])
 
@@ -211,8 +219,8 @@ def test_vertical_layout_compute_positions():
     (cube_first, cube_second) = get_default_cubes()
 
     vertical_layout_rect = VerticalLayout()
-    vertical_layout_square = VerticalLayout(cell_shape='square')
-    vertical_layout_diagonal = VerticalLayout(cell_shape='diagonal')
+    vertical_layout_square = VerticalLayout(cell_shape="square")
+    vertical_layout_diagonal = VerticalLayout(cell_shape="diagonal")
 
     position_rect = vertical_layout_rect.compute_positions([cube_first, cube_second])
 
@@ -230,12 +238,11 @@ def test_vertical_layout_compute_positions():
 
 
 def test_horizontal_layout_compute_positions():
-
     cube_first, cube_second = get_default_cubes()
 
     horizontal_rect = HorizontalLayout()
-    horizontal_square = HorizontalLayout(cell_shape='square')
-    horizontal_diagonal = HorizontalLayout(cell_shape='diagonal')
+    horizontal_square = HorizontalLayout(cell_shape="square")
+    horizontal_diagonal = HorizontalLayout(cell_shape="diagonal")
 
     position_rect = horizontal_rect.compute_positions([cube_first, cube_second])
 
@@ -252,11 +259,11 @@ def test_x_layout():
     cube_first, cube_second = get_default_cubes()
     actors = [cube_first, cube_second]
 
-    positive_x_layout = XLayout(direction='x+')
-    negative_x_layout = XLayout(direction='x-')
+    positive_x_layout = XLayout(direction="x+")
+    negative_x_layout = XLayout(direction="x-")
 
     with npt.assert_raises(ValueError):
-        _ = XLayout(direction='Invalid direction')
+        _ = XLayout(direction="Invalid direction")
 
     positive_positions = positive_x_layout.compute_positions(actors)
     negative_positions = negative_x_layout.compute_positions(actors)
@@ -289,11 +296,11 @@ def test_y_layout():
     cube_first, cube_second = get_default_cubes()
     actors = [cube_first, cube_second]
 
-    positive_y_layout = YLayout(direction='y+')
-    negative_y_layout = YLayout(direction='y-')
+    positive_y_layout = YLayout(direction="y+")
+    negative_y_layout = YLayout(direction="y-")
 
     with npt.assert_raises(ValueError):
-        _ = YLayout(direction='Invalid direction')
+        _ = YLayout(direction="Invalid direction")
 
     positive_positions = positive_y_layout.compute_positions(actors)
     negative_positions = negative_y_layout.compute_positions(actors)
@@ -326,15 +333,15 @@ def test_z_layout():
     cube_first, cube_second = get_default_cubes()
     actors = [cube_first, cube_second]
 
-    positive_z_layout = ZLayout(direction='z+')
-    negative_z_layout = ZLayout(direction='z-')
-    diagonal_z_layout = ZLayout(direction='z+', cell_shape='diagonal')
+    positive_z_layout = ZLayout(direction="z+")
+    negative_z_layout = ZLayout(direction="z-")
+    diagonal_z_layout = ZLayout(direction="z+", cell_shape="diagonal")
 
     with npt.assert_raises(ValueError):
-        _ = XLayout(direction='Invalid direction')
+        _ = XLayout(direction="Invalid direction")
 
     with npt.assert_raises(ValueError):
-        invalid_shape_layout = ZLayout(direction='z+', cell_shape='Invalid Shape')
+        invalid_shape_layout = ZLayout(direction="z+", cell_shape="Invalid Shape")
         _ = invalid_shape_layout.get_cells_shape(actors)
 
     positive_positions = positive_z_layout.compute_positions(actors)

@@ -34,14 +34,14 @@ sphere = actor.sphere(
 )
 
 # Creating a dict of possible options and mapping it with their values.
-options = {'Blue': (0, 0, 255), 'Red': (255, 0, 0), 'Green': (0, 255, 0)}
+options = {"Blue": (0, 0, 255), "Red": (255, 0, 0), "Green": (0, 255, 0)}
 
 color_toggler = ui.RadioButton(
     list(options),
-    checked_labels=['Blue'],
+    checked_labels=["Blue"],
     padding=1,
     font_size=16,
-    font_family='Arial',
+    font_family="Arial",
     position=(200, 200),
 )
 
@@ -65,7 +65,7 @@ color_toggler.on_change = toggle_color
 # manager.
 
 current_size = (800, 800)
-show_manager = window.ShowManager(size=current_size, title='FURY Sphere Example')
+show_manager = window.ShowManager(size=current_size, title="FURY Sphere Example")
 
 show_manager.scene.add(sphere)
 show_manager.scene.add(color_toggler)
@@ -82,4 +82,4 @@ interactive = False
 if interactive:
     show_manager.start()
 
-window.record(show_manager.scene, size=current_size, out_path='viz_radio_buttons.png')
+window.record(show_manager.scene, size=current_size, out_path="viz_radio_buttons.png")

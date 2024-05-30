@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 import gzip
-import time
-import fury.animation as anim
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 from threading import Lock
+import time
 from warnings import warn
 
 import numpy as np
 from scipy import ndimage
 
 from fury import __version__ as fury_version
+import fury.animation as anim
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image, save_image
 from fury.lib import (
@@ -32,7 +32,7 @@ from fury.shaders.base import GL_NUMBERS as _GL
 from fury.utils import asbytes
 
 try:
-    basestring
+    _ = basestring
 except NameError:
     basestring = str
 
@@ -83,7 +83,9 @@ class Scene(OpenGLRenderer):
             else:
                 self.rm(self.__skybox_actor)
         else:
-            warn('Scene created without a skybox. Nothing to show or hide.')
+            warn(
+                "Scene created without a skybox. Nothing to show or hide.", stacklevel=2
+            )
 
     def add(self, *actors):
         """Add an actor to the scene."""
@@ -92,7 +94,7 @@ class Scene(OpenGLRenderer):
                 self.AddVolume(actor)
             elif isinstance(actor, Actor2D):
                 self.AddActor2D(actor)
-            elif hasattr(actor, 'add_to_scene'):
+            elif hasattr(actor, "add_to_scene"):
                 actor.add_to_scene(self)
             else:
                 self.AddActor(actor)
@@ -110,7 +112,7 @@ class Scene(OpenGLRenderer):
         """Remove all actors from the scene."""
         self.RemoveAllViewProps()
 
-    def projection(self, proj_type='perspective'):
+    def projection(self, proj_type="perspective"):
         """Decide between parallel or perspective projection.
 
         Parameters
@@ -119,7 +121,7 @@ class Scene(OpenGLRenderer):
             Can be 'parallel' or 'perspective' (default).
 
         """
-        if proj_type == 'parallel':
+        if proj_type == "parallel":
             self.GetActiveCamera().ParallelProjectionOn()
         else:
             self.GetActiveCamera().ParallelProjectionOff()
@@ -173,10 +175,10 @@ class Scene(OpenGLRenderer):
     def camera_info(self):
         """Return Camera information."""
         cam = self.camera()
-        print('# Active Camera')
-        print('   Position (%.2f, %.2f, %.2f)' % cam.GetPosition())
-        print('   Focal Point (%.2f, %.2f, %.2f)' % cam.GetFocalPoint())
-        print('   View Up (%.2f, %.2f, %.2f)' % cam.GetViewUp())
+        print("# Active Camera")
+        print("   Position (%.2f, %.2f, %.2f)" % cam.GetPosition())
+        print("   Focal Point (%.2f, %.2f, %.2f)" % cam.GetFocalPoint())
+        print("   View Up (%.2f, %.2f, %.2f)" % cam.GetViewUp())
 
     def set_camera(self, position=None, focal_point=None, view_up=None):
         """Set up camera position / Focal Point / View Up."""
@@ -276,7 +278,6 @@ class Scene(OpenGLRenderer):
     @property
     def last_render_time(self):
         """Returns the last render time in seconds."""
-
         return self.GetLastRenderTimeInSeconds()
 
     def fxaa_on(self):
@@ -292,13 +293,13 @@ class ShowManager:
     def __init__(
         self,
         scene=None,
-        title='FURY',
+        title="FURY",
         size=(300, 300),
         png_magnify=1,
         reset_camera=True,
         order_transparent=False,
-        interactor_style='custom',
-        stereo='off',
+        interactor_style="custom",
+        stereo="off",
         multi_samples=8,
         max_peels=4,
         occlusion_ratio=0.0,
@@ -387,7 +388,7 @@ class ShowManager:
 
         self.window = RenderWindow()
 
-        if self.stereo.lower() != 'off':
+        if self.stereo.lower() != "off":
             enable_stereo(self.window, self.stereo)
 
         self.window.AddRenderer(scene)
@@ -404,11 +405,11 @@ class ShowManager:
                 occlusion_ratio=occlusion_ratio,
             )
 
-        if self.interactor_style == 'image':
+        if self.interactor_style == "image":
             self.style = InteractorStyleImage()
-        elif self.interactor_style == 'trackball':
+        elif self.interactor_style == "trackball":
             self.style = InteractorStyleTrackballCamera()
-        elif self.interactor_style == 'custom':
+        elif self.interactor_style == "custom":
             self.style = CustomInteractorStyle()
         else:
             self.style = interactor_style
@@ -435,6 +436,7 @@ class ShowManager:
         -------
         list[Timeline]:
             List of Timelines.
+
         """
         return self._timelines
 
@@ -446,6 +448,7 @@ class ShowManager:
         -------
         list[Animation]:
             List of Animations.
+
         """
         return self._animations
 
@@ -460,6 +463,7 @@ class ShowManager:
         ----------
         animation : Animation or Timeline
             The Animation or Timeline to be added to the ShowManager.
+
         """
         animation.add_to_scene(self.scene)
         if isinstance(animation, anim.Animation):
@@ -491,8 +495,8 @@ class ShowManager:
         ----------
         animation : Animation or Timeline
             The Timeline to be removed.
-        """
 
+        """
         if animation in self.timelines or animation in self.animations:
             animation.remove_from_scene(self.scene)
             if isinstance(animation, anim.Animation):
@@ -530,8 +534,8 @@ class ShowManager:
 
         """
         try:
-            if self.title.upper() == 'FURY':
-                self.window.SetWindowName(self.title + ' ' + fury_version)
+            if self.title.upper() == "FURY":
+                self.window.SetWindowName(self.title + " " + fury_version)
             else:
                 self.window.SetWindowName(self.title)
             if multithreaded:
@@ -563,8 +567,8 @@ class ShowManager:
                 interactor_style=self.interactor_style,
             )
             self.render()
-            if self.title.upper() == 'FURY':
-                self.window.SetWindowName(self.title + ' ' + fury_version)
+            if self.title.upper() == "FURY":
+                self.window.SetWindowName(self.title + " " + fury_version)
             else:
                 self.window.SetWindowName(self.title)
             self.iren.Start()
@@ -590,10 +594,12 @@ class ShowManager:
         Returns
         -------
         successful : bool
-            Returns if the lock was acquired."""
+        Returns if the lock was acquired.
+
+        """
         if self.is_done():
             return False
-        if not hasattr(self, 'window'):
+        if not hasattr(self, "window"):
             return False
         try:
             self.lock()
@@ -635,7 +641,7 @@ class ShowManager:
 
         """
         with InTemporaryDirectory():
-            filename = 'recorded_events.log'
+            filename = "recorded_events.log"
             recorder = InteractorEventRecorder()
             recorder.SetInteractor(self.iren)
             recorder.SetFileName(filename)
@@ -645,7 +651,7 @@ class ShowManager:
                     recorder.Stop()
                 self.iren.TerminateApp()
 
-            self.iren.AddObserver('ExitEvent', _stop_recording_and_close)
+            self.iren.AddObserver("ExitEvent", _stop_recording_and_close)
 
             recorder.EnabledOn()
             recorder.Record()
@@ -656,11 +662,11 @@ class ShowManager:
             # to close the file.
             recorder = None
             # Retrieved recorded events.
-            with open(filename, 'r') as f:
+            with open(filename, "r") as f:
                 events = f.read()
         return events
 
-    def record_events_to_file(self, filename='record.log'):
+    def record_events_to_file(self, filename="record.log"):
         """Record events during the interaction.
 
         The recording is represented as a list of VTK events
@@ -676,11 +682,11 @@ class ShowManager:
         events = self.record_events()
 
         # Compress file if needed
-        if filename.endswith('.gz'):
-            with gzip.open(filename, 'wb') as fgz:
+        if filename.endswith(".gz"):
+            with gzip.open(filename, "wb") as fgz:
                 fgz.write(asbytes(events))
         else:
-            with open(filename, 'w') as f:
+            with open(filename, "w") as f:
                 f.write(events)
 
     def play_events(self, events):
@@ -729,8 +735,8 @@ class ShowManager:
 
         """
         # Uncompress file if needed.
-        if filename.endswith('.gz'):
-            with gzip.open(filename, 'r') as f:
+        if filename.endswith(".gz"):
+            with gzip.open(filename, "r") as f:
                 events = f.read()
         else:
             with open(filename) as f:
@@ -746,7 +752,7 @@ class ShowManager:
     def add_timer_callback(self, repeat, duration, timer_callback):
         if not self.iren.GetInitialized():
             self.initialize()
-        self.iren.AddObserver('TimerEvent', timer_callback)
+        self.iren.AddObserver("TimerEvent", timer_callback)
 
         if repeat:
             timer_id = self.iren.CreateRepeatingTimer(duration)
@@ -755,7 +761,7 @@ class ShowManager:
         self.timers.append(timer_id)
         return timer_id
 
-    def add_iren_callback(self, iren_callback, event='MouseMoveEvent'):
+    def add_iren_callback(self, iren_callback, event="MouseMoveEvent"):
         if not self.iren.GetInitialized():
             self.initialize()
         self.iren.AddObserver(event, iren_callback)
@@ -770,7 +776,6 @@ class ShowManager:
 
     def exit(self):
         """Close window and terminate interactor."""
-
         # if is_osx and self.timers:
         # OSX seems to not destroy correctly timers
         # segfault 11 appears sometimes if we do not do it manually.
@@ -826,12 +831,12 @@ class ShowManager:
 
 def show(
     scene,
-    title='FURY',
+    title="FURY",
     size=(300, 300),
     png_magnify=1,
     reset_camera=True,
     order_transparent=False,
-    stereo='off',
+    stereo="off",
     multi_samples=8,
     max_peels=4,
     occlusion_ratio=0.0,
@@ -839,7 +844,7 @@ def show(
     """Show window with current scene.
 
     Parameters
-    ------------
+    ----------
     scene : Scene() or vtkRenderer()
         The scene that holds all the actors.
     title : string
@@ -880,7 +885,7 @@ def show(
         Occlusion ration for depth peeling (Default 0 - exact image).
 
     Examples
-    ----------
+    --------
     >>> import numpy as np
     >>> from fury import window, actor
     >>> r = window.Scene()
@@ -892,8 +897,8 @@ def show(
     >>> r.add(l)
     >>> #window.show(r)
 
-    See also
-    ---------
+    See Also
+    --------
     fury.window.record
     fury.window.snapshot
 
@@ -927,7 +932,7 @@ def record(
     size=(300, 300),
     reset_camera=True,
     screen_clip=False,
-    stereo='off',
+    stereo="off",
     verbose=False,
 ):
     """Record a video of your scene.
@@ -936,7 +941,7 @@ def record(
     azimuth angle az_angle in every frame.
 
     Parameters
-    -----------
+    ----------
     scene : Scene() or vtkRenderer() object
         Scene instance
     cam_pos : None or sequence (3,), optional
@@ -984,7 +989,7 @@ def record(
         print information about the camera. Default is False.
 
     Examples
-    ---------
+    --------
     >>> from fury import window, actor
     >>> scene = window.Scene()
     >>> a = actor.axes()
@@ -1009,7 +1014,7 @@ def record(
     if reset_camera:
         scene.ResetCamera()
 
-    if stereo.lower() != 'off':
+    if stereo.lower() != "off":
         enable_stereo(renWin, stereo)
 
     renderLarge = RenderLargeImage()
@@ -1031,9 +1036,9 @@ def record(
 
     cam = scene.GetActiveCamera()
     if verbose:
-        print('Camera Position (%.2f, %.2f, %.2f)' % cam.GetPosition())
-        print('Camera Focal Point (%.2f, %.2f, %.2f)' % cam.GetFocalPoint())
-        print('Camera View Up (%.2f, %.2f, %.2f)' % cam.GetViewUp())
+        print("Camera Position (%.2f, %.2f, %.2f)" % cam.GetPosition())
+        print("Camera Focal Point (%.2f, %.2f, %.2f)" % cam.GetFocalPoint())
+        print("Camera View Up (%.2f, %.2f, %.2f)" % cam.GetViewUp())
 
     for i in range(n_frames):
         scene.GetActiveCamera().Azimuth(ang)
@@ -1044,12 +1049,12 @@ def record(
 
         if path_numbering:
             if out_path is None:
-                filename = str(i).zfill(6) + '.png'
+                filename = str(i).zfill(6) + ".png"
             else:
-                filename = out_path + str(i).zfill(6) + '.png'
+                filename = out_path + str(i).zfill(6) + ".png"
         else:
             if out_path is None:
-                filename = 'fury.png'
+                filename = "fury.png"
             else:
                 filename = out_path
 
@@ -1117,18 +1122,17 @@ def snapshot(
     size=(300, 300),
     offscreen=True,
     order_transparent=False,
-    stereo='off',
+    stereo="off",
     multi_samples=8,
     max_peels=4,
     occlusion_ratio=0.0,
     dpi=(72, 72),
     render_window=None,
 ):
-
     """Save a snapshot of the scene in a file or in memory.
 
     Parameters
-    -----------
+    ----------
     scene : Scene() or vtkRenderer
         Scene instance
     fname : str or None
@@ -1179,7 +1183,7 @@ def snapshot(
         render_window = RenderWindow()
         if offscreen:
             render_window.SetOffScreenRendering(1)
-        if stereo.lower() != 'off':
+        if stereo.lower() != "off":
             enable_stereo(render_window, stereo)
         render_window.AddRenderer(scene)
         render_window.SetSize(width, height)
@@ -1269,10 +1273,10 @@ def analyze_snapshot(
         colors_found = False
 
         def __str__(self):
-            msg = 'Report:\n-------\n'
-            msg += 'objects: {}\n'.format(self.objects)
-            msg += 'labels: \n{}\n'.format(self.labels)
-            msg += 'colors_found: {}\n'.format(self.colors_found)
+            msg = "Report:\n-------\n"
+            msg += "objects: {}\n".format(self.objects)
+            msg += "labels: \n{}\n".format(self.labels)
+            msg += "colors_found: {}\n".format(self.colors_found)
             return msg
 
     report = ReportSnapshot()
@@ -1281,7 +1285,7 @@ def analyze_snapshot(
         if isinstance(colors, tuple):
             colors = [colors]
         flags = [False] * len(colors)
-        for (i, col) in enumerate(colors):
+        for i, col in enumerate(colors):
             # find if the current color exist in the array
             flags[i] = np.any(np.any(np.all(np.equal(im[..., :3], col[:3]), axis=-1)))
 
@@ -1330,17 +1334,20 @@ def enable_stereo(renwin, stereo_type):
     # stereo type ints from
     # https://gitlab.kitware.com/vtk/vtk/blob/master/Rendering/Core/vtkRenderWindow.h#L57
     stereo_type_dictionary = {
-        'opengl': 1,
-        'interlaced': 3,
-        'anaglyph': 7,
-        'checkerboard': 8,
-        'horizontal': 9,
+        "opengl": 1,
+        "interlaced": 3,
+        "anaglyph": 7,
+        "checkerboard": 8,
+        "horizontal": 9,
     }
 
     # default to horizontal since it is easy to see if it is working
     if stereo_type not in stereo_type_dictionary:
-        warn('Unknown stereo type provided. ' "Setting stereo type to 'horizontal'.")
-        stereo_type = 'horizontal'
+        warn(
+            "Unknown stereo type provided. " "Setting stereo type to 'horizontal'.",
+            stacklevel=2,
+        )
+        stereo_type = "horizontal"
 
     renwin.SetStereoType(stereo_type_dictionary[stereo_type])
 
@@ -1388,7 +1395,7 @@ def gl_enable_depth(gl_state):
     gl_state : vtkOpenGLState
 
     """
-    gl_state.vtkglEnable(_GL['GL_DEPTH_TEST'])
+    gl_state.vtkglEnable(_GL["GL_DEPTH_TEST"])
 
 
 def gl_disable_depth(gl_state):
@@ -1399,7 +1406,7 @@ def gl_disable_depth(gl_state):
     gl_state : vtkOpenGLState
 
     """
-    gl_state.vtkglDisable(_GL['GL_DEPTH_TEST'])
+    gl_state.vtkglDisable(_GL["GL_DEPTH_TEST"])
 
 
 def gl_enable_blend(gl_state):
@@ -1410,7 +1417,7 @@ def gl_enable_blend(gl_state):
     gl_state : vtkOpenGLState
 
     """
-    gl_state.vtkglEnable(_GL['GL_BLEND'])
+    gl_state.vtkglEnable(_GL["GL_BLEND"])
 
 
 def gl_disable_blend(gl_state):
@@ -1428,8 +1435,8 @@ def gl_disable_blend(gl_state):
 
     """  # noqa
 
-    gl_state.vtkglDisable(_GL['GL_CULL_FACE'])
-    gl_state.vtkglDisable(_GL['GL_BLEND'])
+    gl_state.vtkglDisable(_GL["GL_CULL_FACE"])
+    gl_state.vtkglDisable(_GL["GL_BLEND"])
 
 
 def gl_set_additive_blending(gl_state):
@@ -1441,9 +1448,9 @@ def gl_set_additive_blending(gl_state):
 
     """
     gl_reset_blend(gl_state)
-    gl_state.vtkglEnable(_GL['GL_BLEND'])
-    gl_state.vtkglDisable(_GL['GL_DEPTH_TEST'])
-    gl_state.vtkglBlendFunc(_GL['GL_SRC_ALPHA'], _GL['GL_ONE'])
+    gl_state.vtkglEnable(_GL["GL_BLEND"])
+    gl_state.vtkglDisable(_GL["GL_DEPTH_TEST"])
+    gl_state.vtkglBlendFunc(_GL["GL_SRC_ALPHA"], _GL["GL_ONE"])
 
 
 def gl_set_additive_blending_white_background(gl_state):
@@ -1455,13 +1462,13 @@ def gl_set_additive_blending_white_background(gl_state):
 
     """
     gl_reset_blend(gl_state)
-    gl_state.vtkglEnable(_GL['GL_BLEND'])
-    gl_state.vtkglDisable(_GL['GL_DEPTH_TEST'])
+    gl_state.vtkglEnable(_GL["GL_BLEND"])
+    gl_state.vtkglDisable(_GL["GL_DEPTH_TEST"])
     gl_state.vtkglBlendFuncSeparate(
-        _GL['GL_SRC_ALPHA'],
-        _GL['GL_ONE_MINUS_SRC_ALPHA'],
-        _GL['GL_ONE'],
-        _GL['GL_ZERO'],
+        _GL["GL_SRC_ALPHA"],
+        _GL["GL_ONE_MINUS_SRC_ALPHA"],
+        _GL["GL_ONE"],
+        _GL["GL_ZERO"],
     )
 
 
@@ -1473,14 +1480,14 @@ def gl_set_normal_blending(gl_state):
     gl_state : vtkOpenGLState
 
     """
-    gl_state.vtkglEnable(_GL['GL_BLEND'])
-    gl_state.vtkglEnable(_GL['GL_DEPTH_TEST'])
-    gl_state.vtkglBlendFunc(_GL['GL_ONE'], _GL['GL_ONE'])
+    gl_state.vtkglEnable(_GL["GL_BLEND"])
+    gl_state.vtkglEnable(_GL["GL_DEPTH_TEST"])
+    gl_state.vtkglBlendFunc(_GL["GL_ONE"], _GL["GL_ONE"])
     gl_state.vtkglBlendFuncSeparate(
-        _GL['GL_SRC_ALPHA'],
-        _GL['GL_ONE_MINUS_SRC_ALPHA'],
-        _GL['GL_ONE'],
-        _GL['GL_ONE_MINUS_SRC_ALPHA'],
+        _GL["GL_SRC_ALPHA"],
+        _GL["GL_ONE_MINUS_SRC_ALPHA"],
+        _GL["GL_ONE"],
+        _GL["GL_ONE_MINUS_SRC_ALPHA"],
     )
 
 
@@ -1493,7 +1500,7 @@ def gl_set_multiplicative_blending(gl_state):
 
     """
     gl_reset_blend(gl_state)
-    gl_state.vtkglBlendFunc(_GL['GL_ZERO'], _GL['GL_SRC_COLOR'])
+    gl_state.vtkglBlendFunc(_GL["GL_ZERO"], _GL["GL_SRC_COLOR"])
 
 
 def gl_set_subtractive_blending(gl_state):
@@ -1505,7 +1512,7 @@ def gl_set_subtractive_blending(gl_state):
 
     """
     gl_reset_blend(gl_state)
-    gl_state.vtkglBlendFunc(_GL['GL_ZERO'], _GL['GL_ONE_MINUS_SRC_COLOR'])
+    gl_state.vtkglBlendFunc(_GL["GL_ZERO"], _GL["GL_ONE_MINUS_SRC_COLOR"])
 
 
 def release_context(window):

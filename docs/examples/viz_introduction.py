@@ -55,7 +55,6 @@ This tutorial explains keyframe animation in FURY.
 # For this tutorial, we are going to use the FURY animation module to translate
 # FURY sphere actor.
 
-
 import numpy as np
 
 from fury import actor, window
@@ -114,5 +113,5 @@ if interactive:
     showm.start()
 
 window.record(
-    scene, out_path='viz_keyframe_animation_introduction.png', size=(900, 768)
+    scene, out_path="viz_keyframe_animation_introduction.png", size=(900, 768)
 )

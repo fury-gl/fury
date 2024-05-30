@@ -19,7 +19,7 @@ from fury.shaders import add_shader_callback, shader_to_actor
 
 
 fetch_viz_models()
-model = read_viz_models('utah.obj')
+model = read_viz_models("utah.obj")
 
 
 ###############################################################################
@@ -59,10 +59,10 @@ fragment_shader_code_impl = """
     """
 
 shader_to_actor(
-    utah, 'vertex', impl_code=vertex_shader_code_impl, decl_code=vertex_shader_code_decl
+    utah, "vertex", impl_code=vertex_shader_code_impl, decl_code=vertex_shader_code_decl
 )
-shader_to_actor(utah, 'fragment', decl_code=fragment_shader_code_decl)
-shader_to_actor(utah, 'fragment', impl_code=fragment_shader_code_impl, block='light')
+shader_to_actor(utah, "fragment", decl_code=fragment_shader_code_decl)
+shader_to_actor(utah, "fragment", impl_code=fragment_shader_code_impl, block="light")
 
 ###############################################################################
 # Let's create a scene.
@@ -93,7 +93,7 @@ def shader_callback(_caller, _event, calldata=None):
     global timer
     if program is not None:
         try:
-            program.SetUniformf('time', timer)
+            program.SetUniformf("time", timer)
         except ValueError:
             pass
 
@@ -103,7 +103,7 @@ add_shader_callback(utah, shader_callback)
 # Let's add a textblock to the scene with a custom message
 
 tb = ui.TextBlock2D()
-tb.message = 'Hello Shaders'
+tb.message = "Hello Shaders"
 
 ###############################################################################
 # Show Manager
@@ -124,4 +124,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(showm.scene, size=current_size, out_path='viz_shader.png')
+window.record(showm.scene, size=current_size, out_path="viz_shader.png")

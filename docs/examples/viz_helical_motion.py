@@ -96,7 +96,7 @@ charge_actor = actor.point(pts, color_particle, point_radius=radius_particle)
 scene.add(charge_actor)
 
 vertices = utils.vertices_from_actor(charge_actor)
-vcolors = utils.colors_from_actor(charge_actor, 'colors')
+vcolors = utils.colors_from_actor(charge_actor, "colors")
 no_vertices_per_point = len(vertices)
 initial_vertices = vertices.copy() - np.repeat(pts, no_vertices_per_point, axis=0)
 
@@ -105,8 +105,8 @@ initial_vertices = vertices.copy() - np.repeat(pts, no_vertices_per_point, axis=
 # Initializing text box to display the name of the animation
 
 tb = ui.TextBlock2D(bold=True, position=(100, 90))
-m1 = 'Motion of a charged particle in a '
-m2 = 'combined electric and magnetic field'
+m1 = "Motion of a charged particle in a "
+m2 = "combined electric and magnetic field"
 tb.message = m1 + m2
 scene.add(tb)
 
@@ -166,4 +166,4 @@ def timer_callback(_obj, _event):
 
 showm.add_timer_callback(True, 15, timer_callback)
 showm.start()
-window.record(showm.scene, size=(800, 600), out_path='viz_helical_motion.png')
+window.record(showm.scene, size=(800, 600), out_path="viz_helical_motion.png")

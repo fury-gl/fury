@@ -13,13 +13,13 @@ from dipy.direction import peaks_from_model
 from dipy.reconst.shm import CsaOdfModel
 
 try:
-    from dipy.tracking.local import LocalTracking
     from dipy.tracking.local import (
+        LocalTracking,
         ThresholdTissueClassifier as ThresholdStoppingCriterion,
     )
 except ImportError:
-    from dipy.tracking.stopping_criterion import ThresholdStoppingCriterion
     from dipy.tracking.local_tracking import LocalTracking
+    from dipy.tracking.stopping_criterion import ThresholdStoppingCriterion
 
 from dipy.tracking import utils
 from dipy.tracking.streamline import Streamlines
@@ -97,4 +97,4 @@ if interactive:
 # scene.zoom(1.5)
 # scene.reset_clipping_range()
 
-window.record(scene, out_path='contour_from_roi_tutorial.png', size=(600, 600))
+window.record(scene, out_path="contour_from_roi_tutorial.png", size=(600, 600))

@@ -1,7 +1,7 @@
 import asyncio
+from importlib import reload
 import sys
 import time
-from importlib import reload
 from unittest import mock
 
 import numpy as np
@@ -29,9 +29,10 @@ from fury.stream.widget import Widget, check_port_is_available
 
 @pytest.fixture
 def loop():
-    """
-    Refs
-    ----
+    """Use this fixture to get the event loop.
+
+    References
+    ----------
      https://promity.com/2020/06/03/testing-asynchronous-code-in-python/
     """
     loop = asyncio.new_event_loop()
@@ -41,7 +42,7 @@ def loop():
 
 def test_rtc_video_stream(loop: asyncio.AbstractEventLoop):
     if not WEBRTC_AVAILABLE:
-        print('\n aiortc not available -> skipping test\n')
+        print("\n aiortc not available -> skipping test\n")
         return
 
     def test(use_raw_array, ms_stream=16):
@@ -134,7 +135,7 @@ def test_pillow():
     img_buffer_manager.get_jpeg()
     width, height, frame = img_buffer_manager.get_current_frame()
 
-    image = np.frombuffer(frame, 'uint8')[0 : width * height * 3].reshape(
+    image = np.frombuffer(frame, "uint8")[0 : width * height * 3].reshape(
         (height, width, 3)
     )
     report = window.analyze_snapshot(image, find_objects=True)
@@ -146,14 +147,14 @@ def test_pillow():
 
 def test_rtc_video_stream_whitout_cython(loop: asyncio.AbstractEventLoop):
     if not WEBRTC_AVAILABLE:
-        print('\n aiortc not available -> skipping test\n')
+        print("\n aiortc not available -> skipping test\n")
         return
 
     use_raw_array = True
     ms_stream = 0
     # creates a context without cython
-    with mock.patch.dict(sys.modules, {'pyximport': None}):
-        reload(sys.modules['fury.stream.server.main'])
+    with mock.patch.dict(sys.modules, {"pyximport": None}):
+        reload(sys.modules["fury.stream.server.main"])
         width_0 = 100
         height_0 = 200
 
@@ -195,7 +196,7 @@ def test_rtc_video_stream_whitout_cython(loop: asyncio.AbstractEventLoop):
         stream.stop()
         stream.cleanup()
 
-    reload(sys.modules['fury.stream.server.main'])
+    reload(sys.modules["fury.stream.server.main"])
 
 
 def test_client_and_buffer_manager():
@@ -239,7 +240,7 @@ def test_client_and_buffer_manager():
         width, height, frame = img_buffer_manager.get_current_frame()
 
         # assert width == showm.size[0] and height == showm.size[1]
-        image = np.frombuffer(frame, 'uint8')[0 : width * height * 3].reshape(
+        image = np.frombuffer(frame, "uint8")[0 : width * height * 3].reshape(
             (height, width, 3)
         )
         # image = np.flipud(image)
@@ -380,13 +381,13 @@ def test_stream_interaction(loop: asyncio.AbstractEventLoop):
         for _ in range(10):
             stream_interaction.circular_queue.enqueue(
                 np.array(
-                    [_CQUEUE.event_ids.mouse_weel, 1, 0, 0, 0, 0, 0.1, 0], dtype='d'
+                    [_CQUEUE.event_ids.mouse_weel, 1, 0, 0, 0, 0, 0.1, 0], dtype="d"
                 )
             )
         for _ in range(10):
             stream_interaction.circular_queue.enqueue(
                 np.array(
-                    [_CQUEUE.event_ids.mouse_weel, -1, 0, 0, 0, 0, 0.1, 0], dtype='d'
+                    [_CQUEUE.event_ids.mouse_weel, -1, 0, 0, 0, 0, 0.1, 0], dtype="d"
                 )
             )
         dxs = []
@@ -396,7 +397,7 @@ def test_stream_interaction(loop: asyncio.AbstractEventLoop):
             stream_interaction.circular_queue.enqueue(
                 np.array(
                     [_CQUEUE.event_ids.left_btn_press, 0, x, y, ctrl, shift, 0.1, 0],
-                    dtype='d',
+                    dtype="d",
                 )
             )
             for i in range(50):
@@ -412,13 +413,13 @@ def test_stream_interaction(loop: asyncio.AbstractEventLoop):
                 stream_interaction.circular_queue.enqueue(
                     np.array(
                         [_CQUEUE.event_ids.mouse_move, 0, x, y, ctrl, shift, 0.1, 0],
-                        dtype='d',
+                        dtype="d",
                     )
                 )
             stream_interaction.circular_queue.enqueue(
                 np.array(
                     [_CQUEUE.event_ids.left_btn_release, 0, x, y, ctrl, shift, 0.1, 0],
-                    dtype='d',
+                    dtype="d",
                 )
             )
 
@@ -536,7 +537,7 @@ def test_multidimensional_buffer():
             m_buffer = tools.SharedMemMultiDimensionalBuffer(
                 max_size=max_size, dimension=dimension
             )
-        m_buffer.buffer = np.arange((max_size + 1) * dimension).astype('d')
+        m_buffer.buffer = np.arange((max_size + 1) * dimension).astype("d")
         m_buffer[1] = np.array([0.2, 0.3, 0.4, 0.5])
         assert len(m_buffer[0]) == dimension
         if not use_raw_array:
@@ -665,8 +666,8 @@ def test_circular_queue():
 
 
 def test_queue_and_webserver():
-    """check if the correct
-    envent ids and the data are stored in the
+    """Check if the correct
+    event ids and the data are stored in the
     correct positions
     """
     max_size = 3
@@ -678,7 +679,7 @@ def test_queue_and_webserver():
         queue = tools.ArrayCircularQueue(max_size=max_size, dimension=dimension)
     else:
         queue = tools.SharedMemCircularQueue(max_size=max_size, dimension=dimension)
-    set_weel({'deltaY': 0.2, 'timestampInMs': 123}, queue)
+    set_weel({"deltaY": 0.2, "timestampInMs": 123}, queue)
     arr_queue = queue.dequeue()
     arr = np.zeros(dimension)
     arr[0] = _CQUEUE.event_ids.mouse_weel
@@ -687,36 +688,36 @@ def test_queue_and_webserver():
     npt.assert_equal(arr, arr_queue)
 
     # if the mouse position has been stored correctly in the circular queue
-    data = {'x': -3, 'y': 2.0, 'ctrlKey': 1, 'shiftKey': 0, 'timestampInMs': 123}
+    data = {"x": -3, "y": 2.0, "ctrlKey": 1, "shiftKey": 0, "timestampInMs": 123}
     set_mouse(data, queue)
     arr_queue = queue.dequeue()
     arr = np.zeros(dimension)
     arr[0] = _CQUEUE.event_ids.mouse_move
-    arr[_CQUEUE.index_info.x] = data['x']
-    arr[_CQUEUE.index_info.y] = data['y']
-    arr[_CQUEUE.index_info.ctrl] = data['ctrlKey']
-    arr[_CQUEUE.index_info.shift] = data['shiftKey']
-    arr[_CQUEUE.index_info.user_timestamp] = data['timestampInMs']
+    arr[_CQUEUE.index_info.x] = data["x"]
+    arr[_CQUEUE.index_info.y] = data["y"]
+    arr[_CQUEUE.index_info.ctrl] = data["ctrlKey"]
+    arr[_CQUEUE.index_info.shift] = data["shiftKey"]
+    arr[_CQUEUE.index_info.user_timestamp] = data["timestampInMs"]
     npt.assert_equal(arr, arr_queue)
 
     data = {
-        'mouseButton': 0,
-        'on': 1,
-        'x': -3,
-        'y': 2.0,
-        'ctrlKey': 1,
-        'shiftKey': 0,
-        'timestampInMs': 123,
+        "mouseButton": 0,
+        "on": 1,
+        "x": -3,
+        "y": 2.0,
+        "ctrlKey": 1,
+        "shiftKey": 0,
+        "timestampInMs": 123,
     }
     set_mouse_click(data, queue)
     arr_queue = queue.dequeue()
     arr = np.zeros(dimension)
     arr[0] = _CQUEUE.event_ids.left_btn_press
-    arr[_CQUEUE.index_info.x] = data['x']
-    arr[_CQUEUE.index_info.y] = data['y']
-    arr[_CQUEUE.index_info.ctrl] = data['ctrlKey']
-    arr[_CQUEUE.index_info.shift] = data['shiftKey']
-    arr[_CQUEUE.index_info.user_timestamp] = data['timestampInMs']
+    arr[_CQUEUE.index_info.x] = data["x"]
+    arr[_CQUEUE.index_info.y] = data["y"]
+    arr[_CQUEUE.index_info.ctrl] = data["ctrlKey"]
+    arr[_CQUEUE.index_info.shift] = data["shiftKey"]
+    arr[_CQUEUE.index_info.user_timestamp] = data["timestampInMs"]
     npt.assert_equal(arr, arr_queue)
     queue.cleanup()
 
@@ -748,7 +749,7 @@ def test_webserver():
                 stream_interaction.circular_queue.head_tail_buffer,
                 stream_interaction.circular_queue.buffer._buffer,
                 8000,
-                'localhost',
+                "localhost",
                 True,
                 True,
                 run_app=False,
@@ -760,7 +761,7 @@ def test_webserver():
                 stream_interaction.circular_queue.head_tail_buffer_name,
                 stream_interaction.circular_queue.buffer.buffer_name,
                 8000,
-                'localhost',
+                "localhost",
                 True,
                 True,
                 True,
@@ -776,7 +777,7 @@ def test_webserver():
         test(False)
 
 
-@pytest.mark.skipif(True, reason='Infinite loop. Need to check this test.')
+@pytest.mark.skipif(True, reason="Infinite loop. Need to check this test.")
 def test_widget():
     if not PY_VERSION_8:
         return

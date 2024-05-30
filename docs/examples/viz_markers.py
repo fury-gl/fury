@@ -5,6 +5,7 @@ Fury Markers
 
 This example shows how to use the marker actor.
 """
+
 import numpy as np
 
 from fury import actor, window
@@ -15,7 +16,7 @@ n = 10000
 # There are nine types 2d markers: circle, square, diamond, triangle, pentagon,
 # hexagon, heptagon, cross and plus.
 
-marker_symbols = ['o', 's', 'd', '^', 'p', 'h', 's6', 'x', '+']
+marker_symbols = ["o", "s", "d", "^", "p", "h", "s6", "x", "+"]
 markers = [np.random.choice(marker_symbols) for i in range(n)]
 
 centers = np.random.normal(size=(n, 3), scale=10)
@@ -39,7 +40,7 @@ nodes_actor = actor.markers(
 
 nodes_3d_actor = actor.markers(
     centers + np.ones_like(centers) * 25,
-    marker='3d',
+    marker="3d",
     colors=colors,
     scales=0.5,
 )
@@ -54,4 +55,4 @@ interactive = False
 if interactive:
     window.show(scene, size=(600, 600))
 
-window.record(scene, out_path='viz_markers.png', size=(600, 600))
+window.record(scene, out_path="viz_markers.png", size=(600, 600))

@@ -5,6 +5,7 @@ Making a custom interpolator
 
 Keyframe animation using custom interpolator.
 """
+
 import numpy as np
 
 from fury import actor, window
@@ -66,11 +67,11 @@ def tan_cubic_spline_interpolator(keyframes):
     # Setting the tangent to a zero vector in this case is the best choice
     for time in keyframes:
         data = keyframes.get(time)
-        value = data.get('value')
-        if data.get('in_tangent') is None:
-            data['in_tangent'] = np.zeros_like(value)
-        if data.get('in_tangent') is None:
-            data['in_tangent'] = np.zeros_like(value)
+        value = data.get("value")
+        if data.get("in_tangent") is None:
+            data["in_tangent"] = np.zeros_like(value)
+        if data.get("in_tangent") is None:
+            data["in_tangent"] = np.zeros_like(value)
 
     def interpolate(t):
         # `get_previous_timestamp`and `get_next_timestamp` functions take
@@ -96,10 +97,10 @@ def tan_cubic_spline_interpolator(keyframes):
         # {'value': array(1, 1, 1), 'custom_field': array(2, 3, 1)}
         #
         # now we continue with the cubic spline equation.
-        p0 = keyframes.get(t0).get('value')
-        tan_0 = keyframes.get(t0).get('out_tangent') * time_delta
-        p1 = keyframes.get(t1).get('value')
-        tan_1 = keyframes.get(t1).get('in_tangent') * time_delta
+        p0 = keyframes.get(t0).get("value")
+        tan_0 = keyframes.get(t0).get("out_tangent") * time_delta
+        p1 = keyframes.get(t1).get("value")
+        tan_1 = keyframes.get(t1).get("in_tangent") * time_delta
         # cubic spline equation using tangents
         t2 = dt * dt
         t3 = t2 * dt
@@ -163,4 +164,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_keyframe_custom_interpolator.png', size=(900, 768))
+window.record(scene, out_path="viz_keyframe_custom_interpolator.png", size=(900, 768))

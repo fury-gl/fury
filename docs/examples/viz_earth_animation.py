@@ -30,7 +30,7 @@ scene = window.Scene()
 # image.
 
 fetch_viz_textures()
-earth_filename = read_viz_textures('1_earth_8k.jpg')
+earth_filename = read_viz_textures("1_earth_8k.jpg")
 earth_image = io.load_image(earth_filename)
 
 ##############################################################################
@@ -42,7 +42,7 @@ earth_actor = actor.texture_on_sphere(earth_image)
 ##############################################################################
 # Then, do the same for the moon.
 
-moon_filename = read_viz_textures('moon-8k.jpg')
+moon_filename = read_viz_textures("moon-8k.jpg")
 moon_image = io.load_image(moon_filename)
 
 moon_actor = actor.texture_on_sphere(moon_image)
@@ -100,7 +100,7 @@ sphere_actor = actor.sphere(center, window.colors.blue_medium, radius)
 # Also creating a text actor to add below the sphere.
 
 text_actor = actor.text_3d(
-    'Bloomington, Indiana', (-0.42, 0.31, 0.03), window.colors.white, 0.004
+    "Bloomington, Indiana", (-0.42, 0.31, 0.03), window.colors.white, 0.004
 )
 utils.rotate(text_actor, (-90, 0, 1, 0))
 
@@ -108,7 +108,7 @@ utils.rotate(text_actor, (-90, 0, 1, 0))
 # Let's also import a model of a satellite to visualize circling the moon.
 
 fetch_viz_models()
-satellite_filename = read_viz_models('satellite_obj.obj')
+satellite_filename = read_viz_models("satellite_obj.obj")
 satellite = io.load_polydata(satellite_filename)
 satellite_actor = utils.get_actor_from_polydata(satellite)
 
@@ -172,4 +172,4 @@ def timer_callback(_obj, _event):
 
 showm.add_timer_callback(True, 35, timer_callback)
 showm.start()
-window.record(showm.scene, size=(900, 768), out_path='viz_earth_animation.png')
+window.record(showm.scene, size=(900, 768), out_path="viz_earth_animation.png")

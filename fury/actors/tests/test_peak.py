@@ -42,11 +42,11 @@ def test__orientation_colors():
         [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]]
     )
 
-    colors = _orientation_colors(points, cmap='rgb_standard')
+    colors = _orientation_colors(points, cmap="rgb_standard")
     expected = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
     npt.assert_array_equal(colors, expected)
 
-    npt.assert_raises(ValueError, _orientation_colors, points, cmap='test')
+    npt.assert_raises(ValueError, _orientation_colors, points, cmap="test")
 
 
 def test__peaks_colors_from_points():
@@ -61,7 +61,7 @@ def test__peaks_colors_from_points():
     npt.assert_equal(colors_are_scalars, False)
     npt.assert_equal(global_opacity, 1)
 
-    colors_tuple = _peaks_colors_from_points(points, colors='rgb_standard')
+    colors_tuple = _peaks_colors_from_points(points, colors="rgb_standard")
     vtk_colors, colors_are_scalars, global_opacity = colors_tuple
     desired = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]
     npt.assert_array_equal(numpy_support.vtk_to_numpy(vtk_colors), desired)

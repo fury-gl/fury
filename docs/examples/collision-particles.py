@@ -24,7 +24,6 @@ from fury import actor, ui, utils, window
 
 
 def box_edges(box_lx, box_ly, box_lz):
-
     edge1 = 0.5 * np.array(
         [
             [box_lx, box_ly, box_lz],
@@ -54,7 +53,6 @@ def collision():
     sec = int(num_vertices / num_particles)
 
     for i, j in np.ndindex(num_particles, num_particles):
-
         if i == j:
             continue
         distance = np.linalg.norm(xyz[i] - xyz[j])
@@ -148,7 +146,7 @@ scene.azimuth(30)
 counter = itertools.count()
 
 vertices = utils.vertices_from_actor(sphere_actor)
-vcolors = utils.colors_from_actor(sphere_actor, 'colors')
+vcolors = utils.colors_from_actor(sphere_actor, "colors")
 no_vertices_per_sphere = len(vertices) / num_particles
 initial_vertices = vertices.copy() - np.repeat(xyz, no_vertices_per_sphere, axis=0)
 
@@ -177,4 +175,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(showm.scene, size=(900, 768), out_path='simple_collisions.png')
+window.record(showm.scene, size=(900, 768), out_path="simple_collisions.png")

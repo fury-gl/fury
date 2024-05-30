@@ -1,10 +1,10 @@
 # import os
 # os.environ['PYTHONASYNCIODEBUG'] = '1'
 # import logging
-import numpy as np
 from aiohttp import web
+import numpy as np
 
-from fury.stream.constants import _CQUEUE, PY_VERSION_8
+from fury.stream.constants import PY_VERSION_8, _CQUEUE
 from fury.stream.server.async_app import get_app
 from fury.stream.tools import (
     ArrayCircularQueue,
@@ -48,7 +48,7 @@ class RTCServer(VideoStreamTrack):
         self,
         image_buffer_manager,
     ):
-        """
+        """Initialize the RTCServer
 
         Parameters
         ----------
@@ -81,13 +81,13 @@ class RTCServer(VideoStreamTrack):
             or self.frame.planes[0].height != height
         ):
             if CYTHON_AVAILABLE:
-                self.frame = FuryVideoFrame(width, height, 'rgb24')
+                self.frame = FuryVideoFrame(width, height, "rgb24")
         self.image = image
 
         if not CYTHON_AVAILABLE:
             # if the buffer it's already flipped
             # self.frame.planes[0].update(self.image)
-            self.image = np.frombuffer(self.image, 'uint8')[
+            self.image = np.frombuffer(self.image, "uint8")[
                 0 : width * height * 3
             ].reshape((height, width, 3))
             self.image = np.flipud(self.image)
@@ -117,7 +117,7 @@ def web_server_raw_array(
     queue_head_tail_buffer=None,
     queue_buffer=None,
     port=8000,
-    host='localhost',
+    host="localhost",
     provides_mjpeg=True,
     provides_webrtc=True,
     ms_jpeg=16,
@@ -163,7 +163,6 @@ def web_server_raw_array(
         is used just to be able to test the server.
 
     """
-
     image_buffer_manager = RawArrayImageBufferManager(
         image_buffers=image_buffers, info_buffer=info_buffer
     )
@@ -208,7 +207,7 @@ def web_server(
     queue_head_tail_buffer_name=None,
     queue_buffer_name=None,
     port=8000,
-    host='localhost',
+    host="localhost",
     provides_mjpeg=True,
     provides_webrtc=True,
     avoid_unlink_shared_mem=True,
@@ -258,7 +257,6 @@ def web_server(
         is used just to be able to test the server.
 
     """
-
     if avoid_unlink_shared_mem and PY_VERSION_8:
         remove_shm_from_resource_tracker()
 
