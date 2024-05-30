@@ -45,8 +45,8 @@ if __name__ == "__main__":
     dataset_dir = os.path.join(dipy_home, "stanford_hardi")
 
     coeffs, affine = load_nifti(
-        # os.path.join(dataset_dir, "odf_debug_sh_coeffs_9x11x28(6).nii.gz")
-        os.path.join(dataset_dir, "odf_slice_2.nii.gz")
+        os.path.join(dataset_dir, "odf_debug_sh_coeffs_9x11x28(6).nii.gz")
+        # os.path.join(dataset_dir, "odf_slice_2.nii.gz")
     )
 
     max_num_coeffs = coeffs.shape[-1]
@@ -362,7 +362,7 @@ if __name__ == "__main__":
     intersection_test = """
     float ray_params[MAX_DEGREE];
     rayGlyphIntersections(
-        ray_params, sh_coeffs, numCoeffsVSOutput, ro - centerMCVSOutput, rd
+        ray_params, sh_coeffs, ro - centerMCVSOutput, rd, int(shDegree), int(numCoeffsVSOutput)
     );
     """
 
