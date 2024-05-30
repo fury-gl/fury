@@ -362,7 +362,9 @@ if __name__ == "__main__":
     intersection_test = """
     float ray_params[MAX_DEGREE];
     rayGlyphIntersections(
-        ray_params, sh_coeffs, ro - centerMCVSOutput, rd, int(shDegree), int(numCoeffsVSOutput)
+        ray_params, sh_coeffs, ro - centerMCVSOutput, rd, int(shDegree),
+        int(numCoeffsVSOutput), int(maxPolyDegreeVSOutput), M_PI,
+        NO_INTERSECTION
     );
     """
 

@@ -1,5 +1,6 @@
 void rayGlyphIntersections(out float outRayParams[MAX_DEGREE], float shCoeffs[SH_COUNT],
-    vec3 rayOri, vec3 rayDir, int shDegree, int numCoeffs)
+    vec3 rayOri, vec3 rayDir, int shDegree, int numCoeffs, int maxPolyDegree, float pi,
+    float noIntersection)
 {
     // Determine the direction from the glyph center to the closest point on
     // the ray
@@ -10,8 +11,8 @@ void rayGlyphIntersections(out float outRayParams[MAX_DEGREE], float shCoeffs[SH
     float shValues[SH_DEGREE + 1];
     _unroll_
     for (int i = 0; i != shDegree + 1; ++i) {
-        vec3 point = cos(float(i) * (M_PI / float(shDegree + 1))) * rayDir
-                   + sin(float(i) * (M_PI / float(shDegree + 1))) * closestDir;
+        vec3 point = cos(float(i) * (pi / float(shDegree + 1))) * rayDir
+                   + sin(float(i) * (pi / float(shDegree + 1))) * closestDir;
         float shs[SH_COUNT];
         eval_sh(shs, point);
         shValues[i] = 0.0;
@@ -47,8 +48,8 @@ void rayGlyphIntersections(out float outRayParams[MAX_DEGREE], float shCoeffs[SH
     float closest_dot_origin = dot(closestDir, rayOri);
     if (radius_max < abs(closest_dot_origin)) {
         _unroll_
-        for (int i = 0; i != MAX_DEGREE; ++i)
-            outRayParams[i] = NO_INTERSECTION;
+        for (int i = 0; i != maxPolyDegree; ++i)
+            outRayParams[i] = noIntersection;
         return;
     }
     float radius_over_dot = radius_max / closest_dot_origin;
@@ -56,7 +57,7 @@ void rayGlyphIntersections(out float outRayParams[MAX_DEGREE], float shCoeffs[SH
     // Take the square of radius_poly
     float poly[MAX_DEGREE + 1];
     _unroll_
-    for (int i = 0; i != MAX_DEGREE + 1; ++i)
+    for (int i = 0; i != maxPolyDegree + 1; ++i)
         poly[i] = 0.0;
     _unroll_
     for (int i = 0; i != shDegree + 1; ++i)
@@ -78,8 +79,8 @@ void rayGlyphIntersections(out float outRayParams[MAX_DEGREE], float shCoeffs[SH
     find_roots(roots, poly, -u_max, u_max);
     // Convert them back to the original coordinate frame (i.e. ray parameters)
     _unroll_
-    for (int i = 0; i != MAX_DEGREE; ++i)
-        outRayParams[i] = (roots[i] != NO_INTERSECTION)
+    for (int i = 0; i != maxPolyDegree; ++i)
+        outRayParams[i] = (roots[i] != noIntersection)
                             ? (roots[i] * closest_dot_origin - dotDirOri)
-                            : NO_INTERSECTION;
+                            : noIntersection;
 }
