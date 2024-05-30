@@ -128,9 +128,8 @@ class glTF:
 
                     base_col_tex = pbr['baseColorTexture']
                     metal_rough_tex = pbr['metallicRoughnessTexture']
-
-                    # actor.GetProperty().SetBaseColorTexture(base_col_tex)
                     actor.SetTexture(base_col_tex)
+                    actor.GetProperty().SetBaseColorTexture(base_col_tex)
                     actor.GetProperty().SetORMTexture(metal_rough_tex)
 
                 emissive = self.materials[i]['emissive']
