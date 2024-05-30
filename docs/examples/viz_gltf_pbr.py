@@ -40,7 +40,7 @@ cameras = gltf_obj.cameras
 if cameras:
     scene.SetActiveCamera(cameras[0])
 
-interactive = 6
+interactive = False
 
 if interactive:
     window.show(scene, size=(1280, 720))
