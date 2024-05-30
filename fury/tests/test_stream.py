@@ -667,7 +667,7 @@ def test_circular_queue():
 
 def test_queue_and_webserver():
     """Check if the correct
-    envent ids and the data are stored in the
+    event ids and the data are stored in the
     correct positions
     """
     max_size = 3

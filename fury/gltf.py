@@ -813,8 +813,8 @@ class glTF:
         if bone_id in self.animation_channels[channel_name]:
             transforms = self.animation_channels[channel_name][bone_id]
             timestamps = transforms["timestamps"]
-            metrices = transforms["matrix"]
-            for time, matrix in zip(timestamps, metrices):
+            matrices = transforms["matrix"]
+            for time, matrix in zip(timestamps, matrices):
                 animation.set_keyframe("transform", time[0], matrix)
         else:
             animation.set_keyframe("transform", 0.0, orig_transform)
@@ -934,10 +934,10 @@ class glTF:
                 weights = self.morph_weights[i]
                 animation = Animation()
                 timestamps = transforms["timestamps"]
-                metrices = transforms["matrix"]
-                metrices = np.array(metrices).reshape(-1, len(weights))
+                matrices = transforms["matrix"]
+                matrices = np.array(matrices).reshape(-1, len(weights))
 
-                for time, weights in zip(timestamps, metrices):
+                for time, weights in zip(timestamps, matrices):
                     animation.set_keyframe("morph", time[0], weights)
                 root_animation.add(animation)
 
