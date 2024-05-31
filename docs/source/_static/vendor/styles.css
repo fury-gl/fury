@@ -123,6 +123,7 @@ em {
     font-size: 20px;
     margin-top: 8px;
     letter-spacing: 8px;
+    color: white !important;
 }
 
 #feature-card {

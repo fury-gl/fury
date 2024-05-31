@@ -58,7 +58,7 @@ my_triangles = np.array(
         [1, 5, 7],
         [1, 7, 3],
     ],
-    dtype='i8',
+    dtype="i8",
 )
 
 
@@ -71,9 +71,9 @@ utils.set_polydata_triangles(my_polydata, my_triangles)
 ###############################################################################
 # Save the ``PolyData``
 
-file_name = 'my_cube.vtk'
+file_name = "my_cube.vtk"
 save_polydata(my_polydata, file_name)
-print('Surface saved in ' + file_name)
+print("Surface saved in " + file_name)
 
 ###############################################################################
 # Load the ``PolyData``
@@ -87,7 +87,7 @@ cube_vertices = utils.get_polydata_vertices(cube_polydata)
 colors = cube_vertices * 255
 utils.set_polydata_colors(cube_polydata, colors)
 
-print('new surface colors')
+print("new surface colors")
 print(utils.get_polydata_colors(cube_polydata))
 
 ###############################################################################
@@ -104,4 +104,4 @@ scene.zoom(3)
 
 # display
 # window.show(scene, size=(600, 600), reset_camera=False)
-window.record(scene, out_path='cube.png', size=(600, 600))
+window.record(scene, out_path="cube.png", size=(600, 600))

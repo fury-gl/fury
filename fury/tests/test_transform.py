@@ -66,7 +66,7 @@ def test_sphere_cart():
 
 
 def test_euler_matrix():
-    rotation = euler_matrix(1, 2, 3, 'syxz')
+    rotation = euler_matrix(1, 2, 3, "syxz")
     npt.assert_equal(np.allclose(np.sum(rotation[0]), -1.34786452), True)
 
     rotation = euler_matrix(1, 2, 3, (0, 1, 0, 1))

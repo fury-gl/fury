@@ -26,7 +26,7 @@ def is_tripwire(obj):
 
     """
     try:
-        obj.any_attribute
+        _ = obj.any_attribute
     except TripWireError:
         return True
     except Exception:
@@ -45,7 +45,8 @@ class TripWire:
     ...     import silly_module_name
     ... except ImportError:
     ...    silly_module_name = TripWire('We do not have silly_module_name')
-    >>> silly_module_name.do_silly_thing('with silly string') #doctest: +IGNORE_EXCEPTION_DETAIL # noqa
+    >>> msg = 'with silly string'
+    >>> silly_module_name.do_silly_thing(msg) #doctest: +IGNORE_EXCEPTION_DETAIL
     Traceback (most recent call last):
         ...
     TripWireError: We do not have silly_module_name
@@ -121,13 +122,13 @@ def optional_package(name, trip_msg=None):
         return pkg, True, lambda: None
     if trip_msg is None:
         trip_msg = (
-            'We need package %s for these functions, but '
-            '``import %s`` raised an ImportError' % (name, name)
+            "We need package %s for these functions, but "
+            "``import %s`` raised an ImportError" % (name, name)
         )
     pkg = TripWire(trip_msg)
 
     def setup_module():
         if have_pytest:
-            pytest.mark.skip('No {0} for these tests'.format(name))
+            pytest.mark.skip("No {0} for these tests".format(name))
 
     return pkg, False, setup_module

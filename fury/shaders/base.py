@@ -1,5 +1,5 @@
-import os
 from functools import partial
+import os
 
 from fury import enable_warnings
 from fury.deprecator import deprecate_with_version
@@ -15,50 +15,58 @@ from fury.lib import (
 
 SHADERS_DIR = os.path.join(os.path.dirname(__file__))
 
-SHADERS_EXTS = ['.glsl', '.vert', '.tesc', '.tese', '.geom', '.frag', '.comp']
+SHADERS_EXTS = [
+    ".glsl",
+    ".vert",
+    ".tesc",
+    ".tese",
+    ".geom",
+    ".frag",
+    ".comp",
+]
 
 SHADERS_TYPE = {
-    'vertex': Shader.Vertex,
-    'geometry': Shader.Geometry,
-    'fragment': Shader.Fragment,
+    "vertex": Shader.Vertex,
+    "geometry": Shader.Geometry,
+    "fragment": Shader.Fragment,
 }
 
-REPLACEMENT_SHADERS_TYPES = {'vertex': Shader.Vertex, 'fragment': Shader.Fragment}
+REPLACEMENT_SHADERS_TYPES = {"vertex": Shader.Vertex, "fragment": Shader.Fragment}
 
 SHADERS_BLOCK = {
-    'position': '//VTK::PositionVC',  # frag position in VC
-    'normal': '//VTK::Normal',  # optional normal declaration
-    'light': '//VTK::Light',  # extra lighting parameters
-    'tcoord': '//VTK::TCoord',  # Texture coordinates
-    'color': '//VTK::Color',  # material property values
-    'clip': '//VTK::Clip',  # clipping plane vars
-    'camera': '//VTK::Camera',  # camera and actor matrix values
-    'prim_id': '//VTK::PrimID',  # Apple Bug
-    'valuepass': '//VTK::ValuePass',  # Value raster
-    'output': '//VTK::Output',  # only for geometry shader
-    'coincident': '//VTK::Coincident',  # handle coincident offsets
-    'zbufer': '//VTK::ZBuffer',
-    'depth_peeling': '//VTK::DepthPeeling',  # Depth Peeling Support
-    'picking': '//VTK::Picking',  # picking support
+    "position": "//VTK::PositionVC",  # frag position in VC
+    "normal": "//VTK::Normal",  # optional normal declaration
+    "light": "//VTK::Light",  # extra lighting parameters
+    "tcoord": "//VTK::TCoord",  # Texture coordinates
+    "color": "//VTK::Color",  # material property values
+    "clip": "//VTK::Clip",  # clipping plane vars
+    "camera": "//VTK::Camera",  # camera and actor matrix values
+    "prim_id": "//VTK::PrimID",  # Apple Bug
+    "valuepass": "//VTK::ValuePass",  # Value raster
+    "output": "//VTK::Output",  # only for geometry shader
+    "coincident": "//VTK::Coincident",  # handle coincident offsets
+    "zbufer": "//VTK::ZBuffer",
+    "depth_peeling": "//VTK::DepthPeeling",  # Depth Peeling Support
+    "picking": "//VTK::Picking",  # picking support
 }
 
 # See [1] for a more extensive list of OpenGL constants
 # [1] https://docs.factorcode.org/content/vocab-opengl.gl.html
 GL_NUMBERS = {
-    'GL_ONE': 1,
-    'GL_ZERO': 0,
-    'GL_BLEND': 3042,
-    'GL_ONE_MINUS_SRC_ALPHA': 771,
-    'GL_SRC_ALPHA': 770,
-    'GL_DEPTH_TEST': 2929,
-    'GL_DST_COLOR': 774,
-    'GL_FUNC_SUBTRACT': 3277,
-    'GL_CULL_FACE': 2884,
-    'GL_ALPHA_TEST': 3008,
-    'GL_CW': 2304,
-    'GL_CCW': 2305,
-    'GL_ONE_MINUS_SRC_COLOR': 769,
-    'GL_SRC_COLOR': 768,
+    "GL_ONE": 1,
+    "GL_ZERO": 0,
+    "GL_BLEND": 3042,
+    "GL_ONE_MINUS_SRC_ALPHA": 771,
+    "GL_SRC_ALPHA": 770,
+    "GL_DEPTH_TEST": 2929,
+    "GL_DST_COLOR": 774,
+    "GL_FUNC_SUBTRACT": 3277,
+    "GL_CULL_FACE": 2884,
+    "GL_ALPHA_TEST": 3008,
+    "GL_CW": 2304,
+    "GL_CCW": 2305,
+    "GL_ONE_MINUS_SRC_COLOR": 769,
+    "GL_SRC_COLOR": 768,
 }
 
 
@@ -76,17 +84,17 @@ def compose_shader(glsl_code):
 
     """
     if not glsl_code:
-        return ''
+        return ""
 
     if not all(isinstance(i, str) for i in glsl_code):
-        raise IOError('The only supported format are string.')
+        raise IOError("The only supported format are string.")
 
     if isinstance(glsl_code, str):
         return glsl_code
 
-    code = ''
+    code = ""
     for content in glsl_code:
-        code += '\n'
+        code += "\n"
         code += content
     return code
 
@@ -126,20 +134,21 @@ def load_shader(shader_file):
     -------
     code : str
         GLSL shader code.
+
     """
     file_ext = os.path.splitext(os.path.basename(shader_file))[1]
     if file_ext not in SHADERS_EXTS:
         raise IOError(
             'Shader file "{}" does not have one of the supported '
-            'extensions: {}.'.format(shader_file, SHADERS_EXTS)
+            "extensions: {}.".format(shader_file, SHADERS_EXTS)
         )
     return load_text(shader_file)
 
 
 @deprecate_with_version(
-    message='Load function has been reimplemented as import_fury_shader.',
-    since='0.8.1',
-    until='0.9.0',
+    message="Load function has been reimplemented as import_fury_shader.",
+    since="0.8.1",
+    until="0.9.0",
 )
 def load(filename):
     """Load a Fury shader file.
@@ -162,9 +171,9 @@ def load(filename):
 def shader_to_actor(
     actor,
     shader_type,
-    impl_code='',
-    decl_code='',
-    block='valuepass',
+    impl_code="",
+    decl_code="",
+    block="valuepass",
     keep_default=True,
     replace_first=True,
     replace_all=False,
@@ -208,27 +217,27 @@ def shader_to_actor(
     shader_type = shader_type.lower()
     shader_type = REPLACEMENT_SHADERS_TYPES.get(shader_type, None)
     if shader_type is None:
-        msg = 'Invalid Shader Type. Please choose between '
-        msg += ', '.join(REPLACEMENT_SHADERS_TYPES.keys())
+        msg = "Invalid Shader Type. Please choose between "
+        msg += ", ".join(REPLACEMENT_SHADERS_TYPES.keys())
         raise ValueError(msg)
 
     block = block.lower()
     block = SHADERS_BLOCK.get(block, None)
     if block is None:
-        msg = 'Invalid Shader Type. Please choose between '
-        msg += ', '.join(SHADERS_BLOCK.keys())
+        msg = "Invalid Shader Type. Please choose between "
+        msg += ", ".join(SHADERS_BLOCK.keys())
         raise ValueError(msg)
 
-    block_dec = block + '::Dec'
-    block_impl = block + '::Impl'
+    block_dec = block + "::Dec"
+    block_impl = block + "::Impl"
 
     if keep_default:
-        decl_code = block_dec + '\n' + decl_code
-        impl_code = block_impl + '\n' + impl_code
+        decl_code = block_dec + "\n" + decl_code
+        impl_code = block_impl + "\n" + impl_code
 
     if debug:
         enable_warnings()
-        error_msg = '\n\n--- DEBUG: THIS LINE GENERATES AN ERROR ---\n\n'
+        error_msg = "\n\n--- DEBUG: THIS LINE GENERATES AN ERROR ---\n\n"
         impl_code += error_msg
 
     sp = actor.GetShaderProperty()
@@ -255,15 +264,15 @@ def replace_shader_in_actor(actor, shader_type, code):
 
     """
     function_name = {
-        'vertex': 'SetVertexShaderCode',
-        'fragment': 'SetFragmentShaderCode',
-        'geometry': 'SetGeometryShaderCode',
+        "vertex": "SetVertexShaderCode",
+        "fragment": "SetFragmentShaderCode",
+        "geometry": "SetGeometryShaderCode",
     }
     shader_type = shader_type.lower()
     function = function_name.get(shader_type, None)
     if function is None:
-        msg = 'Invalid Shader Type. Please choose between '
-        msg += ', '.join(function_name.keys())
+        msg = "Invalid Shader Type. Please choose between "
+        msg += ", ".join(function_name.keys())
         raise ValueError(msg)
 
     sp = actor.GetShaderProperty()
@@ -291,7 +300,7 @@ def add_shader_callback(actor, callback, priority=0.0):
         See more at: https://vtk.org/doc/nightly/html/classvtkObject.html
 
     Examples
-    ---------
+    --------
     .. code-block:: python
 
         add_shader_callback(actor, func_call1)

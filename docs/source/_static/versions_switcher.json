@@ -5,8 +5,13 @@
     "url": "https://fury.gl/dev/index.html"
   },
   {
-    "name": "v0.9.x (stable)",
+    "name": "v0.10.x (stable)",
     "version": "stable",
+    "url": "https://fury.gl/v0.10.x/index.html"
+  },
+  {
+    "name": "v0.9.x",
+    "version": "v0.9.x",
     "url": "https://fury.gl/v0.9.x/index.html"
   },
   {

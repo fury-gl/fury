@@ -13,7 +13,6 @@ The timer will call this user defined callback every 200 milliseconds. The
 application will exit after the callback has been called 100 times.
 """
 
-
 import itertools
 
 import numpy as np
@@ -67,4 +66,4 @@ timer_id = showm.add_timer_callback(True, 200, timer_callback)
 
 showm.start()
 
-window.record(showm.scene, size=(900, 768), out_path='viz_timer.png')
+window.record(showm.scene, size=(900, 768), out_path="viz_timer.png")

@@ -17,46 +17,46 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+from datetime import datetime
 import os
 import re
 import sys
-from datetime import datetime
 
 # Add current path
-sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath("."))
 # Add doc in path for finding tutorial and examples
-sys.path.insert(0, os.path.abspath('../..'))
+sys.path.insert(0, os.path.abspath("../.."))
 # Add custom extensions
-sys.path.insert(0, os.path.abspath('./ext'))
+sys.path.insert(0, os.path.abspath("./ext"))
 
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
 #
-needs_sphinx = '4.3'
+needs_sphinx = "4.3"
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
-    'sphinx.ext.githubpages',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.napoleon',
-    'IPython.sphinxext.ipython_directive',
-    'IPython.sphinxext.ipython_console_highlighting',
-    'matplotlib.sphinxext.plot_directive',
-    'sphinx_copybutton',
-    'ext.prepare_gallery',
-    'sphinx_gallery.gen_gallery',
-    'ext.build_modref_templates',
-    'ext.github',
-    'ext.github_tools',
-    'ext.rstjinja',
-    'ablog',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.githubpages",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.napoleon",
+    "IPython.sphinxext.ipython_directive",
+    "IPython.sphinxext.ipython_console_highlighting",
+    "matplotlib.sphinxext.plot_directive",
+    "sphinx_copybutton",
+    "ext.prepare_gallery",
+    "sphinx_gallery.gen_gallery",
+    "ext.build_modref_templates",
+    "ext.github",
+    "ext.github_tools",
+    "ext.rstjinja",
+    "ablog",
 ]
 
 # Configuration options for plot_directive. See:
@@ -72,7 +72,7 @@ numpydoc_show_class_members = False
 # import ablog
 
 templates_path = [
-    '_templates',
+    "_templates",
     # ablog.get_html_templates_path(),
 ]
 
@@ -80,15 +80,15 @@ templates_path = [
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = ".rst"
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # General information about the project.
-project = 'FURY'
-copyright = '2018-{0}, FURY'.format(datetime.now().year)
-author = 'FURY'
+project = "FURY"
+copyright = "2018-{0}, FURY".format(datetime.now().year)
+author = "FURY"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -106,7 +106,7 @@ release = fury.__version__
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = 'en'
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -114,7 +114,7 @@ language = 'en'
 exclude_patterns = []
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
@@ -158,53 +158,56 @@ todo_include_todos = False
 #     "version_dropdown": True,
 #     "version_json": "_static/versions.json",
 # }
-import pydata_sphinx_theme
 
-html_theme = 'pydata_sphinx_theme'
+html_theme = "pydata_sphinx_theme"
 
 # Define the json_url for our version switcher.
-json_url = 'https://fury.gl/latest/_static/versions_switcher.json'
+json_url = "https://fury.gl/latest/_static/versions_switcher.json"
 
 
-if 'dev' in release:
-    version_match = 'latest'
+if "dev" in release:
+    version_match = "latest"
     # We want to keep the relative reference if we are in dev mode
     # but we want the whole url if we are effectively in a released version
-    json_url = '/_static/versions_switcher.json'
+    json_url = "/_static/versions_switcher.json"
 else:
-    version_match = 'v' + release
+    version_match = "v" + release
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
 # html_theme_options = {}
+
+# Log:3/3/24 ~ footer_items is deprecated, using new keys for footer.
 html_theme_options = {
-    'navigation_depth': 1,
+    "navigation_depth": 1,
+    "navigation_with_keys": True,
     #   "logo_link": 'index.html',
-    'navbar_start': ['custom-title.html'],
-    'navbar_center': '',
-    'navbar_end': 'custom-navbar.html',
-    'footer_items': ['custom-footer.html'],
-    'switcher': {
-        'json_url': json_url,
-        'version_match': version_match,
+    "navbar_start": ["custom-title.html"],
+    "navbar_center": ["custom-navbar.html"],
+    "footer_start": ["custom-footer.html"],
+    "footer_center": "",
+    "footer_end": "",
+    "switcher": {
+        "json_url": json_url,
+        "version_match": version_match,
     },
 }
 
-html_additional_pages = {'video': 'home-video-page.html', 'index': 'home.html'}
+html_additional_pages = {"video": "home-video-page.html", "index": "home.html"}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
-html_css_files = ['css/custom.css', 'vendor/fonts.css']
+html_css_files = ["css/custom.css", "vendor/fonts.css"]
 
 # html_baseurl = os.environ.get("SPHINX_HTML_BASE_URL", "http://127.0.0.1:8000/")
 
-html_logo = '_static/images/logo.svg'
+html_logo = "_static/images/logo.svg"
 
-html_favicon = '_static/images/logo.ico'
+html_favicon = "_static/images/logo.ico"
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
@@ -218,42 +221,73 @@ html_favicon = '_static/images/logo.ico'
 #         'versions.html',
 #     ]
 # }
+
+# Log:3/3/24 ~ search-field is not necessary in sidebar anymore,
+# it is in the Navbar. Also with this update it can be easily accessed,
+# with the shortcut, which was not working previously.
 html_sidebars = {
     # "**": ["search-field", 'globaltoc.html',"sidebar-nav-bs"]
-    '**': ['search-field', 'globaltoc.html']
+    # '**': ['search-field', 'globaltoc.html']
+    "**": ["globaltoc.html"]
 }
+
 # html_sidebars = {
 #     "**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"],
 # }
 # html_sidebars = {
-#     "introduction/**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"],
-#     "getting_started": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"],
-#     "auto_examples/**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"],
-#     "auto_tutorials/**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"],
-#     "references/**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"],
+#     "introduction/**": [
+#         "logo-text.html",
+#         "globaltoc.html",
+#         "localtoc.html",
+#         "searchbox.html",
+#     ],
+#     "getting_started": [
+#         "logo-text.html",
+#         "globaltoc.html",
+#         "localtoc.html",
+#         "searchbox.html",
+#     ],
+#     "auto_examples/**": [
+#         "logo-text.html",
+#         "globaltoc.html",
+#         "localtoc.html",
+#         "searchbox.html",
+#     ],
+#     "auto_tutorials/**": [
+#         "logo-text.html",
+#         "globaltoc.html",
+#         "localtoc.html",
+#         "searchbox.html",
+#     ],
+#     "references/**": [
+#         "logo-text.html",
+#         "globaltoc.html",
+#         "localtoc.html",
+#         "searchbox.html",
+#     ],
 #     "blog": ["categories.html", "archives.html"],
 #     "blog/**": ["categories.html", "archives.html"],
 #     "posts/**": ["postcard.html"],
 # }
 
 # ghissue config
-github_project_url = 'https://github.com/fury-gl/fury'
+github_project_url = "https://github.com/fury-gl/fury"
 
 import github_tools as ght
 
-all_versions = ght.get_all_versions(ignore='micro')
+all_versions = ght.get_all_versions(ignore="micro")
 html_context = {
-    'all_versions': all_versions,
-    'versions_list': ['dev', 'latest'] + all_versions,
-    'basic_stats': ght.fetch_basic_stats(),
-    'contributors': ght.fetch_contributor_stats(),
-    'default_mode': 'light',
+    "all_versions": all_versions,
+    "versions_list": ["dev", "latest"] + all_versions,
+    "basic_stats": ght.fetch_basic_stats(),
+    "contributors": ght.fetch_contributor_stats(),
+    "default_mode": "light",
 }
 
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'fury'
+htmlhelp_basename = "fury"
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -277,7 +311,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'fury.tex', 'FURY Documentation', 'Contributors', 'manual'),
+    (master_doc, "fury.tex", "FURY Documentation", "Contributors", "manual"),
 ]
 
 
@@ -285,7 +319,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, 'fury', 'FURY Documentation', [author], 1)]
+man_pages = [(master_doc, "fury", "FURY Documentation", [author], 1)]
 
 # -- Options for sphinx gallery -------------------------------------------
 from scrap import ImageFileScraper
@@ -293,28 +327,28 @@ from scrap import ImageFileScraper
 sc = ImageFileScraper()
 
 sphinx_gallery_conf = {
-    'doc_module': ('fury',),
+    "doc_module": ("fury",),
     # path to your examples scripts
-    'examples_dirs': ['../examples_revamped'],
+    "examples_dirs": ["../examples_revamped"],
     # path where to save gallery generated examples
-    'gallery_dirs': ['auto_examples'],
-    'image_scrapers': (sc),
-    'backreferences_dir': 'api',
-    'reference_url': {
-        'fury': None,
+    "gallery_dirs": ["auto_examples"],
+    "image_scrapers": (sc),
+    "backreferences_dir": "api",
+    "reference_url": {
+        "fury": None,
     },
-    'filename_pattern': re.escape(os.sep),
-    'plot_gallery': "'True'",
+    "filename_pattern": re.escape(os.sep),
+    "plot_gallery": "'True'",
 }
 
 # -- Options for Blog -------------------------------------------
 
-blog_baseurl = 'https://fury.gl/'
+blog_baseurl = "https://fury.gl/"
 blog_feed_fulltext = True
 blog_feed_length = 10
 blog_feed_archives = True
 blog_authors = {
-    'skoudoro': ('Serge Koudoro', 'https://github.com/skoudoro'),
+    "skoudoro": ("Serge Koudoro", "https://github.com/skoudoro"),
 }
 
 # -- Options for Texinfo output -------------------------------------------
@@ -325,25 +359,22 @@ blog_authors = {
 texinfo_documents = [
     (
         master_doc,
-        'fury',
-        'FURY Documentation',
+        "fury",
+        "FURY Documentation",
         author,
-        'fury',
-        'Free Unified Rendering in Python',
-        'Miscellaneous',
+        "fury",
+        "Free Unified Rendering in Python",
+        "Miscellaneous",
     ),
 ]
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3/', None),
-    'numpy': ('https://numpy.org/doc/stable/', None),
-    'scipy': ('https://docs.scipy.org/doc/scipy/', None),
-    'pandas': ('https://pandas.pydata.org/docs/', None),
-    'matplotlib': ('https://matplotlib.org/stable/', None),
-    'dipy': (
-        'https://dipy.org/documentation/latest',
-        'https://dipy.org/documentation/latest/objects.inv/',
-    ),
-    'scikit-learn': ('https://scikit-learn.org/stable/', None),
+    "python": ("https://docs.python.org/3/", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
+    "pandas": ("https://pandas.pydata.org/docs/", None),
+    "matplotlib": ("https://matplotlib.org/stable/", None),
+    "dipy": ("https://docs.dipy.org/stable", None),
+    "scikit-learn": ("https://scikit-learn.org/stable/", None),
 }

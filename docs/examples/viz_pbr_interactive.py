@@ -106,7 +106,7 @@ fetch_viz_cubemaps()
 # The following function returns the full path of the 6 images composing the
 # skybox.
 
-textures = read_viz_cubemap('skybox')
+textures = read_viz_cubemap("skybox")
 
 ###############################################################################
 # Now that we have the location of the textures, let's load them and create a
@@ -166,32 +166,32 @@ show_m = window.ShowManager(
 # We will create one single panel with all of our labels and sliders.
 
 control_panel = ui.Panel2D(
-    (400, 500), position=(5, 5), color=(0.25, 0.25, 0.25), opacity=0.75, align='right'
+    (400, 500), position=(5, 5), color=(0.25, 0.25, 0.25), opacity=0.75, align="right"
 )
 
 ###############################################################################
 # By using our previously defined function, we can easily create all the labels
 # we need for this demo. And then add them to the panel.
 
-slider_label_metallic = ui.TextBlock2D(text='Metallic', font_size=16)
-slider_label_roughness = ui.TextBlock2D(text='Roughness', font_size=16)
-slider_label_anisotropy = ui.TextBlock2D(text='Anisotropy', font_size=16)
+slider_label_metallic = ui.TextBlock2D(text="Metallic", font_size=16)
+slider_label_roughness = ui.TextBlock2D(text="Roughness", font_size=16)
+slider_label_anisotropy = ui.TextBlock2D(text="Anisotropy", font_size=16)
 slider_label_anisotropy_rotation = ui.TextBlock2D(
-    text='Anisotropy Rotation', font_size=16
+    text="Anisotropy Rotation", font_size=16
 )
 slider_label_anisotropy_direction_x = ui.TextBlock2D(
-    text='Anisotropy Direction X', font_size=16
+    text="Anisotropy Direction X", font_size=16
 )
 slider_label_anisotropy_direction_y = ui.TextBlock2D(
-    text='Anisotropy Direction Y', font_size=16
+    text="Anisotropy Direction Y", font_size=16
 )
 slider_label_anisotropy_direction_z = ui.TextBlock2D(
-    text='Anisotropy Direction Z', font_size=16
+    text="Anisotropy Direction Z", font_size=16
 )
-slider_label_coat_strength = ui.TextBlock2D(text='Coat Strength', font_size=16)
-slider_label_coat_roughness = ui.TextBlock2D(text='Coat Roughness', font_size=16)
-slider_label_base_ior = ui.TextBlock2D(text='Base IoR', font_size=16)
-slider_label_coat_ior = ui.TextBlock2D(text='Coat IoR', font_size=16)
+slider_label_coat_strength = ui.TextBlock2D(text="Coat Strength", font_size=16)
+slider_label_coat_roughness = ui.TextBlock2D(text="Coat Roughness", font_size=16)
+slider_label_base_ior = ui.TextBlock2D(text="Base IoR", font_size=16)
+slider_label_coat_ior = ui.TextBlock2D(text="Coat IoR", font_size=16)
 
 control_panel.add_element(slider_label_metallic, (0.01, 0.95))
 control_panel.add_element(slider_label_roughness, (0.01, 0.86))
@@ -212,37 +212,37 @@ slider_slice_metallic = ui.LineSlider2D(
     initial_value=pbr_params.metallic,
     max_value=1,
     length=195,
-    text_template='{value:.1f}',
+    text_template="{value:.1f}",
 )
 slider_slice_roughness = ui.LineSlider2D(
     initial_value=pbr_params.roughness,
     max_value=1,
     length=195,
-    text_template='{value:.1f}',
+    text_template="{value:.1f}",
 )
 slider_slice_anisotropy = ui.LineSlider2D(
     initial_value=pbr_params.anisotropy,
     max_value=1,
     length=195,
-    text_template='{value:.1f}',
+    text_template="{value:.1f}",
 )
 slider_slice_anisotropy_rotation = ui.LineSlider2D(
     initial_value=pbr_params.anisotropy_rotation,
     max_value=1,
     length=195,
-    text_template='{value:.1f}',
+    text_template="{value:.1f}",
 )
 slider_slice_coat_strength = ui.LineSlider2D(
     initial_value=pbr_params.coat_strength,
     max_value=1,
     length=195,
-    text_template='{value:.1f}',
+    text_template="{value:.1f}",
 )
 slider_slice_coat_roughness = ui.LineSlider2D(
     initial_value=pbr_params.coat_roughness,
     max_value=1,
     length=195,
-    text_template='{value:.1f}',
+    text_template="{value:.1f}",
 )
 
 ###############################################################################
@@ -255,21 +255,21 @@ slider_slice_anisotropy_direction_x = ui.LineSlider2D(
     min_value=-1,
     max_value=1,
     length=195,
-    text_template='{value:.1f}',
+    text_template="{value:.1f}",
 )
 slider_slice_anisotropy_direction_y = ui.LineSlider2D(
     initial_value=doa[1],
     min_value=-1,
     max_value=1,
     length=195,
-    text_template='{value:.1f}',
+    text_template="{value:.1f}",
 )
 slider_slice_anisotropy_direction_z = ui.LineSlider2D(
     initial_value=doa[2],
     min_value=-1,
     max_value=1,
     length=195,
-    text_template='{value:.1f}',
+    text_template="{value:.1f}",
 )
 
 ###############################################################################
@@ -282,14 +282,14 @@ slider_slice_base_ior = ui.LineSlider2D(
     min_value=1,
     max_value=2.3,
     length=195,
-    text_template='{value:.02f}',
+    text_template="{value:.02f}",
 )
 slider_slice_coat_ior = ui.LineSlider2D(
     initial_value=pbr_params.coat_ior,
     min_value=1,
     max_value=2.3,
     length=195,
-    text_template='{value:.02f}',
+    text_template="{value:.02f}",
 )
 
 ###############################################################################
@@ -343,4 +343,4 @@ interactive = False
 if interactive:
     show_m.start()
 
-window.record(scene, size=(1920, 1080), out_path='viz_pbr_interactive.png')
+window.record(scene, size=(1920, 1080), out_path="viz_pbr_interactive.png")

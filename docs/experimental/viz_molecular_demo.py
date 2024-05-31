@@ -25,6 +25,7 @@ Richardson, J.S. The anatomy and taxonomy of protein structure
 
 
 Importing necessary modules
+
 """
 
 import os
@@ -32,9 +33,7 @@ import urllib
 
 import numpy as np
 
-from fury import actor
-from fury import molecular as mol
-from fury import ui, window
+from fury import actor, molecular as mol, ui, window
 
 ###############################################################################
 # Downloading the PDB file of the protein to be rendered (the user can change

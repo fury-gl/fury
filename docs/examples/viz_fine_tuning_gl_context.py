@@ -29,21 +29,21 @@ colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
 actor_no_depth_test = actor.markers(
     centers,
-    marker='s',
+    marker="s",
     colors=colors,
     marker_opacity=0.5,
     scales=0.2,
 )
 actor_normal_blending = actor.markers(
     centers - np.array([[0, -0.5, 0]]),
-    marker='s',
+    marker="s",
     colors=colors,
     marker_opacity=0.5,
     scales=0.2,
 )
 actor_add_blending = actor.markers(
     centers - np.array([[0, -1, 0]]),
-    marker='s',
+    marker="s",
     colors=colors,
     marker_opacity=0.5,
     scales=0.2,
@@ -51,14 +51,14 @@ actor_add_blending = actor.markers(
 
 actor_sub_blending = actor.markers(
     centers - np.array([[0, -1.5, 0]]),
-    marker='s',
+    marker="s",
     colors=colors,
     marker_opacity=0.5,
     scales=0.2,
 )
 actor_mul_blending = actor.markers(
     centers - np.array([[0, -2, 0]]),
-    marker='s',
+    marker="s",
     colors=colors,
     marker_opacity=0.5,
     scales=0.2,
@@ -150,4 +150,4 @@ showm.add_timer_callback(interactive, 5, timer_callback)
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_fine_tuning_gl_context.png', size=(600, 600))
+window.record(scene, out_path="viz_fine_tuning_gl_context.png", size=(600, 600))

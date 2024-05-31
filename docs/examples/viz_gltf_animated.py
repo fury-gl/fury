@@ -23,8 +23,8 @@ showm.initialize()
 
 ##############################################################################
 # Retrieving the gltf model.
-fetch_gltf('InterpolationTest', 'glTF')
-filename = read_viz_gltf('InterpolationTest')
+fetch_gltf("InterpolationTest", "glTF")
+filename = read_viz_gltf("InterpolationTest")
 
 ##############################################################################
 # Initialize the glTF object and get actors using `actors` method.
@@ -54,4 +54,4 @@ showm.add_timer_callback(True, 10, timer_callback)
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_gltf_animated.png', size=(900, 768))
+window.record(scene, out_path="viz_gltf_animated.png", size=(900, 768))

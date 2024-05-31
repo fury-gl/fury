@@ -1,10 +1,10 @@
 import os
-import warnings
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 from urllib.request import urlretrieve
+import warnings
 
-import numpy as np
 from PIL import Image
+import numpy as np
 
 from fury.lib import (
     BMPReader,
@@ -24,9 +24,9 @@ from fury.lib import (
     PolyDataWriter,
     STLReader,
     STLWriter,
-    Texture,
     TIFFReader,
     TIFFWriter,
+    Texture,
     XMLPolyDataReader,
     XMLPolyDataWriter,
     numpy_support,
@@ -51,7 +51,7 @@ def load_cubemap_texture(fnames, interpolate_on=True, mipmap_on=True):
 
     """
     if len(fnames) != 6:
-        raise IOError('Expected 6 filenames, got {}'.format(len(fnames)))
+        raise IOError("Expected 6 filenames, got {}".format(len(fnames)))
     texture = Texture()
     texture.CubeMapOn()
     for idx, fn in enumerate(fnames):
@@ -92,41 +92,43 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
         desired image array
 
     """
-    is_url = filename.lower().startswith('http://') or filename.lower().startswith(
-        'https://'
+    is_url = filename.lower().startswith("http://") or filename.lower().startswith(
+        "https://"
     )
 
     if is_url:
         image_name = os.path.basename(filename)
 
-        if len(image_name.split('.')) < 2:
-            raise IOError(f'{filename} is not a valid image URL')
+        if len(image_name.split(".")) < 2:
+            raise IOError(f"{filename} is not a valid image URL")
 
         urlretrieve(filename, image_name)
         filename = image_name
 
     if use_pillow:
         with Image.open(filename) as pil_image:
-            if pil_image.mode in ['P']:
-                pil_image = pil_image.convert('RGB')
+            if pil_image.mode in ["P"]:
+                pil_image = pil_image.convert("RGB")
 
-            if pil_image.mode in ['RGBA', 'RGB', 'L']:
+            if pil_image.mode in ["RGBA", "RGB", "L"]:
                 image = np.asarray(pil_image)
-            elif pil_image.mode.startswith('I;16'):
-                raw = pil_image.tobytes('raw', pil_image.mode)
-                dtype = '>u2' if pil_image.mode.endswith('B') else '<u2'
+            elif pil_image.mode.startswith("I;16"):
+                raw = pil_image.tobytes("raw", pil_image.mode)
+                dtype = ">u2" if pil_image.mode.endswith("B") else "<u2"
                 image = np.frombuffer(raw, dtype=dtype)
-                image.reshape(pil_image.size[::-1]).astype('=u2')
+                image.reshape(pil_image.size[::-1]).astype("=u2")
             else:
                 try:
-                    image = pil_image.convert('RGBA')
-                except ValueError:
-                    raise RuntimeError('Unknown image mode {}'.format(pil_image.mode))
+                    image = pil_image.convert("RGBA")
+                except ValueError as err:
+                    raise RuntimeError(
+                        "Unknown image mode {}".format(pil_image.mode)
+                    ) from err
                 image = np.asarray(pil_image)
 
         if as_vtktype:
             if image.ndim not in [2, 3]:
-                raise IOError('only 2D (L, RGB, RGBA) or 3D image available')
+                raise IOError("only 2D (L, RGB, RGBA) or 3D image available")
 
             vtk_image = ImageData()
             depth = 1 if image.ndim == 2 else image.shape[2]
@@ -152,19 +154,19 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
         return image
 
     d_reader = {
-        '.png': PNGReader,
-        '.bmp': BMPReader,
-        '.jpeg': JPEGReader,
-        '.jpg': JPEGReader,
-        '.tiff': TIFFReader,
-        '.tif': TIFFReader,
+        ".png": PNGReader,
+        ".bmp": BMPReader,
+        ".jpeg": JPEGReader,
+        ".jpg": JPEGReader,
+        ".tiff": TIFFReader,
+        ".tif": TIFFReader,
     }
 
     extension = os.path.splitext(os.path.basename(filename).lower())[1]
 
     if extension.lower() not in d_reader.keys():
         raise IOError(
-            'Impossible to read the file {0}: Unknown extension {1}'.format(
+            "Impossible to read the file {0}: Unknown extension {1}".format(
                 filename, extension
             )
         )
@@ -172,7 +174,7 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
     reader = d_reader.get(extension)()
     reader.SetFileName(filename)
     reader.Update()
-    reader.GetOutput().GetPointData().GetArray(0).SetName('original')
+    reader.GetOutput().GetPointData().GetArray(0).SetName("original")
 
     if not as_vtktype:
         w, h, _ = reader.GetOutput().GetDimensions()
@@ -199,9 +201,10 @@ def load_text(file):
     -------
     text: str
         Text contained in the file.
+
     """
     if not os.path.isfile(file):
-        raise IOError('File {} does not exist.'.format(file))
+        raise IOError("File {} does not exist.".format(file))
     with open(file) as f:
         text = f.read()
     return text
@@ -211,7 +214,7 @@ def save_image(
     arr,
     filename,
     compression_quality=75,
-    compression_type='deflation',
+    compression_type="deflation",
     use_pillow=True,
     dpi=(72, 72),
 ):
@@ -240,25 +243,25 @@ def save_image(
 
     """
     if arr.ndim > 3:
-        raise IOError('Image Dimensions should be <=3')
+        raise IOError("Image Dimensions should be <=3")
 
     if isinstance(dpi, (float, int)):
         dpi = (dpi, dpi)
 
     d_writer = {
-        '.png': PNGWriter,
-        '.bmp': BMPWriter,
-        '.jpeg': JPEGWriter,
-        '.jpg': JPEGWriter,
-        '.tiff': TIFFWriter,
-        '.tif': TIFFWriter,
+        ".png": PNGWriter,
+        ".bmp": BMPWriter,
+        ".jpeg": JPEGWriter,
+        ".jpg": JPEGWriter,
+        ".tiff": TIFFWriter,
+        ".tif": TIFFWriter,
     }
 
     extension = os.path.splitext(os.path.basename(filename).lower())[1]
 
     if extension.lower() not in d_writer.keys():
         raise IOError(
-            'Impossible to save the file {0}: Unknown extension {1}'.format(
+            "Impossible to save the file {0}: Unknown extension {1}".format(
                 filename, extension
             )
         )
@@ -267,14 +270,17 @@ def save_image(
         im = Image.fromarray(arr)
         im.save(filename, quality=compression_quality, dpi=dpi)
     else:
-        warnings.warn(UserWarning('DPI value is ignored while saving images via vtk.'))
+        warnings.warn(
+            UserWarning("DPI value is ignored while saving images via vtk."),
+            stacklevel=2,
+        )
         if arr.ndim == 2:
             arr = arr[..., None]
 
         shape = arr.shape
         arr = np.flipud(arr)
         if extension.lower() in [
-            '.png',
+            ".png",
         ]:
             arr = arr.astype(np.uint8)
         arr = arr.reshape((shape[1] * shape[0], shape[2]))
@@ -296,12 +302,12 @@ def save_image(
         writer = d_writer.get(extension)()
         writer.SetFileName(filename)
         writer.SetInputData(vtk_data)
-        if extension.lower() in ['.jpg', '.jpeg']:
+        if extension.lower() in [".jpg", ".jpeg"]:
             writer.ProgressiveOn()
             writer.SetQuality(compression_quality)
-        if extension.lower() in ['.tif', '.tiff']:
-            compression_type = compression_type or 'nocompression'
-            l_compression = ['nocompression', 'packbits', 'jpeg', 'deflate', 'lzw']
+        if extension.lower() in [".tif", ".tiff"]:
+            compression_type = compression_type or "nocompression"
+            l_compression = ["nocompression", "packbits", "jpeg", "deflate", "lzw"]
 
             if compression_type.lower() in l_compression:
                 comp_id = l_compression.index(compression_type.lower())
@@ -325,25 +331,24 @@ def load_polydata(file_name):
     output : vtkPolyData
 
     """
-
     # Check if file actually exists
     if not os.path.isfile(file_name):
         raise FileNotFoundError(file_name)
 
-    file_extension = file_name.split('.')[-1].lower()
+    file_extension = file_name.split(".")[-1].lower()
 
     poly_reader = {
-        'vtk': PolyDataReader,
-        'vtp': XMLPolyDataReader,
-        'fib': PolyDataReader,
-        'ply': PLYReader,
-        'stl': STLReader,
-        'xml': XMLPolyDataReader,
+        "vtk": PolyDataReader,
+        "vtp": XMLPolyDataReader,
+        "fib": PolyDataReader,
+        "ply": PLYReader,
+        "stl": STLReader,
+        "xml": XMLPolyDataReader,
     }
 
     if file_extension in poly_reader.keys():
         reader = poly_reader.get(file_extension)()
-    elif file_extension == 'obj':
+    elif file_extension == "obj":
         # Special case, since there is two obj format
         reader = OBJReader()
         reader.SetFileName(file_name)
@@ -351,7 +356,7 @@ def load_polydata(file_name):
         if reader.GetOutput().GetNumberOfCells() == 0:
             reader = MNIObjectReader()
     else:
-        raise IOError('.' + file_extension + ' is not supported by FURY')
+        raise IOError("." + file_extension + " is not supported by FURY")
 
     reader.SetFileName(file_name)
     reader.Update()
@@ -372,34 +377,34 @@ def save_polydata(polydata, file_name, binary=False, color_array_name=None):
 
     """
     # get file extension (type)
-    file_extension = file_name.split('.')[-1].lower()
+    file_extension = file_name.split(".")[-1].lower()
     poly_writer = {
-        'vtk': PolyDataWriter,
-        'vtp': XMLPolyDataWriter,
-        'fib': PolyDataWriter,
-        'ply': PLYWriter,
-        'stl': STLWriter,
-        'xml': XMLPolyDataWriter,
+        "vtk": PolyDataWriter,
+        "vtp": XMLPolyDataWriter,
+        "fib": PolyDataWriter,
+        "ply": PLYWriter,
+        "stl": STLWriter,
+        "xml": XMLPolyDataWriter,
     }
 
     if file_extension in poly_writer.keys():
         writer = poly_writer.get(file_extension)()
-    elif file_extension == 'obj':
+    elif file_extension == "obj":
         # Special case, since there is two obj format
-        find_keyword = file_name.lower().split('.')
-        if 'mni' in find_keyword or 'mnc' in find_keyword:
+        find_keyword = file_name.lower().split(".")
+        if "mni" in find_keyword or "mnc" in find_keyword:
             writer = MNIObjectWriter()
         else:
             raise IOError(
-                'Wavefront obj requires a scene \n'
+                "Wavefront obj requires a scene \n"
                 " for MNI obj, use '.mni.obj' extension"
             )
     else:
-        raise IOError('.' + file_extension + ' is not supported by FURY')
+        raise IOError("." + file_extension + " is not supported by FURY")
 
     writer.SetFileName(file_name)
     writer = set_input(writer, polydata)
-    if color_array_name is not None and file_extension == 'ply':
+    if color_array_name is not None and file_extension == "ply":
         writer.SetArrayName(color_array_name)
 
     if binary:
@@ -448,7 +453,7 @@ def load_sprite_sheet(sheet_path, nb_rows, nb_cols, as_vtktype=False):
         sprite_arr = sprite_sheet[box[0] : box[2], box[1] : box[3]]
         if as_vtktype:
             with InTemporaryDirectory() as tdir:
-                tmp_img_path = os.path.join(tdir, f'{row}{col}.png')
+                tmp_img_path = os.path.join(tdir, f"{row}{col}.png")
                 save_image(sprite_arr, tmp_img_path, compression_quality=100)
 
                 sprite_dicts[(row, col)] = load_image(tmp_img_path, as_vtktype=True)

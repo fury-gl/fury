@@ -13,9 +13,7 @@ from fury.lib import (
     VTK_UNSIGNED_SHORT,
     Actor,
     DataSetAttributes,
-)
-from fury.lib import Molecule as Mol
-from fury.lib import (
+    Molecule as Mol,
     OpenGLMoleculeMapper,
     PeriodicTable,
     PolyData,
@@ -23,8 +21,8 @@ from fury.lib import (
     ProteinRibbonFilter,
     SimpleBondPerceiver,
     StringArray,
+    numpy_support as nps,
 )
-from fury.lib import numpy_support as nps
 from fury.utils import numpy_to_vtk_points
 
 
@@ -92,13 +90,14 @@ class Molecule(Mol):
             atoms present in the molecule.
             Array containing a bool value to indicate if an atom is a
             heteroatom.
+
         """
         if atomic_numbers is None and coords is None:
             self.Initialize()
         elif not isinstance(atomic_numbers, np.ndarray) or not isinstance(
             coords, np.ndarray
         ):
-            raise ValueError('atom_types and coords must be numpy arrays.')
+            raise ValueError("atom_types and coords must be numpy arrays.")
         elif len(atomic_numbers) == len(coords):
             self.atom_names = atom_names
             self.model = model
@@ -109,7 +108,7 @@ class Molecule(Mol):
             self.is_hetatm = is_hetatm
             coords = numpy_to_vtk_points(coords)
             atom_nums = nps.numpy_to_vtk(atomic_numbers, array_type=VTK_UNSIGNED_SHORT)
-            atom_nums.SetName('Atomic Numbers')
+            atom_nums.SetName("Atomic Numbers")
             fieldData = DataSetAttributes()
             fieldData.AddArray(atom_nums)
             self.Initialize(coords, fieldData)
@@ -117,8 +116,8 @@ class Molecule(Mol):
             n1 = len(coords)
             n2 = len(atomic_numbers)
             raise ValueError(
-                'Mismatch in length of atomic_numbers({0}) and '
-                'length of atomic_coords({1}).'.format(n1, n2)
+                "Mismatch in length of atomic_numbers({0}) and "
+                "length of atomic_coords({1}).".format(n1, n2)
             )
 
     @property
@@ -147,6 +146,7 @@ def add_atom(molecule, atomic_num, x_coord, y_coord, z_coord):
         y-coordinate of the atom.
     z_coord : float
         z-coordinate of the atom.
+
     """
     molecule.AppendAtom(atomic_num, x_coord, y_coord, z_coord)
 
@@ -171,6 +171,7 @@ def add_bond(molecule, atom1_index, atom2_index, bond_order=1):
     Ensure that the total number of bonds between two atoms doesn't exceed 3.
     Calling ``add_bond`` to add bonds between atoms that already have a triple
     bond between them leads to erratic behavior and must be avoided.
+
     """
     molecule.AppendBond(atom1_index, atom2_index, bond_order)
 
@@ -186,6 +187,7 @@ def get_atomic_number(molecule, atom_index):
         The molecule to which the atom belongs.
     atom_index : int
         Index of the atom whose atomic number is to be obtained.
+
     """
     return molecule.GetAtomAtomicNumber(atom_index)
 
@@ -204,6 +206,7 @@ def set_atomic_number(molecule, atom_index, atomic_num):
         Index of the atom to whom the atomic number is to be assigned.
     atom_num : int
         Atomic number to be assigned to the atom.
+
     """
     molecule.SetAtomAtomicNumber(atom_index, atomic_num)
 
@@ -219,6 +222,7 @@ def get_atomic_position(molecule, atom_index):
         The molecule to which the atom belongs.
     atom_index : int
         Index of the atom whose atomic coordinates are to be obtained.
+
     """
     return molecule.GetAtomPosition(atom_index)
 
@@ -241,6 +245,7 @@ def set_atomic_position(molecule, atom_index, x_coord, y_coord, z_coord):
         y-coordinate of the atom.
     z_coord : float
         z-coordinate of the atom.
+
     """
     molecule.SetAtomPosition(atom_index, x_coord, y_coord, z_coord)
 
@@ -257,6 +262,7 @@ def get_bond_order(molecule, bond_index):
         The molecule to which the bond belongs.
     bond_index : int
         Index of the bond whose order is to be obtained.
+
     """
     return molecule.GetBondOrder(bond_index)
 
@@ -275,6 +281,7 @@ def set_bond_order(molecule, bond_index, bond_order):
         Index of the bond whose order is to be assigned.
     bond_order : int
         Bond order (whether it's a single/double/triple bond).
+
     """
     return molecule.SetBondOrder(bond_index, bond_order)
 
@@ -287,6 +294,7 @@ def get_all_atomic_numbers(molecule):
     ----------
     molecule : Molecule
         The molecule whose atomic number array is to be obtained.
+
     """
     return nps.vtk_to_numpy(molecule.GetAtomicNumberArray())
 
@@ -299,6 +307,7 @@ def get_all_bond_orders(molecule):
     ----------
     molecule : Molecule
         The molecule whose bond types array is to be obtained.
+
     """
     return nps.vtk_to_numpy(molecule.GetBondOrdersArray())
 
@@ -311,13 +320,13 @@ def get_all_atomic_positions(molecule):
     ----------
     molecule : Molecule
         The molecule whose atomic position array is to be obtained.
+
     """
     return nps.vtk_to_numpy(molecule.GetAtomicPositionArray().GetData())
 
 
 def deep_copy_molecule(molecule1, molecule2):
-    """
-    Deep copies the atomic information (atoms and bonds) from molecule2 into
+    """Deep copies the atomic information (atoms and bonds) from molecule2 into
     molecule1.
 
     Parameters
@@ -326,13 +335,13 @@ def deep_copy_molecule(molecule1, molecule2):
         The molecule to which the atomic information is copied.
     molecule2 : Molecule
         The molecule from which the atomic information is copied.
+
     """
     molecule1.DeepCopyStructure(molecule2)
 
 
 def compute_bonding(molecule):
-    """
-    Uses `vtkSimpleBondPerceiver` to generate bonding information for a
+    """Uses `vtkSimpleBondPerceiver` to generate bonding information for a
     molecule.
     `vtkSimpleBondPerceiver` performs a simple check of all interatomic
     distances and adds a single bond between atoms that are reasonably
@@ -349,6 +358,7 @@ def compute_bonding(molecule):
     This algorithm does not consider valences, hybridization, aromaticity,
     or anything other than atomic separations. It will not produce anything
     other than single bonds.
+
     """
     bonder = SimpleBondPerceiver()
     bonder.SetInputData(molecule)
@@ -376,6 +386,7 @@ class PTable(PeriodicTable):
         ----------
         atomic_number : int
             Atomic number of the element whose symbol is to be obtained.
+
         """
         return self.GetSymbol(atomic_number)
 
@@ -386,6 +397,7 @@ class PTable(PeriodicTable):
         ----------
         atomic_number : int
             Atomic number of the element whose name is to be obtained.
+
         """
         return self.GetElementName(atomic_number)
 
@@ -397,10 +409,11 @@ class PTable(PeriodicTable):
         ----------
         element_name : string
             Name of the element whose atomic number is to be obtained.
+
         """
         return self.GetAtomicNumber(element_name)
 
-    def atomic_radius(self, atomic_number, radius_type='VDW'):
+    def atomic_radius(self, atomic_number, radius_type="VDW"):
         """Given an atomic number, return either the covalent radius of the
         atom (in Å) or return the Van Der Waals radius (in Å) of the atom
         depending on radius_type.
@@ -416,15 +429,16 @@ class PTable(PeriodicTable):
             * 'Covalent' : for covalent radius of the atom
 
             Default: 'VDW'
+
         """
         radius_type = radius_type.lower()
-        if radius_type == 'vdw':
+        if radius_type == "vdw":
             return self.GetVDWRadius(atomic_number)
-        elif radius_type == 'covalent':
+        elif radius_type == "covalent":
             return self.GetCovalentRadius(atomic_number)
         else:
             raise ValueError(
-                'Incorrect radius_type specified. Please choose'
+                "Incorrect radius_type specified. Please choose"
                 ' from "VDW" or "Covalent".'
             )
 
@@ -437,12 +451,13 @@ class PTable(PeriodicTable):
         ----------
         atomicNumber : int
             Atomic number of the element whose RGB tuple is to be obtained.
+
         """
         rgb = np.array(self.GetDefaultRGBTuple(atomic_number))
         return rgb
 
 
-def sphere_cpk(molecule, colormode='discrete'):
+def sphere_cpk(molecule, colormode="discrete"):
     """Create an actor for sphere molecular representation. It's also referred
     to as CPK model and space-filling model.
 
@@ -472,6 +487,7 @@ def sphere_cpk(molecule, colormode='discrete'):
     Peptides, and Proteins
     `Review of Scientific Instruments 1953, 24 (8), 621-627.
     <https://doi.org/10.1063/1.1770803>`_
+
     """
     colormode = colormode.lower()
     msp_mapper = OpenGLMoleculeMapper()
@@ -480,13 +496,13 @@ def sphere_cpk(molecule, colormode='discrete'):
     msp_mapper.SetRenderBonds(False)
     msp_mapper.SetAtomicRadiusTypeToVDWRadius()
     msp_mapper.SetAtomicRadiusScaleFactor(1)
-    if colormode == 'discrete':
+    if colormode == "discrete":
         msp_mapper.SetAtomColorMode(1)
-    elif colormode == 'single':
+    elif colormode == "single":
         msp_mapper.SetAtomColorMode(0)
     else:
         msp_mapper.SetAtomColorMode(1)
-        warnings.warn('Incorrect colormode specified! Using discrete.')
+        warnings.warn("Incorrect colormode specified! Using discrete.", stacklevel=2)
 
     # To-Do manipulate shading properties to make it look aesthetic
     molecule_actor = Actor()
@@ -496,7 +512,7 @@ def sphere_cpk(molecule, colormode='discrete'):
 
 def ball_stick(
     molecule,
-    colormode='discrete',
+    colormode="discrete",
     atom_scale_factor=0.3,
     bond_thickness=0.1,
     multiple_bonds=True,
@@ -543,11 +559,12 @@ def ball_stick(
     Turner, M. Ball and stick models for organic chemistry
     `J. Chem. Educ. 1971, 48, 6, 407.
     <https://doi.org/10.1021/ed048p407>`_
+
     """
     if molecule.total_num_bonds == 0:
         raise ValueError(
-            'No bonding data available for the molecule! Ball '
-            'and stick model cannot be made!'
+            "No bonding data available for the molecule! Ball "
+            "and stick model cannot be made!"
         )
     colormode = colormode.lower()
     bs_mapper = OpenGLMoleculeMapper()
@@ -561,21 +578,21 @@ def ball_stick(
         bs_mapper.SetUseMultiCylindersForBonds(1)
     else:
         bs_mapper.SetUseMultiCylindersForBonds(0)
-    if colormode == 'discrete':
+    if colormode == "discrete":
         bs_mapper.SetAtomColorMode(1)
         bs_mapper.SetBondColorMode(1)
-    elif colormode == 'single':
+    elif colormode == "single":
         bs_mapper.SetAtomColorMode(0)
         bs_mapper.SetBondColorMode(0)
     else:
         bs_mapper.SetAtomColorMode(1)
-        warnings.warn('Incorrect colormode specified! Using discrete.')
+        warnings.warn("Incorrect colormode specified! Using discrete.", stacklevel=2)
     molecule_actor = Actor()
     molecule_actor.SetMapper(bs_mapper)
     return molecule_actor
 
 
-def stick(molecule, colormode='discrete', bond_thickness=0.1):
+def stick(molecule, colormode="discrete", bond_thickness=0.1):
     """Create an actor for stick molecular representation.
 
     Parameters
@@ -602,10 +619,11 @@ def stick(molecule, colormode='discrete', bond_thickness=0.1):
     molecule_actor : vtkActor
         Actor created to render the stick representation of the molecule to be
         visualized.
+
     """
     if molecule.total_num_bonds == 0:
         raise ValueError(
-            'No bonding data available for the molecule! Stick ' 'model cannot be made!'
+            "No bonding data available for the molecule! Stick " "model cannot be made!"
         )
     colormode = colormode.lower()
     mst_mapper = OpenGLMoleculeMapper()
@@ -615,15 +633,15 @@ def stick(molecule, colormode='discrete', bond_thickness=0.1):
     mst_mapper.SetBondRadius(bond_thickness)
     mst_mapper.SetAtomicRadiusTypeToUnitRadius()
     mst_mapper.SetAtomicRadiusScaleFactor(bond_thickness)
-    if colormode == 'discrete':
+    if colormode == "discrete":
         mst_mapper.SetAtomColorMode(1)
         mst_mapper.SetBondColorMode(1)
-    elif colormode == 'single':
+    elif colormode == "single":
         mst_mapper.SetAtomColorMode(0)
         mst_mapper.SetBondColorMode(0)
     else:
         mst_mapper.SetAtomColorMode(1)
-        warnings.warn('Incorrect colormode specified! Using discrete.')
+        warnings.warn("Incorrect colormode specified! Using discrete.", stacklevel=2)
     molecule_actor = Actor()
     molecule_actor.SetMapper(mst_mapper)
     return molecule_actor
@@ -648,25 +666,26 @@ def ribbon(molecule):
     Richardson, J.S. The anatomy and taxonomy of protein structure
     `Advances in Protein Chemistry, 1981, 34, 167-339.
     <https://doi.org/10.1016/S0065-3233(08)60520-3>`_
+
     """
     coords = get_all_atomic_positions(molecule)
     all_atomic_numbers = get_all_atomic_numbers(molecule)
     num_total_atoms = molecule.total_num_atoms
     secondary_structures = np.ones(num_total_atoms)
     for i in range(num_total_atoms):
-        secondary_structures[i] = ord('c')
+        secondary_structures[i] = ord("c")
         resi = molecule.residue_seq[i]
         for j, _ in enumerate(molecule.sheet):
             sheet = molecule.sheet[j]
             if molecule.chain[i] != sheet[0] or resi < sheet[1] or resi > sheet[3]:
                 continue
-            secondary_structures[i] = ord('s')
+            secondary_structures[i] = ord("s")
 
         for j, _ in enumerate(molecule.helix):
             helix = molecule.helix[j]
             if molecule.chain[i] != helix[0] or resi < helix[1] or resi > helix[3]:
                 continue
-            secondary_structures[i] = ord('h')
+            secondary_structures[i] = ord("h")
 
     output = PolyData()
 
@@ -677,7 +696,7 @@ def ribbon(molecule):
 
     # setting the array name to atom_type as vtkProteinRibbonFilter requires
     # the array to be named atom_type
-    atomic_num_arr.SetName('atom_type')
+    atomic_num_arr.SetName("atom_type")
 
     output.GetPointData().AddArray(atomic_num_arr)
 
@@ -686,7 +705,7 @@ def ribbon(molecule):
 
     # setting the array name to atom_types as vtkProteinRibbonFilter requires
     # the array to be named atom_types
-    atom_names.SetName('atom_types')
+    atom_names.SetName("atom_types")
     atom_names.SetNumberOfTuples(num_total_atoms)
     for i in range(num_total_atoms):
         atom_names.SetValue(i, molecule.atom_names[i])
@@ -697,47 +716,47 @@ def ribbon(molecule):
     residue_seq = nps.numpy_to_vtk(
         num_array=molecule.residue_seq, deep=True, array_type=VTK_ID_TYPE
     )
-    residue_seq.SetName('residue')
+    residue_seq.SetName("residue")
     output.GetPointData().AddArray(residue_seq)
 
     # for chain
     chain = nps.numpy_to_vtk(
         num_array=molecule.chain, deep=True, array_type=VTK_UNSIGNED_CHAR
     )
-    chain.SetName('chain')
+    chain.SetName("chain")
     output.GetPointData().AddArray(chain)
 
     # for secondary structures
     s_s = nps.numpy_to_vtk(
         num_array=secondary_structures, deep=True, array_type=VTK_UNSIGNED_CHAR
     )
-    s_s.SetName('secondary_structures')
+    s_s.SetName("secondary_structures")
     output.GetPointData().AddArray(s_s)
 
     # for secondary structures begin
     newarr = np.ones(num_total_atoms)
     s_sb = nps.numpy_to_vtk(num_array=newarr, deep=True, array_type=VTK_UNSIGNED_CHAR)
-    s_sb.SetName('secondary_structures_begin')
+    s_sb.SetName("secondary_structures_begin")
     output.GetPointData().AddArray(s_sb)
 
     # for secondary structures end
     newarr = np.ones(num_total_atoms)
     s_se = nps.numpy_to_vtk(num_array=newarr, deep=True, array_type=VTK_UNSIGNED_CHAR)
-    s_se.SetName('secondary_structures_end')
+    s_se.SetName("secondary_structures_end")
     output.GetPointData().AddArray(s_se)
 
     # for is_hetatm
     is_hetatm = nps.numpy_to_vtk(
         num_array=molecule.is_hetatm, deep=True, array_type=VTK_UNSIGNED_CHAR
     )
-    is_hetatm.SetName('ishetatm')
+    is_hetatm.SetName("ishetatm")
     output.GetPointData().AddArray(is_hetatm)
 
     # for model
     model = nps.numpy_to_vtk(
         num_array=molecule.model, deep=True, array_type=VTK_UNSIGNED_INT
     )
-    model.SetName('model')
+    model.SetName("model")
     output.GetPointData().AddArray(model)
 
     table = PTable()
@@ -747,15 +766,15 @@ def ribbon(molecule):
     rgb = np.ones((num_total_atoms, 3))
 
     for i in range(num_total_atoms):
-        radii[i] = np.repeat(table.atomic_radius(all_atomic_numbers[i], 'VDW'), 3)
+        radii[i] = np.repeat(table.atomic_radius(all_atomic_numbers[i], "VDW"), 3)
         rgb[i] = table.atom_color(all_atomic_numbers[i])
 
     Rgb = nps.numpy_to_vtk(num_array=rgb, deep=True, array_type=VTK_UNSIGNED_CHAR)
-    Rgb.SetName('rgb_colors')
+    Rgb.SetName("rgb_colors")
     output.GetPointData().SetScalars(Rgb)
 
     Radii = nps.numpy_to_vtk(num_array=radii, deep=True, array_type=VTK_FLOAT)
-    Radii.SetName('radius')
+    Radii.SetName("radius")
     output.GetPointData().SetVectors(Radii)
 
     # setting the coordinates

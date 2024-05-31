@@ -41,11 +41,11 @@ cubes_pos = np.array(
 
 ###############################################################################
 # Static labels for different interpolators (for show)
-linear_text = actor.vector_text('Linear', (-2.64, -1, 0))
-lab_text = actor.vector_text('LAB', (-0.37, -1, 0))
-hsv_text = actor.vector_text('HSV', (1.68, -1, 0))
-xyz_text = actor.vector_text('XYZ', (3.6, -1, 0))
-step_text = actor.vector_text('Step', (5.7, -1, 0))
+linear_text = actor.vector_text("Linear", (-2.64, -1, 0))
+lab_text = actor.vector_text("LAB", (-0.37, -1, 0))
+hsv_text = actor.vector_text("HSV", (1.68, -1, 0))
+xyz_text = actor.vector_text("XYZ", (3.6, -1, 0))
+step_text = actor.vector_text("Step", (5.7, -1, 0))
 scene.add(step_text, lab_text, linear_text, hsv_text, xyz_text)
 
 ###############################################################################
@@ -108,4 +108,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_keyframe_animation_colors.png', size=(900, 768))
+window.record(scene, out_path="viz_keyframe_animation_colors.png", size=(900, 768))

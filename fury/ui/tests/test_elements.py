@@ -1,7 +1,6 @@
 """Test for components module."""
-import itertools
+
 import os
-import shutil
 from os.path import join as pjoin
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 
@@ -9,10 +8,9 @@ import numpy as np
 import numpy.testing as npt
 import pytest
 
-from fury import actor, ui, window
+from fury import ui, window
 from fury.data import DATA_DIR
-from fury.decorators import skip_osx, skip_win
-from fury.primitive import prim_sphere
+from fury.decorators import skip_osx
 from fury.testing import (
     EventCounter,
     assert_arrays_equal,
@@ -30,16 +28,16 @@ from fury.ui import PlaybackPanel
 
 
 def test_ui_textbox(recording=False):
-    filename = 'test_ui_textbox'
-    recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
+    filename = "test_ui_textbox"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     print(recording_filename)
     # TextBox
-    textbox_test = ui.TextBox2D(height=3, width=10, text='Text')
+    textbox_test = ui.TextBox2D(height=3, width=10, text="Text")
 
-    another_textbox_test = ui.TextBox2D(height=3, width=10, text='Enter Text')
-    another_textbox_test.set_message('Enter Text')
+    another_textbox_test = ui.TextBox2D(height=3, width=10, text="Enter Text")
+    another_textbox_test.set_message("Enter Text")
 
     # Checking whether textbox went out of focus
     is_off_focused = [False]
@@ -55,7 +53,7 @@ def test_ui_textbox(recording=False):
     event_counter.monitor(textbox_test)
 
     current_size = (600, 600)
-    show_manager = window.ShowManager(size=current_size, title='FURY TextBox')
+    show_manager = window.ShowManager(size=current_size, title="FURY TextBox")
 
     show_manager.scene.add(textbox_test)
 
@@ -73,16 +71,16 @@ def test_ui_textbox(recording=False):
 
 
 def test_ui_line_slider_2d_horizontal_bottom(recording=False):
-    filename = 'test_ui_line_slider_2d_horizontal_bottom'
-    recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
+    filename = "test_ui_line_slider_2d_horizontal_bottom"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     line_slider_2d_test = ui.LineSlider2D(
         initial_value=-2,
         min_value=-5,
         max_value=5,
-        orientation='horizontal',
-        text_alignment='bottom',
+        orientation="horizontal",
+        text_alignment="bottom",
     )
     line_slider_2d_test.center = (300, 300)
 
@@ -92,7 +90,7 @@ def test_ui_line_slider_2d_horizontal_bottom(recording=False):
 
     current_size = (600, 600)
     show_manager = window.ShowManager(
-        size=current_size, title='FURY Horizontal Line Slider'
+        size=current_size, title="FURY Horizontal Line Slider"
     )
 
     show_manager.scene.add(line_slider_2d_test)
@@ -109,16 +107,16 @@ def test_ui_line_slider_2d_horizontal_bottom(recording=False):
 
 
 def test_ui_line_slider_2d_horizontal_top(recording=False):
-    filename = 'test_ui_line_slider_2d_horizontal_top'
-    recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
+    filename = "test_ui_line_slider_2d_horizontal_top"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     line_slider_2d_test = ui.LineSlider2D(
         initial_value=-2,
         min_value=-5,
         max_value=5,
-        orientation='horizontal',
-        text_alignment='top',
+        orientation="horizontal",
+        text_alignment="top",
     )
     line_slider_2d_test.center = (300, 300)
 
@@ -128,7 +126,7 @@ def test_ui_line_slider_2d_horizontal_top(recording=False):
 
     current_size = (600, 600)
     show_manager = window.ShowManager(
-        size=current_size, title='FURY Horizontal Line Slider'
+        size=current_size, title="FURY Horizontal Line Slider"
     )
 
     show_manager.scene.add(line_slider_2d_test)
@@ -145,16 +143,16 @@ def test_ui_line_slider_2d_horizontal_top(recording=False):
 
 
 def test_ui_line_slider_2d_vertical_left(recording=False):
-    filename = 'test_ui_line_slider_2d_vertical_left'
-    recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
+    filename = "test_ui_line_slider_2d_vertical_left"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     line_slider_2d_test = ui.LineSlider2D(
         initial_value=-2,
         min_value=-5,
         max_value=5,
-        orientation='vertical',
-        text_alignment='left',
+        orientation="vertical",
+        text_alignment="left",
     )
     line_slider_2d_test.center = (300, 300)
 
@@ -164,7 +162,7 @@ def test_ui_line_slider_2d_vertical_left(recording=False):
 
     current_size = (600, 600)
     show_manager = window.ShowManager(
-        size=current_size, title='FURY Vertical Line Slider'
+        size=current_size, title="FURY Vertical Line Slider"
     )
 
     show_manager.scene.add(line_slider_2d_test)
@@ -181,16 +179,16 @@ def test_ui_line_slider_2d_vertical_left(recording=False):
 
 
 def test_ui_line_slider_2d_vertical_right(recording=False):
-    filename = 'test_ui_line_slider_2d_vertical_right'
-    recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
+    filename = "test_ui_line_slider_2d_vertical_right"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     line_slider_2d_test = ui.LineSlider2D(
         initial_value=-2,
         min_value=-5,
         max_value=5,
-        orientation='vertical',
-        text_alignment='right',
+        orientation="vertical",
+        text_alignment="right",
     )
     line_slider_2d_test.center = (300, 300)
 
@@ -200,7 +198,7 @@ def test_ui_line_slider_2d_vertical_right(recording=False):
 
     current_size = (600, 600)
     show_manager = window.ShowManager(
-        size=current_size, title='FURY Vertical Line Slider'
+        size=current_size, title="FURY Vertical Line Slider"
     )
 
     show_manager.scene.add(line_slider_2d_test)
@@ -219,16 +217,16 @@ def test_ui_line_slider_2d_vertical_right(recording=False):
 def test_ui_2d_line_slider_hooks(recording=False):
     global changed, value_changed, slider_moved
 
-    filename = 'test_ui_line_slider_2d_hooks'
-    recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
+    filename = "test_ui_line_slider_2d_hooks"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     line_slider_2d = ui.LineSlider2D(center=(300, 300))
 
     event_counter = EventCounter()
     event_counter.monitor(line_slider_2d)
 
-    show_manager = window.ShowManager(size=(600, 600), title='FURY Line Slider hooks')
+    show_manager = window.ShowManager(size=(600, 600), title="FURY Line Slider hooks")
 
     # counters for the hooks to increment
     changed = value_changed = slider_moved = 0
@@ -272,7 +270,7 @@ def test_ui_2d_line_slider_hooks(recording=False):
 def test_ui_line_double_slider_2d(interactive=False):
     line_double_slider_2d_horizontal_test = ui.LineDoubleSlider2D(
         center=(300, 300),
-        shape='disk',
+        shape="disk",
         outer_radius=15,
         min_value=-10,
         max_value=10,
@@ -284,7 +282,7 @@ def test_ui_line_double_slider_2d(interactive=False):
 
     line_double_slider_2d_vertical_test = ui.LineDoubleSlider2D(
         center=(300, 300),
-        shape='disk',
+        shape="disk",
         outer_radius=15,
         min_value=-10,
         max_value=10,
@@ -296,7 +294,7 @@ def test_ui_line_double_slider_2d(interactive=False):
 
     if interactive:
         show_manager = window.ShowManager(
-            size=(600, 600), title='FURY Line Double Slider'
+            size=(600, 600), title="FURY Line Double Slider"
         )
         show_manager.scene.add(line_double_slider_2d_horizontal_test)
         show_manager.scene.add(line_double_slider_2d_vertical_test)
@@ -304,9 +302,9 @@ def test_ui_line_double_slider_2d(interactive=False):
 
     line_double_slider_2d_horizontal_test = ui.LineDoubleSlider2D(
         center=(300, 300),
-        shape='square',
+        shape="square",
         handle_side=5,
-        orientation='horizontal',
+        orientation="horizontal",
         initial_values=(50, 40),
     )
     npt.assert_equal(line_double_slider_2d_horizontal_test.handles[0].size, (5, 5))
@@ -317,9 +315,9 @@ def test_ui_line_double_slider_2d(interactive=False):
 
     line_double_slider_2d_vertical_test = ui.LineDoubleSlider2D(
         center=(300, 300),
-        shape='square',
+        shape="square",
         handle_side=5,
-        orientation='vertical',
+        orientation="vertical",
         initial_values=(50, 40),
     )
     npt.assert_equal(line_double_slider_2d_vertical_test.handles[0].size, (5, 5))
@@ -329,11 +327,11 @@ def test_ui_line_double_slider_2d(interactive=False):
     npt.assert_equal(line_double_slider_2d_vertical_test.top_disk_ratio, 0.4)
 
     with npt.assert_raises(ValueError):
-        ui.LineDoubleSlider2D(orientation='Not_hor_not_vert')
+        ui.LineDoubleSlider2D(orientation="Not_hor_not_vert")
 
     if interactive:
         show_manager = window.ShowManager(
-            size=(600, 600), title='FURY Line Double Slider'
+            size=(600, 600), title="FURY Line Double Slider"
         )
         show_manager.scene.add(line_double_slider_2d_horizontal_test)
         show_manager.scene.add(line_double_slider_2d_vertical_test)
@@ -343,9 +341,9 @@ def test_ui_line_double_slider_2d(interactive=False):
 def test_ui_2d_line_double_slider_hooks(recording=False):
     global changed, value_changed, slider_moved
 
-    filename = 'test_ui_line_double_slider_2d_hooks'
-    recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
+    filename = "test_ui_line_double_slider_2d_hooks"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     line_double_slider_2d = ui.LineDoubleSlider2D(center=(300, 300))
 
@@ -353,7 +351,7 @@ def test_ui_2d_line_double_slider_hooks(recording=False):
     event_counter.monitor(line_double_slider_2d)
 
     show_manager = window.ShowManager(
-        size=(600, 600), title='FURY Line Double Slider hooks'
+        size=(600, 600), title="FURY Line Double Slider hooks"
     )
 
     # counters for the line double slider's changes
@@ -397,9 +395,9 @@ def test_ui_2d_line_double_slider_hooks(recording=False):
 
 
 def test_ui_ring_slider_2d(recording=False):
-    filename = 'test_ui_ring_slider_2d'
-    recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
+    filename = "test_ui_ring_slider_2d"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     ring_slider_2d_test = ui.RingSlider2D()
     ring_slider_2d_test.center = (300, 300)
@@ -410,7 +408,7 @@ def test_ui_ring_slider_2d(recording=False):
     event_counter.monitor(ring_slider_2d_test)
 
     current_size = (600, 600)
-    show_manager = window.ShowManager(size=current_size, title='FURY Ring Slider')
+    show_manager = window.ShowManager(size=current_size, title="FURY Ring Slider")
 
     show_manager.scene.add(ring_slider_2d_test)
 
@@ -435,16 +433,16 @@ def test_ui_ring_slider_2d(recording=False):
 def test_ui_2d_ring_slider_hooks(recording=False):
     global changed, value_changed, slider_moved
 
-    filename = 'test_ui_ring_slider_2d_hooks'
-    recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
+    filename = "test_ui_ring_slider_2d_hooks"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     ring_slider_2d = ui.RingSlider2D(center=(300, 300))
 
     event_counter = EventCounter()
     event_counter.monitor(ring_slider_2d)
 
-    show_manager = window.ShowManager(size=(600, 600), title='FURY Ring Slider hooks')
+    show_manager = window.ShowManager(size=(600, 600), title="FURY Ring Slider hooks")
 
     # counters for the ring slider changes
     changed = value_changed = slider_moved = 0
@@ -486,12 +484,12 @@ def test_ui_2d_ring_slider_hooks(recording=False):
 
 
 def test_ui_range_slider(interactive=False):
-    range_slider_test_horizontal = ui.RangeSlider(shape='square')
-    range_slider_test_vertical = ui.RangeSlider(shape='square', orientation='vertical')
+    range_slider_test_horizontal = ui.RangeSlider(shape="square")
+    range_slider_test_vertical = ui.RangeSlider(shape="square", orientation="vertical")
 
     if interactive:
         show_manager = window.ShowManager(
-            size=(600, 600), title='FURY Line Double Slider'
+            size=(600, 600), title="FURY Line Double Slider"
         )
         show_manager.scene.add(range_slider_test_horizontal)
         show_manager.scene.add(range_slider_test_vertical)
@@ -548,7 +546,7 @@ def test_ui_slider_value_range():
 
 
 def test_ui_option(interactive=False):
-    option_test = ui.Option(label='option 1', position=(10, 10))
+    option_test = ui.Option(label="option 1", position=(10, 10))
 
     npt.assert_equal(option_test.checked, False)
 
@@ -559,14 +557,14 @@ def test_ui_option(interactive=False):
 
 
 def test_ui_checkbox_initial_state(recording=False):
-    filename = 'test_ui_checkbox_initial_state'
-    recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
+    filename = "test_ui_checkbox_initial_state"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     checkbox_test = ui.Checkbox(
-        labels=['option 1', 'option 2\nOption 2', 'option 3', 'option 4'],
+        labels=["option 1", "option 2\nOption 2", "option 3", "option 4"],
         position=(100, 100),
-        checked_labels=['option 1', 'option 4'],
+        checked_labels=["option 1", "option 4"],
     )
 
     # Collect the sequence of options that have been checked in this list.
@@ -582,7 +580,7 @@ def test_ui_checkbox_initial_state(recording=False):
     event_counter.monitor(checkbox_test)
 
     # Create a show manager and record/play events.
-    show_manager = window.ShowManager(size=(600, 600), title='FURY Checkbox')
+    show_manager = window.ShowManager(size=(600, 600), title="FURY Checkbox")
     show_manager.scene.add(checkbox_test)
 
     if recording:
@@ -608,16 +606,16 @@ def test_ui_checkbox_initial_state(recording=False):
         #  10. Click on button of option 3.
         # Check if the right options were selected.
         expected = [
-            ['option 4'],
-            ['option 4', 'option 2\nOption 2'],
-            ['option 4', 'option 2\nOption 2', 'option 1'],
-            ['option 4', 'option 2\nOption 2', 'option 1', 'option 3'],
-            ['option 4', 'option 2\nOption 2', 'option 3'],
-            ['option 2\nOption 2', 'option 3'],
-            ['option 2\nOption 2', 'option 3', 'option 1'],
-            ['option 3', 'option 1'],
-            ['option 3', 'option 1', 'option 4'],
-            ['option 1', 'option 4'],
+            ["option 4"],
+            ["option 4", "option 2\nOption 2"],
+            ["option 4", "option 2\nOption 2", "option 1"],
+            ["option 4", "option 2\nOption 2", "option 1", "option 3"],
+            ["option 4", "option 2\nOption 2", "option 3"],
+            ["option 2\nOption 2", "option 3"],
+            ["option 2\nOption 2", "option 3", "option 1"],
+            ["option 3", "option 1"],
+            ["option 3", "option 1", "option 4"],
+            ["option 1", "option 4"],
         ]
 
         npt.assert_equal(len(selected_options), len(expected))
@@ -625,12 +623,12 @@ def test_ui_checkbox_initial_state(recording=False):
 
 
 def test_ui_checkbox_default(recording=False):
-    filename = 'test_ui_checkbox_initial_state'
-    recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
+    filename = "test_ui_checkbox_initial_state"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     checkbox_test = ui.Checkbox(
-        labels=['option 1', 'option 2\nOption 2', 'option 3', 'option 4'],
+        labels=["option 1", "option 2\nOption 2", "option 3", "option 4"],
         position=(10, 10),
         checked_labels=[],
     )
@@ -660,7 +658,7 @@ def test_ui_checkbox_default(recording=False):
     event_counter.monitor(checkbox_test)
 
     # Create a show manager and record/play events.
-    show_manager = window.ShowManager(size=(600, 600), title='FURY Checkbox')
+    show_manager = window.ShowManager(size=(600, 600), title="FURY Checkbox")
     show_manager.scene.add(checkbox_test)
 
     if recording:
@@ -686,15 +684,15 @@ def test_ui_checkbox_default(recording=False):
 
         # Check if the right options were selected.
         expected = [
-            ['option 1'],
-            ['option 1', 'option 2\nOption 2'],
-            ['option 2\nOption 2'],
-            ['option 2\nOption 2', 'option 3'],
-            ['option 2\nOption 2', 'option 3', 'option 1'],
-            ['option 2\nOption 2', 'option 3', 'option 1', 'option 4'],
-            ['option 2\nOption 2', 'option 3', 'option 4'],
-            ['option 3', 'option 4'],
-            ['option 3'],
+            ["option 1"],
+            ["option 1", "option 2\nOption 2"],
+            ["option 2\nOption 2"],
+            ["option 2\nOption 2", "option 3"],
+            ["option 2\nOption 2", "option 3", "option 1"],
+            ["option 2\nOption 2", "option 3", "option 1", "option 4"],
+            ["option 2\nOption 2", "option 3", "option 4"],
+            ["option 3", "option 4"],
+            ["option 3"],
             [],
         ]
         npt.assert_equal(len(selected_options), len(expected))
@@ -702,14 +700,14 @@ def test_ui_checkbox_default(recording=False):
 
 
 def test_ui_radio_button_initial_state(recording=False):
-    filename = 'test_ui_radio_button_initial'
-    recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
+    filename = "test_ui_radio_button_initial"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     radio_button_test = ui.RadioButton(
-        labels=['option 1', 'option 2\nOption 2', 'option 3', 'option 4'],
+        labels=["option 1", "option 2\nOption 2", "option 3", "option 4"],
         position=(100, 100),
-        checked_labels=['option 4'],
+        checked_labels=["option 4"],
     )
 
     selected_option = []
@@ -724,7 +722,7 @@ def test_ui_radio_button_initial_state(recording=False):
     event_counter.monitor(radio_button_test)
 
     # Create a show manager and record/play events.
-    show_manager = window.ShowManager(size=(600, 600), title='FURY Checkbox')
+    show_manager = window.ShowManager(size=(600, 600), title="FURY Checkbox")
     show_manager.scene.add(radio_button_test)
     if recording:
         show_manager.record_events_to_file(recording_filename)
@@ -746,26 +744,26 @@ def test_ui_radio_button_initial_state(recording=False):
 
         # Check if the right options were selected.
         expected = [
-            ['option 1'],
-            ['option 2\nOption 2'],
-            ['option 2\nOption 2'],
-            ['option 2\nOption 2'],
-            ['option 1'],
-            ['option 3'],
-            ['option 4'],
-            ['option 4'],
+            ["option 1"],
+            ["option 2\nOption 2"],
+            ["option 2\nOption 2"],
+            ["option 2\nOption 2"],
+            ["option 1"],
+            ["option 3"],
+            ["option 4"],
+            ["option 4"],
         ]
         npt.assert_equal(len(selected_option), len(expected))
         assert_arrays_equal(selected_option, expected)
 
 
 def test_ui_radio_button_default(recording=False):
-    filename = 'test_ui_radio_button_initial'
-    recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
+    filename = "test_ui_radio_button_initial"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     radio_button_test = ui.RadioButton(
-        labels=['option 1', 'option 2\nOption 2', 'option 3', 'option 4'],
+        labels=["option 1", "option 2\nOption 2", "option 3", "option 4"],
         position=(10, 10),
         checked_labels=[],
     )
@@ -793,7 +791,7 @@ def test_ui_radio_button_default(recording=False):
     event_counter.monitor(radio_button_test)
 
     # Create a show manager and record/play events.
-    show_manager = window.ShowManager(size=(600, 600), title='FURY Checkbox')
+    show_manager = window.ShowManager(size=(600, 600), title="FURY Checkbox")
     show_manager.scene.add(radio_button_test)
     if recording:
         show_manager.record_events_to_file(recording_filename)
@@ -815,14 +813,14 @@ def test_ui_radio_button_default(recording=False):
 
         # Check if the right options were selected.
         expected = [
-            ['option 1'],
-            ['option 2\nOption 2'],
-            ['option 2\nOption 2'],
-            ['option 2\nOption 2'],
-            ['option 1'],
-            ['option 3'],
-            ['option 4'],
-            ['option 4'],
+            ["option 1"],
+            ["option 2\nOption 2"],
+            ["option 2\nOption 2"],
+            ["option 2\nOption 2"],
+            ["option 1"],
+            ["option 3"],
+            ["option 4"],
+            ["option 4"],
         ]
         npt.assert_equal(len(selected_option), len(expected))
         assert_arrays_equal(selected_option, expected)
@@ -832,22 +830,22 @@ def test_multiple_radio_button_pre_selected():
     npt.assert_raises(
         ValueError,
         ui.RadioButton,
-        labels=['option 1', 'option 2\nOption 2', 'option 3', 'option 4'],
-        checked_labels=['option 1', 'option 4'],
+        labels=["option 1", "option 2\nOption 2", "option 3", "option 4"],
+        checked_labels=["option 1", "option 4"],
     )
 
 
 @pytest.mark.skipif(
-    True, reason='Need investigation. Incorrect ' 'number of event for each vtk version'
+    True, reason="Need investigation. Incorrect " "number of event for each vtk version"
 )
 def test_ui_listbox_2d(interactive=False):
-    filename = 'test_ui_listbox_2d'
-    recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
+    filename = "test_ui_listbox_2d"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     # Values that will be displayed by the listbox.
     values = list(range(1, 42 + 1))
-    values.append('A Very Very Long Item To Test Text Overflow of List Box 2D')
+    values.append("A Very Very Long Item To Test Text Overflow of List Box 2D")
 
     if interactive:
         listbox = ui.ListBox2D(
@@ -860,7 +858,7 @@ def test_ui_listbox_2d(interactive=False):
         listbox.center = (300, 300)
         listbox.panel.opacity = 0.2
 
-        show_manager = window.ShowManager(size=(600, 600), title='FURY ListBox')
+        show_manager = window.ShowManager(size=(600, 600), title="FURY ListBox")
         show_manager.scene.add(listbox)
         show_manager.start()
 
@@ -894,7 +892,7 @@ def test_ui_listbox_2d(interactive=False):
     event_counter = EventCounter()
     event_counter.monitor(listbox)
 
-    show_manager = window.ShowManager(size=(600, 600), title='FURY ListBox')
+    show_manager = window.ShowManager(size=(600, 600), title="FURY ListBox")
     show_manager.scene.add(listbox)
     show_manager.play_events_from_file(recording_filename)
     expected = EventCounter.load(expected_events_counts_filename)
@@ -906,8 +904,8 @@ def test_ui_listbox_2d(interactive=False):
         [1, 2],
         [1],
         [
-            'A Very Very Long Item To \
-Test Text Overflow of List Box 2D'
+            "A Very Very Long Item To \
+Test Text Overflow of List Box 2D"
         ],
         [1],
         values,
@@ -926,13 +924,13 @@ Test Text Overflow of List Box 2D'
         [2],
         [2],
         [
-            'A Very Very Long Item To \
-Test Text Overflow of List Box 2D'
+            "A Very Very Long Item To \
+Test Text Overflow of List Box 2D"
         ],
         [1],
         [
-            'A Very Very Long Item To Test \
-Text Overflow of List Box 2D'
+            "A Very Very Long Item To Test \
+Text Overflow of List Box 2D"
         ],
     ]
     npt.assert_equal(len(selected_values), len(expected))
@@ -941,12 +939,12 @@ Text Overflow of List Box 2D'
 
 def test_ui_listbox_2d_visibility():
     l1 = ui.ListBox2D(
-        values=['Violet', 'Indigo', 'Blue', 'Yellow'],
+        values=["Violet", "Indigo", "Blue", "Yellow"],
         position=(12, 10),
         size=(100, 100),
     )
     l2 = ui.ListBox2D(
-        values=['Violet', 'Indigo', 'Blue', 'Yellow'],
+        values=["Violet", "Indigo", "Blue", "Yellow"],
         position=(10, 10),
         size=(100, 300),
     )
@@ -964,19 +962,19 @@ def test_ui_listbox_2d_visibility():
 
 
 def test_ui_file_menu_2d(interactive=False):
-    filename = 'test_ui_file_menu_2d'
-    recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
+    filename = "test_ui_file_menu_2d"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     with InTemporaryDirectory() as tmpdir:
-        test_dir = os.path.join(tmpdir, 'testdir')
-        os.makedirs(os.path.join(test_dir, 'tempdir'))
+        test_dir = os.path.join(tmpdir, "testdir")
+        os.makedirs(os.path.join(test_dir, "tempdir"))
         for i in range(10):
-            open(os.path.join(test_dir, 'tempdir', f'test{i}.txt'), 'wt').close()
-        open(os.path.join(test_dir, 'testfile.txt'), 'wt').close()
+            open(os.path.join(test_dir, "tempdir", f"test{i}.txt"), "wt").close()
+        open(os.path.join(test_dir, "testfile.txt"), "wt").close()
 
         filemenu = ui.FileMenu2D(
-            size=(500, 500), extensions=['txt'], directory_path=test_dir
+            size=(500, 500), extensions=["txt"], directory_path=test_dir
         )
 
         # We will collect the sequence of files that have been selected.
@@ -993,7 +991,7 @@ def test_ui_file_menu_2d(interactive=False):
         event_counter.monitor(filemenu)
 
         # Create a show manager and record/play events.
-        show_manager = window.ShowManager(size=(600, 600), title='FURY FileMenu')
+        show_manager = window.ShowManager(size=(600, 600), title="FURY FileMenu")
         show_manager.scene.add(filemenu)
 
         # Recorded events:
@@ -1009,38 +1007,38 @@ def test_ui_file_menu_2d(interactive=False):
 
         # Check if the right files were selected.
         expected = [
-            ['testfile.txt'],
-            ['tempdir'],
-            ['test0.txt'],
+            ["testfile.txt"],
+            ["tempdir"],
+            ["test0.txt"],
             [
-                'test0.txt',
-                'test1.txt',
-                'test2.txt',
-                'test3.txt',
-                'test4.txt',
-                'test5.txt',
-                'test6.txt',
+                "test0.txt",
+                "test1.txt",
+                "test2.txt",
+                "test3.txt",
+                "test4.txt",
+                "test5.txt",
+                "test6.txt",
             ],
-            ['../'],
-            ['testfile.txt'],
+            ["../"],
+            ["testfile.txt"],
         ]
 
         npt.assert_equal(len(selected_files), len(expected))
         assert_arrays_equal(selected_files, expected)
         if interactive:
             filemenu = ui.FileMenu2D(size=(500, 500), directory_path=os.getcwd())
-            show_manager = window.ShowManager(size=(600, 600), title='FURY FileMenu')
+            show_manager = window.ShowManager(size=(600, 600), title="FURY FileMenu")
             show_manager.scene.add(filemenu)
             show_manager.start()
 
 
 def test_ui_combobox_2d(interactive=False):
-    filename = 'test_ui_combobox_2d'
-    recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
+    filename = "test_ui_combobox_2d"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
-    values = ['An Item' + str(i) for i in range(0, 5)]
-    new_values = ['An Item5', 'An Item6']
+    values = ["An Item" + str(i) for i in range(0, 5)]
+    new_values = ["An Item5", "An Item6"]
 
     combobox = ui.ComboBox2D(items=values, position=(400, 400), size=(300, 200))
 
@@ -1049,20 +1047,20 @@ def test_ui_combobox_2d(interactive=False):
     event_counter.monitor(combobox)
 
     current_size = (800, 800)
-    show_manager = window.ShowManager(size=current_size, title='ComboBox UI Example')
+    show_manager = window.ShowManager(size=current_size, title="ComboBox UI Example")
     show_manager.scene.add(combobox)
 
     values.extend(new_values)
     combobox.append_item(*new_values)
     npt.assert_equal(values, combobox.items)
 
-    values.append('An Item7')
-    combobox.append_item('An Item7')
+    values.append("An Item7")
+    combobox.append_item("An Item7")
     npt.assert_equal(values, combobox.items)
 
-    values.append('An Item8')
-    values.append('An Item9')
-    combobox.append_item('An Item8', 'An Item9')
+    values.append("An Item8")
+    values.append("An Item9")
+    combobox.append_item("An Item8", "An Item9")
     npt.assert_equal(values, combobox.items)
 
     complex_list = [[0], (1, [[2, 3], 4], 5)]
@@ -1070,12 +1068,12 @@ def test_ui_combobox_2d(interactive=False):
     values.extend([str(i) for i in range(6)])
     npt.assert_equal(values, combobox.items)
 
-    invalid_item = {'Hello': 1, 'World': 2}
+    invalid_item = {"Hello": 1, "World": 2}
     npt.assert_raises(TypeError, combobox.append_item, invalid_item)
 
     npt.assert_equal(values, combobox.items)
-    npt.assert_equal((60, 60), combobox.drop_button_size)
-    npt.assert_equal([300, 140], combobox.drop_menu_size)
+    npt.assert_equal((30, 20), combobox.drop_button_size)
+    npt.assert_equal([270, 140], combobox.drop_menu_size)
     npt.assert_equal([300, 200], combobox.size)
 
     ui.ComboBox2D(items=values, draggable=False)
@@ -1090,20 +1088,19 @@ def test_ui_combobox_2d(interactive=False):
         expected = EventCounter.load(expected_events_counts_filename)
         event_counter.check_counts(expected)
 
-    npt.assert_equal('An Item1', combobox.selected_text)
+    npt.assert_equal("An Item1", combobox.selected_text)
     npt.assert_equal(1, combobox.selected_text_index)
 
     combobox.resize((450, 300))
-    npt.assert_equal((360, 90), combobox.text_block_size)
-    npt.assert_equal((90, 90), combobox.drop_button_size)
-    npt.assert_equal((450, 210), combobox.drop_menu_size)
+    npt.assert_equal((405, 30), combobox.text_block_size)
+    npt.assert_equal((45, 30), combobox.drop_button_size)
+    npt.assert_equal((405, 210), combobox.drop_menu_size)
 
 
 def test_ui_combobox_2d_dropdown_visibility(interactive=False):
+    values = ["An Item" + str(i) for i in range(0, 5)]
 
-    values = ['An Item' + str(i) for i in range(0, 5)]
-
-    tab_ui = ui.TabUI(position=(49, 94), size=(400, 400), nb_tabs=1 , draggable=True)
+    tab_ui = ui.TabUI(position=(49, 94), size=(400, 400), nb_tabs=1, draggable=True)
     combobox = ui.ComboBox2D(items=values, position=(400, 400), size=(300, 200))
 
     tab_ui.add_element(0, combobox, (0.1, 0.3))
@@ -1114,7 +1111,7 @@ def test_ui_combobox_2d_dropdown_visibility(interactive=False):
     event_counter.monitor(tab_ui)
 
     current_size = (800, 800)
-    show_manager = window.ShowManager(size=current_size, title='ComboBox UI Example')
+    show_manager = window.ShowManager(size=current_size, title="ComboBox UI Example")
     show_manager.scene.add(tab_ui)
 
     tab_ui.tabs[0].content_panel.set_visibility(True)
@@ -1143,22 +1140,22 @@ def test_ui_combobox_2d_dropdown_visibility(interactive=False):
 
 @pytest.mark.skipif(
     skip_osx,
-    reason='This test does not work on macOS.'
-    'It works on the local machines.'
-    'The colors provided for shapes are '
-    'normalized values whereas when we test'
-    'it, the values returned are between '
-    '0-255. So while conversion from one'
-    'representation to another, there may be'
-    'something which causes these issues.',
+    reason="This test does not work on macOS."
+    "It works on the local machines."
+    "The colors provided for shapes are "
+    "normalized values whereas when we test"
+    "it, the values returned are between "
+    "0-255. So while conversion from one"
+    "representation to another, there may be"
+    "something which causes these issues.",
 )
 def test_ui_draw_shape():
-    line = ui.DrawShape(shape_type='line', position=(150, 150))
-    quad = ui.DrawShape(shape_type='quad', position=(300, 300))
-    circle = ui.DrawShape(shape_type='circle', position=(150, 300))
+    line = ui.DrawShape(shape_type="line", position=(150, 150))
+    quad = ui.DrawShape(shape_type="quad", position=(300, 300))
+    circle = ui.DrawShape(shape_type="circle", position=(150, 300))
 
     with npt.assert_raises(IOError):
-        ui.DrawShape('poly')
+        ui.DrawShape("poly")
 
     line.resize((100, 5))
     line.shape.color = (0, 1, 0)
@@ -1167,14 +1164,14 @@ def test_ui_draw_shape():
     circle.resize((25, 0))
     circle.shape.color = (0, 0, 1)
 
-    line_color = np.round(255 * np.array(line.shape.color)).astype('uint8')
-    quad_color = np.round(255 * np.array(quad.shape.color)).astype('uint8')
-    circle_color = np.round(255 * np.array(circle.shape.color)).astype('uint8')
+    line_color = np.round(255 * np.array(line.shape.color)).astype("uint8")
+    quad_color = np.round(255 * np.array(quad.shape.color)).astype("uint8")
+    circle_color = np.round(255 * np.array(circle.shape.color)).astype("uint8")
 
     current_size = (900, 900)
     scene = window.Scene()
     show_manager = window.ShowManager(
-        scene, size=current_size, title='DrawShape UI Example'
+        scene, size=current_size, title="DrawShape UI Example"
     )
     scene.add(line, circle, quad)
 
@@ -1187,9 +1184,9 @@ def test_ui_draw_shape():
 
 
 def test_ui_draw_panel_basic(interactive=False):
-    filename = 'test_ui_draw_panel_basic'
-    recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
+    filename = "test_ui_draw_panel_basic"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     drawpanel = ui.DrawPanel(size=(600, 600), position=(30, 10))
 
@@ -1199,7 +1196,7 @@ def test_ui_draw_panel_basic(interactive=False):
 
     current_size = (680, 680)
     show_manager = window.ShowManager(
-        size=current_size, title='DrawPanel Basic UI Example'
+        size=current_size, title="DrawPanel Basic UI Example"
     )
     show_manager.scene.add(drawpanel)
 
@@ -1220,9 +1217,9 @@ def test_ui_draw_panel_basic(interactive=False):
 
 
 def test_ui_draw_panel_rotation(interactive=False):
-    filename = 'test_ui_draw_panel_rotation'
-    recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
+    filename = "test_ui_draw_panel_rotation"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     drawpanel = ui.DrawPanel(size=(600, 600), position=(30, 10))
 
@@ -1232,7 +1229,7 @@ def test_ui_draw_panel_rotation(interactive=False):
 
     current_size = (680, 680)
     show_manager = window.ShowManager(
-        size=current_size, title='DrawPanel Rotation UI Example'
+        size=current_size, title="DrawPanel Rotation UI Example"
     )
     show_manager.scene.add(drawpanel)
 
@@ -1258,12 +1255,12 @@ def test_playback_panel(interactive=False):
 
     current_size = (900, 620)
     show_manager = window.ShowManager(
-        size=current_size, title='PlaybackPanel UI Example'
+        size=current_size, title="PlaybackPanel UI Example"
     )
 
-    filename = 'test_playback_panel'
-    recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
+    filename = "test_playback_panel"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     def play():
         global playing
@@ -1313,10 +1310,10 @@ def test_playback_panel(interactive=False):
     assert_true(stopped)
     assert_equal(playback.current_time, ts)
     assert_greater(playback.current_time, 0)
-    assert_not_equal(playback.current_time_str, '00:00.00')
+    assert_not_equal(playback.current_time_str, "00:00.00")
     playback.current_time = 5
     assert_equal(playback.current_time, 5)
-    assert_equal(playback.current_time_str, '00:05.00')
+    assert_equal(playback.current_time_str, "00:05.00")
     # test show/hide
     playback.show()
     ss = window.snapshot(show_manager.scene)
@@ -1327,20 +1324,28 @@ def test_playback_panel(interactive=False):
 
 
 def test_card_ui(interactive=False):
-    filename = 'test_card_ui'
-    recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
+    filename = "test_card_ui"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
-    img_url = "https://raw.githubusercontent.com/fury-gl"\
-              "/fury-communication-assets/main/fury-logo.png"
+    img_url = (
+        "https://raw.githubusercontent.com/fury-gl"
+        "/fury-communication-assets/main/fury-logo.png"
+    )
 
     title = "FURY"
-    body = "FURY - Free Unified Rendering in pYthon."\
-           "A software library for scientific visualization in Python."
+    body = (
+        "FURY - Free Unified Rendering in pYthon."
+        "A software library for scientific visualization in Python."
+    )
 
-    card = ui.elements.Card2D(image_path=img_url, draggable=True,
-                              title_text=title, body_text=body,
-                              image_scale=0.5)
+    card = ui.elements.Card2D(
+        image_path=img_url,
+        draggable=True,
+        title_text=title,
+        body_text=body,
+        image_scale=0.5,
+    )
 
     # Assign the counter callback to every possible event.
 
@@ -1354,11 +1359,11 @@ def test_card_ui(interactive=False):
     npt.assert_equal(card.color, (0.5, 0.5, 0.5))
     npt.assert_equal(card.panel.position, (0, 0))
 
-    card.title = 'Changed Title'
-    npt.assert_equal(card.title, 'Changed Title')
+    card.title = "Changed Title"
+    npt.assert_equal(card.title, "Changed Title")
 
-    card.body = 'Changed Body'
-    npt.assert_equal(card.body, 'Changed Body')
+    card.body = "Changed Body"
+    npt.assert_equal(card.body, "Changed Body")
 
     card.title = title
     card.body = body
@@ -1368,7 +1373,7 @@ def test_card_ui(interactive=False):
     card.resize((300, 300))
     npt.assert_equal(card.image.size[1], 150.0)
     current_size = (600, 600)
-    show_manager = window.ShowManager(size=current_size, title='FURY Card')
+    show_manager = window.ShowManager(size=current_size, title="FURY Card")
     show_manager.scene.add(card)
 
     if interactive:

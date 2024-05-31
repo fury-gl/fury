@@ -36,9 +36,9 @@ def spline_interpolator(keyframes, degree):
     """
     if len(keyframes) < (degree + 1):
         raise ValueError(
-            f'Minimum {degree + 1} '
-            f'keyframes must be set in order to use '
-            f'{degree}-degree spline'
+            f"Minimum {degree + 1} "
+            f"keyframes must be set in order to use "
+            f"{degree}-degree spline"
         )
     timestamps = get_timestamps_from_keyframes(keyframes)
 
@@ -102,13 +102,13 @@ def step_interpolator(keyframes):
     function
         The interpolation function that take time and return interpolated
         value at that time.
-    """
 
+    """
     timestamps = get_timestamps_from_keyframes(keyframes)
 
     def interpolate(t):
         previous_t = get_previous_timestamp(timestamps, t, include_last=True)
-        return keyframes.get(previous_t).get('value')
+        return keyframes.get(previous_t).get("value")
 
     return interpolate
 
@@ -129,6 +129,7 @@ def linear_interpolator(keyframes):
     function
         The interpolation function that take time and return interpolated
         value at that time.
+
     """
     timestamps = get_timestamps_from_keyframes(keyframes)
     is_single = len(keyframes) == 1
@@ -136,11 +137,11 @@ def linear_interpolator(keyframes):
     def interpolate(t):
         if is_single:
             t = timestamps[0]
-            return keyframes.get(t).get('value')
+            return keyframes.get(t).get("value")
         t0 = get_previous_timestamp(timestamps, t)
         t1 = get_next_timestamp(timestamps, t)
-        p0 = keyframes.get(t0).get('value')
-        p1 = keyframes.get(t1).get('value')
+        p0 = keyframes.get(t0).get("value")
+        p1 = keyframes.get(t1).get("value")
         return lerp(p0, p1, t0, t1, t)
 
     return interpolate
@@ -167,28 +168,28 @@ def cubic_bezier_interpolator(keyframes):
     -----
     If no control points are set in the keyframes, The cubic
     Bézier interpolator will almost behave as a linear interpolator.
-    """
 
+    """
     timestamps = get_timestamps_from_keyframes(keyframes)
 
     for ts in timestamps:
         # keyframe at timestamp
         kf_ts = keyframes.get(ts)
-        if kf_ts.get('in_cp') is None:
-            kf_ts['in_cp'] = kf_ts.get('value')
+        if kf_ts.get("in_cp") is None:
+            kf_ts["in_cp"] = kf_ts.get("value")
 
-        if kf_ts.get('out_cp') is None:
-            kf_ts['out_cp'] = kf_ts.get('value')
+        if kf_ts.get("out_cp") is None:
+            kf_ts["out_cp"] = kf_ts.get("value")
 
     def interpolate(t):
         t0 = get_previous_timestamp(timestamps, t)
         t1 = get_next_timestamp(timestamps, t)
         k0 = keyframes.get(t0)
         k1 = keyframes.get(t1)
-        p0 = k0.get('value')
-        p1 = k0.get('out_cp')
-        p2 = k1.get('in_cp')
-        p3 = k1.get('value')
+        p0 = k0.get("value")
+        p1 = k0.get("out_cp")
+        p2 = k1.get("in_cp")
+        p3 = k1.get("value")
         dt = get_time_tau(t, t0, t1)
         val = (
             (1 - dt) ** 3 * p0
@@ -226,7 +227,7 @@ def slerp(keyframes):
 
     quat_rots = []
     for ts in timestamps:
-        quat_rots.append(keyframes.get(ts).get('value'))
+        quat_rots.append(keyframes.get(ts).get("value"))
     rotations = transform.Rotation.from_quat(quat_rots)
     # if only one keyframe specified, linear interpolator is used.
     if len(timestamps) == 1:
@@ -271,12 +272,12 @@ def color_interpolator(keyframes, rgb2space, space2rgb):
     space_keyframes = {}
     is_single = len(keyframes) == 1
     for ts, keyframe in keyframes.items():
-        space_keyframes[ts] = rgb2space(keyframe.get('value'))
+        space_keyframes[ts] = rgb2space(keyframe.get("value"))
 
     def interpolate(t):
         if is_single:
             t = timestamps[0]
-            return keyframes.get(t).get('value')
+            return keyframes.get(t).get("value")
         t0 = get_previous_timestamp(timestamps, t)
         t1 = get_next_timestamp(timestamps, t)
         c0 = space_keyframes.get(t0)
@@ -293,6 +294,7 @@ def hsv_color_interpolator(keyframes):
     See Also
     --------
     color_interpolator
+
     """
     return color_interpolator(keyframes, rgb2hsv, hsv2rgb)
 
@@ -303,6 +305,7 @@ def lab_color_interpolator(keyframes):
     See Also
     --------
     color_interpolator
+
     """
     return color_interpolator(keyframes, rgb2lab, lab2rgb)
 
@@ -313,6 +316,7 @@ def xyz_color_interpolator(keyframes):
     See Also
     --------
     color_interpolator
+
     """
     return color_interpolator(keyframes, rgb2xyz, xyz2rgb)
 
@@ -335,15 +339,14 @@ def tan_cubic_spline_interpolator(keyframes):
         value at that time.
 
     """
-
     timestamps = get_timestamps_from_keyframes(keyframes)
     for time in keyframes:
         data = keyframes.get(time)
-        value = data.get('value')
-        if data.get('in_tangent') is None:
-            data['in_tangent'] = np.zeros_like(value)
-        if data.get('in_tangent') is None:
-            data['in_tangent'] = np.zeros_like(value)
+        value = data.get("value")
+        if data.get("in_tangent") is None:
+            data["in_tangent"] = np.zeros_like(value)
+        if data.get("in_tangent") is None:
+            data["in_tangent"] = np.zeros_like(value)
 
     def interpolate(t):
         t0 = get_previous_timestamp(timestamps, t)
@@ -353,10 +356,10 @@ def tan_cubic_spline_interpolator(keyframes):
 
         time_delta = t1 - t0
 
-        p0 = keyframes.get(t0).get('value')
-        tan_0 = keyframes.get(t0).get('out_tangent') * time_delta
-        p1 = keyframes.get(t1).get('value')
-        tan_1 = keyframes.get(t1).get('in_tangent') * time_delta
+        p0 = keyframes.get(t0).get("value")
+        tan_0 = keyframes.get(t0).get("out_tangent") * time_delta
+        p1 = keyframes.get(t1).get("value")
+        tan_1 = keyframes.get(t1).get("in_tangent") * time_delta
         # cubic spline equation using tangents
         t2 = dt * dt
         t3 = t2 * dt

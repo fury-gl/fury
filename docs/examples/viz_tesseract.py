@@ -150,7 +150,7 @@ scene.add(edges)
 ###############################################################################
 # Initializing text box to display the name
 
-tb = TextBlock2D(text='Tesseract', position=(900, 950), font_size=20)
+tb = TextBlock2D(text="Tesseract", position=(900, 950), font_size=20)
 showm.scene.add(tb)
 
 ###############################################################################
@@ -186,4 +186,4 @@ def timer_callback(_obj, _event):
 
 showm.add_timer_callback(True, 20, timer_callback)
 showm.start()
-window.record(showm.scene, size=(600, 600), out_path='viz_tesseract.png')
+window.record(showm.scene, size=(600, 600), out_path="viz_tesseract.png")

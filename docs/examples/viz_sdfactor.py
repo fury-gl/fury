@@ -34,7 +34,7 @@ sdfactor = actor.sdf(
     centers=centers,
     directions=dirs,
     colors=colors,
-    primitives=['sphere', 'torus', 'ellipsoid', 'capsule'],
+    primitives=["sphere", "torus", "ellipsoid", "capsule"],
     scales=scales,
 )
 
@@ -53,11 +53,11 @@ scene.add(sdfactor)
 # manager.
 
 current_size = (1024, 720)
-showm = window.ShowManager(scene, size=current_size, title='Visualize SDF Actor')
+showm = window.ShowManager(scene, size=current_size, title="Visualize SDF Actor")
 
 interactive = False
 
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_sdfactor.png', size=current_size)
+window.record(scene, out_path="viz_sdfactor.png", size=current_size)
