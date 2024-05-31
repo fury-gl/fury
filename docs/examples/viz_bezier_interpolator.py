@@ -5,6 +5,7 @@ Bezier Interpolator
 
 Keyframe animation using cubic Bezier interpolator.
 """
+
 import numpy as np
 
 from fury import actor, window
@@ -44,19 +45,19 @@ showm = window.ShowManager(
 #         keyframe 1            ----------------->         keyframe 2
 # (time-1) (value-1) (out-cp-1) -----------------> (time-2) (value-2) (in-cp-2)
 
-keyframe_1 = {'value': [-2, 0, 0], 'out_cp': [-15, 6, 0]}
-keyframe_2 = {'value': [18, 0, 0], 'in_cp': [27, 18, 0]}
+keyframe_1 = {"value": [-2, 0, 0], "out_cp": [-15, 6, 0]}
+keyframe_2 = {"value": [18, 0, 0], "in_cp": [27, 18, 0]}
 
 ###############################################################################
 # Visualizing points
 pts_actor = actor.sphere(
-    np.array([keyframe_1.get('value'), keyframe_2.get('value')]), (1, 0, 0), radii=0.3
+    np.array([keyframe_1.get("value"), keyframe_2.get("value")]), (1, 0, 0), radii=0.3
 )
 
 ###############################################################################
 # Visualizing the control points
 cps_actor = actor.sphere(
-    np.array([keyframe_2.get('in_cp'), keyframe_1.get('out_cp')]), (0, 0, 1), radii=0.6
+    np.array([keyframe_2.get("in_cp"), keyframe_1.get("out_cp")]), (0, 0, 1), radii=0.6
 )
 
 ###############################################################################
@@ -86,10 +87,10 @@ animation.add_actor(sphere)
 # will be the same as the position itself.
 
 animation.set_position(
-    0.0, np.array(keyframe_1.get('value')), out_cp=np.array(keyframe_1.get('out_cp'))
+    0.0, np.array(keyframe_1.get("value")), out_cp=np.array(keyframe_1.get("out_cp"))
 )
 animation.set_position(
-    5.0, np.array(keyframe_2.get('value')), in_cp=np.array(keyframe_2.get('in_cp'))
+    5.0, np.array(keyframe_2.get("value")), in_cp=np.array(keyframe_2.get("in_cp"))
 )
 
 ###############################################################################
@@ -109,7 +110,7 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_keyframe_animation_bezier_1.png', size=(900, 768))
+window.record(scene, out_path="viz_keyframe_animation_bezier_1.png", size=(900, 768))
 
 ###############################################################################
 # A more complex scene scene
@@ -126,9 +127,9 @@ show_manager = window.ShowManager(
 # point it controls.
 keyframes = {
     # time - position - in control point  - out control point
-    0.0: {'value': [-2, 0, 0], 'out_cp': [-15, 6, 0]},
-    5.0: {'value': [18, 0, 0], 'in_cp': [27, 18, 0], 'out_cp': [27, -18, 0]},
-    9.0: {'value': [-5, -10, -10]},
+    0.0: {"value": [-2, 0, 0], "out_cp": [-15, 6, 0]},
+    5.0: {"value": [18, 0, 0], "in_cp": [27, 18, 0], "out_cp": [27, -18, 0]},
+    9.0: {"value": [-5, -10, -10]},
 }
 
 ###############################################################################
@@ -149,10 +150,10 @@ animation.set_position_interpolator(cubic_bezier_interpolator)
 
 ###########################################################################
 # visualizing the points and control points (only for demonstration)
-for t, keyframe in keyframes.items():
-    pos = keyframe.get('value')
-    in_control_point = keyframe.get('in_cp')
-    out_control_point = keyframe.get('out_cp')
+for keyframe in keyframes.values():
+    pos = keyframe.get("value")
+    in_control_point = keyframe.get("in_cp")
+    out_control_point = keyframe.get("out_cp")
 
     ###########################################################################
     # visualizing position keyframe
@@ -181,4 +182,4 @@ show_manager.add_animation(timeline)
 if interactive:
     show_manager.start()
 
-window.record(scene, out_path='viz_keyframe_animation_bezier_2.png', size=(900, 768))
+window.record(scene, out_path="viz_keyframe_animation_bezier_2.png", size=(900, 768))

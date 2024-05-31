@@ -23,11 +23,11 @@ scene = window.Scene()
 
 # Create a panel and the start/pause buttons
 
-panel = ui.Panel2D(size=(300, 100), color=(1, 1, 1), align='right')
+panel = ui.Panel2D(size=(300, 100), color=(1, 1, 1), align="right")
 panel.center = (400, 50)
 
-pause_button = ui.Button2D(icon_fnames=[('square', read_viz_icons(fname='pause2.png'))])
-start_button = ui.Button2D(icon_fnames=[('square', read_viz_icons(fname='play3.png'))])
+pause_button = ui.Button2D(icon_fnames=[("square", read_viz_icons(fname="pause2.png"))])
+start_button = ui.Button2D(icon_fnames=[("square", read_viz_icons(fname="play3.png"))])
 
 # Add the buttons on the panel
 
@@ -41,55 +41,55 @@ panel.add_element(start_button, (0.66, 0.33))
 
 planets_data = [
     {
-        'filename': '8k_mercury.jpg',
-        'position': 7,
-        'earth_days': 58,
-        'scale': (0.4, 0.4, 0.4),
+        "filename": "8k_mercury.jpg",
+        "position": 7,
+        "earth_days": 58,
+        "scale": (0.4, 0.4, 0.4),
     },
     {
-        'filename': '8k_venus_surface.jpg',
-        'position': 9,
-        'earth_days': 243,
-        'scale': (0.6, 0.6, 0.6),
+        "filename": "8k_venus_surface.jpg",
+        "position": 9,
+        "earth_days": 243,
+        "scale": (0.6, 0.6, 0.6),
     },
     {
-        'filename': '1_earth_8k.jpg',
-        'position': 11,
-        'earth_days': 1,
-        'scale': (0.4, 0.4, 0.4),
+        "filename": "1_earth_8k.jpg",
+        "position": 11,
+        "earth_days": 1,
+        "scale": (0.4, 0.4, 0.4),
     },
     {
-        'filename': '8k_mars.jpg',
-        'position': 13,
-        'earth_days': 1,
-        'scale': (0.8, 0.8, 0.8),
+        "filename": "8k_mars.jpg",
+        "position": 13,
+        "earth_days": 1,
+        "scale": (0.8, 0.8, 0.8),
     },
-    {'filename': 'jupiter.jpg', 'position': 16, 'earth_days': 0.41, 'scale': (2, 2, 2)},
+    {"filename": "jupiter.jpg", "position": 16, "earth_days": 0.41, "scale": (2, 2, 2)},
     {
-        'filename': '8k_saturn.jpg',
-        'position': 19,
-        'earth_days': 0.45,
-        'scale': (2, 2, 2),
-    },
-    {
-        'filename': '8k_saturn_ring_alpha.png',
-        'position': 19,
-        'earth_days': 0.45,
-        'scale': (3, 0.5, 3),
+        "filename": "8k_saturn.jpg",
+        "position": 19,
+        "earth_days": 0.45,
+        "scale": (2, 2, 2),
     },
     {
-        'filename': '2k_uranus.jpg',
-        'position': 22,
-        'earth_days': 0.70,
-        'scale': (1, 1, 1),
+        "filename": "8k_saturn_ring_alpha.png",
+        "position": 19,
+        "earth_days": 0.45,
+        "scale": (3, 0.5, 3),
     },
     {
-        'filename': '2k_neptune.jpg',
-        'position': 25,
-        'earth_days': 0.70,
-        'scale': (1, 1, 1),
+        "filename": "2k_uranus.jpg",
+        "position": 22,
+        "earth_days": 0.70,
+        "scale": (1, 1, 1),
     },
-    {'filename': '8k_sun.jpg', 'position': 0, 'earth_days': 27, 'scale': (5, 5, 5)},
+    {
+        "filename": "2k_neptune.jpg",
+        "position": 25,
+        "earth_days": 0.70,
+        "scale": (1, 1, 1),
+    },
+    {"filename": "8k_sun.jpg", "position": 0, "earth_days": 27, "scale": (5, 5, 5)},
 ]
 fetch_viz_textures()
 
@@ -114,13 +114,13 @@ def init_planet(planet_data):
     planet_actor: actor
         The corresponding sphere actor with texture applied.
     """
-    planet_file = read_viz_textures(planet_data['filename'])
+    planet_file = read_viz_textures(planet_data["filename"])
     planet_image = io.load_image(planet_file)
     planet_actor = actor.texture_on_sphere(planet_image)
-    planet_actor.SetPosition(planet_data['position'], 0, 0)
-    if planet_data['filename'] != '8k_saturn_ring_alpha.png':
+    planet_actor.SetPosition(planet_data["position"], 0, 0)
+    if planet_data["filename"] != "8k_saturn_ring_alpha.png":
         utils.rotate(planet_actor, (90, 1, 0, 0))
-    planet_actor.SetScale(planet_data['scale'])
+    planet_actor.SetScale(planet_data["scale"])
     scene.add(planet_actor)
     return planet_actor
 
@@ -153,7 +153,7 @@ sun_actor = planet_actor_list[9]
 g_exponent = np.float_power(10, -11)
 g_constant = 6.673 * g_exponent
 
-m_exponent = 1073741824   # np.power(10, 30)
+m_exponent = 1073741824  # np.power(10, 30)
 m_constant = 1.989 * m_exponent
 
 miu = m_constant * g_constant
@@ -242,10 +242,10 @@ def calculate_path(r_planet, c):
 # around itself.
 
 r_planets = [
-    p_data['position']
+    p_data["position"]
     for p_data in planets_data
-    if 'sun' not in p_data['filename']
-    if 'saturn_ring' not in p_data['filename']
+    if "sun" not in p_data["filename"]
+    if "saturn_ring" not in p_data["filename"]
 ]
 
 planet_actors = [
@@ -261,12 +261,12 @@ planet_actors = [
 
 
 sun_data = {
-    'actor': sun_actor,
-    'position': planets_data[9]['position'],
-    'earth_days': planets_data[9]['earth_days'],
+    "actor": sun_actor,
+    "position": planets_data[9]["position"],
+    "earth_days": planets_data[9]["earth_days"],
 }
 
-r_times = [p_data['earth_days'] for p_data in planets_data]
+r_times = [p_data["earth_days"] for p_data in planets_data]
 
 ##############################################################################
 # Here we are calculating and updating the path/orbit before animation starts.
@@ -292,7 +292,7 @@ def timer_callback(_obj, _event):
     showm.render()
 
     # Rotating the sun actor
-    rotate_axial(sun_actor, sun_data['earth_days'], 1)
+    rotate_axial(sun_actor, sun_data["earth_days"], 1)
 
     for r_planet, p_actor, r_time in zip(r_planets, planet_actors, r_times):
         # if the planet is saturn then we also need to update the position
@@ -331,4 +331,4 @@ pause_button.on_left_mouse_button_clicked = pause_animation
 showm.add_timer_callback(True, 10, timer_callback)
 showm.start()
 
-window.record(showm.scene, size=(900, 768), out_path='viz_solar_system_animation.png')
+window.record(showm.scene, size=(900, 768), out_path="viz_solar_system_animation.png")

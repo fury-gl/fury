@@ -9,6 +9,7 @@ create a cube and control with sliders.
 
 First, some imports.
 """
+
 import numpy as np
 
 from fury import actor, ui, window
@@ -37,43 +38,43 @@ cube = actor.cube(
 # By default the alignments are 'bottom' for horizontal and 'top' for vertical.
 
 ring_slider = ui.RingSlider2D(
-    center=(630, 400), initial_value=0, text_template='{angle:5.1f}°'
+    center=(630, 400), initial_value=0, text_template="{angle:5.1f}°"
 )
 
 hor_line_slider_text_top = ui.LineSlider2D(
     center=(400, 230),
     initial_value=0,
-    orientation='horizontal',
+    orientation="horizontal",
     min_value=-10,
     max_value=10,
-    text_alignment='top',
+    text_alignment="top",
 )
 
 hor_line_slider_text_bottom = ui.LineSlider2D(
     center=(400, 200),
     initial_value=0,
-    orientation='horizontal',
+    orientation="horizontal",
     min_value=-10,
     max_value=10,
-    text_alignment='bottom',
+    text_alignment="bottom",
 )
 
 ver_line_slider_text_left = ui.LineSlider2D(
     center=(100, 400),
     initial_value=0,
-    orientation='vertical',
+    orientation="vertical",
     min_value=-10,
     max_value=10,
-    text_alignment='left',
+    text_alignment="left",
 )
 
 ver_line_slider_text_right = ui.LineSlider2D(
     center=(150, 400),
     initial_value=0,
-    orientation='vertical',
+    orientation="vertical",
     min_value=-10,
     max_value=10,
-    text_alignment='right',
+    text_alignment="right",
 )
 
 
@@ -117,7 +118,7 @@ ver_line_slider_text_right.on_change = translate_cube_ver
 # manager.
 
 current_size = (800, 800)
-show_manager = window.ShowManager(size=current_size, title='FURY Cube Example')
+show_manager = window.ShowManager(size=current_size, title="FURY Cube Example")
 
 show_manager.scene.add(cube)
 show_manager.scene.add(ring_slider)
@@ -149,4 +150,4 @@ interactive = False
 if interactive:
     show_manager.start()
 
-window.record(show_manager.scene, size=current_size, out_path='viz_slider.png')
+window.record(show_manager.scene, size=current_size, out_path="viz_slider.png")

@@ -1,5 +1,9 @@
-:root {
-  --fontFamily: {{ .Site.Params.font.name }};
+/* Log:3/3/24
+With the pydata-theme update, the {{ .Site.Params.font.name }} doesn't work anymore(not quite sure why), so I had to add the font-family to the root element. This helped restore back to the original font.
+ */
+
+ :root {
+  --fontFamily: "Helvetica Neue", sans-serif;
 
   --colorPrimaryDark:  rgb(153, 0, 0);
   --colorPrimary: rgb(77, 119, 207);

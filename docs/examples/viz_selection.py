@@ -61,7 +61,7 @@ num_objects = centers.shape[0]
 ###############################################################################
 # Access the memory of the colors of all the cubes
 
-vcolors = utils.colors_from_actor(cube_actor, 'colors')
+vcolors = utils.colors_from_actor(cube_actor, "colors")
 
 ###############################################################################
 # Create a rectangular 2d box as a texture
@@ -78,7 +78,7 @@ scene.zoom(3.0)
 ###############################################################################
 # Create the Selection Manager
 
-selm = pick.SelectionManager(select='faces')
+selm = pick.SelectionManager(select="faces")
 
 ###############################################################################
 # Tell Selection Manager to avoid selecting specific actors
@@ -98,17 +98,17 @@ def hover_callback(_obj, _event):
     # defines selection region and returns information from selected objects
     info = selm.select(event_pos, showm.scene, (200 // 2, 100 // 2))
     for node in info.keys():
-        if info[node]['face'] is not None:
-            if info[node]['actor'] is cube_actor:
-                for face_index in info[node]['face']:
+        if info[node]["face"] is not None:
+            if info[node]["actor"] is cube_actor:
+                for face_index in info[node]["face"]:
                     # generates an object_index to help with coloring
                     # by dividing by the number of faces of each cube (6 * 2)
                     object_index = face_index // 12
                     sec = int(num_vertices / num_objects)
-                    color_change = np.array([150, 0, 0, 255], dtype='uint8')
-                    vcolors[
-                        object_index * sec : object_index * sec + sec
-                    ] = color_change
+                    color_change = np.array([150, 0, 0, 255], dtype="uint8")
+                    vcolors[object_index * sec : object_index * sec + sec] = (
+                        color_change
+                    )
                 utils.update_actor(cube_actor)
     showm.render()
 
@@ -132,11 +132,10 @@ showm.add_iren_callback(hover_callback)
 interactive = False
 
 if interactive:
-
     showm.start()
 
 
 ###############################################################################
 # Save the current framebuffer in a PNG file
 
-window.record(showm.scene, size=(1024, 768), out_path='viz_selection.png')
+window.record(showm.scene, size=(1024, 768), out_path="viz_selection.png")

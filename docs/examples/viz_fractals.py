@@ -221,7 +221,7 @@ def snowflake(N):
 # the Scene and ShowManager.
 
 scene = window.Scene()
-showmgr = window.ShowManager(scene, 'Fractals', (800, 800), reset_camera=True)
+showmgr = window.ShowManager(scene, "Fractals", (800, 800), reset_camera=True)
 
 ###############################################################################
 # These values are what work nicely on my machine without lagging. If you have
@@ -235,16 +235,16 @@ fractals = [tetrix(6), sponge(3), snowflake(3)]
 # fractals and add the selected one. This also resets the camera.
 
 options = {
-    'Tetrix': 0,
-    'Sponge': 1,
-    'Snowflake': 2,
+    "Tetrix": 0,
+    "Sponge": 1,
+    "Snowflake": 2,
 }
 
 shape_chooser = ui.RadioButton(
     options.keys(),
     padding=10,
     font_size=16,
-    checked_labels=['Tetrix'],
+    checked_labels=["Tetrix"],
     position=(10, 10),
 )
 
@@ -289,4 +289,4 @@ interactive = False
 if interactive:
     showmgr.start()
 else:
-    window.record(showmgr.scene, out_path='fractals.png', size=(800, 800))
+    window.record(showmgr.scene, out_path="fractals.png", size=(800, 800))

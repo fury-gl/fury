@@ -50,21 +50,21 @@ origin = [0, 0, 0]
 
 def particle(
     colors,
-    origin=[0, 0, 0],
-    num_total_steps=300,
-    total_time=5,
-    delta=1.8,
-    path_thickness=3,
+    _origin=origin,
+    _num_total_steps=num_total_steps,
+    _total_time=total_time,
+    _delta=delta,
+    _path_thickness=path_thickness,
 ):
-    origin = np.asarray(origin, dtype=float)
-    position = np.tile(origin, (num_total_steps, 1))
-    path_actor = actor.line([position], colors, linewidth=path_thickness)
+    _origin = np.asarray(_origin, dtype=float)
+    position = np.tile(origin, (_num_total_steps, 1))
+    path_actor = actor.line([position], colors, linewidth=_path_thickness)
     path_actor.position = position
-    path_actor.delta = delta
-    path_actor.num_total_steps = num_total_steps
-    path_actor.time_step = total_time / num_total_steps
+    path_actor.delta = _delta
+    path_actor.num_total_steps = _num_total_steps
+    path_actor.time_step = _total_time / _num_total_steps
     path_actor.vertices = utils.vertices_from_actor(path_actor)
-    path_actor.no_vertices_per_point = len(path_actor.vertices) / num_total_steps
+    path_actor.no_vertices_per_point = len(path_actor.vertices) / _num_total_steps
     path_actor.initial_vertices = path_actor.vertices.copy() - np.repeat(
         position, path_actor.no_vertices_per_point, axis=0
     )
@@ -130,7 +130,7 @@ scene.add(container_actor)
 # Initializing text box to display the name of the animation
 
 tb = ui.TextBlock2D(bold=True, position=(235, 40), color=(0, 0, 0))
-tb.message = 'Brownian Motion'
+tb.message = "Brownian Motion"
 scene.add(tb)
 
 
@@ -155,4 +155,4 @@ def timer_callback(_obj, _event):
 
 showm.add_timer_callback(True, 30, timer_callback)
 showm.start()
-window.record(showm.scene, size=(600, 600), out_path='viz_brownian_motion.png')
+window.record(showm.scene, size=(600, 600), out_path="viz_brownian_motion.png")

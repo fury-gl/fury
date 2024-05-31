@@ -2,9 +2,9 @@ import numpy as np
 import vtk
 from vtk.util import numpy_support
 
+from fury import actor, window
 import fury.primitive as fp
 import fury.shaders as fs
-from fury import actor, window
 from fury.utils import get_actor_from_primitive
 
 verts, faces = fp.prim_box()

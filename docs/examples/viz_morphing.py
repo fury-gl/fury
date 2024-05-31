@@ -13,8 +13,8 @@ from fury.gltf import glTF
 # Retrieving the model with morphing in it (look at Khronoos samples).
 # We're choosing the `MorphStressTest` model here.
 
-fetch_gltf('MorphStressTest', 'glTF')
-filename = read_viz_gltf('MorphStressTest')
+fetch_gltf("MorphStressTest", "glTF")
+filename = read_viz_gltf("MorphStressTest")
 
 ##############################################################################
 # Initializing the glTF object, You can additionally set `apply_normals=True`.
@@ -27,7 +27,7 @@ gltf_obj = glTF(filename, apply_normals=True)
 # name you want to visualize.
 # Note: If there's no name for animation, It's stored as `anim_0`, `anim_1` etc
 
-animation = gltf_obj.morph_animation()['TheWave']
+animation = gltf_obj.morph_animation()["TheWave"]
 
 ##############################################################################
 # Call the `update_morph` method once, This moves initialise the morphing at
@@ -71,4 +71,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_morphing.png', size=(900, 768))
+window.record(scene, out_path="viz_morphing.png", size=(900, 768))

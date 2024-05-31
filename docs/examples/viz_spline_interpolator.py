@@ -94,4 +94,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_keyframe_animation_spline.png', size=(900, 768))
+window.record(scene, out_path="viz_keyframe_animation_spline.png", size=(900, 768))

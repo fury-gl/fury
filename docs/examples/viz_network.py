@@ -15,9 +15,7 @@ from os.path import join as pjoin
 
 import numpy as np
 
-from fury import actor
-from fury import colormap as cmap
-from fury import window
+from fury import actor, colormap as cmap, window
 from fury.data import fetch_viz_wiki_nw
 
 ###############################################################################
@@ -102,7 +100,7 @@ interactive = False
 if interactive:
     window.show(scene, size=(600, 600))
 
-window.record(scene, out_path='journal_networks.png', size=(600, 600))
+window.record(scene, out_path="journal_networks.png", size=(600, 600))
 
 ###############################################################################
 # This example can be improved by adding some interactivy with slider,

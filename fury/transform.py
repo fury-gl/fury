@@ -8,48 +8,48 @@ _NEXT_AXIS = [1, 2, 0, 1]
 
 # map axes strings to/from tuples of inner axis, parity, repetition, frame
 _AXES2TUPLE = {
-    'sxyz': (0, 0, 0, 0),
-    'sxyx': (0, 0, 1, 0),
-    'sxzy': (0, 1, 0, 0),
-    'sxzx': (0, 1, 1, 0),
-    'syzx': (1, 0, 0, 0),
-    'syzy': (1, 0, 1, 0),
-    'syxz': (1, 1, 0, 0),
-    'syxy': (1, 1, 1, 0),
-    'szxy': (2, 0, 0, 0),
-    'szxz': (2, 0, 1, 0),
-    'szyx': (2, 1, 0, 0),
-    'szyz': (2, 1, 1, 0),
-    'rzyx': (0, 0, 0, 1),
-    'rxyx': (0, 0, 1, 1),
-    'ryzx': (0, 1, 0, 1),
-    'rxzx': (0, 1, 1, 1),
-    'rxzy': (1, 0, 0, 1),
-    'ryzy': (1, 0, 1, 1),
-    'rzxy': (1, 1, 0, 1),
-    'ryxy': (1, 1, 1, 1),
-    'ryxz': (2, 0, 0, 1),
-    'rzxz': (2, 0, 1, 1),
-    'rxyz': (2, 1, 0, 1),
-    'rzyz': (2, 1, 1, 1),
+    "sxyz": (0, 0, 0, 0),
+    "sxyx": (0, 0, 1, 0),
+    "sxzy": (0, 1, 0, 0),
+    "sxzx": (0, 1, 1, 0),
+    "syzx": (1, 0, 0, 0),
+    "syzy": (1, 0, 1, 0),
+    "syxz": (1, 1, 0, 0),
+    "syxy": (1, 1, 1, 0),
+    "szxy": (2, 0, 0, 0),
+    "szxz": (2, 0, 1, 0),
+    "szyx": (2, 1, 0, 0),
+    "szyz": (2, 1, 1, 0),
+    "rzyx": (0, 0, 0, 1),
+    "rxyx": (0, 0, 1, 1),
+    "ryzx": (0, 1, 0, 1),
+    "rxzx": (0, 1, 1, 1),
+    "rxzy": (1, 0, 0, 1),
+    "ryzy": (1, 0, 1, 1),
+    "rzxy": (1, 1, 0, 1),
+    "ryxy": (1, 1, 1, 1),
+    "ryxz": (2, 0, 0, 1),
+    "rzxz": (2, 0, 1, 1),
+    "rxyz": (2, 1, 0, 1),
+    "rzyz": (2, 1, 1, 1),
 }
 
-_TUPLE2AXES = dict((v, k) for k, v in _AXES2TUPLE.items())
+_TUPLE2AXES = {v: k for k, v in _AXES2TUPLE.items()}
 
 
-def euler_matrix(ai, aj, ak, axes='sxyz'):
+def euler_matrix(ai, aj, ak, axes="sxyz"):
     """Return homogeneous rotation matrix from Euler angles and axis sequence.
 
     Code modified from the work of Christoph Gohlke link provided here
     http://www.lfd.uci.edu/~gohlke/code/transformations.py.html
 
     Parameters
-    ------------
+    ----------
     ai, aj, ak : Euler's roll, pitch and yaw angles
     axes : One of 24 axis sequences as string or encoded tuple
 
     Returns
-    ---------
+    -------
     matrix : ndarray (4, 4)
 
     Code modified from the work of Christoph Gohlke link provided here
@@ -138,7 +138,7 @@ def sphere2cart(r, theta, phi):
     as 'longitude'
 
     Parameters
-    ------------
+    ----------
     r : array_like
        radius
     theta : array_like
@@ -147,16 +147,16 @@ def sphere2cart(r, theta, phi):
        azimuth angle
 
     Returns
-    ---------
+    -------
     x : array
-       x coordinate(s) in Cartesion space
+       x coordinate(s) in Cartesian space
     y : array
        y coordinate(s) in Cartesian space
     z : array
        z coordinate
 
     Notes
-    --------
+    -----
     See these pages:
 
     * http://en.wikipedia.org/wiki/Spherical_coordinate_system
@@ -197,7 +197,7 @@ def cart2sphere(x, y, z):
     $0\le\theta\mathrm{(theta)}\le\pi$ and $-\pi\le\phi\mathrm{(phi)}\le\pi$
 
     Parameters
-    ------------
+    ----------
     x : array_like
        x coordinate in Cartesian space
     y : array_like
@@ -206,7 +206,7 @@ def cart2sphere(x, y, z):
        z coordinate
 
     Returns
-    ---------
+    -------
     r : array
        radius
     theta : array
@@ -345,6 +345,7 @@ def apply_transformation(vertices, transformation):
     -------
     vertices : ndarray (n, 3)
         transformed vertices of the mesh
+
     """
     shape = vertices.shape
     temp = np.full((shape[0], 1), 1)
@@ -374,6 +375,7 @@ def transform_from_matrix(matrix):
         rotation component from the transformation matrix
     scale : ndarray (3, )
         scale component from the transformation matrix.
+
     """
     translate = matrix[:, -1:].reshape((-1,))[:-1]
 

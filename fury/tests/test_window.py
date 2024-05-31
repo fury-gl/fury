@@ -8,7 +8,7 @@ import pytest
 
 from fury import actor, io, shaders, window
 from fury.animation import Animation, Timeline
-from fury.decorators import skip_linux, skip_osx, skip_win
+from fury.decorators import skip_osx, skip_win
 from fury.lib import ImageData, Texture, numpy_support
 from fury.testing import assert_greater, assert_less_equal, assert_true, captured_output
 from fury.utils import remove_observer_from_actor
@@ -23,7 +23,7 @@ def test_scene():
     # numerical errors when moving from float to int values
     bg_float = (1, 0.501, 0)
     # That will come in the image in the 0-255 uint scale
-    bg_color = tuple((np.round(255 * np.array(bg_float))).astype('uint8'))
+    bg_color = tuple((np.round(255 * np.array(bg_float))).astype("uint8"))
     scene.background(bg_float)
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(
@@ -73,12 +73,12 @@ def test_scene():
         scene.camera_info()
     npt.assert_equal(
         out.getvalue().strip(),
-        '# Active Camera\n   '
-        'Position (0.00, 0.00, 1.00)\n   '
-        'Focal Point (0.00, 0.00, 0.00)\n   '
-        'View Up (0.00, 1.00, 0.00)',
+        "# Active Camera\n   "
+        "Position (0.00, 0.00, 1.00)\n   "
+        "Focal Point (0.00, 0.00, 0.00)\n   "
+        "View Up (0.00, 1.00, 0.00)",
     )
-    npt.assert_equal(err.getvalue().strip(), '')
+    npt.assert_equal(err.getvalue().strip(), "")
     # Tests for skybox functionality
     # Test scene created without skybox
     scene = window.Scene()
@@ -98,11 +98,11 @@ def test_scene():
         vtk_img.SetDimensions(2, 2, 1)
         img_arr = np.zeros((2, 2, 3), dtype=np.uint8)
         img_arr[:, :, i // 2] = checker_arr
-        vtk_arr = numpy_support.numpy_to_vtk(img_arr.reshape((-1, 3), order='F'))
-        vtk_arr.SetName('Image')
+        vtk_arr = numpy_support.numpy_to_vtk(img_arr.reshape((-1, 3), order="F"))
+        vtk_arr.SetName("Image")
         img_point_data = vtk_img.GetPointData()
         img_point_data.AddArray(vtk_arr)
-        img_point_data.SetActiveScalars('Image')
+        img_point_data.SetActiveScalars("Image")
         test_tex.SetInputDataObject(i, vtk_img)
     test_tex.InterpolateOn()
     test_tex.MipmapOn()
@@ -192,7 +192,6 @@ def test_active_camera():
 
 
 def test_parallel_projection():
-
     scene = window.Scene()
     axes = actor.axes()
     axes2 = actor.axes()
@@ -211,7 +210,7 @@ def test_parallel_projection():
     scene.reset_camera()
     arr = window.snapshot(scene)
 
-    scene.projection('parallel')
+    scene.projection("parallel")
     # window.show(scene, reset_camera=False)
     arr2 = window.snapshot(scene)
     # Because of the parallel projection the two axes
@@ -219,13 +218,12 @@ def test_parallel_projection():
     # pixels rather than in perspective projection were
     # the axes being further will be smaller.
     npt.assert_equal(np.sum(arr2 > 0) > np.sum(arr > 0), True)
-    scene.projection('perspective')
+    scene.projection("perspective")
     arr2 = window.snapshot(scene)
     npt.assert_equal(np.sum(arr2 > 0), np.sum(arr > 0))
 
 
 def test_order_transparent():
-
     scene = window.Scene()
 
     red_cube = actor.cube(
@@ -288,11 +286,11 @@ def test_skybox():
         vtk_img.SetDimensions(2, 2, 1)
         img_arr = np.zeros((2, 2, 3), dtype=np.uint8)
         img_arr[:, :, i // 2] = checker_arr
-        vtk_arr = numpy_support.numpy_to_vtk(img_arr.reshape((-1, 3), order='F'))
-        vtk_arr.SetName('Image')
+        vtk_arr = numpy_support.numpy_to_vtk(img_arr.reshape((-1, 3), order="F"))
+        vtk_arr.SetName("Image")
         img_point_data = vtk_img.GetPointData()
         img_point_data.AddArray(vtk_arr)
-        img_point_data.SetActiveScalars('Image')
+        img_point_data.SetActiveScalars("Image")
         test_tex.SetInputDataObject(i, vtk_img)
     test_tex.InterpolateOn()
     test_tex.MipmapOn()
@@ -327,7 +325,7 @@ def test_save_screenshot():
     show_m = window.ShowManager(scene, size=window_sz)
 
     with InTemporaryDirectory():
-        fname = 'test.png'
+        fname = "test.png"
         # Basic test
         show_m.save_screenshot(fname)
         npt.assert_equal(os.path.exists(fname), True)
@@ -351,7 +349,7 @@ def test_save_screenshot():
 
 
 @pytest.mark.skipif(
-    skip_win, reason='This test does not work on Windows.' ' Need to be introspected'
+    skip_win, reason="This test does not work on Windows." " Need to be introspected"
 )
 def test_stereo():
     scene = window.Scene()
@@ -373,16 +371,16 @@ def test_stereo():
     scene.reset_camera()
 
     mono = window.snapshot(
-        scene, fname='stereo_off.png', offscreen=True, size=(300, 300), stereo='off'
+        scene, fname="stereo_off.png", offscreen=True, size=(300, 300), stereo="off"
     )
 
     with npt.assert_warns(UserWarning):
         stereo = window.snapshot(
             scene,
-            fname='stereo_horizontal.png',
+            fname="stereo_horizontal.png",
             offscreen=True,
             size=(300, 300),
-            stereo='On',
+            stereo="On",
         )
 
     # mono render should have values in the center
@@ -434,7 +432,7 @@ def test_frame_rate():
     # assert_al(ideal_fps, actual_fps) this is very imprecise
 
 
-@pytest.mark.skipif(True, reason='See TODO in the code')
+@pytest.mark.skipif(True, reason="See TODO in the code")
 def test_record():
     xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
     colors = np.array([[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1.0, 1]])
@@ -449,7 +447,7 @@ def test_record():
     scene = window.Scene()
     scene.add(sphere_actor)
 
-    def test_content(filename='fury.png', colors_found=(True, True)):
+    def test_content(filename="fury.png", colors_found=(True, True)):
         npt.assert_equal(os.path.isfile(filename), True)
         arr = io.load_image(filename)
         report = window.analyze_snapshot(arr, colors=[(0, 255, 0), (0, 0, 255)])
@@ -464,16 +462,16 @@ def test_record():
 
     # test out_path and path_numbering, n_frame
     with InTemporaryDirectory():
-        filename = 'tmp_snapshot.png'
+        filename = "tmp_snapshot.png"
         window.record(scene, out_path=filename)
         test_content(filename)
         window.record(scene, out_path=filename, path_numbering=True)
-        test_content(filename + '000000.png')
+        test_content(filename + "000000.png")
         window.record(scene, out_path=filename, path_numbering=True, n_frames=3)
-        test_content(filename + '000000.png')
-        test_content(filename + '000001.png')
-        test_content(filename + '000002.png')
-        npt.assert_equal(os.path.isfile(filename + '000003.png'), False)
+        test_content(filename + "000000.png")
+        test_content(filename + "000001.png")
+        test_content(filename + "000002.png")
+        npt.assert_equal(os.path.isfile(filename + "000003.png"), False)
 
     # test verbose
     with captured_output() as (out, _):
@@ -481,9 +479,9 @@ def test_record():
 
     npt.assert_equal(
         out.getvalue().strip(),
-        'Camera Position (315.32, 0.00, 536.73)\n'
-        'Camera Focal Point (119.97, 0.00, 0.00)\n'
-        'Camera View Up (0.00, 1.00, 0.00)',
+        "Camera Position (315.32, 0.00, 536.73)\n"
+        "Camera Focal Point (119.97, 0.00, 0.00)\n"
+        "Camera View Up (0.00, 1.00, 0.00)",
     )
     # test camera option
     with InTemporaryDirectory():
@@ -499,18 +497,18 @@ def test_record():
     if not skip_osx:
         with InTemporaryDirectory():
             window.record(
-                scene, out_path='fury_1.png', size=(1000, 1000), magnification=5
+                scene, out_path="fury_1.png", size=(1000, 1000), magnification=5
             )
-            npt.assert_equal(os.path.isfile('fury_1.png'), True)
-            arr = io.load_image('fury_1.png')
+            npt.assert_equal(os.path.isfile("fury_1.png"), True)
+            arr = io.load_image("fury_1.png")
 
             npt.assert_equal(arr.shape, (5000, 5000, 3))
 
             window.record(
-                scene, out_path='fury_2.png', size=(5000, 5000), screen_clip=True
+                scene, out_path="fury_2.png", size=(5000, 5000), screen_clip=True
             )
-            npt.assert_equal(os.path.isfile('fury_2.png'), True)
-            arr = io.load_image('fury_2.png')
+            npt.assert_equal(os.path.isfile("fury_2.png"), True)
+            arr = io.load_image("fury_2.png")
 
             assert_less_equal(arr.shape[0], 5000)
             assert_less_equal(arr.shape[1], 5000)
@@ -530,14 +528,13 @@ def test_opengl_state_simple():
         window.gl_set_subtractive_blending,
         window.gl_set_additive_blending_white_background,
     ]:
-
         scene = window.Scene()
         centers = np.array([[0, 0, 0], [-0.1, 0, 0], [0.1, 0, 0]])
         colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
         actors = actor.markers(
             centers,
-            marker='s',
+            marker="s",
             colors=colors,
             marker_opacity=0.5,
             scales=0.2,
@@ -555,7 +552,7 @@ def test_opengl_state_simple():
         showm.exit()
 
 
-@pytest.mark.skipif(True, reason='See TODO in the code')
+@pytest.mark.skipif(True, reason="See TODO in the code")
 def test_opengl_state_add_remove_and_check():
     scene = window.Scene()
     centers = np.array([[0, 0, 0], [-0.1, 0, 0], [0.1, 0, 0]])
@@ -563,7 +560,7 @@ def test_opengl_state_add_remove_and_check():
 
     actor_no_depth_test = actor.markers(
         centers,
-        marker='s',
+        marker="s",
         colors=colors,
         marker_opacity=0.5,
         scales=0.2,
@@ -576,7 +573,7 @@ def test_opengl_state_add_remove_and_check():
 
     showm.render()
     state = window.gl_get_current_state(showm.window.GetState())
-    before_depth_test = state['GL_DEPTH_TEST']
+    before_depth_test = state["GL_DEPTH_TEST"]
     npt.assert_equal(before_depth_test, True)
     # TODO: we are getting bad request for enum status
     # it seems we are not provide the correct values
@@ -594,13 +591,13 @@ def test_opengl_state_add_remove_and_check():
     showm.render()
     state = window.gl_get_current_state(showm.window.GetState())
     # print('type', type(showm.window.GetState()))
-    after_depth_test = state['GL_DEPTH_TEST']
+    after_depth_test = state["GL_DEPTH_TEST"]
     npt.assert_equal(after_depth_test, False)
     # removes the no_depth_test effect
     remove_observer_from_actor(actor_no_depth_test, id_observer)
     showm.render()
     state = window.gl_get_current_state(showm.window.GetState())
-    after_remove_depth_test_observer = state['GL_DEPTH_TEST']
+    after_remove_depth_test_observer = state["GL_DEPTH_TEST"]
     npt.assert_equal(after_remove_depth_test_observer, True)
 
 

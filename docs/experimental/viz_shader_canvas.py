@@ -1,6 +1,6 @@
 import numpy as np
-import vtk
 from scipy.spatial import Delaunay
+import vtk
 from vtk.util import numpy_support
 
 from fury.utils import (
@@ -160,6 +160,7 @@ def rectangle2(centers, colors, use_vertices=False, size=(2, 2)):
     centers : ndarray, shape (N, 3)
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+
     """
     if np.array(colors).ndim == 1:
         colors = np.tile(colors, (len(centers), 1))

@@ -24,10 +24,10 @@ selected = np.zeros(3, dtype=bool)
 ###############################################################################
 # Let's create a panel to show what is picked
 
-panel = ui.Panel2D(size=(400, 200), color=(1, 0.5, 0.0), align='right')
+panel = ui.Panel2D(size=(400, 200), color=(1, 0.5, 0.0), align="right")
 panel.center = (150, 200)
 
-text_block = ui.TextBlock2D(text='Left click on object \n')
+text_block = ui.TextBlock2D(text="Left click on object \n")
 panel.add_element(text_block, (0.3, 0.3))
 
 ###############################################################################
@@ -35,7 +35,7 @@ panel.add_element(text_block, (0.3, 0.3))
 
 scene = window.Scene()
 
-label_actor = actor.vector_text(text='Test')
+label_actor = actor.vector_text(text="Test")
 
 ###############################################################################
 # This actor is made with 3 cubes of different orientation
@@ -59,7 +59,7 @@ num_objects = centers.shape[0]
 ###############################################################################
 # Access the memory of the colors of all the cubes
 
-vcolors = utils.colors_from_actor(fury_actor, 'colors')
+vcolors = utils.colors_from_actor(fury_actor, "colors")
 
 ###############################################################################
 # Adding an actor showing the axes of the world coordinates
@@ -80,13 +80,12 @@ pickm = pick.PickingManager()
 
 
 def left_click_callback(obj, event):
-
     # Get the event position on display and pick
 
     event_pos = pickm.event_position(showm.iren)
     picked_info = pickm.pick(event_pos, showm.scene)
 
-    vertex_index = picked_info['vertex']
+    vertex_index = picked_info["vertex"]
 
     # Calculate the objects index
 
@@ -97,11 +96,11 @@ def left_click_callback(obj, event):
 
     if not selected[object_index]:
         scale = 6 / 5
-        color_add = np.array([30, 30, 30], dtype='uint8')
+        color_add = np.array([30, 30, 30], dtype="uint8")
         selected[object_index] = True
     else:
         scale = 5 / 6
-        color_add = np.array([-30, -30, -30], dtype='uint8')
+        color_add = np.array([-30, -30, -30], dtype="uint8")
         selected[object_index] = False
 
     # Update vertices positions
@@ -120,14 +119,14 @@ def left_click_callback(obj, event):
     # Tell actor that memory is modified
     utils.update_actor(fury_actor)
 
-    face_index = picked_info['face']
+    face_index = picked_info["face"]
 
     # Show some info
-    text = 'Object ' + str(object_index) + '\n'
-    text += 'Vertex ID ' + str(vertex_index) + '\n'
-    text += 'Face ID ' + str(face_index) + '\n'
-    text += 'World pos ' + str(np.round(picked_info['xyz'], 2)) + '\n'
-    text += 'Actor ID ' + str(id(picked_info['actor']))
+    text = "Object " + str(object_index) + "\n"
+    text += "Vertex ID " + str(vertex_index) + "\n"
+    text += "Face ID " + str(face_index) + "\n"
+    text += "World pos " + str(np.round(picked_info["xyz"], 2)) + "\n"
+    text += "Actor ID " + str(id(picked_info["actor"]))
     text_block.message = text
     showm.render()
 
@@ -135,7 +134,7 @@ def left_click_callback(obj, event):
 ###############################################################################
 # Bind the callback to the actor
 
-fury_actor.AddObserver('LeftButtonPressEvent', left_click_callback, 1)
+fury_actor.AddObserver("LeftButtonPressEvent", left_click_callback, 1)
 
 ###############################################################################
 # Make the window appear
@@ -150,11 +149,10 @@ scene.add(panel)
 interactive = False
 
 if interactive:
-
     showm.start()
 
 
 ###############################################################################
 # Save the current framebuffer in a PNG file
 
-window.record(showm.scene, size=(1024, 768), out_path='viz_picking.png')
+window.record(showm.scene, size=(1024, 768), out_path="viz_picking.png")

@@ -1,6 +1,6 @@
 import numpy as np
-import vtk
 from viz_shader_canvas import cube, disk, rectangle, rectangle2, square
+import vtk
 
 from fury import actor, window
 

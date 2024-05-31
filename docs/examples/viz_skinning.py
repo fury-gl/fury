@@ -14,8 +14,8 @@ from fury.gltf import glTF
 # Retrieving the model with skeletal animations.
 # We're choosing the `RiggedFigure` model here.
 
-fetch_gltf('RiggedFigure', 'glTF')
-filename = read_viz_gltf('RiggedFigure')
+fetch_gltf("RiggedFigure", "glTF")
+filename = read_viz_gltf("RiggedFigure")
 
 ##############################################################################
 # Initializing the glTF object, You can additionally set `apply_normals=True`.
@@ -28,11 +28,11 @@ gltf_obj = glTF(filename, apply_normals=False)
 # name you want to visualize.
 # Note: If there's no name for animation, It's stored as `anim_0`, `anim_1` etc
 
-animation = gltf_obj.skin_animation()['anim_0']
+animation = gltf_obj.skin_animation()["anim_0"]
 
 # After we get the timeline object, We want to initialise the skinning process.
 # You can set `bones=true` to visualize each bone transformation. Additionally,
-# you can set `lenght` of bones in the `initialise_skin` method.
+# you can set `length` of bones in the `initialise_skin` method.
 # Note: Make sure to call this method before you initialize ShowManager, else
 # bones won't be added to the scene.
 
@@ -73,4 +73,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_skinning.png', size=(900, 768))
+window.record(scene, out_path="viz_skinning.png", size=(900, 768))

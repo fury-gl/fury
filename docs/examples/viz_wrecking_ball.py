@@ -9,6 +9,7 @@ a wrecking ball.
 
 First some imports.
 """
+
 import itertools
 
 import numpy as np
@@ -177,15 +178,15 @@ rope = p.createMultiBody(
     basePosition,
     baseOrientation,
     linkMasses=link_Masses,
-    linkCollisionShapeIndices=linkCollisionShapeIndices,
-    linkVisualShapeIndices=linkVisualShapeIndices,
-    linkPositions=linkPositions,
-    linkOrientations=linkOrientations,
-    linkInertialFramePositions=linkInertialFramePositions,
-    linkInertialFrameOrientations=linkInertialFrameOrns,
-    linkParentIndices=indices,
-    linkJointTypes=jointTypes,
-    linkJointAxis=axis,
+    linkCollisionShapeIndices=linkCollisionShapeIndices.astype(int),
+    linkVisualShapeIndices=linkVisualShapeIndices.astype(int),
+    linkPositions=linkPositions.astype(int),
+    linkOrientations=linkOrientations.astype(int),
+    linkInertialFramePositions=linkInertialFramePositions.astype(int),
+    linkInertialFrameOrientations=linkInertialFrameOrns.astype(int),
+    linkParentIndices=indices.astype(int),
+    linkJointTypes=jointTypes.astype(int),
+    linkJointAxis=axis.astype(int),
 )
 
 ###############################################################################
@@ -263,6 +264,7 @@ chain_sec = int(num_vertices / num_objects)
 ###############################################################################
 # We define methods to sync bricks and wrecking ball.
 
+
 # Function for syncing actors with multibodies.
 def sync_brick(object_index, multibody):
     pos, orn = p.getBasePositionAndOrientation(multibody)
@@ -315,7 +317,7 @@ def sync_chain(actor_list, multibody):
 counter = itertools.count()
 fpss = np.array([])
 tb = ui.TextBlock2D(
-    position=(0, 680), font_size=30, color=(1, 0.5, 0), text='Avg. FPS: \nSim Steps: '
+    position=(0, 680), font_size=30, color=(1, 0.5, 0), text="Avg. FPS: \nSim Steps: "
 )
 scene.add(tb)
 
@@ -335,7 +337,7 @@ def timer_callback(_obj, _event):
         fps = showm.frame_rate
         fpss = np.append(fpss, fps)
         tb.message = (
-            'Avg. FPS: ' + str(np.round(np.mean(fpss), 0)) + '\nSim Steps: ' + str(cnt)
+            "Avg. FPS: " + str(np.round(np.mean(fpss), 0)) + "\nSim Steps: " + str(cnt)
         )
 
     # Updating the position and orientation of each individual brick.
@@ -373,4 +375,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, size=(900, 768), out_path='viz_wrecking_ball.png')
+window.record(scene, size=(900, 768), out_path="viz_wrecking_ball.png")

@@ -50,4 +50,3 @@ Among the challenges I faced, one notable instance involved addressing the visib
 What is coming up next?
 -----------------------
 The ``FileDialog`` implementation is nearly finalized, and my plan is to work on any review, feedback or suggestions that might arise. Following this, I will shift my attention towards addressing the ``TreeUI``.
-

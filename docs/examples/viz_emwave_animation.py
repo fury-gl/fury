@@ -94,14 +94,14 @@ x = np.linspace(-3, 3, npoints)
 y = np.sin(wavenumber * x - angular_frq * time + phase_angle)
 z = np.array([0 for i in range(npoints)])
 
-pts = np.array([(a, b, c) for (a, b, c) in zip(x, y, z)])
+pts = np.array(list(zip(x, y, z)))
 pts = [pts]
 colors = window.colors.red
 wave_actor1 = actor.line(pts, colors, linewidth=3)
 scene.add(wave_actor1)
 
 vertices = utils.vertices_from_actor(wave_actor1)
-vcolors = utils.colors_from_actor(wave_actor1, 'colors')
+vcolors = utils.colors_from_actor(wave_actor1, "colors")
 no_vertices_per_point = len(vertices) / npoints
 initial_vertices = vertices.copy() - np.repeat(pts, no_vertices_per_point, axis=0)
 
@@ -113,14 +113,14 @@ xx = np.linspace(-3, 3, npoints)
 yy = np.array([0 for i in range(npoints)])
 zz = np.sin(wavenumber * xx - angular_frq * time + phase_angle)
 
-pts2 = np.array([(a, b, c) for (a, b, c) in zip(xx, yy, zz)])
+pts2 = np.array(list(zip(xx, yy, zz)))
 pts2 = [pts2]
 colors2 = window.colors.blue
 wave_actor2 = actor.line(pts2, colors2, linewidth=3)
 scene.add(wave_actor2)
 
 vertices2 = utils.vertices_from_actor(wave_actor2)
-vcolors2 = utils.colors_from_actor(wave_actor2, 'colors')
+vcolors2 = utils.colors_from_actor(wave_actor2, "colors")
 no_vertices_per_point2 = len(vertices2) / npoints
 initial_vertices2 = vertices2.copy() - np.repeat(pts2, no_vertices_per_point2, axis=0)
 
@@ -129,7 +129,7 @@ initial_vertices2 = vertices2.copy() - np.repeat(pts2, no_vertices_per_point2, a
 # Initializing text box to display the title of the animation
 
 tb = ui.TextBlock2D(bold=True, position=(160, 90))
-tb.message = 'Electromagnetic Wave'
+tb.message = "Electromagnetic Wave"
 scene.add(tb)
 
 ###############################################################################
@@ -154,12 +154,12 @@ def timer_callback(_obj, _event):
     cnt = next(counter)
 
     x, y, z = update_coordinates(wavenumber, angular_frq, phase_angle, time)
-    pts = np.array([(a, b, c) for (a, b, c) in zip(x, y, z)])
+    pts = np.array(list(zip(x, y, z)))
     vertices[:] = initial_vertices + np.repeat(pts, no_vertices_per_point, axis=0)
     utils.update_actor(wave_actor1)
 
     xx, zz, yy = update_coordinates(wavenumber, angular_frq, phase_angle, time)
-    pts2 = np.array([(a, b, c) for (a, b, c) in zip(xx, yy, zz)])
+    pts2 = np.array(list(zip(xx, yy, zz)))
     vertices2[:] = initial_vertices2 + np.repeat(pts2, no_vertices_per_point2, axis=0)
     utils.update_actor(wave_actor2)
 
@@ -178,4 +178,4 @@ showm.add_timer_callback(True, 25, timer_callback)
 interactive = False
 if interactive:
     showm.start()
-window.record(showm.scene, size=(800, 600), out_path='viz_emwave.png')
+window.record(showm.scene, size=(800, 600), out_path="viz_emwave.png")

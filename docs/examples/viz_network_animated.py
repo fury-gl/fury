@@ -18,9 +18,7 @@ from os.path import join as pjoin
 
 import numpy as np
 
-from fury import actor
-from fury import colormap as cmap
-from fury import window
+from fury import actor, colormap as cmap, window
 from fury.utils import compute_bounds, update_actor, vertices_from_actor
 
 ###############################################################################
@@ -257,4 +255,4 @@ showm.add_timer_callback(True, 16, timer_callback)
 
 showm.start()
 
-window.record(showm.scene, size=(900, 768), out_path='viz_animated_networks.png')
+window.record(showm.scene, size=(900, 768), out_path="viz_animated_networks.png")

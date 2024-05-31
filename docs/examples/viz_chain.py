@@ -8,6 +8,7 @@ in fury. In this example we specifically render a Chain oscillating to and from.
 
 First some imports.
 """
+
 import itertools
 
 import numpy as np
@@ -92,15 +93,15 @@ rope = p.createMultiBody(
     basePosition,
     baseOrientation,
     linkMasses=link_Masses,
-    linkCollisionShapeIndices=linkCollisionShapeIndices,
-    linkVisualShapeIndices=linkVisualShapeIndices,
+    linkCollisionShapeIndices=linkCollisionShapeIndices.astype(int),
+    linkVisualShapeIndices=linkVisualShapeIndices.astype(int),
     linkPositions=linkPositions,
     linkOrientations=linkOrientations,
     linkInertialFramePositions=linkInertialFramePositions,
     linkInertialFrameOrientations=linkInertialFrameOrns,
-    linkParentIndices=indices,
-    linkJointTypes=jointTypes,
-    linkJointAxis=axis,
+    linkParentIndices=indices.astype(int),
+    linkJointTypes=jointTypes.astype(int),
+    linkJointAxis=axis.astype(int),
 )
 
 ###############################################################################
@@ -163,6 +164,7 @@ counter = itertools.count()
 ###############################################################################
 # We define a couple of syncing methods for the base and chain.
 
+
 # Function for syncing actors with multi-bodies.
 def sync_actor(actor, multibody):
     pos, orn = p.getBasePositionAndOrientation(multibody)
@@ -204,7 +206,7 @@ def sync_joints(actor_list, multibody):
 
 fpss = np.array([])
 tb = ui.TextBlock2D(
-    position=(0, 680), font_size=30, color=(1, 0.5, 0), text='Avg. FPS: \nSim Steps: '
+    position=(0, 680), font_size=30, color=(1, 0.5, 0), text="Avg. FPS: \nSim Steps: "
 )
 scene.add(tb)
 
@@ -227,7 +229,7 @@ def timer_callback(_obj, _event):
         fps = showm.frame_rate
         fpss = np.append(fpss, fps)
         tb.message = (
-            'Avg. FPS: ' + str(np.round(np.mean(fpss), 0)) + '\nSim Steps: ' + str(cnt)
+            "Avg. FPS: " + str(np.round(np.mean(fpss), 0)) + "\nSim Steps: " + str(cnt)
         )
 
     # some trajectory
@@ -262,4 +264,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, size=(900, 768), out_path='viz_chain.png')
+window.record(scene, size=(900, 768), out_path="viz_chain.png")

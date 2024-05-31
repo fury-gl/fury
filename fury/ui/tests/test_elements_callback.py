@@ -1,24 +1,19 @@
 """Test for components module."""
+
 import itertools
-import os
-import shutil
-from os.path import join as pjoin
-from tempfile import TemporaryDirectory as InTemporaryDirectory
 
 import numpy as np
 import numpy.testing as npt
 import pytest
 
 from fury import actor, ui, window
-from fury.data import DATA_DIR
 from fury.decorators import skip_osx, skip_win
 from fury.primitive import prim_sphere
-from fury.testing import EventCounter, assert_arrays_equal, assert_greater
+from fury.testing import assert_greater
 
 
 def test_frame_rate_and_anti_aliasing():
     """Testing frame rate with/out anti-aliasing"""
-
     length_ = 200
     multi_samples = 32
     max_peels = 8
@@ -80,7 +75,7 @@ def test_frame_rate_and_anti_aliasing():
         if cnt % 1 == 0:
             fps = np.round(showm.frame_rate, 0)
             frh.fpss.append(fps)
-            msg = 'FPS ' + str(fps) + ' ' + str(cnt)
+            msg = "FPS " + str(fps) + " " + str(cnt)
             tb.message = msg
             showm.render()
         if cnt > 10:
@@ -136,9 +131,9 @@ def test_frame_rate_and_anti_aliasing():
 
 @pytest.mark.skipif(
     skip_win,
-    reason='This test does not work on windows. It '
-    'works on a local machine. Check after '
-    'fixing memory leak with RenderWindow.',
+    reason="This test does not work on windows. It "
+    "works on a local machine. Check after "
+    "fixing memory leak with RenderWindow.",
 )
 def test_timer():
     """Testing add a timer and exit window and app from inside timer."""
@@ -150,14 +145,14 @@ def test_timer():
 
     sphere_actor = actor.sphere(centers=xyzr[:, :3], colors=colors[:], radii=xyzr[:, 3])
 
-    vertices, faces = prim_sphere('repulsion724')
+    vertices, faces = prim_sphere("repulsion724")
 
     sphere_actor2 = actor.sphere(
         centers=xyzr2[:, :3],
         colors=colors[:],
         radii=xyzr2[:, 3],
         vertices=vertices,
-        faces=faces.astype('i8'),
+        faces=faces.astype("i8"),
     )
 
     scene.add(sphere_actor)

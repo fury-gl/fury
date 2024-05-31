@@ -156,7 +156,7 @@ must have a way to lock the write/read if the memory resource is busy.
 Meanwhile the
 `multiprocessing.Arrays <https://docs.python.org/3/library/multiprocessing.html#multiprocessing.Array>`__
 already has a context which allows lock (.get_lock()) SharedMemory
-dosen’t[2]. The use of abstract class allowed me to deal with those
+doesn’t[2]. The use of abstract class allowed me to deal with those
 peculiarities. `commit
 358402e <https://github.com/fury-gl/fury/pull/437/commits/358402ea2f06833f66f45f3818ccc3448b2da9cd>`__
 
