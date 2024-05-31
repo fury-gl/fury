@@ -2,6 +2,7 @@ import itertools
 import os
 
 from PIL import Image
+from collections import Counter
 import numpy as np
 import numpy.testing as npt
 from packaging.version import parse
@@ -172,20 +173,21 @@ def test_export_gltf():
     box_actor = gltf_obj.actors()
     scene.add(*box_actor)
     export_scene(scene, "test.gltf")
+    display_1 = window.snapshot(scene)
     scene.clear()
 
     gltf_obj = glTF("test.gltf")
     actors = gltf_obj.actors()
     scene.add(*actors)
 
-    display = window.snapshot(scene)
-    res = window.analyze_snapshot(
-        display,
-        bg_color=(0, 0, 0),
-        colors=[(108, 173, 223), (92, 135, 39)],
-        find_objects=False,
-    )
-    npt.assert_equal(res.colors_found, [True, True])
+    display_2 = window.snapshot(scene)
+
+    colors_display_1 = Counter([tuple(color) for color in display_1.reshape(-1, 3)])
+    colors_display_2 = Counter([tuple(color) for color in display_2.reshape(-1, 3)])
+
+    is_equal_colors = colors_display_1.most_common(5) == colors_display_2.most_common(5)
+
+    npt.assert_equal(is_equal_colors, True)
 
 
 def test_simple_animation():
