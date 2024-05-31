@@ -22,18 +22,18 @@ void rayGlyphIntersections(out float outRayParams[MAX_DEGREE], float shCoeffs[SH
     }
     // Compute coefficients of the SH polynomial along the ray in the
     // coordinate frame given by rayDir and closestDir
-    float radius_poly[SH_DEGREE + 1];
-    float inv_vander[(SH_DEGREE + 1) * (SH_DEGREE + 1)];
-    get_inv_vandermonde(inv_vander);
+    float radiusPoly[SH_DEGREE + 1];
+    float invVander[(SH_DEGREE + 1) * (SH_DEGREE + 1)];
+    get_inv_vandermonde(invVander);
     _unroll_
     for (int i = 0; i != shDegree + 1; ++i) {
-        radius_poly[i] = 0.0;
+        radiusPoly[i] = 0.0;
         _unroll_
         for (int j = 0; j != shDegree + 1; ++j)
-            radius_poly[i] += inv_vander[i * (shDegree + 1) + j] * shValues[j];
+            radiusPoly[i] += invVander[i * (shDegree + 1) + j] * shValues[j];
     }
     // Compute a bounding circle around the glyph in the relevant plane
-    float radius_max = 0.0;
+    float radiusMax = 0.0;
     _unroll_
     for (int i = 0; i != shDegree + 1; ++i) {
         float bound = sqrt(
@@ -42,19 +42,19 @@ void rayGlyphIntersections(out float outRayParams[MAX_DEGREE], float shCoeffs[SH
         );
         // Workaround for buggy compilers where 0^0 is 0
         bound = (i == 0 || i == shDegree) ? 1.0 : bound;
-        radius_max += bound * abs(radius_poly[i]);
+        radiusMax += bound * abs(radiusPoly[i]);
     }
     // Figure out the interval, where (if at all) the ray intersects the circle
-    float closest_dot_origin = dot(closestDir, rayOri);
-    if (radius_max < abs(closest_dot_origin)) {
+    float dotCloOri = dot(closestDir, rayOri);
+    if (radiusMax < abs(dotCloOri)) {
         _unroll_
         for (int i = 0; i != maxPolyDegree; ++i)
             outRayParams[i] = noIntersection;
         return;
     }
-    float radius_over_dot = radius_max / closest_dot_origin;
-    float u_max = sqrt(radius_over_dot * radius_over_dot - 1.0);
-    // Take the square of radius_poly
+    float radOverDot = radiusMax / dotCloOri;
+    float uMax = sqrt(radOverDot * radOverDot - 1.0);
+    // Take the square of radiusPoly
     float poly[MAX_DEGREE + 1];
     _unroll_
     for (int i = 0; i != maxPolyDegree + 1; ++i)
@@ -63,24 +63,24 @@ void rayGlyphIntersections(out float outRayParams[MAX_DEGREE], float shCoeffs[SH
     for (int i = 0; i != shDegree + 1; ++i)
         _unroll_
         for (int j = 0; j != shDegree + 1; ++j)
-            poly[i + j] += radius_poly[i] * radius_poly[j];
+            poly[i + j] += radiusPoly[i] * radiusPoly[j];
     // Subtract the scaled (2 * SH_DEGREE + 2)-th power of the distance to the
     // glyph center
-    float dot_sq = closest_dot_origin * closest_dot_origin;
+    float dotSq = dotCloOri * dotCloOri;
     float binomial = 1.0;
     _unroll_
     for (int i = 0; i != shDegree + 2; ++i) {
-        poly[2 * i] -= binomial * dot_sq;
+        poly[2 * i] -= binomial * dotSq;
         // Update the binomial coefficient using a recurrence relation
         binomial *= float(shDegree + 1 - i) / float(i + 1);
     }
     // Find roots of the polynomial within the relevant bounds
     float roots[MAX_DEGREE + 1];
-    find_roots(roots, poly, -u_max, u_max);
+    find_roots(roots, poly, -uMax, uMax);
     // Convert them back to the original coordinate frame (i.e. ray parameters)
     _unroll_
     for (int i = 0; i != maxPolyDegree; ++i)
         outRayParams[i] = (roots[i] != noIntersection)
-                            ? (roots[i] * closest_dot_origin - dotDirOri)
+                            ? (roots[i] * dotCloOri - dotDirOri)
                             : noIntersection;
 }
