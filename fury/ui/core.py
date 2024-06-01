@@ -1,7 +1,5 @@
 """UI core module that describe UI abstract class."""
 
-__all__ = ['Rectangle2D', 'Disk2D', 'TextBlock2D', 'Button2D']
-
 import abc
 
 import numpy as np
@@ -98,9 +96,9 @@ class UI(object, metaclass=abc.ABCMeta):
         self._setup()  # Setup needed actors and sub UI components.
         self.position = position
 
-        self.left_button_state = 'released'
-        self.right_button_state = 'released'
-        self.middle_button_state = 'released'
+        self.left_button_state = "released"
+        self.right_button_state = "released"
+        self.middle_button_state = "released"
 
         self.on_left_mouse_button_pressed = lambda i_ren, obj, element: None
         self.on_left_mouse_button_dragged = lambda i_ren, obj, element: None
@@ -127,13 +125,13 @@ class UI(object, metaclass=abc.ABCMeta):
         components.
 
         """
-        msg = 'Subclasses of UI must implement `_setup(self)`.'
+        msg = "Subclasses of UI must implement `_setup(self)`."
         raise NotImplementedError(msg)
 
     @abc.abstractmethod
     def _get_actors(self):
         """Get the actors composing this UI component."""
-        msg = 'Subclasses of UI must implement `_get_actors(self)`.'
+        msg = "Subclasses of UI must implement `_get_actors(self)`."
         raise NotImplementedError(msg)
 
     @property
@@ -150,7 +148,7 @@ class UI(object, metaclass=abc.ABCMeta):
         _scene : Scene
 
         """
-        msg = 'Subclasses of UI must implement `_add_to_scene(self, scene)`.'
+        msg = "Subclasses of UI must implement `_add_to_scene(self, scene)`."
         raise NotImplementedError(msg)
 
     def add_to_scene(self, scene):
@@ -169,13 +167,12 @@ class UI(object, metaclass=abc.ABCMeta):
         for callback in self._callbacks:
             if not isinstance(iren, CustomInteractorStyle):
                 msg = (
-                    'The ShowManager requires `CustomInteractorStyle` in'
-                    ' order to use callbacks.'
+                    "The ShowManager requires `CustomInteractorStyle` in"
+                    " order to use callbacks."
                 )
                 raise TypeError(msg)
 
             if callback[0] == self._scene:
-
                 iren.add_callback(iren, callback[1], callback[2], args=[self])
             else:
                 iren.add_callback(*callback, args=[self])
@@ -219,7 +216,7 @@ class UI(object, metaclass=abc.ABCMeta):
             Absolute pixel coordinates (x, y).
 
         """
-        msg = 'Subclasses of UI must implement `_set_position(self, coords)`.'
+        msg = "Subclasses of UI must implement `_set_position(self, coords)`."
         raise NotImplementedError(msg)
 
     @property
@@ -228,7 +225,7 @@ class UI(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def _get_size(self):
-        msg = 'Subclasses of UI must implement property `size`.'
+        msg = "Subclasses of UI must implement property `size`."
         raise NotImplementedError(msg)
 
     @property
@@ -245,8 +242,8 @@ class UI(object, metaclass=abc.ABCMeta):
             Absolute pixel coordinates (x, y).
 
         """
-        if not hasattr(self, 'size'):
-            msg = 'Subclasses of UI must implement the `size` property.'
+        if not hasattr(self, "size"):
+            msg = "Subclasses of UI must implement the `size` property."
             raise NotImplementedError(msg)
 
         new_center = np.array(coords)
@@ -261,89 +258,89 @@ class UI(object, metaclass=abc.ABCMeta):
 
     def handle_events(self, actor):
         self.add_callback(
-            actor, 'LeftButtonPressEvent', self.left_button_click_callback
+            actor, "LeftButtonPressEvent", self.left_button_click_callback
         )
         self.add_callback(
-            actor, 'LeftButtonReleaseEvent', self.left_button_release_callback
+            actor, "LeftButtonReleaseEvent", self.left_button_release_callback
         )
         self.add_callback(
-            actor, 'RightButtonPressEvent', self.right_button_click_callback
+            actor, "RightButtonPressEvent", self.right_button_click_callback
         )
         self.add_callback(
-            actor, 'RightButtonReleaseEvent', self.right_button_release_callback
+            actor, "RightButtonReleaseEvent", self.right_button_release_callback
         )
         self.add_callback(
-            actor, 'MiddleButtonPressEvent', self.middle_button_click_callback
+            actor, "MiddleButtonPressEvent", self.middle_button_click_callback
         )
         self.add_callback(
-            actor, 'MiddleButtonReleaseEvent', self.middle_button_release_callback
+            actor, "MiddleButtonReleaseEvent", self.middle_button_release_callback
         )
-        self.add_callback(actor, 'MouseMoveEvent', self.mouse_move_callback)
-        self.add_callback(actor, 'KeyPressEvent', self.key_press_callback)
+        self.add_callback(actor, "MouseMoveEvent", self.mouse_move_callback)
+        self.add_callback(actor, "KeyPressEvent", self.key_press_callback)
 
     @staticmethod
     def left_button_click_callback(i_ren, obj, self):
-        self.left_button_state = 'pressing'
+        self.left_button_state = "pressing"
         self.on_left_mouse_button_pressed(i_ren, obj, self)
         i_ren.event.abort()
 
     @staticmethod
     def left_button_release_callback(i_ren, obj, self):
-        if self.left_button_state == 'pressing':
+        if self.left_button_state == "pressing":
             self.on_left_mouse_button_clicked(i_ren, obj, self)
-        self.left_button_state = 'released'
+        self.left_button_state = "released"
         self.on_left_mouse_button_released(i_ren, obj, self)
 
     @staticmethod
     def right_button_click_callback(i_ren, obj, self):
-        self.right_button_state = 'pressing'
+        self.right_button_state = "pressing"
         self.on_right_mouse_button_pressed(i_ren, obj, self)
         i_ren.event.abort()
 
     @staticmethod
     def right_button_release_callback(i_ren, obj, self):
-        if self.right_button_state == 'pressing':
+        if self.right_button_state == "pressing":
             self.on_right_mouse_button_clicked(i_ren, obj, self)
-        self.right_button_state = 'released'
+        self.right_button_state = "released"
         self.on_right_mouse_button_released(i_ren, obj, self)
 
     @staticmethod
     def middle_button_click_callback(i_ren, obj, self):
-        self.middle_button_state = 'pressing'
+        self.middle_button_state = "pressing"
         self.on_middle_mouse_button_pressed(i_ren, obj, self)
         i_ren.event.abort()
 
     @staticmethod
     def middle_button_release_callback(i_ren, obj, self):
-        if self.middle_button_state == 'pressing':
+        if self.middle_button_state == "pressing":
             self.on_middle_mouse_button_clicked(i_ren, obj, self)
-        self.middle_button_state = 'released'
+        self.middle_button_state = "released"
         self.on_middle_mouse_button_released(i_ren, obj, self)
 
     @staticmethod
     def mouse_move_callback(i_ren, obj, self):
         left_pressing_or_dragging = (
-            self.left_button_state == 'pressing' or self.left_button_state == 'dragging'
+            self.left_button_state == "pressing" or self.left_button_state == "dragging"
         )
 
         right_pressing_or_dragging = (
-            self.right_button_state == 'pressing'
-            or self.right_button_state == 'dragging'
+            self.right_button_state == "pressing"
+            or self.right_button_state == "dragging"
         )
 
         middle_pressing_or_dragging = (
-            self.middle_button_state == 'pressing'
-            or self.middle_button_state == 'dragging'
+            self.middle_button_state == "pressing"
+            or self.middle_button_state == "dragging"
         )
 
         if left_pressing_or_dragging:
-            self.left_button_state = 'dragging'
+            self.left_button_state = "dragging"
             self.on_left_mouse_button_dragged(i_ren, obj, self)
         elif right_pressing_or_dragging:
-            self.right_button_state = 'dragging'
+            self.right_button_state = "dragging"
             self.on_right_mouse_button_dragged(i_ren, obj, self)
         elif middle_pressing_or_dragging:
-            self.middle_button_state = 'dragging'
+            self.middle_button_state = "dragging"
             self.on_middle_mouse_button_dragged(i_ren, obj, self)
 
     @staticmethod
@@ -696,11 +693,11 @@ class TextBlock2D(UI):
 
     def __init__(
         self,
-        text='Text Block',
+        text="Text Block",
         font_size=18,
-        font_family='Arial',
-        justification='left',
-        vertical_justification='bottom',
+        font_family="Arial",
+        justification="left",
+        vertical_justification="bottom",
         bold=False,
         italic=False,
         shadow=False,
@@ -709,7 +706,7 @@ class TextBlock2D(UI):
         bg_color=None,
         position=(0, 0),
         auto_font_scale=False,
-        dynamic_bbox=False
+        dynamic_bbox=False,
     ):
         """Init class instance.
 
@@ -866,7 +863,7 @@ class TextBlock2D(UI):
         return self.actor.GetTextProperty().GetFontFamilyAsString()
 
     @font_family.setter
-    def font_family(self, family='Arial'):
+    def font_family(self, family="Arial"):
         """Set font family.
 
         Currently Arial and Courier are supported.
@@ -877,12 +874,12 @@ class TextBlock2D(UI):
             The font family.
 
         """
-        if family == 'Arial':
+        if family == "Arial":
             self.actor.GetTextProperty().SetFontFamilyToArial()
-        elif family == 'Courier':
+        elif family == "Courier":
             self.actor.GetTextProperty().SetFontFamilyToCourier()
         else:
-            raise ValueError('Font not supported yet: {}.'.format(family))
+            raise ValueError("Font not supported yet: {}.".format(family))
 
     @property
     def justification(self):
@@ -1124,37 +1121,38 @@ class TextBlock2D(UI):
             self.update_bounding_box()
 
     def update_alignment(self):
-        """Update Text Alignment.
-        """
+        """Update Text Alignment."""
         text_property = self.actor.GetTextProperty()
         updated_text_position = [0, 0]
 
-        if self.justification.lower() == 'left':
+        if self.justification.lower() == "left":
             text_property.SetJustificationToLeft()
             updated_text_position[0] = self.boundingbox[0]
-        elif self.justification.lower() == 'center':
+        elif self.justification.lower() == "center":
             text_property.SetJustificationToCentered()
-            updated_text_position[0] = self.boundingbox[0] + \
-                (self.boundingbox[2]-self.boundingbox[0])//2
-        elif self.justification.lower() == 'right':
+            updated_text_position[0] = (
+                self.boundingbox[0] + (self.boundingbox[2] - self.boundingbox[0]) // 2
+            )
+        elif self.justification.lower() == "right":
             text_property.SetJustificationToRight()
             updated_text_position[0] = self.boundingbox[2]
         else:
-            msg = 'Text can only be justified left, right and center.'
+            msg = "Text can only be justified left, right and center."
             raise ValueError(msg)
 
-        if self.vertical_justification.lower() == 'bottom':
+        if self.vertical_justification.lower() == "bottom":
             text_property.SetVerticalJustificationToBottom()
             updated_text_position[1] = self.boundingbox[1]
-        elif self.vertical_justification.lower() == 'middle':
+        elif self.vertical_justification.lower() == "middle":
             text_property.SetVerticalJustificationToCentered()
-            updated_text_position[1] = self.boundingbox[1] + \
-                (self.boundingbox[3]-self.boundingbox[1])//2
-        elif self.vertical_justification.lower() == 'top':
+            updated_text_position[1] = (
+                self.boundingbox[1] + (self.boundingbox[3] - self.boundingbox[1]) // 2
+            )
+        elif self.vertical_justification.lower() == "top":
             text_property.SetVerticalJustificationToTop()
             updated_text_position[1] = self.boundingbox[3]
         else:
-            msg = 'Vertical justification must be: bottom, middle or top.'
+            msg = "Vertical justification must be: bottom, middle or top."
             raise ValueError(msg)
 
         self.actor.SetPosition(updated_text_position)
@@ -1163,7 +1161,7 @@ class TextBlock2D(UI):
         """Calculate size of background according to the message it contains."""
         lines = self.message.split("\n")
         max_length = max(len(line) for line in lines)
-        return [max_length*self.font_size, len(lines)*self.font_size]
+        return [max_length * self.font_size, len(lines) * self.font_size]
 
     def update_bounding_box(self, size=None):
         """Update Text Bounding Box.
@@ -1178,14 +1176,19 @@ class TextBlock2D(UI):
         if size is None:
             size = self.cal_size_from_message()
 
-        self.boundingbox = [self.position[0], self.position[1],
-                            self.position[0]+size[0], self.position[1]+size[1]]
+        self.boundingbox = [
+            self.position[0],
+            self.position[1],
+            self.position[0] + size[0],
+            self.position[1] + size[1],
+        ]
         self.background.resize(size)
 
         if self.auto_font_scale:
             self.actor.SetPosition2(
-                self.boundingbox[2]-self.boundingbox[0],
-                self.boundingbox[3]-self.boundingbox[1])
+                self.boundingbox[2] - self.boundingbox[0],
+                self.boundingbox[3] - self.boundingbox[1],
+            )
         else:
             self.update_alignment()
 
@@ -1202,8 +1205,10 @@ class TextBlock2D(UI):
         self.background.position = position
 
     def _get_size(self):
-        bb_size = (self.boundingbox[2]-self.boundingbox[0],
-                   self.boundingbox[3]-self.boundingbox[1])
+        bb_size = (
+            self.boundingbox[2] - self.boundingbox[0],
+            self.boundingbox[3] - self.boundingbox[1],
+        )
         if self.dynamic_bbox or self.auto_font_scale or sum(bb_size):
             return bb_size
         return self.cal_size_from_message()
@@ -1234,7 +1239,7 @@ class Button2D(UI):
         """
         super(Button2D, self).__init__(position)
 
-        self.icon_extents = dict()
+        self.icon_extents = {}
         self.icons = self._build_icons(icon_fnames)
         self.icon_names = [icon[0] for icon in self.icons]
         self.current_icon_id = 0

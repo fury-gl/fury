@@ -19,9 +19,9 @@ is an MIT-licensed project.
 
 # Stdlib imports
 import ast
+from importlib import import_module
 import os
 import re
-from importlib import import_module
 
 # suppress print statements (warnings for empty files)
 DEBUG = True
@@ -33,12 +33,12 @@ class ApiDocWriter:
     """
 
     # only separating first two levels
-    rst_section_levels = ['*', '=', '-', '~', '^']
+    rst_section_levels = ["*", "=", "-", "~", "^"]
 
     def __init__(
         self,
         package_name,
-        rst_extension='.txt',
+        rst_extension=".txt",
         package_skip_patterns=None,
         module_skip_patterns=None,
         object_skip_patterns=None,
@@ -77,13 +77,13 @@ class ApiDocWriter:
 
         """
         if package_skip_patterns is None:
-            package_skip_patterns = ['\\.tests$']
+            package_skip_patterns = ["\\.tests$"]
         if module_skip_patterns is None:
-            module_skip_patterns = ['\\.setup$', '\\._']
+            module_skip_patterns = ["\\.setup$", "\\._"]
         if object_skip_patterns is None:
             object_skip_patterns = []
 
-        self.root_path = ''
+        self.root_path = ""
         self.written_modules = None
         self._package_name = None
         self.package_name = package_name
@@ -116,14 +116,14 @@ class ApiDocWriter:
         self.written_modules = None
 
     package_name = property(
-        get_package_name, set_package_name, None, 'get/set package_name'
+        get_package_name, set_package_name, None, "get/set package_name"
     )
 
     @staticmethod
     def _import(name):
         """Import namespace package."""
         mod = __import__(name)
-        components = name.split('.')
+        components = name.split(".")
         for comp in components[1:]:
             mod = getattr(mod, comp)
         return mod
@@ -141,10 +141,10 @@ class ApiDocWriter:
         'Klass'
 
         """
-        name = line.split()[1].split('(')[0].strip()
+        name = line.split()[1].split("(")[0].strip()
         # in case we have classes which are not derived from object
         # ie. old style classes
-        return name.rstrip(':')
+        return name.rstrip(":")
 
     def _uri2path(self, uri):
         """Convert uri to absolute filepath.
@@ -175,36 +175,36 @@ class ApiDocWriter:
 
         """
         if uri == self.package_name:
-            return os.path.join(self.root_path, '__init__.py')
-        path = uri.replace(self.package_name + '.', '')
-        path = path.replace('.', os.path.sep)
+            return os.path.join(self.root_path, "__init__.py")
+        path = uri.replace(self.package_name + ".", "")
+        path = path.replace(".", os.path.sep)
         path = os.path.join(self.root_path, path)
         # XXX maybe check for extensions as well?
-        if os.path.exists(path + '.py'):  # file
-            path += '.py'
-        elif os.path.exists(os.path.join(path, '__init__.py')):
-            path = os.path.join(path, '__init__.py')
+        if os.path.exists(path + ".py"):  # file
+            path += ".py"
+        elif os.path.exists(os.path.join(path, "__init__.py")):
+            path = os.path.join(path, "__init__.py")
         else:
             return None
         return path
 
     def _path2uri(self, dirpath):
         """Convert directory path to uri."""
-        package_dir = self.package_name.replace('.', os.path.sep)
+        package_dir = self.package_name.replace(".", os.path.sep)
         relpath = dirpath.replace(self.root_path, package_dir)
         if relpath.startswith(os.path.sep):
             relpath = relpath[1:]
-        return relpath.replace(os.path.sep, '.')
+        return relpath.replace(os.path.sep, ".")
 
     def _parse_module(self, uri):
         """Parse module defined in *uri*."""
         filename = self._uri2path(uri)
         if filename is None:
-            print(filename, 'erk')
+            print(filename, "erk")
             # nothing that we could handle here.
             return ([], [])
 
-        f = open(filename, 'rt')
+        f = open(filename, "rt")
         functions, classes = self._parse_lines(f)
         f.close()
         return functions, classes
@@ -227,7 +227,7 @@ class ApiDocWriter:
 
         """
         mod = import_module(uri)
-        patterns = '(?:{0})'.format('|'.join(self.object_skip_patterns))
+        patterns = "(?:{0})".format("|".join(self.object_skip_patterns))
         pat = re.compile(patterns)
 
         with open(mod.__file__) as fi:
@@ -236,17 +236,16 @@ class ApiDocWriter:
         functions = []
         classes = []
         for n in node.body:
-
-            if not hasattr(n, 'name'):
+            if not hasattr(n, "name"):
                 if not isinstance(n, ast.Assign):
                     continue
 
             if isinstance(n, ast.ClassDef):
-                if n.name.startswith('_') or pat.search(n.name):
+                if n.name.startswith("_") or pat.search(n.name):
                     continue
                 classes.append(n.name)
             elif isinstance(n, ast.FunctionDef):
-                if n.name.startswith('_') or pat.search(n.name):
+                if n.name.startswith("_") or pat.search(n.name):
                     continue
                 functions.append(n.name)
             # Specific condition for vtk and fury
@@ -256,7 +255,7 @@ class ApiDocWriter:
                         if isinstance(n.targets[0], ast.Tuple):
                             continue
                         functions.append(n.targets[0].id)
-                    elif hasattr(n.value, 'attr') and n.value.attr.startswith('vtk'):
+                    elif hasattr(n.value, "attr") and n.value.attr.startswith("vtk"):
                         classes.append(n.targets[0].id)
                 except Exception:
                     print(mod.__file__)
@@ -270,15 +269,15 @@ class ApiDocWriter:
         functions = []
         classes = []
         for line in linesource:
-            if line.startswith('def ') and line.count('('):
+            if line.startswith("def ") and line.count("("):
                 # exclude private stuff
                 name = self._get_object_name(line)
-                if not name.startswith('_'):
+                if not name.startswith("_"):
                     functions.append(name)
-            elif line.startswith('class '):
+            elif line.startswith("class "):
                 # exclude private stuff
                 name = self._get_object_name(line)
-                if not name.startswith('_'):
+                if not name.startswith("_"):
                     classes.append(name)
             else:
                 pass
@@ -305,54 +304,54 @@ class ApiDocWriter:
         # get the names of all classes and functions
         functions, classes = self._parse_module_with_import(uri)
         if not len(functions) and not len(classes) and DEBUG:
-            print('WARNING: Empty -', uri)  # dbg
+            print("WARNING: Empty -", uri)  # dbg
 
         # Make a shorter version of the uri that omits the package name for
         # titles
-        uri_short = re.sub(r'^%s\.' % self.package_name, '', uri)
+        uri_short = re.sub(r"^%s\." % self.package_name, "", uri)
 
-        head = '.. AUTO-GENERATED FILE -- DO NOT EDIT!\n\n'
-        body = ''
+        head = ".. AUTO-GENERATED FILE -- DO NOT EDIT!\n\n"
+        body = ""
 
         # Set the chapter title to read 'module' for all modules except for the
         # main packages
-        if '.' in uri_short:
-            title = 'Module: :mod:`' + uri_short + '`'
-            head += title + '\n' + self.rst_section_levels[2] * len(title)
+        if "." in uri_short:
+            title = "Module: :mod:`" + uri_short + "`"
+            head += title + "\n" + self.rst_section_levels[2] * len(title)
         else:
-            title = ':mod:`' + uri_short + '`'
-            head += title + '\n' + self.rst_section_levels[1] * len(title)
+            title = ":mod:`" + uri_short + "`"
+            head += title + "\n" + self.rst_section_levels[1] * len(title)
 
-        head += '\n.. automodule:: ' + uri + '\n'
-        head += '\n.. currentmodule:: ' + uri + '\n'
-        body += '\n.. currentmodule:: ' + uri + '\n\n'
+        head += "\n.. automodule:: " + uri + "\n"
+        head += "\n.. currentmodule:: " + uri + "\n"
+        body += "\n.. currentmodule:: " + uri + "\n\n"
         for c in classes:
             body += (
-                '\n:class:`'
+                "\n:class:`"
                 + c
-                + '`\n'
+                + "`\n"
                 + self.rst_section_levels[3] * (len(c) + 9)
-                + '\n\n'
+                + "\n\n"
             )
-            body += '\n.. autoclass:: ' + c + '\n'
+            body += "\n.. autoclass:: " + c + "\n"
             # must NOT exclude from index to keep cross-refs working
             body += (
-                '  :members:\n'
-                '  :undoc-members:\n'
-                '  :show-inheritance:\n'
-                '\n'
-                '  .. automethod:: __init__\n\n'
+                "  :members:\n"
+                "  :undoc-members:\n"
+                "  :show-inheritance:\n"
+                "\n"
+                "  .. automethod:: __init__\n\n"
             )
-        head += '.. autosummary::\n\n'
+        head += ".. autosummary::\n\n"
         for f in classes + functions:
-            head += '   ' + f + '\n'
-        head += '\n'
+            head += "   " + f + "\n"
+        head += "\n"
 
         for f in functions:
             # must NOT exclude from index to keep cross-refs working
-            body += f + '\n'
-            body += self.rst_section_levels[3] * len(f) + '\n'
-            body += '\n.. autofunction:: ' + f + '\n\n'
+            body += f + "\n"
+            body += self.rst_section_levels[3] * len(f) + "\n"
+            body += "\n.. autofunction:: " + f + "\n\n"
 
         return head, body
 
@@ -378,9 +377,9 @@ class ApiDocWriter:
         False
 
         """
-        if match_type == 'module':
+        if match_type == "module":
             patterns = self.module_skip_patterns
-        elif match_type == 'package':
+        elif match_type == "package":
             patterns = self.package_skip_patterns
         else:
             raise ValueError('Cannot interpret match type "%s"' % match_type)
@@ -390,7 +389,7 @@ class ApiDocWriter:
             matchstr = matchstr[L:]
         for pat in patterns:
             try:
-                pat.search
+                _ = pat.search
             except AttributeError:
                 pat = re.compile(pat)
             if pat.search(matchstr):
@@ -433,13 +432,13 @@ class ApiDocWriter:
             filenames = [
                 f[:-3]
                 for f in filenames
-                if f.endswith('.py') and not f.startswith('__init__')
+                if f.endswith(".py") and not f.startswith("__init__")
             ]
 
             for subpkg_name in dirnames + filenames:
-                package_uri = '.'.join((root_uri, subpkg_name))
+                package_uri = ".".join((root_uri, subpkg_name))
                 package_path = self._uri2path(package_uri)
-                if package_path and self._survives_exclude(package_uri, 'package'):
+                if package_path and self._survives_exclude(package_uri, "package"):
                     modules.append(package_uri)
 
         return sorted(modules)
@@ -447,7 +446,7 @@ class ApiDocWriter:
     def write_modules_api(self, modules, outdir):
         # upper-level modules
         ulms = [
-            '.'.join(m.split('.')[:2]) if m.count('.') >= 1 else m.split('.')[0]
+            ".".join(m.split(".")[:2]) if m.count(".") >= 1 else m.split(".")[0]
             for m in modules
         ]
 
@@ -464,12 +463,12 @@ class ApiDocWriter:
         written_modules = []
 
         for ulm, mods in module_by_ulm.items():
-            print('Generating docs for %s:' % ulm)
+            print("Generating docs for %s:" % ulm)
             document_head = []
             document_body = []
 
             for m in mods:
-                print('  -> ' + m)
+                print("  -> " + m)
                 head, body = self.generate_api_doc(m)
 
                 document_head.append(head)
@@ -477,7 +476,7 @@ class ApiDocWriter:
 
             out_module = ulm + self.rst_extension
             outfile = os.path.join(outdir, out_module)
-            fileobj = open(outfile, 'wt')
+            fileobj = open(outfile, "wt")
 
             fileobj.writelines(document_head + document_body)
             fileobj.close()
@@ -509,7 +508,7 @@ class ApiDocWriter:
         modules = self.discover_modules()
         self.write_modules_api(modules, outdir)
 
-    def write_index(self, outdir, froot='gen', relative_to=None):
+    def write_index(self, outdir, froot="gen", relative_to=None):
         """Make a reST API index file from written files.
 
         Parameters
@@ -529,22 +528,22 @@ class ApiDocWriter:
 
         """
         if self.written_modules is None:
-            raise ValueError('No modules written')
+            raise ValueError("No modules written")
         # Get full filename path
         path = os.path.join(outdir, froot + self.rst_extension)
         # Path written into index is relative to rootpath
         if relative_to is not None:
-            relpath = (outdir + os.path.sep).replace(relative_to + os.path.sep, '')
+            relpath = (outdir + os.path.sep).replace(relative_to + os.path.sep, "")
         else:
             relpath = outdir
-        idx = open(path, 'wt')
+        idx = open(path, "wt")
         w = idx.write
-        w('.. AUTO-GENERATED FILE -- DO NOT EDIT!\n\n')
+        w(".. AUTO-GENERATED FILE -- DO NOT EDIT!\n\n")
 
-        title = 'API Reference'
-        w(title + '\n')
-        w('=' * len(title) + '\n\n')
-        w('.. toctree::\n\n')
+        title = "API Reference"
+        w(title + "\n")
+        w("=" * len(title) + "\n\n")
+        w(".. toctree::\n\n")
         for f in self.written_modules:
-            w('   %s\n' % os.path.join(relpath, f))
+            w("   %s\n" % os.path.join(relpath, f))
         idx.close()

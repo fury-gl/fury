@@ -136,6 +136,34 @@ Since Xvfb will require an X server (we also recommend to install XQuartz packag
     export DISPLAY=:0
     xvfb-run --server-args="-screen 0 1920x1080x24" pytest -svv fury
 
+Coding style
+------------
+
+FURY uses the standard Python `PEP8 <https://peps.python.org/pep-0008/>`_
+style to ensure the readability and consistency across the toolkit. FURY has
+adopted an automated style checking framework that uses `pre-commit <https://pre-commit.com/>`_
+and `ruff <https://docs.astral.sh/ruff/>`_. Style conformance rules are
+specified in the ``ruff.toml`` configuration file. When requesting to push to
+FURY, the compliance to the set of rules is automatically checked using a
+GitHub Actions workflow.
+
+In order to check the compliance locally, developers should install the
+``[style]`` dependencies:
+
+.. code-block:: shell
+
+  pip install -e .[style]
+
+The git hook scripts need to be installed then running:
+
+.. code-block:: shell
+
+  pre-commit install
+
+``pre-commit`` will then run automatically on ``git commit``.
+
+Most text editors can be configured to check the compliance of your code with
+the set of rules specified in the ``ruff.toml`` file.
 
 Populating our Documentation
 ----------------------------

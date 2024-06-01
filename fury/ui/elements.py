@@ -1,31 +1,32 @@
 """UI components module."""
 
 __all__ = [
-    'TextBox2D',
-    'LineSlider2D',
-    'LineDoubleSlider2D',
-    'RingSlider2D',
-    'RangeSlider',
-    'Checkbox',
-    'Option',
-    'RadioButton',
-    'ComboBox2D',
-    'ListBox2D',
-    'ListBoxItem2D',
-    'FileMenu2D',
-    'DrawShape',
-    'DrawPanel',
-    'PlaybackPanel',
-    'Card2D',
-    'SpinBox'
+    "TextBox2D",
+    "LineSlider2D",
+    "LineDoubleSlider2D",
+    "RingSlider2D",
+    "RangeSlider",
+    "Checkbox",
+    "Option",
+    "RadioButton",
+    "ComboBox2D",
+    "ListBox2D",
+    "ListBoxItem2D",
+    "FileMenu2D",
+    "DrawShape",
+    "DrawPanel",
+    "PlaybackPanel",
+    "Card2D",
+    "SpinBox",
 ]
 
-import os
 from collections import OrderedDict
 from numbers import Number
+import os
 from string import printable
 from urllib.request import urlopen
 
+from PIL import Image, UnidentifiedImageError
 import numpy as np
 from PIL import Image, UnidentifiedImageError
 
@@ -77,12 +78,12 @@ class TextBox2D(UI):
         self,
         width,
         height,
-        text='Enter Text',
+        text="Enter Text",
         position=(100, 10),
         color=(0, 0, 0),
         font_size=18,
-        font_family='Arial',
-        justification='left',
+        font_family="Arial",
+        justification="left",
         bold=False,
         italic=False,
         shadow=False,
@@ -208,12 +209,12 @@ class TextBox2D(UI):
             A multi line formatted text.
 
         """
-        multi_line_text = ''
+        multi_line_text = ""
         for i, t in enumerate(text):
             multi_line_text += t
             if (i + 1) % self.width == 0:
-                multi_line_text += '\n'
-        return multi_line_text.rstrip('\n')
+                multi_line_text += "\n"
+        return multi_line_text.rstrip("\n")
 
     def handle_character(self, key, key_char):
         """Handle button events.
@@ -225,17 +226,17 @@ class TextBox2D(UI):
         character : str
 
         """
-        if key.lower() == 'return':
+        if key.lower() == "return":
             self.render_text(False)
             self.off_focus(self)
             return True
-        elif key_char != '' and key_char in printable:
+        elif key_char != "" and key_char in printable:
             self.add_character(key_char)
-        if key.lower() == 'backspace':
+        if key.lower() == "backspace":
             self.remove_character()
-        elif key.lower() == 'left':
+        elif key.lower() == "left":
             self.move_left()
-        elif key.lower() == 'right':
+        elif key.lower() == "right":
             self.move_right()
 
         self.render_text()
@@ -277,10 +278,10 @@ class TextBox2D(UI):
         character : str
 
         """
-        if len(character) > 1 and character.lower() != 'space':
+        if len(character) > 1 and character.lower() != "space":
             return
-        if character.lower() == 'space':
-            character = ' '
+        if character.lower() == "space":
+            character = " "
         self.message = (
             self.message[: self.caret_pos] + character + self.message[self.caret_pos :]
         )
@@ -331,7 +332,7 @@ class TextBox2D(UI):
         """
         if show_caret:
             ret_text = (
-                self.message[: self.caret_pos] + '_' + self.message[self.caret_pos :]
+                self.message[: self.caret_pos] + "_" + self.message[self.caret_pos :]
             )
         else:
             ret_text = self.message
@@ -348,14 +349,14 @@ class TextBox2D(UI):
 
         """
         text = self.showable_text(show_caret)
-        if text == '':
-            text = 'Enter Text'
+        if text == "":
+            text = "Enter Text"
         self.text.message = self.width_set_text(text)
 
     def edit_mode(self):
         """Turn on edit mode."""
         if self.init:
-            self.message = ''
+            self.message = ""
             self.init = False
             self.caret_pos = 0
         self.render_text()
@@ -434,10 +435,10 @@ class LineSlider2D(UI):
         outer_radius=10,
         handle_side=20,
         font_size=16,
-        orientation='horizontal',
-        text_alignment='',
-        text_template='{value:.1f} ({ratio:.0%})',
-        shape='disk',
+        orientation="horizontal",
+        text_alignment="",
+        text_template="{value:.1f} ({ratio:.0%})",
+        shape="disk",
     ):
         """Init this UI element.
 
@@ -481,24 +482,24 @@ class LineSlider2D(UI):
         self.shape = shape
         self.orientation = orientation.lower().strip()
         self.align_dict = {
-            'horizontal': ['top', 'bottom'],
-            'vertical': ['left', 'right'],
+            "horizontal": ["top", "bottom"],
+            "vertical": ["left", "right"],
         }
         self.default_color = (1, 1, 1)
         self.active_color = (0, 0, 1)
         self.alignment = text_alignment.lower()
         super(LineSlider2D, self).__init__()
 
-        if self.orientation == 'horizontal':
-            self.alignment = 'bottom' if not self.alignment else self.alignment
+        if self.orientation == "horizontal":
+            self.alignment = "bottom" if not self.alignment else self.alignment
             self.track.width = length
             self.track.height = line_width
-        elif self.orientation == 'vertical':
-            self.alignment = 'left' if not self.alignment else self.alignment
+        elif self.orientation == "vertical":
+            self.alignment = "left" if not self.alignment else self.alignment
             self.track.width = line_width
             self.track.height = length
         else:
-            raise ValueError('Unknown orientation')
+            raise ValueError("Unknown orientation")
 
         if self.alignment not in self.align_dict[self.orientation]:
             raise ValueError(
@@ -507,10 +508,10 @@ class LineSlider2D(UI):
                 )
             )
 
-        if shape == 'disk':
+        if shape == "disk":
             self.handle.inner_radius = inner_radius
             self.handle.outer_radius = outer_radius
-        elif shape == 'square':
+        elif shape == "square":
             self.handle.width = handle_side
             self.handle.height = handle_side
         self.center = center
@@ -539,14 +540,14 @@ class LineSlider2D(UI):
         self.track.color = (1, 0, 0)
 
         # Slider's handle
-        if self.shape == 'disk':
+        if self.shape == "disk":
             self.handle = Disk2D(outer_radius=1)
-        elif self.shape == 'square':
+        elif self.shape == "square":
             self.handle = Rectangle2D(size=(1, 1))
         self.handle.color = self.default_color
 
         # Slider Text
-        self.text = TextBlock2D(justification='center', vertical_justification='top')
+        self.text = TextBlock2D(justification="center", vertical_justification="top")
 
         # Add default events listener for this UI component.
         self.track.on_left_mouse_button_pressed = self.track_click_callback
@@ -575,7 +576,7 @@ class LineSlider2D(UI):
         # Consider the handle's size when computing the slider's size.
         width = None
         height = None
-        if self.orientation == 'horizontal':
+        if self.orientation == "horizontal":
             width = self.track.width + self.handle.size[0]
             height = max(self.track.height, self.handle.size[1])
         else:
@@ -595,7 +596,7 @@ class LineSlider2D(UI):
         """
         # Offset the slider line by the handle's radius.
         track_position = coords + self.handle.size / 2.0
-        if self.orientation == 'horizontal':
+        if self.orientation == "horizontal":
             # Offset the slider line height by half the slider line width.
             track_position[1] -= self.track.size[1] / 2.0
         else:
@@ -606,14 +607,14 @@ class LineSlider2D(UI):
         self.handle.position = self.handle.position.astype(float)
         self.handle.position += coords - self.position
         # Position the text below the handle.
-        if self.orientation == 'horizontal':
-            align = 35 if self.alignment == 'top' else -10
+        if self.orientation == "horizontal":
+            align = 35 if self.alignment == "top" else -10
             self.text.position = (
                 self.handle.center[0],
                 self.handle.position[1] + align,
             )
         else:
-            align = 70 if self.alignment == 'right' else -35
+            align = 70 if self.alignment == "right" else -35
             self.text.position = (
                 self.handle.position[0] + align,
                 self.handle.center[1] + 2,
@@ -645,7 +646,7 @@ class LineSlider2D(UI):
 
         """
         # Move slider disk.
-        if self.orientation == 'horizontal':
+        if self.orientation == "horizontal":
             x_position = position[0]
             x_position = max(x_position, self.left_x_position)
             x_position = min(x_position, self.right_x_position)
@@ -689,17 +690,17 @@ class LineSlider2D(UI):
         disk_position_x = None
         disk_position_y = None
 
-        if self.orientation == 'horizontal':
+        if self.orientation == "horizontal":
             length = float(self.right_x_position - self.left_x_position)
             length = np.round(length, decimals=6)
             if length != self.track.width:
-                raise ValueError('Disk position outside the slider line')
+                raise ValueError("Disk position outside the slider line")
             disk_position_x = self.handle.center[0]
             self._ratio = (disk_position_x - self.left_x_position) / length
         else:
             length = float(self.top_y_position - self.bottom_y_position)
             if length != self.track.height:
-                raise ValueError('Disk position outside the slider line')
+                raise ValueError("Disk position outside the slider line")
             disk_position_y = self.handle.center[1]
             self._ratio = (disk_position_y - self.bottom_y_position) / length
 
@@ -712,7 +713,7 @@ class LineSlider2D(UI):
         self.text.message = text
 
         # Move the text below the slider's handle.
-        if self.orientation == 'horizontal':
+        if self.orientation == "horizontal":
             self.text.position = (disk_position_x, self.text.position[1])
         else:
             self.text.position = (self.text.position[0], disk_position_y)
@@ -811,9 +812,9 @@ class LineDoubleSlider2D(UI):
         min_value=0,
         max_value=100,
         font_size=16,
-        text_template='{value:.1f}',
-        orientation='horizontal',
-        shape='disk',
+        text_template="{value:.1f}",
+        orientation="horizontal",
+        shape="disk",
     ):
         """Init this UI element.
 
@@ -857,22 +858,22 @@ class LineDoubleSlider2D(UI):
         self.orientation = orientation.lower()
         super(LineDoubleSlider2D, self).__init__()
 
-        if self.orientation == 'horizontal':
+        if self.orientation == "horizontal":
             self.track.width = length
             self.track.height = line_width
-        elif self.orientation == 'vertical':
+        elif self.orientation == "vertical":
             self.track.width = line_width
             self.track.height = length
         else:
-            raise ValueError('Unknown orientation')
+            raise ValueError("Unknown orientation")
 
         self.center = center
-        if shape == 'disk':
+        if shape == "disk":
             self.handles[0].inner_radius = inner_radius
             self.handles[0].outer_radius = outer_radius
             self.handles[1].inner_radius = inner_radius
             self.handles[1].outer_radius = outer_radius
-        elif shape == 'square':
+        elif shape == "square":
             self.handles[0].width = handle_side
             self.handles[0].height = handle_side
             self.handles[1].width = handle_side
@@ -910,10 +911,10 @@ class LineDoubleSlider2D(UI):
 
         # Handles
         self.handles = []
-        if self.shape == 'disk':
+        if self.shape == "disk":
             self.handles.append(Disk2D(outer_radius=1))
             self.handles.append(Disk2D(outer_radius=1))
-        elif self.shape == 'square':
+        elif self.shape == "square":
             self.handles.append(Rectangle2D(size=(1, 1)))
             self.handles.append(Rectangle2D(size=(1, 1)))
         self.handles[0].color = self.default_color
@@ -921,8 +922,8 @@ class LineDoubleSlider2D(UI):
 
         # Slider Text
         self.text = [
-            TextBlock2D(justification='center', vertical_justification='top'),
-            TextBlock2D(justification='center', vertical_justification='top'),
+            TextBlock2D(justification="center", vertical_justification="top"),
+            TextBlock2D(justification="center", vertical_justification="top"),
         ]
 
         # Add default events listener for this UI component.
@@ -960,7 +961,7 @@ class LineDoubleSlider2D(UI):
         # Consider the handle's size when computing the slider's size.
         width = None
         height = None
-        if self.orientation == 'horizontal':
+        if self.orientation == "horizontal":
             width = self.track.width + self.handles[0].size[0]
             height = max(self.track.height, self.handles[0].size[1])
         else:
@@ -980,7 +981,7 @@ class LineDoubleSlider2D(UI):
         """
         # Offset the slider line by the handle's radius.
         track_position = coords
-        if self.orientation == 'horizontal':
+        if self.orientation == "horizontal":
             # Offset the slider line height by half the slider line width.
             track_position[1] -= self.track.size[1] / 2.0
         else:
@@ -995,7 +996,7 @@ class LineDoubleSlider2D(UI):
         self.handles[0].position += coords - self.position
         self.handles[1].position += coords - self.position
 
-        if self.orientation == 'horizontal':
+        if self.orientation == "horizontal":
             # Position the text below the handles.
             self.text[0].position = (
                 self.handles[0].center[0],
@@ -1051,7 +1052,7 @@ class LineDoubleSlider2D(UI):
         ratio : float
 
         """
-        if self.orientation == 'horizontal':
+        if self.orientation == "horizontal":
             return self.left_x_position + ratio * self.track.width
         return self.bottom_y_position + ratio * self.track.height
 
@@ -1063,7 +1064,7 @@ class LineDoubleSlider2D(UI):
         coord : float
 
         """
-        if self.orientation == 'horizontal':
+        if self.orientation == "horizontal":
             return (coord - self.left_x_position) / float(self.track.width)
         return (coord - self.bottom_y_position) / float(self.track.height)
 
@@ -1089,7 +1090,7 @@ class LineDoubleSlider2D(UI):
             The index of disk being moved.
 
         """
-        if self.orientation == 'horizontal':
+        if self.orientation == "horizontal":
             x_position = position[0]
 
             if disk_number == 0 and x_position >= self.handles[1].center[0]:
@@ -1295,7 +1296,7 @@ class LineDoubleSlider2D(UI):
 
         """
         # Compute the ratio determined by the position of the slider disk.
-        if self.orientation == 'horizontal':
+        if self.orientation == "horizontal":
             self._ratio[disk_number] = self.coord_to_ratio(
                 self.handles[disk_number].center[0]
             )
@@ -1311,7 +1312,7 @@ class LineDoubleSlider2D(UI):
         text = self.format_text(disk_number)
         self.text[disk_number].message = text
 
-        if self.orientation == 'horizontal':
+        if self.orientation == "horizontal":
             self.text[disk_number].position = (
                 self.handles[disk_number].center[0],
                 self.text[disk_number].position[1],
@@ -1399,7 +1400,7 @@ class RingSlider2D(UI):
         handle_inner_radius=0,
         handle_outer_radius=10,
         font_size=16,
-        text_template='{ratio:.0%}',
+        text_template="{ratio:.0%}",
     ):
         """Init this UI element.
 
@@ -1472,8 +1473,7 @@ class RingSlider2D(UI):
         self.handle.color = self.default_color
 
         # Slider Text
-        self.text = TextBlock2D(justification='center',
-                                vertical_justification='middle')
+        self.text = TextBlock2D(justification="center", vertical_justification="middle")
 
         # Add default events listener for this UI component.
         self.track.on_left_mouse_button_pressed = self.track_click_callback
@@ -1678,9 +1678,9 @@ class RangeSlider(UI):
         max_value=100,
         font_size=16,
         range_precision=1,
-        orientation='horizontal',
+        orientation="horizontal",
         value_precision=2,
-        shape='disk',
+        shape="disk",
     ):
         """Init this class instance.
 
@@ -1728,8 +1728,8 @@ class RangeSlider(UI):
         self.shape = shape
         self.orientation = orientation.lower()
 
-        self.range_slider_text_template = '{value:.' + str(range_precision) + 'f}'
-        self.value_slider_text_template = '{value:.' + str(value_precision) + 'f}'
+        self.range_slider_text_template = "{value:." + str(range_precision) + "f}"
+        self.value_slider_text_template = "{value:." + str(value_precision) + "f}"
 
         self.range_slider_center = range_slider_center
         self.value_slider_center = value_slider_center
@@ -1868,15 +1868,15 @@ class Option(UI):
         """Setup this UI component."""
         # Option's button
         self.button_icons = []
-        self.button_icons.append(('unchecked', read_viz_icons(fname='stop2.png')))
-        self.button_icons.append(('checked', read_viz_icons(fname='checkmark.png')))
+        self.button_icons.append(("unchecked", read_viz_icons(fname="stop2.png")))
+        self.button_icons.append(("checked", read_viz_icons(fname="checkmark.png")))
         self.button = Button2D(icon_fnames=self.button_icons, size=self.button_size)
 
         self.text = TextBlock2D(text=self.label, font_size=self.font_size)
 
         # Display initial state
         if self.checked:
-            self.button.set_icon_by_name('checked')
+            self.button.set_icon_by_name("checked")
 
         # Add callbacks
         self.button.on_left_mouse_button_clicked = self.toggle
@@ -1911,7 +1911,7 @@ class Option(UI):
             Absolute pixel coordinates (x, y).
 
         """
-        num_newlines = self.label.count('\n')
+        num_newlines = self.label.count("\n")
         self.button.position = coords + (0, num_newlines * self.font_size * 0.5)
         offset = (self.button.size[0] + self.button_label_gap, 0)
         self.text.position = coords + offset
@@ -1927,11 +1927,11 @@ class Option(UI):
 
     def select(self):
         self.checked = True
-        self.button.set_icon_by_name('checked')
+        self.button.set_icon_by_name("checked")
 
     def deselect(self):
         self.checked = False
-        self.button.set_icon_by_name('unchecked')
+        self.button.set_icon_by_name("unchecked")
 
 
 class Checkbox(UI):
@@ -1955,7 +1955,7 @@ class Checkbox(UI):
         checked_labels=(),
         padding=1,
         font_size=18,
-        font_family='Arial',
+        font_family="Arial",
         position=(0, 0),
     ):
         """Init this class instance.
@@ -1990,7 +1990,6 @@ class Checkbox(UI):
         self.options = OrderedDict()
         button_y = self.position[1]
         for label in self.labels:
-
             option = Option(
                 label=label,
                 font_size=self.font_size,
@@ -2001,7 +2000,7 @@ class Checkbox(UI):
             line_spacing = option.text.actor.GetTextProperty().GetLineSpacing()
             button_y = (
                 button_y
-                + self.font_size * (label.count('\n') + 1) * (line_spacing + 0.1)
+                + self.font_size * (label.count("\n") + 1) * (line_spacing + 0.1)
                 + self.padding
             )
             self.options[label] = option
@@ -2063,7 +2062,7 @@ class Checkbox(UI):
             button_y = (
                 button_y
                 + self.font_size
-                * (self.labels[option_no].count('\n') + 1)
+                * (self.labels[option_no].count("\n") + 1)
                 * (line_spacing + 0.1)
                 + self.padding
             )
@@ -2100,7 +2099,7 @@ class RadioButton(Checkbox):
         checked_labels,
         padding=1,
         font_size=18,
-        font_family='Arial',
+        font_family="Arial",
         position=(0, 0),
     ):
         """Init class instance.
@@ -2123,7 +2122,7 @@ class RadioButton(Checkbox):
 
         """
         if len(checked_labels) > 1:
-            err_msg = 'Only one option can be pre-selected for radio buttons.'
+            err_msg = "Only one option can be pre-selected for radio buttons."
             raise ValueError(err_msg)
 
         super(RadioButton, self).__init__(
@@ -2160,10 +2159,10 @@ class ComboBox2D(UI):
 
     def __init__(
         self,
-        items=[],
+        items=None,
         position=(0, 0),
         size=(300, 200),
-        placeholder='Choose selection...',
+        placeholder="Choose selection...",
         draggable=True,
         selection_text_color=(0, 0, 0),
         selection_bg_color=(1, 1, 1),
@@ -2214,6 +2213,9 @@ class ComboBox2D(UI):
             Distance between drop down menu's items in pixels.
 
         """
+        if items is None:
+            items = []
+
         self.items = items.copy()
         self.font_size = font_size
         self.reverse_scrolling = reverse_scrolling
@@ -2238,8 +2240,8 @@ class ComboBox2D(UI):
         self.drop_button_size = (int(0.1 * size[0]), int(0.1 * size[1]))
 
         self._icon_files = [
-            ('left', read_viz_icons(fname='circle-left.png')),
-            ('down', read_viz_icons(fname='circle-down.png')),
+            ("left", read_viz_icons(fname="circle-left.png")),
+            ("down", read_viz_icons(fname="circle-down.png")),
         ]
 
         super(ComboBox2D, self).__init__()
@@ -2319,19 +2321,17 @@ class ComboBox2D(UI):
         for slot in self.drop_down_menu.slots:
             slot.add_callback(
                 slot.textblock.actor,
-                'LeftButtonPressEvent',
+                "LeftButtonPressEvent",
                 self.select_option_callback,
             )
 
             slot.add_callback(
                 slot.background.actor,
-                'LeftButtonPressEvent',
+                "LeftButtonPressEvent",
                 self.select_option_callback,
             )
 
-        self.drop_down_button.on_left_mouse_button_clicked = (
-            self.menu_toggle_callback
-        )
+        self.drop_down_button.on_left_mouse_button_clicked = self.menu_toggle_callback
 
         # Offer some standard hooks to the user.
         self.on_change = lambda ui: None
@@ -2373,8 +2373,10 @@ class ComboBox2D(UI):
 
         """
         self.panel.position = coords
-        self.panel.position = (self.panel.position[0],
-                               self.panel.position[1] - self.drop_menu_size[1])
+        self.panel.position = (
+            self.panel.position[0],
+            self.panel.position[1] - self.drop_menu_size[1],
+        )
 
     def _add_to_scene(self, scene):
         """Add all subcomponents or VTK props that compose this UI component.
@@ -2419,7 +2421,7 @@ class ComboBox2D(UI):
             elif isinstance(item, (str, Number)):
                 self.items.append(str(item))
             else:
-                raise TypeError('Invalid item instance {}'.format(type(item)))
+                raise TypeError("Invalid item instance {}".format(type(item)))
 
         self.drop_down_menu.update_scrollbar()
         if not self._menu_visibility:
@@ -2630,8 +2632,8 @@ class ListBox2D(UI):
         self.scroll_bar.on_left_mouse_button_dragged = self.scroll_drag_callback
 
         # Handle mouse wheel events on the panel.
-        up_event = 'MouseWheelForwardEvent'
-        down_event = 'MouseWheelBackwardEvent'
+        up_event = "MouseWheelForwardEvent"
+        down_event = "MouseWheelBackwardEvent"
         if self.reverse_scrolling:
             up_event, down_event = down_event, up_event  # Swap events
 
@@ -2951,15 +2953,15 @@ class ListBoxItem2D(UI):
         """
         self.background = Rectangle2D()
         self.textblock = TextBlock2D(
-            justification='left', vertical_justification='middle'
+            justification="left", vertical_justification="middle"
         )
 
         # Add default events listener for this UI component.
         self.add_callback(
-            self.textblock.actor, 'LeftButtonPressEvent', self.left_button_clicked
+            self.textblock.actor, "LeftButtonPressEvent", self.left_button_clicked
         )
         self.add_callback(
-            self.background.actor, 'LeftButtonPressEvent', self.left_button_clicked
+            self.background.actor, "LeftButtonPressEvent", self.left_button_clicked
         )
 
     def _get_actors(self):
@@ -3014,7 +3016,7 @@ class ListBoxItem2D(UI):
     @element.setter
     def element(self, element):
         self._element = element
-        self.textblock.message = '' if self._element is None else str(element)
+        self.textblock.message = "" if self._element is None else str(element)
 
     def left_button_clicked(self, i_ren, _obj, _list_box_item):
         """Handle left click for this UI element.
@@ -3089,7 +3091,7 @@ class FileMenu2D(UI):
         self.multiselection = multiselection
         self.reverse_scrolling = reverse_scrolling
         self.line_spacing = line_spacing
-        self.extensions = extensions or ['*']
+        self.extensions = extensions or ["*"]
         self.current_directory = directory_path
         self.menu_size = size
         self.directory_contents = []
@@ -3116,12 +3118,12 @@ class FileMenu2D(UI):
         )
 
         self.add_callback(
-            self.listbox.scroll_bar.actor, 'MouseMoveEvent', self.scroll_callback
+            self.listbox.scroll_bar.actor, "MouseMoveEvent", self.scroll_callback
         )
 
         # Handle mouse wheel events on the panel.
-        up_event = 'MouseWheelForwardEvent'
-        down_event = 'MouseWheelBackwardEvent'
+        up_event = "MouseWheelForwardEvent"
+        down_event = "MouseWheelBackwardEvent"
         if self.reverse_scrolling:
             up_event, down_event = down_event, up_event  # Swap events
 
@@ -3140,12 +3142,12 @@ class FileMenu2D(UI):
             self.add_callback(slot.textblock.actor, down_event, self.scroll_callback)
             slot.add_callback(
                 slot.textblock.actor,
-                'LeftButtonPressEvent',
+                "LeftButtonPressEvent",
                 self.directory_click_callback,
             )
             slot.add_callback(
                 slot.background.actor,
-                'LeftButtonPressEvent',
+                "LeftButtonPressEvent",
                 self.directory_click_callback,
             )
 
@@ -3193,11 +3195,11 @@ class FileMenu2D(UI):
 
         directory_names = self.get_directory_names()
         for directory_name in directory_names:
-            all_file_names.append((directory_name, 'directory'))
+            all_file_names.append((directory_name, "directory"))
 
         file_names = self.get_file_names()
         for file_name in file_names:
-            all_file_names.append((file_name, 'file'))
+            all_file_names.append((file_name, "file"))
 
         return all_file_names
 
@@ -3212,11 +3214,11 @@ class FileMenu2D(UI):
         """
         # A list of directory names in the current directory
         directory_names = []
-        for (_, dirnames, _) in os.walk(self.current_directory):
+        for _, dirnames, _ in os.walk(self.current_directory):
             directory_names += dirnames
             break
         directory_names.sort(key=lambda s: s.lower())
-        directory_names.insert(0, '../')
+        directory_names.insert(0, "../")
         return directory_names
 
     def get_file_names(self):
@@ -3229,16 +3231,18 @@ class FileMenu2D(UI):
 
         """
         # A list of file names with extension in the current directory
-        for (_, _, files) in os.walk(self.current_directory):
+        files = []
+        for _, _, f in os.walk(self.current_directory):
+            files += f
             break
 
         file_names = []
-        if '*' in self.extensions or '' in self.extensions:
+        if "*" in self.extensions or "" in self.extensions:
             file_names = files
         else:
             for ext in self.extensions:
                 for file in files:
-                    if file.endswith('.' + ext):
+                    if file.endswith("." + ext):
                         file_names.append(file)
         file_names.sort(key=lambda s: s.lower())
         return file_names
@@ -3251,9 +3255,9 @@ class FileMenu2D(UI):
             list_idx = min(
                 self.listbox.view_offset + idx, len(self.directory_contents) - 1
             )
-            if self.directory_contents[list_idx][1] == 'directory':
+            if self.directory_contents[list_idx][1] == "directory":
                 slot.textblock.color = (0, 0.6, 0)
-            elif self.directory_contents[list_idx][1] == 'file':
+            elif self.directory_contents[list_idx][1] == "file":
                 slot.textblock.color = (0, 0, 0.7)
 
     def scroll_callback(self, i_ren, _obj, _filemenu_item):
@@ -3282,7 +3286,7 @@ class FileMenu2D(UI):
         listboxitem: :class:`ListBoxItem2D`
 
         """
-        if (listboxitem.element, 'directory') in self.directory_contents:
+        if (listboxitem.element, "directory") in self.directory_contents:
             new_directory_path = os.path.join(
                 self.current_directory, listboxitem.element
             )
@@ -3329,14 +3333,14 @@ class DrawShape(UI):
 
         Create a Shape.
         """
-        if self.shape_type == 'line':
+        if self.shape_type == "line":
             self.shape = Rectangle2D(size=(3, 3))
-        elif self.shape_type == 'quad':
+        elif self.shape_type == "quad":
             self.shape = Rectangle2D(size=(3, 3))
-        elif self.shape_type == 'circle':
+        elif self.shape_type == "circle":
             self.shape = Disk2D(outer_radius=2)
         else:
-            raise IOError('Unknown shape type: {}.'.format(self.shape_type))
+            raise IOError("Unknown shape type: {}.".format(self.shape_type))
 
         self.shape.on_left_mouse_button_pressed = self.left_button_pressed
         self.shape.on_left_mouse_button_dragged = self.left_button_dragged
@@ -3369,7 +3373,7 @@ class DrawShape(UI):
             Absolute pixel coordinates (x, y).
 
         """
-        if self.shape_type == 'circle':
+        if self.shape_type == "circle":
             self.shape.center = coords
         else:
             self.shape.position = coords
@@ -3384,7 +3388,7 @@ class DrawShape(UI):
 
         """
         new_center = self.clamp_position(center=center_position)
-        self.drawpanel.canvas.update_element(self, new_center, 'center')
+        self.drawpanel.canvas.update_element(self, new_center, "center")
         self.cal_bounding_box()
 
     @property
@@ -3432,7 +3436,7 @@ class DrawShape(UI):
             Value by which the vertices are rotated in radian.
 
         """
-        if self.shape_type == 'circle':
+        if self.shape_type == "circle":
             return
         points_arr = vertices_from_actor(self.shape.actor)
         new_points_arr = rotate_2d(points_arr, angle)
@@ -3477,15 +3481,15 @@ class DrawShape(UI):
 
     def resize(self, size):
         """Resize the UI."""
-        if self.shape_type == 'line':
+        if self.shape_type == "line":
             hyp = np.hypot(size[0], size[1])
             self.shape.resize((hyp, 3))
             self.rotate(angle=np.arctan2(size[1], size[0]))
 
-        elif self.shape_type == 'quad':
+        elif self.shape_type == "quad":
             self.shape.resize(size)
 
-        elif self.shape_type == 'circle':
+        elif self.shape_type == "circle":
             hyp = np.hypot(size[0], size[1])
             if self.max_size and hyp > self.max_size:
                 hyp = self.max_size
@@ -3500,14 +3504,14 @@ class DrawShape(UI):
 
     def left_button_pressed(self, i_ren, _obj, shape):
         mode = self.drawpanel.current_mode
-        if mode == 'selection':
+        if mode == "selection":
             self.drawpanel.update_shape_selection(self)
 
             click_pos = np.array(i_ren.event.position)
             self._drag_offset = click_pos - self.center
             self.drawpanel.show_rotation_slider()
             i_ren.event.abort()
-        elif mode == 'delete':
+        elif mode == "delete":
             self.remove()
         else:
             self.drawpanel.left_button_pressed(i_ren, _obj, self.drawpanel)
@@ -3554,7 +3558,7 @@ class DrawPanel(UI):
         self.current_mode = None
 
         if is_draggable:
-            self.current_mode = 'selection'
+            self.current_mode = "selection"
 
         self.shape_list = []
         self.current_shape = None
@@ -3572,11 +3576,11 @@ class DrawPanel(UI):
         # Convert mode_data into a private variable and make it read-only
         # Then add the ability to insert user-defined mode
         mode_data = {
-            'selection': ['selection.png', 'selection-pressed.png'],
-            'line': ['line.png', 'line-pressed.png'],
-            'quad': ['quad.png', 'quad-pressed.png'],
-            'circle': ['circle.png', 'circle-pressed.png'],
-            'delete': ['delete.png', 'delete-pressed.png'],
+            "selection": ["selection.png", "selection-pressed.png"],
+            "line": ["line.png", "line-pressed.png"],
+            "quad": ["quad.png", "quad-pressed.png"],
+            "circle": ["circle.png", "circle-pressed.png"],
+            "delete": ["delete.png", "delete-pressed.png"],
         }
 
         padding = 5
@@ -3588,9 +3592,9 @@ class DrawPanel(UI):
 
         for mode, fname in mode_data.items():
             icon_files = []
-            icon_files.append((mode, read_viz_icons(style='new_icons', fname=fname[0])))
+            icon_files.append((mode, read_viz_icons(style="new_icons", fname=fname[0])))
             icon_files.append(
-                (mode + '-pressed', read_viz_icons(style='new_icons', fname=fname[1]))
+                (mode + "-pressed", read_viz_icons(style="new_icons", fname=fname[1]))
             )
             btn = Button2D(icon_fnames=icon_files)
 
@@ -3606,12 +3610,13 @@ class DrawPanel(UI):
         self.canvas.add_element(self.mode_panel, (0, -mode_panel_size[1]))
 
         self.mode_text = TextBlock2D(
-            text='Select appropriate drawing mode using below icon'
+            text="Select appropriate drawing mode using below icon"
         )
         self.canvas.add_element(self.mode_text, (0.0, 1.0))
 
-        self.rotation_slider = RingSlider2D(initial_value=0,
-                                            text_template="{angle:5.1f}°")
+        self.rotation_slider = RingSlider2D(
+            initial_value=0, text_template="{angle:5.1f}°"
+        )
         self.rotation_slider.set_visibility(False)
 
         def rotate_shape(slider):
@@ -3623,7 +3628,8 @@ class DrawPanel(UI):
             self.current_shape.rotate(np.deg2rad(rotation_angle))
             self.current_shape.rotation = slider.value
             self.current_shape.update_shape_position(
-                current_center - self.canvas.position)
+                current_center - self.canvas.position
+            )
 
         self.rotation_slider.on_moving_slider = rotate_shape
 
@@ -3655,9 +3661,10 @@ class DrawPanel(UI):
 
         """
         self.canvas.position = coords + [0, self.mode_panel.size[1]]
-        slider_position = self.canvas.position + \
-            [self.canvas.size[0] - self.rotation_slider.size[0]/2,
-                self.rotation_slider.size[1]/2]
+        slider_position = self.canvas.position + [
+            self.canvas.size[0] - self.rotation_slider.size[0] / 2,
+            self.rotation_slider.size[1] / 2,
+        ]
         self.rotation_slider.center = slider_position
 
     def resize(self, size):
@@ -3673,7 +3680,7 @@ class DrawPanel(UI):
         self.update_button_icons(mode)
         self._current_mode = mode
         if mode is not None:
-            self.mode_text.message = f'Mode: {mode}'
+            self.mode_text.message = f"Mode: {mode}"
 
     def cal_min_boundary_distance(self, position):
         """Calculate minimum distance between the current position and canvas boundary.
@@ -3711,7 +3718,7 @@ class DrawPanel(UI):
         shape = DrawShape(
             shape_type=shape_type, drawpanel=self, position=current_position
         )
-        if shape_type == 'circle':
+        if shape_type == "circle":
             shape.max_size = self.cal_min_boundary_distance(current_position)
         self.shape_list.append(shape)
         self._scene.add(shape)
@@ -3739,8 +3746,7 @@ class DrawPanel(UI):
                 shape.is_selected = False
 
     def show_rotation_slider(self):
-        """Display the  RingSlider2D to allow rotation of shape from the center.
-        """
+        """Display the  RingSlider2D to allow rotation of shape from the center."""
         self._scene.rm(*self.rotation_slider.actors)
         self.rotation_slider.add_to_scene(self._scene)
         self.rotation_slider.set_visibility(True)
@@ -3781,11 +3787,11 @@ class DrawPanel(UI):
         )
 
     def handle_mouse_click(self, position):
-        if self.current_mode == 'selection':
+        if self.current_mode == "selection":
             if self.is_draggable:
                 self._drag_offset = position - self.position
             self.current_shape.is_selected = False
-        if self.current_mode in ['line', 'quad', 'circle']:
+        if self.current_mode in ["line", "quad", "circle"]:
             self.draw_shape(self.current_mode, position)
 
     def left_button_pressed(self, i_ren, _obj, element):
@@ -3793,11 +3799,11 @@ class DrawPanel(UI):
         i_ren.force_render()
 
     def handle_mouse_drag(self, position):
-        if self.is_draggable and self.current_mode == 'selection':
+        if self.is_draggable and self.current_mode == "selection":
             if self._drag_offset is not None:
                 new_position = position - self._drag_offset
                 self.position = new_position
-        if self.current_mode in ['line', 'quad', 'circle']:
+        if self.current_mode in ["line", "quad", "circle"]:
             self.resize_shape(position)
 
     def left_button_dragged(self, i_ren, _obj, element):
@@ -3836,31 +3842,31 @@ class PlaybackPanel(UI):
         """Setup this Panel component."""
         self.time_text = TextBlock2D()
         self.speed_text = TextBlock2D(
-            text='1',
+            text="1",
             font_size=21,
             color=(0.2, 0.2, 0.2),
             bold=True,
-            justification='center',
-            vertical_justification='middle',
+            justification="center",
+            vertical_justification="middle",
         )
 
         self.panel = Panel2D(
             size=(190, 30),
             color=(1, 1, 1),
-            align='right',
+            align="right",
             has_border=True,
             border_color=(0, 0.3, 0),
             border_width=2,
         )
 
         play_pause_icons = [
-            ('play', read_viz_icons(fname='play3.png')),
-            ('pause', read_viz_icons(fname='pause2.png')),
+            ("play", read_viz_icons(fname="play3.png")),
+            ("pause", read_viz_icons(fname="pause2.png")),
         ]
 
         loop_icons = [
-            ('once', read_viz_icons(fname='checkmark.png')),
-            ('loop', read_viz_icons(fname='infinite.png')),
+            ("once", read_viz_icons(fname="checkmark.png")),
+            ("loop", read_viz_icons(fname="infinite.png")),
         ]
 
         self._play_pause_btn = Button2D(icon_fnames=play_pause_icons)
@@ -3868,25 +3874,25 @@ class PlaybackPanel(UI):
         self._loop_btn = Button2D(icon_fnames=loop_icons)
 
         self._stop_btn = Button2D(
-            icon_fnames=[('stop', read_viz_icons(fname='stop2.png'))]
+            icon_fnames=[("stop", read_viz_icons(fname="stop2.png"))]
         )
 
         self._speed_up_btn = Button2D(
-            icon_fnames=[('plus', read_viz_icons(fname='plus.png'))], size=(15, 15)
+            icon_fnames=[("plus", read_viz_icons(fname="plus.png"))], size=(15, 15)
         )
 
         self._slow_down_btn = Button2D(
-            icon_fnames=[('minus', read_viz_icons(fname='minus.png'))], size=(15, 15)
+            icon_fnames=[("minus", read_viz_icons(fname="minus.png"))], size=(15, 15)
         )
 
         self._progress_bar = LineSlider2D(
             initial_value=0,
-            orientation='horizontal',
+            orientation="horizontal",
             min_value=0,
             max_value=100,
-            text_alignment='top',
+            text_alignment="top",
             length=590,
-            text_template='',
+            text_template="",
             line_width=9,
         )
 
@@ -3953,30 +3959,30 @@ class PlaybackPanel(UI):
     def play(self):
         """Play the playback"""
         self._playing = True
-        self._play_pause_btn.set_icon_by_name('pause')
+        self._play_pause_btn.set_icon_by_name("pause")
         self.on_play()
 
     def stop(self):
         """Stop the playback"""
         self._playing = False
-        self._play_pause_btn.set_icon_by_name('play')
+        self._play_pause_btn.set_icon_by_name("play")
         self.on_stop()
 
     def pause(self):
         """Pause the playback"""
         self._playing = False
-        self._play_pause_btn.set_icon_by_name('play')
+        self._play_pause_btn.set_icon_by_name("play")
         self.on_pause()
 
     def loop(self):
         """Set repeating mode to loop."""
         self._loop = True
-        self._loop_btn.set_icon_by_name('loop')
+        self._loop_btn.set_icon_by_name("loop")
 
     def play_once(self):
         """Set repeating mode to repeat once."""
         self._loop = False
-        self._loop_btn.set_icon_by_name('once')
+        self._loop_btn.set_icon_by_name("once")
 
     @property
     def final_time(self):
@@ -4057,11 +4063,11 @@ class PlaybackPanel(UI):
         t = np.clip(t, 0, self.final_time)
         if self.final_time < 3600:
             m, s = divmod(t, 60)
-            t_str = r'%02d:%05.2f' % (m, s)
+            t_str = r"%02d:%05.2f" % (m, s)
         else:
             m, s = divmod(t, 60)
             h, m = divmod(m, 60)
-            t_str = r'%02d:%02d:%02d' % (h, m, s)
+            t_str = r"%02d:%02d:%02d" % (h, m, s)
         self.time_text.message = t_str
 
     @property
@@ -4089,7 +4095,7 @@ class PlaybackPanel(UI):
         if speed <= 0:
             speed = 0.01
         self._speed = speed
-        speed_str = f'{speed}'.strip('0').rstrip('.')
+        speed_str = f"{speed}".strip("0").rstrip(".")
         self.speed_text.font_size = 21 if 0.01 <= speed < 100 else 14
         self.speed_text.message = speed_str
 
@@ -4180,12 +4186,24 @@ class Card2D(UI):
 
     """
 
-    def __init__(self, image_path, body_text="", draggable=True,
-                 title_text="", padding=10, position=(0, 0),
-                 size=(400, 400), image_scale=0.5, bg_color=(0.5, 0.5, 0.5),
-                 bg_opacity=1, title_color=(0., 0., 0.),
-                 body_color=(0., 0., 0.), border_color=(1., 1., 1.),
-                 border_width=0, maintain_aspect=False):
+    def __init__(
+        self,
+        image_path,
+        body_text="",
+        draggable=True,
+        title_text="",
+        padding=10,
+        position=(0, 0),
+        size=(400, 400),
+        image_scale=0.5,
+        bg_color=(0.5, 0.5, 0.5),
+        bg_opacity=1,
+        title_color=(0.0, 0.0, 0.0),
+        body_color=(0.0, 0.0, 0.0),
+        border_color=(1.0, 1.0, 1.0),
+        border_width=0,
+        maintain_aspect=False,
+    ):
         """Parameters
         ----------
         image_path: str
@@ -4223,10 +4241,11 @@ class Card2D(UI):
         """
         self.image_path = image_path
         self._basename = os.path.basename(self.image_path)
-        self._extension = self._basename.split('.')[-1]
-        if self._extension not in ['jpg', 'jpeg', 'png']:
+        self._extension = self._basename.split(".")[-1]
+        if self._extension not in ["jpg", "jpeg", "png"]:
             raise UnidentifiedImageError(
-                f'Image extension {self._extension} not supported')
+                f"Image extension {self._extension} not supported"
+            )
 
         self.body_text = body_text
         self.title_text = title_text
@@ -4247,8 +4266,7 @@ class Card2D(UI):
         if self.maintain_aspect:
             self._true_image_size = Image.open(urlopen(self.image_path)).size
 
-        self._image_size = (self.card_size[0], self.card_size[1] *
-                            self.image_scale)
+        self._image_size = (self.card_size[0], self.card_size[1] * self.image_scale)
 
         self.border_width = border_width
         self.has_border = bool(border_width)
@@ -4257,8 +4275,10 @@ class Card2D(UI):
         self.position = position
 
         if self.maintain_aspect:
-            self._new_size = (self._true_image_size[0],
-                              self._true_image_size[1] // self.image_scale)
+            self._new_size = (
+                self._true_image_size[0],
+                self._true_image_size[1] // self.image_scale,
+            )
             self.resize(self._new_size)
         else:
             self.resize(size)
@@ -4269,41 +4289,43 @@ class Card2D(UI):
         Create the title and body.
         Create a Panel2D widget to hold image, title, body.
         """
-        self.image = ImageContainer2D(img_path=self.image_path,
-                                      size=self._image_size)
+        self.image = ImageContainer2D(img_path=self.image_path, size=self._image_size)
 
-        self.body_box = TextBlock2D(text=self.body_text,
-                                    color=self.body_color)
+        self.body_box = TextBlock2D(text=self.body_text, color=self.body_color)
 
-        self.title_box = TextBlock2D(text=self.title_text, bold=True,
-                                     color=self.title_color)
+        self.title_box = TextBlock2D(
+            text=self.title_text, bold=True, color=self.title_color
+        )
 
-        self.panel = Panel2D(self.card_size, color=self.bg_color,
-                             opacity=self.bg_opacity,
-                             border_color=self.border_color,
-                             border_width=self.border_width,
-                             has_border=self.has_border)
+        self.panel = Panel2D(
+            self.card_size,
+            color=self.bg_color,
+            opacity=self.bg_opacity,
+            border_color=self.border_color,
+            border_width=self.border_width,
+            has_border=self.has_border,
+        )
 
-        self.panel.add_element(self.image, (0., 0.))
-        self.panel.add_element(self.title_box, (0., 0.))
-        self.panel.add_element(self.body_box, (0., 0.))
+        self.panel.add_element(self.image, (0.0, 0.0))
+        self.panel.add_element(self.title_box, (0.0, 0.0))
+        self.panel.add_element(self.body_box, (0.0, 0.0))
 
         if self.draggable:
-            self.panel.background.on_left_mouse_button_dragged =\
+            self.panel.background.on_left_mouse_button_dragged = (
                 self.left_button_dragged
-            self.panel.background.on_left_mouse_button_pressed\
-                = self.left_button_pressed
-            self.image.on_left_mouse_button_dragged =\
-                self.left_button_dragged
-            self.image.on_left_mouse_button_pressed =\
+            )
+            self.panel.background.on_left_mouse_button_pressed = (
                 self.left_button_pressed
+            )
+            self.image.on_left_mouse_button_dragged = self.left_button_dragged
+            self.image.on_left_mouse_button_pressed = self.left_button_pressed
         else:
-            self.panel.background.on_left_mouse_button_dragged =\
+            self.panel.background.on_left_mouse_button_dragged = (
                 lambda i_ren, _obj, _comp: i_ren.force_render
+            )
 
     def _get_actors(self):
-        """Get the actors composing this UI component.
-        """
+        """Get the actors composing this UI component."""
         return self.panel.actors
 
     def _add_to_scene(self, _scene):
@@ -4316,11 +4338,11 @@ class Card2D(UI):
         """
         self.panel.add_to_scene(_scene)
         if self.size[0] <= 200:
-            clip_overflow(self.body_box, self.size[0]-2*self.padding)
+            clip_overflow(self.body_box, self.size[0] - 2 * self.padding)
         else:
-            wrap_overflow(self.body_box, self.size[0]-2*self.padding)
+            wrap_overflow(self.body_box, self.size[0] - 2 * self.padding)
 
-        wrap_overflow(self.title_box, self.size[0]-2*self.padding)
+        wrap_overflow(self.title_box, self.size[0] - 2 * self.padding)
 
     def _get_size(self):
         return self.panel.size
@@ -4337,25 +4359,31 @@ class Card2D(UI):
         _width, _height = size
         self.panel.resize(size)
 
-        self._image_size = (size[0]-int(self.border_width),
-                            int(self.image_scale*size[1]))
+        self._image_size = (
+            size[0] - int(self.border_width),
+            int(self.image_scale * size[1]),
+        )
 
-        _title_box_size = (_width - 2 * self.padding, _height *
-                           0.34 * self.text_scale / 2)
+        _title_box_size = (
+            _width - 2 * self.padding,
+            _height * 0.34 * self.text_scale / 2,
+        )
 
-        _body_box_size = (_width - 2 * self.padding, _height *
-                          self.text_scale / 2)
+        _body_box_size = (_width - 2 * self.padding, _height * self.text_scale / 2)
 
-        _img_coords = (int(self.border_width),
-                       int(size[1] - self._image_size[1]))
+        _img_coords = (int(self.border_width), int(size[1] - self._image_size[1]))
 
-        _title_coords = (self.padding, int(_img_coords[1] -
-                                           _title_box_size[1] - self.padding +
-                                           self.border_width))
+        _title_coords = (
+            self.padding,
+            int(_img_coords[1] - _title_box_size[1] - self.padding + self.border_width),
+        )
 
-        _text_coords = (self.padding, int(_title_coords[1] -
-                                          _body_box_size[1] - self.padding +
-                                          self.border_width))
+        _text_coords = (
+            self.padding,
+            int(
+                _title_coords[1] - _body_box_size[1] - self.padding + self.border_width
+            ),
+        )
 
         self.panel.update_element(self.image, _img_coords)
         self.panel.update_element(self.body_box, _text_coords)
@@ -4377,8 +4405,7 @@ class Card2D(UI):
 
     @property
     def color(self):
-        """Returns the background color of card.
-        """
+        """Returns the background color of card."""
         return self.panel.color
 
     @color.setter
@@ -4394,8 +4421,7 @@ class Card2D(UI):
 
     @property
     def body(self):
-        """Returns the body text of the card.
-        """
+        """Returns the body text of the card."""
         return self.body_box.message
 
     @body.setter
@@ -4404,8 +4430,7 @@ class Card2D(UI):
 
     @property
     def title(self):
-        """Returns the title text of the card
-        """
+        """Returns the title text of the card"""
         return self.title_box.message
 
     @title.setter
@@ -4426,12 +4451,21 @@ class Card2D(UI):
 
 
 class SpinBox(UI):
-    """SpinBox UI.
-    """
+    """SpinBox UI."""
 
-    def __init__(self, position=(350, 400), size=(300, 100), padding=10,
-                 panel_color=(1, 1, 1), min_val=0, max_val=100,
-                 initial_val=50, step=1, max_column=10, max_line=2):
+    def __init__(
+        self,
+        position=(350, 400),
+        size=(300, 100),
+        padding=10,
+        panel_color=(1, 1, 1),
+        min_val=0,
+        max_val=100,
+        initial_val=50,
+        step=1,
+        max_column=10,
+        max_line=2,
+    ):
         """Init this UI element.
 
         Parameters
@@ -4482,24 +4516,23 @@ class SpinBox(UI):
         """
         self.panel = Panel2D(size=self.panel_size, color=self.panel_color)
 
-        self.textbox = TextBox2D(width=self.max_column,
-                                 height=self.max_line)
+        self.textbox = TextBox2D(width=self.max_column, height=self.max_line)
         self.textbox.text.dynamic_bbox = False
         self.textbox.text.auto_font_scale = True
         self.increment_button = Button2D(
-            icon_fnames=[("up", read_viz_icons(fname="circle-up.png"))])
+            icon_fnames=[("up", read_viz_icons(fname="circle-up.png"))]
+        )
         self.decrement_button = Button2D(
-            icon_fnames=[("down", read_viz_icons(fname="circle-down.png"))])
+            icon_fnames=[("down", read_viz_icons(fname="circle-down.png"))]
+        )
 
         self.panel.add_element(self.textbox, (0, 0))
         self.panel.add_element(self.increment_button, (0, 0))
         self.panel.add_element(self.decrement_button, (0, 0))
 
         # Adding button click callbacks
-        self.increment_button.on_left_mouse_button_pressed = \
-            self.increment_callback
-        self.decrement_button.on_left_mouse_button_pressed = \
-            self.decrement_callback
+        self.increment_button.on_left_mouse_button_pressed = self.increment_callback
+        self.decrement_button.on_left_mouse_button_pressed = self.decrement_callback
         self.textbox.off_focus = self.textbox_update_value
 
     def resize(self, size):
@@ -4521,11 +4554,15 @@ class SpinBox(UI):
         self.increment_button.resize(self.button_size)
         self.decrement_button.resize(self.button_size)
 
-        textbox_pos = (self.padding, int((size[1] - self.textbox_size[1])/2))
-        inc_btn_pos = (size[0] - self.padding - self.button_size[0],
-                       int((1.5*size[1] - self.button_size[1])/2))
-        dec_btn_pos = (size[0] - self.padding - self.button_size[0],
-                       int((0.5*size[1] - self.button_size[1])/2))
+        textbox_pos = (self.padding, int((size[1] - self.textbox_size[1]) / 2))
+        inc_btn_pos = (
+            size[0] - self.padding - self.button_size[0],
+            int((1.5 * size[1] - self.button_size[1]) / 2),
+        )
+        dec_btn_pos = (
+            size[0] - self.padding - self.button_size[0],
+            int((0.5 * size[1] - self.button_size[1]) / 2),
+        )
 
         self.panel.update_element(self.textbox, textbox_pos)
         self.panel.update_element(self.increment_button, inc_btn_pos)

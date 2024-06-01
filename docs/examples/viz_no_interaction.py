@@ -12,15 +12,12 @@ from os.path import join as pjoin
 # multiprocessing.set_start_method('spawn')
 import numpy as np
 
-from fury import actor
-from fury import colormap as cmap
-from fury import window
+from fury import actor, colormap as cmap, window
 from fury.data.fetcher import fetch_viz_wiki_nw
 from fury.stream.client import FuryStreamClient
 from fury.stream.server.main import web_server_raw_array
 
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     interactive = False
     ###########################################################################
     # First we will set the resolution which it'll be used by the streamer
@@ -55,7 +52,7 @@ if __name__ == '__main__':
     sphere_actor = actor.sdf(
         centers=positions,
         colors=colors,
-        primitives='sphere',
+        primitives="sphere",
         scales=radii * 0.5,
     )
 
@@ -103,4 +100,4 @@ if __name__ == '__main__':
     stream.stop()
     stream.cleanup()
 
-    window.record(showm.scene, size=window_size, out_path='viz_no_interaction.png')
+    window.record(showm.scene, size=window_size, out_path="viz_no_interaction.png")

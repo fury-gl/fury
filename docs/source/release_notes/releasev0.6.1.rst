@@ -53,7 +53,7 @@ Pull Requests (15):
 * :ghpull:`279`: Decreasing the size of the sun in solarsystem tutorial
 * :ghpull:`273`: Python GSoC Weekly blogs
 * :ghpull:`276`: Update Deprecated test
-* :ghpull:`272`: Python GSoC Blogs upto 19th July 2020
+* :ghpull:`272`: Python GSoC Blogs up to 19th July 2020
 
 Issues (27):
 
@@ -83,4 +83,4 @@ Issues (27):
 * :ghissue:`273`: Python GSoC Weekly blogs
 * :ghissue:`277`: Sun
 * :ghissue:`276`: Update Deprecated test
-* :ghissue:`272`: Python GSoC Blogs upto 19th July 2020
+* :ghissue:`272`: Python GSoC Blogs up to 19th July 2020

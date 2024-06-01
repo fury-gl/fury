@@ -5,6 +5,7 @@ Keyframe hierarchical Animation
 
 Creating hierarchical keyframes animation in fury
 """
+
 import numpy as np
 
 from fury import actor, window
@@ -140,5 +141,5 @@ if interactive:
     showm.start()
 
 window.record(
-    scene, out_path='viz_keyframe_hierarchical_animation.png', size=(900, 768)
+    scene, out_path="viz_keyframe_hierarchical_animation.png", size=(900, 768)
 )

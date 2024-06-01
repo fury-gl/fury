@@ -9,9 +9,9 @@ the Nibabel package for the copyright and license terms.
 """
 
 import functools
+from inspect import signature
 import re
 import warnings
-from inspect import signature
 
 from fury import __version__
 from fury.optpkg import optional_package
@@ -19,9 +19,9 @@ from fury.optpkg import optional_package
 # packaging.version.parse is a third-party utility but is used by setuptools
 # (so probably already installed) and is conformant to the current PEP 440.
 # But just if it is not the case, we use distutils
-packaging, have_pkg, _ = optional_package('setuptools.extern.packaging')
+packaging, have_pkg, _ = optional_package("setuptools.extern.packaging")
 
-_LEADING_WHITE = re.compile(r'^(\s*)')
+_LEADING_WHITE = re.compile(r"^(\s*)")
 
 
 class ExpiredDeprecationError(RuntimeError):
@@ -50,7 +50,7 @@ def _ensure_cr(text):
 
     Ensures that ``text`` always ends with a carriage return
     """
-    return text.rstrip() + '\n'
+    return text.rstrip() + "\n"
 
 
 def _add_dep_doc(old_doc, dep_doc):
@@ -76,7 +76,9 @@ def _add_dep_doc(old_doc, dep_doc):
     old_doc = _ensure_cr(old_doc)
     old_lines = old_doc.splitlines()
     new_lines = []
-    for line_no, line in enumerate(old_lines):
+    line_no = 0
+    for line_no in range(len(old_lines)):
+        line = old_lines[line_no]
         if line.strip():
             new_lines.append(line)
         else:
@@ -84,10 +86,10 @@ def _add_dep_doc(old_doc, dep_doc):
     next_line = line_no + 1
     if next_line >= len(old_lines):
         # nothing following first paragraph, just append message
-        return old_doc + '\n' + dep_doc
+        return old_doc + "\n" + dep_doc
     indent = _LEADING_WHITE.match(old_lines[next_line]).group()
-    dep_lines = [indent + L for L in [''] + dep_doc.splitlines() + ['']]
-    return '\n'.join(new_lines + dep_lines + old_lines[next_line:]) + '\n'
+    dep_lines = [indent + L for L in [""] + dep_doc.splitlines() + [""]]
+    return "\n".join(new_lines + dep_lines + old_lines[next_line:]) + "\n"
 
 
 def cmp_pkg_version(version_str, pkg_version_str=__version__):
@@ -116,8 +118,8 @@ def cmp_pkg_version(version_str, pkg_version_str=__version__):
     """
     version_cmp = packaging.version.parse if have_pkg else None
 
-    if any([re.match(r'^[a-z, A-Z]', v) for v in [version_str, pkg_version_str]]):
-        msg = 'Invalid version {0} or {1}'.format(version_str, pkg_version_str)
+    if any(re.match(r"^[a-z, A-Z]", v) for v in [version_str, pkg_version_str]):
+        msg = "Invalid version {0} or {1}".format(version_str, pkg_version_str)
         raise ValueError(msg)
     elif version_cmp(version_str) > version_cmp(pkg_version_str):
         return 1
@@ -134,8 +136,8 @@ def is_bad_version(version_str, version_comparator=cmp_pkg_version):
 
 def deprecate_with_version(
     message,
-    since='',
-    until='',
+    since="",
+    until="",
     version_comparator=cmp_pkg_version,
     warn_class=DeprecationWarning,
     error_class=ExpiredDeprecationError,
@@ -179,17 +181,17 @@ def deprecate_with_version(
 
     """
     messages = [message]
-    if (since, until) != ('', ''):
-        messages.append('')
+    if (since, until) != ("", ""):
+        messages.append("")
     if since:
-        messages.append('* deprecated from version: ' + since)
+        messages.append("* deprecated from version: " + since)
     if until:
         messages.append(
-            '* {0} {1} as of version: {2}'.format(
-                'Raises' if is_bad_version(until) else 'Will raise', error_class, until
+            "* {0} {1} as of version: {2}".format(
+                "Raises" if is_bad_version(until) else "Will raise", error_class, until
             )
         )
-    message = '\n'.join(messages)
+    message = "\n".join(messages)
 
     def deprecator(func):
         @functools.wraps(func)
@@ -208,13 +210,13 @@ def deprecate_with_version(
 def deprecated_params(
     old_name,
     new_name=None,
-    since='',
-    until='',
+    since="",
+    until="",
     version_comparator=cmp_pkg_version,
     arg_in_kwargs=False,
     warn_class=ArgsDeprecationWarning,
     error_class=ExpiredDeprecationError,
-    alternative='',
+    alternative="",
 ):
     """Deprecate a *renamed* or *removed* function argument.
 
@@ -314,19 +316,17 @@ def deprecated_params(
 
         if (
             len(
-                set(
-                    [
-                        len(old_name),
-                        len(new_name),
-                        len(since),
-                        len(until),
-                        len(arg_in_kwargs),
-                    ]
-                )
+                {
+                    len(old_name),
+                    len(new_name),
+                    len(since),
+                    len(until),
+                    len(arg_in_kwargs),
+                }
             )
             != 1
         ):
-            raise ValueError('All parameters should have the same length')
+            raise ValueError("All parameters should have the same length")
     else:
         # To allow a uniform approach later on, wrap all arguments in lists.
         old_name = [old_name]
@@ -352,7 +352,7 @@ def deprecated_params(
                 # the only remaining possibility is that it should be caught
                 # by some kind of **kwargs argument.
                 msg = '"{}" was not specified in the function '.format(n_name)
-                msg += 'signature. If it was meant to be part of '
+                msg += "signature. If it was meant to be part of "
                 msg += '"**kwargs" then set "arg_in_kwargs" to "True"'
                 raise TypeError(msg)
 
@@ -369,7 +369,7 @@ def deprecated_params(
                 # positional-only argument, varargs, varkwargs or some
                 # unknown type:
                 msg = 'cannot replace argument "{}" '.format(n_name)
-                msg += 'of kind {}.'.format(repr(param.kind))
+                msg += "of kind {}.".format(repr(param.kind))
                 raise TypeError(msg)
 
         @functools.wraps(function)
@@ -378,20 +378,20 @@ def deprecated_params(
                 messages = [
                     '"{}" was deprecated'.format(o_name),
                 ]
-                if (since[i], until[i]) != ('', ''):
-                    messages.append('')
+                if (since[i], until[i]) != ("", ""):
+                    messages.append("")
                 if since[i]:
-                    messages.append('* deprecated from version: ' + str(since[i]))
+                    messages.append("* deprecated from version: " + str(since[i]))
                 if until[i]:
                     messages.append(
-                        '* {0} {1} as of version: {2}'.format(
-                            'Raises' if is_bad_version(until[i]) else 'Will raise',
+                        "* {0} {1} as of version: {2}".format(
+                            "Raises" if is_bad_version(until[i]) else "Will raise",
                             error_class,
                             until[i],
                         )
                     )
-                messages.append('')
-                message = '\n'.join(messages)
+                messages.append("")
+                message = "\n".join(messages)
 
                 # The only way to have oldkeyword inside the function is
                 # that it is passed as kwarg because the oldkeyword
@@ -406,7 +406,7 @@ def deprecated_params(
 
                     if newarg_in_args or newarg_in_kwargs:
                         msg = 'cannot specify both "{}"'.format(o_name)
-                        msg += ' (deprecated parameter) and '
+                        msg += " (deprecated parameter) and "
                         msg += '"{}" (new parameter name).'.format(n_name)
                         raise TypeError(msg)
 
@@ -418,7 +418,7 @@ def deprecated_params(
                     if n_name is not None:
                         message += '* Use argument "{}" instead.'.format(n_name)
                     elif alternative:
-                        message += '* Use {} instead.'.format(alternative)
+                        message += "* Use {} instead.".format(alternative)
 
                     if until[i] and is_bad_version(until[i], version_comparator):
                         raise error_class(message)
@@ -428,7 +428,7 @@ def deprecated_params(
                 # positional argument.
                 elif not n_name and positions[i] and len(args) > positions[i]:
                     if alternative:
-                        message += '* Use {} instead.'.format(alternative)
+                        message += "* Use {} instead.".format(alternative)
                     if until[i] and is_bad_version(until[i], version_comparator):
                         raise error_class(message)
 

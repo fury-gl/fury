@@ -8,36 +8,36 @@ _NEXT_AXIS = [1, 2, 0, 1]
 
 # map axes strings to/from tuples of inner axis, parity, repetition, frame
 _AXES2TUPLE = {
-    'sxyz': (0, 0, 0, 0),
-    'sxyx': (0, 0, 1, 0),
-    'sxzy': (0, 1, 0, 0),
-    'sxzx': (0, 1, 1, 0),
-    'syzx': (1, 0, 0, 0),
-    'syzy': (1, 0, 1, 0),
-    'syxz': (1, 1, 0, 0),
-    'syxy': (1, 1, 1, 0),
-    'szxy': (2, 0, 0, 0),
-    'szxz': (2, 0, 1, 0),
-    'szyx': (2, 1, 0, 0),
-    'szyz': (2, 1, 1, 0),
-    'rzyx': (0, 0, 0, 1),
-    'rxyx': (0, 0, 1, 1),
-    'ryzx': (0, 1, 0, 1),
-    'rxzx': (0, 1, 1, 1),
-    'rxzy': (1, 0, 0, 1),
-    'ryzy': (1, 0, 1, 1),
-    'rzxy': (1, 1, 0, 1),
-    'ryxy': (1, 1, 1, 1),
-    'ryxz': (2, 0, 0, 1),
-    'rzxz': (2, 0, 1, 1),
-    'rxyz': (2, 1, 0, 1),
-    'rzyz': (2, 1, 1, 1),
+    "sxyz": (0, 0, 0, 0),
+    "sxyx": (0, 0, 1, 0),
+    "sxzy": (0, 1, 0, 0),
+    "sxzx": (0, 1, 1, 0),
+    "syzx": (1, 0, 0, 0),
+    "syzy": (1, 0, 1, 0),
+    "syxz": (1, 1, 0, 0),
+    "syxy": (1, 1, 1, 0),
+    "szxy": (2, 0, 0, 0),
+    "szxz": (2, 0, 1, 0),
+    "szyx": (2, 1, 0, 0),
+    "szyz": (2, 1, 1, 0),
+    "rzyx": (0, 0, 0, 1),
+    "rxyx": (0, 0, 1, 1),
+    "ryzx": (0, 1, 0, 1),
+    "rxzx": (0, 1, 1, 1),
+    "rxzy": (1, 0, 0, 1),
+    "ryzy": (1, 0, 1, 1),
+    "rzxy": (1, 1, 0, 1),
+    "ryxy": (1, 1, 1, 1),
+    "ryxz": (2, 0, 0, 1),
+    "rzxz": (2, 0, 1, 1),
+    "rxyz": (2, 1, 0, 1),
+    "rzyz": (2, 1, 1, 1),
 }
 
-_TUPLE2AXES = dict((v, k) for k, v in _AXES2TUPLE.items())
+_TUPLE2AXES = {v: k for k, v in _AXES2TUPLE.items()}
 
 
-def euler_matrix(ai, aj, ak, axes='sxyz'):
+def euler_matrix(ai, aj, ak, axes="sxyz"):
     """Return homogeneous rotation matrix from Euler angles and axis sequence.
 
     Code modified from the work of Christoph Gohlke link provided here

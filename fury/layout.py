@@ -13,11 +13,10 @@ class Layout:
         positions = self.compute_positions(actors)
 
         for a, pos in zip(actors, positions):
-
             if is_ui(a):
                 a.position = (pos[0], pos[1])
             else:
-                anchor = np.array(getattr(a, 'anchor', (0, 0, 0)))
+                anchor = np.array(getattr(a, "anchor", (0, 0, 0)))
                 a.AddPosition(pos - (np.array(a.GetCenter()) + anchor))
 
     def compute_positions(self, _actors):
@@ -36,7 +35,7 @@ class GridLayout(Layout):
     def __init__(
         self,
         cell_padding=0,
-        cell_shape='rect',
+        cell_shape="rect",
         aspect_ratio=16 / 9.0,
         dim=None,
         position_offset=(0, 0, 0),
@@ -88,15 +87,15 @@ class GridLayout(Layout):
             The 2D shape (on the xy-plane) of every actors.
 
         """
-        if self.cell_shape == 'rect':
+        if self.cell_shape == "rect":
             bounding_box_sizes = np.asarray(list(map(self.compute_sizes, actors)))
             cell_shape = np.max(bounding_box_sizes, axis=0)[:2]
             shapes = [cell_shape] * len(actors)
-        elif self.cell_shape == 'square':
+        elif self.cell_shape == "square":
             bounding_box_sizes = np.asarray(list(map(self.compute_sizes, actors)))
             cell_shape = np.max(bounding_box_sizes, axis=0)[:2]
             shapes = [(max(cell_shape),) * 2] * len(actors)
-        elif self.cell_shape == 'diagonal':
+        elif self.cell_shape == "diagonal":
             # Size of every cell corresponds to the diagonal
             # of the largest bounding box.
             diagonals = []
@@ -162,7 +161,7 @@ class GridLayout(Layout):
 class HorizontalLayout(GridLayout):
     """Provide functionalities for laying out actors in a horizontal layout."""
 
-    def __init__(self, cell_padding=0, cell_shape='rect'):
+    def __init__(self, cell_padding=0, cell_shape="rect"):
         """Initialize the Horizontal layout.
 
         Parameters
@@ -217,7 +216,7 @@ class HorizontalLayout(GridLayout):
 class VerticalLayout(GridLayout):
     """Provide functionalities for laying out actors in a vertical stack."""
 
-    def __init__(self, cell_padding=0, cell_shape='rect'):
+    def __init__(self, cell_padding=0, cell_shape="rect"):
         """Initialize the Vertical layout.
 
         Parameters
@@ -271,7 +270,7 @@ class VerticalLayout(GridLayout):
 class XLayout(HorizontalLayout):
     """Provide functionalities for laying out actors along x-axis."""
 
-    def __init__(self, direction='x+', cell_padding=0, cell_shape='rect'):
+    def __init__(self, direction="x+", cell_padding=0, cell_shape="rect"):
         """Initialize the X layout.
 
         Parameters
@@ -295,8 +294,8 @@ class XLayout(HorizontalLayout):
         """
         self.direction = direction.lower()
 
-        if self.direction not in ['x+', 'x-']:
-            raise ValueError(f'{direction} is not a valid direction')
+        if self.direction not in ["x+", "x-"]:
+            raise ValueError(f"{direction} is not a valid direction")
 
         super(XLayout, self).__init__(cell_padding=cell_padding, cell_shape=cell_shape)
 
@@ -315,7 +314,7 @@ class XLayout(HorizontalLayout):
             The 2D shape (on the xy-plane) of every actors.
 
         """
-        if self.direction == 'x-':
+        if self.direction == "x-":
             actors = actors[::-1]
 
         return super().get_cells_shape(actors)
@@ -337,14 +336,14 @@ class XLayout(HorizontalLayout):
             The computed 3D coordinates of every actors.
 
         """
-        if self.direction == 'x-':
+        if self.direction == "x-":
             actors = actors[::-1]
 
         return super().compute_positions(actors)
 
     def apply(self, actors):
         """Position the actors according to a certain layout."""
-        if self.direction == 'x-':
+        if self.direction == "x-":
             actors = actors[::-1]
 
         return super().apply(actors)
@@ -353,7 +352,7 @@ class XLayout(HorizontalLayout):
 class YLayout(VerticalLayout):
     """Provide functionalities for laying out actors along y-axis."""
 
-    def __init__(self, direction='y+', cell_padding=0, cell_shape='rect'):
+    def __init__(self, direction="y+", cell_padding=0, cell_shape="rect"):
         """Initialize the Y layout.
 
         Parameters
@@ -377,8 +376,8 @@ class YLayout(VerticalLayout):
         """
         self.direction = direction.lower()
 
-        if self.direction not in ['y+', 'y-']:
-            raise ValueError(f'{direction} is not a valid direction')
+        if self.direction not in ["y+", "y-"]:
+            raise ValueError(f"{direction} is not a valid direction")
 
         super(YLayout, self).__init__(cell_padding=cell_padding, cell_shape=cell_shape)
 
@@ -397,7 +396,7 @@ class YLayout(VerticalLayout):
             The 2D shape (on the xy-plane) of every actors.
 
         """
-        if self.direction == 'y-':
+        if self.direction == "y-":
             actors = actors[::-1]
 
         return super().get_cells_shape(actors)
@@ -419,14 +418,14 @@ class YLayout(VerticalLayout):
             The computed 3D coordinates of every actors.
 
         """
-        if self.direction == 'y-':
+        if self.direction == "y-":
             actors = actors[::-1]
 
         return super().compute_positions(actors)
 
     def apply(self, actors):
         """Position the actors according to a certain layout."""
-        if self.direction == 'y-':
+        if self.direction == "y-":
             actors = actors[::-1]
 
         return super().apply(actors)
@@ -435,7 +434,7 @@ class YLayout(VerticalLayout):
 class ZLayout(GridLayout):
     """Provide functionalities for laying out actors along z-axis."""
 
-    def __init__(self, direction='z+', cell_padding=0, cell_shape='rect'):
+    def __init__(self, direction="z+", cell_padding=0, cell_shape="rect"):
         """Initialize the Z layout.
 
         Parameters
@@ -459,8 +458,8 @@ class ZLayout(GridLayout):
         """
         self.direction = direction.lower()
 
-        if self.direction not in ['z+', 'z-']:
-            raise ValueError(f'{direction} is not a valid direction')
+        if self.direction not in ["z+", "z-"]:
+            raise ValueError(f"{direction} is not a valid direction")
 
         super(ZLayout, self).__init__(cell_padding=cell_padding, cell_shape=cell_shape)
 
@@ -479,14 +478,14 @@ class ZLayout(GridLayout):
             The shape (on the z-plane) of every actors.
 
         """
-        if self.direction == 'z-':
+        if self.direction == "z-":
             actors = actors[::-1]
 
-        if self.cell_shape == 'rect' or self.cell_shape == 'square':
+        if self.cell_shape == "rect" or self.cell_shape == "square":
             bounding_box_sizes = np.asarray(list(map(get_bounding_box_sizes, actors)))
             cell_shape = np.max(bounding_box_sizes, axis=0)[2]
             shapes = [cell_shape] * len(actors)
-        elif self.cell_shape == 'diagonal':
+        elif self.cell_shape == "diagonal":
             # Size of every cell corresponds to the diagonal
             # of the largest bounding box.
             longest_diagonal = np.max([a.GetLength() for a in actors])
@@ -510,7 +509,7 @@ class ZLayout(GridLayout):
             The computed 3D coordinates of every actors.
 
         """
-        if self.direction == 'z-':
+        if self.direction == "z-":
             actors = actors[::-1]
 
         positions = [
@@ -528,7 +527,7 @@ class ZLayout(GridLayout):
 
     def apply(self, actors):
         """Position the actors according to a certain layout."""
-        if self.direction == 'z-':
+        if self.direction == "z-":
             actors = actors[::-1]
 
         return super().apply(actors)

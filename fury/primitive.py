@@ -1,4 +1,5 @@
 """Module dedicated for basic primitive."""
+
 import math
 from os.path import join as pjoin
 
@@ -11,15 +12,15 @@ from fury.data import DATA_DIR
 from fury.transform import cart2sphere, sphere2cart
 from fury.utils import fix_winding_order
 
-SCIPY_1_4_PLUS = parse(short_version) >= parse('1.4.0')
+SCIPY_1_4_PLUS = parse(short_version) >= parse("1.4.0")
 
 SPHERE_FILES = {
-    'symmetric362': pjoin(DATA_DIR, 'evenly_distributed_sphere_362.npz'),
-    'symmetric642': pjoin(DATA_DIR, 'evenly_distributed_sphere_642.npz'),
-    'symmetric724': pjoin(DATA_DIR, 'evenly_distributed_sphere_724.npz'),
-    'repulsion724': pjoin(DATA_DIR, 'repulsion724.npz'),
-    'repulsion100': pjoin(DATA_DIR, 'repulsion100.npz'),
-    'repulsion200': pjoin(DATA_DIR, 'repulsion200.npz'),
+    "symmetric362": pjoin(DATA_DIR, "evenly_distributed_sphere_362.npz"),
+    "symmetric642": pjoin(DATA_DIR, "evenly_distributed_sphere_642.npz"),
+    "symmetric724": pjoin(DATA_DIR, "evenly_distributed_sphere_724.npz"),
+    "repulsion724": pjoin(DATA_DIR, "repulsion724.npz"),
+    "repulsion100": pjoin(DATA_DIR, "repulsion100.npz"),
+    "repulsion200": pjoin(DATA_DIR, "repulsion200.npz"),
 }
 
 
@@ -37,7 +38,7 @@ def faces_from_sphere_vertices(vertices):
         Indices into vertices; forms triangular faces.
 
     """
-    hull = ConvexHull(vertices, qhull_options='Qbb Qc')
+    hull = ConvexHull(vertices, qhull_options="Qbb Qc")
     faces = np.ascontiguousarray(hull.simplices)
     if len(vertices) < 2**16:
         return np.asarray(faces, np.uint16)
@@ -46,7 +47,7 @@ def faces_from_sphere_vertices(vertices):
 
 
 def repeat_primitive_function(
-    func, centers, func_args=[], directions=(1, 0, 0), colors=(1, 0, 0), scales=1
+    func, centers, func_args=None, directions=(1, 0, 0), colors=(1, 0, 0), scales=1
 ):
     """Repeat Vertices and triangles of a specific primitive function.
 
@@ -78,14 +79,17 @@ def repeat_primitive_function(
         Expanded colors applied to all vertices/faces
 
     """
+    if func_args is None:
+        func_args = []
+
     # Get faces
     _, faces = func()
     if len(func_args) == 1:
         func_args = np.squeeze(np.array([func_args] * centers.shape[0]))
     elif len(func_args) != centers.shape[0]:
         raise IOError(
-            'sq_params should 1 or equal to the numbers \
-                        of centers'
+            "sq_params should 1 or equal to the numbers \
+                        of centers"
         )
 
     vertices = np.concatenate([func(i)[0] for i in func_args])
@@ -169,7 +173,7 @@ def repeat_primitive(
         axis=0,
     ).reshape((big_triangles.shape[0], 1))
 
-    def normalize_input(arr, arr_name=''):
+    def normalize_input(arr, arr_name=""):
         if (
             isinstance(arr, (tuple, list, np.ndarray))
             and len(arr) in [3, 4]
@@ -181,19 +185,19 @@ def repeat_primitive(
         elif arr is None:
             return np.array([])
         elif len(arr) != len(centers):
-            msg = '{} size should be 1 or '.format(arr_name)
-            msg += 'equal to the numbers of centers'
+            msg = "{} size should be 1 or ".format(arr_name)
+            msg += "equal to the numbers of centers"
             raise IOError(msg)
         else:
             return np.array(arr)
 
     # update colors
-    colors = normalize_input(colors, 'colors')
+    colors = normalize_input(colors, "colors")
     big_colors = np.repeat(colors, unit_verts_size, axis=0)
     big_colors *= 255
 
     # update orientations
-    directions = normalize_input(directions, 'directions')
+    directions = normalize_input(directions, "directions")
     for pts, dirs in enumerate(directions):
         # Normal vector of the object.
         dir_abs = np.linalg.norm(dirs)
@@ -211,8 +215,9 @@ def repeat_primitive(
                 rotation_matrix = -np.eye(3, dtype=np.float64)
             else:
                 h = 1 / (1 + c)
-                rotation_matrix = np.eye(3, dtype=np.float64) + \
-                    Vmat + (Vmat.dot(Vmat) * h)
+                rotation_matrix = (
+                    np.eye(3, dtype=np.float64) + Vmat + (Vmat.dot(Vmat) * h)
+                )
 
         else:
             rotation_matrix = np.identity(3)
@@ -243,7 +248,7 @@ def prim_square():
     vertices = np.array(
         [[-0.5, -0.5, 0.0], [-0.5, 0.5, 0.0], [0.5, 0.5, 0.0], [0.5, -0.5, 0.0]]
     )
-    triangles = np.array([[0, 1, 2], [2, 3, 0]], dtype='i8')
+    triangles = np.array([[0, 1, 2], [2, 3, 0]], dtype="i8")
     return vertices, triangles
 
 
@@ -285,12 +290,12 @@ def prim_box():
             [1, 5, 7],
             [1, 7, 3],
         ],
-        dtype='i8',
+        dtype="i8",
     )
     return vertices, triangles
 
 
-def prim_sphere(name='symmetric362', gen_faces=False, phi=None, theta=None):
+def prim_sphere(name="symmetric362", gen_faces=False, phi=None, theta=None):
     """Provide vertices and triangles of the spheres.
 
     Parameters
@@ -335,9 +340,9 @@ def prim_sphere(name='symmetric362', gen_faces=False, phi=None, theta=None):
             raise ValueError('No sphere called "%s"' % name)
         res = np.load(fname)
 
-        verts = res['vertices'].copy()
-        faces = faces_from_sphere_vertices(verts) if gen_faces else res['faces']
-        faces = fix_winding_order(res['vertices'], faces, clockwise=True)
+        verts = res["vertices"].copy()
+        faces = faces_from_sphere_vertices(verts) if gen_faces else res["faces"]
+        faces = fix_winding_order(res["vertices"], faces, clockwise=True)
         return verts, faces
     else:
         phi = phi if phi >= 3 else 3
@@ -368,7 +373,7 @@ def prim_sphere(name='symmetric362', gen_faces=False, phi=None, theta=None):
         return verts, faces
 
 
-def prim_superquadric(roundness=(1, 1), sphere_name='symmetric362'):
+def prim_superquadric(roundness=(1, 1), sphere_name="symmetric362"):
     """Provide vertices and triangles of a superquadrics.
 
     Parameters
@@ -439,7 +444,7 @@ def prim_tetrahedron():
         [[0.5, 0.5, 0.5], [0.5, -0.5, -0.5], [-0.5, 0.5, -0.5], [-0.5, -0.5, 0.5]]
     )
 
-    pyramid_triag = np.array([[2, 0, 1], [0, 2, 3], [0, 3, 1], [1, 3, 2]], dtype='i8')
+    pyramid_triag = np.array([[2, 0, 1], [0, 2, 3], [0, 3, 1], [1, 3, 2]], dtype="i8")
 
     return pyramid_vert, pyramid_triag
 
@@ -497,7 +502,7 @@ def prim_icosahedron():
             [10, 9, 6],
             [9, 10, 11],
         ],
-        dtype='i8',
+        dtype="i8",
     )
 
     return icosahedron_vertices, icosahedron_mesh
@@ -592,7 +597,7 @@ def prim_rhombicuboctahedron():
             [22, 20, 5],
             [20, 1, 5],
         ],
-        dtype='i8',
+        dtype="i8",
     )
 
     triangles = fix_winding_order(vertices, triangles, clockwise=True)
@@ -643,7 +648,7 @@ def prim_star(dim=2):
                 [3, 7, 9],
                 [3, 5, 7],
             ],
-            dtype='i8',
+            dtype="i8",
         )
 
     if dim == 3:
@@ -694,7 +699,7 @@ def prim_star(dim=2):
                 [3, 11, 2],
                 [11, 1, 2],
             ],
-            dtype='i8',
+            dtype="i8",
         )
     return vert, triangles
 
@@ -712,7 +717,7 @@ def prim_triangularprism():
     """
     # Local variable to represent the square root of three rounded
     # to 7 decimal places
-    three = float('{:.7f}'.format(math.sqrt(3)))
+    three = float("{:.7f}".format(math.sqrt(3)))
     vertices = np.array(
         [
             [0, -1 / three, 1 / 2],
@@ -808,7 +813,7 @@ def prim_octagonalprism():
     """
     # Local variable to represent the square root of two rounded
     # to 7 decimal places
-    two = float('{:.7f}'.format(math.sqrt(2)))
+    two = float("{:.7f}".format(math.sqrt(2)))
 
     vertices = np.array(
         [
@@ -861,7 +866,7 @@ def prim_octagonalprism():
             [10, 13, 14],
             [13, 10, 9],
         ],
-        dtype='u8',
+        dtype="u8",
     )
     vertices /= 4
     triangles = fix_winding_order(vertices, triangles, clockwise=True)
@@ -906,7 +911,7 @@ def prim_frustum():
             [5, 0, 1],
             [0, 5, 4],
         ],
-        dtype='u8',
+        dtype="u8",
     )
     vertices /= 2
     triangles = fix_winding_order(vertices, triangles, clockwise=True)
@@ -936,9 +941,9 @@ def prim_cylinder(radius=0.5, height=1, sectors=36, capped=True):
 
     """
     if not isinstance(sectors, int):
-        raise TypeError('Only integers are allowed for sectors parameter')
+        raise TypeError("Only integers are allowed for sectors parameter")
     if not sectors > 7:
-        raise ValueError('Sectors parameter should be greater than 7')
+        raise ValueError("Sectors parameter should be greater than 7")
     sector_step = 2 * math.pi / sectors
     unit_circle_vertices = []
 
@@ -996,7 +1001,7 @@ def prim_cylinder(radius=0.5, height=1, sectors=36, capped=True):
     k2 = sectors + 1
 
     # triangles for the side surface
-    for i in range(sectors):
+    for _ in range(sectors):
         triangles.append(k1)
         triangles.append(k2)
         triangles.append(k1 + 1)
@@ -1151,7 +1156,7 @@ def prim_cone(radius=0.5, height=1, sectors=10):
 
     """
     if sectors < 3:
-        raise ValueError('Sectors parameter should be greater than 2')
+        raise ValueError("Sectors parameter should be greater than 2")
 
     sector_angles = 2 * np.pi / sectors * np.arange(sectors)
 

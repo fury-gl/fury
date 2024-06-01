@@ -7,9 +7,9 @@ First, let's download some available datasets. Here we are using a dataset
 which provides metrics and bundles.
 """
 
-import numpy as np
 from dipy.data import fetch_bundles_2_subjects, read_bundles_2_subjects
 from dipy.tracking.streamline import length, transform_streamlines
+import numpy as np
 
 from fury import actor, window
 
@@ -17,23 +17,23 @@ interactive = False  # set to True to show the interactive display window
 
 fetch_bundles_2_subjects()
 dix = read_bundles_2_subjects(
-    subj_id='subj_1', metrics=['fa'], bundles=['cg.left', 'cst.right']
+    subj_id="subj_1", metrics=["fa"], bundles=["cg.left", "cst.right"]
 )
 
 ###############################################################################
 # Store fractional anisotropy.
 
-fa = dix['fa']
+fa = dix["fa"]
 
 ###############################################################################
 # Store grid to world transformation matrix.
 
-affine = dix['affine']
+affine = dix["affine"]
 
 ###############################################################################
 # Store the cingulum bundle. A bundle is a list of streamlines.
 
-bundle = dix['cg.left']
+bundle = dix["cg.left"]
 
 ###############################################################################
 # It happened that this bundle is in world coordinates and therefore we need to
@@ -63,7 +63,7 @@ scene.add(stream_actor)
 if interactive:
     window.show(scene, size=(600, 600), reset_camera=False)
 
-window.record(scene, out_path='bundle1.png', size=(600, 600))
+window.record(scene, out_path="bundle1.png", size=(600, 600))
 
 ###############################################################################
 # You may wonder how we knew how to set the camera. This is very easy. You just
@@ -93,7 +93,7 @@ scene.add(bar)
 if interactive:
     window.show(scene, size=(600, 600), reset_camera=False)
 
-window.record(scene, out_path='bundle2.png', size=(600, 600))
+window.record(scene, out_path="bundle2.png", size=(600, 600))
 
 ##############################################################################
 # Show every point with a value from a volume with your colormap
@@ -117,7 +117,7 @@ scene.add(bar2)
 if interactive:
     window.show(scene, size=(600, 600), reset_camera=False)
 
-window.record(scene, out_path='bundle3.png', size=(600, 600))
+window.record(scene, out_path="bundle3.png", size=(600, 600))
 
 ###############################################################################
 # Show every bundle with a specific color
@@ -134,7 +134,7 @@ scene.add(stream_actor4)
 if interactive:
     window.show(scene, size=(600, 600), reset_camera=False)
 
-window.record(scene, out_path='bundle4.png', size=(600, 600))
+window.record(scene, out_path="bundle4.png", size=(600, 600))
 
 ###############################################################################
 # Show every streamline of a bundle with a different color
@@ -168,7 +168,7 @@ scene.add(bar3)
 if interactive:
     window.show(scene, size=(600, 600), reset_camera=False)
 
-window.record(scene, out_path='bundle5.png', size=(600, 600))
+window.record(scene, out_path="bundle5.png", size=(600, 600))
 
 ###############################################################################
 # Show every point of every streamline with a different color
@@ -189,7 +189,7 @@ scene.add(stream_actor6)
 if interactive:
     window.show(scene, size=(600, 600), reset_camera=False)
 
-window.record(scene, out_path='bundle6.png', size=(600, 600))
+window.record(scene, out_path="bundle6.png", size=(600, 600))
 
 ###############################################################################
 # Add depth cues to streamline rendering
@@ -210,7 +210,7 @@ scene.add(stream_actor7)
 if interactive:
     window.show(scene, size=(600, 600), reset_camera=False)
 
-window.record(scene, out_path='bundle7.png', size=(600, 600))
+window.record(scene, out_path="bundle7.png", size=(600, 600))
 
 ###############################################################################
 # Render streamlines as fake tubes
@@ -228,7 +228,7 @@ scene.add(stream_actor8)
 if interactive:
     window.show(scene, size=(600, 600), reset_camera=False)
 
-window.record(scene, out_path='bundle8.png', size=(600, 600))
+window.record(scene, out_path="bundle8.png", size=(600, 600))
 
 ###############################################################################
 # Combine depth cues with fake tubes
@@ -247,7 +247,7 @@ scene.add(stream_actor9)
 if interactive:
     window.show(scene, size=(600, 600), reset_camera=False)
 
-window.record(scene, out_path='bundle9.png', size=(600, 600))
+window.record(scene, out_path="bundle9.png", size=(600, 600))
 
 ###############################################################################
 # Render streamlines as tubes
@@ -267,7 +267,7 @@ scene.add(stream_actor10)
 if interactive:
     window.show(scene, size=(600, 600), reset_camera=False)
 
-window.record(scene, out_path='bundle10.png', size=(600, 600))
+window.record(scene, out_path="bundle10.png", size=(600, 600))
 
 ###############################################################################
 # In summary, we showed that there are many useful ways for visualizing maps

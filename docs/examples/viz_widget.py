@@ -70,7 +70,7 @@ time_sleep = 1000 if interactive else 1
 # If you want to use the widget in a Windows environment without the WSL
 # you need to use the asyncio version of the widget.
 #
-if platform.system() == 'Windows':
+if platform.system() == "Windows":
 
     async def main():
         widget.start()
@@ -86,4 +86,4 @@ else:
     time.sleep(time_sleep)
     widget.stop()
 
-window.record(showm.scene, size=window_size, out_path='viz_widget.png')
+window.record(showm.scene, size=window_size, out_path="viz_widget.png")

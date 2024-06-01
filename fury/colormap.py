@@ -11,7 +11,7 @@ from fury.lib import LookupTable
 # Allow import, but disable doctests if we don't have matplotlib
 from fury.optpkg import optional_package
 
-cm, have_matplotlib, _ = optional_package('matplotlib.cm')
+cm, have_matplotlib, _ = optional_package("matplotlib.cm")
 
 
 def colormap_lookup_table(
@@ -193,7 +193,6 @@ def boys2rgb(v):
     trl_z = -2.1899
 
     if v.ndim == 2:
-
         N = len(x)
         C = np.zeros((N, 3))
 
@@ -202,7 +201,6 @@ def boys2rgb(v):
         C[:, 2] = 0.9 * np.abs(((Z - trl_z) / w_z)) + 0.05
 
     if v.ndim == 1:
-
         C = np.zeros((3,))
         C[0] = 0.9 * np.abs(((X - trl_x) / w_x)) + 0.05
         C[1] = 0.9 * np.abs(((Y - trl_y) / w_y)) + 0.05
@@ -238,13 +236,13 @@ def orient2rgb(v):
         orient = np.abs(np.divide(v, orientn, where=orientn != 0))
     else:
         raise IOError(
-            'Wrong vector dimension, It should be an array' ' with a shape (N, 3)'
+            "Wrong vector dimension, It should be an array" " with a shape (N, 3)"
         )
 
     return orient
 
 
-def line_colors(streamlines, cmap='rgb_standard'):
+def line_colors(streamlines, cmap="rgb_standard"):
     """Create colors for streamlines to be used in actor.line.
 
     Parameters
@@ -257,12 +255,12 @@ def line_colors(streamlines, cmap='rgb_standard'):
     colors : ndarray
 
     """
-    if cmap == 'rgb_standard':
+    if cmap == "rgb_standard":
         col_list = [
             orient2rgb(streamline[-1] - streamline[0]) for streamline in streamlines
         ]
 
-    if cmap == 'boys_standard':
+    if cmap == "boys_standard":
         col_list = [
             boys2rgb(streamline[-1] - streamline[0]) for streamline in streamlines
         ]
@@ -270,23 +268,24 @@ def line_colors(streamlines, cmap='rgb_standard'):
     return np.vstack(col_list)
 
 
-lowercase_cm_name = {'blues': 'Blues', 'accent': 'Accent'}
+lowercase_cm_name = {"blues": "Blues", "accent": "Accent"}
 dipy_cmaps = None
 
 
 def get_cmap(name):
     """Make a callable, similar to maptlotlib.pyplot.get_cmap."""
-    if name.lower() == 'accent':
+    if name.lower() == "accent":
         warn(
-            'The `Accent` colormap is deprecated as of version'
-            + ' 0.2 of Fury and will be removed in a future '
-            + 'version. Please use another colormap',
+            "The `Accent` colormap is deprecated as of version"
+            + " 0.2 of Fury and will be removed in a future "
+            + "version. Please use another colormap",
             PendingDeprecationWarning,
+            stacklevel=2,
         )
 
     global dipy_cmaps
     if dipy_cmaps is None:
-        filename = pjoin(DATA_DIR, 'dipy_colormaps.json')
+        filename = pjoin(DATA_DIR, "dipy_colormaps.json")
         with open(filename) as f:
             dipy_cmaps = json.load(f)
 
@@ -297,7 +296,7 @@ def get_cmap(name):
     def simple_cmap(v):
         """Emulate matplotlib colormap callable."""
         rgba = np.ones((len(v), 4))
-        for i, color in enumerate(('red', 'green', 'blue')):
+        for i, color in enumerate(("red", "green", "blue")):
             x, y0, _ = zip(*desc[color])
             # Matplotlib allows more complex colormaps, but for users who do
             # not have Matplotlib fury makes a few simple colormaps available.
@@ -309,7 +308,7 @@ def get_cmap(name):
     return simple_cmap
 
 
-def create_colormap(v, name='plasma', auto=True):
+def create_colormap(v, name="plasma", auto=True):
     """Create colors from a specific colormap and return it
     as an array of shape (N,3) where every row gives the corresponding
     r,g,b value. The colormaps we use are similar with those of matplotlib.
@@ -335,17 +334,17 @@ def create_colormap(v, name='plasma', auto=True):
 
     """
     if not have_matplotlib:
-        msg = 'You do not have Matplotlib installed. Some colormaps'
-        msg += ' might not work for you. Consider downloading Matplotlib.'
-        warn(msg)
+        msg = "You do not have Matplotlib installed. Some colormaps"
+        msg += " might not work for you. Consider downloading Matplotlib."
+        warn(msg, stacklevel=2)
 
-    if name.lower() == 'jet':
-        msg = 'Jet is a popular colormap but can often be misleading'
-        msg += 'Use instead plasma, viridis, hot or inferno.'
-        warn(msg, PendingDeprecationWarning)
+    if name.lower() == "jet":
+        msg = "Jet is a popular colormap but can often be misleading"
+        msg += "Use instead plasma, viridis, hot or inferno."
+        warn(msg, PendingDeprecationWarning, stacklevel=2)
 
     if v.ndim > 1:
-        msg = 'This function works only with 1d arrays. Use ravel()'
+        msg = "This function works only with 1d arrays. Use ravel()"
         raise ValueError(msg)
 
     if auto:
@@ -358,7 +357,7 @@ def create_colormap(v, name='plasma', auto=True):
 
     colormap = getattr(cm, newname) if have_matplotlib else get_cmap(newname)
     if colormap is None:
-        e_s = 'Colormap {} is not yet implemented '.format(name)
+        e_s = "Colormap {} is not yet implemented ".format(name)
         raise ValueError(e_s)
 
     rgba = colormap(v)
@@ -512,7 +511,7 @@ def _lab2rgb(lab):
     return _xyz2rgb(tmp)
 
 
-def distinguishable_colormap(bg=(0, 0, 0), exclude=[], nb_colors=None):
+def distinguishable_colormap(bg=(0, 0, 0), exclude=None, nb_colors=None):
     """Generate colors that are maximally perceptually distinct.
 
     This function generates a set of colors which are distinguishable
@@ -563,6 +562,9 @@ def distinguishable_colormap(bg=(0, 0, 0), exclude=[], nb_colors=None):
     original implementation (v1.2), 14 Dec 2010 (Updated 07 Feb 2011).
 
     """
+    if exclude is None:
+        exclude = []
+
     NB_DIVISIONS = 30  # This constant come from the original code.
 
     # Generate a sizable number of RGB triples. This represents our space of
@@ -625,12 +627,12 @@ def hex_to_rgb(color):
     >>> c = colormap.hex_to_rgb(color)
 
     """
-    if color[0] == '#':
+    if color[0] == "#":
         color = color[1:]
 
-    r = int('0x' + color[0:2], 0) / 255
-    g = int('0x' + color[2:4], 0) / 255
-    b = int('0x' + color[4:6], 0) / 255
+    r = int("0x" + color[0:2], 0) / 255
+    g = int("0x" + color[2:4], 0) / 255
+    b = int("0x" + color[4:6], 0) / 255
 
     return np.array([r, g, b])
 
@@ -669,7 +671,7 @@ def rgb2hsv(rgb):
     # -- S channel
     delta = rgb.ptp(-1)
     # Ignore warning for zero divided by zero
-    old_settings = np.seterr(invalid='ignore')
+    old_settings = np.seterr(invalid="ignore")
     out_s = delta / out_v
     out_s[delta == 0.0] = 0.0
 
@@ -826,42 +828,42 @@ def rgb2xyz(rgb):
 # it can be found at:
 # https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
 illuminants = {
-    'A': {
-        '2': (1.098466069456375, 1, 0.3558228003436005),
-        '10': (1.111420406956693, 1, 0.3519978321919493),
-        'R': (1.098466069456375, 1, 0.3558228003436005),
+    "A": {
+        "2": (1.098466069456375, 1, 0.3558228003436005),
+        "10": (1.111420406956693, 1, 0.3519978321919493),
+        "R": (1.098466069456375, 1, 0.3558228003436005),
     },
-    'B': {
-        '2': (0.9909274480248003, 1, 0.8531327322886154),
-        '10': (0.9917777147717607, 1, 0.8434930535866175),
-        'R': (0.9909274480248003, 1, 0.8531327322886154),
+    "B": {
+        "2": (0.9909274480248003, 1, 0.8531327322886154),
+        "10": (0.9917777147717607, 1, 0.8434930535866175),
+        "R": (0.9909274480248003, 1, 0.8531327322886154),
     },
-    'C': {
-        '2': (0.980705971659919, 1, 1.1822494939271255),
-        '10': (0.9728569189782166, 1, 1.1614480488951577),
-        'R': (0.980705971659919, 1, 1.1822494939271255),
+    "C": {
+        "2": (0.980705971659919, 1, 1.1822494939271255),
+        "10": (0.9728569189782166, 1, 1.1614480488951577),
+        "R": (0.980705971659919, 1, 1.1822494939271255),
     },
-    'D50': {
-        '2': (0.9642119944211994, 1, 0.8251882845188288),
-        '10': (0.9672062750333777, 1, 0.8142801513128616),
-        'R': (0.9639501491621826, 1, 0.8241280285499208),
+    "D50": {
+        "2": (0.9642119944211994, 1, 0.8251882845188288),
+        "10": (0.9672062750333777, 1, 0.8142801513128616),
+        "R": (0.9639501491621826, 1, 0.8241280285499208),
     },
-    'D55': {
-        '2': (0.956797052643698, 1, 0.9214805860173273),
-        '10': (0.9579665682254781, 1, 0.9092525159847462),
-        'R': (0.9565317453467969, 1, 0.9202554587037198),
+    "D55": {
+        "2": (0.956797052643698, 1, 0.9214805860173273),
+        "10": (0.9579665682254781, 1, 0.9092525159847462),
+        "R": (0.9565317453467969, 1, 0.9202554587037198),
     },
-    'D65': {
-        '2': (0.95047, 1.0, 1.08883),
-        '10': (0.94809667673716, 1, 1.0730513595166162),
-        'R': (0.9532057125493769, 1, 1.0853843816469158),
+    "D65": {
+        "2": (0.95047, 1.0, 1.08883),
+        "10": (0.94809667673716, 1, 1.0730513595166162),
+        "R": (0.9532057125493769, 1, 1.0853843816469158),
     },
-    'D75': {
-        '2': (0.9497220898840717, 1, 1.226393520724154),
-        '10': (0.9441713925645873, 1, 1.2064272211720228),
-        'R': (0.9497220898840717, 1, 1.226393520724154),
+    "D75": {
+        "2": (0.9497220898840717, 1, 1.226393520724154),
+        "10": (0.9441713925645873, 1, 1.2064272211720228),
+        "R": (0.9497220898840717, 1, 1.226393520724154),
     },
-    'E': {'2': (1.0, 1.0, 1.0), '10': (1.0, 1.0, 1.0), 'R': (1.0, 1.0, 1.0)},
+    "E": {"2": (1.0, 1.0, 1.0), "10": (1.0, 1.0, 1.0), "R": (1.0, 1.0, 1.0)},
 }
 
 
@@ -894,14 +896,14 @@ def get_xyz_coords(illuminant, observer):
     observer = observer.upper()
     try:
         return np.asarray(illuminants[illuminant][observer], dtype=float)
-    except KeyError:
+    except KeyError as err:
         raise ValueError(
-            f'Unknown illuminant/observer combination '
-            f'(`{illuminant}`, `{observer}`)'
-        )
+            f"Unknown illuminant/observer combination "
+            f"(`{illuminant}`, `{observer}`)"
+        ) from err
 
 
-def xyz2lab(xyz, illuminant='D65', observer='2'):
+def xyz2lab(xyz, illuminant="D65", observer="2"):
     """XYZ to CIE-LAB color space conversion.
 
     Parameters
@@ -948,7 +950,7 @@ def xyz2lab(xyz, illuminant='D65', observer='2'):
     return np.concatenate([x[..., np.newaxis] for x in [L, a, b]], axis=-1)
 
 
-def lab2xyz(lab, illuminant='D65', observer='2'):
+def lab2xyz(lab, illuminant="D65", observer="2"):
     """CIE-LAB to XYZcolor space conversion.
 
     Parameters
@@ -982,7 +984,7 @@ def lab2xyz(lab, illuminant='D65', observer='2'):
     if np.any(z < 0):
         invalid = np.nonzero(z < 0)
         warn(
-            'Color data out of range: Z < 0 in %s pixels' % invalid[0].size,
+            "Color data out of range: Z < 0 in %s pixels" % invalid[0].size,
             stacklevel=2,
         )
         z[invalid] = 0
@@ -999,7 +1001,7 @@ def lab2xyz(lab, illuminant='D65', observer='2'):
     return out
 
 
-def rgb2lab(rgb, illuminant='D65', observer='2'):
+def rgb2lab(rgb, illuminant="D65", observer="2"):
     """Conversion from the sRGB color space (IEC 61966-2-1:1999)
     to the CIE Lab colorspace under the given illuminant and observer.
 
@@ -1029,7 +1031,7 @@ def rgb2lab(rgb, illuminant='D65', observer='2'):
     return xyz2lab(rgb2xyz(rgb), illuminant, observer)
 
 
-def lab2rgb(lab, illuminant='D65', observer='2'):
+def lab2rgb(lab, illuminant="D65", observer="2"):
     """Lab to RGB color space conversion.
 
     Parameters

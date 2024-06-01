@@ -1,12 +1,12 @@
+from functools import partial
 import logging
 import platform
 import time
-from functools import partial
 
 import numpy as np
 import vtk
 
-from fury.stream.constants import _CQUEUE, PY_VERSION_8
+from fury.stream.constants import PY_VERSION_8, _CQUEUE
 from fury.stream.tools import (
     ArrayCircularQueue,
     IntervalTimer,
@@ -35,7 +35,7 @@ def callback_stream_client(stream_client):
     vtk_array = vtk_image.GetPointData().GetScalars()
 
     w, h, _ = vtk_image.GetDimensions()
-    np_arr = np.frombuffer(vtk_array, dtype='uint8')
+    np_arr = np.frombuffer(vtk_array, dtype="uint8")
     if np_arr is None:
         stream_client.in_request = False
         return
@@ -94,7 +94,7 @@ class FuryStreamClient:
         self.max_size = max_window_size[0] * max_window_size[1]
         self.max_window_size = max_window_size
         if self.max_size < self.showm.size[0] * self.showm.size[1]:
-            raise ValueError('max_window_size must be greater than window_size')
+            raise ValueError("max_window_size must be greater than window_size")
 
         if not PY_VERSION_8 and not use_raw_array:
             raise ValueError(
@@ -135,31 +135,30 @@ class FuryStreamClient:
         """
 
         def callback_for_vtk(caller, event, *args, **kwargs):
-            callback_stream_client(**{'stream_client': kwargs['stream_client']})
+            callback_stream_client(**{"stream_client": kwargs["stream_client"]})
 
-        use_asyncio = platform.system() == 'Windows' or use_asyncio
+        use_asyncio = platform.system() == "Windows" or use_asyncio
         if self._started:
             self.stop()
         if ms > 0:
             if self._whithout_iren_start:
-
                 Interval = IntervalTimer if use_asyncio else IntervalTimerThreading
                 self._interval_timer = Interval(
-                    ms / 1000, callback_stream_client, **{'stream_client': self}
+                    ms / 1000, callback_stream_client, **{"stream_client": self}
                 )
             else:
                 self._id_observer = self.showm.iren.AddObserver(
-                    'TimerEvent', partial(callback_for_vtk, **{'stream_client': self})
+                    "TimerEvent", partial(callback_for_vtk, **{"stream_client": self})
                 )
                 self._id_timer = self.showm.iren.CreateRepeatingTimer(ms)
         else:
             self._id_observer = self.showm.iren.AddObserver(
-                'RenderEvent', partial(callback_for_vtk, **{'stream_client': self})
+                "RenderEvent", partial(callback_for_vtk, **{"stream_client": self})
             )
         self.showm.window.Render()
         self.showm.iren.Render()
         self._started = True
-        callback_stream_client(**{'stream_client': self})
+        callback_stream_client(**{"stream_client": self})
 
     def stop(self):
         """Stop the stream client."""
@@ -193,17 +192,18 @@ class FuryStreamClient:
             self.img_manager.info_buffer.unlink()
         except FileNotFoundError:
             print(
-                f'Shared Memory {self.img_manager.info_buffer_name}\
-                    (info_buffer) File not found'
+                f"Shared Memory {self.img_manager.info_buffer_name}\
+                    (info_buffer) File not found"
             )
         for buffer, name in zip(
-            self.img_manager.image_buffers, self.img_manager.image_buffer_names
+            self.img_manager.image_buffers,
+            self.img_manager.image_buffer_names,
         ):
             buffer.close()
             try:
                 buffer.unlink()
             except FileNotFoundError:
-                print(f'Shared Memory {name}(buffer image) File not found')
+                print(f"Shared Memory {name}(buffer image) File not found")
 
 
 def interaction_callback(circular_queue, showm, iren, render_after):
@@ -261,7 +261,7 @@ def interaction_callback(circular_queue, showm, iren, render_after):
             event_ids.right_btn_release: iren.RightButtonReleaseEvent,
         }
         mouse_actions[user_event_id]()
-    logging.info('Interaction: time to perform event ' + f'{ts-user_timestamp:.2f} ms')
+    logging.info("Interaction: time to perform event " + f"{ts-user_timestamp:.2f} ms")
     if render_after:
         showm.window.Render()
         showm.iren.Render()
@@ -318,9 +318,9 @@ class FuryStreamInteraction:
             separate thread.
 
         """
-        use_asyncio = platform.system() == 'Windows' or use_asyncio
+        use_asyncio = platform.system() == "Windows" or use_asyncio
         if ms <= 0:
-            raise ValueError('ms must be greater than zero')
+            raise ValueError("ms must be greater than zero")
 
         if self._started:
             self.stop()
@@ -336,7 +336,7 @@ class FuryStreamInteraction:
             def callback(caller, event, *args, **kwargs):
                 interaction_callback(self.circular_queue, self.showm, self.iren, True)
 
-            self._id_observer = self.showm.iren.AddObserver('TimerEvent', callback)
+            self._id_observer = self.showm.iren.AddObserver("TimerEvent", callback)
             self._id_timer = self.showm.iren.CreateRepeatingTimer(ms)
 
         self._started = True

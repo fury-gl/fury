@@ -35,15 +35,15 @@ scene.background((0.9, 0.9, 0.9))
 # These subset of parameters have their values constrained in the 0 to 1 range.
 
 material_params = [
-    [[1, 1, 0], {'metallic': 0, 'roughness': 0}],
-    [(0, 0, 1), {'roughness': 0}],
-    [(1, 0, 1), {'anisotropy': 0, 'metallic': 0.25, 'roughness': 0.5}],
+    [[1, 1, 0], {"metallic": 0, "roughness": 0}],
+    [(0, 0, 1), {"roughness": 0}],
+    [(1, 0, 1), {"anisotropy": 0, "metallic": 0.25, "roughness": 0.5}],
     [
         (1, 0, 1),
-        {'anisotropy_rotation': 0, 'anisotropy': 1, 'metallic': 0.25, 'roughness': 0.5},
+        {"anisotropy_rotation": 0, "anisotropy": 1, "metallic": 0.25, "roughness": 0.5},
     ],
-    [(0, 1, 1), {'coat_strength': 0, 'roughness': 0}],
-    [(0, 1, 1), {'coat_roughness': 0, 'coat_strength': 1, 'roughness': 0}],
+    [(0, 1, 1), {"coat_strength": 0, "roughness": 0}],
+    [(0, 1, 1), {"coat_roughness": 0, "coat_strength": 1, "roughness": 0}],
 ]
 
 ###############################################################################
@@ -73,17 +73,17 @@ for i, mp in enumerate(material_params):
 # visualization.
 
 labels = [
-    'Metallic',
-    'Roughness',
-    'Anisotropy',
-    'Anisotropy Rotation',
-    'Coat Strength',
-    'Coat Roughness',
+    "Metallic",
+    "Roughness",
+    "Anisotropy",
+    "Anisotropy Rotation",
+    "Coat Strength",
+    "Coat Roughness",
 ]
 
-for i, l in enumerate(labels):
+for i, name in enumerate(labels):
     pos = [-40, -5 * i, 0]
-    label = actor.vector_text(l, pos=pos, scale=(0.8, 0.8, 0.8), color=(0, 0, 0))
+    label = actor.vector_text(name, pos=pos, scale=(0.8, 0.8, 0.8), color=(0, 0, 0))
     scene.add(label)
 
 for j in range(num_values):
@@ -105,14 +105,14 @@ for j in range(num_values):
 iors = np.round(np.linspace(1, 2.3, num=num_values), decimals=2)
 
 ior_params = [
-    [(0, 1, 1), {'base_ior': iors[0], 'roughness': 0}],
+    [(0, 1, 1), {"base_ior": iors[0], "roughness": 0}],
     [
         (0, 1, 1),
         {
-            'coat_ior': iors[0],
-            'coat_roughness': 0.1,
-            'coat_strength': 1,
-            'roughness': 0,
+            "coat_ior": iors[0],
+            "coat_roughness": 0.1,
+            "coat_strength": 1,
+            "roughness": 0,
         },
     ],
 ]
@@ -132,17 +132,17 @@ for i, iorp in enumerate(ior_params):
 ###############################################################################
 # Let's add the respective labels to the scene.
 
-labels = ['Base IoR', 'Coat IoR']
+labels = ["Base IoR", "Coat IoR"]
 
-for i, l in enumerate(labels):
+for i, name in enumerate(labels):
     pos = [-40, -35 - (5 * i), 0]
-    label = actor.vector_text(l, pos=pos, scale=(0.8, 0.8, 0.8), color=(0, 0, 0))
+    label = actor.vector_text(name, pos=pos, scale=(0.8, 0.8, 0.8), color=(0, 0, 0))
     scene.add(label)
 
 for j in range(num_values):
     pos = [-26 + 5 * j, -32, 0]
     label = actor.vector_text(
-        '{:.02f}'.format(iors[j]), pos=pos, scale=(0.8, 0.8, 0.8), color=(0, 0, 0)
+        "{:.02f}".format(iors[j]), pos=pos, scale=(0.8, 0.8, 0.8), color=(0, 0, 0)
     )
     scene.add(label)
 
@@ -153,4 +153,4 @@ interactive = False
 if interactive:
     window.show(scene)
 
-window.record(scene, size=(600, 600), out_path='viz_pbr_spheres.png')
+window.record(scene, size=(600, 600), out_path="viz_pbr_spheres.png")

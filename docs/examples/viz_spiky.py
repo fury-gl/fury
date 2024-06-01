@@ -24,7 +24,7 @@ scene = window.Scene()
 # of the surface normal.
 # ``prim_sphere`` provides a sphere with evenly distributed points
 
-vertices, triangles = primitive.prim_sphere(name='symmetric362', gen_faces=False)
+vertices, triangles = primitive.prim_sphere(name="symmetric362", gen_faces=False)
 
 ##############################################################################
 # To be able to visualize the vertices, let's define a point actor with
@@ -108,7 +108,7 @@ def timer_callback(_obj, _event):
 
 showm.add_timer_callback(True, 200, timer_callback)
 showm.start()
-window.record(showm.scene, size=(900, 768), out_path='viz_spiky.png')
+window.record(showm.scene, size=(900, 768), out_path="viz_spiky.png")
 
 ##############################################################################
 # Instead of arrows, you can choose other geometrical objects

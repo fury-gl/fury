@@ -33,13 +33,13 @@ class PickingManager:
         """
         self.pickers = {}
         if vertices:
-            self.pickers['vertices'] = PointPicker()
+            self.pickers["vertices"] = PointPicker()
         if faces:
-            self.pickers['faces'] = CellPicker()
+            self.pickers["faces"] = CellPicker()
         if actors:
-            self.pickers['actors'] = PropPicker()
+            self.pickers["actors"] = PropPicker()
         if world_coords:
-            self.pickers['world_coords'] = WorldPointPicker()
+            self.pickers["world_coords"] = WorldPointPicker()
 
     def pick(self, disp_xy, sc):
         """Pick on display coordinates.
@@ -54,25 +54,25 @@ class PickingManager:
         """
         x, y = disp_xy
         z = 0
-        info = {'vertex': None, 'face': None, 'actor': None, 'xyz': None}
+        info = {"vertex": None, "face": None, "actor": None, "xyz": None}
         keys = self.pickers.keys()
 
-        if 'vertices' in keys:
-            self.pickers['vertices'].Pick(x, y, z, sc)
-            info['vertex'] = self.pickers['vertices'].GetPointId()
+        if "vertices" in keys:
+            self.pickers["vertices"].Pick(x, y, z, sc)
+            info["vertex"] = self.pickers["vertices"].GetPointId()
 
-        if 'faces' in keys:
-            self.pickers['faces'].Pick(x, y, z, sc)
-            info['vertex'] = self.pickers['faces'].GetPointId()
-            info['face'] = self.pickers['faces'].GetCellId()
+        if "faces" in keys:
+            self.pickers["faces"].Pick(x, y, z, sc)
+            info["vertex"] = self.pickers["faces"].GetPointId()
+            info["face"] = self.pickers["faces"].GetCellId()
 
-        if 'actors' in keys:
-            self.pickers['actors'].Pick(x, y, z, sc)
-            info['actor'] = self.pickers['actors'].GetViewProp()
+        if "actors" in keys:
+            self.pickers["actors"].Pick(x, y, z, sc)
+            info["actor"] = self.pickers["actors"].GetViewProp()
 
-        if 'world_coords' in keys:
-            self.pickers['world_coords'].Pick(x, y, z, sc)
-            info['xyz'] = self.pickers['world_coords'].GetPickPosition()
+        if "world_coords" in keys:
+            self.pickers["world_coords"].Pick(x, y, z, sc)
+            info["xyz"] = self.pickers["world_coords"].GetPickPosition()
 
         return info
 
@@ -120,7 +120,7 @@ class PickingManager:
 class SelectionManager:
     """Selection Manager helps with picking many objects simultaneously."""
 
-    def __init__(self, select='faces'):
+    def __init__(self, select="faces"):
         """Initialize Selection Manager.
 
         Parameters
@@ -149,14 +149,14 @@ class SelectionManager:
 
         """
         self.selected_type = select.lower()
-        if select == 'faces' or select == 'edges':
+        if select == "faces" or select == "edges":
             self.hsel.SetFieldAssociation(DataObject.FIELD_ASSOCIATION_CELLS)
-        elif select == 'points' or select == 'vertices':
+        elif select == "points" or select == "vertices":
             self.hsel.SetFieldAssociation(DataObject.FIELD_ASSOCIATION_POINTS)
-        elif select == 'actors':
+        elif select == "actors":
             self.hsel.SetActorPassOnly(True)
         else:
-            raise ValueError('Unkown parameter select')
+            raise ValueError("Unknown parameter select")
 
     def pick(self, disp_xy, sc):
         """Pick on display coordinates returns a single object.
@@ -202,18 +202,16 @@ class SelectionManager:
             res = self.hsel.Select()
 
         except OverflowError:
-            return {0: {'node': None, 'vertex': None, 'face': None, 'actor': None}}
+            return {0: {"node": None, "vertex": None, "face": None, "actor": None}}
 
         num_nodes = res.GetNumberOfNodes()
         if num_nodes < 1:
             sel_node = None
-            return {0: {'node': None, 'vertex': None, 'face': None, 'actor': None}}
+            return {0: {"node": None, "vertex": None, "face": None, "actor": None}}
         else:
-
             for i in range(num_nodes):
-
                 sel_node = res.GetNode(i)
-                info = {'node': None, 'vertex': None, 'face': None, 'actor': None}
+                info = {"node": None, "vertex": None, "face": None, "actor": None}
 
                 if sel_node is not None:
                     selected_nodes = set(
@@ -222,12 +220,12 @@ class SelectionManager:
                         ).astype(int)
                     )
 
-                    info['node'] = sel_node
-                    info['actor'] = sel_node.GetProperties().Get(sel_node.PROP())
-                    if self.selected_type == 'faces':
-                        info['face'] = list(selected_nodes)
-                    if self.selected_type == 'vertex':
-                        info['vertex'] = list(selected_nodes)
+                    info["node"] = sel_node
+                    info["actor"] = sel_node.GetProperties().Get(sel_node.PROP())
+                    if self.selected_type == "faces":
+                        info["face"] = list(selected_nodes)
+                    if self.selected_type == "vertex":
+                        info["vertex"] = list(selected_nodes)
                 info_plus[i] = info
 
         return info_plus

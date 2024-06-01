@@ -1,8 +1,8 @@
 import os
 from time import perf_counter
 
-import numpy as np
 from PIL import Image
+import numpy as np
 
 from fury import window
 from fury.animation.animation import Animation
@@ -34,7 +34,6 @@ class Timeline:
     """
 
     def __init__(self, animations=None, playback_panel=False, loop=True, length=None):
-
         self._scene = None
         self.playback_panel = None
         self._current_timestamp = 0
@@ -285,9 +284,17 @@ class Timeline:
         """
         return self.playback_panel is not None
 
-    def record(self, fname=None, fps=30, speed=1.0, size=(900, 768),
-               order_transparent=True, multi_samples=8,
-               max_peels=4, show_panel=False):
+    def record(
+        self,
+        fname=None,
+        fps=30,
+        speed=1.0,
+        size=(900, 768),
+        order_transparent=True,
+        multi_samples=8,
+        max_peels=4,
+        show_panel=False,
+    ):
         """Record the animation
 
         Parameters
@@ -326,15 +333,16 @@ class Timeline:
         """
         ext = os.path.splitext(fname)[-1]
 
-        mp4 = ext == '.mp4'
+        mp4 = ext == ".mp4"
 
         if mp4:
             try:
                 import cv2
-            except ImportError:
-                raise ImportError('OpenCV must be installed in order to '
-                                  'save as MP4 video.')
-            fourcc = cv2.VideoWriter.fourcc(*'mp4v')
+            except ImportError as err:
+                raise ImportError(
+                    "OpenCV must be installed in order to " "save as MP4 video."
+                ) from err
+            fourcc = cv2.VideoWriter.fourcc(*"mp4v")
             out = cv2.VideoWriter(fname, fourcc, fps, size)
 
         duration = self.duration
@@ -356,8 +364,7 @@ class Timeline:
         render_window.SetSize(*size)
 
         if order_transparent:
-            window.antialiasing(scene, render_window, multi_samples, max_peels,
-                                0)
+            window.antialiasing(scene, render_window, multi_samples, max_peels, 0)
 
         render_window = RenderWindow()
         render_window.SetOffScreenRendering(1)
@@ -369,7 +376,7 @@ class Timeline:
 
         window_to_image_filter = WindowToImageFilter()
 
-        print('Recording...')
+        print("Recording...")
         while t < duration:
             self.seek(t)
             render_window.Render()
@@ -380,8 +387,7 @@ class Timeline:
             h, w, _ = vtk_image.GetDimensions()
             vtk_array = vtk_image.GetPointData().GetScalars()
             components = vtk_array.GetNumberOfComponents()
-            snap = numpy_support.vtk_to_numpy(vtk_array).reshape(w, h,
-                                                                 components)
+            snap = numpy_support.vtk_to_numpy(vtk_array).reshape(w, h, components)
             corrected_snap = np.flipud(snap)
 
             if mp4:
@@ -393,7 +399,7 @@ class Timeline:
 
             t += step
 
-        print('Saving...')
+        print("Saving...")
 
         if fname is None:
             return frames
@@ -401,8 +407,13 @@ class Timeline:
         if mp4:
             out.release()
         else:
-            frames[0].save(fname, append_images=frames[1:], loop=0,
-                           duration=1000 / fps, save_all=True)
+            frames[0].save(
+                fname,
+                append_images=frames[1:],
+                loop=0,
+                duration=1000 / fps,
+                save_all=True,
+            )
 
         if _hide_panel:
             self.playback_panel.show()
@@ -425,10 +436,10 @@ class Timeline:
             self._animations.append(animation)
             self.update_duration()
         else:
-            raise TypeError('Expected an Animation, a list or a tuple.')
+            raise TypeError("Expected an Animation, a list or a tuple.")
 
     @property
-    def animations(self) -> 'list[Animation]':
+    def animations(self) -> "list[Animation]":
         """Return a list of Animations.
 
         Returns

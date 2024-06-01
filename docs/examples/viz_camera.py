@@ -60,7 +60,7 @@ plan = actor.box(
 ###############################################################################
 # Creating "FURY" text
 # ====================
-fury_text = actor.vector_text('FURY', pos=(-4.3, 15, 0), scale=(2, 2, 2))
+fury_text = actor.vector_text("FURY", pos=(-4.3, 15, 0), scale=(2, 2, 2))
 
 ###############################################################################
 # Creating an ``Animation`` to animate the opacity of ``fury_text``
@@ -81,7 +81,7 @@ timeline.add_animation(text_anim)
 # =================================
 #
 
-for i in range(50):
+for _ in range(50):
     ###########################################################################
     # create a sphere actor that's centered at the origin and has random color
     # and radius.
@@ -176,4 +176,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_keyframe_animation_camera.png', size=(900, 768))
+window.record(scene, out_path="viz_keyframe_animation_camera.png", size=(900, 768))
