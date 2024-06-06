@@ -14,7 +14,7 @@ void rayGlyphIntersections(out float outRayParams[MAX_DEGREE], float shCoeffs[SH
         vec3 point = cos(float(i) * (pi / float(shDegree + 1))) * rayDir
                    + sin(float(i) * (pi / float(shDegree + 1))) * closestDir;
         float shs[SH_COUNT];
-        eval_sh(shs, point);
+        evalSH(shs, point, shDegree);
         shValues[i] = 0.0;
         _unroll_
         for (int j = 0; j != numCoeffs; ++j)

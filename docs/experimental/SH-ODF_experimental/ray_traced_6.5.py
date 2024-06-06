@@ -248,7 +248,9 @@ if __name__ == "__main__":
     #       SH_DEGREE in this order.
     #   param point The point on the unit sphere where the basis should be
     #       evaluated.
-    eval_sh = import_fury_shader(os.path.join("rt_odfs", "eval_sh.frag"))
+    eval_sh = import_fury_shader(
+        os.path.join("ray_traced", "odf", "eval_sh.frag")
+    )
 
     # Evaluates the gradient of each basis function given by eval_sh() and the
     # basis itself
@@ -272,7 +274,6 @@ if __name__ == "__main__":
     #       glyph. Their exact meaning is defined by eval_sh().
     #   param ray_origin The origin of the ray, relative to the glyph center.
     #   param ray_dir The normalized direction vector of the ray.
-    # TODO: Pass numCoeffs
     ray_sh_glyph_intersections = import_fury_shader(
         os.path.join("ray_traced", "odf", "ray_glyph_intersections.frag")
     )
