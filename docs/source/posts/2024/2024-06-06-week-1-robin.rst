@@ -31,7 +31,7 @@ I also merged a `PR <https://github.com/fury-gl/fury/pull/891>`_ on FURY which f
 3) **Deciding which embedding model to use**
 
 A good embedding model is necessary to generate embeddings which we then upsert into the DB. Ollama had embedding model support, but I found the catalogue very small and the models they provided were not powerful enough. Therefore I decided to try using HuggingFace Sentence Transformers.
-Sentence Transformers have a very vibrant catalogue of models available of various sizes. I chose `gte-large-en-v1.5 <https://huggingface.co/Alibaba-NLP/gte-large-en-v1.5>`_ from Alibaba-NLP, an 8k context, 434 million parameter model. It only had a modest memory requirement of 1.62 GB. 
+Sentence Transformers have a very vibrant catalogue of models available of various sizes. I chose `gte-large-en-v1.5 <https://huggingface.co/Alibaba-NLP/gte-large-en-v1.5>`_ from Alibaba-NLP, an 8k context, 434 million parameter model. It only had a modest memory requirement of 1.62 GB.
 Performance wise, it ranks 11th on the `MTEB leaderboard <https://huggingface.co/spaces/mteb/leaderboard>`_. It is a very interesting model due to its size:performance ratio.
 
 4) **Hosting the embedding model**
