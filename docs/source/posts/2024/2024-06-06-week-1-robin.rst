@@ -1,0 +1,106 @@
+Week 1: It officially begins...
+===============================
+
+.. post:: June 06 2024
+   :author: Robin Roy
+   :tags: google
+   :category: gsoc
+
+Hi, I'm `Robin <https://github.com/robinroy03>`_ and this is my blog about week 1.
+
+My goal for week 1 was to start with `Retrieval-Augmented Generation (RAG) <https://www.pinecone.io/learn/retrieval-augmented-generation/>`_, check different databases and host every endpoint. My week1 and week2 are very intertwined because I applied everything I did during week1 on week2. (I'm writing this blog midway through week2)
+
+why phi-3-mini-4k-instruct?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Before I detail everything I've done this week, I'll explain why `phi-3 mini 4k <https://huggingface.co/microsoft/Phi-3-mini-4k-instruct>`_ was chosen as the LLM, I forgot to mention this in the last blog. Phi-3 is a small 3.8B 4k context model. Due to its small size, it runs fast both locally and on huggingface. Performance wise comparatively with other opensource models, it performs decently well. In the `LMYSYS LLM leaderboard <https://chat.lmsys.org/?leaderboard>`_ phi-3 mini 4k comes with an ELO of 1066 (59th position). But it achieves this as a small model.
+I also tried Llama3-8B, it performs better than phi-3 mini with an ELO of 1153 and rank 22. But it is considerably slower for inference. Due to this, I chose phi-3 mini for now.
+
+
+Things I did week-1 (and some week2)
+------------------------------------
+
+1) **Choosing the vector database**
+
+I decided to choose `Pinecone <https://www.pinecone.io/>`_ as the vector DB because it had a very generous free tier. Other options on consideration were `pgvector <https://github.com/pgvector/pgvector>`_ and `chromadb <https://www.trychroma.com/>`_, but they didn't have a free tier.
+
+2) **PR Submissions and Review**
+
+I also merged a `PR <https://github.com/fury-gl/fury/pull/891>`_ on FURY which fixes a CI issue. I also spent time doing review of other PRs from my fellow GSoC mates.
+
+3) **Deciding which embedding model to use**
+
+A good embedding model is necessary to generate embeddings which we then upsert into the DB. Ollama had embedding model support, but I found the catalogue very small and the models they provided were not powerful enough. Therefore I decided to try using HuggingFace Sentence Transformers.
+Sentence Transformers have a very vibrant catalogue of models available of various sizes. I chose `gte-large-en-v1.5 <https://huggingface.co/Alibaba-NLP/gte-large-en-v1.5>`_ from Alibaba-NLP, an 8k context, 434 million parameter model. It only had a modest memory requirement of 1.62 GB. 
+Performance wise, it ranks 11th on the `MTEB leaderboard <https://huggingface.co/spaces/mteb/leaderboard>`_. It is a very interesting model due to its size:performance ratio.
+
+4) **Hosting the embedding model**
+
+Hosting this sentence-transformer model was confusing. For some reason, the HF spaces were blocking the Python script from writing on ``.cache`` folder. Later I figured out the reason and fixed it.
+I've hosted 5 gunicorn workers to serve 5 parallel requests at a time. Since the model is small, this is possible.
+
+5) **Hosting the database endpoint**
+
+I wrapped the pinecone db api into an endpoint so it'll be easy to query and receive the results.
+It is also configured to accept 5 concurrent requests although I could increase it a lot more.
+
+I upserted docstrings from ``fury/actor.py`` into the vector db for testing. So now, whenever you ask a question the model will use some ``actor.py`` function to give you an answer. For now, it could be used like a semantic function search engine.
+
+I decided to abstract the db endpoint to reduce the dependency on one provider. We can swap the providers as required and keep all other features running.
+
+6) **Hosting Discord Bot**
+
+So with this, all the endpoints are finally online. The bot has some issues, it is going offline midway for some reason. I'll have to see why that happens.
+
+For some reason, huggingface spaces decided to not start the bot script. Later a community admin from huggingface told me to use their official bot implementation as a reference. This is why I had to use threading and gradio to get the bot running (migrating to docker can be done, but this is how they did it and I just took that for now).
+
+Huggingface spaces need a script to satisfy certain criteria to allow them to run, one of them is a non-blocking I/O on the main loop. So I had to move the discord bot to a new thread.
+
+Connecting all of them together!
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+So now we have 4 hosted services:
+ - Discord Bot
+ - LLM API
+ - Embeddings API
+ - Database API
+
+Now we'll have to connect them all to get an answer to the user query.
+
+This is the current architecture, there's a lot of room for improvement here.
+
+
+   .. raw:: html
+
+      <iframe src="https://drive.google.com/file/d/1HIrIJcVNZAyZGHefistB8qrS5maeE7iG/preview" width="640" height="480" allow="autoplay"></iframe>
+
+The Language Model takes the context and the user query, combines them to form an answer and returns to the user through discord (for now). Maybe moving the core logic from discord bot to a separate node might be good, and connect discord/github/X to that node.
+The database takes embeddings and do an Approximate Nearest Neighbor search (a variant of KNN) and returns top-k results (k=3 for now).
+
+  .. raw:: html
+
+   <iframe src="https://drive.google.com/file/d/1k8nVQ_7-Jl_1P78PGuhjUxu5rJEc8TZn/preview" width="640" height="390" frameborder="0" allowfullscreen></iframe>
+
+
+What is coming up next week?
+----------------------------
+
+Answer quality improvements. Also, the discord bot dies randomly, have to fix that also.
+
+Did you get stuck anywhere?
+---------------------------
+
+Was stuck in hosting models on huggingface spaces, fixed it later.
+
+LINKS:
+
+- `Discord Bot <https://huggingface.co/spaces/robinroy03/fury-bot-discord/tree/main>`_
+
+- `Database Repo <https://huggingface.co/spaces/robinroy03/fury-db-endpoint/tree/main>`_
+
+- `Embedding Repo <https://huggingface.co/spaces/robinroy03/fury-embeddings-endpoint/tree/main>`_
+
+- `LLM Repo <https://huggingface.co/spaces/robinroy03/fury-bot/tree/main>`_
+
+
+Thank you for reading!
