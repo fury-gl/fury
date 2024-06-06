@@ -59,8 +59,8 @@ docs/source/generated/
 docs/source/api
 docs/source/auto_examples
 docs/source/auto_tutorials
-docs/source/sg_execution_times.rst
 docs/source/reference
+docs/source/sg_execution_times.rst
 docs/examples/*.png
 docs/examples/*.vtk
 docs/examples/*.gif
