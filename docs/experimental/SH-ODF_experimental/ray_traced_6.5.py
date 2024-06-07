@@ -248,9 +248,72 @@ if __name__ == "__main__":
     #       SH_DEGREE in this order.
     #   param point The point on the unit sphere where the basis should be
     #       evaluated.
+    """
     eval_sh = import_fury_shader(
         os.path.join("ray_traced", "odf", "eval_sh.frag")
     )
+    """
+
+    eval_sh = """
+    void evalSH(out float outSHs[SH_COUNT], vec3 point, int shDegree,
+        int numCoeffs)
+    {
+        if (shDegree == 2)
+        {
+            float tmpOutSHs[6];
+            #if SH_DEGREE == 2
+                eval_sh_2(tmpOutSHs, point);
+            #endif
+            for (int i = 0; i != numCoeffs; ++i)
+                outSHs[i] = tmpOutSHs[i];
+        }
+        else if (shDegree == 4)
+        {
+            float tmpOutSHs[15];
+            #if SH_DEGREE == 4
+                eval_sh_4(tmpOutSHs, point);
+            #endif
+            for (int i = 0; i != numCoeffs; ++i)
+                outSHs[i] = tmpOutSHs[i];
+        }
+        else if (shDegree == 6)
+        {
+            float tmpOutSHs[28];
+            #if SH_DEGREE == 6
+                eval_sh_6(tmpOutSHs, point);
+            #endif
+            for (int i = 0; i != numCoeffs; ++i)
+                outSHs[i] = tmpOutSHs[i];
+        }
+        else if (shDegree == 8)
+        {
+            float tmpOutSHs[45];
+            #if SH_DEGREE == 8
+                eval_sh_8(tmpOutSHs, point);
+            #endif
+            for (int i = 0; i != numCoeffs; ++i)
+                outSHs[i] = tmpOutSHs[i];
+        }
+        else if (shDegree == 10)
+        {
+            float tmpOutSHs[66];
+            #if SH_DEGREE == 10
+                eval_sh_10(tmpOutSHs, point);
+            #endif
+            for (int i = 0; i != numCoeffs; ++i)
+                outSHs[i] = tmpOutSHs[i];
+        }
+        else if (shDegree == 12)
+        {
+            float tmpOutSHs[91];
+            #if SH_DEGREE == 12
+                eval_sh_12(tmpOutSHs, point);
+            #endif
+            for (int i = 0; i != numCoeffs; ++i)
+                outSHs[i] = tmpOutSHs[i];
+        }
+    }
+    """
 
     # Evaluates the gradient of each basis function given by eval_sh() and the
     # basis itself
