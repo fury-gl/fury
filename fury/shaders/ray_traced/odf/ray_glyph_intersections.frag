@@ -24,7 +24,7 @@ void rayGlyphIntersections(out float outRayParams[MAX_DEGREE], float shCoeffs[SH
     // coordinate frame given by rayDir and closestDir
     float radiusPoly[SH_DEGREE + 1];
     float invVander[(SH_DEGREE + 1) * (SH_DEGREE + 1)];
-    get_inv_vandermonde(invVander);
+    getInvVandermonde(invVander, shDegree);
     _unroll_
     for (int i = 0; i != shDegree + 1; ++i) {
         radiusPoly[i] = 0.0;

@@ -329,7 +329,7 @@ if __name__ == "__main__":
     # Outputs a matrix that turns equidistant samples on the unit circle of a
     # homogeneous polynomial into coefficients of that polynomial.
     get_inv_vandermonde = import_fury_shader(
-        os.path.join("rt_odfs", "get_inv_vandermonde.frag")
+        os.path.join("ray_traced", "odf", "get_inv_vandermonde.frag")
     )
 
     # Determines all intersections between a ray and a spherical harmonics
