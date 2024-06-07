@@ -203,11 +203,16 @@ if __name__ == "__main__":
     eval_sh_composed = ""
     for i in range(2, max_sh_degree + 1, 2):
         eval_sh = import_fury_shader(
-            os.path.join("rt_odfs", sh_basis, "eval_sh_" + str(i) + ".frag")
+            os.path.join(
+                "ray_traced", "odf", sh_basis, "eval_sh_" + str(i) + ".frag"
+            )
         )
         eval_sh_grad = import_fury_shader(
             os.path.join(
-                "rt_odfs", sh_basis, "eval_sh_grad_" + str(i) + ".frag"
+                "ray_traced",
+                "odf",
+                sh_basis,
+                "eval_sh_grad_" + str(i) + ".frag",
             )
         )
         eval_sh_composed = compose_shader(
@@ -255,62 +260,62 @@ if __name__ == "__main__":
     """
 
     eval_sh = """
-    void evalSH(out float outSHs[SH_COUNT], vec3 point, int shDegree,
+    void evalSH(out float outSH[SH_COUNT], vec3 point, int shDegree,
         int numCoeffs)
     {
         if (shDegree == 2)
         {
-            float tmpOutSHs[6];
+            float tmpOutSH[6];
             #if SH_DEGREE == 2
-                eval_sh_2(tmpOutSHs, point);
+                evalSH2(tmpOutSH, point);
             #endif
             for (int i = 0; i != numCoeffs; ++i)
-                outSHs[i] = tmpOutSHs[i];
+                outSH[i] = tmpOutSH[i];
         }
         else if (shDegree == 4)
         {
-            float tmpOutSHs[15];
+            float tmpOutSH[15];
             #if SH_DEGREE == 4
-                eval_sh_4(tmpOutSHs, point);
+                evalSH4(tmpOutSH, point);
             #endif
             for (int i = 0; i != numCoeffs; ++i)
-                outSHs[i] = tmpOutSHs[i];
+                outSH[i] = tmpOutSH[i];
         }
         else if (shDegree == 6)
         {
-            float tmpOutSHs[28];
+            float tmpOutSH[28];
             #if SH_DEGREE == 6
-                eval_sh_6(tmpOutSHs, point);
+                evalSH6(tmpOutSH, point);
             #endif
             for (int i = 0; i != numCoeffs; ++i)
-                outSHs[i] = tmpOutSHs[i];
+                outSH[i] = tmpOutSH[i];
         }
         else if (shDegree == 8)
         {
-            float tmpOutSHs[45];
+            float tmpOutSH[45];
             #if SH_DEGREE == 8
-                eval_sh_8(tmpOutSHs, point);
+                evalSH8(tmpOutSH, point);
             #endif
             for (int i = 0; i != numCoeffs; ++i)
-                outSHs[i] = tmpOutSHs[i];
+                outSH[i] = tmpOutSH[i];
         }
         else if (shDegree == 10)
         {
-            float tmpOutSHs[66];
+            float tmpOutSH[66];
             #if SH_DEGREE == 10
-                eval_sh_10(tmpOutSHs, point);
+                evalSH10(tmpOutSH, point);
             #endif
             for (int i = 0; i != numCoeffs; ++i)
-                outSHs[i] = tmpOutSHs[i];
+                outSH[i] = tmpOutSH[i];
         }
         else if (shDegree == 12)
         {
-            float tmpOutSHs[91];
+            float tmpOutSH[91];
             #if SH_DEGREE == 12
-                eval_sh_12(tmpOutSHs, point);
+                evalSH12(tmpOutSH, point);
             #endif
             for (int i = 0; i != numCoeffs; ++i)
-                outSHs[i] = tmpOutSHs[i];
+                outSH[i] = tmpOutSH[i];
         }
     }
     """
