@@ -43,14 +43,14 @@ but also for improving my own coding and reviewing skills.
 Acknowledgements
 ~~~~~~~~~~~~~~~~~
 
-I would like to thank all my classmates and my guide for their constructive suggestions on my work.
+I would like to thank all my classmates: `Iñigo Tellaetxe Elorriaga <https://github.com/itellaetxe>`_, `Robin Roy <https://github.com/robinroy03>`_, `Kaustav Deka <https://github.com/deka27>`_ and my guide: `Serge Koudoro <https://github.com//skoudoro>`_ for their constructive suggestions on my work.
 Their ideas and suggestions were of great help to me and I am grateful for their support and advice.
 
 
 What happens next?
 ~~~~~~~~~~~~~~~~~~
 
-Here's a summary of what I plan to do in week three:
+Here's a summary of what I plan to do in week two:
 
 - Apply the keyword_only decorator to all other necessary functions.
 - Update the calling of these functions in the code to ensure consistency and avoid raising warnings.
