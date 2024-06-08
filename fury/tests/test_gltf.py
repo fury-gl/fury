@@ -54,21 +54,23 @@ def test_load_texture():
     scene.add(actor)
     display = window.snapshot(scene)
     res = window.analyze_snapshot(
-        display, bg_color=(0, 0, 0), colors=[(149, 126, 19), (136, 115, 19), (143, 121, 19)], find_objects=False
+        display, bg_color=(0, 0, 0),
+        colors=[(149, 126, 19), (136, 115, 19), (143, 121, 19)],
+        find_objects=False
     )
     npt.assert_equal(res.colors_found, [True, True, True])
     scene.clear()
 
 
-@pytest.mark.skipif(True, reason="This test is failing on CI, not sure why yet")
+@pytest.mark.skipif(True, reason="Failing! Needs more investigation")
 def test_colors():
     # vertex colors
     fetch_gltf("BoxVertexColors")
     file = read_viz_gltf("BoxVertexColors", "glTF")
     importer = glTF(file)
-    actor = importer.actors()[0]
+    imp_actor = importer.actors()[0]
     scene = window.Scene()
-    scene.add(actor)
+    scene.add(imp_actor)
     display = window.snapshot(scene)
     res = window.analyze_snapshot(
         display,
@@ -182,10 +184,15 @@ def test_export_gltf():
 
     display_2 = window.snapshot(scene)
 
-    colors_display_1 = Counter([tuple(color) for color in display_1.reshape(-1, 3)])
-    colors_display_2 = Counter([tuple(color) for color in display_2.reshape(-1, 3)])
+    colors_display_1 = Counter(
+        [tuple(color) for color in display_1.reshape(-1, 3)]
+    )
+    colors_display_2 = Counter(
+        [tuple(color) for color in display_2.reshape(-1, 3)]
+    )
 
-    is_equal_colors = colors_display_1.most_common(5) == colors_display_2.most_common(5)
+    is_equal_colors = (colors_display_1.most_common(5) ==
+                       colors_display_2.most_common(5))
 
     npt.assert_equal(is_equal_colors, True)
 
@@ -337,7 +344,8 @@ def test_morphing():
 
     npt.assert_equal(len(gltf_obj._actors), 2)
     npt.assert_equal(len(gltf_obj.morph_weights), 16)
-    npt.assert_equal(list(animations.keys()), ["Individuals", "TheWave", "Pulse"])
+    npt.assert_equal(list(animations.keys()),
+                     ["Individuals", "TheWave", "Pulse"])
     anim_1 = animations["TheWave"]
     gltf_obj.update_morph(anim_1)
 
