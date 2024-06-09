@@ -13,7 +13,7 @@ My goal for week 1 was to start with `Retrieval-Augmented Generation (RAG) <http
 why phi-3-mini-4k-instruct?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Before I detail everything I've done this week, I'll explain why `phi-3 mini 4k <https://huggingface.co/microsoft/Phi-3-mini-4k-instruct>`_ was chosen as the LLM, I forgot to mention this in the last blog. Phi-3 is a small 3.8B 4k context model. Due to its small size, it runs fast both locally and on huggingface. Performance wise comparatively with other opensource models, it performs decently well. In the `LMYSYS LLM leaderboard <https://chat.lmsys.org/?leaderboard>`_ phi-3 mini 4k comes with an ELO of 1066 (59th position). But it achieves this as a small model.
+Before I detail everything I've done this week, I'll explain why `phi-3 mini 4k <https://huggingface.co/microsoft/Phi-3-mini-4k-instruct>`_ was chosen as the LLM, I forgot to mention this in the last blog. Phi-3 is a small 3.8B 4k context model, it means it can work with 4k tokens(similar to words) at a time. Due to its small size, it runs fast both locally and on Huggingface. Performance wise comparatively with other opensource models, it performs decently well. In the `LMSYS LLM leaderboard <https://chat.lmsys.org/?leaderboard>`_ phi-3 mini 4k comes with an ELO of 1066 (59th position). But it achieves this as a small model.
 I also tried Llama3-8B, it performs better than phi-3 mini with an ELO of 1153 and rank 22. But it is considerably slower for inference. Due to this, I chose phi-3 mini for now.
 
 
@@ -36,30 +36,31 @@ Performance wise, it ranks 11th on the `MTEB leaderboard <https://huggingface.co
 
 4) **Hosting the embedding model**
 
-Hosting this sentence-transformer model was confusing. For some reason, the HF spaces were blocking the Python script from writing on ``.cache`` folder. Later I figured out the reason and fixed it.
+Hosting this sentence-transformer model was confusing. For some reason, the HF spaces were blocking the Python script from writing on ``.cache`` folder. Docker container inside spaces runs with user id 1000 (non-root user), therefore I had to give it permission to download and store files.
+
 I've hosted 5 gunicorn workers to serve 5 parallel requests at a time. Since the model is small, this is possible.
 
 5) **Hosting the database endpoint**
 
-I wrapped the pinecone db api into an endpoint so it'll be easy to query and receive the results.
+I wrapped the pinecone DB API into an endpoint so it'll be easy to query and receive the results.
 It is also configured to accept 5 concurrent requests although I could increase it a lot more.
 
-I upserted docstrings from ``fury/actor.py`` into the vector db for testing. So now, whenever you ask a question the model will use some ``actor.py`` function to give you an answer. For now, it could be used like a semantic function search engine.
+I upserted docstrings from ``fury/actor.py`` into the vector DB for testing. So now, whenever you ask a question the model will use some ``actor.py`` function to give you an answer. For now, it could be used like a semantic function search engine.
 
-I decided to abstract the db endpoint to reduce the dependency on one provider. We can swap the providers as required and keep all other features running.
+I decided to abstract the DB endpoint to reduce the dependency on one provider. We can swap the providers as required and keep all other features running.
 
 6) **Hosting Discord Bot**
 
 So with this, all the endpoints are finally online. The bot has some issues, it is going offline midway for some reason. I'll have to see why that happens.
 
-For some reason, huggingface spaces decided to not start the bot script. Later a community admin from huggingface told me to use their official bot implementation as a reference. This is why I had to use threading and gradio to get the bot running (migrating to docker can be done, but this is how they did it and I just took that for now).
+For some reason, Huggingface spaces decided to not start the bot script. Later a community admin from Huggingface told me to use their official bot implementation as a reference. This is why I had to use threading and gradio to get the bot running (migrating to docker can be done, but this is how they did it and I just took that for now).
 
 Huggingface spaces need a script to satisfy certain criteria to allow them to run, one of them is a non-blocking I/O on the main loop. So I had to move the discord bot to a new thread.
 
 Connecting all of them together!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-So now we have 4 hosted services:
+So now we have 4 hosted services, all hosted on HuggingFace spaces:
  - Discord Bot
  - LLM API
  - Embeddings API
@@ -72,15 +73,14 @@ This is the current architecture, there's a lot of room for improvement here.
 
    .. raw:: html
 
-      <iframe src="https://drive.google.com/file/d/1HIrIJcVNZAyZGHefistB8qrS5maeE7iG/preview" width="640" height="480" allow="autoplay"></iframe>
+      <img src="https://github.com/fury-gl/fury-communication-assets/blob/main/gsoc_2024/7-6-2024-demo-architecture-gsoc-robin-week2.png?raw=true">
 
 The Language Model takes the context and the user query, combines them to form an answer and returns to the user through discord (for now). Maybe moving the core logic from discord bot to a separate node might be good, and connect discord/github/X to that node.
 The database takes embeddings and do an Approximate Nearest Neighbor search (a variant of KNN) and returns top-k results (k=3 for now).
 
   .. raw:: html
 
-   <iframe src="https://drive.google.com/file/d/1k8nVQ_7-Jl_1P78PGuhjUxu5rJEc8TZn/preview" width="640" height="390" frameborder="0" allowfullscreen></iframe>
-
+   <iframe src="https://github.com/robinroy03/fury-discord-bot/assets/115863770/48f1136d-18a5-45ee-aa22-0a3f6426d575" width="640" height="390" frameborder="0" allowfullscreen></iframe>
 
 What is coming up next week?
 ----------------------------
@@ -90,7 +90,7 @@ Answer quality improvements. Also, the discord bot dies randomly, have to fix th
 Did you get stuck anywhere?
 ---------------------------
 
-Was stuck in hosting models on huggingface spaces, fixed it later.
+Was stuck in hosting models on Huggingface spaces, fixed it later.
 
 LINKS:
 
@@ -102,5 +102,14 @@ LINKS:
 
 - `LLM Repo <https://huggingface.co/spaces/robinroy03/fury-bot/tree/main>`_
 
+- `Retrieval-Augmented Generation (RAG) <https://www.pinecone.io/learn/retrieval-augmented-generation/>`_
+- `phi-3 mini 4k <https://huggingface.co/microsoft/Phi-3-mini-4k-instruct>`_
+- `LMSYS LLM leaderboard <https://chat.lmsys.org/?leaderboard>`_
+- `Pinecone <https://www.pinecone.io/>`_
+- `pgvector <https://github.com/pgvector/pgvector>`_
+- `chromadb <https://www.trychroma.com/>`_
+- `PR <https://github.com/fury-gl/fury/pull/891>`_
+- `gte-large-en-v1.5 <https://huggingface.co/Alibaba-NLP/gte-large-en-v1.5>`_
+- `MTEB leaderboard <https://huggingface.co/spaces/mteb/leaderboard>`_
 
 Thank you for reading!
