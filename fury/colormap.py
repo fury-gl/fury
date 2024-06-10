@@ -15,7 +15,7 @@ from fury.optpkg import optional_package
 cm, have_matplotlib, _ = optional_package("matplotlib.cm")
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def colormap_lookup_table(
     *,
     scale_range=(0, 1),
@@ -245,7 +245,7 @@ def orient2rgb(v):
     return orient
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def line_colors(streamlines, *, cmap="rgb_standard"):
     """Create colors for streamlines to be used in actor.line.
 
@@ -312,7 +312,7 @@ def get_cmap(name):
     return simple_cmap
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def create_colormap(v, *, name="plasma", auto=True):
     """Create colors from a specific colormap and return it
     as an array of shape (N,3) where every row gives the corresponding
@@ -516,7 +516,7 @@ def _lab2rgb(lab):
     return _xyz2rgb(tmp)
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def distinguishable_colormap(*, bg=(0, 0, 0), exclude=None, nb_colors=None):
     """Generate colors that are maximally perceptually distinct.
 
@@ -909,7 +909,7 @@ def get_xyz_coords(illuminant, observer):
         ) from err
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def xyz2lab(xyz, *, illuminant="D65", observer="2"):
     """XYZ to CIE-LAB color space conversion.
 
@@ -957,7 +957,7 @@ def xyz2lab(xyz, *, illuminant="D65", observer="2"):
     return np.concatenate([x[..., np.newaxis] for x in [L, a, b]], axis=-1)
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def lab2xyz(lab, *, illuminant="D65", observer="2"):
     """CIE-LAB to XYZcolor space conversion.
 
@@ -1009,7 +1009,7 @@ def lab2xyz(lab, *, illuminant="D65", observer="2"):
     return out
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def rgb2lab(rgb, *, illuminant="D65", observer="2"):
     """Conversion from the sRGB color space (IEC 61966-2-1:1999)
     to the CIE Lab colorspace under the given illuminant and observer.
@@ -1040,7 +1040,7 @@ def rgb2lab(rgb, *, illuminant="D65", observer="2"):
     return xyz2lab(rgb2xyz(rgb), illuminant=illuminant, observer=observer)
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def lab2rgb(lab, *, illuminant="D65", observer="2"):
     """Lab to RGB color space conversion.
 

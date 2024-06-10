@@ -14,7 +14,7 @@ except ImportError:
 COMMIT_HASH = "$Format:%h$"
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def pkg_commit_hash(pkg_path: str | None = None) -> tuple[str, str]:
     """Get short form of commit hash
 

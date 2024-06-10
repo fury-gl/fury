@@ -7,7 +7,7 @@ from fury.decorators import warn_on_args_to_kwargs
 from fury.io import load_image
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def matplotlib_figure_to_numpy(
     fig, *, dpi=100, fname=None, flip_up_down=True, transparent=False
 ):

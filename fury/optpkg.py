@@ -67,7 +67,7 @@ class TripWire:
         raise TripWireError(self._msg)
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def optional_package(name, *, trip_msg=None):
     """Return package-like thing and module setup for package `name`.
 

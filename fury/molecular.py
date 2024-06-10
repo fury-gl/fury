@@ -35,7 +35,7 @@ class Molecule(Mol):
     This is a more pythonic version of ``Molecule``.
     """
 
-    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
         *,
@@ -157,7 +157,7 @@ def add_atom(molecule, atomic_num, x_coord, y_coord, z_coord):
     molecule.AppendAtom(atomic_num, x_coord, y_coord, z_coord)
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def add_bond(molecule, atom1_index, atom2_index, *, bond_order=1):
     """Add bonding data to our molecule. Establish a bond of type bond_order
     between the atom at atom1_index and the atom at atom2_index.
@@ -420,7 +420,7 @@ class PTable(PeriodicTable):
         """
         return self.GetAtomicNumber(element_name)
 
-    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+    @warn_on_args_to_kwargs()
     def atomic_radius(self, atomic_number, *, radius_type="VDW"):
         """Given an atomic number, return either the covalent radius of the
         atom (in Å) or return the Van Der Waals radius (in Å) of the atom
@@ -465,7 +465,7 @@ class PTable(PeriodicTable):
         return rgb
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def sphere_cpk(molecule, *, colormode="discrete"):
     """Create an actor for sphere molecular representation. It's also referred
     to as CPK model and space-filling model.
@@ -522,7 +522,7 @@ def sphere_cpk(molecule, *, colormode="discrete"):
     return molecule_actor
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def ball_stick(
     molecule,
     *,
@@ -609,7 +609,7 @@ def ball_stick(
     return molecule_actor
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def stick(molecule, *, colormode="discrete", bond_thickness=0.1):
     """Create an actor for stick molecular representation.
 
@@ -839,7 +839,7 @@ def ribbon(molecule):
     return molecule_actor
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def bounding_box(molecule, *, colors=(1, 1, 1), linewidth=0.3):
     """Create a bounding box for a molecule.
 

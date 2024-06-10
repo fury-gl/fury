@@ -39,7 +39,7 @@ _AXES2TUPLE = {
 _TUPLE2AXES = {v: k for k, v in _AXES2TUPLE.items()}
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def euler_matrix(ai, aj, ak, *, axes="sxyz"):
     """Return homogeneous rotation matrix from Euler angles and axis sequence.
 

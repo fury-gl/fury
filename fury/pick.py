@@ -17,7 +17,7 @@ from fury.lib import (
 class PickingManager:
     """Picking Manager helps with picking 3D objects."""
 
-    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
         *,
@@ -129,7 +129,7 @@ class PickingManager:
 class SelectionManager:
     """Selection Manager helps with picking many objects simultaneously."""
 
-    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+    @warn_on_args_to_kwargs()
     def __init__(self, *, select="faces"):
         """Initialize Selection Manager.
 
@@ -181,7 +181,7 @@ class SelectionManager:
         """
         return self.select(disp_xy, sc, area=0)[0]
 
-    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+    @warn_on_args_to_kwargs()
     def select(self, disp_xy, sc, *, area=0):
         """Select multiple objects using display coordinates.
 
