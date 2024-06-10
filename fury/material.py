@@ -1,7 +1,7 @@
 import os
 import warnings
 
-from fury.decorators import keyword_only
+from fury.decorators import warn_on_args_to_kwargs
 from fury.lib import VTK_OBJECT, calldata_type
 from fury.shaders import (
     add_shader_callback,
@@ -135,7 +135,7 @@ class __PBRParams:
         self.__actor_properties.SetCoatIOR(coat_ior)
 
 
-@keyword_only
+@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
 def manifest_pbr(
     actor,
     *,
@@ -211,7 +211,7 @@ def manifest_pbr(
         return None
 
 
-@keyword_only
+@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
 def manifest_principled(
     actor,
     *,
@@ -611,7 +611,7 @@ def manifest_principled(
         return None
 
 
-@keyword_only
+@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
 def manifest_standard(
     actor,
     *,

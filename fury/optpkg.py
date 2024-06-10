@@ -2,7 +2,7 @@
 
 import importlib
 
-from fury.decorators import keyword_only
+from fury.decorators import warn_on_args_to_kwargs
 
 try:
     import pytest
@@ -67,7 +67,7 @@ class TripWire:
         raise TripWireError(self._msg)
 
 
-@keyword_only
+@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
 def optional_package(name, *, trip_msg=None):
     """Return package-like thing and module setup for package `name`.
 

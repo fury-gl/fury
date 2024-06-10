@@ -3,7 +3,7 @@ import math
 import numpy as np
 from scipy.spatial.transform import Rotation as Rot  # type: ignore
 
-from fury.decorators import keyword_only
+from fury.decorators import warn_on_args_to_kwargs
 
 # axis sequences for Euler angles
 _NEXT_AXIS = [1, 2, 0, 1]
@@ -39,7 +39,7 @@ _AXES2TUPLE = {
 _TUPLE2AXES = {v: k for k, v in _AXES2TUPLE.items()}
 
 
-@keyword_only
+@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
 def euler_matrix(ai, aj, ak, *, axes="sxyz"):
     """Return homogeneous rotation matrix from Euler angles and axis sequence.
 

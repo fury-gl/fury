@@ -1704,7 +1704,7 @@ def dot(points, colors=None, opacity=None, dot_size=5):
         vtk_faces.InsertNextCell(1)
         vtk_faces.InsertCellPoint(idd)
 
-    color_tuple = color_check(len(points), colors)
+    color_tuple = color_check(len(points), colors=colors)
     color_array, global_opacity = color_tuple
 
     # Create a polydata object

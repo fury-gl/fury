@@ -2,12 +2,12 @@
 
 import numpy as np
 
-from fury.decorators import keyword_only
+from fury.decorators import warn_on_args_to_kwargs
 
 TWO_PI = 2 * np.pi
 
 
-@keyword_only
+@warn_on_args_to_kwargs()
 def clip_overflow(textblock, width, *, side="right"):
     """Clips overflowing text of TextBlock2D with respect to width.
 
@@ -39,7 +39,7 @@ def clip_overflow(textblock, width, *, side="right"):
     return textblock.message
 
 
-@keyword_only
+@warn_on_args_to_kwargs()
 def wrap_overflow(textblock, wrap_width, *, side="right"):
     """Wraps overflowing text of TextBlock2D with respect to width.
 
@@ -84,7 +84,7 @@ def wrap_overflow(textblock, wrap_width, *, side="right"):
     return textblock.message
 
 
-@keyword_only
+@warn_on_args_to_kwargs()
 def check_overflow(textblock, width, *, overflow_postfix="", side="right"):
     """Checks if the text is overflowing.
 
