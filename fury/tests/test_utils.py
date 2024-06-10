@@ -838,7 +838,7 @@ def test_color_check():
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
     colors = np.array([[1, 0, 0, 0.5], [0, 1, 0, 0.5], [0, 0, 1, 0.5]])
 
-    color_tuple = color_check(len(points), colors)
+    color_tuple = color_check(len(points), colors=colors)
     color_array, global_opacity = color_tuple
 
     npt.assert_equal(color_array, np.floor(colors * 255))
@@ -847,7 +847,7 @@ def test_color_check():
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
     colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
-    color_tuple = color_check(len(points), colors)
+    color_tuple = color_check(len(points), colors=colors)
     color_array, global_opacity = color_tuple
 
     npt.assert_equal(color_array, np.floor(colors * 255))
@@ -856,7 +856,7 @@ def test_color_check():
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
     colors = (1, 1, 1, 0.5)
 
-    color_tuple = color_check(len(points), colors)
+    color_tuple = color_check(len(points), colors=colors)
     color_array, global_opacity = color_tuple
 
     npt.assert_equal(color_array, np.floor(np.array([colors] * 3) * 255))
@@ -865,7 +865,7 @@ def test_color_check():
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
     colors = (1, 0, 0)
 
-    color_tuple = color_check(len(points), colors)
+    color_tuple = color_check(len(points), colors=colors)
     color_array, global_opacity = color_tuple
 
     npt.assert_equal(color_array, np.floor(np.array([colors] * 3) * 255))
@@ -963,7 +963,7 @@ def test_set_actor_origin():
     cube = actor.cube(np.array([[0, 0, 0]]))
     orig_vert = np.copy(vertices_from_actor(cube))
 
-    utils.set_actor_origin(cube, np.array([0.5, 0.5, 0.5]))
+    utils.set_actor_origin(cube, center=np.array([0.5, 0.5, 0.5]))
     new_vert = np.copy(vertices_from_actor(cube))
     npt.assert_array_equal(orig_vert, new_vert + np.array([0.5, 0.5, 0.5]))
 

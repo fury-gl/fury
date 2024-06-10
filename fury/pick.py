@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 import numpy as np
 
-from fury.decorators import keyword_only
+from fury.decorators import warn_on_args_to_kwargs
 from fury.lib import (
     CellPicker,
     DataObject,
@@ -17,7 +17,7 @@ from fury.lib import (
 class PickingManager:
     """Picking Manager helps with picking 3D objects."""
 
-    @keyword_only
+    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
     def __init__(
         self,
         *,
@@ -129,7 +129,7 @@ class PickingManager:
 class SelectionManager:
     """Selection Manager helps with picking many objects simultaneously."""
 
-    @keyword_only
+    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
     def __init__(self, *, select="faces"):
         """Initialize Selection Manager.
 
@@ -181,7 +181,7 @@ class SelectionManager:
         """
         return self.select(disp_xy, sc, area=0)[0]
 
-    @keyword_only
+    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
     def select(self, disp_xy, sc, *, area=0):
         """Select multiple objects using display coordinates.
 

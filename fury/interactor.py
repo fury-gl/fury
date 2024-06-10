@@ -4,7 +4,7 @@ from collections import deque
 
 import numpy as np
 
-from fury.decorators import keyword_only
+from fury.decorators import warn_on_args_to_kwargs
 from fury.lib import (
     Command,
     InteractorStyle,
@@ -174,7 +174,7 @@ class CustomInteractorStyle(InteractorStyleUser):
 
         self.event.reset()  # Event fully processed.
 
-    @keyword_only
+    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
     def _button_clicked(self, button, *, last_event=-1, before_last_event=-2):
         if len(self.history) < abs(before_last_event):
             return False
@@ -188,9 +188,10 @@ class CustomInteractorStyle(InteractorStyleUser):
         return True
 
     def _button_double_clicked(self, button):
-        if not (self._button_clicked(button) and self._button_clicked(button,
-                                                                      last_event=-3,
-                                                                      before_last_event=-4)):
+        if not (
+            self._button_clicked(button)
+            and self._button_clicked(button, last_event=-3, before_last_event=-4)
+        ):
             return False
 
         return True
@@ -387,7 +388,7 @@ class CustomInteractorStyle(InteractorStyleUser):
         """Causes the scene to refresh."""
         self.GetInteractor().GetRenderWindow().Render()
 
-    @keyword_only
+    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
     def add_callback(self, prop, event_type, callback, *, priority=0, args=None):
         """Add a callback associated to a specific event for a VTK prop.
 

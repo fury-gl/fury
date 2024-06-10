@@ -13,7 +13,7 @@ import numpy as np
 from numpy.testing import assert_array_equal
 import scipy  # type: ignore
 
-from fury.decorators import keyword_only
+from fury.decorators import warn_on_args_to_kwargs
 
 
 @contextmanager
@@ -39,7 +39,7 @@ def captured_output():
         sys.stdout, sys.stderr = old_out, old_err
 
 
-@keyword_only
+@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
 def assert_operator(value1, value2, *, msg="", op=operator.eq):
     """Check Boolean statement."""
     if not op(value1, value2):
@@ -70,7 +70,7 @@ def assert_arrays_equal(arrays1, arrays2):
 
 
 class EventCounter:
-    @keyword_only
+    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
     def __init__(self, *, events_names=None):
         if events_names is None:
             events_names = [
@@ -173,7 +173,7 @@ class clear_and_catch_warnings(warnings.catch_warnings):
 
     class_modules = ()
 
-    @keyword_only
+    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
     def __init__(self, *, record=True, modules=()):
         self.modules = set(modules).union(self.class_modules)
         self._warnreg_copies = {}
