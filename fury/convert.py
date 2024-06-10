@@ -3,11 +3,11 @@ from tempfile import TemporaryDirectory
 
 import numpy as np
 
-from fury.decorators import keyword_only
+from fury.decorators import warn_on_args_to_kwargs
 from fury.io import load_image
 
 
-@keyword_only
+@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
 def matplotlib_figure_to_numpy(
     fig, *, dpi=100, fname=None, flip_up_down=True, transparent=False
 ):
