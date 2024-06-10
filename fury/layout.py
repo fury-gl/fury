@@ -2,7 +2,7 @@ import math
 
 import numpy as np
 
-from fury.decorators import keyword_only
+from fury.decorators import warn_on_args_to_kwargs
 from fury.utils import get_bounding_box_sizes, get_grid_cells_position, is_ui
 
 
@@ -33,7 +33,7 @@ class GridLayout(Layout):
 
     """
 
-    @keyword_only
+    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
     def __init__(
         self,
         *,
@@ -156,8 +156,8 @@ class GridLayout(Layout):
         shapes = [np.array(self.cell_padding) / 2.0 + s for s in shapes]
         positions = get_grid_cells_position(
             shapes,
-            self.aspect_ratio,
-            self.dim,
+            aspect_ratio=self.aspect_ratio,
+            dim=self.dim,
         )
 
         positions += self.position_offset
@@ -186,7 +186,7 @@ class GridLayout(Layout):
 class HorizontalLayout(GridLayout):
     """Provide functionalities for laying out actors in a horizontal layout."""
 
-    @keyword_only
+    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
     def __init__(self, *, cell_padding=0, cell_shape="rect"):
         """Initialize the Horizontal layout.
 
@@ -242,7 +242,7 @@ class HorizontalLayout(GridLayout):
 class VerticalLayout(GridLayout):
     """Provide functionalities for laying out actors in a vertical stack."""
 
-    @keyword_only
+    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
     def __init__(self, *, cell_padding=0, cell_shape="rect"):
         """Initialize the Vertical layout.
 
@@ -297,7 +297,7 @@ class VerticalLayout(GridLayout):
 class XLayout(HorizontalLayout):
     """Provide functionalities for laying out actors along x-axis."""
 
-    @keyword_only
+    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
     def __init__(self, *, direction="x+", cell_padding=0, cell_shape="rect"):
         """Initialize the X layout.
 
@@ -383,7 +383,7 @@ class XLayout(HorizontalLayout):
 class YLayout(VerticalLayout):
     """Provide functionalities for laying out actors along y-axis."""
 
-    @keyword_only
+    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
     def __init__(self, *, direction="y+", cell_padding=0, cell_shape="rect"):
         """Initialize the Y layout.
 
@@ -469,7 +469,7 @@ class YLayout(VerticalLayout):
 class ZLayout(GridLayout):
     """Provide functionalities for laying out actors along z-axis."""
 
-    @keyword_only
+    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
     def __init__(self, *, direction="z+", cell_padding=0, cell_shape="rect"):
         """Initialize the Z layout.
 
