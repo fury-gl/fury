@@ -2,7 +2,7 @@
 
 import numpy.testing as npt
 
-from fury.decorators import doctest_skip_parser, keyword_only
+from fury.decorators import doctest_skip_parser, warn_on_args_to_kwargs
 from fury.testing import assert_true
 
 HAVE_AMODULE = False
@@ -51,28 +51,44 @@ def test_skipper():
     npt.assert_raises(NameError, doctest_skip_parser, f)
 
 
-def test_keyword_only():
-    @keyword_only
-    def f(a, b, *, c, d=4, e=5):
+def test_warn_on_args_to_kwargs():
+    @warn_on_args_to_kwargs()
+    def func(a, b, *, c, d=4, e=5):
         return a + b + c + d + e
 
-    npt.assert_equal(f(1, 2, c=3, d=4, e=5), 15)
-    npt.assert_equal(f(1, 2, c=3, d=5), 16)
-    npt.assert_equal(f(1, 2, c=3), 15)
+    npt.assert_equal(func(1, 2, c=3, d=4, e=5), 15)
+    npt.assert_equal(func(1, 2, c=3, d=5), 16)
+    npt.assert_equal(func(1, 2, c=3), 15)
     with npt.assert_warns(UserWarning):
-        npt.assert_equal(f(1, 2, 3, 4, 5), 15)
+        npt.assert_equal(func(1, 2, 3, 4, 5), 15)
     with npt.assert_warns(UserWarning):
-        npt.assert_equal(f(1, 2, 3, 6), 17)
+        npt.assert_equal(func(1, 2, 3, 6), 17)
     with npt.assert_warns(UserWarning):
-        npt.assert_equal(f(1, 2, 10), 22)
+        npt.assert_equal(func(1, 2, 10), 22)
     with npt.assert_warns(UserWarning):
-        npt.assert_equal(f(1, 2, 10, d=10, e=19), 42)
+        npt.assert_equal(func(1, 2, 10, d=10, e=19), 42)
     with npt.assert_warns(UserWarning):
-        npt.assert_equal(f(1, 2, 10, e=10), 27)
+        npt.assert_equal(func(1, 2, 10, e=10), 27)
     with npt.assert_warns(UserWarning):
-        npt.assert_equal(f(1, 2, 10, d=10), 28)
-    # npt.assert_raises(TypeError, f, 1, 2, d=4, e=5)
-    # npt.assert_raises(TypeError, f, 1, 2, e=10)
-    # npt.assert_raises(TypeError, f, 1, 2, d=10)
-    # npt.assert_raises(TypeError, f, 1, 3)
-    # npt.assert_raises(TypeError, f, 1)
+        npt.assert_equal(func(1, 2, 10, d=10), 28)
+    npt.assert_raises(TypeError, func, 1, 2, d=4, e=5)
+    npt.assert_raises(TypeError, func, 1, 2, e=10)
+    npt.assert_raises(TypeError, func, 1, 2, d=10)
+    npt.assert_raises(TypeError, func, 1, 3)
+    npt.assert_raises(TypeError, func, 1)
+
+
+def test_warn_on_args_to_kwargs_with_versions():
+    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.1.0")
+    def func(a, b, *, c, d=4, e=5):
+        return a + b + c + d + e
+
+    npt.assert_equal(func(1, 2, c=3, d=4, e=5), 15)
+    npt.assert_equal(func(1, 2, c=3, d=5), 16)
+    npt.assert_equal(func(1, 2, c=3), 15)
+    with npt.assert_warns(UserWarning):
+        npt.assert_equal(func(1, 2, 3, 4, 5), 15)
+    with npt.assert_warns(UserWarning):
+        npt.assert_equal(func(1, 2, 3, 6), 17)
+    with npt.assert_warns(UserWarning):
+        npt.assert_equal(func(1, 2, 10), 22)
