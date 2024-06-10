@@ -86,7 +86,7 @@ def warn_on_args_to_kwargs(from_version=None, until_version=None):
 
         Examples:
         ---------
-        >>> @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+        >>> @warn_on_args_to_kwargs()
         ... def f(a, b, *, c, d=1, e=1):
         ...     return a + b + c + d + e
         >>> f(1, 2, 3, 4, 5)
