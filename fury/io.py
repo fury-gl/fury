@@ -35,7 +35,7 @@ from fury.lib import (
 from fury.utils import set_input
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def load_cubemap_texture(fnames, *, interpolate_on=True, mipmap_on=True):
     """Load a cube map texture from a list of 6 images.
 
@@ -76,7 +76,7 @@ def load_cubemap_texture(fnames, *, interpolate_on=True, mipmap_on=True):
     return texture
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def load_image(filename, *, as_vtktype=False, use_pillow=True):
     """Load an image.
 
@@ -220,7 +220,7 @@ def load_text(file):
     return text
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def save_image(
     arr,
     filename,
@@ -381,7 +381,7 @@ def load_polydata(file_name):
     return reader.GetOutput()
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def save_polydata(polydata, file_name, *, binary=False, color_array_name=None):
     """Save a vtk polydata to a supported format file.
 
@@ -432,7 +432,7 @@ def save_polydata(polydata, file_name, *, binary=False, color_array_name=None):
     writer.Write()
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def load_sprite_sheet(sheet_path, nb_rows, nb_cols, *, as_vtktype=False):
     """Process and load sprites from a sprite sheet.
 
