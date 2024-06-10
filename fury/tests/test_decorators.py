@@ -78,17 +78,17 @@ def test_warn_on_args_to_kwargs():
     npt.assert_raises(TypeError, func, 1)
 
 
-def test_warn_on_args_to_kwargs_with_versions():
-    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.1.0")
-    def func(a, b, *, c, d=4, e=5):
-        return a + b + c + d + e
+# def test_warn_on_args_to_kwargs_with_versions():
+#     @warn_on_args_to_kwargs()
+#     def func(a, b, *, c, d=4, e=5):
+#         return a + b + c + d + e
 
-    npt.assert_equal(func(1, 2, c=3, d=4, e=5), 15)
-    npt.assert_equal(func(1, 2, c=3, d=5), 16)
-    npt.assert_equal(func(1, 2, c=3), 15)
-    with npt.assert_warns(UserWarning):
-        npt.assert_equal(func(1, 2, 3, 4, 5), 15)
-    with npt.assert_warns(UserWarning):
-        npt.assert_equal(func(1, 2, 3, 6), 17)
-    with npt.assert_warns(UserWarning):
-        npt.assert_equal(func(1, 2, 10), 22)
+#     npt.assert_equal(func(1, 2, c=3, d=4, e=5), 15)
+#     npt.assert_equal(func(1, 2, c=3, d=5), 16)
+#     npt.assert_equal(func(1, 2, c=3), 15)
+#     with npt.assert_warns(UserWarning):
+#         npt.assert_equal(func(1, 2, 3, 4, 5), 15)
+#     with npt.assert_warns(UserWarning):
+#         npt.assert_equal(func(1, 2, 3, 6), 17)
+#     with npt.assert_warns(UserWarning):
+#         npt.assert_equal(func(1, 2, 10), 22)

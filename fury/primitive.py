@@ -47,7 +47,7 @@ def faces_from_sphere_vertices(vertices):
         return faces
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def repeat_primitive_function(
     func, centers, *, func_args=None, directions=(1, 0, 0), colors=(1, 0, 0), scales=1
 ):
@@ -105,7 +105,7 @@ def repeat_primitive_function(
     )
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def repeat_primitive(
     vertices,
     faces,
@@ -176,7 +176,7 @@ def repeat_primitive(
         axis=0,
     ).reshape((big_triangles.shape[0], 1))
 
-    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+    @warn_on_args_to_kwargs()
     def normalize_input(arr, *, arr_name=""):
         if (
             isinstance(arr, (tuple, list, np.ndarray))
@@ -299,7 +299,7 @@ def prim_box():
     return vertices, triangles
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def prim_sphere(*, name="symmetric362", gen_faces=False, phi=None, theta=None):
     """Provide vertices and triangles of the spheres.
 
@@ -610,7 +610,7 @@ def prim_rhombicuboctahedron():
     return vertices, triangles
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def prim_star(*, dim=2):
     """Return vertices and triangle for star geometry.
 
@@ -924,7 +924,7 @@ def prim_frustum():
     return vertices, triangles
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def prim_cylinder(*, radius=0.5, height=1, sectors=36, capped=True):
     """Return vertices and triangles for a cylinder.
 
@@ -1052,7 +1052,7 @@ def prim_cylinder(*, radius=0.5, height=1, sectors=36, capped=True):
     return vertices, triangles
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def prim_arrow(
     *,
     height=1.0,
@@ -1148,7 +1148,7 @@ def prim_arrow(
     return vertices, triangles
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def prim_cone(*, radius=0.5, height=1, sectors=10):
     """Return vertices and triangle of a Cone.
 

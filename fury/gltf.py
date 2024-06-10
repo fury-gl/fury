@@ -33,7 +33,7 @@ acc_type = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4, "MAT4": 16}
 
 
 class glTF:
-    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+    @warn_on_args_to_kwargs()
     def __init__(self, filename, *, apply_normals=False):
         """Read and generate actors from glTF files.
 
@@ -123,7 +123,7 @@ class glTF:
 
         return self._actors
 
-    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+    @warn_on_args_to_kwargs()
     def inspect_scene(self, *, scene_id=0):
         """Loop over nodes in a scene.
 
@@ -141,7 +141,7 @@ class glTF:
         for i, animation in enumerate(self.gltf.animations):
             self.transverse_channels(animation, i)
 
-    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+    @warn_on_args_to_kwargs()
     def transverse_node(self, nextnode_id, matrix, *, parent=None, is_joint=False):
         """Load mesh and generates transformation matrix.
 
@@ -656,7 +656,7 @@ class glTF:
             matrix = transf
         return matrix
 
-    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+    @warn_on_args_to_kwargs()
     def transverse_animations(
         self,
         animation,
@@ -756,7 +756,7 @@ class glTF:
             utils.update_actor(self._actors[i])
             utils.compute_bounds(self._actors[i])
 
-    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+    @warn_on_args_to_kwargs()
     def initialize_skin(self, animation, *, bones=False, length=0.2):
         """Create bones and add to the animation and initialise `update_skin`
 
@@ -778,7 +778,7 @@ class glTF:
             animation.add_actor(list(self._bactors.values()))
         self.update_skin(animation)
 
-    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+    @warn_on_args_to_kwargs()
     def apply_skin_matrix(self, vertices, joint_matrices, *, actor_index=0):
         """Apply the skinnig matrix, that transform the vertices.
 
@@ -872,7 +872,7 @@ class glTF:
             root_animation.add_actor(self._actors)
         return root_animations
 
-    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+    @warn_on_args_to_kwargs()
     def get_joint_actors(self, *, length=0.5, with_transforms=False):
         """Create an arrow actor for each bone in a skinned model.
 
@@ -1067,7 +1067,7 @@ class glTF:
         return main_animation
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def export_scene(scene, *, filename="default.gltf"):
     """Generate gltf from FURY scene.
 
@@ -1300,7 +1300,7 @@ def write_scene(gltf, nodes):
     gltf.scenes.append(scene)
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def write_node(gltf, *, mesh_id=None, camera_id=None):
     """Create node
 
@@ -1369,7 +1369,7 @@ def write_camera(gltf, camera):
     gltf.cameras.append(cam)
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def get_prim(vertex, index, color, tcoord, normal, material, *, mode=4):
     """Return a Primitive object.
 
@@ -1440,7 +1440,7 @@ def write_material(gltf, basecolortexture: int, uri: str):
     gltf.images.append(image)
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def write_accessor(
     gltf, bufferview, byte_offset, comp_type, count, accssor_type, *, max=None, min=None
 ):
@@ -1479,7 +1479,7 @@ def write_accessor(
     gltf.accessors.append(accessor)
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def write_bufferview(gltf, buffer, byte_offset, byte_length, *, byte_stride=None):
     """Write bufferview in the gltf.
 

@@ -135,7 +135,7 @@ class __PBRParams:
         self.__actor_properties.SetCoatIOR(coat_ior)
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def manifest_pbr(
     actor,
     *,
@@ -211,7 +211,7 @@ def manifest_pbr(
         return None
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def manifest_principled(
     actor,
     *,
@@ -611,7 +611,7 @@ def manifest_principled(
         return None
 
 
-@warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+@warn_on_args_to_kwargs()
 def manifest_standard(
     actor,
     *,
