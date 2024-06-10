@@ -174,7 +174,7 @@ class CustomInteractorStyle(InteractorStyleUser):
 
         self.event.reset()  # Event fully processed.
 
-    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+    @warn_on_args_to_kwargs()
     def _button_clicked(self, button, *, last_event=-1, before_last_event=-2):
         if len(self.history) < abs(before_last_event):
             return False
@@ -388,7 +388,7 @@ class CustomInteractorStyle(InteractorStyleUser):
         """Causes the scene to refresh."""
         self.GetInteractor().GetRenderWindow().Render()
 
-    @warn_on_args_to_kwargs(from_version="0.0.0", until_version="0.10.0")
+    @warn_on_args_to_kwargs()
     def add_callback(self, prop, event_type, callback, *, priority=0, args=None):
         """Add a callback associated to a specific event for a VTK prop.
 
