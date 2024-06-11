@@ -1,8 +1,8 @@
+from collections import Counter
 import itertools
 import os
 
 from PIL import Image
-from collections import Counter
 import numpy as np
 import numpy.testing as npt
 from packaging.version import parse
@@ -54,9 +54,10 @@ def test_load_texture():
     scene.add(actor)
     display = window.snapshot(scene)
     res = window.analyze_snapshot(
-        display, bg_color=(0, 0, 0),
+        display,
+        bg_color=(0, 0, 0),
         colors=[(149, 126, 19), (136, 115, 19), (143, 121, 19)],
-        find_objects=False
+        find_objects=False,
     )
     npt.assert_equal(res.colors_found, [True, True, True])
     scene.clear()
@@ -111,7 +112,7 @@ def test_orientation():
 
     # save screenshot
     img = Image.fromarray(display)
-    img.save('test_orientation.png')
+    img.save("test_orientation.png")
     res = window.analyze_snapshot(
         display,
         bg_color=(0, 0, 0),
@@ -184,14 +185,9 @@ def test_export_gltf():
 
     display_2 = window.snapshot(scene)
 
-    colors_display_1 = Counter(
-        [tuple(color) for color in display_1.reshape(-1, 3)]
-    )
-    colors_display_2 = Counter(
-        [tuple(color) for color in display_2.reshape(-1, 3)]
-    )
-    is_equal_colors = (colors_display_1.most_common(3) ==
-                       colors_display_2.most_common(3))
+    colors_display_1 = Counter([tuple(color) for color in display_1.reshape(-1, 3)])
+    colors_display_2 = Counter([tuple(color) for color in display_2.reshape(-1, 3)])
+    is_equal_colors = colors_display_1.most_common(3) == colors_display_2.most_common(3)
 
     # TODO: Test for image similarity instead of color
     #  similarity after fixing the issue with exporting
@@ -217,7 +213,7 @@ def test_simple_animation():
     showm.save_screenshot("keyframe1.png")
 
     timeline.seek(2.57)
-    showm.save_screenshot('keyframe2.png')
+    showm.save_screenshot("keyframe2.png")
 
     res_1 = window.analyze_snapshot(
         "keyframe1.png", colors=[(87, 112, 134), (134, 100, 133)]
@@ -346,8 +342,7 @@ def test_morphing():
 
     npt.assert_equal(len(gltf_obj._actors), 2)
     npt.assert_equal(len(gltf_obj.morph_weights), 16)
-    npt.assert_equal(list(animations.keys()),
-                     ["Individuals", "TheWave", "Pulse"])
+    npt.assert_equal(list(animations.keys()), ["Individuals", "TheWave", "Pulse"])
     anim_1 = animations["TheWave"]
     gltf_obj.update_morph(anim_1)
 

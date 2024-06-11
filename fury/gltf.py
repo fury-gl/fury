@@ -1,20 +1,22 @@
 # TODO: Materials, Lights
 import base64
+import copy
 import os
 from typing import Dict  # noqa
 
 from PIL import Image
 import numpy as np
-import copy
 import pygltflib as gltflib
 from pygltflib.utils import glb2gltf, gltf2glb
 
 from fury import actor, io, transform, utils
 from fury.animation import Animation
-from fury.animation.interpolator import (linear_interpolator,
-                                         slerp,
-                                         step_interpolator,
-                                         tan_cubic_spline_interpolator)
+from fury.animation.interpolator import (
+    linear_interpolator,
+    slerp,
+    step_interpolator,
+    tan_cubic_spline_interpolator,
+)
 from fury.lib import Camera, Matrix4x4, Texture, Transform, numpy_support
 
 comp_type = {
@@ -30,7 +32,6 @@ acc_type = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4, "MAT4": 16}
 
 
 class glTF:
-
     def __init__(self, filename, apply_normals=False):
         """Read and generate actors from glTF files.
 
@@ -111,30 +112,30 @@ class glTF:
             actor.SetUserTransform(_transform)
 
             if self.materials[i] is not None:
-                pbr = self.materials[i]['pbr']
+                pbr = self.materials[i]["pbr"]
                 if pbr is not None:
-                    base_color = pbr['baseColor']
+                    base_color = pbr["baseColor"]
                     actor.GetProperty().SetColor(tuple(base_color[:3]))
 
-                    metal = pbr['metallicValue']
-                    rough = pbr['roughnessValue']
+                    metal = pbr["metallicValue"]
+                    rough = pbr["roughnessValue"]
                     actor.GetProperty().SetInterpolationToPBR()
                     actor.GetProperty().SetMetallic(metal)
                     actor.GetProperty().SetRoughness(rough)
 
-                    base_col_tex = pbr['baseColorTexture']
-                    metal_rough_tex = pbr['metallicRoughnessTexture']
+                    base_col_tex = pbr["baseColorTexture"]
+                    metal_rough_tex = pbr["metallicRoughnessTexture"]
                     actor.SetTexture(base_col_tex)
                     actor.GetProperty().SetBaseColorTexture(base_col_tex)
                     actor.GetProperty().SetORMTexture(metal_rough_tex)
 
-                emissive = self.materials[i]['emissive']
-                if emissive['texture'] is not None:
-                    actor.GetProperty().SetEmissiveTexture(emissive['texture'])
-                if emissive['factor'] is not None:
-                    actor.GetProperty().SetEmissiveFactor(emissive['factor'])
+                emissive = self.materials[i]["emissive"]
+                if emissive["texture"] is not None:
+                    actor.GetProperty().SetEmissiveTexture(emissive["texture"])
+                if emissive["factor"] is not None:
+                    actor.GetProperty().SetEmissiveFactor(emissive["factor"])
 
-                normal = self.materials[i]['normal']
+                normal = self.materials[i]["normal"]
                 if normal["texture"] is not None:
                     actor.GetProperty().SetNormalTexture(normal["texture"])
                     actor.GetProperty().SetNormalScale(normal["scale"])
@@ -164,8 +165,7 @@ class glTF:
         for i, animation in enumerate(self.gltf.animations):
             self.transverse_channels(animation, i)
 
-    def transverse_node(self, nextnode_id, matrix, parent=None,
-                        is_joint=False):
+    def transverse_node(self, nextnode_id, matrix, parent=None, is_joint=False):
         """Load mesh and generates transformation matrix.
 
         Parameters
@@ -211,8 +211,10 @@ class glTF:
         next_matrix = np.dot(matrix, matnode)
 
         if node.skin is not None:
-            if (nextnode_id in self.gltf.skins[0].joints and
-                    nextnode_id not in self.bone_tranforms):
+            if (
+                nextnode_id in self.gltf.skins[0].joints
+                and nextnode_id not in self.bone_tranforms
+            ):
                 self.bone_tranforms[nextnode_id] = next_matrix[:]
 
         if is_joint:
@@ -273,9 +275,8 @@ class glTF:
                 tangents = self.get_acc_data(attributes.TANGENT)
                 utils.set_polydata_tangents(polydata, tangents[:, :3])
             elif attributes.NORMAL is not None and self.apply_normals:
-                doa = [0, 1, .5]
-                tangents = utils.tangents_from_direction_of_anisotropy(normals,
-                                                                       doa)
+                doa = [0, 1, 0.5]
+                tangents = utils.tangents_from_direction_of_anisotropy(normals, doa)
                 utils.set_polydata_tangents(polydata, tangents)
 
             if attributes.COLOR_0 is not None:
@@ -343,12 +344,15 @@ class glTF:
         total_byte_offset = byte_offset + acc_byte_offset
 
         buff_array = self.get_buff_array(
-            buff_id, d_type["dtype"], byte_length, total_byte_offset, byte_stride
+            buff_id,
+            d_type["dtype"],
+            byte_length,
+            total_byte_offset,
+            byte_stride,
         )
         return buff_array[:, :a_type]
 
-    def get_buff_array(self, buff_id, d_type, byte_length,
-                       byte_offset, byte_stride):
+    def get_buff_array(self, buff_id, d_type, byte_length, byte_offset, byte_stride):
         """Extract the mesh data from buffer.
 
         Parameters
@@ -373,8 +377,7 @@ class glTF:
         buffer = self.gltf.buffers[buff_id]
         uri = buffer.uri
 
-        if d_type == np.short or d_type == np.ushort or \
-                d_type == np.uint16:
+        if d_type == np.short or d_type == np.ushort or d_type == np.uint16:
             byte_length = int(byte_length / 2)
             byte_stride = int(byte_stride / 2)
 
@@ -393,8 +396,9 @@ class glTF:
                 with open(os.path.join(self.pwd, uri), "rb") as f:
                     buff_data = f.read(-1)
 
-            out_arr = np.frombuffer(buff_data, dtype=d_type,
-                                    count=byte_length, offset=byte_offset)
+            out_arr = np.frombuffer(
+                buff_data, dtype=d_type, count=byte_length, offset=byte_offset
+            )
 
             out_arr = out_arr.reshape(-1, byte_stride)
             return out_arr
@@ -432,42 +436,41 @@ class glTF:
                     orm = self.get_texture(mrt)
                 else:
                     mrt = self.get_texture(mrt, rgb=True)
-                    occ_tex = self.get_texture(occ.index,
-                                               rgb=True) if occ else None
+                    occ_tex = self.get_texture(occ.index, rgb=True) if occ else None
                     # generate orm texture
                     orm = self.generate_orm(mrt, occ_tex)
             colors = pbr.baseColorFactor
             metalvalue = pbr.metallicFactor
             roughvalue = pbr.roughnessFactor
-            pbr_dict = {'baseColorTexture': bct,
-                        'metallicRoughnessTexture': orm,
-                        'baseColor': colors,
-                        'metallicValue': metalvalue,
-                        'roughnessValue': roughvalue}
+            pbr_dict = {
+                "baseColorTexture": bct,
+                "metallicRoughnessTexture": orm,
+                "baseColor": colors,
+                "metallicValue": metalvalue,
+                "roughnessValue": roughvalue,
+            }
         normal = material.normalTexture
         normal_tex = {
             "texture": self.get_texture(normal.index) if normal else None,
-            "scale": normal.scale if normal else 1.0
+            "scale": normal.scale if normal else 1.0,
         }
         occlusion = material.occlusionTexture
         occ_tex = {
-            "texture": self.get_texture(
-                occlusion.index) if occlusion else None,
-            "strength": occlusion.strength if occlusion else 1.0
+            "texture": self.get_texture(occlusion.index) if occlusion else None,
+            "strength": occlusion.strength if occlusion else 1.0,
         }
         # must update pbr_dict with ORM texture
         emissive = material.emissiveTexture
         emi_tex = {
-            "texture": self.get_texture(emissive.index,
-                                        True) if emissive else None,
-            "factor": material.emissiveFactor if emissive else [0, 0, 0]
+            "texture": self.get_texture(emissive.index, True) if emissive else None,
+            "factor": material.emissiveFactor if emissive else [0, 0, 0],
         }
 
         return {
-            'pbr': pbr_dict,
-            'normal': normal_tex,
-            'occlusion': occ_tex,
-            'emissive': emi_tex
+            "pbr": pbr_dict,
+            "normal": normal_tex,
+            "occlusion": occ_tex,
+            "emissive": emi_tex,
         }
 
     def get_texture(self, tex_id, srgb_colorspace=False, rgb=False):
@@ -603,8 +606,7 @@ class glTF:
             zfar = perspective.zfar if perspective.zfar else 1000.0
             znear = perspective.znear
             vtk_cam.SetClippingRange(znear, zfar)
-            angle = perspective.yfov * 180 / np.pi \
-                if perspective.yfov else 30.0
+            angle = perspective.yfov * 180 / np.pi if perspective.yfov else 30.0
             vtk_cam.SetViewAngle(angle)
             if perspective.aspectRatio:
                 vtk_cam.SetExplicitAspectRatio(perspective.aspectRatio)
@@ -633,13 +635,13 @@ class glTF:
             path = channel.target.path
             anim_data = self.get_sampler_data(sampler, node_id, path)
             self.node_transform.append(anim_data)
-            sampler_data = self.get_matrix_from_sampler(path, node_id,
-                                                        anim_channel, sampler)
+            sampler_data = self.get_matrix_from_sampler(
+                path, node_id, anim_channel, sampler
+            )
             anim_channel[node_id] = sampler_data
         self.animation_channels[name] = anim_channel
 
-    def get_sampler_data(self, sampler: gltflib.Sampler, node_id: int,
-                         transform_type):
+    def get_sampler_data(self, sampler: gltflib.Sampler, node_id: int, transform_type):
         """Get the animation and transformation data from sampler.
 
         Parameters
@@ -670,8 +672,9 @@ class glTF:
             "property": transform_type,
         }
 
-    def get_matrix_from_sampler(self, prop, node, anim_channel,
-                                sampler: gltflib.Sampler):
+    def get_matrix_from_sampler(
+        self, prop, node, anim_channel, sampler: gltflib.Sampler
+    ):
         """Return transformation matrix for a given timestamp from Sampler
         data. Combine matrices for a given common timestamp.
 
@@ -809,15 +812,17 @@ class glTF:
             actor_transform = self.transformations[0]
             bone_transform = np.dot(actor_transform, new_deform)
             self._bvertices[bone_id][:] = transform.apply_transformation(
-                self._bvert_copy[bone_id], bone_transform)
+                self._bvert_copy[bone_id], bone_transform
+            )
             utils.update_actor(self._bactors[bone_id])
 
         if node.children:
             c_animations = animation.child_animations
             c_bones = node.children
             for c_anim, c_bone in zip(c_animations, c_bones):
-                self.transverse_animations(c_anim, c_bone, timestamp,
-                                           joint_matrices, new_deform)
+                self.transverse_animations(
+                    c_anim, c_bone, timestamp, joint_matrices, new_deform
+                )
 
     def update_skin(self, animation):
         """Update the animation and actors with skinning data.
@@ -841,11 +846,15 @@ class glTF:
             _animation = animation
             parent_transform = np.identity(4)
         for child in _animation.child_animations:
-            self.transverse_animations(child, self.bones[0], timestamp,
-                                       joint_matrices, parent_transform)
+            self.transverse_animations(
+                child,
+                self.bones[0],
+                timestamp,
+                joint_matrices,
+                parent_transform,
+            )
         for i, vertex in enumerate(self._vertices):
-            vertex[:] = self.apply_skin_matrix(self._vcopy[i],
-                                               joint_matrices, i)
+            vertex[:] = self.apply_skin_matrix(self._vcopy[i], joint_matrices, i)
             actor_transf = self.transformations[i]
             vertex[:] = transform.apply_transformation(vertex, actor_transf)
             utils.update_actor(self._actors[i])
@@ -897,19 +906,19 @@ class glTF:
             a_joint = [self.bones[i] for i in a_joint]
             a_weight = weights[i]
 
-            skin_mat = \
-                np.multiply(a_weight[0], joint_matrices[a_joint[0]]) + \
-                np.multiply(a_weight[1], joint_matrices[a_joint[1]]) + \
-                np.multiply(a_weight[2], joint_matrices[a_joint[2]]) + \
-                np.multiply(a_weight[3], joint_matrices[a_joint[3]])
+            skin_mat = (
+                np.multiply(a_weight[0], joint_matrices[a_joint[0]])
+                + np.multiply(a_weight[1], joint_matrices[a_joint[1]])
+                + np.multiply(a_weight[2], joint_matrices[a_joint[2]])
+                + np.multiply(a_weight[3], joint_matrices[a_joint[3]])
+            )
 
             xyz = np.dot(skin_mat, np.append(xyz, [1.0]))
             clone[i] = xyz[:3]
 
         return clone
 
-    def transverse_bones(self, bone_id, channel_name,
-                         parent_animation: Animation):
+    def transverse_bones(self, bone_id, channel_name, parent_animation: Animation):
         """Loop over the bones and add child bone animation to their parent
         animation.
 
@@ -954,8 +963,7 @@ class glTF:
 
         """
         root_animations = {}
-        self._vertices = [utils.vertices_from_actor(act) for act in
-                          self.actors()]
+        self._vertices = [utils.vertices_from_actor(act) for act in self.actors()]
         self._vcopy = [np.copy(vert) for vert in self._vertices]
         for name in self.animation_channels.keys():
             root_animation = Animation()
@@ -982,12 +990,12 @@ class glTF:
         parent_transforms = self.bone_tranforms
 
         for bone in self.bones:
-            arrow = actor.arrow(origin, [0, 1, 0], [1, 1, 1],
-                                scales=length)
+            arrow = actor.arrow(origin, [0, 1, 0], [1, 1, 1], scales=length)
             verts = utils.vertices_from_actor(arrow)
             if with_transforms:
                 verts[:] = transform.apply_transformation(
-                    verts, parent_transforms[bone])
+                    verts, parent_transforms[bone]
+                )
                 utils.update_actor(arrow)
             self._bactors[bone] = arrow
             self._bvertices[bone] = verts
@@ -1007,8 +1015,7 @@ class glTF:
         for i, vertex in enumerate(self._vertices):
             weights = animation.child_animations[0].get_value("morph", timestamp)
             vertex[:] = self.apply_morph_vertices(self._vcopy[i], weights, i)
-            vertex[:] = transform.apply_transformation(vertex,
-                                                       self.transformations[i])
+            vertex[:] = transform.apply_transformation(vertex, self.transformations[i])
             utils.update_actor(self._actors[i])
             utils.compute_bounds(self._actors[i])
 
@@ -1046,8 +1053,7 @@ class glTF:
 
         """
         animations = {}
-        self._vertices = [utils.vertices_from_actor(act) for act in
-                          self.actors()]
+        self._vertices = [utils.vertices_from_actor(act) for act in self.actors()]
         self._vcopy = [np.copy(vert) for vert in self._vertices]
 
         for name, data in self.animation_channels.items():
@@ -1109,13 +1115,13 @@ class glTF:
                     interpolation_type = transforms["interpolation"]
 
                     interpolator = interpolators.get(interpolation_type)
-                    rot_interp = rotation_interpolators.get(
-                        interpolation_type)
+                    rot_interp = rotation_interpolators.get(interpolation_type)
                     timeshape = timestamp.shape
                     transhape = node_transform.shape
                     if transforms["interpolation"] == "CUBICSPLINE":
                         node_transform = node_transform.reshape(
-                            (timeshape[0], -1, transhape[1]))
+                            (timeshape[0], -1, transhape[1])
+                        )
 
                     for time, trs in zip(timestamp, node_transform):
                         in_tan, out_tan = None, None
@@ -1127,17 +1133,26 @@ class glTF:
 
                         if prop == "rotation":
                             animation.set_rotation(
-                                time[0], trs, in_tangent=in_tan, out_tangent=out_tan
+                                time[0],
+                                trs,
+                                in_tangent=in_tan,
+                                out_tangent=out_tan,
                             )
                             animation.set_rotation_interpolator(rot_interp)
                         if prop == "translation":
                             animation.set_position(
-                                time[0], trs, in_tangent=in_tan, out_tangent=out_tan
+                                time[0],
+                                trs,
+                                in_tangent=in_tan,
+                                out_tangent=out_tan,
                             )
                             animation.set_position_interpolator(interpolator)
                         if prop == "scale":
                             animation.set_scale(
-                                time[0], trs, in_tangent=in_tan, out_tangent=out_tan
+                                time[0],
+                                trs,
+                                in_tangent=in_tan,
+                                out_tangent=out_tan,
                             )
                             animation.set_scale_interpolator(interpolator)
                 else:
@@ -1184,8 +1199,9 @@ def export_scene(scene, filename="default.gltf"):
     buffer_size = 0
     bview_count = 0
     for act in scene.GetActors():
-        prim, size, count = _connect_primitives(gltf_obj, act, buffer_file,
-                                                buffer_size, bview_count, name)
+        prim, size, count = _connect_primitives(
+            gltf_obj, act, buffer_file, buffer_size, bview_count, name
+        )
         primitives.append(prim)
         buffer_size = size
         bview_count = count
@@ -1258,8 +1274,7 @@ def _connect_primitives(gltf, actor, buff_file, byteoffset, count, name):
     elif istraingles:
         mode = 4
 
-    vertex, index, normal, tcoord, color = (None, None, None,
-                                            None, None)
+    vertex, index, normal, tcoord, color = (None, None, None, None, None)
     if indices is not None and len(indices) != 0:
         indices = indices.reshape((-1,))
         amax = [np.max(indices)]
@@ -1272,8 +1287,14 @@ def _connect_primitives(gltf, actor, buff_file, byteoffset, count, name):
         blength = len(indices) * ctype["size"]
         buff_file.write(indices.tobytes())
         write_bufferview(gltf, 0, byteoffset, blength)
-        write_accessor(gltf, count, 0, gltflib.UNSIGNED_SHORT,
-                       len(indices), gltflib.SCALAR)
+        write_accessor(
+            gltf,
+            count,
+            0,
+            gltflib.UNSIGNED_SHORT,
+            len(indices),
+            gltflib.SCALAR,
+        )
         byteoffset += blength
         index = count
         count += 1
@@ -1289,8 +1310,16 @@ def _connect_primitives(gltf, actor, buff_file, byteoffset, count, name):
         blength = len(vertices) * ctype["size"]
         buff_file.write(vertices.tobytes())
         write_bufferview(gltf, 0, byteoffset, blength)
-        write_accessor(gltf, count, 0, gltflib.FLOAT, len(vertices) //
-                       atype, gltflib.VEC3, amax, amin)
+        write_accessor(
+            gltf,
+            count,
+            0,
+            gltflib.FLOAT,
+            len(vertices) // atype,
+            gltflib.VEC3,
+            amax,
+            amin,
+        )
         byteoffset += blength
         vertex = count
         count += 1
@@ -1306,8 +1335,16 @@ def _connect_primitives(gltf, actor, buff_file, byteoffset, count, name):
         blength = len(normals) * ctype["size"]
         buff_file.write(normals.tobytes())
         write_bufferview(gltf, 0, byteoffset, blength)
-        write_accessor(gltf, count, 0, gltflib.FLOAT,
-                       len(normals) // atype, gltflib.VEC3, amax, amin)
+        write_accessor(
+            gltf,
+            count,
+            0,
+            gltflib.FLOAT,
+            len(normals) // atype,
+            gltflib.VEC3,
+            amax,
+            amin,
+        )
         byteoffset += blength
         normal = count
         count += 1
@@ -1323,8 +1360,9 @@ def _connect_primitives(gltf, actor, buff_file, byteoffset, count, name):
         blength = len(tcoords) * ctype["size"]
         buff_file.write(tcoords.tobytes())
         write_bufferview(gltf, 0, byteoffset, blength)
-        write_accessor(gltf, count, 0, gltflib.FLOAT,
-                       len(tcoords) // atype, gltflib.VEC2)
+        write_accessor(
+            gltf, count, 0, gltflib.FLOAT, len(tcoords) // atype, gltflib.VEC2
+        )
         byteoffset += blength
         tcoord = count
         count += 1
@@ -1344,15 +1382,13 @@ def _connect_primitives(gltf, actor, buff_file, byteoffset, count, name):
         atype = acc_type.get(gltflib.VEC3)
 
         shape = colors.shape[0]
-        colors = np.concatenate((colors, np.full((shape, 1),
-                                                 255.)), axis=1)
+        colors = np.concatenate((colors, np.full((shape, 1), 255.0)), axis=1)
         colors = colors / 255
         colors = colors.reshape((-1,)).astype(ctype["dtype"])
         blength = len(colors) * ctype["size"]
         buff_file.write(colors.tobytes())
         write_bufferview(gltf, 0, byteoffset, blength)
-        write_accessor(gltf, count, 0, gltflib.FLOAT, shape,
-                       gltflib.VEC4)
+        write_accessor(gltf, count, 0, gltflib.FLOAT, shape, gltflib.VEC4)
         byteoffset += blength
         color = count
         count += 1
@@ -1515,8 +1551,16 @@ def write_material(gltf, basecolortexture: int, uri: str):
     gltf.images.append(image)
 
 
-def write_accessor(gltf, bufferview, byte_offset, comp_type,
-                   count, accssor_type, max=None, min=None):
+def write_accessor(
+    gltf,
+    bufferview,
+    byte_offset,
+    comp_type,
+    count,
+    accssor_type,
+    max=None,
+    min=None,
+):
     """Write accessor in the gltf.
 
     Parameters
@@ -1552,8 +1596,7 @@ def write_accessor(gltf, bufferview, byte_offset, comp_type,
     gltf.accessors.append(accessor)
 
 
-def write_bufferview(gltf, buffer, byte_offset, byte_length,
-                     byte_stride=None):
+def write_bufferview(gltf, buffer, byte_offset, byte_length, byte_stride=None):
     """Write bufferview in the gltf.
 
     Parameters
