@@ -18,8 +18,8 @@ scene.SetBackground(0.19, 0.21, 0.26)
 
 ##############################################################################
 # Fetch and read the glTF file 'DamagedHelmet'.
-fetch_gltf('DamagedHelmet')
-filename = read_viz_gltf('DamagedHelmet')
+fetch_gltf("DamagedHelmet")
+filename = read_viz_gltf("DamagedHelmet")
 
 ##############################################################################
 # Create a glTF object from the file and apply normals to the geometry.
@@ -45,4 +45,4 @@ interactive = False
 if interactive:
     window.show(scene, size=(1280, 720))
 
-window.record(scene, out_path='viz_gltf_PBR.png', size=(1280, 720))
+window.record(scene, out_path="viz_gltf_PBR.png", size=(1280, 720))
