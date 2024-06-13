@@ -253,12 +253,6 @@ if __name__ == "__main__":
     #       SH_DEGREE in this order.
     #   param point The point on the unit sphere where the basis should be
     #       evaluated.
-    """
-    eval_sh = import_fury_shader(
-        os.path.join("ray_traced", "odf", "eval_sh.frag")
-    )
-    """
-
     eval_sh = """
     void evalSH(out float outSH[SH_COUNT], vec3 point, int shDegree,
         int numCoeffs)
