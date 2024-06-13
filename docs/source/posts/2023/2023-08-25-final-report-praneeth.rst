@@ -116,7 +116,6 @@ Other Objectives
   - **CardUI (Merged)** - https://github.com/fury-gl/fury/pull/398
   - **ComboBox Flaw (Merged)** - https://github.com/fury-gl/fury/pull/768
 
-
     .. image:: https://user-images.githubusercontent.com/54466356/112532305-b090ef80-8dce-11eb-90a0-8d06eed55993.png
         :height: 500
         :align: center

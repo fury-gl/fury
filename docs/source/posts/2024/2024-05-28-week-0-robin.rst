@@ -1,0 +1,97 @@
+Week 0: Community Bonding!
+==========================
+
+.. post:: May 29 2024
+   :author: Robin Roy
+   :tags: google
+   :category: gsoc
+
+Hi, I'm Robin and I'm a 2nd year CS undergrad from Vellore Institute of Technology, Chennai. During GSoC '24 my work will be to build an LLM chatbot which will help the community by answering their questions.
+
+Scientific visualization is often complicated and hard for people to get used to - "Although 3D visualization technologies are advancing quickly, their sophistication and focus on non-scientific domains makes it hard for researchers to use
+them. In other words, most of the existing 3D visualization and computing APIs are low-level
+(close to the hardware) and made for professional specialist developers." [FURY]_. FURY is our effort to bridge this gap with an easy-to-use API. With LLMs, the goal is to take this one step further and make it even simpler for people to get started. By reducing the barrier to entry, we can bring more people into this domain. Visualization should not be the most time-consuming thing for an engineer/researcher, it is supposed to just happen and help them accelerate faster.
+
+My Community Bonding Work
+-------------------------
+
+The main goal for me was to try different hosting providers and LLMs, test everything and see how they perform. I had my final exams during this period so I lost around 2 weeks to that. But I did manage to catch up and finish the work.
+We wanted to keep hosting cheap (preferably free). I'll detail all the things I tried and the review for each of them.
+
+Hosting work, in order:
+~~~~~~~~~~~~~~~~~~~~~~~
+
+1) **Ollama on Google Colab**
+
+The way it works is by taking Ollama and running it inside google colab, then providing a reverse proxy using ngrok.
+We later connect that reverse proxy to the local ollama instance.
+
+It works. But Google Colab can run only for a maximum of 12 hours and the runtimes will timeout if idle. Also, it was very hacky.
+
+   .. raw:: html
+
+      <iframe width="640" height="390" src="https://drive.google.com/file/d/1qNLtXxAMlLQ8xO8jfV0keRtskvcsj-fC/preview" frameborder="0" allowfullscreen></iframe>
+
+2) **Ollama on Kaggle**
+
+Same as above, same issues. Talked with my mentor `Mohamed <https://github.com/m-agour>`_ and skipped implementation.
+
+3) **GGUF (GPT-Generated Unified Format) models with ctransformers on HuggingFace**
+
+The way it works is by taking a `gguf <https://vickiboykis.com/2024/02/28/gguf-the-long-way-around/>`_ model and then inferencing using the ctransformers library from HuggingFace. An endpoint will be exposed using flask/fastapi.
+
+It had issues like not all models were working, and ctransformers did not support all models. And the models that do work were slow on my machine. Local testing was a nightmare and inference speed on HuggingFace was also very slow.
+
+4) **GGUF models with llama-cpp-python, hosted on HuggingFace**
+
+I used langchain wrapper over llama-cpp-python to inference GGUF models. This one was able to handle all GGUF models, and local testing was okayish. When I tried handling concurrent requests, it crashed and gave segmentation fault. I fixed segmentation fault later by increasing gunicorn workers (Gunicorn was the WSGI server I used).
+It was still not that good and local testing was annoying me. I cannot iterate fast when it takes a full 2-3 minutes for the output to generate.
+
+This wrapper on a wrapper on a wrapper was also not fun (langchain wrapper of llama-cpp-python which itself is a wrapper of llama-cpp).
+
+I later removed langchain and reimplemented everything, but langchain wasn't the reason for the slow performance so it wasn't helpful.
+
+5) **Ollama on HuggingFace!**
+
+TLDR: This one worked!
+
+   .. raw:: html
+
+      <iframe width="640" height="390" src="https://drive.google.com/file/d/17yxdw169uqLlw6WKfi--bWEUQArJk7i2/preview" frameborder="0" allowfullscreen></iframe>
+
+Ollama was perfect, it works like a charm on my machine and the ecosystem is also amazing (the people on their discord server are super kind). I knew I had to try ollama on HuggingFace.
+I was unable to initially run ollama and provide an endpoint. My dockerfile builds were all failing. Later mentor `Serge <https://github.com/skoudoro/>`_ told me to use the official Ollama image (till then I was using the Ubuntu base image).
+
+I managed to get the dockerfile running locally, but still, the HuggingFace build was failing. Then I took help from HuggingFace community. They told me it was HuggingFace blocking some ports, so to try different ports. This is when I came across another ollama server repo, and it was using Ubuntu as the base image. I studied that code and modified my dockerfile. It was adding an env variable to repo settings that I missed. My current dockerfile is just 5 lines and it works well.
+
+FURY Discord Bot
+~~~~~~~~~~~~~~~~
+
+I also made a barebones FURY Discord Bot which was connected to my local ollama instance. My dockerfile was stuck and I wanted to do something tangible, so I did this before the weekly meeting.
+
+   .. raw:: html
+
+      <iframe src="https://drive.google.com/file/d/17aosa4iyDl90mYfVGPrmILtQdXtS6IEy/preview" width="640" height="480" allow="autoplay"></iframe>
+
+What is coming up next week?
+----------------------------
+
+Currently, I'm finding a vector DB & studying how to effectively use RAG here.
+
+Did you get stuck anywhere?
+---------------------------
+
+Yes, I had some issues with the dockerfile. It was resolved.
+
+
+LINKS:
+
+- `HuggingFace repo <https://huggingface.co/spaces/robinroy03/fury-bot/tree/main>`_
+
+- `Discord Bot <https://github.com/robinroy03/fury-discord-bot>`_
+
+
+Thank you for reading!
+
+
+.. [FURY] Eleftherios Garyfallidis, Serge Koudoro, Javier Guaje, Marc-Alexandre Côté, Soham Biswas, David Reagan, Nasim Anousheh, Filipi Silva, Geoffrey Fox, and Fury Contributors. "FURY: advanced scientific visualization." Journal of Open Source Software 6, no. 64 (2021): 3384. https://doi.org/10.21105/joss.03384
