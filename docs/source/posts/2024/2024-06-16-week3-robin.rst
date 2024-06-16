@@ -47,6 +47,9 @@ Our architecture:
 
 So now, along with Ollama, we have Groq inference also. I aim to make a `router` so that we can swap different providers as required. I'm also very interested in integrating Google Gemini 1.5 Flash and other models. Groq does not support fine-tuning, but Flash supports it and is `free of cost <https://developers.googleblog.com/en/gemini-15-pro-and-15-flash-now-available/#:~:text=To%20support%20that%2C%20we%20will%20also%20be%20rolling%20out%20tuning%20support%20for%20Gemini%201.5%20Flash%20on%20June%2017th.%20Tuning%20will%20be%20supported%20in%20both%20Google%20AI%20Studio%20and%20the%20Gemini%20API%20directly.%20Currently%2C%20tuning%20jobs%20are%20free%20of%20charge%2C%20and%20using%20a%20tuned%20model%20does%20not%20incur%20any%20additional%20per%2Dtoken%20costs.>`_ (for now). Our architecture is platform agnostic, so we can try out different things without being locked into any of them. We will also fine-tune our phi3 model since we have the data with us.
 
+    .. raw:: html
+
+        <iframe src="https://github.com/robinroy03/fury-discord-bot/assets/115863770/234fee85-9eb4-4fd5-a334-9e6d11e552a3" width="640" height="390" frameborder="0" allowfullscreen></iframe>
 
 4) **Dockerizing Discord Bot**
 
