@@ -15,7 +15,7 @@ Things I did in week 3
 
 1) **A better data parsing technique**
 
-My initial approach was naive, it was just regex and some common filtrations. Later, my mentors told me to use the `inspect` module. I studied that module and realized that I needed to parse data using an AST. I didn't use the `inspect` module to do the parsing, since I only had to get the function/class signature and docstrings. So instead I used the ``ast`` module from pyton stdlib. My mentors gave me the general direction to go through - which was using ASTs to parse data effectively.
+My initial approach was naive, it was just regex and some common filtrations. Later, my mentors told me to use the `inspect` module. I studied that module and realized that I needed to parse data using an AST. I didn't use the `inspect` module to do the parsing, since I only had to get the function/class signature and docstrings. So instead I used the ``ast`` module from python stdlib. My mentors gave me the general direction to go through - which was using ASTs to parse data effectively.
 
 So now we have a script which you run like `python extractor.py fury` and it'll generate the appropriate JSON files.
 
