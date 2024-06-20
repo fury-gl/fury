@@ -191,7 +191,7 @@ def test_add_shader_callback():
     scene = window.Scene()
     scene.add(cube)
 
-    showm = window.ShowManager(scene)
+    showm = window.ShowManager(scene=scene)
 
     class Timer:
         idx = 0.0

@@ -46,11 +46,17 @@ def get_default_cubes(
     cube_first_scale, cube_second_scale = scales
 
     cube_first = actor.cube(
-        cube_first_center, cube_first_direction, cube_first_color, cube_first_scale
+        cube_first_center,
+        directions=cube_first_direction,
+        colors=cube_first_color,
+        scales=cube_first_scale,
     )
 
     cube_second = actor.cube(
-        cube_second_center, cube_second_direction, cube_second_color, cube_second_scale
+        cube_second_center,
+        directions=cube_second_direction,
+        colors=cube_second_color,
+        scales=cube_second_scale,
     )
 
     return (cube_first, cube_second)
