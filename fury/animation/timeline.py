@@ -35,7 +35,9 @@ class Timeline:
     """
 
     @warn_on_args_to_kwargs()
-    def __init__(self, *, animations=None, playback_panel=False, loop=True, length=None):
+    def __init__(
+        self, *, animations=None, playback_panel=False, loop=True, length=None
+    ):
         self._scene = None
         self.playback_panel = None
         self._current_timestamp = 0
