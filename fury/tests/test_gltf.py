@@ -217,11 +217,11 @@ def test_simple_animation():
 
 def test_skinning():
     # animation test
-    fetch_gltf("SimpleSkin", "glTF")
+    fetch_gltf(name="SimpleSkin", mode="glTF")
     file = read_viz_gltf("SimpleSkin")
     gltf_obj = glTF(file)
     animation = gltf_obj.skin_animation()["anim_0"]
-    timeline = Timeline(animation)
+    timeline = Timeline(animations=animation)
     # checking weights and joints
     weights = np.array(
         [

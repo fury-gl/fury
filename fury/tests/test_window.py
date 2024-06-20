@@ -612,7 +612,7 @@ def test_add_animation_to_show_manager():
     cube = actor.cube(np.array([[2, 2, 3]]))
 
     timeline = Timeline(playback_panel=True)
-    animation = Animation(cube)
+    animation = Animation(actors=cube)
     timeline.add_animation(animation)
     showm.add_animation(timeline)
 
