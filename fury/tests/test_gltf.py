@@ -24,8 +24,8 @@ else:
 
 
 def test_load_gltf():
-    fetch_gltf("Duck")
-    filename = read_viz_gltf("Duck", "glTF")
+    fetch_gltf(name="Duck")
+    filename = read_viz_gltf("Duck", mode="glTF")
     importer = glTF(filename)
     polydatas = importer.polydatas
     vertices = utils.get_polydata_vertices(polydatas[0])
@@ -44,8 +44,8 @@ def test_load_gltf():
 
 
 def test_load_texture():
-    fetch_gltf("Duck")
-    filename = read_viz_gltf("Duck", "glTF")
+    fetch_gltf(name="Duck")
+    filename = read_viz_gltf("Duck", mode="glTF")
     importer = glTF(filename)
     actor = importer.actors()[0]
 
@@ -62,8 +62,8 @@ def test_load_texture():
 @pytest.mark.skipif(True, reason="This test is failing on CI, not sure why yet")
 def test_colors():
     # vertex colors
-    fetch_gltf("BoxVertexColors")
-    file = read_viz_gltf("BoxVertexColors", "glTF")
+    fetch_gltf(name="BoxVertexColors")
+    file = read_viz_gltf("BoxVertexColors", mode="glTF")
     importer = glTF(file)
     actor = importer.actors()[0]
     scene = window.Scene()
@@ -79,8 +79,8 @@ def test_colors():
     scene.clear()
 
     # material colors
-    fetch_gltf("BoxAnimated")
-    file = read_viz_gltf("BoxAnimated", "glTF")
+    fetch_gltf(name="BoxAnimated")
+    file = read_viz_gltf("BoxAnimated", mode="glTF")
     importer = glTF(file)
     actors = importer.actors()
     scene.add(*actors)
@@ -95,8 +95,8 @@ def test_colors():
 
 
 def test_orientation():
-    fetch_gltf("BoxTextured", "glTF-Embedded")
-    file = read_viz_gltf("BoxTextured", "glTF-Embedded")
+    fetch_gltf(name="BoxTextured", mode="glTF-Embedded")
+    file = read_viz_gltf("BoxTextured", mode="glTF-Embedded")
     importer = glTF(file)
     actor = importer.actors()[0]
 
@@ -162,7 +162,7 @@ def test_export_gltf():
     scene.reset_camera_tight()
     scene.clear()
 
-    fetch_gltf("BoxTextured", "glTF")
+    fetch_gltf(name="BoxTextured", mode="glTF")
     filename = read_viz_gltf("BoxTextured")
     gltf_obj = glTF(filename)
     box_actor = gltf_obj.actors()
@@ -185,7 +185,7 @@ def test_export_gltf():
 
 
 def test_simple_animation():
-    fetch_gltf("BoxAnimated", "glTF")
+    fetch_gltf(name="BoxAnimated", mode="glTF")
     file = read_viz_gltf("BoxAnimated")
     gltf_obj = glTF(file)
     timeline = Timeline()
@@ -217,7 +217,7 @@ def test_simple_animation():
 
 def test_skinning():
     # animation test
-    fetch_gltf("SimpleSkin", "glTF")
+    fetch_gltf(name="SimpleSkin", mode="glTF")
     file = read_viz_gltf("SimpleSkin")
     gltf_obj = glTF(file)
     animation = gltf_obj.skin_animation()["anim_0"]
@@ -321,7 +321,7 @@ def test_skinning():
 
 
 def test_morphing():
-    fetch_gltf("MorphStressTest", "glTF")
+    fetch_gltf(name="MorphStressTest", mode="glTF")
     file = read_viz_gltf("MorphStressTest")
     gltf_obj = glTF(file)
     animations = gltf_obj.morph_animation()
