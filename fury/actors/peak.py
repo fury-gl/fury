@@ -3,6 +3,7 @@ from os.path import join as pjoin
 import numpy as np
 
 from fury.colormap import boys2rgb, colormap_lookup_table, orient2rgb
+from fury.decorators import warn_on_args_to_kwargs
 from fury.lib import (
     VTK_OBJECT,
     Actor,
@@ -62,10 +63,12 @@ class PeakActor(Actor):
 
     """
 
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
         directions,
         indices,
+        *,
         values=None,
         affine=None,
         colors=None,
@@ -210,11 +213,12 @@ class PeakActor(Actor):
         self.__cross_section = self.__high_ranges // 2
 
         self.__mapper.AddObserver(
-            Command.UpdateShaderEvent, self.__display_peaks_vtk_callback
+            Command.UpdateShaderEvent, self.__display_peaks_vtk_callback(None, None)
         )
 
+    @warn_on_args_to_kwargs()
     @calldata_type(VTK_OBJECT)
-    def __display_peaks_vtk_callback(self, caller, event, calldata=None):
+    def __display_peaks_vtk_callback(self, caller, event, *, calldata=None):
         if calldata is not None:
             calldata.SetUniformi("isRange", self.__is_range)
             calldata.SetUniform3f("highRanges", self.__high_ranges)
@@ -275,7 +279,8 @@ class PeakActor(Actor):
         return self.__min_centers
 
 
-def _orientation_colors(points, cmap="rgb_standard"):
+@warn_on_args_to_kwargs()
+def _orientation_colors(points, *, cmap="rgb_standard"):
     """
     Parameters
     ----------
@@ -306,7 +311,8 @@ def _orientation_colors(points, cmap="rgb_standard"):
     return np.asarray(col_list)
 
 
-def _peaks_colors_from_points(points, colors=None, points_per_line=2):
+@warn_on_args_to_kwargs()
+def _peaks_colors_from_points(points, *, colors=None, points_per_line=2):
     """Return a VTK scalar array containing colors information for each one of
     the peaks according to the policy defined by the parameter colors.
 
@@ -376,7 +382,8 @@ def _peaks_colors_from_points(points, colors=None, points_per_line=2):
     return color_array, colors_are_scalars, global_opacity
 
 
-def _points_to_vtk_cells(points, points_per_line=2):
+@warn_on_args_to_kwargs()
+def _points_to_vtk_cells(points, *, points_per_line=2):
     """Return the VTK cell array for the peaks given the set of points
     coordinates.
 

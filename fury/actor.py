@@ -1091,8 +1091,8 @@ def odf_slicer(
         global_cm,
         colormap,
         opacity,
-        affine,
-        B_matrix,
+        affine=affine,
+        B=B_matrix,
     )
 
 
