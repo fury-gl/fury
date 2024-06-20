@@ -49,7 +49,9 @@ def test_callback():
     simple_ui = SimplestUI()
     current_size = (900, 600)
     scene = window.Scene()
-    show_manager = window.ShowManager(scene, size=current_size, title="FURY GridUI")
+    show_manager = window.ShowManager(
+        scene=scene, size=current_size, title="FURY GridUI"
+    )
     scene.add(simple_ui)
     event_counter = ft.EventCounter()
     event_counter.monitor(simple_ui)

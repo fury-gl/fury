@@ -15,6 +15,7 @@ from fury.actors.tensor import (
     tensor_ellipsoid,
 )
 from fury.colormap import colormap_lookup_table
+from fury.decorators import warn_on_args_to_kwargs
 from fury.deprecator import deprecate_with_version, deprecated_params
 from fury.io import load_image
 from fury.lib import (
@@ -88,8 +89,10 @@ from fury.utils import (
 )
 
 
+@warn_on_args_to_kwargs()
 def slicer(
     data,
+    *,
     affine=None,
     value_range=None,
     opacity=1.0,
@@ -265,7 +268,8 @@ def slicer(
             # line = np.array([[xmin, ymin, zmin]])
             # self.outline_actor = actor.line()
 
-        def display(self, x=None, y=None, z=None):
+        @warn_on_args_to_kwargs()
+        def display(self, *, x=None, y=None, z=None):
             if x is None and y is None and z is None:
                 self.display_extent(ex1, ex2, ey1, ey2, ez2 // 2, ez2 // 2)
             if x is not None:
@@ -350,7 +354,8 @@ def slicer(
     return image_actor
 
 
-def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
+@warn_on_args_to_kwargs()
+def surface(vertices, *, faces=None, colors=None, smooth=None, subdivision=3):
     """Generate a surface actor from an array of vertices.
 
     The color and smoothness of the surface can be customized by specifying
@@ -427,7 +432,8 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
     return surface_actor
 
 
-def contour_from_roi(data, affine=None, color=None, opacity=1):
+@warn_on_args_to_kwargs()
+def contour_from_roi(data, *, affine=None, color=None, opacity=1):
     """Generate surface actor from a binary ROI.
 
     The color and opacity of the surface can be customized.
@@ -546,7 +552,8 @@ def contour_from_roi(data, affine=None, color=None, opacity=1):
     return skin_actor
 
 
-def contour_from_label(data, affine=None, color=None):
+@warn_on_args_to_kwargs()
+def contour_from_label(data, *, affine=None, color=None):
     """Generate surface actor from a labeled Array.
 
     The color and opacity of individual surfaces can be customized.
@@ -591,15 +598,17 @@ def contour_from_label(data, affine=None, color=None):
     for i, roi_id in enumerate(unique_roi_id):
         roi_data = np.isin(data, roi_id).astype(int)
         roi_surface = contour_from_roi(
-            roi_data, affine, color=color[i], opacity=opacity[i]
+            roi_data, affine=affine, color=color[i], opacity=opacity[i]
         )
         unique_roi_surfaces.AddPart(roi_surface)
 
     return unique_roi_surfaces
 
 
+@warn_on_args_to_kwargs()
 def streamtube(
     lines,
+    *,
     colors=None,
     opacity=1,
     linewidth=0.1,
@@ -667,7 +676,7 @@ def streamtube(
     >>> scene = window.Scene()
     >>> lines = [np.random.rand(10, 3), np.random.rand(20, 3)]
     >>> colors = np.random.rand(2, 3)
-    >>> c = actor.streamtube(lines, colors)
+    >>> c = actor.streamtube(lines, colores=colors)
     >>> scene.add(c)
     >>> #window.show(scene)
 
@@ -765,8 +774,10 @@ def streamtube(
     return actor
 
 
+@warn_on_args_to_kwargs()
 def line(
     lines,
+    *,
     colors=None,
     opacity=1,
     linewidth=1,
@@ -837,7 +848,7 @@ def line(
     >>> scene = window.Scene()
     >>> lines = [np.random.rand(10, 3), np.random.rand(20, 3)]
     >>> colors = np.random.rand(2, 3)
-    >>> c = actor.line(lines, colors)
+    >>> c = actor.line(lines, colors=colors)
     >>> scene.add(c)
     >>> #window.show(scene)
 
@@ -887,7 +898,8 @@ def line(
 
     if depth_cue:
 
-        def callback(_caller, _event, calldata=None):
+        @warn_on_args_to_kwargs()
+        def callback(_caller, _event, *, calldata=None):
             program = calldata
             if program is not None:
                 program.SetUniformf("linewidth", linewidth)
@@ -901,7 +913,8 @@ def line(
     return actor
 
 
-def scalar_bar(lookup_table=None, title=" "):
+@warn_on_args_to_kwargs()
+def scalar_bar(*, lookup_table=None, title=" "):
     """Default scalar bar actor for a given colormap (colorbar).
 
     Parameters
@@ -932,8 +945,14 @@ def scalar_bar(lookup_table=None, title=" "):
     return scalar_bar
 
 
+@warn_on_args_to_kwargs()
 def axes(
-    scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1), opacity=1
+    *,
+    scale=(1, 1, 1),
+    colorx=(1, 0, 0),
+    colory=(0, 1, 0),
+    colorz=(0, 0, 1),
+    opacity=1,
 ):
     """Create an actor with the coordinate's system axes where
     red = x, green = y, blue = z.
@@ -961,12 +980,14 @@ def axes(
     colors = np.array([colorx + (opacity,), colory + (opacity,), colorz + (opacity,)])
 
     scales = np.asarray(scale)
-    arrow_actor = arrow(centers, dirs, colors, scales, repeat_primitive=False)
+    arrow_actor = arrow(centers, dirs, colors, scales=scales, repeat_primitive=False)
     return arrow_actor
 
 
+@warn_on_args_to_kwargs()
 def odf_slicer(
     odfs,
+    *,
     affine=None,
     mask=None,
     sphere=None,
@@ -1083,7 +1104,8 @@ def _makeNd(array, ndim):
     return array.reshape(new_shape)
 
 
-def _roll_evals(evals, axis=-1):
+@warn_on_args_to_kwargs()
+def _roll_evals(evals, *, axis=-1):
     """Check evals shape.
 
     Helper function to check that the evals provided to functions calculating
@@ -1112,7 +1134,8 @@ def _roll_evals(evals, axis=-1):
     return evals
 
 
-def _fa(evals, axis=-1):
+@warn_on_args_to_kwargs()
+def _fa(evals, *, axis=-1):
     r"""Return Fractional anisotropy (FA) of a diffusion tensor.
 
     Parameters
@@ -1138,7 +1161,7 @@ def _fa(evals, axis=-1):
                     \lambda_2^2+\lambda_3^2}}
 
     """
-    evals = _roll_evals(evals, axis)
+    evals = _roll_evals(evals, axis=axis)
     # Make sure not to get nans
     all_zero = (evals == 0).all(axis=0)
     ev1, ev2, ev3 = evals
@@ -1183,9 +1206,11 @@ def _color_fa(fa, evecs):
     return np.abs(evecs[..., 0]) * np.clip(fa, 0, 1)[..., None]
 
 
+@warn_on_args_to_kwargs()
 def tensor_slicer(
     evals,
     evecs,
+    *,
     affine=None,
     mask=None,
     sphere=None,
@@ -1261,7 +1286,8 @@ def tensor_slicer(
             )
             self.SetMapper(self.mapper)
 
-        def display(self, x=None, y=None, z=None):
+        @warn_on_args_to_kwargs()
+        def display(self, *, x=None, y=None, z=None):
             if x is None and y is None and z is None:
                 self.display_extent(
                     0,
@@ -1288,9 +1314,11 @@ def tensor_slicer(
     return tensor_actor
 
 
+@warn_on_args_to_kwargs()
 def _tensor_slicer_mapper(
     evals,
     evecs,
+    *,
     affine=None,
     mask=None,
     sphere=None,
@@ -1394,8 +1422,10 @@ def _tensor_slicer_mapper(
     return mapper
 
 
+@warn_on_args_to_kwargs()
 def peak_slicer(
     peaks_dirs,
+    *,
     peaks_values=None,
     mask=None,
     affine=None,
@@ -1515,7 +1545,8 @@ def peak_slicer(
             self.SetProperty(self.line.GetProperty())
             self.SetMapper(self.line.GetMapper())
 
-        def display(self, x=None, y=None, z=None):
+        @warn_on_args_to_kwargs()
+        def display(self, *, x=None, y=None, z=None):
             if x is None and y is None and z is None:
                 self.display_extent(
                     0,
@@ -1542,8 +1573,10 @@ def peak_slicer(
     return peak_actor
 
 
+@warn_on_args_to_kwargs()
 def peak(
     peaks_dirs,
+    *,
     peaks_values=None,
     mask=None,
     affine=None,
@@ -1657,7 +1690,8 @@ def peak(
     )
 
 
-def dot(points, colors=None, opacity=None, dot_size=5):
+@warn_on_args_to_kwargs()
+def dot(points, *, colors=None, opacity=None, dot_size=5):
     """Create one or more 3d points.
 
     Parameters
@@ -1739,7 +1773,8 @@ dots = deprecate_with_version(
 )(dot)
 
 
-def point(points, colors, point_radius=0.1, phi=8, theta=8, opacity=1.0):
+@warn_on_args_to_kwargs()
+def point(points, colors, *, point_radius=0.1, phi=8, theta=8, opacity=1.0):
     """Visualize points as sphere glyphs.
 
     Parameters
@@ -1783,9 +1818,11 @@ def point(points, colors, point_radius=0.1, phi=8, theta=8, opacity=1.0):
     )
 
 
+@warn_on_args_to_kwargs()
 def sphere(
     centers,
     colors,
+    *,
     radii=1.0,
     phi=16,
     theta=16,
@@ -1874,10 +1911,12 @@ def sphere(
     return sphere_actor
 
 
+@warn_on_args_to_kwargs()
 def cylinder(
     centers,
     directions,
     colors,
+    *,
     radius=0.05,
     heights=1,
     capped=False,
@@ -1981,10 +2020,12 @@ def cylinder(
     return cylinder_actor
 
 
+@warn_on_args_to_kwargs()
 def disk(
     centers,
     directions,
     colors,
+    *,
     rinner=0.3,
     router=0.7,
     cresolution=6,
@@ -2058,7 +2099,8 @@ def disk(
     return disk_actor
 
 
-def square(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
+@warn_on_args_to_kwargs()
+def square(centers, *, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     """Visualize one or many squares with different features.
 
     Parameters
@@ -2082,7 +2124,7 @@ def square(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> scene = window.Scene()
     >>> centers = np.random.rand(5, 3)
     >>> dirs = np.random.rand(5, 3)
-    >>> sq_actor = actor.square(centers, dirs)
+    >>> sq_actor = actor.square(centers, directions=dirs)
     >>> scene.add(sq_actor)
     >>> # window.show(scene)
 
@@ -2106,7 +2148,8 @@ def square(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     return sq_actor
 
 
-def rectangle(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 0)):
+@warn_on_args_to_kwargs()
+def rectangle(centers, *, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 0)):
     """Visualize one or many rectangles with different features.
 
     Parameters
@@ -2134,7 +2177,7 @@ def rectangle(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 0))
     >>> scene = window.Scene()
     >>> centers = np.random.rand(5, 3)
     >>> dirs = np.random.rand(5, 3)
-    >>> rect_actor = actor.rectangle(centers, dirs)
+    >>> rect_actor = actor.rectangle(centers, directions=dirs)
     >>> scene.add(rect_actor)
     >>> # window.show(scene)
 
@@ -2142,8 +2185,9 @@ def rectangle(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 0))
     return square(centers=centers, directions=directions, colors=colors, scales=scales)
 
 
+@warn_on_args_to_kwargs()
 @deprecated_params(["size", "heights"], ["scales", "scales"], since="0.6", until="0.8")
-def box(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 3)):
+def box(centers, *, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 3)):
     """Visualize one or many boxes with different features.
 
     Parameters
@@ -2167,7 +2211,7 @@ def box(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 3)):
     >>> scene = window.Scene()
     >>> centers = np.random.rand(5, 3)
     >>> dirs = np.random.rand(5, 3)
-    >>> box_actor = actor.box(centers, dirs, (1, 1, 1))
+    >>> box_actor = actor.box(centers, directions=dirs, colors=(1, 1, 1))
     >>> scene.add(box_actor)
     >>> # window.show(scene)
 
@@ -2190,8 +2234,9 @@ def box(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 3)):
     return box_actor
 
 
+@warn_on_args_to_kwargs()
 @deprecated_params("heights", "scales", since="0.6", until="0.8")
-def cube(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
+def cube(centers, *, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     """Visualize one or many cubes with different features.
 
     Parameters
@@ -2215,7 +2260,7 @@ def cube(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> scene = window.Scene()
     >>> centers = np.random.rand(5, 3)
     >>> dirs = np.random.rand(5, 3)
-    >>> cube_actor = actor.cube(centers, dirs)
+    >>> cube_actor = actor.cube(centers, directions=dirs)
     >>> scene.add(cube_actor)
     >>> # window.show(scene)
 
@@ -2223,10 +2268,12 @@ def cube(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     return box(centers=centers, directions=directions, colors=colors, scales=scales)
 
 
+@warn_on_args_to_kwargs()
 def arrow(
     centers,
     directions,
     colors,
+    *,
     heights=1.0,
     resolution=10,
     tip_length=0.35,
@@ -2275,7 +2322,7 @@ def arrow(
     >>> centers = np.random.rand(5, 3)
     >>> directions = np.random.rand(5, 3)
     >>> heights = np.random.rand(5)
-    >>> arrow_actor = actor.arrow(centers, directions, (1, 1, 1), heights)
+    >>> arrow_actor = actor.arrow(centers, directions, (1, 1, 1), heights=heights)
     >>> scene.add(arrow_actor)
     >>> # window.show(scene)
 
@@ -2318,10 +2365,12 @@ def arrow(
     return arrow_actor
 
 
+@warn_on_args_to_kwargs()
 def cone(
     centers,
     directions,
     colors,
+    *,
     heights=1.0,
     resolution=10,
     vertices=None,
@@ -2362,7 +2411,7 @@ def cone(
     >>> centers = np.random.rand(5, 3)
     >>> directions = np.random.rand(5, 3)
     >>> heights = np.random.rand(5)
-    >>> cone_actor = actor.cone(centers, directions, (1, 1, 1), heights)
+    >>> cone_actor = actor.cone(centers, directions, (1, 1, 1), heights=heights)
     >>> scene.add(cone_actor)
     >>> # window.show(scene)
 
@@ -2400,7 +2449,8 @@ def cone(
     return cone_actor
 
 
-def triangularprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
+@warn_on_args_to_kwargs()
+def triangularprism(centers, *, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     """Visualize one or many regular triangular prisms with different features.
 
     Parameters
@@ -2426,11 +2476,11 @@ def triangularprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> dirs = np.random.rand(3, 3)
     >>> colors = np.random.rand(3, 3)
     >>> scales = np.random.rand(3, 1)
-    >>> actor = actor.triangularprism(centers, dirs, colors, scales)
+    >>> actor = actor.triangularprism(centers, directions=dirs, colors=colors, scales=scales)
     >>> scene.add(actor)
     >>> # window.show(scene)
 
-    """
+    """  # noqa: E501
     verts, faces = fp.prim_triangularprism()
     res = fp.repeat_primitive(
         verts,
@@ -2448,7 +2498,8 @@ def triangularprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     return tprism_actor
 
 
-def rhombicuboctahedron(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
+@warn_on_args_to_kwargs()
+def rhombicuboctahedron(centers, *, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     """Visualize one or many rhombicuboctahedron with different features.
 
     Parameters
@@ -2474,11 +2525,11 @@ def rhombicuboctahedron(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=
     >>> dirs = np.random.rand(3, 3)
     >>> colors = np.random.rand(3, 3)
     >>> scales = np.random.rand(3, 1)
-    >>> actor = actor.rhombicuboctahedron(centers, dirs, colors, scales)
+    >>> actor = actor.rhombicuboctahedron(centers, directions=dirs, colors=colors, scales=scales)
     >>> scene.add(actor)
     >>> # window.show(scene)
 
-    """
+    """  # noqa: E501
     verts, faces = fp.prim_rhombicuboctahedron()
     res = fp.repeat_primitive(
         verts,
@@ -2496,7 +2547,8 @@ def rhombicuboctahedron(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=
     return rcoh_actor
 
 
-def pentagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
+@warn_on_args_to_kwargs()
+def pentagonalprism(centers, *, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     """Visualize one or many pentagonal prisms with different features.
 
     Parameters
@@ -2523,11 +2575,11 @@ def pentagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> dirs = np.random.rand(3, 3)
     >>> colors = np.random.rand(3, 3)
     >>> scales = np.random.rand(3, 1)
-    >>> actor_pentagonal = actor.pentagonalprism(centers, dirs, colors, scales)
+    >>> actor_pentagonal = actor.pentagonalprism(centers, directions=dirs, colors=colors, scales=scales)
     >>> scene.add(actor_pentagonal)
     >>> # window.show(scene)
 
-    """
+    """  # noqa: E501
     verts, faces = fp.prim_pentagonalprism()
     res = fp.repeat_primitive(
         verts,
@@ -2546,7 +2598,8 @@ def pentagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     return pent_actor
 
 
-def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
+@warn_on_args_to_kwargs()
+def octagonalprism(centers, *, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     """Visualize one or many octagonal prisms with different features.
 
     Parameters
@@ -2572,11 +2625,11 @@ def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> dirs = np.random.rand(3, 3)
     >>> colors = np.random.rand(3, 3)
     >>> scales = np.random.rand(3, 1)
-    >>> actor = actor.octagonalprism(centers, dirs, colors, scales)
+    >>> actor = actor.octagonalprism(centers, directions=dirs, colors=colors, scales=scales)
     >>> scene.add(actor)
     >>> # window.show(scene)
 
-    """
+    """  # noqa: E501
     verts, faces = fp.prim_octagonalprism()
     res = fp.repeat_primitive(
         verts,
@@ -2595,7 +2648,8 @@ def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     return oct_actor
 
 
-def frustum(centers, directions=(1, 0, 0), colors=(0, 1, 0), scales=1):
+@warn_on_args_to_kwargs()
+def frustum(centers, *, directions=(1, 0, 0), colors=(0, 1, 0), scales=1):
     """Visualize one or many frustum pyramids with different features.
 
     Parameters
@@ -2621,7 +2675,7 @@ def frustum(centers, directions=(1, 0, 0), colors=(0, 1, 0), scales=1):
     >>> dirs = np.random.rand(4, 3)
     >>> colors = np.random.rand(4, 3)
     >>> scales = np.random.rand(4, 1)
-    >>> actor = actor.frustum(centers, dirs, colors, scales)
+    >>> actor = actor.frustum(centers, directions=dirs, colors=colors, scales=scales)
     >>> scene.add(actor)
     >>> # window.show(scene)
 
@@ -2644,8 +2698,9 @@ def frustum(centers, directions=(1, 0, 0), colors=(0, 1, 0), scales=1):
     return frustum_actor
 
 
+@warn_on_args_to_kwargs()
 def superquadric(
-    centers, roundness=(1, 1), directions=(1, 0, 0), colors=(1, 0, 0), scales=1
+    centers, *, roundness=(1, 1), directions=(1, 0, 0), colors=(1, 0, 0), scales=1
 ):
     """Visualize one or many superquadrics with different features.
 
@@ -2715,8 +2770,10 @@ def superquadric(
     return spq_actor
 
 
+@warn_on_args_to_kwargs()
 def billboard(
     centers,
+    *,
     colors=(0, 1, 0),
     scales=1,
     vs_dec=None,
@@ -2864,7 +2921,9 @@ def billboard(
     return bb_actor
 
 
+@warn_on_args_to_kwargs()
 def vector_text(
+    *,
     text="Origin",
     pos=(0, 0, 0),
     scale=(0.2, 0.2, 0.2),
@@ -2970,8 +3029,10 @@ label = deprecate_with_version(
 )(vector_text)
 
 
+@warn_on_args_to_kwargs()
 def text_3d(
     text,
+    *,
     position=(0, 0, 0),
     color=(1, 1, 1),
     font_size=12,
@@ -3019,7 +3080,8 @@ def text_3d(
             self.GetTextProperty().SetFontSize(24)
             text_actor.SetScale((1.0 / 24.0 * size,) * 3)
 
-        def font_family(self, _family="Arial"):
+        @warn_on_args_to_kwargs()
+        def font_family(self, *, _family="Arial"):
             self.GetTextProperty().SetFontFamilyToArial()
 
         def justification(self, justification):
@@ -3046,7 +3108,8 @@ def text_3d(
                     "Unknown vertical justification: '{}'".format(justification)
                 )
 
-        def font_style(self, bold=False, italic=False, shadow=False):
+        @warn_on_args_to_kwargs()
+        def font_style(self, *, bold=False, italic=False, shadow=False):
             tprop = self.GetTextProperty()
             if bold:
                 tprop.BoldOn()
@@ -3074,8 +3137,8 @@ def text_3d(
     text_actor.message(text)
     text_actor.font_size(font_size)
     text_actor.set_position(position)
-    text_actor.font_family(font_family)
-    text_actor.font_style(bold, italic, shadow)
+    text_actor.font_family(_family=font_family)
+    text_actor.font_style(bold=bold, italic=italic, shadow=shadow)
     text_actor.color(color)
     text_actor.justification(justification)
     text_actor.vertical_justification(vertical_justification)
@@ -3101,7 +3164,8 @@ class Container:
 
     """
 
-    def __init__(self, layout=None):
+    @warn_on_args_to_kwargs()
+    def __init__(self, *, layout=None):
         """Parameters
         ----------
         layout : ``fury.layout.Layout`` object
@@ -3234,8 +3298,10 @@ class Container:
         return len(self._items)
 
 
+@warn_on_args_to_kwargs()
 def grid(
     actors,
+    *,
     captions=None,
     caption_offset=(0, -100, 0),
     cell_padding=0,
@@ -3316,7 +3382,8 @@ def grid(
     return grid
 
 
-def figure(pic, interpolation="nearest"):
+@warn_on_args_to_kwargs()
+def figure(pic, *, interpolation="nearest"):
     """Return a figure as an image actor.
 
     Parameters
@@ -3362,7 +3429,8 @@ def figure(pic, interpolation="nearest"):
     return image_actor
 
 
-def texture(rgb, interp=True):
+@warn_on_args_to_kwargs()
+def texture(rgb, *, interp=True):
     """Map an RGB or RGBA texture on a plane.
 
     Parameters
@@ -3441,7 +3509,8 @@ def texture_update(texture_actor, arr):
     grid.GetPointData().SetScalars(vtkarr)
 
 
-def _textured_sphere_source(theta=60, phi=60):
+@warn_on_args_to_kwargs()
+def _textured_sphere_source(*, theta=60, phi=60):
     """Use vtkTexturedSphereSource to set the theta and phi.
 
     Parameters
@@ -3463,7 +3532,8 @@ def _textured_sphere_source(theta=60, phi=60):
     return tss
 
 
-def texture_on_sphere(rgb, theta=60, phi=60, interpolate=True):
+@warn_on_args_to_kwargs()
+def texture_on_sphere(rgb, *, theta=60, phi=60, interpolate=True):
     """Map an RGB or RGBA texture on a sphere.
 
     Parameters
@@ -3499,7 +3569,8 @@ def texture_on_sphere(rgb, theta=60, phi=60, interpolate=True):
     return earthActor
 
 
-def texture_2d(rgb, interp=False):
+@warn_on_args_to_kwargs()
+def texture_2d(rgb, *, interp=False):
     """Create 2D texture from array.
 
     Parameters
@@ -3565,7 +3636,10 @@ def texture_2d(rgb, interp=False):
     return act
 
 
-def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives="torus", scales=1):
+@warn_on_args_to_kwargs()
+def sdf(
+    centers, *, directions=(1, 0, 0), colors=(1, 0, 0), primitives="torus", scales=1
+):
     """Create a SDF primitive based actor.
 
     Parameters
@@ -3646,8 +3720,10 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives="torus", sca
     return box_actor
 
 
+@warn_on_args_to_kwargs()
 def markers(
     centers,
+    *,
     colors=(0, 1, 0),
     scales=1,
     marker="3d",
@@ -3785,7 +3861,12 @@ def markers(
         attribute_to_actor(sq_actor, list_of_markers, "marker")
 
     def callback(
-        _caller, _event, calldata=None, uniform_type="f", uniform_name=None, value=None
+        _caller,
+        _event,
+        calldata=None,
+        uniform_type="f",
+        uniform_name=None,
+        value=None,
     ):
         program = calldata
         if program is not None:
@@ -3824,7 +3905,16 @@ def markers(
     return sq_actor
 
 
-def ellipsoid(centers, axes, lengths, colors=(1, 0, 0), scales=1.0, opacity=1.0):
+@warn_on_args_to_kwargs()
+def ellipsoid(
+    centers,
+    axes,
+    lengths,
+    *,
+    colors=(1, 0, 0),
+    scales=1.0,
+    opacity=1.0,
+):
     """VTK actor for visualizing ellipsoids.
 
     Parameters
@@ -3889,7 +3979,17 @@ def ellipsoid(centers, axes, lengths, colors=(1, 0, 0), scales=1.0, opacity=1.0)
     return tensor_ellipsoid(centers, axes, lengths, colors, scales, opacity)
 
 
-def uncertainty_cone(evals, evecs, signal, sigma, b_matrix, scales=0.6, opacity=1.0):
+@warn_on_args_to_kwargs()
+def uncertainty_cone(
+    evals,
+    evecs,
+    signal,
+    sigma,
+    b_matrix,
+    *,
+    scales=0.6,
+    opacity=1.0,
+):
     """VTK actor for visualizing the cone of uncertainty representing the
     variance of the main direction of diffusion.
 

@@ -1171,7 +1171,7 @@ def test_ui_draw_shape():
     current_size = (900, 900)
     scene = window.Scene()
     show_manager = window.ShowManager(
-        scene, size=current_size, title="DrawShape UI Example"
+        scene=scene, size=current_size, title="DrawShape UI Example"
     )
     scene.add(line, circle, quad)
 
