@@ -50,7 +50,7 @@ def doctest_skip_parser(func):
     return func
 
 
-def warn_on_args_to_kwargs(from_version=None, until_version=None):
+def warn_on_args_to_kwargs(from_version="0.1.O", until_version="0.11.0"):
     """Decorator to enforce keyword-only arguments.
 
     This decorator enforces that all arguments after the first one are
@@ -143,7 +143,7 @@ def warn_on_args_to_kwargs(from_version=None, until_version=None):
             params_len = len(params)
             try:
                 return func(*args, **kwargs)
-            except TypeError:
+            except TypeError as e:
                 # if the version of fury is greater than until_version, an error should
                 # be displayed to indicate that this way of calling the function func
                 # was supported by from_version until_version but not by the current
@@ -152,13 +152,7 @@ def warn_on_args_to_kwargs(from_version=None, until_version=None):
                     from fury import __version__ as FURY_VERSION
 
                     if version.parse(FURY_VERSION) > version.parse(until_version):
-                        raise RuntimeError(
-                            f"Calling the {func.__name__} function in this way "
-                            f"was supported from {from_version} up to {until_version}, "
-                            f"but not in the current version of FURY {FURY_VERSION}. "
-                            f"Here's how you must call the Function {func.__name__}: "
-                            f"{func.__name__}({func_params_sample})"
-                        ) from None
+                        raise TypeError(e) from e
 
                 if ARG_DEFAULT:
                     missing_kwargs += ARG_DEFAULT
