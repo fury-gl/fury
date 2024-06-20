@@ -421,3 +421,24 @@ def attribute_to_actor(actor, arr, attr_name, deep=True):
     mapper.MapDataArrayToVertexAttribute(
         attr_name, attr_name, DataObject.FIELD_ASSOCIATION_POINTS, -1
     )
+
+def shader_custom_uniforms(actor, shader_type):
+    """Eases the passing of uniform values to the shaders by returning ``actor.GetShaderProperty().GetVertexCustomUniforms()``,
+    that give access to the ``SetUniform`` methods.
+    Parameters
+    ----------
+    actor : actor.Actor
+          Actor which the uniform values will be passed to.
+    shader_type : str
+          Shader type of the uniform values to be passed. It can be:
+          * "vertex"
+          * "fragment"
+          * "geometry"
+    """
+    SHADER_FUNCTIONS = {"vertex" : actor.GetShaderProperty().GetVertexCustomUniforms(), 
+                        "fragment" : actor.GetShaderProperty().GetFragmentCustomUniforms(),
+                        "geometry" : actor.GetShaderProperty().GetGeometryCustomUniforms()}
+    
+    
+    
+    return SHADER_FUNCTIONS[shader_type]
