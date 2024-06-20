@@ -192,7 +192,7 @@ def test_simple_animation():
     animation = gltf_obj.main_animation()
     timeline.add_animation(animation)
     scene = window.Scene()
-    showm = window.ShowManager(scene, size=(900, 768))
+    showm = window.ShowManager(scene=scene, size=(900, 768))
     showm.initialize()
 
     scene.add(timeline)
@@ -259,7 +259,7 @@ def test_skinning():
     npt.assert_equal(len(ibms), 2)
 
     scene = window.Scene()
-    showm = window.ShowManager(scene, size=(900, 768))
+    showm = window.ShowManager(scene=scene, size=(900, 768))
     showm.initialize()
 
     scene.add(timeline)
@@ -333,7 +333,7 @@ def test_morphing():
     gltf_obj.update_morph(anim_1)
 
     scene = window.Scene()
-    showm = window.ShowManager(scene, size=(900, 768))
+    showm = window.ShowManager(scene=scene, size=(900, 768))
     showm.initialize()
 
     timeline_1 = Timeline()
