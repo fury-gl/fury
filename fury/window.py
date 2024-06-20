@@ -10,6 +10,7 @@ from scipy import ndimage
 
 from fury import __version__ as fury_version
 import fury.animation as anim
+from fury.decorators import warn_on_args_to_kwargs
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image, save_image
 from fury.lib import (
@@ -47,7 +48,8 @@ class Scene(OpenGLRenderer):
     available in ``vtkRenderer`` if necessary.
     """
 
-    def __init__(self, background=(0, 0, 0), skybox=None):
+    @warn_on_args_to_kwargs()
+    def __init__(self, *, background=(0, 0, 0), skybox=None):
         self.__skybox = skybox
         self.__skybox_actor = None
         if skybox:
@@ -61,7 +63,8 @@ class Scene(OpenGLRenderer):
         """Set a background color."""
         self.SetBackground(color)
 
-    def skybox(self, visible=True, gamma_correct=True):
+    @warn_on_args_to_kwargs()
+    def skybox(self, *, visible=True, gamma_correct=True):
         """Show or hide the skybox.
 
         Parameters
@@ -112,7 +115,8 @@ class Scene(OpenGLRenderer):
         """Remove all actors from the scene."""
         self.RemoveAllViewProps()
 
-    def projection(self, proj_type="perspective"):
+    @warn_on_args_to_kwargs()
+    def projection(self, *, proj_type="perspective"):
         """Decide between parallel or perspective projection.
 
         Parameters
@@ -130,7 +134,8 @@ class Scene(OpenGLRenderer):
         """Reset the camera to an automatic position given by the engine."""
         self.ResetCamera()
 
-    def reset_camera_tight(self, margin_factor=1.02):
+    @warn_on_args_to_kwargs()
+    def reset_camera_tight(self, *, margin_factor=1.02):
         """Resets camera so the content fit tightly within the window.
 
         Parameters
@@ -180,7 +185,8 @@ class Scene(OpenGLRenderer):
         print("   Focal Point (%.2f, %.2f, %.2f)" % cam.GetFocalPoint())
         print("   View Up (%.2f, %.2f, %.2f)" % cam.GetViewUp())
 
-    def set_camera(self, position=None, focal_point=None, view_up=None):
+    @warn_on_args_to_kwargs()
+    def set_camera(self, *, position=None, focal_point=None, view_up=None):
         """Set up camera position / Focal Point / View Up."""
         if position is not None:
             self.GetActiveCamera().SetPosition(*position)
@@ -290,8 +296,10 @@ class Scene(OpenGLRenderer):
 class ShowManager:
     """Class interface between the scene, the window and the interactor."""
 
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
+        *,
         scene=None,
         title="FURY",
         size=(300, 300),
@@ -521,7 +529,8 @@ class ShowManager:
         except AttributeError:
             return True
 
-    def start(self, multithreaded=False, desired_fps=60):
+    @warn_on_args_to_kwargs()
+    def start(self, *, multithreaded=False, desired_fps=60):
         """Start interaction.
 
         Parameters
@@ -666,7 +675,8 @@ class ShowManager:
                 events = f.read()
         return events
 
-    def record_events_to_file(self, filename="record.log"):
+    @warn_on_args_to_kwargs()
+    def record_events_to_file(self, *, filename="record.log"):
         """Record events during the interaction.
 
         The recording is represented as a list of VTK events
@@ -744,7 +754,8 @@ class ShowManager:
 
         self.play_events(events)
 
-    def add_window_callback(self, win_callback, event=Command.ModifiedEvent):
+    @warn_on_args_to_kwargs()
+    def add_window_callback(self, win_callback, *, event=Command.ModifiedEvent):
         """Add window callbacks."""
         self.window.AddObserver(event, win_callback)
         self.window.Render()
@@ -761,7 +772,8 @@ class ShowManager:
         self.timers.append(timer_id)
         return timer_id
 
-    def add_iren_callback(self, iren_callback, event="MouseMoveEvent"):
+    @warn_on_args_to_kwargs()
+    def add_iren_callback(self, iren_callback, *, event="MouseMoveEvent"):
         if not self.iren.GetInitialized():
             self.initialize()
         self.iren.AddObserver(event, iren_callback)
@@ -784,7 +796,8 @@ class ShowManager:
         self.destroy_timers()
         self.timers.clear()
 
-    def save_screenshot(self, fname, magnification=1, size=None, stereo=None):
+    @warn_on_args_to_kwargs()
+    def save_screenshot(self, fname, *, magnification=1, size=None, stereo=None):
         """Save a screenshot of the current window in the specified filename.
 
         Parameters
@@ -829,8 +842,10 @@ class ShowManager:
         )
 
 
+@warn_on_args_to_kwargs()
 def show(
     scene,
+    *,
     title="FURY",
     size=(300, 300),
     png_magnify=1,
@@ -904,12 +919,12 @@ def show(
 
     """
     show_manager = ShowManager(
-        scene,
-        title,
-        size,
-        png_magnify,
-        reset_camera,
-        order_transparent,
+        scene=scene,
+        title=title,
+        size=size,
+        png_magnify=png_magnify,
+        reset_camera=reset_camera,
+        order_transparent=order_transparent,
         stereo=stereo,
         multi_samples=multi_samples,
         max_peels=max_peels,
@@ -919,7 +934,9 @@ def show(
     show_manager.start()
 
 
+@warn_on_args_to_kwargs()
 def record(
+    *,
     scene=None,
     cam_pos=None,
     cam_focal=None,
@@ -1073,7 +1090,8 @@ def record(
     renWin.Finalize()
 
 
-def antialiasing(scene, win, multi_samples=8, max_peels=4, occlusion_ratio=0.0):
+@warn_on_args_to_kwargs()
+def antialiasing(scene, win, *, multi_samples=8, max_peels=4, occlusion_ratio=0.0):
     """Enable anti-aliasing and ordered transparency.
 
     Parameters
@@ -1116,8 +1134,10 @@ def antialiasing(scene, win, multi_samples=8, max_peels=4, occlusion_ratio=0.0):
     scene.SetOcclusionRatio(occlusion_ratio)
 
 
+@warn_on_args_to_kwargs()
 def snapshot(
     scene,
+    *,
     fname=None,
     size=(300, 300),
     offscreen=True,
@@ -1190,7 +1210,11 @@ def snapshot(
 
         if order_transparent:
             antialiasing(
-                scene, render_window, multi_samples, max_peels, occlusion_ratio
+                scene,
+                render_window,
+                multi_samples=multi_samples,
+                max_peels=max_peels,
+                occlusion_ratio=occlusion_ratio,
             )
         render_window.Render()
 
@@ -1238,8 +1262,9 @@ def analyze_scene(scene):
     return report
 
 
+@warn_on_args_to_kwargs()
 def analyze_snapshot(
-    im, bg_color=colors.black, colors=None, find_objects=True, strel=None
+    im, *, bg_color=colors.black, colors=None, find_objects=True, strel=None
 ):
     """Analyze snapshot from memory or file.
 

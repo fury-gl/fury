@@ -396,7 +396,11 @@ def test_ribbon(interactive=False):
             is_hetatm=is_hetatm,
         )
         test_actor = mol.ribbon(molecule)
-        scene.set_camera((28, 113, 74), (34, 106, 70), (-0.37, 0.29, -0.88))
+        scene.set_camera(
+            position=(28, 113, 74),
+            focal_point=(34, 106, 70),
+            view_up=(-0.37, 0.29, -0.88),
+        )
         scene.add(test_actor)
         scene.reset_camera()
         scene.reset_clipping_range()

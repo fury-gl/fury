@@ -51,7 +51,7 @@ def test_frame_rate_and_anti_aliasing():
 
     counter = itertools.count()
     showm = window.ShowManager(
-        scene,
+        scene=scene,
         size=(1980, 1080),
         reset_camera=False,
         order_transparent=True,
@@ -103,7 +103,7 @@ def test_frame_rate_and_anti_aliasing():
     counter = itertools.count()
     multi_samples = 0
     showm = window.ShowManager(
-        scene,
+        scene=scene,
         size=(1980, 1080),
         reset_camera=False,
         order_transparent=True,
@@ -161,7 +161,10 @@ def test_timer():
     tb = ui.TextBlock2D()
     counter = itertools.count()
     showm = window.ShowManager(
-        scene, size=(1024, 768), reset_camera=False, order_transparent=True
+        scene=scene,
+        size=(1024, 768),
+        reset_camera=False,
+        order_transparent=True,
     )
 
     scene.add(tb)
