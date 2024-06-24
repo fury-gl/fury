@@ -1,0 +1,82 @@
+Week 3: Data Data Data!
+=======================
+
+.. post:: June 16 2024
+   :author: Robin Roy
+   :tags: google
+   :category: gsoc
+
+Hi, I'm `Robin <https://github.com/robinroy03>`_ and this is my blog about week 3.
+
+My goal for week 3 was to collect data more efficiently and improve the citations. I also had my mid-terms during this week so I had to get things done fast.
+
+Things I did in week 3
+----------------------
+
+1) **A better data parsing technique**
+
+My initial approach was naive, it was just regex and some common filtrations. Later, my mentors told me to use the `inspect` module. I studied that module and realized that I needed to parse data using an AST. I didn't use the `inspect` module to do the parsing, since I only had to get the function/class signature and docstrings. So instead I used the ``ast`` module from python stdlib. My mentors gave me the general direction to go through - which was using ASTs to parse data effectively.
+
+So now we have a script which you run like `python extractor.py fury` and it'll generate the appropriate JSON files.
+
+`{"path": "../..", "function/class name": "name", "docstring": "..", "class_methods": ["method1", "..."]}`
+
+I also changed the upserting chunk format. Earlier it was just strings, now it is JSON (same thing above). I do not have a scientific reason for this, but empirically it looks like it helped. Benchmarking is something I'm planning to do next week.
+
+Metadata format:
+
+`metadata: {"path": "../..", "function/class name": "name", "docstring": "..", "methods": [(method1, docstring), (method2, docstring), ...]}`
+
+2) **Links for citation**
+
+Now the bot shows links for citations. Because of the new parsing, I was able to do that pretty efficiently.
+
+.. image:: /_static/images/gsoc-robin-3-fury-discord-bot-references-url.jpg
+    :alt: Link based references for the LLM output.
+
+
+3) **Faster Inference**
+
+So this is something about the Generative AI field. There are too many things happening you might miss some stuff. `Groq` is a company providing free APIs for the llama and other opensource models (free for now, at least). Its inference speed is also super high. So I decided to integrate that also into our infrastructure.
+Since everything is a microservice in our architecture, it is easy to add new things.
+
+Our architecture:
+   .. raw:: html
+
+      <img src="https://github.com/fury-gl/fury-communication-assets/blob/main/gsoc_2024/7-6-2024-demo-architecture-gsoc-robin-week2.png?raw=true">
+
+So now, along with Ollama, we have Groq inference also. I aim to make a `router` so that we can swap different providers as required. I'm also very interested in integrating Google Gemini 1.5 Flash and other models. Groq does not support fine-tuning, but Flash supports it and is `free of cost <https://developers.googleblog.com/en/gemini-15-pro-and-15-flash-now-available/#:~:text=To%20support%20that%2C%20we%20will%20also%20be%20rolling%20out%20tuning%20support%20for%20Gemini%201.5%20Flash%20on%20June%2017th.%20Tuning%20will%20be%20supported%20in%20both%20Google%20AI%20Studio%20and%20the%20Gemini%20API%20directly.%20Currently%2C%20tuning%20jobs%20are%20free%20of%20charge%2C%20and%20using%20a%20tuned%20model%20does%20not%20incur%20any%20additional%20per%2Dtoken%20costs.>`_ (for now). Our architecture is platform agnostic, so we can try out different things without being locked into any of them. We will also fine-tune our phi3 model since we have the data with us.
+
+    .. raw:: html
+
+        <iframe src="https://github.com/robinroy03/fury-discord-bot/assets/115863770/234fee85-9eb4-4fd5-a334-9e6d11e552a3" width="640" height="390" frameborder="0" allowfullscreen></iframe>
+
+4) **Dockerizing Discord Bot**
+
+I earlier used the huggingface implementation (copied their implementation demo). It was bad. My mentors suggested to dockerize the bot so I did that.
+
+
+What is coming up next week?
+----------------------------
+
+- Benchmarking. Now we have the data, but we need to properly benchmark to see whether the modifications I make every day are making the bot dumber or smarter.
+- Study different techniques to improve model answer accuracy such as `HyDE <https://arxiv.org/abs/2212.10496>`_.
+- Study how to go forward with fine-tuning.
+- Improved references.
+- Collect more data.
+
+
+Did you get stuck anywhere?
+---------------------------
+
+No, everything went well this week. Exam preparation was a pain though😢.
+
+LINKS:
+
+- `Gemini Blog <https://developers.googleblog.com/en/gemini-15-pro-and-15-flash-now-available>`_
+
+- `HyDE <https://arxiv.org/abs/2212.10496>`_
+
+- `Robin :) <https://github.com/robinroy03>`_
+
+Thank you for reading!
