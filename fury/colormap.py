@@ -669,7 +669,7 @@ def rgb2hsv(rgb):
     out_v = rgb.max(-1)
 
     # -- S channel
-    delta = rgb.ptp(-1)
+    delta = np.ptp(rgb, -1)
     # Ignore warning for zero divided by zero
     old_settings = np.seterr(invalid="ignore")
     out_s = delta / out_v
