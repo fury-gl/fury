@@ -6,6 +6,7 @@ import warnings
 from PIL import Image
 import numpy as np
 
+from fury.decorators import warn_on_args_to_kwargs
 from fury.lib import (
     BMPReader,
     BMPWriter,
@@ -34,7 +35,8 @@ from fury.lib import (
 from fury.utils import set_input
 
 
-def load_cubemap_texture(fnames, interpolate_on=True, mipmap_on=True):
+@warn_on_args_to_kwargs()
+def load_cubemap_texture(fnames, *, interpolate_on=True, mipmap_on=True):
     """Load a cube map texture from a list of 6 images.
 
     Parameters
@@ -74,7 +76,8 @@ def load_cubemap_texture(fnames, interpolate_on=True, mipmap_on=True):
     return texture
 
 
-def load_image(filename, as_vtktype=False, use_pillow=True):
+@warn_on_args_to_kwargs()
+def load_image(filename, *, as_vtktype=False, use_pillow=True):
     """Load an image.
 
     Parameters
@@ -92,8 +95,8 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
         desired image array
 
     """
-    is_url = filename.lower().startswith("http://") or filename.lower().startswith(
-        "https://"
+    is_url = (filename.lower().startswith("http://")) or (
+        filename.lower().startswith("https://")
     )
 
     if is_url:
@@ -135,7 +138,14 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
 
             # width, height
             vtk_image.SetDimensions(image.shape[1], image.shape[0], depth)
-            vtk_image.SetExtent(0, image.shape[1] - 1, 0, image.shape[0] - 1, 0, 0)
+            vtk_image.SetExtent(
+                0,
+                image.shape[1] - 1,
+                0,
+                image.shape[0] - 1,
+                0,
+                0,
+            )
             vtk_image.SetSpacing(1.0, 1.0, 1.0)
             vtk_image.SetOrigin(0.0, 0.0, 0.0)
 
@@ -210,9 +220,11 @@ def load_text(file):
     return text
 
 
+@warn_on_args_to_kwargs()
 def save_image(
     arr,
     filename,
+    *,
     compression_quality=75,
     compression_type="deflation",
     use_pillow=True,
@@ -307,7 +319,13 @@ def save_image(
             writer.SetQuality(compression_quality)
         if extension.lower() in [".tif", ".tiff"]:
             compression_type = compression_type or "nocompression"
-            l_compression = ["nocompression", "packbits", "jpeg", "deflate", "lzw"]
+            l_compression = [
+                "nocompression",
+                "packbits",
+                "jpeg",
+                "deflate",
+                "lzw",
+            ]
 
             if compression_type.lower() in l_compression:
                 comp_id = l_compression.index(compression_type.lower())
@@ -363,7 +381,8 @@ def load_polydata(file_name):
     return reader.GetOutput()
 
 
-def save_polydata(polydata, file_name, binary=False, color_array_name=None):
+@warn_on_args_to_kwargs()
+def save_polydata(polydata, file_name, *, binary=False, color_array_name=None):
     """Save a vtk polydata to a supported format file.
 
     Save formats can be VTK, FIB, PLY, STL and XML.
@@ -413,7 +432,8 @@ def save_polydata(polydata, file_name, binary=False, color_array_name=None):
     writer.Write()
 
 
-def load_sprite_sheet(sheet_path, nb_rows, nb_cols, as_vtktype=False):
+@warn_on_args_to_kwargs()
+def load_sprite_sheet(sheet_path, nb_rows, nb_cols, *, as_vtktype=False):
     """Process and load sprites from a sprite sheet.
 
     Parameters
@@ -450,13 +470,18 @@ def load_sprite_sheet(sheet_path, nb_rows, nb_cols, as_vtktype=False):
             nxt_col * sprite_size_y,
         )
 
-        sprite_arr = sprite_sheet[box[0] : box[2], box[1] : box[3]]
+        sprite_arr = sprite_sheet[
+            box[0] : box[2], box[1] : box[3]  # noqa: E203
+        ]
         if as_vtktype:
             with InTemporaryDirectory() as tdir:
                 tmp_img_path = os.path.join(tdir, f"{row}{col}.png")
                 save_image(sprite_arr, tmp_img_path, compression_quality=100)
 
-                sprite_dicts[(row, col)] = load_image(tmp_img_path, as_vtktype=True)
+                sprite_dicts[(row, col)] = load_image(
+                    tmp_img_path,
+                    as_vtktype=True,
+                )
         else:
             sprite_dicts[(row, col)] = sprite_arr
 

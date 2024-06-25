@@ -26,7 +26,7 @@ def tests_fetch_gltf():
             os.remove(pjoin(boxtex, path))
         os.rmdir(boxtex)
 
-    fetch_gltf(models_list)
+    fetch_gltf(name=models_list)
     list_gltf = os.listdir(folder)
     results = [model in list_gltf for model in models_list]
 
@@ -43,7 +43,7 @@ def tests_fetch_gltf():
     items = os.listdir(boxtex)
     npt.assert_array_equal(len(items), 3)
 
-    filenames, path = fetch_gltf("Box", "glTF-Binary")
+    filenames, path = fetch_gltf(name="Box", mode="glTF-Binary")
     npt.assert_equal(len(filenames), 1)
     npt.assert_equal(os.listdir(path), filenames)
 
@@ -63,8 +63,8 @@ def test_list_gltf_sample_models():
 
 def test_read_viz_gltf():
     gltf_dir = pjoin(fury_home, "glTF")
-    filenames, path = fetch_gltf("Box", "glTF-Binary")
-    filename = read_viz_gltf("Box", "glTF-Binary")
+    filenames, path = fetch_gltf(name="Box", mode="glTF-Binary")
+    filename = read_viz_gltf("Box", mode="glTF-Binary")
     npt.assert_equal(filename, pjoin(path, filenames[0]))
 
     npt.assert_raises(ValueError, read_viz_gltf, "FURY", "glTF")
@@ -77,7 +77,7 @@ def test_read_viz_gltf():
         os.rmdir(mode)
     npt.assert_raises(ValueError, read_viz_gltf, "Box")
 
-    filenames, path = fetch_gltf("Box")
+    filenames, path = fetch_gltf(name="Box")
     out_path = read_viz_gltf("Box").split(os.sep)
     mode = out_path[-2:][0]
     npt.assert_equal(mode, "glTF")

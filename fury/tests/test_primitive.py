@@ -24,7 +24,7 @@ def test_vertices_primitives():
         npt.assert_equal(vertices.min(), e_min)
         npt.assert_equal(vertices.max(), e_max)
 
-    vertices, _ = fp.prim_star(3)
+    vertices, _ = fp.prim_star(dim=3)
     npt.assert_equal(vertices.shape, (12, 3))
     npt.assert_almost_equal(abs(np.mean(vertices)), 0.11111111)
     npt.assert_equal(vertices.min(), -3)
@@ -108,7 +108,7 @@ def test_spheres_primitives():
     ]
 
     for name, nb_verts, nb_triangles in l_primitives:
-        verts, faces = fp.prim_sphere(name)
+        verts, faces = fp.prim_sphere(name=name)
         npt.assert_equal(verts.shape, (nb_verts, 3))
         npt.assert_almost_equal(np.mean(verts), 0)
         npt.assert_equal(len(faces), nb_triangles)
@@ -116,7 +116,14 @@ def test_spheres_primitives():
             list(set(np.concatenate(faces, axis=None))), list(range(len(verts)))
         )
 
-    npt.assert_raises(ValueError, fp.prim_sphere, "sym362")
+    npt.assert_raises(
+        ValueError,
+        fp.prim_sphere,
+        name="sym362",
+        gen_faces=False,
+        phi=None,
+        theta=None,
+    )
 
     l_primitives = [
         (10, 10, 82, 160),
@@ -138,7 +145,7 @@ def test_spheres_primitives():
 def test_superquadric_primitives():
     # test default, should be like a sphere 362
     sq_verts, sq_faces = fp.prim_superquadric()
-    s_verts, s_faces = fp.prim_sphere("symmetric362")
+    s_verts, s_faces = fp.prim_sphere(name="symmetric362")
 
     npt.assert_equal(sq_verts.shape, s_verts.shape)
     npt.assert_equal(sq_faces.shape, s_faces.shape)
@@ -211,7 +218,7 @@ def test_cone_primitive():
     )
 
     # test warnings
-    npt.assert_raises(ValueError, fp.prim_cone, 0.5, 1, 2)
+    npt.assert_raises(ValueError, fp.prim_cone, radius=0.5, height=1, sectors=2)
 
 
 def test_repeat_primitive():
@@ -223,9 +230,7 @@ def test_repeat_primitive():
 
     for i in [-1, 1]:
         dirs = dirs * i
-        res = fp.repeat_primitive(
-            vertices=verts, faces=faces, centers=centers, directions=dirs, colors=colors
-        )
+        res = fp.repeat_primitive(verts, faces, centers, directions=dirs, colors=colors)
 
         big_verts, big_faces, big_colors, big_centers = res
 
@@ -263,8 +268,8 @@ def test_repeat_primitive_function():
     phi_theta = np.array([[1, 1], [1, 2], [2, 1]])
 
     _ = fp.repeat_primitive_function(
-        func=fp.prim_superquadric,
-        centers=centers,
+        fp.prim_superquadric,
+        centers,
         func_args=phi_theta,
         directions=dirs,
         colors=colors,
