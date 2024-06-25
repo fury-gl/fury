@@ -22,7 +22,7 @@ def setup_module():
 def test_wrong_interactor_style():
     panel = ui.Panel2D(size=(300, 150))
     dummy_scene = window.Scene()
-    _ = window.ShowManager(dummy_scene, interactor_style="trackball")
+    _ = window.ShowManager(scene=dummy_scene, interactor_style="trackball")
     npt.assert_raises(TypeError, panel.add_to_scene, dummy_scene)
 
 
@@ -35,17 +35,32 @@ def test_grid_ui1(interactive=False):
     vol1[25:75, 25:75, 25:75] = 100
 
     colors = distinguishable_colormap(nb_colors=3)
-    contour_actor1 = actor.contour_from_roi(vol1, np.eye(4), colors[0], 1.0)
+    contour_actor1 = actor.contour_from_roi(
+        vol1,
+        affine=np.eye(4),
+        color=colors[0],
+        opacity=1.0,
+    )
 
     vol2 = np.zeros((100, 100, 100))
     vol2[25:75, 25:75, 25:75] = 100
 
-    contour_actor2 = actor.contour_from_roi(vol2, np.eye(4), colors[1], 1.0)
+    contour_actor2 = actor.contour_from_roi(
+        vol2,
+        affine=np.eye(4),
+        color=colors[1],
+        opacity=1.0,
+    )
 
     vol3 = np.zeros((100, 100, 100))
     vol3[25:75, 25:75, 25:75] = 100
 
-    contour_actor3 = actor.contour_from_roi(vol3, np.eye(4), colors[2], 1.0)
+    contour_actor3 = actor.contour_from_roi(
+        vol3,
+        affine=np.eye(4),
+        color=colors[2],
+        opacity=1.0,
+    )
 
     scene = window.Scene()
     actors = []
@@ -88,7 +103,7 @@ def test_grid_ui1(interactive=False):
     texts.append(text_actor3)
 
     counter = itertools.count()
-    show_m = window.ShowManager(scene)
+    show_m = window.ShowManager(scene=scene)
 
     def timer_callback(_obj, _event):
         nonlocal show_m, counter
@@ -136,17 +151,32 @@ def test_grid_ui2(interactive=False):
     vol1[25:75, 25:75, 25:75] = 100
 
     colors = distinguishable_colormap(nb_colors=3)
-    contour_actor1 = actor.contour_from_roi(vol1, np.eye(4), colors[0], 1.0)
+    contour_actor1 = actor.contour_from_roi(
+        vol1,
+        affine=np.eye(4),
+        color=colors[0],
+        opacity=1.0,
+    )
 
     vol2 = np.zeros((100, 100, 100))
     vol2[25:75, 25:75, 25:75] = 100
 
-    contour_actor2 = actor.contour_from_roi(vol2, np.eye(4), colors[1], 1.0)
+    contour_actor2 = actor.contour_from_roi(
+        vol2,
+        affine=np.eye(4),
+        color=colors[1],
+        opacity=1.0,
+    )
 
     vol3 = np.zeros((100, 100, 100))
     vol3[25:75, 25:75, 25:75] = 100
 
-    contour_actor3 = actor.contour_from_roi(vol3, np.eye(4), colors[2], 1.0)
+    contour_actor3 = actor.contour_from_roi(
+        vol3,
+        affine=np.eye(4),
+        color=colors[2],
+        opacity=1.0,
+    )
 
     scene = window.Scene()
     actors = []
@@ -198,7 +228,9 @@ def test_grid_ui2(interactive=False):
 
     current_size = (900, 600)
     scene = window.Scene()
-    show_manager = window.ShowManager(scene, size=current_size, title="FURY GridUI")
+    show_manager = window.ShowManager(
+        scene=scene, size=current_size, title="FURY GridUI"
+    )
 
     grid_ui2 = ui.GridUI(
         actors=actors,

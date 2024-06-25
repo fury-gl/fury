@@ -2,6 +2,7 @@ from functools import partial
 import os
 
 from fury import enable_warnings
+from fury.decorators import warn_on_args_to_kwargs
 from fury.deprecator import deprecate_with_version
 from fury.io import load_text
 from fury.lib import (
@@ -168,9 +169,11 @@ def load(filename):
         return shader_file.read()
 
 
+@warn_on_args_to_kwargs()
 def shader_to_actor(
     actor,
     shader_type,
+    *,
     impl_code="",
     decl_code="",
     block="valuepass",
@@ -279,7 +282,8 @@ def replace_shader_in_actor(actor, shader_type, code):
     getattr(sp, function)(code)
 
 
-def add_shader_callback(actor, callback, priority=0.0):
+@warn_on_args_to_kwargs()
+def add_shader_callback(actor, callback, *, priority=0.0):
     """Add a shader callback to the actor.
 
     Parameters
@@ -328,20 +332,21 @@ def add_shader_callback(actor, callback, priority=0.0):
                 test_values.append(500)
 
         fs.add_shader_callback(
-                actor, callbackHigh, 999)
+                actor, callbackHigh, priority=999)
         fs.add_shader_callback(
-                actor, callbackLow, 0)
+                actor, callbackLow, priority=0)
         id_mean = fs.add_shader_callback(
-                actor, callbackMean, 500)
+                actor, callbackMean, priority=500)
 
         showm.start()
         # test_values = [999, 500, 0, 999, 500, 0, ...]
 
     """
 
+    # @warn_on_args_to_kwargs()
     @calldata_type(VTK_OBJECT)
     def cbk(caller, event, calldata=None):
-        callback(caller, event, calldata)
+        callback(caller, event, calldata=calldata)
 
     if not isinstance(priority, (float, int)):
         raise TypeError(
@@ -355,7 +360,8 @@ def add_shader_callback(actor, callback, priority=0.0):
     return id_observer
 
 
-def shader_apply_effects(window, actor, effects, priority=0):
+@warn_on_args_to_kwargs()
+def shader_apply_effects(window, actor, effects, *, priority=0):
     """This applies a specific opengl state (effect) or a list of effects just
     before the actor's shader is executed.
 
@@ -381,7 +387,8 @@ def shader_apply_effects(window, actor, effects, priority=0):
     if not isinstance(effects, list):
         effects = [effects]
 
-    def callback(_caller, _event, calldata=None, effects=None, window=None):
+    @warn_on_args_to_kwargs()
+    def callback(_caller, _event, *, calldata=None, effects=None, window=None):
         program = calldata
         glState = window.GetState()
         if program is not None:
@@ -389,13 +396,14 @@ def shader_apply_effects(window, actor, effects, priority=0):
                 func(glState)
 
     id_observer = add_shader_callback(
-        actor, partial(callback, effects=effects, window=window), priority
+        actor, partial(callback, effects=effects, window=window), priority=priority
     )
 
     return id_observer
 
 
-def attribute_to_actor(actor, arr, attr_name, deep=True):
+@warn_on_args_to_kwargs()
+def attribute_to_actor(actor, arr, attr_name, *, deep=True):
     """Link a numpy array with vertex attribute.
 
     Parameters
