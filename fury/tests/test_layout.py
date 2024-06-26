@@ -46,11 +46,17 @@ def get_default_cubes(
     cube_first_scale, cube_second_scale = scales
 
     cube_first = actor.cube(
-        cube_first_center, cube_first_direction, cube_first_color, cube_first_scale
+        cube_first_center,
+        directions=cube_first_direction,
+        colors=cube_first_color,
+        scales=cube_first_scale,
     )
 
     cube_second = actor.cube(
-        cube_second_center, cube_second_direction, cube_second_color, cube_second_scale
+        cube_second_center,
+        directions=cube_second_direction,
+        colors=cube_second_color,
+        scales=cube_second_scale,
     )
 
     return (cube_first, cube_second)
@@ -263,7 +269,11 @@ def test_x_layout():
     negative_x_layout = XLayout(direction="x-")
 
     with npt.assert_raises(ValueError):
-        _ = XLayout(direction="Invalid direction")
+        _ = XLayout(
+            direction="Invalid direction",
+            cell_padding=0,
+            cell_shape="rect",
+        )
 
     positive_positions = positive_x_layout.compute_positions(actors)
     negative_positions = negative_x_layout.compute_positions(actors)
@@ -300,7 +310,11 @@ def test_y_layout():
     negative_y_layout = YLayout(direction="y-")
 
     with npt.assert_raises(ValueError):
-        _ = YLayout(direction="Invalid direction")
+        _ = YLayout(
+            direction="Invalid direction",
+            cell_padding=0,
+            cell_shape="rect",
+        )
 
     positive_positions = positive_y_layout.compute_positions(actors)
     negative_positions = negative_y_layout.compute_positions(actors)
@@ -338,7 +352,11 @@ def test_z_layout():
     diagonal_z_layout = ZLayout(direction="z+", cell_shape="diagonal")
 
     with npt.assert_raises(ValueError):
-        _ = XLayout(direction="Invalid direction")
+        _ = XLayout(
+            direction="Invalid direction",
+            cell_padding=0,
+            cell_shape="rect",
+        )
 
     with npt.assert_raises(ValueError):
         invalid_shape_layout = ZLayout(direction="z+", cell_shape="Invalid Shape")

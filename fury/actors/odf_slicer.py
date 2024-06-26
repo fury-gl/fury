@@ -2,6 +2,7 @@
 import numpy as np
 
 from fury.colormap import create_colormap
+from fury.decorators import warn_on_args_to_kwargs
 from fury.lib import Actor, PolyData, PolyDataMapper
 from fury.utils import (
     apply_affine,
@@ -51,6 +52,7 @@ class OdfSlicerActor(Actor):
 
     """
 
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
         odfs,
@@ -64,6 +66,7 @@ class OdfSlicerActor(Actor):
         global_cm,
         colormap,
         opacity,
+        *,
         affine=None,
         B=None,
     ):
@@ -122,7 +125,8 @@ class OdfSlicerActor(Actor):
 
         self._update_mapper()
 
-    def slice_along_axis(self, slice_index, axis="zaxis"):
+    @warn_on_args_to_kwargs()
+    def slice_along_axis(self, slice_index, *, axis="zaxis"):
         """Slice ODF field at given `slice_index` along axis
         in ['xaxis', 'yaxis', zaxis'].
         """
@@ -156,16 +160,17 @@ class OdfSlicerActor(Actor):
         else:
             raise ValueError("Invalid axis name {0}.".format(axis))
 
-    def display(self, x=None, y=None, z=None):
+    @warn_on_args_to_kwargs()
+    def display(self, *, x=None, y=None, z=None):
         """Display a slice along x, y, or z axis."""
         if x is None and y is None and z is None:
             self.slice_along_axis(self.grid_shape[2] // 2)
         elif x is not None:
-            self.slice_along_axis(x, "xaxis")
+            self.slice_along_axis(x, axis="xaxis")
         elif y is not None:
-            self.slice_along_axis(y, "yaxis")
+            self.slice_along_axis(y, axis="yaxis")
         elif z is not None:
-            self.slice_along_axis(z, "zaxis")
+            self.slice_along_axis(z, axis="zaxis")
 
     def update_sphere(self, vertices, faces, B):
         """Dynamically change the sphere used for SH to SF projection."""
@@ -254,14 +259,14 @@ class OdfSlicerActor(Actor):
             if self.colormap is None:
                 raise IOError("if global_cm=True, colormap must be defined.")
             else:
-                all_colors = create_colormap(sf.ravel(), self.colormap) * 255
+                all_colors = create_colormap(sf.ravel(), name=self.colormap) * 255
         elif self.colormap is not None:
             if isinstance(self.colormap, str):
                 # Map ODFs values [min, max] to [0, 1] for each ODF
                 range_sf = sf.max(axis=-1) - sf.min(axis=-1)
                 rescaled = sf - sf.min(axis=-1, keepdims=True)
                 rescaled[range_sf > 0] /= range_sf[range_sf > 0][..., None]
-                all_colors = create_colormap(rescaled.ravel(), self.colormap) * 255
+                all_colors = create_colormap(rescaled.ravel(), name=self.colormap) * 255
             else:
                 all_colors = np.tile(
                     np.array(self.colormap).reshape(1, 3),
