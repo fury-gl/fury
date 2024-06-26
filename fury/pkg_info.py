@@ -4,6 +4,8 @@ from subprocess import run
 
 from packaging.version import Version
 
+from fury.decorators import warn_on_args_to_kwargs
+
 try:
     from ._version import __version__
 except ImportError:
@@ -12,6 +14,7 @@ except ImportError:
 COMMIT_HASH = "$Format:%h$"
 
 
+@warn_on_args_to_kwargs()
 def pkg_commit_hash(pkg_path: str | None = None) -> tuple[str, str]:
     """Get short form of commit hash
 

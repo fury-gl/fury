@@ -276,7 +276,7 @@ def test_text_block_2d_justification():
     texts = []
     texts += [
         ui.TextBlock2D(
-            "HH",
+            text="HH",
             position=(left, top),
             font_size=font_size,
             color=(1, 0, 0),
@@ -287,7 +287,7 @@ def test_text_block_2d_justification():
     ]
     texts += [
         ui.TextBlock2D(
-            "HH",
+            text="HH",
             position=(center, top),
             font_size=font_size,
             color=(0, 1, 0),
@@ -298,7 +298,7 @@ def test_text_block_2d_justification():
     ]
     texts += [
         ui.TextBlock2D(
-            "HH",
+            text="HH",
             position=(right, top),
             font_size=font_size,
             color=(0, 0, 1),
@@ -310,7 +310,7 @@ def test_text_block_2d_justification():
 
     texts += [
         ui.TextBlock2D(
-            "HH",
+            text="HH",
             position=(left, middle),
             font_size=font_size,
             color=(1, 1, 0),
@@ -321,7 +321,7 @@ def test_text_block_2d_justification():
     ]
     texts += [
         ui.TextBlock2D(
-            "HH",
+            text="HH",
             position=(center, middle),
             font_size=font_size,
             color=(0, 1, 1),
@@ -332,7 +332,7 @@ def test_text_block_2d_justification():
     ]
     texts += [
         ui.TextBlock2D(
-            "HH",
+            text="HH",
             position=(right, middle),
             font_size=font_size,
             color=(1, 0, 1),
@@ -344,7 +344,7 @@ def test_text_block_2d_justification():
 
     texts += [
         ui.TextBlock2D(
-            "HH",
+            text="HH",
             position=(left, bottom),
             font_size=font_size,
             color=(0.5, 0, 1),
@@ -355,7 +355,7 @@ def test_text_block_2d_justification():
     ]
     texts += [
         ui.TextBlock2D(
-            "HH",
+            text="HH",
             position=(center, bottom),
             font_size=font_size,
             color=(1, 0.5, 0),
@@ -366,7 +366,7 @@ def test_text_block_2d_justification():
     ]
     texts += [
         ui.TextBlock2D(
-            "HH",
+            text="HH",
             position=(right, bottom),
             font_size=font_size,
             color=(0, 1, 0.5),
