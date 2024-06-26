@@ -1,0 +1,79 @@
+Week 2: The first iteration!
+============================
+
+.. post:: June 16 2024
+   :author: Robin Roy
+   :tags: google
+   :category: gsoc
+
+Hi, I'm `Robin <https://github.com/robinroy03>`_ and this is my blog about week 2.
+
+My goal for week 2 was to connect everything and make a prototype. So now we have a bot working 24x7 to answer all your doubts :)
+
+Apart from the things mentioned in my `week 1 blog <https://fury.gl/latest/posts/2024/2024-06-06-week-1-robin.html>`_, the things I did in week 2 are basically:
+ - Chunking the files for embedding.
+ - Upserting the chunks into the database.
+ - Connecting everything together.
+ - Making the discord bot async.
+ - Merging a PR.
+
+1) **Chunking the files for embedding**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In the context of building LLM-related applications, chunking is the process of breaking down large pieces of text into smaller segments. It's an essential technique that helps optimize the relevance of the content we get back from a vector database once we use an embedding model to embed content. For our case with FURY, our data is entirely code. So one approach I tried was to take docstrings and the function/class signature.
+
+I used a naive parser during week 2, which used a combination of regex and common pattern matching to do this splitting. Later my mentors `Mohamed <https://github.com/m-agour>`_ and `Serge <https://github.com/skoudoro/>`_ told me to use a better approach, using the python ``inspect`` module.
+
+Another thing to consider was the chunk size. It is shown that smaller chunks outperform larger chunks. This can be intuitively thought of like this: An embedding model can compress a smaller text to 1024 vectors without much data loss compared to compressing a larger text to 1024 vectors.
+
+This also introduces another important issue, we need a way to test it based on our model. So we need benchmarking.
+
+
+2) **Upserting chunks into the database**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+I upserted all the chunks into the database, along with the vectors I gave metadata which was the function signature and docstrings. Later in week 3, we'll modify this to show links instead of the big wall of text.
+
+
+3) **Connecting everything together**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+I took the 4 key parts - Discord Bot, LLM API, Embeddings API and the Database API and connected them together. This was explained on the `week 1 blog <https://fury.gl/latest/posts/2024/2024-06-06-week-1-robin.html>`_ itself.
+
+
+4) **Making the Discord Bot async**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+One of the biggest challenges I faced this week was to get everything running properly. LLM output takes a lot of time to generate (we'll fix this amazingly well in week 3 BTW).
+I made a big mistake, I used ``requests`` library to do the REST API calls. It occurred to me later that it is synchronous and does blocking calls. This was the reason my Discord bot was dying randomly. I fixed it by migrating to ``aiohttp``.
+
+This also made me realize I can use async in a lot of other places. A lot of these tasks are I/O bound. If I make them async we might be able to take many more concurrent requests.
+
+5) **Merging a PR**
+~~~~~~~~~~~~~~~~~~~
+
+I merged a `PR <https://github.com/fury-gl/fury/pull/893>`_ which modifies `.gitignore`. I found this while generating the Sphinx docs.
+
+
+What is coming up next week?
+----------------------------
+
+- A faster LLM inference.
+- Better pipeline for data collection.
+- Links for citation.
+
+Did you get stuck anywhere?
+---------------------------
+
+Took me some time to realize I was using synchronous code inside async. Fixed it later.
+
+
+LINKS:
+
+- `Week 1 Blog <https://fury.gl/latest/posts/2024/2024-06-06-week-1-robin.html>`_
+- `PR <https://github.com/fury-gl/fury/pull/893>`_
+- `Serge Koudoro <https://github.com/skoudoro/>`_
+- `Mohamed Abouagour <https://github.com/m-agour>`_
+- `Robin :) <https://github.com/robinroy03>`_
+
+Thank you for reading!
