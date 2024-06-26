@@ -24,7 +24,10 @@ def test_custom_interactor_style_events(recording=False):
     # in steps so that the widgets can be added properly
     interactor_style = interactor.CustomInteractorStyle()
     show_manager = window.ShowManager(
-        scene, size=(800, 800), reset_camera=False, interactor_style=interactor_style
+        scene=scene,
+        size=(800, 800),
+        reset_camera=False,
+        interactor_style=interactor_style,
     )
 
     # Create a cursor, a circle that will follow the mouse.
@@ -56,8 +59,8 @@ def test_custom_interactor_style_events(recording=False):
         np.array([[-1, 1, 0.0], [1, 1, 0.0]]),
     ]
     colors = np.array([[1.0, 0.0, 0.0], [0.3, 0.7, 0.0]])
-    tube1 = actor.streamtube([lines[0]], colors[0])
-    tube2 = actor.streamtube([lines[1]], colors[1])
+    tube1 = actor.streamtube([lines[0]], colors=colors[0])
+    tube2 = actor.streamtube([lines[1]], colors=colors[1])
     scene.add(tube1)
     scene.add(tube2)
 
@@ -157,8 +160,8 @@ def test_double_click_events(recording=False):
 
     cube = actor.cube(
         np.array([(0, 0, 0)]),
-        np.array([(0.16526678, 0.0186237, 0.01906076)]),
-        (1, 1, 1),
+        directions=np.array([(0.16526678, 0.0186237, 0.01906076)]),
+        colors=(1, 1, 1),
         scales=3,
     )
 
