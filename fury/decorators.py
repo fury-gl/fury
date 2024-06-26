@@ -5,7 +5,6 @@ from inspect import signature
 import platform
 import re
 import sys
-from typing import Optional
 from warnings import warn
 
 from packaging import version
@@ -54,8 +53,8 @@ def doctest_skip_parser(func):
 
 
 def warn_on_args_to_kwargs(
-    from_version: Optional[str] = "0.1.0",
-    until_version: Optional[str] = "0.11.0",
+    from_version="0.1.0",
+    until_version="0.11.0",
 ):
     """Decorator to enforce keyword-only arguments.
 
@@ -65,9 +64,9 @@ def warn_on_args_to_kwargs(
 
     Parameters
     ----------
-    from_version: optional, str
+    from_version: str, optional
         The version of fury from which the function was supported.
-    until_version: optional, str
+    until_version: str, optional
         The version of fury until which the function was supported.
 
     Returns
