@@ -112,10 +112,37 @@ class glTF:
             actor.SetUserTransform(_transform)
 
             if self.materials[i] is not None:
-                base_col_tex = self.materials[i]["baseColorTexture"]
-                actor.SetTexture(base_col_tex)
-                base_color = self.materials[i]["baseColor"]
-                actor.GetProperty().SetColor(tuple(base_color[:3]))
+                pbr = self.materials[i]["pbr"]
+                if pbr is not None:
+                    base_color = pbr["baseColor"]
+                    actor.GetProperty().SetColor(tuple(base_color[:3]))
+
+                    metal = pbr["metallicValue"]
+                    rough = pbr["roughnessValue"]
+                    actor.GetProperty().SetInterpolationToPBR()
+                    actor.GetProperty().SetMetallic(metal)
+                    actor.GetProperty().SetRoughness(rough)
+
+                    base_col_tex = pbr["baseColorTexture"]
+                    metal_rough_tex = pbr["metallicRoughnessTexture"]
+                    actor.SetTexture(base_col_tex)
+                    actor.GetProperty().SetBaseColorTexture(base_col_tex)
+                    actor.GetProperty().SetORMTexture(metal_rough_tex)
+
+                emissive = self.materials[i]["emissive"]
+                if emissive["texture"] is not None:
+                    actor.GetProperty().SetEmissiveTexture(emissive["texture"])
+                if emissive["factor"] is not None:
+                    actor.GetProperty().SetEmissiveFactor(emissive["factor"])
+
+                normal = self.materials[i]["normal"]
+                if normal["texture"] is not None:
+                    actor.GetProperty().SetNormalTexture(normal["texture"])
+                    actor.GetProperty().SetNormalScale(normal["scale"])
+
+                # occlusion = self.materials[i]['occlusion']
+                # if occlusion["texture"] is not None:
+                #     actor.GetProperty().SetOcclusionStrength(occlusion["strength"])
 
             self._actors.append(actor)
 
@@ -223,7 +250,7 @@ class glTF:
             Mesh index to be loaded
         transform_mat : ndarray (4, 4)
             Transformation matrix.
-
+        parent : list
         """
         primitives = self.gltf.meshes[mesh_id].primitives
 
@@ -238,12 +265,19 @@ class glTF:
 
             if attributes.NORMAL is not None and self.apply_normals:
                 normals = self.get_acc_data(attributes.NORMAL)
-                normals = transform.apply_transformation(normals, transform_mat)
                 utils.set_polydata_normals(polydata, normals)
 
             if attributes.TEXCOORD_0 is not None:
                 tcoords = self.get_acc_data(attributes.TEXCOORD_0)
                 utils.set_polydata_tcoords(polydata, tcoords)
+
+            if attributes.TANGENT is not None:
+                tangents = self.get_acc_data(attributes.TANGENT)
+                utils.set_polydata_tangents(polydata, tangents[:, :3])
+            elif attributes.NORMAL is not None and self.apply_normals:
+                doa = [0, 1, 0.5]
+                tangents = utils.tangents_from_direction_of_anisotropy(normals, doa)
+                utils.set_polydata_tangents(polydata, tangents)
 
             if attributes.COLOR_0 is not None:
                 color = self.get_acc_data(attributes.COLOR_0)
@@ -310,7 +344,11 @@ class glTF:
         total_byte_offset = byte_offset + acc_byte_offset
 
         buff_array = self.get_buff_array(
-            buff_id, d_type["dtype"], byte_length, total_byte_offset, byte_stride
+            buff_id,
+            d_type["dtype"],
+            byte_length,
+            total_byte_offset,
+            byte_stride,
         )
         return buff_array[:, :a_type]
 
@@ -383,23 +421,67 @@ class glTF:
 
         """
         material = self.gltf.materials[mat_id]
-        bct = None
-
+        pbr_dict = None
         pbr = material.pbrMetallicRoughness
+        if pbr is not None:
+            bct, orm = None, None
+            if pbr.baseColorTexture is not None:
+                bct = pbr.baseColorTexture.index
+                bct = self.get_texture(bct, True)
+            if pbr.metallicRoughnessTexture is not None:
+                mrt = pbr.metallicRoughnessTexture.index
+                # find if there's any occulsion tex present
+                occ = material.occlusionTexture
+                if occ is not None and occ.index == mrt:
+                    orm = self.get_texture(mrt)
+                else:
+                    mrt = self.get_texture(mrt, rgb=True)
+                    occ_tex = self.get_texture(occ.index, rgb=True) if occ else None
+                    # generate orm texture
+                    orm = self.generate_orm(mrt, occ_tex)
+            colors = pbr.baseColorFactor
+            metalvalue = pbr.metallicFactor
+            roughvalue = pbr.roughnessFactor
+            pbr_dict = {
+                "baseColorTexture": bct,
+                "metallicRoughnessTexture": orm,
+                "baseColor": colors,
+                "metallicValue": metalvalue,
+                "roughnessValue": roughvalue,
+            }
+        normal = material.normalTexture
+        normal_tex = {
+            "texture": self.get_texture(normal.index) if normal else None,
+            "scale": normal.scale if normal else 1.0,
+        }
+        occlusion = material.occlusionTexture
+        occ_tex = {
+            "texture": self.get_texture(occlusion.index) if occlusion else None,
+            "strength": occlusion.strength if occlusion else 1.0,
+        }
+        # must update pbr_dict with ORM texture
+        emissive = material.emissiveTexture
+        emi_tex = {
+            "texture": self.get_texture(emissive.index, True) if emissive else None,
+            "factor": material.emissiveFactor if emissive else [0, 0, 0],
+        }
 
-        if pbr.baseColorTexture is not None:
-            bct = pbr.baseColorTexture.index
-            bct = self.get_texture(bct)
-        colors = pbr.baseColorFactor
-        return {"baseColorTexture": bct, "baseColor": colors}
+        return {
+            "pbr": pbr_dict,
+            "normal": normal_tex,
+            "occlusion": occ_tex,
+            "emissive": emi_tex,
+        }
 
-    def get_texture(self, tex_id):
+    def get_texture(self, tex_id, srgb_colorspace=False, rgb=False):
         """Read and convert image into vtk texture.
 
         Parameters
         ----------
         tex_id : int
             Texture index
+        srgb_colorspace : bool
+            Use vtkSRGB colorspace. (default=False)
 
         Returns
         -------
@@ -441,8 +523,51 @@ class glTF:
         else:
             image_path = os.path.join(self.pwd, file)
 
-        rgb = io.load_image(image_path)
-        grid = utils.rgb_to_vtk(np.flipud(rgb))
+        rgb_array = io.load_image(image_path)
+        if rgb:
+            return rgb_array
+        grid = utils.rgb_to_vtk(np.flipud(rgb_array))
+        atexture = Texture()
+        atexture.InterpolateOn()
+        atexture.EdgeClampOn()
+        atexture.SetInputDataObject(grid)
+        if srgb_colorspace:
+            atexture.UseSRGBColorSpaceOn()
+        atexture.Update()
+
+        return atexture
+
+    def generate_orm(self, metallic_roughness=None, occlusion=None):
+        """Generates ORM texture from O, R & M textures.
+        We do this by swapping Red channel of metallic_roughness with the
+        occlusion texture and adding metallic to Blue channel.
+
+        Parameters
+        ----------
+        metallic_roughness : ndarray
+        occlusion : ndarray
+        """
+        shape = metallic_roughness.shape
+        rgb_array = np.copy(metallic_roughness)
+        # metallic is red if name starts as metallicRoughness, otherwise its
+        # in the green channel
+        # https://github.com/KhronosGroup/glTF/issues/857#issuecomment-290530762
+        metal_arr = metallic_roughness[:, :, 2]
+        rough_arr = metallic_roughness[:, :, 1]
+        if occlusion is None:
+            occ_arr = np.full((shape[0], shape[1]), 256)
+            # print(occ_arr)
+        else:
+            if len(list(occlusion.shape)) > 2:
+                # occ_arr = np.dot(occlusion,
+                #                  np.array([0.2989, 0.5870, 0.1140]))
+                occ_arr = occlusion.sum(2) / 3
+                # both equation grayscales but second one is less computation.
+        rgb_array[:, :, 0][:] = metal_arr  # blue channel
+        rgb_array[:, :, 1][:] = rough_arr
+        rgb_array[:, :, 2][:] = occ_arr  # red channel
+
+        grid = utils.rgb_to_vtk(rgb_array)
         atexture = Texture()
         atexture.InterpolateOn()
         atexture.EdgeClampOn()
@@ -722,7 +847,11 @@ class glTF:
             parent_transform = np.identity(4)
         for child in _animation.child_animations:
             self.transverse_animations(
-                child, self.bones[0], timestamp, joint_matrices, parent_transform
+                child,
+                self.bones[0],
+                timestamp,
+                joint_matrices,
+                parent_transform,
             )
         for i, vertex in enumerate(self._vertices):
             vertex[:] = self.apply_skin_matrix(self._vcopy[i], joint_matrices, i)
@@ -1004,17 +1133,26 @@ class glTF:
 
                         if prop == "rotation":
                             animation.set_rotation(
-                                time[0], trs, in_tangent=in_tan, out_tangent=out_tan
+                                time[0],
+                                trs,
+                                in_tangent=in_tan,
+                                out_tangent=out_tan,
                             )
                             animation.set_rotation_interpolator(rot_interp)
                         if prop == "translation":
                             animation.set_position(
-                                time[0], trs, in_tangent=in_tan, out_tangent=out_tan
+                                time[0],
+                                trs,
+                                in_tangent=in_tan,
+                                out_tangent=out_tan,
                             )
                             animation.set_position_interpolator(interpolator)
                         if prop == "scale":
                             animation.set_scale(
-                                time[0], trs, in_tangent=in_tan, out_tangent=out_tan
+                                time[0],
+                                trs,
+                                in_tangent=in_tan,
+                                out_tangent=out_tan,
                             )
                             animation.set_scale_interpolator(interpolator)
                 else:
@@ -1060,7 +1198,6 @@ def export_scene(scene, filename="default.gltf"):
     primitives = []
     buffer_size = 0
     bview_count = 0
-
     for act in scene.GetActors():
         prim, size, count = _connect_primitives(
             gltf_obj, act, buffer_file, buffer_size, bview_count, name
@@ -1151,7 +1288,12 @@ def _connect_primitives(gltf, actor, buff_file, byteoffset, count, name):
         buff_file.write(indices.tobytes())
         write_bufferview(gltf, 0, byteoffset, blength)
         write_accessor(
-            gltf, count, 0, gltflib.UNSIGNED_SHORT, len(indices), gltflib.SCALAR
+            gltf,
+            count,
+            0,
+            gltflib.UNSIGNED_SHORT,
+            len(indices),
+            gltflib.SCALAR,
         )
         byteoffset += blength
         index = count
@@ -1410,7 +1552,14 @@ def write_material(gltf, basecolortexture: int, uri: str):
 
 
 def write_accessor(
-    gltf, bufferview, byte_offset, comp_type, count, accssor_type, max=None, min=None
+    gltf,
+    bufferview,
+    byte_offset,
+    comp_type,
+    count,
+    accssor_type,
+    max=None,
+    min=None,
 ):
     """Write accessor in the gltf.
 
