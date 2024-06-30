@@ -13,6 +13,7 @@ from fury.animation.interpolator import (  # noqa F401
     spline_interpolator,
     step_interpolator,
 )
+from fury.decorators import warn_on_args_to_kwargs
 from fury.lib import Actor, Camera, Transform
 
 
@@ -42,7 +43,8 @@ class Animation:
 
     """
 
-    def __init__(self, actors=None, length=None, loop=True, motion_path_res=None):
+    @warn_on_args_to_kwargs()
+    def __init__(self, *, actors=None, length=None, loop=True, motion_path_res=None):
         super().__init__()
         self._data = defaultdict(dict)
         self._animations = []
@@ -191,7 +193,8 @@ class Animation:
             }
         return data.get(attrib)
 
-    def get_keyframes(self, attrib=None):
+    @warn_on_args_to_kwargs()
+    def get_keyframes(self, *, attrib=None):
         """Get a keyframe for a specific or all attributes.
 
         Parameters
@@ -209,8 +212,9 @@ class Animation:
             }
         return data.get(attrib, {}).get("keyframes", {})
 
+    @warn_on_args_to_kwargs()
     def set_keyframe(
-        self, attrib, timestamp, value, update_interpolator=True, **kwargs
+        self, attrib, timestamp, value, *, update_interpolator=True, **kwargs
     ):
         """Set a keyframe for a certain attribute.
 
@@ -263,7 +267,7 @@ class Animation:
                 self._timeline.update_duration()
             else:
                 self.update_duration()
-        self.update_animation(0)
+        self.update_animation(time=0)
         self.update_motion_path()
 
     def set_keyframes(self, attrib, keyframes):
@@ -359,7 +363,8 @@ class Animation:
                 self._scene.rm(*self._actors)
                 self._added_to_scene = False
 
-    def set_interpolator(self, attrib, interpolator, is_evaluator=False, **kwargs):
+    @warn_on_args_to_kwargs()
+    def set_interpolator(self, attrib, interpolator, *, is_evaluator=False, **kwargs):
         """Set keyframes interpolator for a certain property
 
         Parameters
@@ -437,7 +442,8 @@ class Animation:
         data = self._data
         return bool(data.get(attrib, {}).get("interpolator", {}).get("func"))
 
-    def set_position_interpolator(self, interpolator, is_evaluator=False, **kwargs):
+    @warn_on_args_to_kwargs()
+    def set_position_interpolator(self, interpolator, *, is_evaluator=False, **kwargs):
         """Set the position interpolator.
 
         Parameters
@@ -464,7 +470,8 @@ class Animation:
             "position", interpolator, is_evaluator=is_evaluator, **kwargs
         )
 
-    def set_scale_interpolator(self, interpolator, is_evaluator=False):
+    @warn_on_args_to_kwargs()
+    def set_scale_interpolator(self, interpolator, *, is_evaluator=False):
         """Set the scale interpolator.
 
         Parameters
@@ -483,7 +490,8 @@ class Animation:
         """
         self.set_interpolator("scale", interpolator, is_evaluator=is_evaluator)
 
-    def set_rotation_interpolator(self, interpolator, is_evaluator=False):
+    @warn_on_args_to_kwargs()
+    def set_rotation_interpolator(self, interpolator, *, is_evaluator=False):
         """Set the rotation interpolator .
 
         Parameters
@@ -502,7 +510,8 @@ class Animation:
         """
         self.set_interpolator("rotation", interpolator, is_evaluator=is_evaluator)
 
-    def set_color_interpolator(self, interpolator, is_evaluator=False):
+    @warn_on_args_to_kwargs()
+    def set_color_interpolator(self, interpolator, *, is_evaluator=False):
         """Set the color interpolator.
 
         Parameters
@@ -521,7 +530,8 @@ class Animation:
         """
         self.set_interpolator("color", interpolator, is_evaluator=is_evaluator)
 
-    def set_opacity_interpolator(self, interpolator, is_evaluator=False):
+    @warn_on_args_to_kwargs()
+    def set_opacity_interpolator(self, interpolator, *, is_evaluator=False):
         """Set the opacity interpolator.
 
         Parameters
@@ -899,7 +909,8 @@ class Animation:
         self._animations.append(animation)
         self.update_duration()
 
-    def add_actor(self, actor, static=False):
+    @warn_on_args_to_kwargs()
+    def add_actor(self, actor, *, static=False):
         """Add an actor or list of actors to the Animation.
 
         Parameters
@@ -1094,7 +1105,8 @@ class Animation:
         attrib = self._get_attribute_data(prop)
         attrib.get("callbacks", []).append(callback)
 
-    def update_animation(self, time=None):
+    @warn_on_args_to_kwargs()
+    def update_animation(self, *, time=None):
         """Update the animation.
 
         Update the animation at a certain time. This will make sure all
@@ -1168,7 +1180,7 @@ class Animation:
         [callback(time) for callback in self._general_callbacks]
 
         # Also update all child Animations.
-        [animation.update_animation(time) for animation in self._animations]
+        [animation.update_animation(time=time) for animation in self._animations]
 
         if self._scene and not has_handler:
             self._scene.reset_clipping_range()
@@ -1184,7 +1196,7 @@ class Animation:
         self._scene = scene
         self._added_to_scene = True
         self._start_time = perf_counter()
-        self.update_animation(0)
+        self.update_animation(time=0)
 
     def remove_from_scene(self, scene):
         """Remove Animation, its actors and sub Animations from the scene"""
@@ -1217,7 +1229,8 @@ class CameraAnimation(Animation):
 
     """
 
-    def __init__(self, camera=None, length=None, loop=True, motion_path_res=None):
+    @warn_on_args_to_kwargs()
+    def __init__(self, *, camera=None, length=None, loop=True, motion_path_res=None):
         super(CameraAnimation, self).__init__(
             length=length, loop=loop, motion_path_res=motion_path_res
         )
@@ -1353,7 +1366,8 @@ class CameraAnimation(Animation):
         """
         return self.get_value("view_up", t)
 
-    def set_focal_interpolator(self, interpolator, is_evaluator=False):
+    @warn_on_args_to_kwargs()
+    def set_focal_interpolator(self, interpolator, *, is_evaluator=False):
         """Set the camera focal position interpolator.
 
         Parameters
@@ -1368,7 +1382,8 @@ class CameraAnimation(Animation):
         """
         self.set_interpolator("focal", interpolator, is_evaluator=is_evaluator)
 
-    def set_view_up_interpolator(self, interpolator, is_evaluator=False):
+    @warn_on_args_to_kwargs()
+    def set_view_up_interpolator(self, interpolator, *, is_evaluator=False):
         """Set the camera up-view vector animation interpolator.
 
         Parameters
@@ -1383,7 +1398,8 @@ class CameraAnimation(Animation):
         """
         self.set_interpolator("view_up", interpolator, is_evaluator=is_evaluator)
 
-    def update_animation(self, time=None):
+    @warn_on_args_to_kwargs()
+    def update_animation(self, *, time=None):
         """Update the camera animation.
 
         Parameters
@@ -1396,7 +1412,7 @@ class CameraAnimation(Animation):
         if self._camera is None:
             if self._scene:
                 self._camera = self._scene.camera()
-                self.update_animation(time)
+                self.update_animation(tile=time)
                 return
         else:
             if self.is_interpolatable("rotation"):

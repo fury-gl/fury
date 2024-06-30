@@ -6,6 +6,7 @@ import numpy as np
 
 from fury import window
 from fury.animation.animation import Animation
+from fury.decorators import warn_on_args_to_kwargs
 from fury.lib import RenderWindow, WindowToImageFilter, numpy_support
 from fury.ui.elements import PlaybackPanel
 
@@ -33,7 +34,10 @@ class Timeline:
 
     """
 
-    def __init__(self, animations=None, playback_panel=False, loop=True, length=None):
+    @warn_on_args_to_kwargs()
+    def __init__(
+        self, *, animations=None, playback_panel=False, loop=True, length=None
+    ):
         self._scene = None
         self.playback_panel = None
         self._current_timestamp = 0
@@ -284,8 +288,10 @@ class Timeline:
         """
         return self.playback_panel is not None
 
+    @warn_on_args_to_kwargs()
     def record(
         self,
+        *,
         fname=None,
         fps=30,
         speed=1.0,
@@ -450,7 +456,8 @@ class Timeline:
         """
         return self._animations
 
-    def update(self, force=False):
+    @warn_on_args_to_kwargs()
+    def update(self, *, force=False):
         """Update the timeline.
 
         Update the Timeline and all the animations that it controls. As well as
@@ -477,7 +484,7 @@ class Timeline:
                 else:
                     self.pause()
         if self.playing or force:
-            [anim.update_animation(time) for anim in self._animations]
+            [anim.update_animation(time=time) for anim in self._animations]
 
     def add_to_scene(self, scene):
         """Add Timeline and all of its Animations to the scene"""
