@@ -2,7 +2,18 @@
 
 import warnings
 
+import lazy_loader as lazy
+
 from fury.pkg_info import __version__, pkg_commit_hash
+
+__getattr__, __dir__, __all__ = lazy.attach_stub(__name__, __file__)
+
+__all__ += [
+    "__version__",
+    "disable_warnings",
+    "enable_warnings",
+    "get_info",
+]
 
 
 def get_info(verbose=False):
