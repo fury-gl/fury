@@ -7,7 +7,7 @@ WEEK 3: Refinements and Further Enhancements
    :category: gsoc
 
 Hello everyone,
---------------
+---------------
 
 Welcome to the fourth week of my Google Summer of Code (GSoC) 2024 journey!
 This week I've been delving into the technical aspects of my project,
@@ -61,7 +61,7 @@ What Happens Next?
 
 For week 4, I plan to:
 
-* Continue refining the ``warn_on_args_to_kwargs`` decorator based on feedback of my Peer `Iñigo Tellaetxe Elorriaga <https://github.com/itellaetxe>`_, `Robin Roy <https://github.com/robinroy03>`_, `Kaustav Deka <https://github.com/deka27>`_, my guide: `Serge Koudoro <https://github.com/skoudoro>`_ and the others community members.
+* Continue refining the ``warn_on_args_to_kwargs`` decorator based on feedback from my Peers `Iñigo Tellaetxe Elorriaga <https://github.com/itellaetxe>`_, `Robin Roy <https://github.com/robinroy03>`_, `Kaustav Deka <https://github.com/deka27>`_, my guide: `Serge Koudoro <https://github.com/skoudoro>`_ and the other community members.
 * Apply the ``warn_on_args_to_kwargs`` decorator to all the remaining modules and update all the unitests of these modules too, to respect the desired format.
 * Dive deep intp the lazy loading functionality based on my research to optimize performance.
 * Further engage in code reviews to support my peers and improve our project

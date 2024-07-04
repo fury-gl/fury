@@ -7,7 +7,7 @@ WEEK 4: Updating Decorator, Exploring Lazy Loading, and Code Reviews
    :category: gsoc
 
 Hello everyone,
---------------
+---------------
 
 Welcome again to my Google summer of code 2024 (GSoC' 2024) journey 2024!.
 This week, I focused on updating the ``warn_on_args_to_kwargs`` decorator, applying it across multiple modules, exploring lazy loading, and continuing with code reviews.
