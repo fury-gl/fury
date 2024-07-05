@@ -21,7 +21,7 @@ This area is still actively studied, and the whole concept is to find ideal chun
 
 So this is our current process
     - if normal function/class definition: no splitting, chunk as it is.
-    - if rst files, use the ``rst parser`` and split them with a chunk size of ~8000 tokens (max llama could take)
+    - if rst files, use the ``rst parser`` and split them with a chunk size of ~8000 tokens (max llama could take). RST files in FURY contain documentation & blog posts.
     - if tutorial, try chunking as it is, if not possible split at 8000 tokens.
 
 Function/class definitions are generally under 8000 so I've not done explicit checks for now, the model will trim the remaining if longer (I found some long classes later).
@@ -40,7 +40,7 @@ I'll observe what people are asking and then iterate towards making the bot bett
 
 4) **Minor bugfixes and stuff**
 
-Did some minor bug fixes like the bot stopping generation midway etc. Those were discord message limit (>2000) issues.
+Did some minor bug fixes on things like the Discord bot generation cutoff and error handling improvements. It was Discord message limit (<=2000) that caused the generation to cut off, I split the message into parts to fix that. Error handling was improved generally everywhere. I'll need to bring logging later.
 
 
 Minor Sidequest
