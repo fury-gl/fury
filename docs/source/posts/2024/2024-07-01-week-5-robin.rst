@@ -25,11 +25,23 @@ Earlier, this was our architecture:
 This had an obvious issue, all the core logic was inside the Discord Bot. So if I want to say, use the LLM inference for making a GitHub bot, or for benchmarking etc, it wasn't possible. So I decided to cut the LLM logic from Discord Bot and made a new ``LLM Router``. It'll handle all the LLM logic from now on, and we do not directly call any other endpoint other than this one.
 It makes life simple, every input going into the endpoint goes like this:
 
-`{"query": "Render a cube in fury", "llm": "llama3-70b-8192", "knn": "3", "stream": False}`
+.. code-block:: json
+
+    {
+        "query": "Render a cube in fury",
+        "llm": "llama3-70b-8192",
+        "knn": "3",
+        "stream": False
+    }
 
 Every response coming out will be like this:
 
-`{"response": "Yes, this is how it would be done python import fury....", "references": "1, 2, 3"}`
+.. code-block:: json
+
+    {
+        "response": "Yes, this is how it would be done python import fury....",
+        "references": "1, 2, 3"
+    }
 
 What happens on the inside is completely abstracted away. You just call this and it'll
     - call the embedding model

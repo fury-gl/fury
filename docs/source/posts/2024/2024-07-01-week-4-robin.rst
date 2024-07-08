@@ -28,7 +28,7 @@ Function/class definitions are generally under 8000 so I've not done explicit ch
 
 2) **Move colab files to a proper Python script**
 
-I did all the upsertion and experiments on colab. It is messy and can't be used in production. We need a one-click approach to upsertion. Something like point to `fury` directory and it should do everything. So I took everything and made a script.
+I did all the upsertion and experiments on colab. It is messy and can't be used in production. We need a one-click approach to upsertion. Something like point to `fury` directory and it should do everything. So I took the messy colab code and made a python script from it.
 
 One of my key goals is to separate core application logic from LLMs/Database providers. We should be able to swap them as needed without much fuss. I'll talk more about this in week 5.
 
