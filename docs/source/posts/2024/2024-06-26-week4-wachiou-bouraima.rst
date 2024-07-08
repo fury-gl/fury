@@ -22,7 +22,7 @@ Based on feedback from my mentor `Serge Koudoro <https://github.com/skoudoro>`_ 
 
    - Added conditions to verify if the values of ``from_version``, ``until_version``, and the current version of FURY are respected. This includes handling cases where ``from_version`` is greater than the current version of FURY, ``until_version`` is less than the current version of FURY, and ``until_version`` is greater than or equal to the current version of FURY.
    - Ensured the decorator and tests cover a broader range of edge cases.
-   - Enhanced the warnong messages for better clarity and guidance.
+   - Enhanced the warning messages for better clarity and guidance.
 
 2. Doctest Updates:
 
@@ -73,8 +73,8 @@ Exploring lazy loading
 In order to optimize performance, I've started exploring and implementing lazy loading. This week, the focus was on the following points:
 
 - Getting to grips with how the lazy loader works
-- Implementing some small script to understand how the Lazy loader works
-- I also read the SPEC1 document available at `SPEC1 <https://scientific-python.org/specs/spec-0001/>`_.
+- Implementing some small script to understand how the lazy loader works
+- I also read the SPEC1 document available at `SPEC1 <https://scientific-python.org/specs/spec-0001/>`_
 - Understanding the benefits of lazy loading and how it can be applied to the FURY code base
 - Planning the integration of lazy loading into the FURY code base
 
