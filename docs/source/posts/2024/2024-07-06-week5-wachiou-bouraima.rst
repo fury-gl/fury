@@ -33,7 +33,7 @@ The implementation involved:
 
 4. **Improved module organization:**
 
-   - Improved module organization and structure to effectively support lazy loading.
+   - Improved module organization in ``__init__.py`` and ``__init__.pyi`` files, to effectively support lazy loading.
 
 
 **Example Implementation**
