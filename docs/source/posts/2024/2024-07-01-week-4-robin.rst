@@ -1,0 +1,74 @@
+Week 4: Pipeline Improvements and Taking The Bot Public!
+========================================================
+
+.. post:: July 1 2024
+   :author: Robin Roy
+   :tags: google
+   :category: gsoc
+
+Hi, I'm `Robin <https://github.com/robinroy03>`_ and this is my blog about week 4.
+
+My goals for week 4 were to move my Google colab notes to a proper Python script, improve the existing code, and make a working pipeline to upsert data easily. Also, the bot is public now :) Anyone reading this blog could join this `Discord Server <https://discord.gg/NVkE6Qd2bZ>`_ and ask questions right away!
+
+Things I did in Week 4
+----------------------
+
+1) **Chunking tutorials and documentation**
+
+Earlier, only files fitting the context window of the embedding model were upserted. This was because otherwise, we'd have to split the file in half and lose the overall context. This will lead to information loss and retrieval will be messy. Now, I decided I'd upsert everything by splitting information properly. By "properly", what I mean is it won't be a random split, and there'll be logical reasoning behind every chunk.
+
+This area is still actively studied, and the whole concept is to find ideal chunks which are self-sufficient and contain the most information. This `notebook <https://github.com/FullStackRetrieval-com/RetrievalTutorials/blob/main/tutorials/LevelsOfTextSplitting/5_Levels_Of_Text_Splitting.ipynb>`_ details 6 different approaches, I read through them and some of their associated literature and decided we'll use `Recursive Character Text Splitting` and `Document Specific Splitting` for now. There is no major reason for this, I just felt it'll work well for now (a reasoning-backed approach will come in a few weeks). There is a lot of experimentation we could do here, a better chunking will result in better ``references`` generation and so on.
+
+So this is our current process
+    - if normal function/class definition: no splitting, chunk as it is.
+    - if rst files, use the ``rst parser`` and split them with a chunk size of ~8000 tokens (max llama could take). RST files in FURY contain documentation & blog posts.
+    - if tutorial, try chunking as it is, if not possible split at 8000 tokens.
+
+Function/class definitions are generally under 8000 so I've not done explicit checks for now, the model will trim the remaining if longer (I found some long classes later).
+
+2) **Move colab files to a proper Python script**
+
+I did all the upsertion and experiments on colab. It is messy and can't be used in production. We need a one-click approach to upsertion. Something like point to `fury` directory and it should do everything. So I took the messy colab code and made a python script from it.
+
+One of my key goals is to separate core application logic from LLMs/Database providers. We should be able to swap them as needed without much fuss. I'll talk more about this in week 5.
+
+3) **Taking the bot public!**
+
+The whole point of making the bot is to help improve the productivity of FURY developers. So I decided to take it public on `this discord server <https://discord.gg/NVkE6Qd2bZ>`_. You could use it today! (actually, you could've used it from the 20th of last month, this blog got delayed😢)
+
+I'll observe what people are asking and then iterate towards making the bot better in that area. I think it'll be better than making the bot good on what I believe is the best.
+
+4) **Minor bugfixes and stuff**
+
+Did some minor bug fixes on things like the Discord bot generation cutoff and error handling improvements. It was Discord message limit (<=2000) that caused the generation to cut off, I split the message into parts to fix that. Error handling was improved generally everywhere. I'll need to bring logging later.
+
+
+Minor Sidequest
+~~~~~~~~~~~~~~~
+
+This is in no way related to FURY, but it was fun so I thought I'd add it here :)
+
+So after midterms, I decided to go back home, to maximally use my time I searched for things to do and found a local FOSS event (`link <https://x.com/FOSSUnitedKochi/status/1804763181274759645>`_). It was done by FOSS United Kochi and it's one of the major FOSS events in my state (Kerala, India). Met some Pythonistas! Explained what FURY is to them. I also ended up finding some lore (`link <https://www.gnu.org/education/edu-system-india.html>`_) about how GNU/Linux spread in Kerala, India. Also found some old FOSS event pictures (`this <https://www.flickr.com/photos/pce/245170427/in/photostream/>`_ one is talking about Python, 2003 World of Python). This was my first FOSS event outside campus so it was fun :)
+
+
+What is coming up next week?
+----------------------------
+
+- Benchmarking
+- Architecture Update
+
+Did you get stuck anywhere?
+---------------------------
+
+No, I did not get stuck. This week was more of learning and experimentation so I think it's normal what I encountered.
+
+LINKS:
+
+- `Discord Server <https://discord.gg/NVkE6Qd2bZ>`_
+- `A Text Splitting Guide <https://github.com/FullStackRetrieval-com/RetrievalTutorials/blob/main/tutorials/LevelsOfTextSplitting/5_Levels_Of_Text_Splitting.ipynb>`_
+- `GNU Case of Kerala <https://www.gnu.org/education/edu-system-india.html>`_
+- `2003 World of Python <https://www.flickr.com/photos/pce/245170427/in/photostream/>`_
+- `FOSS United Kochi <https://x.com/FOSSUnitedKochi/status/1804763181274759645>`_
+- `Robin :) <https://github.com/robinroy03>`_
+
+Thank you for reading!
