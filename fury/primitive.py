@@ -9,6 +9,7 @@ from scipy.spatial import ConvexHull
 from scipy.version import short_version
 
 from fury.data import DATA_DIR
+from fury.decorators import warn_on_args_to_kwargs
 from fury.transform import cart2sphere, sphere2cart
 from fury.utils import fix_winding_order
 
@@ -46,8 +47,9 @@ def faces_from_sphere_vertices(vertices):
         return faces
 
 
+@warn_on_args_to_kwargs()
 def repeat_primitive_function(
-    func, centers, func_args=None, directions=(1, 0, 0), colors=(1, 0, 0), scales=1
+    func, centers, *, func_args=None, directions=(1, 0, 0), colors=(1, 0, 0), scales=1
 ):
     """Repeat Vertices and triangles of a specific primitive function.
 
@@ -91,12 +93,11 @@ def repeat_primitive_function(
             "sq_params should 1 or equal to the numbers \
                         of centers"
         )
-
     vertices = np.concatenate([func(i)[0] for i in func_args])
     return repeat_primitive(
-        vertices=vertices,
-        faces=faces,
-        centers=centers,
+        vertices,
+        faces,
+        centers,
         directions=directions,
         colors=colors,
         scales=scales,
@@ -104,10 +105,12 @@ def repeat_primitive_function(
     )
 
 
+@warn_on_args_to_kwargs()
 def repeat_primitive(
     vertices,
     faces,
     centers,
+    *,
     directions=None,
     colors=(1, 0, 0),
     scales=1,
@@ -173,7 +176,8 @@ def repeat_primitive(
         axis=0,
     ).reshape((big_triangles.shape[0], 1))
 
-    def normalize_input(arr, arr_name=""):
+    @warn_on_args_to_kwargs()
+    def normalize_input(arr, *, arr_name=""):
         if (
             isinstance(arr, (tuple, list, np.ndarray))
             and len(arr) in [3, 4]
@@ -192,12 +196,12 @@ def repeat_primitive(
             return np.array(arr)
 
     # update colors
-    colors = normalize_input(colors, "colors")
+    colors = normalize_input(colors, arr_name="colors")
     big_colors = np.repeat(colors, unit_verts_size, axis=0)
     big_colors *= 255
 
     # update orientations
-    directions = normalize_input(directions, "directions")
+    directions = normalize_input(directions, arr_name="directions")
     for pts, dirs in enumerate(directions):
         # Normal vector of the object.
         dir_abs = np.linalg.norm(dirs)
@@ -295,7 +299,8 @@ def prim_box():
     return vertices, triangles
 
 
-def prim_sphere(name="symmetric362", gen_faces=False, phi=None, theta=None):
+@warn_on_args_to_kwargs()
+def prim_sphere(*, name="symmetric362", gen_faces=False, phi=None, theta=None):
     """Provide vertices and triangles of the spheres.
 
     Parameters
@@ -413,7 +418,7 @@ def prim_superquadric(roundness=(1, 1), sphere_name="symmetric362"):
         """Return a different kind of exponentiation."""
         return np.sign(x) * (np.abs(x) ** p)
 
-    sphere_verts, sphere_triangles = prim_sphere(sphere_name)
+    sphere_verts, sphere_triangles = prim_sphere(name=sphere_name)
     _, sphere_phi, sphere_theta = cart2sphere(*sphere_verts.T)
 
     phi, theta = roundness
@@ -605,7 +610,8 @@ def prim_rhombicuboctahedron():
     return vertices, triangles
 
 
-def prim_star(dim=2):
+@warn_on_args_to_kwargs()
+def prim_star(*, dim=2):
     """Return vertices and triangle for star geometry.
 
     Parameters
@@ -918,7 +924,8 @@ def prim_frustum():
     return vertices, triangles
 
 
-def prim_cylinder(radius=0.5, height=1, sectors=36, capped=True):
+@warn_on_args_to_kwargs()
+def prim_cylinder(*, radius=0.5, height=1, sectors=36, capped=True):
     """Return vertices and triangles for a cylinder.
 
     Parameters
@@ -1045,8 +1052,14 @@ def prim_cylinder(radius=0.5, height=1, sectors=36, capped=True):
     return vertices, triangles
 
 
+@warn_on_args_to_kwargs()
 def prim_arrow(
-    height=1.0, resolution=10, tip_length=0.35, tip_radius=0.1, shaft_radius=0.03
+    *,
+    height=1.0,
+    resolution=10,
+    tip_length=0.35,
+    tip_radius=0.1,
+    shaft_radius=0.03,
 ):
     """Return vertices and triangle for arrow geometry.
 
@@ -1135,7 +1148,8 @@ def prim_arrow(
     return vertices, triangles
 
 
-def prim_cone(radius=0.5, height=1, sectors=10):
+@warn_on_args_to_kwargs()
+def prim_cone(*, radius=0.5, height=1, sectors=10):
     """Return vertices and triangle of a Cone.
 
     Parameters

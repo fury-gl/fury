@@ -56,7 +56,7 @@ def test_rtc_video_stream(loop: asyncio.AbstractEventLoop):
         scene = window.Scene()
         scene.add(actors)
         showm = window.ShowManager(
-            scene,
+            scene=scene,
             reset_camera=False,
             size=(width_0, height_0),
             order_transparent=False,
@@ -108,7 +108,7 @@ def test_pillow():
     scene = window.Scene()
     scene.add(actors)
     showm = window.ShowManager(
-        scene,
+        scene=scene,
         reset_camera=False,
         size=(width_0, height_0),
         order_transparent=False,
@@ -165,7 +165,7 @@ def test_rtc_video_stream_whitout_cython(loop: asyncio.AbstractEventLoop):
         scene = window.Scene()
         scene.add(actors)
         showm = window.ShowManager(
-            scene,
+            scene=scene,
             reset_camera=False,
             size=(width_0, height_0),
             order_transparent=False,
@@ -212,7 +212,7 @@ def test_client_and_buffer_manager():
         scene = window.Scene()
         scene.add(actors)
         showm = window.ShowManager(
-            scene,
+            scene=scene,
             reset_camera=False,
             size=(width_0, height_0),
             order_transparent=False,
@@ -275,7 +275,7 @@ def test_stream_client_conditions():
         scene = window.Scene()
         scene.add(actors)
         showm = window.ShowManager(
-            scene,
+            scene=scene,
             reset_camera=False,
             size=(width_0, height_0),
             order_transparent=False,
@@ -314,7 +314,7 @@ def test_stream_client_resize():
     scene = window.Scene()
     scene.add(actors)
     showm = window.ShowManager(
-        scene,
+        scene=scene,
         reset_camera=False,
         size=(width_0, height_0),
         order_transparent=False,
@@ -360,7 +360,7 @@ def test_stream_interaction(loop: asyncio.AbstractEventLoop):
         scene = window.Scene()
         scene.add(actors)
         showm = window.ShowManager(
-            scene,
+            scene=scene,
             reset_camera=False,
             size=(width_0, height_0),
             order_transparent=False,
@@ -448,7 +448,7 @@ def test_stream_interaction_conditions():
 
         scene = window.Scene()
         scene.add(actors)
-        showm = window.ShowManager(scene, size=(width_0, height_0))
+        showm = window.ShowManager(scene=scene, size=(width_0, height_0))
 
         stream = FuryStreamClient(
             showm, use_raw_array=use_raw_array, whithout_iren_start=whitouth_iren_start
@@ -734,7 +734,7 @@ def test_webserver():
         scene = window.Scene()
         scene.add(actors)
         showm = window.ShowManager(
-            scene,
+            scene=scene,
             reset_camera=False,
             size=(width_0, height_0),
             order_transparent=False,
@@ -790,7 +790,7 @@ def test_widget():
     scene = window.Scene()
     scene.add(actors)
     showm = window.ShowManager(
-        scene,
+        scene=scene,
         reset_camera=False,
         size=(width_0, height_0),
         order_transparent=False,

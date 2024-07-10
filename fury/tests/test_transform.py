@@ -66,17 +66,17 @@ def test_sphere_cart():
 
 
 def test_euler_matrix():
-    rotation = euler_matrix(1, 2, 3, "syxz")
+    rotation = euler_matrix(1, 2, 3, axes="syxz")
     npt.assert_equal(np.allclose(np.sum(rotation[0]), -1.34786452), True)
 
-    rotation = euler_matrix(1, 2, 3, (0, 1, 0, 1))
+    rotation = euler_matrix(1, 2, 3, axes=(0, 1, 0, 1))
     npt.assert_equal(np.allclose(np.sum(rotation[0]), -0.383436184), True)
 
     ai, aj, ak = (4.0 * np.pi) * (np.random.random(3) - 0.5)
     for axes in _AXES2TUPLE.keys():
-        _ = euler_matrix(ai, aj, ak, axes)
+        _ = euler_matrix(ai, aj, ak, axes=axes)
     for axes in _TUPLE2AXES.keys():
-        _ = euler_matrix(ai, aj, ak, axes)
+        _ = euler_matrix(ai, aj, ak, axes=axes)
 
 
 def test_translate():
