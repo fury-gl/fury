@@ -8,6 +8,8 @@ import aiohttp
 from aiohttp import MultipartWriter, WSCloseCode, web
 import numpy as np
 
+from fury.decorators import warn_on_args_to_kwargs
+
 try:
     from aiortc import RTCPeerConnection, RTCSessionDescription
     from aiortc.contrib.media import MediaRelay
@@ -215,7 +217,9 @@ async def websocket_handler(request, **kwargs):
     return ws
 
 
+@warn_on_args_to_kwargs()
 def get_app(
+    *,
     rtc_server=None,
     folder=None,
     circular_queue=None,

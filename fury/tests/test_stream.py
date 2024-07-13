@@ -78,7 +78,7 @@ def test_rtc_video_stream(loop: asyncio.AbstractEventLoop):
 
         rtc_server = RTCServer(img_buffer_manager)
         showm.render()
-        stream.start(ms_stream)
+        stream.start(ms=ms_stream)
         showm.render()
         loop.run_until_complete(rtc_server.recv())
         # sassert frame.width == width_0 and frame.height == height_0
@@ -129,7 +129,7 @@ def test_pillow():
         )
 
     showm.render()
-    stream.start(ms_stream)
+    stream.start(ms=ms_stream)
     showm.render()
     # test jpeg method
     img_buffer_manager.get_jpeg()
@@ -187,7 +187,7 @@ def test_rtc_video_stream_whitout_cython(loop: asyncio.AbstractEventLoop):
 
         rtc_server = RTCServer(img_buffer_manager)
         showm.render()
-        stream.start(ms_stream)
+        stream.start(ms=ms_stream)
         showm.render()
         loop.run_until_complete(rtc_server.recv())
         # assert frame.width == showm.size[0] and frame.height == showm.size[1]
@@ -233,7 +233,7 @@ def test_client_and_buffer_manager():
             )
 
         showm.render()
-        stream.start(ms_stream)
+        stream.start(ms=ms_stream)
         showm.render()
         # test jpeg method
         img_buffer_manager.get_jpeg()
@@ -286,10 +286,10 @@ def test_stream_client_conditions():
         )
 
         showm.render()
-        stream.start(ms_stream)
+        stream.start(ms=ms_stream)
         npt.assert_equal(stream._started, True)
         # test if stop method has been called
-        stream.start(ms_stream)
+        stream.start(ms=ms_stream)
         npt.assert_equal(stream._started, True)
         showm.render()
         stream.stop()
@@ -423,7 +423,7 @@ def test_stream_interaction(loop: asyncio.AbstractEventLoop):
                 )
             )
 
-        stream_interaction.start(ms_stream, use_asyncio=True)
+        stream_interaction.start(ms=ms_stream, use_asyncio=True)
         while stream_interaction.circular_queue.head != -1:
             showm.render()
             await asyncio.sleep(0.01)
@@ -464,11 +464,11 @@ def test_stream_interaction_conditions():
 
         # ms should always be greater than 0
         with npt.assert_raises(ValueError):
-            stream_interaction.start(-1)
+            stream_interaction.start(ms=-1)
 
-        stream_interaction.start(ms_stream)
+        stream_interaction.start(ms=ms_stream)
         # test double start
-        stream_interaction.start(ms_stream)
+        stream_interaction.start(ms=ms_stream)
         while stream_interaction.circular_queue.head != -1:
             showm.render()
             time.sleep(0.01)
@@ -563,14 +563,14 @@ def test_multidimensional_buffer():
                 max_size=max_size, dimension=dimension
             )
             m_buffer_0 = tools.RawArrayMultiDimensionalBuffer(
-                max_size, dimension, buffer=m_buffer_org.buffer
+                max_size, dimension=dimension, buffer=m_buffer_org.buffer
             )
         else:
             m_buffer_org = tools.SharedMemMultiDimensionalBuffer(
                 max_size=max_size, dimension=dimension
             )
             m_buffer_0 = tools.SharedMemMultiDimensionalBuffer(
-                max_size, dimension, buffer_name=m_buffer_org.buffer_name
+                max_size, dimension=dimension, buffer_name=m_buffer_org.buffer_name
             )
 
         m_buffer_0[1] = np.array([0.2, 0.3, 0.4, 0.5])
@@ -744,27 +744,27 @@ def test_webserver():
 
         if use_raw_array:
             web_server_raw_array(
-                stream.img_manager.image_buffers,
-                stream.img_manager.info_buffer,
-                stream_interaction.circular_queue.head_tail_buffer,
-                stream_interaction.circular_queue.buffer._buffer,
-                8000,
-                "localhost",
-                True,
-                True,
+                image_buffers=stream.img_manager.image_buffers,
+                info_buffer=stream.img_manager.info_buffer,
+                queue_head_tail_buffer=stream_interaction.circular_queue.head_tail_buffer,  # noqa E501
+                queue_buffer=stream_interaction.circular_queue.buffer._buffer,
+                port=8000,
+                host="localhost",
+                provides_mjpeg=True,
+                provides_webrtc=True,
                 run_app=False,
             )
         else:
             web_server(
-                stream.img_manager.image_buffer_names,
-                stream.img_manager.info_buffer_name,
-                stream_interaction.circular_queue.head_tail_buffer_name,
-                stream_interaction.circular_queue.buffer.buffer_name,
-                8000,
-                "localhost",
-                True,
-                True,
-                True,
+                image_buffer_names=stream.img_manager.image_buffer_names,
+                info_buffer_name=stream.img_manager.info_buffer_name,
+                queue_head_tail_buffer_name=stream_interaction.circular_queue.head_tail_buffer_name,  # noqa E501
+                queue_buffer_name=stream_interaction.circular_queue.buffer.buffer_name,
+                port=8000,
+                host="localhost",
+                provides_mjpeg=True,
+                provides_webrtc=True,
+                avoid_unlink_shared_mem=True,
                 run_app=False,
             )
 

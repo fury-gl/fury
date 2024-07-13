@@ -9,6 +9,7 @@ import time
 from PIL import Image, ImageDraw
 import numpy as np
 
+from fury.decorators import warn_on_args_to_kwargs
 from fury.stream.constants import PY_VERSION_8
 
 if PY_VERSION_8:
@@ -65,7 +66,8 @@ def remove_shm_from_resource_tracker():
 class GenericMultiDimensionalBuffer(ABC):
     """This implements a abstract (generic) multidimensional buffer."""
 
-    def __init__(self, max_size=None, dimension=8):
+    @warn_on_args_to_kwargs()
+    def __init__(self, *, max_size=None, dimension=8):
         """Initialize the multidimensional buffer.
 
         Parameters
@@ -129,7 +131,8 @@ class GenericMultiDimensionalBuffer(ABC):
 class RawArrayMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
     """This implements a  multidimensional buffer with RawArray."""
 
-    def __init__(self, max_size, dimension=4, buffer=None):
+    @warn_on_args_to_kwargs()
+    def __init__(self, max_size, *, dimension=4, buffer=None):
         """Stream system uses that to implement the CircularQueue
         with shared memory resources.
 
@@ -147,7 +150,7 @@ class RawArrayMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
             a already created RawArray
 
         """
-        super().__init__(max_size, dimension)
+        super().__init__(max_size=max_size, dimension=dimension)
         if buffer is None:
             self.create_mem_resource()
         else:
@@ -178,7 +181,8 @@ class SharedMemMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
     with SharedMemory.
     """
 
-    def __init__(self, max_size, dimension=4, buffer_name=None):
+    @warn_on_args_to_kwargs()
+    def __init__(self, max_size, *, dimension=4, buffer_name=None):
         """Stream system uses that to implement the
         CircularQueue with shared memory resources.
 
@@ -193,7 +197,7 @@ class SharedMemMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
             a already created SharedMemory
 
         """
-        super().__init__(max_size, dimension)
+        super().__init__(max_size=max_size, dimension=dimension)
         if buffer_name is None:
             self.create_mem_resource()
             self._created = True
@@ -271,8 +275,10 @@ class GenericCircularQueue(ABC):
     shared memory resources.
     """
 
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
+        *,
         max_size=None,
         dimension=8,
         use_shared_mem=False,
@@ -389,7 +395,8 @@ class ArrayCircularQueue(GenericCircularQueue):
     Arrays and RawArrays.
     """
 
-    def __init__(self, max_size=10, dimension=6, head_tail_buffer=None, buffer=None):
+    @warn_on_args_to_kwargs()
+    def __init__(self, *, max_size=10, dimension=6, head_tail_buffer=None, buffer=None):
         """Stream system uses that to implement user interactions
 
         Parameters
@@ -410,7 +417,12 @@ class ArrayCircularQueue(GenericCircularQueue):
             RawArray to store the data
 
         """
-        super().__init__(max_size, dimension, use_shared_mem=False, buffer=buffer)
+        super().__init__(
+            max_size=max_size,
+            dimension=dimension,
+            use_shared_mem=False,
+            buffer=buffer,
+        )
 
         if head_tail_buffer is None:
             self.create_mem_resource()
@@ -456,8 +468,9 @@ class SharedMemCircularQueue(GenericCircularQueue):
     SharedMemory.
     """
 
+    @warn_on_args_to_kwargs()
     def __init__(
-        self, max_size=10, dimension=6, head_tail_buffer_name=None, buffer_name=None
+        self, *, max_size=10, dimension=6, head_tail_buffer_name=None, buffer_name=None
     ):
         """Stream system uses that to implement user interactions
 
@@ -479,7 +492,10 @@ class SharedMemCircularQueue(GenericCircularQueue):
 
         """
         super().__init__(
-            max_size, dimension, use_shared_mem=True, buffer_name=buffer_name
+            max_size=max_size,
+            dimension=dimension,
+            use_shared_mem=True,
+            buffer_name=buffer_name,
         )
 
         if head_tail_buffer_name is None:
@@ -564,7 +580,8 @@ class GenericImageBufferManager(ABC):
     the n-buffer technique.
     """
 
-    def __init__(self, max_window_size=None, num_buffers=2, use_shared_mem=False):
+    @warn_on_args_to_kwargs()
+    def __init__(self, *, max_window_size=None, num_buffers=2, use_shared_mem=False):
         """Initialize the ImageBufferManager.
 
         Parameters
@@ -669,7 +686,8 @@ class GenericImageBufferManager(ABC):
 
         return bytes_img
 
-    async def async_get_jpeg(self, ms=33):
+    @warn_on_args_to_kwargs()
+    async def async_get_jpeg(self, *, ms=33):
         jpeg = self.get_jpeg()
         await asyncio.sleep(ms / 1000)
         return jpeg
@@ -690,8 +708,10 @@ class GenericImageBufferManager(ABC):
 class RawArrayImageBufferManager(GenericImageBufferManager):
     """This implements an ImageBufferManager using RawArrays."""
 
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
+        *,
         max_window_size=(100, 100),
         num_buffers=2,
         image_buffers=None,
@@ -714,7 +734,11 @@ class RawArrayImageBufferManager(GenericImageBufferManager):
             A list of buffers with each one containing a frame.
 
         """
-        super().__init__(max_window_size, num_buffers, use_shared_mem=False)
+        super().__init__(
+            max_window_size=max_window_size,
+            num_buffers=num_buffers,
+            use_shared_mem=False,
+        )
         if image_buffers is None or info_buffer is None:
             self.create_mem_resource()
         else:
@@ -767,8 +791,10 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
     SharedMemory approach.
     """
 
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
+        *,
         max_window_size=(100, 100),
         num_buffers=2,
         image_buffer_names=None,
@@ -795,7 +821,11 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
         Python >=3.8 is a requirement to use this object.
 
         """
-        super().__init__(max_window_size, num_buffers, use_shared_mem=True)
+        super().__init__(
+            max_window_size=max_window_size,
+            num_buffers=num_buffers,
+            use_shared_mem=True,
+        )
         if image_buffer_names is None or info_buffer_name is None:
             self.create_mem_resource()
             self._created = True
