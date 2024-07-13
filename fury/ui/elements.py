@@ -30,6 +30,7 @@ from PIL import Image, UnidentifiedImageError
 import numpy as np
 
 from fury.data import read_viz_icons
+from fury.decorators import warn_on_args_to_kwargs
 from fury.lib import Command
 from fury.ui.containers import ImageContainer2D, Panel2D
 from fury.ui.core import UI, Button2D, Disk2D, Rectangle2D, TextBlock2D
@@ -73,10 +74,12 @@ class TextBox2D(UI):
 
     """
 
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
         width,
         height,
+        *,
         text="Enter Text",
         position=(100, 10),
         color=(0, 0, 0),
@@ -226,7 +229,7 @@ class TextBox2D(UI):
 
         """
         if key.lower() == "return":
-            self.render_text(False)
+            self.render_text(show_caret=False)
             self.off_focus(self)
             return True
         elif key_char != "" and key_char in printable:
@@ -338,7 +341,8 @@ class TextBox2D(UI):
         ret_text = ret_text[self.window_left : self.window_right + 1]
         return ret_text
 
-    def render_text(self, show_caret=True):
+    @warn_on_args_to_kwargs()
+    def render_text(self, *, show_caret=True):
         """Render text after processing.
 
         Parameters
@@ -422,8 +426,10 @@ class LineSlider2D(UI):
 
     """
 
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
+        *,
         center=(0, 0),
         initial_value=50,
         min_value=0,
@@ -799,8 +805,10 @@ class LineDoubleSlider2D(UI):
 
     """
 
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
+        *,
         line_width=5,
         inner_radius=0,
         outer_radius=10,
@@ -1388,8 +1396,10 @@ class RingSlider2D(UI):
 
     """
 
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
+        *,
         center=(0, 0),
         initial_value=180,
         min_value=0,
@@ -1664,8 +1674,10 @@ class RangeSlider(UI):
 
     """
 
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
+        *,
         line_width=5,
         inner_radius=0,
         outer_radius=10,
@@ -1837,7 +1849,8 @@ class Option(UI):
 
     """
 
-    def __init__(self, label, position=(0, 0), font_size=18, checked=False):
+    @warn_on_args_to_kwargs()
+    def __init__(self, label, *, position=(0, 0), font_size=18, checked=False):
         """Init this class instance.
 
         Parameters
@@ -1858,7 +1871,7 @@ class Option(UI):
         self.checked = checked
         self.button_size = (font_size * 1.2, font_size * 1.2)
         self.button_label_gap = 10
-        super(Option, self).__init__(position)
+        super(Option, self).__init__(position=position)
 
         # Offer some standard hooks to the user.
         self.on_change = lambda obj: None
@@ -1948,9 +1961,11 @@ class Checkbox(UI):
 
     """
 
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
         labels,
+        *,
         checked_labels=(),
         padding=1,
         font_size=18,
@@ -1981,7 +1996,7 @@ class Checkbox(UI):
         self._font_size = font_size
         self.font_family = font_family
         self.checked_labels = list(checked_labels)
-        super(Checkbox, self).__init__(position)
+        super(Checkbox, self).__init__(position=position)
         self.on_change = lambda checkbox: None
 
     def _setup(self):
@@ -2092,10 +2107,12 @@ class RadioButton(Checkbox):
 
     """
 
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
         labels,
         checked_labels,
+        *,
         padding=1,
         font_size=18,
         font_family="Arial",
@@ -2156,8 +2173,10 @@ class ComboBox2D(UI):
 
     """
 
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
+        *,
         items=None,
         position=(0, 0),
         size=(300, 200),
@@ -2495,9 +2514,11 @@ class ListBox2D(UI):
 
     """
 
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
         values,
+        *,
         position=(0, 0),
         size=(100, 300),
         multiselection=True,
@@ -2863,7 +2884,8 @@ class ListBox2D(UI):
     def clear_selection(self):
         del self.selected[:]
 
-    def select(self, item, multiselect=False, range_select=False):
+    @warn_on_args_to_kwargs()
+    def select(self, item, *, multiselect=False, range_select=False):
         """Select the item.
 
         Parameters
@@ -2908,10 +2930,12 @@ class ListBox2D(UI):
 class ListBoxItem2D(UI):
     """The text displayed in a listbox."""
 
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
         list_box,
         size,
+        *,
         text_color=(1.0, 0.0, 0.0),
         selected_color=(0.4, 0.4, 0.4),
         unselected_color=(0.9, 0.9, 0.9),
@@ -3030,7 +3054,9 @@ class ListBoxItem2D(UI):
         """
         multiselect = i_ren.event.ctrl_key
         range_select = i_ren.event.shift_key
-        self.list_box.select(self, multiselect, range_select)
+        self.list_box.select(
+            item=self, multiselect=multiselect, range_select=range_select
+        )
         i_ren.force_render()
 
     def resize(self, size):
@@ -3052,9 +3078,11 @@ class FileMenu2D(UI):
 
     """
 
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
         directory_path,
+        *,
         extensions=None,
         position=(0, 0),
         size=(100, 300),
@@ -3306,6 +3334,7 @@ class FileMenu2D(UI):
 class DrawShape(UI):
     """Create and Manage 2D Shapes."""
 
+    @warn_on_args_to_kwargs()
     def __init__(self, shape_type, drawpanel=None, position=(0, 0)):
         """Init this UI element.
 
@@ -3324,7 +3353,7 @@ class DrawShape(UI):
         self.drawpanel = drawpanel
         self.max_size = None
         self.rotation = 0
-        super(DrawShape, self).__init__(position)
+        super(DrawShape, self).__init__(position=position)
         self.shape.color = np.random.random(3)
 
     def _setup(self):
@@ -3387,7 +3416,7 @@ class DrawShape(UI):
 
         """
         new_center = self.clamp_position(center=center_position)
-        self.drawpanel.canvas.update_element(self, new_center, "center")
+        self.drawpanel.canvas.update_element(self, new_center, anchor="center")
         self.cal_bounding_box()
 
     @property
@@ -3456,7 +3485,8 @@ class DrawShape(UI):
 
         self._bounding_box_offset = self.position - self._bounding_box_min
 
-    def clamp_position(self, center=None):
+    @warn_on_args_to_kwargs()
+    def clamp_position(self, *, center=None):
         """Clamp the given center according to the DrawPanel canvas.
 
         Parameters
@@ -3538,6 +3568,7 @@ class DrawShape(UI):
 class DrawPanel(UI):
     """The main Canvas(Panel2D) on which everything would be drawn."""
 
+    @warn_on_args_to_kwargs()
     def __init__(self, size=(400, 400), position=(0, 0), is_draggable=False):
         """Init this UI element.
 
@@ -3552,7 +3583,7 @@ class DrawPanel(UI):
 
         """
         self.panel_size = size
-        super(DrawPanel, self).__init__(position)
+        super(DrawPanel, self).__init__(position=position)
         self.is_draggable = is_draggable
         self.current_mode = None
 
@@ -3816,11 +3847,12 @@ class PlaybackPanel(UI):
     such as play, pause, stop, and seek.
     """
 
-    def __init__(self, loop=False, position=(0, 0), width=None):
+    @warn_on_args_to_kwargs()
+    def __init__(self, *, loop=False, position=(0, 0), width=None):
         self._width = width if width is not None else 900
         self._auto_width = width is None
         self._position = position
-        super(PlaybackPanel, self).__init__(position)
+        super(PlaybackPanel, self).__init__(position=position)
         self._playing = False
         self._loop = None
         self.loop() if loop else self.play_once()
@@ -4185,9 +4217,11 @@ class Card2D(UI):
 
     """
 
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
         image_path,
+        *,
         body_text="",
         draggable=True,
         title_text="",
@@ -4452,8 +4486,10 @@ class Card2D(UI):
 class SpinBox(UI):
     """SpinBox UI."""
 
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
+        *,
         position=(350, 400),
         size=(300, 100),
         padding=10,
@@ -4501,7 +4537,7 @@ class SpinBox(UI):
         self.max_column = max_column
         self.max_line = max_line
 
-        super(SpinBox, self).__init__(position)
+        super(SpinBox, self).__init__(position=position)
         self.value = initial_val
         self.resize(size)
 
