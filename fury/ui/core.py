@@ -4,6 +4,7 @@ import abc
 
 import numpy as np
 
+from fury.decorators import warn_on_args_to_kwargs
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image
 from fury.lib import (
@@ -79,7 +80,8 @@ class UI(object, metaclass=abc.ABCMeta):
 
     """
 
-    def __init__(self, position=(0, 0)):
+    @warn_on_args_to_kwargs()
+    def __init__(self, *, position=(0, 0)):
         """Init scene.
 
         Parameters
@@ -179,7 +181,8 @@ class UI(object, metaclass=abc.ABCMeta):
                 if len(callback) > 3:
                     iren.add_callback(*callback[:3], priority=callback[3], args=[self])
 
-    def add_callback(self, prop, event_type, callback, priority=0):
+    @warn_on_args_to_kwargs()
+    def add_callback(self, prop, event_type, callback, *, priority=0):
         """Add a callback to a specific event for this UI component.
 
         Parameters
@@ -353,7 +356,8 @@ class UI(object, metaclass=abc.ABCMeta):
 class Rectangle2D(UI):
     """A 2D rectangle sub-classed from UI."""
 
-    def __init__(self, size=(0, 0), position=(0, 0), color=(1, 1, 1), opacity=1.0):
+    @warn_on_args_to_kwargs()
+    def __init__(self, *, size=(0, 0), position=(0, 0), color=(1, 1, 1), opacity=1.0):
         """Initialize a rectangle.
 
         Parameters
@@ -368,7 +372,7 @@ class Rectangle2D(UI):
             Must take values in [0, 1].
 
         """
-        super(Rectangle2D, self).__init__(position)
+        super(Rectangle2D, self).__init__(position=position)
         self.color = color
         self.opacity = opacity
         self.resize(size)
@@ -519,8 +523,15 @@ class Rectangle2D(UI):
 class Disk2D(UI):
     """A 2D disk UI component."""
 
+    @warn_on_args_to_kwargs()
     def __init__(
-        self, outer_radius, inner_radius=0, center=(0, 0), color=(1, 1, 1), opacity=1.0
+        self,
+        outer_radius,
+        *,
+        inner_radius=0,
+        center=(0, 0),
+        color=(1, 1, 1),
+        opacity=1.0,
     ):
         """Initialize a 2D Disk.
 
@@ -693,8 +704,10 @@ class TextBlock2D(UI):
 
     """
 
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
+        *,
         text="Text Block",
         font_size=18,
         font_family="Arial",
@@ -781,7 +794,7 @@ class TextBlock2D(UI):
             Text bounding box size(width, height) in pixels.
 
         """
-        self.update_bounding_box(size)
+        self.update_bounding_box(size=size)
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -1092,7 +1105,7 @@ class TextBlock2D(UI):
         if flag:
             self.actor.SetTextScaleModeToProp()
             self._justification = "left"
-            self.update_bounding_box(self.size)
+            self.update_bounding_box(size=self.size)
         else:
             self.actor.SetTextScaleModeToNone()
 
@@ -1165,7 +1178,8 @@ class TextBlock2D(UI):
         max_length = max(len(line) for line in lines)
         return [max_length * self.font_size, len(lines) * self.font_size]
 
-    def update_bounding_box(self, size=None):
+    @warn_on_args_to_kwargs()
+    def update_bounding_box(self, *, size=None):
         """Update Text Bounding Box.
 
         Parameters
@@ -1226,7 +1240,8 @@ class Button2D(UI):
 
     """
 
-    def __init__(self, icon_fnames, position=(0, 0), size=(30, 30)):
+    @warn_on_args_to_kwargs()
+    def __init__(self, icon_fnames, *, position=(0, 0), size=(30, 30)):
         """Init class instance.
 
         Parameters
@@ -1239,7 +1254,7 @@ class Button2D(UI):
             Width and height in pixels of the button.
 
         """
-        super(Button2D, self).__init__(position)
+        super(Button2D, self).__init__(position=position)
 
         self.icon_extents = {}
         self.icons = self._build_icons(icon_fnames)
