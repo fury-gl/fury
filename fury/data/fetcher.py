@@ -16,6 +16,8 @@ import zipfile
 
 import aiohttp
 
+from fury.decorators import warn_on_args_to_kwargs
+
 # Set a user-writeable file-system location to put files:
 if "FURY_HOME" in os.environ:
     fury_home = os.environ["FURY_HOME"]
@@ -78,7 +80,8 @@ def update_progressbar(progress, total_length):
     sys.stdout.flush()
 
 
-def copyfileobj_withprogress(fsrc, fdst, total_length, length=16 * 1024):
+@warn_on_args_to_kwargs()
+def copyfileobj_withprogress(fsrc, fdst, total_length, *, length=16 * 1024):
     copied = 0
     while True:
         buf = fsrc.read(length)
@@ -118,7 +121,8 @@ def _get_file_sha(filename):
     return sha256_data.hexdigest()
 
 
-def check_sha(filename, stored_sha256=None):
+@warn_on_args_to_kwargs()
+def check_sha(filename, *, stored_sha256=None):
     """Check the generated sha checksum.
 
     Parameters
@@ -160,7 +164,8 @@ def _get_file_data(fname, url):
                 copyfileobj_withprogress(opener, data, response_size)
 
 
-def fetch_data(files, folder, data_size=None):
+@warn_on_args_to_kwargs()
+def fetch_data(files, folder, *, data_size=None):
     """Download files to folder and checks their sha checksums.
 
     Parameters
@@ -200,19 +205,21 @@ def fetch_data(files, folder, data_size=None):
         all_skip = False
         print('Downloading "%s" to %s' % (f, folder))
         _get_file_data(fullpath, url)
-        check_sha(fullpath, sha)
+        check_sha(fullpath, stored_sha256=sha)
     if all_skip:
         _already_there_msg(folder)
     else:
         print("Files successfully downloaded to %s" % (folder))
 
 
+@warn_on_args_to_kwargs()
 def _make_fetcher(
     name,
     folder,
     baseurl,
     remote_fnames,
     local_fnames,
+    *,
     sha_list=None,
     doc="",
     data_size=None,
@@ -261,7 +268,7 @@ def _make_fetcher(
         files = {}
         for i, (f, n) in enumerate(zip(remote_fnames, local_fnames)):
             files[n] = (baseurl + f, sha_list[i] if sha_list is not None else None)
-        fetch_data(files, folder, data_size)
+        fetch_data(files, folder, data_size=data_size)
 
         if msg is not None:
             print(msg)
@@ -312,7 +319,8 @@ async def _request(session, url):
         return await response.json()
 
 
-async def _download(session, url, filename, size=None):
+@warn_on_args_to_kwargs()
+async def _download(session, url, filename, *, size=None):
     """Download file from url.
 
     Parameters
@@ -393,13 +401,14 @@ async def _fetch_gltf(name, mode):
 
         async with aiohttp.ClientSession() as session:
             await asyncio.gather(
-                *[_download(session, url, name, s) for url, name, s in zip_url]
+                *[_download(session, url, name, size=s) for url, name, s in zip_url]
             )
 
         return f_names, folder
 
 
-def fetch_gltf(name=None, mode="glTF"):
+@warn_on_args_to_kwargs()
+def fetch_gltf(*, name=None, mode="glTF"):
     """Download glTF samples from Khronos Group Github.
 
     Parameters
@@ -447,7 +456,7 @@ fetch_viz_cubemaps = _make_fetcher(
         "skybox-py.jpg",
         "skybox-pz.jpg",
     ],
-    [
+    sha_list=[
         "12B1CE6C91AA3AAF258A8A5944DF739A6C1CC76E89D4D7119D1F795A30FC1BF2",
         "E18FE2206B63D3DF2C879F5E0B9937A61D99734B6C43AC288226C58D2418D23E",
         "00DDDD1B715D5877AF2A74C014FF6E47891F07435B471D213CD0673A8C47F2B2",
@@ -464,7 +473,7 @@ fetch_viz_icons = _make_fetcher(
     UW_RW_URL + "1773/38478/",
     ["icomoon.tar.gz"],
     ["icomoon.tar.gz"],
-    ["BC1FEEA6F58BA3601D6A0B029EB8DFC5F352E21F2A16BA41099A96AA3F5A4735"],
+    sha_list=["BC1FEEA6F58BA3601D6A0B029EB8DFC5F352E21F2A16BA41099A96AA3F5A4735"],
     data_size="12KB",
     doc="Download icons for fury",
     unzip=True,
@@ -510,7 +519,7 @@ fetch_viz_new_icons = _make_fetcher(
         "selection-pressed.png",
         "selection.png",
     ],
-    [
+    sha_list=[
         "CD859F244DF1BA719C65C869C3FAF6B8563ABF82F457730ADBFBD7CA72DDB7BC",
         "5896BDC9FF9B3D1054134D7D9A854677CE9FA4E64F494F156BB2E3F0E863F207",
         "937C46C25BC38B62021B01C97A4EE3CDE5F7C8C4A6D0DB75BF4E4CACE2AF1226",
@@ -538,7 +547,7 @@ fetch_viz_wiki_nw = _make_fetcher(
     FURY_DATA_URL,
     ["wiki_categories.txt", "wiki_edges.txt", "wiki_positions.txt"],
     ["wiki_categories.txt", "wiki_edges.txt", "wiki_positions.txt"],
-    [
+    sha_list=[
         "1679241B13D2FD01209160F0C186E14AB55855478300B713D5369C12854CFF82",
         "702EE8713994243C8619A29C9ECE32F95305737F583B747C307500F3EC4A6B56",
         "044917A8FBD0EB980D93B6C406A577BEA416FA934E897C26C87E91C218EF4432",
@@ -558,7 +567,7 @@ fetch_viz_models = _make_fetcher(
     MODEL_DATA_URL,
     ["utah.obj", "suzanne.obj", "satellite_obj.obj", "dragon.obj"],
     ["utah.obj", "suzanne.obj", "satellite_obj.obj", "dragon.obj"],
-    [
+   sha_list= [
         "0B50F12CEDCDC27377AC702B1EE331223BECEC59593B3F00A9E06B57A9C1B7C3",
         "BB4FF4E65D65D71D53000E06D2DC7BF89B702223657C1F64748811A3A6C8D621",
         "90213FAC81D89BBB59FA541643304E0D95C2D446157ACE044D46F259454C0E74",
@@ -589,7 +598,7 @@ fetch_viz_dmri = _make_fetcher(
         "whole_brain_evecs.nii.gz",
         "whole_brain_evals.nii.gz",
     ],
-    [
+    sha_list=[
         "767ca3e4cd296e78421d83c32201b30be2d859c332210812140caac1b93d492b",
         "8843ECF3224CB8E3315B7251D1E303409A17D7137D3498A8833853C4603C6CC2",
         "3096B190B1146DD0EADDFECC0B4FBBD901F4933692ADD46A83F637F28B22122D",
@@ -642,7 +651,7 @@ fetch_viz_textures = _make_fetcher(
         "1_earth_16k.jpg",
         "clouds.jpg",
     ],
-    [
+    sha_list=[
         "0D66DC62768C43D763D3288CE67128AAED27715B11B0529162DC4117F710E26F",
         "5CF740C72287AF7B3ACCF080C3951944ADCB1617083B918537D08CBD9F2C5465",
         "DF443F3E20C7724803690A350D9F6FDB36AD8EBC011B0345FB519A8B321F680A",
@@ -665,7 +674,8 @@ fetch_viz_textures = _make_fetcher(
 )
 
 
-def read_viz_cubemap(name, suffix_type=1, ext=".jpg"):
+@warn_on_args_to_kwargs()
+def read_viz_cubemap(name, *, suffix_type=1, ext=".jpg"):
     """Read specific cube map with specific suffix type and extension.
 
     Parameters
@@ -707,7 +717,8 @@ def read_viz_cubemap(name, suffix_type=1, ext=".jpg"):
     return cubemap_fnames
 
 
-def read_viz_icons(style="icomoon", fname="infinity.png"):
+@warn_on_args_to_kwargs()
+def read_viz_icons(*, style="icomoon", fname="infinity.png"):
     """Read specific icon from specific style.
 
     Parameters
@@ -790,7 +801,8 @@ def read_viz_dmri(fname):
     return pjoin(folder, fname)
 
 
-def read_viz_gltf(fname, mode="glTF"):
+@warn_on_args_to_kwargs()
+def read_viz_gltf(fname, *, mode="glTF"):
     """Read specific gltf sample.
 
     Parameters
