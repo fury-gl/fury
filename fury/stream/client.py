@@ -6,6 +6,7 @@ import time
 import numpy as np
 import vtk
 
+from fury.decorators import warn_on_args_to_kwargs
 from fury.stream.constants import PY_VERSION_8, _CQUEUE
 from fury.stream.tools import (
     ArrayCircularQueue,
@@ -47,9 +48,11 @@ def callback_stream_client(stream_client):
 class FuryStreamClient:
     """This obj is responsible to create a StreamClient."""
 
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
         showm,
+        *,
         max_window_size=None,
         use_raw_array=True,
         whithout_iren_start=False,
@@ -119,7 +122,8 @@ class FuryStreamClient:
         self.use_raw_array = use_raw_array
         self._started = False
 
-    def start(self, ms=0, use_asyncio=False):
+    @warn_on_args_to_kwargs()
+    def start(self, *, ms=0, use_asyncio=False):
         """Start the stream client.
 
         Parameters
@@ -134,6 +138,7 @@ class FuryStreamClient:
 
         """
 
+        @warn_on_args_to_kwargs()
         def callback_for_vtk(caller, event, *args, **kwargs):
             callback_stream_client(**{"stream_client": kwargs["stream_client"]})
 
@@ -270,8 +275,9 @@ def interaction_callback(circular_queue, showm, iren, render_after):
 class FuryStreamInteraction:
     """This obj. is responsible to manage the user interaction"""
 
+    @warn_on_args_to_kwargs()
     def __init__(
-        self, showm, max_queue_size=50, use_raw_array=True, whithout_iren_start=False
+        self, showm, *, max_queue_size=50, use_raw_array=True, whithout_iren_start=False
     ):
         """Initialize the StreamInteraction obj.
 
@@ -306,7 +312,8 @@ class FuryStreamInteraction:
         self._whithout_iren_start = whithout_iren_start
         self._started = False
 
-    def start(self, ms=3, use_asyncio=False):
+    @warn_on_args_to_kwargs()
+    def start(self, *, ms=3, use_asyncio=False):
         """Start the stream interaction client.
 
         Parameters

@@ -4,6 +4,7 @@
 from aiohttp import web
 import numpy as np
 
+from fury.decorators import warn_on_args_to_kwargs
 from fury.stream.constants import PY_VERSION_8, _CQUEUE
 from fury.stream.server.async_app import get_app
 from fury.stream.tools import (
@@ -111,7 +112,9 @@ class RTCServer(VideoStreamTrack):
             pass
 
 
+@warn_on_args_to_kwargs()
 def web_server_raw_array(
+    *,
     image_buffers=None,
     info_buffer=None,
     queue_head_tail_buffer=None,
@@ -183,7 +186,7 @@ def web_server_raw_array(
         )
 
     app_fury = get_app(
-        rtc_server,
+        rtc_server=rtc_server,
         circular_queue=circular_queue,
         image_buffer_manager=image_buffer_manager,
         provides_mjpeg=provides_mjpeg,
@@ -201,7 +204,9 @@ def web_server_raw_array(
     image_buffer_manager.cleanup()
 
 
+@warn_on_args_to_kwargs()
 def web_server(
+    *,
     image_buffer_names=None,
     info_buffer_name=None,
     queue_head_tail_buffer_name=None,
@@ -280,7 +285,7 @@ def web_server(
         )
 
     app_fury = get_app(
-        rtc_server,
+        rtc_server=rtc_server,
         circular_queue=circular_queue,
         image_buffer_manager=image_buffer_manager,
         provides_mjpeg=provides_mjpeg,

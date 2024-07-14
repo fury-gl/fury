@@ -13,6 +13,7 @@ try:
 except ImportError:
     IPYTHON_AVAILABLE = False
 
+from fury.decorators import warn_on_args_to_kwargs
 from fury.stream.client import FuryStreamClient, FuryStreamInteraction
 from fury.stream.constants import PY_VERSION_8
 
@@ -46,9 +47,11 @@ class Widget:
     using the SharedMemory object from Python multiprocessing.
     """
 
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
         showm,
+        *,
         ms_stream=33,
         ms_interaction=33,
         host="localhost",
@@ -130,7 +133,8 @@ class Widget:
         s += ")"
         return s
 
-    def _start_fury_client(self, use_asyncio=False):
+    @warn_on_args_to_kwargs()
+    def _start_fury_client(self, *, use_asyncio=False):
         """Start the fury image buffer client and the interaction client
 
         Parameters
@@ -193,12 +197,14 @@ class Widget:
         url += f"?iframe=1&encoding={self.encoding}"
         return url
 
-    def return_iframe(self, height=200):
+    @warn_on_args_to_kwargs()
+    def return_iframe(self, *, height=200):
         """Return the jupyter div iframe used to show the stream"""
         if IPYTHON_AVAILABLE:
             display(IFrame(self.url, "100%", f"{int(height)}px"))
 
-    def start(self, use_asyncio=False):
+    @warn_on_args_to_kwargs()
+    def start(self, *, use_asyncio=False):
         """Start the fury client and the interaction client and return the url
 
         Parameters
@@ -215,7 +221,8 @@ class Widget:
             return False
         print(f"url: {self.url}")
 
-    def display(self, height=150):
+    @warn_on_args_to_kwargs()
+    def display(self, *, height=150):
         """Start the server and display the url in an iframe"""
         self._start_fury_client()
         ok = self.run_command()
