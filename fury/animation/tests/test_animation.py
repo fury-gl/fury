@@ -30,14 +30,14 @@ def test_animation():
     anim.add_static_actor(cube_actor)
     assert cube_actor in anim.static_actors
 
-    anim = Animation(cube_actor)
+    anim = Animation(actors=cube_actor)
     assert cube_actor in anim.actors
 
     anim_main = Animation()
     anim_main.add_child_animation(anim)
     assert anim in anim_main.child_animations
 
-    anim = Animation(cube_actor)
+    anim = Animation(actors=cube_actor)
     anim.set_position(0, np.array([1, 1, 1]))
     # overriding a keyframe
     anim.set_position(0, np.array([0, 0, 0]))
@@ -79,7 +79,7 @@ def test_animation():
 
     cube = actor.cube(np.array([[0, 0, 0]]))
     anim.add_actor(cube)
-    anim.update_animation(0)
+    anim.update_animation(time=0)
     if not shaders:
         transform = cube.GetUserTransform()
         npt.assert_almost_equal(anim.get_position(0), transform.GetPosition())
@@ -89,7 +89,7 @@ def test_animation():
 
 def test_camera_animation():
     cam = Camera()
-    anim = CameraAnimation(cam)
+    anim = CameraAnimation(camera=cam)
 
     assert anim.camera is cam
 
@@ -101,13 +101,13 @@ def test_camera_animation():
 
     anim.set_rotation(0, np.array([180, 0, 0]))
 
-    anim.update_animation(0)
+    anim.update_animation(time=0)
     npt.assert_almost_equal(cam.GetPosition(), np.array([1, 2, 3]))
     npt.assert_almost_equal(cam.GetFocalPoint(), np.array([10, 20, 30]))
-    anim.update_animation(3)
+    anim.update_animation(time=3)
     npt.assert_almost_equal(cam.GetPosition(), np.array([3, 2, 1]))
     npt.assert_almost_equal(cam.GetFocalPoint(), np.array([30, 20, 10]))
-    anim.update_animation(1.5)
+    anim.update_animation(time=1.5)
     npt.assert_almost_equal(cam.GetPosition(), np.array([2, 2, 2]))
     npt.assert_almost_equal(cam.GetFocalPoint(), np.array([20, 20, 20]))
     rot = np.zeros(16)
