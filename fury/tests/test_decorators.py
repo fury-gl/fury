@@ -59,21 +59,21 @@ def test_warn_on_args_to_kwargs():
         return a + b + c + d + e
 
     # if FURY_CURRENT_VERSION is less than from_version
-    fury.__version__ = "0.0.0"
+    fury.__version__ = "0.1.0"
     npt.assert_equal(func(1, 2, 3, 4, 5), 15)
     npt.assert_equal(func(1, 2, c=3, d=4, e=5), 15)
     npt.assert_raises(TypeError, func, 1, 3)
 
     # if FURY_CURRENT_VERSION is greater than until_version
-    fury.__version__ = "0.12.0"
+    fury.__version__ = "50.0.0"
     npt.assert_equal(func(1, 2, c=3, d=4, e=5), 15)
     npt.assert_equal(func(1, 2, c=3, d=5), 16)
     npt.assert_equal(func(1, 2, c=3), 15)
     npt.assert_raises(TypeError, func, 1, 3, 4)
     npt.assert_raises(TypeError, func, 1, 3)
 
-    # if FURY_CURRENT_VERSION is less than from_version
-    fury.__version__ = "0.10.0"
+    # if FURY_CURRENT_VERSION is less than until_version
+    fury.__version__ = "0.12.0"
     npt.assert_equal(func(1, 2, c=3, d=4, e=5), 15)
     npt.assert_equal(func(1, 2, c=3, d=5), 16)
     with npt.assert_warns(UserWarning):
@@ -82,8 +82,8 @@ def test_warn_on_args_to_kwargs():
         npt.assert_equal(func(1, 2, 4), 16)
     npt.assert_raises(TypeError, func, 1, 3)
 
-    # if FURY_CURRENT_VERSION is equal to from_version
-    fury.__version__ = "0.11.0"
+    # if FURY_CURRENT_VERSION is equal to until_version
+    fury.__version__ = "0.14.0"
     with npt.assert_warns(UserWarning):
         npt.assert_equal(func(1, 2, 3, 6), 17)
     with npt.assert_warns(UserWarning):

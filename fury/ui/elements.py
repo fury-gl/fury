@@ -3335,7 +3335,7 @@ class DrawShape(UI):
     """Create and Manage 2D Shapes."""
 
     @warn_on_args_to_kwargs()
-    def __init__(self, shape_type, drawpanel=None, position=(0, 0)):
+    def __init__(self, shape_type, *, drawpanel=None, position=(0, 0)):
         """Init this UI element.
 
         Parameters
@@ -3569,7 +3569,7 @@ class DrawPanel(UI):
     """The main Canvas(Panel2D) on which everything would be drawn."""
 
     @warn_on_args_to_kwargs()
-    def __init__(self, size=(400, 400), position=(0, 0), is_draggable=False):
+    def __init__(self, *, size=(400, 400), position=(0, 0), is_draggable=False):
         """Init this UI element.
 
         Parameters
