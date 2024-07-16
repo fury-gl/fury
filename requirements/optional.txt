@@ -1,3 +1,4 @@
+pygltflib>=1.15.1
 matplotlib
 dipy>=1.0.0
 Cython
