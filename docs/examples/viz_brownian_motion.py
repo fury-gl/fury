@@ -108,10 +108,10 @@ showm = window.ShowManager(
 l_particle = [
     particle(
         colors=np.random.rand(1, 3),
-        origin=origin,
-        num_total_steps=num_total_steps,
-        total_time=total_time,
-        path_thickness=path_thickness,
+        _origin=origin,
+        _num_total_steps=num_total_steps,
+        _total_time=total_time,
+        _path_thickness=path_thickness,
     )
     for _ in range(num_particles)
 ]

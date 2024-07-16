@@ -196,10 +196,10 @@ def warn_on_args_to_kwargs(
                             stacklevel=3,
                         )
 
-                # if the current version of fury is less than from_version,
-                # the function should be called without any changes.
+                    # if the current version of fury is less than from_version,
+                    # the function should be called without any changes.
 
-                return result
+                    return result
 
         return wrapper
 
