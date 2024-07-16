@@ -16,7 +16,6 @@ from fury.actors.tensor import (
 )
 from fury.colormap import colormap_lookup_table
 from fury.decorators import warn_on_args_to_kwargs
-from fury.deprecator import deprecate_with_version, deprecated_params
 from fury.io import load_image
 from fury.lib import (
     VTK_UNSIGNED_CHAR,
@@ -1768,11 +1767,6 @@ def dot(points, *, colors=None, opacity=None, dot_size=5):
     return poly_actor
 
 
-dots = deprecate_with_version(
-    message="dots function has been renamed dot", since="0.8.1", until="0.9.0"
-)(dot)
-
-
 @warn_on_args_to_kwargs()
 def point(points, colors, *, point_radius=0.1, phi=8, theta=8, opacity=1.0):
     """Visualize points as sphere glyphs.
@@ -2186,7 +2180,6 @@ def rectangle(centers, *, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 
 
 
 @warn_on_args_to_kwargs()
-@deprecated_params(["size", "heights"], ["scales", "scales"], since="0.6", until="0.8")
 def box(centers, *, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 3)):
     """Visualize one or many boxes with different features.
 
@@ -2235,7 +2228,6 @@ def box(centers, *, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 3)):
 
 
 @warn_on_args_to_kwargs()
-@deprecated_params("heights", "scales", since="0.6", until="0.8")
 def cube(centers, *, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     """Visualize one or many cubes with different features.
 
@@ -3020,13 +3012,6 @@ def vector_text(
 
     texta.SetPosition(*pos)
     return texta
-
-
-label = deprecate_with_version(
-    message="Label function has been renamed" " vector_text",
-    since="0.7.1",
-    until="0.9.0",
-)(vector_text)
 
 
 @warn_on_args_to_kwargs()

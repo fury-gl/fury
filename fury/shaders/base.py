@@ -342,17 +342,16 @@ def add_shader_callback(actor, callback, *, priority=0.0):
         # test_values = [999, 500, 0, 999, 500, 0, ...]
 
     """
+    if not isinstance(priority, (float, int)):
+        raise ValueError(
+            """
+            add_shader_callback priority argument should be a float/int"""
+        )
 
     # @warn_on_args_to_kwargs()
     @calldata_type(VTK_OBJECT)
     def cbk(caller, event, calldata=None):
         callback(caller, event, calldata=calldata)
-
-    if not isinstance(priority, (float, int)):
-        raise TypeError(
-            """
-            add_shader_callback priority argument should be a float/int"""
-        )
 
     mapper = actor.GetMapper()
     id_observer = mapper.AddObserver(Command.UpdateShaderEvent, cbk, priority)

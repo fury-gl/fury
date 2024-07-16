@@ -3,7 +3,6 @@ from tempfile import TemporaryDirectory as InTemporaryDirectory
 
 import numpy as np
 import numpy.testing as npt
-import pytest
 
 from fury import actor, window
 from fury.deprecator import ExpiredDeprecationError
@@ -234,8 +233,9 @@ def test_add_shader_callback():
 
     id_observer = add_shader_callback(cone_actor, callbackLow, priority=0)
 
-    with pytest.raises(Exception):  # noqa: B017
-        add_shader_callback(cone_actor, callbackLow, priority="str")
+    npt.assert_raises(
+        ValueError, add_shader_callback, cone_actor, callbackLow, priority="str"
+    )
 
     mapper = cone_actor.GetMapper()
     mapper.RemoveObserver(id_observer)
