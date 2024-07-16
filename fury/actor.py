@@ -30,6 +30,7 @@ from fury.lib import (
     ConeSource,
     ContourFilter,
     CylinderSource,
+    PlaneSource,
     DiskSource,
     FloatArray,
     Follower,
@@ -79,6 +80,7 @@ from fury.utils import (
     get_actor_from_primitive,
     lines_to_vtk_polydata,
     numpy_to_vtk_colors,
+    numpy_to_vtk_image_data,
     repeat_sources,
     rgb_to_vtk,
     set_input,
@@ -4034,3 +4036,97 @@ def uncertainty_cone(
     angles = main_dir_uncertainty(evals, evecs, signal, sigma, b_matrix)
 
     return double_cone(centers, evecs, angles, colors, scales, opacity)
+
+
+def texture_on_cube(negx, negy, negz, posx, posy, posz, centers=(0, 0, 0)):
+    """Map RGB or RGBA textures on a cube
+
+    Parameters
+    ----------
+    negx : ndarray
+        Input 2D RGB or RGBA array.
+    negy : ndarray
+        Input 2D RGB or RGBA array.
+    negz : ndarray
+        Input 2D RGB or RGBA array.
+    posx : ndarray
+        Input 2D RGB or RGBA array.
+    posy : ndarray
+        Input 2D RGB or RGBA array.
+    posz : ndarray
+        Input 2D RGB or RGBA array.
+    centers : tuple (3,), optional
+        The X, Y and Z coordinate of the cube.
+
+         |----|
+         | +Y |
+    |----|----|----|----|
+    | -X | +Z | +X | -Z |
+    |----|----|----|----|
+         | -Y |
+         |----|
+
+    Returns
+    -------
+    actors : list[Actor]
+        A list of 6 Actor objects, one for each face of the cube, in order.
+
+    """
+    plane_objects = [PlaneSource() for _ in range(6)]
+
+    center_x, center_y, center_z = centers
+    plane_centers = [
+        (-0.5 + center_x, 0 + center_y, 0 + center_z),
+        (0 + center_x, -0.5 + center_y, 0 + center_z),
+        (0 + center_x, 0 + center_y, -0.5 + center_z),
+        (0.5 + center_x, 0 + center_y, 0 + center_z),
+        (0 + center_x, 0.5 + center_y, 0 + center_z),
+        (0 + center_x, 0 + center_y, 0.5 + center_z)
+    ]
+
+    plane_normals = [
+        (-1, 0, 0),
+        (0, -1, 0),
+        (0, 0, -1),
+        (1, 0, 0),
+        (0, 1, 0),
+        (0, 0, 1)
+    ]
+
+    for plane, center, normal in zip(
+        plane_objects,
+        plane_centers,
+        plane_normals
+    ):
+        plane.SetCenter(*center)
+        plane.SetNormal(*normal)
+
+    image_grids = [negx, negy, negz, posx, posy, posz]
+    image_data_objects = [
+        numpy_to_vtk_image_data(grid) for grid in image_grids
+    ]
+
+    texture_objects = [Texture() for _ in range(6)]
+    for image_data, texture in zip(
+        image_data_objects,
+        texture_objects
+    ):
+        texture.SetInputDataObject(image_data)
+
+    polydatamapper_objects = [PolyDataMapper() for _ in range(6)]
+    for mapper, plane in zip(
+        polydatamapper_objects,
+        plane_objects
+    ):
+        mapper.SetInputConnection(plane.GetOutputPort())
+
+    actor_objects = [Actor() for _ in range(6)]
+    for actor, mapper, texture in zip(
+        actor_objects,
+        polydatamapper_objects,
+        texture_objects
+    ):
+        actor.SetMapper(mapper)
+        actor.SetTexture(texture)
+
+    return actor_objects

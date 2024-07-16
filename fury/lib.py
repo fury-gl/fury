@@ -228,6 +228,8 @@ DiskSource = fsvtk.vtkDiskSource
 TexturedSphereSource = fsvtk.vtkTexturedSphereSource
 #: class for RegularPolygonSource
 RegularPolygonSource = fsvtk.vtkRegularPolygonSource
+#: class for PlaneSource
+PlaneSource = fsvtk.vtkPlaneSource
 
 ##############################################################
 #  vtkCommonDataModel Module

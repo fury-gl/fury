@@ -11,6 +11,7 @@ from fury import actor, primitive as fp, shaders, window
 from fury.actor import grid
 from fury.decorators import skip_linux, skip_osx, skip_win
 from fury.deprecator import ExpiredDeprecationError
+from fury.lib import Actor
 
 # Allow import, but disable doctests if we don't have dipy
 from fury.optpkg import optional_package
@@ -1952,3 +1953,37 @@ def test_actors_primitives_count():
         primitives_count = test_case[2]
         act = act_func(**args)
         npt.assert_equal(primitives_count_from_actor(act), primitives_count)
+
+
+def test_texture_on_cube(interactive=False):
+    arr_255 = np.full((720, 1280), 255, dtype=np.uint8)
+    arr_0 = np.full((720, 1280), 0, dtype=np.uint8)
+
+    arr_white = np.full((720, 1280, 3), 255, dtype=np.uint8)
+    arr_red = np.dstack((arr_255, arr_0, arr_0))
+    arr_green = np.dstack((arr_0, arr_255, arr_0))
+    arr_blue = np.dstack((arr_0, arr_0, arr_255))
+    arr_yellow = np.dstack((arr_255, arr_255, arr_0))
+    arr_aqua = np.dstack((arr_0, arr_255, arr_255))
+
+    cube = actor.texture_on_cube(arr_white,
+                                 arr_red,
+                                 arr_green,
+                                 arr_blue,
+                                 arr_yellow,
+                                 arr_aqua,
+                                 (1, 2, 3))
+
+    # testing whether 6 VTK Planes are returned
+    assert len(cube) == 6 and isinstance(cube[0], Actor)
+
+    # testing whether the colors render as required (testing only 1)
+    scene = window.Scene()
+    scene.add(cube[5])
+
+    pic1 = window.snapshot(scene)
+    res1 = window.analyze_snapshot(im=pic1, colors=[
+        (0, 255, 255), (255, 255, 255)
+    ])
+
+    npt.assert_equal(res1.colors_found, [True, False])
