@@ -71,7 +71,7 @@ That outputted the following (beautiful) results for a set of 1000 random points
 
 The third one is still being a trickier challenge. If you recall from my first blogposts, I spent something around *one month* trying to setup
 float framebuffer objects to FURY with VTK so I could use them in my project. After spending all of that time with no results,
-me and Bruno, my mentor, :doc:`found a way <2023-07-03-week-5-joaodellagli.rst>` to do what we wanted to do, but using a different VTK class,
+me and Bruno, my mentor, :ref:`found a way <2023-07-03-week-5-joaodellagli>` to do what we wanted to do, but using a different VTK class,
 `vtkWindowToImageFilter <https://vtk.org/doc/nightly/html/classvtkWindowToImageFilter.html>`_. Well, it was a good workaround back then and
 it lead me all the way here, however now it is costing a price. The float framebuffers were an important part of the project because they
 would allow us to pass *32-bit float information* from one shader to another, which would be important as they would allow the densities to

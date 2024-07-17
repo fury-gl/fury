@@ -48,7 +48,7 @@ Based on feedback from my mentor `Serge Koudoro <https://github.com/skoudoro>`_ 
 
 
 Applying the ``warn_on_args_to_kwargs`` Decorator
------------------------------------------------
+-------------------------------------------------
 
 This week, I applied the ``warn_on_args_to_kwargs`` decorator to several modules, ensuring consistent usage and improved code quality. The modules updated include:
 

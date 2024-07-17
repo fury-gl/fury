@@ -12,7 +12,7 @@ Welcome again to another weekly blogpost! Today, let's talk about the importance
 Last Week's Effort
 -----------------------
 So, last week my project was struggling with some supposedly simple in concept, yet intricate in execution issues. If you recall from
-my :doc:`last blogpost <2023-06-19-week-3-joaodellagli>`, I could not manage to make the Framebuffer Object setup work, as its method,
+my :ref:`last blogpost <2023-06-19-week-3-joaodellagli>`, I could not manage to make the Framebuffer Object setup work, as its method,
 ``SetContext()``, wasn't being able to generate the FBO inside OpenGL. Well, after some (more) research about that as I also dived in my
 plan B, that involved studying numba as a way to accelerate a data structure I implemented on my PR `#783 <https://github.com/fury-gl/fury/pull/783>`_,
 me and one of my mentors decided we needed a pair programming session, that finally happened on thursday. After that session,
@@ -34,11 +34,13 @@ Apparently, for the FBO generation to work, it is first needed to initialize the
 
 
 This simple missing line of code was responsible for ending weeks of suffer, as after that, I called:
+
 ::
    print("FBO of index:", FBO.GetFBOIndex())
    print("Number of color attachments:", FBO.GetNumberOfColorAttachments())
 
 That outputted:
+
 ::
    FBO of index: 4
    Number of color attachments: 1

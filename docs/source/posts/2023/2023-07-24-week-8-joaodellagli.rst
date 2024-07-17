@@ -21,7 +21,7 @@ on how could this work, reaching two options:
 
 The first one would have the advantage of being simple and pretty straightforward, as a user would only need to call the actor and have
 it working on their hands, having the tradeoff of leaving some important steps for a clean API hidden and static. These steps I mention
-are related to how this rendering works, as I have previously :doc:`showed you <2023-07-03-week-5-joaodellagli>`, it relies on post-processing effects,
+are related to how this rendering works, as I have previously :ref:`showed you <2023-07-03-week-5-joaodellagli>`, it relies on post-processing effects,
 which need an offscreen rendering, that for example are done by the *callback functions*.
 
 In short, these functions are instructions the user gives to the interactor to run inside the interaction loop. Inside FURY there are tree
