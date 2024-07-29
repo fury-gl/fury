@@ -1,0 +1,52 @@
+Week 8: Gemini Finetuning
+=========================
+
+.. post:: July 27 2024
+   :author: Robin Roy
+   :tags: google
+   :category: gsoc
+
+Hi, I'm `Robin <https://github.com/robinroy03>`_ and this is my blog about week 8.
+
+This week I worked on finalizing the Discord chat QnA data collection and using it to Fine-Tune the Gemini-1.0-Pro model.
+
+Things I did in Week 8
+----------------------
+
+1) **Discord Data Collection**
+
+I finished collecting data from all the channels in the Discord server, cross-verifying to check whether they still work. I also added some questions which were on the FURY bot testing server. These QnA pairs were later converted to a CSV with input/output pairs and fed to Gemini for finetuning.
+
+2) **Gemini Finetuning**
+
+Finetuning is essentially training the model on the input/output. RAG is giving context and asking the model to form an answer using that. Finetuning updates the model weights as per the input/output. Gemini uses `Parameter-Efficient Fine-Tuning <https://huggingface.co/blog/peft>`_ in AI Studio as per some reports. It makes sense because the tuning only takes minutes and PEFT is a good strategy to prevent issues like `catastrophic forgetting <https://arxiv.org/abs/1312.6211>`_.
+
+Finetuning and RAG are complementary to each other. The difference between them can be summarized as follows:
+
+RAG is like giving an LLM with no prior knowledge about FURY access to some important functions/classes as per the user prompt. It'll use this given context and its knowledge of graphics libraries (knowledge from pretraining) to form an answer.
+
+Finetuning is used to make the model follow a certain style or behaviour. It is a form of mimicking the input-output. This will help in increasing the model's performance. An interesting thing is I had to train the model 1) with RAG and 2) without RAG.
+
+For finetuning, the input must be in the format the LLM will get the answer from the user. When you ask a question to the FURY bot, the bot does not get your question directly. We are processing it to add additional information. Therefore I had to process all the collected data with RAG.
+
+This is an interesting direction, and I have a lot of cool things to try out here. I'll spend the next few weeks trying different ideas.
+
+
+What is coming up next week?
+----------------------------
+
+- Finetuning strategies.
+- Hosting the model on API.
+
+
+Did you get stuck anywhere?
+---------------------------
+
+No, I did not get stuck anywhere.
+
+LINKS:
+
+- `Parameter-Efficient Fine-Tuning <https://huggingface.co/blog/peft>`_
+- `catastrophic forgetting <https://arxiv.org/abs/1312.6211>`_
+
+Thank you for reading!

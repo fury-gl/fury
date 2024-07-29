@@ -1,0 +1,31 @@
+Week 7: Surviving final examinations
+====================================
+
+.. post:: July 27 2024
+   :author: Robin Roy
+   :tags: google
+   :category: gsoc
+
+Hi, I'm `Robin <https://github.com/robinroy03>`_ and this is my blog about week 7.
+
+I majorly took this week off due to my semester final examinations :) They were fun. Major topics were x86, ARM and 8051. I had not written a lot of assembly apart from school work. I took the week to experiment with some assembly. The course was more into hardware architecture than programming. I've now enough knowledge to read a given piece of ASM code with a wiki to look up mnemonics (and Gemini/Claude to help). I'm not fast in writing ASM (yet), one day I'll find a project to dive into, or maybe some reverse engineering and CTFs. GPU instruction sets are also something interesting.
+
+
+**Discord data collection**
+
+I collected some Q&A questions from the FURY discord server. I did it manually because the volume wasn't high, and I wanted it to be correct. Had to cross-check with GitHub also to check whether the answer/code mentioned still stands. The format I used was [User question, Answer]. If the answer/question is spread across multiple conversations, I'll adjust it to this format.
+
+
+What is coming up next week?
+----------------------------
+
+- Gemini Finetuning
+- Collect more Discord data.
+
+
+Did you get stuck anywhere?
+---------------------------
+
+Not really apart from some silly ASM bugs.
+
+Thank you for reading!
