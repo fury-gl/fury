@@ -28,12 +28,15 @@ Using that, I could set the typedhint of the `bandwidth` variable to `float` and
 
 So how did it go?
 -----------------
+
 All went fine with no difficult at all, thankfully.
+
 
 The Next Steps
 --------------
+
 My next plans are, after having PR `#826 <https://github.com/fury-gl/fury/pull/826>`_ merged, to work on the float encoding issue described in
-:doc:`this blogpost<2023-07-31-week-9-joaodellagli>`. Also, I plan to tackle the UI idea once again, to see if I can finally give the user
+:ref:`this blogpost <2023-07-31-week-9-joaodellagli>` . Also, I plan to tackle the UI idea once again, to see if I can finally give the user
 a way to control the intensities of the distributions.
 
 Wish me luck!

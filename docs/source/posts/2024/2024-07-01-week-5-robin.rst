@@ -28,10 +28,10 @@ It makes life simple, every input going into the endpoint goes like this:
 .. code-block:: json
 
     {
-        "query": "Render a cube in fury",
-        "llm": "llama3-70b-8192",
-        "knn": "3",
-        "stream": False
+    "query": "Render a cube in fury",
+    "llm": "llama3-70b-8192",
+    "knn": "3",
+    "stream": false
     }
 
 Every response coming out will be like this:
@@ -73,7 +73,7 @@ As mentioned above, I added ``Gemini`` models this week. They have a decent free
 
 3) **LLM Benchmarking**
 
-LLM Benchmarking is the process of evaluating the LLM output and giving a score. With this, making the model better will be simply a function of increasing the score. This area is still under development and the things I've tried here are the current standard procedures. To understand more about benchmarking, you can read `this <https://huggingface.co/learn/cookbook/en/rag_evaluation>`_, `this <https://huggingface.co/learn/cookbook/en/llm_judge>`_ and `this <https://huggingface.co/learn/cookbook/en/advanced_rag>`_. This `course <https://www.deeplearning.ai/short-courses/advanced-retrieval-for-ai/>`_ is also amazing.
+LLM Benchmarking is the process of evaluating the LLM output and giving a score. With this, making the model better will be simply a function of increasing the score. This area is still under development and the things I've tried here are the current standard procedures. To understand more about benchmarking, you can read: `RAG Evaluation <https://huggingface.co/learn/cookbook/en/rag_evaluation>`_, `Using LLM-as-a-judge 🧑‍⚖️ for an automated and versatile evaluation <https://huggingface.co/learn/cookbook/en/llm_judge>`_ and `Advanced RAG on Hugging Face documentation using LangChain <https://huggingface.co/learn/cookbook/en/advanced_rag>`_. This `course <https://www.deeplearning.ai/short-courses/advanced-retrieval-for-ai/>`_ is also amazing.
 
 I'll anyways give a TL;DR:
 LLM benchmarking is essentially like writing an English Literature exam and getting the grades. Your evaluator may give you a 4 or a 5, and the reasoning can be varied. For the same answer, you may even get very varied results from 2 different evaluators! Two common rubrics they use are ``groundedness (whether the answer follows from the material)`` and ``completion (whether the answer is complete, whether it fully answers the question with respect to the material)``. These are the same rubrics we'll use for LLM evaluation. For code, it's different. The code should compile and do exactly what it should.

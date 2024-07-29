@@ -48,7 +48,7 @@ Minor Sidequest
 
 This is in no way related to FURY, but it was fun so I thought I'd add it here :)
 
-So after midterms, I decided to go back home, to maximally use my time I searched for things to do and found a local FOSS event (`link <https://x.com/FOSSUnitedKochi/status/1804763181274759645>`_). It was done by FOSS United Kochi and it's one of the major FOSS events in my state (Kerala, India). Met some Pythonistas! Explained what FURY is to them. I also ended up finding some lore (`link <https://www.gnu.org/education/edu-system-india.html>`_) about how GNU/Linux spread in Kerala, India. Also found some old FOSS event pictures (`this <https://www.flickr.com/photos/pce/245170427/in/photostream/>`_ one is talking about Python, 2003 World of Python). This was my first FOSS event outside campus so it was fun :)
+So after midterms, I decided to go back home, to maximally use my time I searched for things to do and found a local FOSS event: (`Kochi's FOSS <https://x.com/FOSSUnitedKochi/status/1804763181274759645>`_). It was done by FOSS United Kochi and it's one of the major FOSS events in my state (Kerala, India). Met some Pythonistas! Explained what FURY is to them. I also ended up finding some lore (`click here to read <https://www.gnu.org/education/edu-system-india.html>`_) about how GNU/Linux spread in Kerala, India. Also found some old FOSS event pictures (`this <https://www.flickr.com/photos/pce/245170427/in/photostream/>`_ one is talking about Python, 2003 World of Python). This was my first FOSS event outside campus so it was fun :)
 
 
 What is coming up next week?
