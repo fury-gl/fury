@@ -12,10 +12,7 @@ from os.path import join as pjoin
 # multiprocessing.set_start_method('spawn')
 import numpy as np
 
-from fury import actor, colormap as cmap, window
-from fury.data.fetcher import fetch_viz_wiki_nw
-from fury.stream.client import FuryStreamClient
-from fury.stream.server.main import web_server_raw_array
+import fury
 
 if __name__ == "__main__":
     interactive = False
@@ -24,7 +21,7 @@ if __name__ == "__main__":
 
     window_size = (400, 400)
 
-    files, folder = fetch_viz_wiki_nw()
+    files, folder = fury.data.fetch_viz_wiki_nw()
     categories_file, edges_file, positions_file = sorted(files.keys())
     positions = np.loadtxt(pjoin(folder, positions_file))
     categories = np.loadtxt(pjoin(folder, categories_file), dtype=str)
@@ -33,7 +30,9 @@ if __name__ == "__main__":
 
     index2category = np.unique(categories)
 
-    categoryColors = cmap.distinguishable_colormap(nb_colors=len(index2category))
+    categoryColors = fury.colormap.distinguishable_colormap(
+        nb_colors=len(index2category)
+    )
 
     colors = np.array(
         [categoryColors[category2index[category]] for category in categories]
@@ -49,19 +48,19 @@ if __name__ == "__main__":
     edgesPositions = np.array(edgesPositions)
     edgesColors = np.average(np.array(edgesColors), axis=1)
 
-    sphere_actor = actor.sdf(
+    sphere_actor = fury.actor.sdf(
         centers=positions,
         colors=colors,
         primitives="sphere",
         scales=radii * 0.5,
     )
 
-    lines_actor = actor.line(
+    lines_actor = fury.actor.line(
         edgesPositions,
         colors=edgesColors,
         opacity=0.1,
     )
-    scene = window.Scene()
+    scene = fury.window.Scene()
 
     scene.add(lines_actor)
     scene.add(sphere_actor)
@@ -70,7 +69,7 @@ if __name__ == "__main__":
         position=(0, 0, 1000), focal_point=(0.0, 0.0, 0.0), view_up=(0.0, 0.0, 0.0)
     )
 
-    showm = window.ShowManager(
+    showm = fury.window.ShowManager(
         scene,
         reset_camera=False,
         size=(window_size[0], window_size[1]),
@@ -82,9 +81,9 @@ if __name__ == "__main__":
 
     ms = 0
 
-    stream = FuryStreamClient(showm, use_raw_array=True)
+    stream = fury.stream.FuryStreamClient(showm, use_raw_array=True)
     p = multiprocessing.Process(
-        target=web_server_raw_array,
+        target=fury.stream.server.web_server_raw_array,
         args=(
             stream.img_manager.image_buffers,
             stream.img_manager.info_buffer,
@@ -100,4 +99,4 @@ if __name__ == "__main__":
     stream.stop()
     stream.cleanup()
 
-    window.record(showm.scene, size=window_size, out_path="viz_no_interaction.png")
+    fury.window.record(showm.scene, size=window_size, out_path="viz_no_interaction.png")

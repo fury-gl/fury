@@ -11,7 +11,7 @@ import os
 from dipy.data import fetch_bundles_2_subjects
 import nibabel as nib
 
-from fury import actor, ui, window
+import fury
 
 ###############################################################################
 # Let's download and load a T1.
@@ -35,7 +35,7 @@ affine = img.affine
 ###############################################################################
 # Create a Scene object which holds all the actors which we want to visualize.
 
-scene = window.Scene()
+scene = fury.window.Scene()
 scene.background((0.5, 0.5, 0.5))
 
 ###############################################################################
@@ -53,7 +53,7 @@ value_range = (mean - 0.5 * std, mean + 1.5 * std)
 # transformation matrix. The default behavior of this function is to show the
 # middle slice of the last dimension of the resampled data.
 
-slice_actor = actor.slicer(data, affine, value_range)
+slice_actor = fury.actor.slicer(data, affine, value_range)
 
 ###############################################################################
 # The ``slice_actor`` contains an axial slice.
@@ -81,12 +81,12 @@ scene.zoom(1.4)
 ###############################################################################
 # In order to interact with the data you will need to uncomment the line below.
 
-# window.show(scene, size=(600, 600), reset_camera=False)
+# fury.window.show(scene, size=(600, 600), reset_camera=False)
 
 ###############################################################################
 # Otherwise, you can save a screenshot using the following command.
 
-window.record(scene, out_path="slices.png", size=(600, 600), reset_camera=False)
+fury.window.record(scene, out_path="slices.png", size=(600, 600), reset_camera=False)
 
 ###############################################################################
 # Render slices from FA with your colormap
@@ -111,7 +111,7 @@ fa = img.get_fdata()
 ###############################################################################
 # Notice here how the scale range is. We use FA min and max values to set it up
 
-lut = actor.colormap_lookup_table(
+lut = fury.actor.colormap_lookup_table(
     scale_range=(fa.min(), fa.max()),
     hue_range=(0.4, 1.0),
     saturation_range=(1, 1.0),
@@ -122,7 +122,7 @@ lut = actor.colormap_lookup_table(
 # This is because the lookup table is applied in the slice after interpolating
 # to (0, 255).
 
-fa_actor = actor.slicer(fa, affine, lookup_colormap=lut)
+fa_actor = fury.actor.slicer(fa, affine, lookup_colormap=lut)
 
 scene.clear()
 scene.add(fa_actor)
@@ -130,9 +130,11 @@ scene.add(fa_actor)
 scene.reset_camera()
 scene.zoom(1.4)
 
-# window.show(scene, size=(600, 600), reset_camera=False)
+# fury.window.show(scene, size=(600, 600), reset_camera=False)
 
-window.record(scene, out_path="slices_lut.png", size=(600, 600), reset_camera=False)
+fury.window.record(
+    scene, out_path="slices_lut.png", size=(600, 600), reset_camera=False
+)
 
 ###############################################################################
 # Now we would like to add the ability to click on a voxel and show its value
@@ -142,19 +144,19 @@ window.record(scene, out_path="slices_lut.png", size=(600, 600), reset_camera=Fa
 # the ``ShowManager`` object, which allows accessing the pipeline in different
 # areas.
 
-show_m = window.ShowManager(scene, size=(1200, 900))
+show_m = fury.window.ShowManager(scene, size=(1200, 900))
 
 
 ###############################################################################
 # We'll start by creating the panel and adding it to the ``ShowManager``
 
-label_position = ui.TextBlock2D(text="Position:")
-label_value = ui.TextBlock2D(text="Value:")
+label_position = fury.ui.TextBlock2D(text="Position:")
+label_value = fury.ui.TextBlock2D(text="Value:")
 
-result_position = ui.TextBlock2D(text="")
-result_value = ui.TextBlock2D(text="")
+result_position = fury.ui.TextBlock2D(text="")
+result_value = fury.ui.TextBlock2D(text="")
 
-panel_picking = ui.Panel2D(
+panel_picking = fury.ui.Panel2D(
     size=(250, 125), position=(20, 20), color=(0, 0, 0), opacity=0.75, align="left"
 )
 
@@ -203,7 +205,7 @@ scene.projection("parallel")
 result_position.message = ""
 result_value.message = ""
 
-show_m_mosaic = window.ShowManager(scene, size=(1200, 900))
+show_m_mosaic = fury.window.ShowManager(scene, size=(1200, 900))
 
 
 def left_click_callback_mosaic(obj, _ev):
@@ -260,4 +262,4 @@ scene.zoom(1.0)
 # zoom in/out using the scroll wheel, and pick voxels with left click.
 
 
-window.record(scene, out_path="mosaic.png", size=(900, 600), reset_camera=False)
+fury.window.record(scene, out_path="mosaic.png", size=(900, 600), reset_camera=False)

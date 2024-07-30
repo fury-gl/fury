@@ -8,13 +8,11 @@ Tutorial on making a robot arm animation in FURY.
 
 import numpy as np
 
-from fury import actor, window
-from fury.animation import Animation, Timeline
-from fury.utils import set_actor_origin
+import fury
 
-scene = window.Scene()
+scene = fury.window.Scene()
 
-showm = window.ShowManager(
+showm = fury.window.ShowManager(
     scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 showm.initialize()
@@ -23,16 +21,20 @@ showm.initialize()
 ###############################################################################
 # Creating robot arm components
 
-base = actor.cylinder(
+base = fury.actor.cylinder(
     np.array([[0, 0, 0]]), np.array([[0, 1, 0]]), colors=(0, 1, 0), radius=1
 )
-main_arm = actor.box(np.array([[0, 0, 0]]), colors=(1, 0.5, 0), scales=(12, 1, 1))
+main_arm = fury.actor.box(np.array([[0, 0, 0]]), colors=(1, 0.5, 0), scales=(12, 1, 1))
 
-sub_arm = actor.box(np.array([[0, 0, 0]]), colors=(0, 0.5, 0.8), scales=(8, 0.7, 0.7))
-joint_1 = actor.sphere(np.array([[0, 0, 0]]), colors=np.array([1, 0, 1]), radii=1.2)
-joint_2 = actor.sphere(np.array([[0, 0, 0]]), colors=np.array([1, 0, 1]))
+sub_arm = fury.actor.box(
+    np.array([[0, 0, 0]]), colors=(0, 0.5, 0.8), scales=(8, 0.7, 0.7)
+)
+joint_1 = fury.actor.sphere(
+    np.array([[0, 0, 0]]), colors=np.array([1, 0, 1]), radii=1.2
+)
+joint_2 = fury.actor.sphere(np.array([[0, 0, 0]]), colors=np.array([1, 0, 1]))
 
-end = actor.cone(
+end = fury.actor.cone(
     np.array([[0, 0, 0]]),
     np.array([[1, 0, 0]]),
     np.array([[1, 0, 0]]),
@@ -42,18 +44,18 @@ end = actor.cone(
 
 ###############################################################################
 # Setting the center of both shafts to the beginning.
-set_actor_origin(main_arm, np.array([-6, 0, 0]))
-set_actor_origin(sub_arm, np.array([-4, 0, 0]))
+fury.utils.set_actor_origin(main_arm, np.array([-6, 0, 0]))
+fury.utils.set_actor_origin(sub_arm, np.array([-4, 0, 0]))
 
 ###############################################################################
 # Creating a timeline
-timeline = Timeline(playback_panel=True)
+timeline = fury.animation.Timeline(playback_panel=True)
 
 ###############################################################################
 # Creating animations
-main_arm_animation = Animation([main_arm, joint_1], length=2 * np.pi)
-child_arm_animation = Animation([sub_arm, joint_2])
-drill_animation = Animation(end)
+main_arm_animation = fury.animation.Animation([main_arm, joint_1], length=2 * np.pi)
+child_arm_animation = fury.animation.Animation([sub_arm, joint_2])
+drill_animation = fury.animation.Animation(end)
 
 
 ###############################################################################
@@ -119,4 +121,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path="viz_robot_arm.png", size=(900, 768))
+fury.window.record(scene, out_path="viz_robot_arm.png", size=(900, 768))

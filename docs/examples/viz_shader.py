@@ -7,19 +7,17 @@ Varying Color
 This example shows how to use shaders to generate a shaded output. We will
 demonstrate how to load polydata then use a custom shader calls to render
 a custom shaded model.
-First, a bunch of imports.
+First, let's import FURY
 """
 
-from fury import io, ui, utils, window
-from fury.data.fetcher import fetch_viz_models, read_viz_models
-from fury.shaders import add_shader_callback, shader_to_actor
+import fury
 
 ###############################################################################
 # Let's download  and load the model
 
 
-fetch_viz_models()
-model = read_viz_models("utah.obj")
+fury.data.fetch_viz_models()
+model = fury.data.read_viz_models("utah.obj")
 
 
 ###############################################################################
@@ -28,9 +26,9 @@ model = read_viz_models("utah.obj")
 # For this example we use the standard utah teapot model.
 # currently supported formats include OBJ, VTK, FIB, PLY, STL and XML
 
-utah = io.load_polydata(model)
-utah = utils.get_polymapper_from_polydata(utah)
-utah = utils.get_actor_from_polymapper(utah)
+utah = fury.io.load_polydata(model)
+utah = fury.utils.get_polymapper_from_polydata(utah)
+utah = fury.utils.get_actor_from_polymapper(utah)
 mapper = utah.GetMapper()
 
 
@@ -58,16 +56,18 @@ fragment_shader_code_impl = """
     fragOutput0 = vec4(col, fragOutput0.a);
     """
 
-shader_to_actor(
+fury.shaders.shader_to_actor(
     utah, "vertex", impl_code=vertex_shader_code_impl, decl_code=vertex_shader_code_decl
 )
-shader_to_actor(utah, "fragment", decl_code=fragment_shader_code_decl)
-shader_to_actor(utah, "fragment", impl_code=fragment_shader_code_impl, block="light")
+fury.shaders.shader_to_actor(utah, "fragment", decl_code=fragment_shader_code_decl)
+fury.shaders.shader_to_actor(
+    utah, "fragment", impl_code=fragment_shader_code_impl, block="light"
+)
 
 ###############################################################################
 # Let's create a scene.
 
-scene = window.Scene()
+scene = fury.window.Scene()
 
 global timer
 timer = 0
@@ -98,11 +98,11 @@ def shader_callback(_caller, _event, calldata=None):
             pass
 
 
-add_shader_callback(utah, shader_callback)
+fury.shaders.add_shader_callback(utah, shader_callback)
 ###############################################################################
 # Let's add a textblock to the scene with a custom message
 
-tb = ui.TextBlock2D()
+tb = fury.ui.TextBlock2D()
 tb.message = "Hello Shaders"
 
 ###############################################################################
@@ -112,7 +112,7 @@ tb.message = "Hello Shaders"
 # manager.
 
 current_size = (1024, 720)
-showm = window.ShowManager(scene, size=current_size, reset_camera=False)
+showm = fury.window.ShowManager(scene, size=current_size, reset_camera=False)
 
 
 showm.add_timer_callback(True, 30, timer_callback)
@@ -124,4 +124,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(showm.scene, size=current_size, out_path="viz_shader.png")
+fury.window.record(showm.scene, size=current_size, out_path="viz_shader.png")

@@ -42,23 +42,22 @@ import time
 
 import numpy as np
 
-from fury import actor, window
-from fury.stream.widget import Widget
+import fury
 
 interactive = False
 window_size = (720, 500)
 N = 4
 centers = np.random.normal(size=(N, 3))
 colors = np.random.uniform(0.1, 1.0, size=(N, 3))
-actors = actor.sphere(centers, opacity=0.5, radii=0.4, colors=colors)
-scene = window.Scene()
+actors = fury.actor.sphere(centers, opacity=0.5, radii=0.4, colors=colors)
+scene = fury.window.Scene()
 scene.add(actors)
-showm = window.ShowManager(scene, size=(window_size[0], window_size[1]))
+showm = fury.window.ShowManager(scene, size=(window_size[0], window_size[1]))
 
 ##########################################################################
 # Create a stream widget
 
-widget = Widget(showm, port=8000)
+widget = fury.stream.Widget(showm, port=8000)
 
 # if you want to use webRTC, you can pass the argument to choose this encoding
 # which is a more robust option.
@@ -86,4 +85,4 @@ else:
     time.sleep(time_sleep)
     widget.stop()
 
-window.record(showm.scene, size=window_size, out_path="viz_widget.png")
+fury.window.record(showm.scene, size=window_size, out_path="viz_widget.png")

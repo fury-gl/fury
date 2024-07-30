@@ -18,8 +18,7 @@ from os.path import join as pjoin
 
 import numpy as np
 
-from fury import actor, colormap as cmap, window
-from fury.utils import compute_bounds, update_actor, vertices_from_actor
+import fury
 
 ###############################################################################
 # This demo has two modes.
@@ -72,7 +71,7 @@ category2index = {category: i for i, category in enumerate(np.unique(categories)
 
 index2category = np.unique(categories)
 
-category_colors = cmap.distinguishable_colormap(nb_colors=len(index2category))
+category_colors = fury.colormap.distinguishable_colormap(nb_colors=len(index2category))
 
 colors = np.array(
     [category_colors[category2index[category]] for category in categories]
@@ -98,12 +97,12 @@ edges_colors = np.average(np.array(edges_colors), axis=1)
 # build 2 actors that we represent our data : sphere_actor for the nodes and
 # lines_actor for the edges.
 
-sphere_actor = actor.sphere(
+sphere_actor = fury.actor.sphere(
     centers=np.zeros(positions.shape), colors=colors, radii=radii * 0.5, theta=8, phi=8
 )
 
 
-lines_actor = actor.line(
+lines_actor = fury.actor.line(
     np.zeros((len(edges), 2, 3)),
     colors=edges_colors,
     lod=False,
@@ -129,7 +128,7 @@ def new_layout_timer(
     b = 1.0
     deltaT = 1.0
 
-    sphere_geometry = np.array(vertices_from_actor(sphere_actor))
+    sphere_geometry = np.array(fury.utils.vertices_from_actor(sphere_actor))
     geometry_length = sphere_geometry.shape[0] / vertices_count
 
     if vertex_initial_positions is not None:
@@ -199,18 +198,18 @@ def new_layout_timer(
             iterate(1)
         else:
             pos[:] += (np.random.random(pos.shape) - 0.5) * 1.5
-        spheres_positions = vertices_from_actor(sphere_actor)
+        spheres_positions = fury.utils.vertices_from_actor(sphere_actor)
         spheres_positions[:] = sphere_geometry + np.repeat(pos, geometry_length, axis=0)
 
-        edges_positions = vertices_from_actor(lines_actor)
+        edges_positions = fury.utils.vertices_from_actor(lines_actor)
         edges_positions[::2] = pos[edges_list[:, 0]]
         edges_positions[1::2] = pos[edges_list[:, 1]]
 
-        update_actor(lines_actor)
-        compute_bounds(lines_actor)
+        fury.utils.update_actor(lines_actor)
+        fury.utils.compute_bounds(lines_actor)
 
-        update_actor(sphere_actor)
-        compute_bounds(lines_actor)
+        fury.utils.update_actor(sphere_actor)
+        fury.utils.compute_bounds(lines_actor)
         showm.scene.reset_clipping_range()
         showm.render()
 
@@ -225,7 +224,7 @@ def new_layout_timer(
 # lines_actor and sphere_actor.
 
 
-scene = window.Scene()
+scene = fury.window.Scene()
 
 camera = scene.camera()
 
@@ -238,7 +237,7 @@ scene.add(sphere_actor)
 # parameter max_iteractions of the timer callback to let the animation run for
 # more time.
 
-showm = window.ShowManager(
+showm = fury.window.ShowManager(
     scene, reset_camera=False, size=(900, 768), order_transparent=True, multi_samples=8
 )
 
@@ -255,4 +254,4 @@ showm.add_timer_callback(True, 16, timer_callback)
 
 showm.start()
 
-window.record(showm.scene, size=(900, 768), out_path="viz_animated_networks.png")
+fury.window.record(showm.scene, size=(900, 768), out_path="viz_animated_networks.png")

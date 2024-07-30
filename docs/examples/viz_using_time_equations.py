@@ -8,21 +8,20 @@ Tutorial on making keyframe-based animation in FURY using custom functions.
 
 import numpy as np
 
-from fury import actor, window
-from fury.animation import Animation
+import fury
 
-scene = window.Scene()
+scene = fury.window.Scene()
 
-showm = window.ShowManager(
+showm = fury.window.ShowManager(
     scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 
 
-cube = actor.cube(np.array([[0, 0, 0]]), (0, 0, 0), (1, 0, 1), scales=6)
+cube = fury.actor.cube(np.array([[0, 0, 0]]), (0, 0, 0), (1, 0, 1), scales=6)
 
 ###############################################################################
 # Creating an ``Animation`` to animate the actor and show its motion path.
-anim = Animation(length=2 * np.pi, loop=True, motion_path_res=200)
+anim = fury.animation.Animation(length=2 * np.pi, loop=True, motion_path_res=200)
 
 ###############################################################################
 # Adding the sphere actor to the timeline
@@ -77,4 +76,6 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path="viz_keyframe_animation_evaluators.png", size=(900, 768))
+fury.window.record(
+    scene, out_path="viz_keyframe_animation_evaluators.png", size=(900, 768)
+)

@@ -15,7 +15,7 @@ import itertools
 import numpy as np
 import pybullet as p
 
-from fury import actor, ui, utils, window
+import fury
 
 # Next, we initialize a pybullet client to render the physics.
 # We use `DIRECT` mode to initialize pybullet without a GUI.
@@ -35,7 +35,7 @@ base_position = np.array([0, 0, -0.1])
 base_orientation = np.array([0, 0, 0, 1])
 
 # Render a BASE plane to support the Dominoes.
-base_actor = actor.box(
+base_actor = fury.actor.box(
     centers=np.array([[0, 0, 0]]),
     directions=[0, 0, 0],
     scales=base_size,
@@ -94,7 +94,7 @@ for i in range(number_of_dominoes):
     p.changeDynamics(dominos[i], -1, lateralFriction=0.2, restitution=0.1)
 
 
-domino_actor = actor.box(
+domino_actor = fury.actor.box(
     centers=domino_centers,
     directions=domino_directions,
     scales=domino_sizes,
@@ -103,13 +103,13 @@ domino_actor = actor.box(
 
 ###############################################################################
 # Now, we define a scene and add actors to it.
-scene = window.Scene()
-scene.add(actor.axes())
+scene = fury.window.Scene()
+scene.add(fury.actor.axes())
 scene.add(base_actor)
 scene.add(domino_actor)
 
 # Create show manager.
-showm = window.ShowManager(
+showm = fury.window.ShowManager(
     scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 
@@ -128,7 +128,7 @@ base_actor.SetPosition(*base_pos)
 
 
 # Calculate the vertices of the dominos.
-vertices = utils.vertices_from_actor(domino_actor)
+vertices = fury.utils.vertices_from_actor(domino_actor)
 num_vertices = vertices.shape[0]
 num_objects = domino_centers.shape[0]
 sec = int(num_vertices / num_objects)
@@ -173,7 +173,7 @@ def sync_domino(object_index, multibody):
 # Here, we define a textblock to display the Avg. FPS and simulation steps.
 
 fpss = np.array([])
-tb = ui.TextBlock2D(
+tb = fury.ui.TextBlock2D(
     text="Avg. FPS: \nSim Steps: ", position=(0, 680), font_size=30, color=(1, 0.5, 0)
 )
 scene.add(tb)
@@ -224,7 +224,7 @@ def timer_callback(_obj, _event):
     # Updating the position and orientation of individual dominos.
     for idx, domino in enumerate(dominos):
         sync_domino(idx, domino)
-    utils.update_actor(domino_actor)
+    fury.utils.update_actor(domino_actor)
 
     # Simulate a step.
     p.stepSimulation()
@@ -244,4 +244,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path="viz_domino.png", size=(900, 768))
+fury.window.record(scene, out_path="viz_domino.png", size=(900, 768))

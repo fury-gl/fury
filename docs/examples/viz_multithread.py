@@ -15,29 +15,29 @@ import time
 
 import numpy as np
 
-from fury import actor, ui, window
+import fury
 
 # Preparing to draw some spheres
 xyz = 10 * (np.random.random((100, 3)) - 0.5)
 colors = np.random.random((100, 4))
 radii = np.random.random(100) + 0.5
 
-scene = window.Scene()
-sphere_actor = actor.sphere(
+scene = fury.window.Scene()
+sphere_actor = fury.actor.sphere(
     centers=xyz, colors=colors, radii=radii, use_primitive=False
 )
 scene.add(sphere_actor)
 
 
 # Preparing the show manager as usual
-showm = window.ShowManager(
+showm = fury.window.ShowManager(
     scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 
 # showm.initialize()
 
 # Creating a text block to show a message and reset the camera
-tb = ui.TextBlock2D(bold=True)
+tb = fury.ui.TextBlock2D(bold=True)
 scene.add(tb)
 scene.ResetCamera()
 
@@ -77,7 +77,7 @@ def add_remove_axes():
     for i in range(100):
         if showm.lock_current():
             if current_axes is None:
-                current_axes = actor.axes(scale=(0.20 * i, 0.20 * i, 0.20 * i))
+                current_axes = fury.actor.axes(scale=(0.20 * i, 0.20 * i, 0.20 * i))
                 scene.add(current_axes)
                 pass
             else:

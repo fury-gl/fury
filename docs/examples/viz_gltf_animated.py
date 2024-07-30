@@ -6,16 +6,14 @@ In this tutorial, we will show how to display a simple animated glTF in a
 scene.
 """
 
-from fury import window
-from fury.data import fetch_gltf, read_viz_gltf
-from fury.gltf import glTF
+import fury
 
 ##############################################################################
 # Create a scene.
 
-scene = window.Scene()
+scene = fury.window.Scene()
 
-showm = window.ShowManager(
+showm = fury.window.ShowManager(
     scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 showm.initialize()
@@ -23,14 +21,14 @@ showm.initialize()
 
 ##############################################################################
 # Retrieving the gltf model.
-fetch_gltf("InterpolationTest", "glTF")
-filename = read_viz_gltf("InterpolationTest")
+fury.data.fetch_gltf("InterpolationTest", "glTF")
+filename = fury.data.read_viz_gltf("InterpolationTest")
 
 ##############################################################################
 # Initialize the glTF object and get actors using `actors` method.
 # Get the main_timeline (which contains multiple Timeline objects).
 
-gltf_obj = glTF(filename)
+gltf_obj = fury.gltf.glTF(filename)
 timeline = gltf_obj.main_animation()
 
 ##############################################################################
@@ -54,4 +52,4 @@ showm.add_timer_callback(True, 10, timer_callback)
 if interactive:
     showm.start()
 
-window.record(scene, out_path="viz_gltf_animated.png", size=(900, 768))
+fury.window.record(scene, out_path="viz_gltf_animated.png", size=(900, 768))

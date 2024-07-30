@@ -18,14 +18,13 @@ animations.
 
 import numpy as np
 
-from fury import actor, window
-from fury.animation import Animation, Timeline
+import fury
 
 ###############################################################################
 # We create our ``Scene`` and ``ShowManager`` as usual.
-scene = window.Scene()
+scene = fury.window.Scene()
 
-showm = window.ShowManager(scene, size=(900, 768))
+showm = fury.window.ShowManager(scene, size=(900, 768))
 showm.initialize()
 
 ###############################################################################
@@ -37,12 +36,12 @@ showm.initialize()
 
 ###############################################################################
 # Creating a ``Timeline`` with a PlaybackPanel.
-timeline = Timeline(playback_panel=True)
+timeline = fury.animation.Timeline(playback_panel=True)
 
 ###############################################################################
 # Creating a Fury Animation as usual
-anim = Animation()
-sphere = actor.sphere(np.zeros([1, 3]), np.ones([1, 3]))
+anim = fury.animation.Animation()
+sphere = fury.actor.sphere(np.zeros([1, 3]), np.ones([1, 3]))
 anim.add_actor(sphere)
 # Now that the actor is add to the ``Animation``, setting keyframes to the
 # Animation will animate the actor accordingly.
@@ -88,4 +87,6 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path="viz_keyframe_animation_timeline.png", size=(900, 768))
+fury.window.record(
+    scene, out_path="viz_keyframe_animation_timeline.png", size=(900, 768)
+)

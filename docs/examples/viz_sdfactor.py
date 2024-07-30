@@ -16,7 +16,7 @@ shapes using shaders
 
 import numpy as np
 
-from fury import actor, window
+import fury
 
 ###############################################################################
 # Lets define variables for the SDF Actor
@@ -30,7 +30,7 @@ scales = np.random.rand(4, 1)
 ###############################################################################
 # Create SDF Actor
 
-sdfactor = actor.sdf(
+sdfactor = fury.actor.sdf(
     centers=centers,
     directions=dirs,
     colors=colors,
@@ -41,7 +41,7 @@ sdfactor = actor.sdf(
 ##############################################################################
 # Create a scene
 
-scene = window.Scene()
+scene = fury.window.Scene()
 scene.background((1.0, 0.8, 0.8))
 scene.add(sdfactor)
 
@@ -53,11 +53,11 @@ scene.add(sdfactor)
 # manager.
 
 current_size = (1024, 720)
-showm = window.ShowManager(scene, size=current_size, title="Visualize SDF Actor")
+showm = fury.window.ShowManager(scene, size=current_size, title="Visualize SDF Actor")
 
 interactive = False
 
 if interactive:
     showm.start()
 
-window.record(scene, out_path="viz_sdfactor.png", size=current_size)
+fury.window.record(scene, out_path="viz_sdfactor.png", size=current_size)

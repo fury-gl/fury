@@ -12,13 +12,12 @@ First, some imports.
 
 import numpy as np
 
-from fury import actor, ui, window
-from fury.data import fetch_viz_icons
+import fury
 
 ##############################################################################
 # First we need to fetch some icons that are included in FURY.
 
-fetch_viz_icons()
+fury.data.fetch_viz_icons()
 
 ###############################################################################
 # Cube and sliders
@@ -26,7 +25,7 @@ fetch_viz_icons()
 #
 # Add a cube to the scene .
 
-cube = actor.cube(
+cube = fury.actor.cube(
     centers=np.array([[15, 0, 0]]),
     colors=np.array([[0, 0, 1]]),
     scales=np.array([[20, 20, 20]]),
@@ -37,11 +36,11 @@ cube = actor.cube(
 # Now we'll add five sliders: 1 circular and 4 linear sliders.
 # By default the alignments are 'bottom' for horizontal and 'top' for vertical.
 
-ring_slider = ui.RingSlider2D(
+ring_slider = fury.ui.RingSlider2D(
     center=(630, 400), initial_value=0, text_template="{angle:5.1f}°"
 )
 
-hor_line_slider_text_top = ui.LineSlider2D(
+hor_line_slider_text_top = fury.ui.LineSlider2D(
     center=(400, 230),
     initial_value=0,
     orientation="horizontal",
@@ -50,7 +49,7 @@ hor_line_slider_text_top = ui.LineSlider2D(
     text_alignment="top",
 )
 
-hor_line_slider_text_bottom = ui.LineSlider2D(
+hor_line_slider_text_bottom = fury.ui.LineSlider2D(
     center=(400, 200),
     initial_value=0,
     orientation="horizontal",
@@ -59,7 +58,7 @@ hor_line_slider_text_bottom = ui.LineSlider2D(
     text_alignment="bottom",
 )
 
-ver_line_slider_text_left = ui.LineSlider2D(
+ver_line_slider_text_left = fury.ui.LineSlider2D(
     center=(100, 400),
     initial_value=0,
     orientation="vertical",
@@ -68,7 +67,7 @@ ver_line_slider_text_left = ui.LineSlider2D(
     text_alignment="left",
 )
 
-ver_line_slider_text_right = ui.LineSlider2D(
+ver_line_slider_text_right = fury.ui.LineSlider2D(
     center=(150, 400),
     initial_value=0,
     orientation="vertical",
@@ -118,7 +117,7 @@ ver_line_slider_text_right.on_change = translate_cube_ver
 # manager.
 
 current_size = (800, 800)
-show_manager = window.ShowManager(size=current_size, title="FURY Cube Example")
+show_manager = fury.window.ShowManager(size=current_size, title="FURY Cube Example")
 
 show_manager.scene.add(cube)
 show_manager.scene.add(ring_slider)
@@ -150,4 +149,4 @@ interactive = False
 if interactive:
     show_manager.start()
 
-window.record(show_manager.scene, size=current_size, out_path="viz_slider.png")
+fury.window.record(show_manager.scene, size=current_size, out_path="viz_slider.png")

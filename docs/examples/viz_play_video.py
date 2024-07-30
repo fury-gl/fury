@@ -12,7 +12,7 @@ import time
 import cv2
 import numpy as np
 
-from fury import actor, window
+import fury
 
 
 # The VideoCapturer Class
@@ -48,16 +48,16 @@ class VideoPlayer:
         # Initialize Scene
         self.initialize_scene()
         # Create a Show Manager and Initialize it
-        self.show_manager = window.ShowManager(
+        self.show_manager = fury.window.ShowManager(
             self.scene, size=(900, 768), reset_camera=False, order_transparent=True
         )
 
     # Initialize the Scene with actors
     def initialize_scene(self):
-        self.scene = window.Scene()
+        self.scene = fury.window.Scene()
         # Initialize a Plane actor with the 1st video frame along with
         # the actor grid which is to be updated in each iteration
-        self.plane_actor = actor.texture(self.current_video_frame)
+        self.plane_actor = fury.actor.texture(self.current_video_frame)
         self.scene.add(self.plane_actor)
 
     # The timer_callback function getting called by the show manager
@@ -66,7 +66,7 @@ class VideoPlayer:
         if isinstance(self.current_video_frame, np.ndarray):
             # update texture of the actor with the current frame image
             # by updating the actor grid
-            actor.texture_update(self.plane_actor, self.current_video_frame)
+            fury.actor.texture_update(self.plane_actor, self.current_video_frame)
             self.show_manager.scene.azimuth(1.5)  # to rotate the camera
         else:
             self.show_manager.exit()
@@ -90,4 +90,6 @@ video_url = (
 )
 vp = VideoPlayer(video_url)
 vp.run()
-window.record(vp.show_manager.scene, out_path="viz_play_video.png", size=(600, 600))
+fury.window.record(
+    vp.show_manager.scene, out_path="viz_play_video.png", size=(600, 600)
+)

@@ -13,7 +13,7 @@ When the objects are picked they will change size and color.
 
 import numpy as np
 
-from fury import actor, pick, ui, utils, window
+import fury
 
 centers = 0.5 * np.array([[0, 0, 0], [100, 0, 0], [200, 0, 0.0]])
 colors = np.array([[0.8, 0, 0], [0, 0.8, 0], [0, 0, 0.8]])
@@ -24,18 +24,18 @@ selected = np.zeros(3, dtype=bool)
 ###############################################################################
 # Let's create a panel to show what is picked
 
-panel = ui.Panel2D(size=(400, 200), color=(1, 0.5, 0.0), align="right")
+panel = fury.ui.Panel2D(size=(400, 200), color=(1, 0.5, 0.0), align="right")
 panel.center = (150, 200)
 
-text_block = ui.TextBlock2D(text="Left click on object \n")
+text_block = fury.ui.TextBlock2D(text="Left click on object \n")
 panel.add_element(text_block, (0.3, 0.3))
 
 ###############################################################################
 # Build scene and add an actor with many objects.
 
-scene = window.Scene()
+scene = fury.window.Scene()
 
-label_actor = actor.vector_text(text="Test")
+label_actor = fury.actor.vector_text(text="Test")
 
 ###############################################################################
 # This actor is made with 3 cubes of different orientation
@@ -47,23 +47,23 @@ directions = np.array(
         [0, np.sqrt(2) / 2, np.sqrt(2) / 2],
     ]
 )
-fury_actor = actor.cube(centers, directions, colors, scales=radii)
+fury_actor = fury.actor.cube(centers, directions, colors, scales=radii)
 
 ###############################################################################
 # Access the memory of the vertices of all the cubes
 
-vertices = utils.vertices_from_actor(fury_actor)
+vertices = fury.utils.vertices_from_actor(fury_actor)
 num_vertices = vertices.shape[0]
 num_objects = centers.shape[0]
 
 ###############################################################################
 # Access the memory of the colors of all the cubes
 
-vcolors = utils.colors_from_actor(fury_actor, "colors")
+vcolors = fury.utils.colors_from_actor(fury_actor, "colors")
 
 ###############################################################################
 # Adding an actor showing the axes of the world coordinates
-ax = actor.axes(scale=(10, 10, 10))
+ax = fury.actor.axes(scale=(10, 10, 10))
 
 scene.add(fury_actor)
 scene.add(label_actor)
@@ -73,7 +73,7 @@ scene.reset_camera()
 ###############################################################################
 # Create the Picking manager
 
-pickm = pick.PickingManager()
+pickm = fury.pick.PickingManager()
 
 ###############################################################################
 # Time to make the callback which will be called when we pick an object
@@ -117,7 +117,7 @@ def left_click_callback(obj, event):
     vcolors[object_index * sec : object_index * sec + sec] += color_add
 
     # Tell actor that memory is modified
-    utils.update_actor(fury_actor)
+    fury.utils.update_actor(fury_actor)
 
     face_index = picked_info["face"]
 
@@ -139,7 +139,7 @@ fury_actor.AddObserver("LeftButtonPressEvent", left_click_callback, 1)
 ###############################################################################
 # Make the window appear
 
-showm = window.ShowManager(scene, size=(1024, 768), order_transparent=True)
+showm = fury.window.ShowManager(scene, size=(1024, 768), order_transparent=True)
 
 scene.add(panel)
 
@@ -155,4 +155,4 @@ if interactive:
 ###############################################################################
 # Save the current framebuffer in a PNG file
 
-window.record(showm.scene, size=(1024, 768), out_path="viz_picking.png")
+fury.window.record(showm.scene, size=(1024, 768), out_path="viz_picking.png")

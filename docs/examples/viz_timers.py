@@ -17,24 +17,24 @@ import itertools
 
 import numpy as np
 
-from fury import actor, ui, window
+import fury
 
 xyz = 10 * np.random.rand(100, 3)
 colors = np.random.rand(100, 4)
 radii = np.random.rand(100) + 0.5
 
-scene = window.Scene()
+scene = fury.window.Scene()
 
-sphere_actor = actor.sphere(centers=xyz, colors=colors, radii=radii)
+sphere_actor = fury.actor.sphere(centers=xyz, colors=colors, radii=radii)
 
 scene.add(sphere_actor)
 
-showm = window.ShowManager(
+showm = fury.window.ShowManager(
     scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 
 
-tb = ui.TextBlock2D(bold=True)
+tb = fury.ui.TextBlock2D(bold=True)
 
 # use itertools to avoid global variables
 counter = itertools.count()
@@ -66,4 +66,4 @@ timer_id = showm.add_timer_callback(True, 200, timer_callback)
 
 showm.start()
 
-window.record(showm.scene, size=(900, 768), out_path="viz_timer.png")
+fury.window.record(showm.scene, size=(900, 768), out_path="viz_timer.png")

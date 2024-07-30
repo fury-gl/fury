@@ -15,18 +15,17 @@ First, some imports.
 
 import numpy as np
 
-from fury import actor, ui, window
-from fury.data import fetch_viz_icons
+import fury
 
 ##############################################################################
 # First we need to fetch some icons that are included in FURY.
 
-fetch_viz_icons()
+fury.data.fetch_viz_icons()
 
 ###############################################################################
 # First, we create the Tab UI.
 
-tab_ui = ui.TabUI(position=(49, 94), size=(300, 300), nb_tabs=3, draggable=True)
+tab_ui = fury.ui.TabUI(position=(49, 94), size=(300, 300), nb_tabs=3, draggable=True)
 
 ###############################################################################
 # We can also define the position of the Tab Bar.
@@ -40,9 +39,9 @@ tab_ui.tab_bar_pos = "bottom"
 #
 # Now we prepare content for the first tab.
 
-ring_slider = ui.RingSlider2D(initial_value=0, text_template="{angle:5.1f}°")
+ring_slider = fury.ui.RingSlider2D(initial_value=0, text_template="{angle:5.1f}°")
 
-line_slider_x = ui.LineSlider2D(
+line_slider_x = fury.ui.LineSlider2D(
     initial_value=0,
     min_value=-10,
     max_value=10,
@@ -50,7 +49,7 @@ line_slider_x = ui.LineSlider2D(
     text_alignment="Top",
 )
 
-line_slider_y = ui.LineSlider2D(
+line_slider_y = fury.ui.LineSlider2D(
     initial_value=0,
     min_value=-10,
     max_value=10,
@@ -58,7 +57,7 @@ line_slider_y = ui.LineSlider2D(
     text_alignment="Right",
 )
 
-cube = actor.box(
+cube = fury.actor.box(
     centers=np.array([[10, 0, 0]]),
     directions=np.array([[0, 1, 0]]),
     colors=np.array([[0, 0, 1]]),
@@ -105,17 +104,17 @@ tab_ui.add_element(0, line_slider_y, (0.0, 0.1))
 #
 # Now we prepare content for second tab.
 
-cylinder = actor.cylinder(
+cylinder = fury.actor.cylinder(
     centers=np.array([[0, 0, 0]]),
     directions=np.array([[1, 1, 0]]),
     colors=np.array([[0, 1, 1]]),
     radius=1.0,
 )
 
-sphere = actor.sphere(centers=np.array([[5, 0, 0]]), colors=(1, 1, 0))
+sphere = fury.actor.sphere(centers=np.array([[5, 0, 0]]), colors=(1, 1, 0))
 
 figure_dict = {"cylinder": cylinder, "sphere": sphere}
-checkbox = ui.Checkbox(labels=["cylinder", "sphere"])
+checkbox = fury.ui.Checkbox(labels=["cylinder", "sphere"])
 
 
 # Get difference between two lists.
@@ -149,7 +148,7 @@ tab_ui.add_element(1, checkbox, (0.2, 0.2))
 #
 # Now we prepare content for third tab.
 
-label = ui.TextBlock2D(
+label = fury.ui.TextBlock2D(
     position=(600, 300),
     font_size=40,
     color=(1, 0.5, 0),
@@ -168,7 +167,7 @@ colors = {
     "Red": (1, 0, 0),
 }
 
-color_combobox = ui.ComboBox2D(
+color_combobox = fury.ui.ComboBox2D(
     items=list(colors.keys()),
     placeholder="Choose Text Color",
     size=(250, 150),
@@ -228,7 +227,7 @@ tab_ui.on_collapse = collapse
 ###############################################################################
 # Next we prepare the scene and render it with the help of show manager.
 
-sm = window.ShowManager(size=(800, 500), title="Viz Tab")
+sm = fury.window.ShowManager(size=(800, 500), title="Viz Tab")
 sm.scene.add(tab_ui, cube, cylinder, sphere, label)
 
 # To interact with the ui set interactive = True
@@ -237,4 +236,4 @@ interactive = False
 if interactive:
     sm.start()
 
-window.record(sm.scene, size=(500, 500), out_path="viz_tab.png")
+fury.window.record(sm.scene, size=(500, 500), out_path="viz_tab.png")
