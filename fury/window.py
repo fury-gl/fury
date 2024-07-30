@@ -32,11 +32,6 @@ from fury.lib import (
 from fury.shaders.base import GL_NUMBERS as _GL
 from fury.utils import asbytes
 
-try:
-    _ = basestring  # type: ignore
-except NameError:
-    basestring = str
-
 
 class Scene(OpenGLRenderer):
     """Your scene class.
@@ -1289,7 +1284,7 @@ def analyze_snapshot(
         information about what was found in the current snapshot array ``im``.
 
     """
-    if isinstance(im, basestring):
+    if isinstance(im, str):
         im = load_image(im)
 
     class ReportSnapshot:
