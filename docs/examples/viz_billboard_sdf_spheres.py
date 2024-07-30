@@ -286,7 +286,7 @@ else:
 ###############################################################################
 # References
 # ----------
-# .. [Hart1996] Hart, John C. "Sphere tracing: A geometric method for the
+# .. _[Hart1996] Hart, John C. "Sphere tracing: A geometric method for the
 #               antialiased ray tracing of implicit surfaces." The Visual
 #               Computer 12.10 (1996): 527-545.
 #
