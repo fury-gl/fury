@@ -17,9 +17,16 @@ __all__ = [
     "Widget",
     "check_port_is_available",
     "server",
+    "client",
+    "tools",
 ]
 
-from . import server
+from . import (
+    client,
+    server,
+    tools,
+    widget as widget,
+)
 from .client import FuryStreamClient, FuryStreamInteraction, interaction_callback
 from .tools import (
     ArrayCircularQueue,

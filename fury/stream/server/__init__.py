@@ -1,3 +1,3 @@
-from fury.stream.server.main import web_server, web_server_raw_array
+import lazy_loader as lazy
 
-__all__ = ["web_server", "web_server_raw_array"]
+__getattr__, __dir__, __all__ = lazy.attach_stub(__name__, __file__)
