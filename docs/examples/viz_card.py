@@ -9,7 +9,7 @@ This example shows how to create a card.
 First, some imports.
 """
 
-from fury import ui, window
+import fury
 from fury.data import fetch_viz_icons
 
 ##############################################################################
@@ -31,7 +31,7 @@ body = (
     "A software library for scientific visualization in Python."
 )
 
-card = ui.elements.Card2D(
+card = fury.ui.elements.Card2D(
     image_path=img_url,
     title_text=title,
     body_text=body,
@@ -48,7 +48,7 @@ card = ui.elements.Card2D(
 # manager.
 
 current_size = (1000, 1000)
-show_manager = window.ShowManager(size=current_size, title="FURY Card Example")
+show_manager = fury.window.ShowManager(size=current_size, title="FURY Card Example")
 
 show_manager.scene.add(card)
 # To interact with the UI, set interactive = True
@@ -57,4 +57,4 @@ interactive = False
 if interactive:
     show_manager.start()
 
-window.record(show_manager.scene, out_path="card_ui.png", size=(1000, 1000))
+fury.window.record(show_manager.scene, out_path="card_ui.png", size=(1000, 1000))

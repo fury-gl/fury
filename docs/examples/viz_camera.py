@@ -6,9 +6,9 @@ Keyframe animation: Camera and opacity
 Camera and opacity keyframe animation explained in this tutorial.
 """
 
+import fury
 import numpy as np
 
-from fury import actor, window
 from fury.animation import Animation, CameraAnimation, Timeline
 from fury.animation.interpolator import cubic_spline_interpolator
 
@@ -19,9 +19,9 @@ from fury.animation.interpolator import cubic_spline_interpolator
 # The plan here is to animate (scale and translate) 50 spheres randomly, and
 # show `FURY` text that appears at the end!
 
-scene = window.Scene()
+scene = fury.window.Scene()
 
-showm = window.ShowManager(
+showm = fury.window.ShowManager(
     scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 
@@ -48,10 +48,10 @@ timeline = Timeline(playback_panel=True)
 
 ###############################################################################
 # Creating two actors for visualization, and to detect camera's animations.
-arrow = actor.arrow(
+arrow = fury.actor.arrow(
     np.array([[0, 0, 0]]), np.array([[0, 1, 0]]), np.array([[1, 1, 0]]), scales=5
 )
-plan = actor.box(
+plan = fury.actor.box(
     np.array([[0, 0, 0]]),
     colors=np.array([[1, 1, 1]]),
     scales=np.array([[20, 0.2, 20]]),
@@ -60,7 +60,7 @@ plan = actor.box(
 ###############################################################################
 # Creating "FURY" text
 # ====================
-fury_text = actor.vector_text("FURY", pos=(-4.3, 15, 0), scale=(2, 2, 2))
+fury_text = fury.actor.vector_text("FURY", pos=(-4.3, 15, 0), scale=(2, 2, 2))
 
 ###############################################################################
 # Creating an ``Animation`` to animate the opacity of ``fury_text``
@@ -86,7 +86,7 @@ for _ in range(50):
     # create a sphere actor that's centered at the origin and has random color
     # and radius.
     actors = [
-        actor.sphere(
+        fury.actor.sphere(
             np.array([[0, 0, 0]]), np.random.random([1, 3]), np.random.random([1, 3])
         )
     ]
@@ -176,4 +176,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path="viz_keyframe_animation_camera.png", size=(900, 768))
+fury.window.record(scene, out_path="viz_keyframe_animation_camera.png", size=(900, 768))

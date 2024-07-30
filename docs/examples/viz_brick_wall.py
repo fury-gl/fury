@@ -14,8 +14,7 @@ import itertools
 
 import numpy as np
 import pybullet as p
-
-from fury import actor, ui, utils, window
+import fury
 
 ###############################################################################
 # Next, we initialize a pybullet client to render the physics. We use `DIRECT`
@@ -54,7 +53,7 @@ brick_size = np.array([0.2, 0.4, 0.2])
 # Now we define the required parameters to render the Ball.
 
 # Ball actor
-ball_actor = actor.sphere(
+ball_actor = fury.actor.sphere(
     centers=np.array([[0, 0, 0]]), colors=ball_color, radii=ball_radius
 )
 
@@ -75,7 +74,7 @@ p.changeDynamics(ball, -1, lateralFriction=0.3, restitution=0.5)
 ###############################################################################
 # Render a base plane to support the bricks.
 
-base_actor = actor.box(
+base_actor = fury.actor.box(
     centers=np.array([[0, 0, 0]]),
     directions=[0, 0, 0],
     scales=base_size,
@@ -132,7 +131,7 @@ for k in range(wall_height):
         p.changeDynamics(bricks[i], -1, lateralFriction=0.1, restitution=0.1)
         i += 1
 
-brick_actor = actor.box(
+brick_actor = fury.actor.box(
     centers=brick_centers,
     directions=brick_directions,
     scales=brick_sizes,
@@ -142,14 +141,14 @@ brick_actor = actor.box(
 ###############################################################################
 # Now, we define a scene and add actors to it.
 
-scene = window.Scene()
-scene.add(actor.axes())
+scene = fury.window.Scene()
+scene.add(fury.actor.axes())
 scene.add(ball_actor)
 scene.add(base_actor)
 scene.add(brick_actor)
 
 # Create show manager.
-showm = window.ShowManager(
+showm = fury.window.ShowManager(
     scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 
@@ -172,7 +171,7 @@ ball_pos, _ = p.getBasePositionAndOrientation(ball)
 ball_actor.SetPosition(*ball_pos)
 
 # Calculate the vertices of the bricks.
-vertices = utils.vertices_from_actor(brick_actor)
+vertices = fury.utils.vertices_from_actor(brick_actor)
 num_vertices = vertices.shape[0]
 num_objects = brick_centers.shape[0]
 sec = int(num_vertices / num_objects)
@@ -230,7 +229,7 @@ def sync_actor(actor, multibody):
 # Here, we define a textblock to display the Avg. FPS and simulation steps.
 
 fpss = np.array([])
-tb = ui.TextBlock2D(
+tb = fury.ui.TextBlock2D(
     text="Avg. FPS: \nSim Steps: ", position=(0, 680), font_size=30, color=(1, 0.5, 0)
 )
 scene.add(tb)
@@ -280,7 +279,7 @@ def timer_callback(_obj, _event):
     # Updating the position and orientation of each individual brick.
     for idx, brick in enumerate(bricks):
         sync_brick(idx, brick)
-    utils.update_actor(brick_actor)
+    fury.utils.update_actor(brick_actor)
 
     # Simulate a step.
     p.stepSimulation()
@@ -300,4 +299,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path="viz_brick_wall.png", size=(900, 768))
+fury.window.record(scene, out_path="viz_brick_wall.png", size=(900, 768))

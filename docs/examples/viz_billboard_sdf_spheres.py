@@ -32,15 +32,14 @@ Let's start by importing the necessary modules:
 
 import os
 
+import fury
 import numpy as np
-
-from fury import actor, window
 from fury.shaders import compose_shader, import_fury_shader
 from fury.utils import represent_actor_as_wireframe
 
 ###############################################################################
 # Now set up a new scene to place our actors in.
-scene = window.Scene()
+scene = fury.window.Scene()
 
 ###############################################################################
 # This tutorial is divided into two parts. First, we will render spheres in the
@@ -66,7 +65,7 @@ colors = np.array(
     [[1, 1, 0], [1, 0, 1], [0, 0, 1], [1, 1, 1], [1, 0, 0], [0, 1, 0], [0, 1, 1]]
 )
 scales = np.array([6, 1.2, 1, 0.2, 0.7, 3, 2])
-spheres_actor = actor.sphere(
+spheres_actor = fury.actor.sphere(
     centers, colors, radii=scales, phi=8, theta=8, use_primitive=False
 )
 
@@ -79,9 +78,9 @@ scene.add(spheres_actor)
 interactive = False
 
 if interactive:
-    window.show(scene)
+    fury.window.show(scene)
 else:
-    window.record(scene, size=(600, 600), out_path="viz_regular_spheres.png")
+    fury.window.record(scene, size=(600, 600), out_path="viz_regular_spheres.png")
 
 ###############################################################################
 # Now, let's explore our scene to understand what we have created. Traditional
@@ -91,23 +90,23 @@ else:
 represent_actor_as_wireframe(spheres_actor)
 
 if interactive:
-    window.show(scene)
+    fury.window.show(scene)
 else:
-    window.record(scene, size=(600, 600), out_path="viz_low_res_wireframe.png")
+    fury.window.record(scene, size=(600, 600), out_path="viz_low_res_wireframe.png")
 
 ###############################################################################
 # Let's clean the scene and play with the parameters `phi` and `theta`.
 scene.clear()
-spheres_actor = actor.sphere(
+spheres_actor = fury.actor.sphere(
     centers, colors, radii=scales, phi=16, theta=16, use_primitive=False
 )
 represent_actor_as_wireframe(spheres_actor)
 scene.add(spheres_actor)
 
 if interactive:
-    window.show(scene)
+    fury.window.show(scene)
 else:
-    window.record(scene, size=(600, 600), out_path="viz_hi_res_wireframe.png")
+    fury.window.record(scene, size=(600, 600), out_path="viz_hi_res_wireframe.png")
 
 ###############################################################################
 # As you might have noticed, these parameters control the resolution of the
@@ -131,14 +130,14 @@ scene.clear()
 ###############################################################################
 # The billboard actor is suited and continuously improved to render SDFs. To
 # create and visualize it, we can use the following instructions:
-billboards_actor = actor.billboard(centers, colors=colors, scales=scales)
+billboards_actor = fury.actor.billboard(centers, colors=colors, scales=scales)
 represent_actor_as_wireframe(billboards_actor)
 scene.add(billboards_actor)
 
 if interactive:
-    window.show(scene)
+    fury.window.show(scene)
 else:
-    window.record(scene, size=(600, 600), out_path="viz_billboards_wireframe.png")
+    fury.window.record(scene, size=(600, 600), out_path="viz_billboards_wireframe.png")
 
 ###############################################################################
 # If you interacted with this actor, you might have noticed how it always
@@ -180,15 +179,15 @@ fs_impl = compose_shader([sphere_dist, sdf_eval])
 
 ###############################################################################
 # We are ready to create and visualize our SDF-billboard actors.
-spheres_actor = actor.billboard(
+spheres_actor = fury.actor.billboard(
     centers, colors=colors, scales=scales, fs_dec=fs_dec, fs_impl=fs_impl
 )
 scene.add(spheres_actor)
 
 if interactive:
-    window.show(scene)
+    fury.window.show(scene)
 else:
-    window.record(scene, size=(600, 600), out_path="viz_billboards_circles.png")
+    fury.window.record(scene, size=(600, 600), out_path="viz_billboards_circles.png")
 
 ###############################################################################
 # Hold on, those actors don't look exactly like the ones we created using
@@ -273,15 +272,15 @@ fs_impl = compose_shader(
 
 ###############################################################################
 # Finally, recreate the SDF billboard actors and visualize them.
-spheres_actor = actor.billboard(
+spheres_actor = fury.actor.billboard(
     centers, colors=colors, scales=scales, fs_dec=fs_dec, fs_impl=fs_impl
 )
 scene.add(spheres_actor)
 
 if interactive:
-    window.show(scene)
+    fury.window.show(scene)
 else:
-    window.record(scene, size=(600, 600), out_path="viz_billboards_spheres.png")
+    fury.window.record(scene, size=(600, 600), out_path="viz_billboards_spheres.png")
 
 ###############################################################################
 # References
