@@ -33,7 +33,7 @@ from fury.shaders.base import GL_NUMBERS as _GL
 from fury.utils import asbytes
 
 try:
-    _ = basestring
+    _ = basestring  # type: ignore
 except NameError:
     basestring = str
 

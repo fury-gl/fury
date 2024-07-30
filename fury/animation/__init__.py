@@ -1,8 +1,3 @@
-from fury.animation.animation import Animation, CameraAnimation
-from fury.animation.timeline import Timeline
+import lazy_loader as lazy
 
-__all__ = [
-    "Animation",
-    "CameraAnimation",
-    "Timeline",
-]
+__getattr__, __dir__, __all__ = lazy.attach_stub(__name__, __file__)
