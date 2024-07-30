@@ -12,8 +12,7 @@ First, a bunch of imports.
 
 import numpy as np
 
-from fury import actor, ui, window
-from fury.data import fetch_viz_icons, read_viz_icons
+import fury
 
 ###############################################################################
 # Shapes
@@ -21,17 +20,19 @@ from fury.data import fetch_viz_icons, read_viz_icons
 #
 # Let's start by drawing some simple shapes. First, a rectangle.
 
-rect = ui.Rectangle2D(size=(200, 200), position=(400, 300), color=(1, 0, 1))
+rect = fury.ui.Rectangle2D(size=(200, 200), position=(400, 300), color=(1, 0, 1))
 
 ###############################################################################
 # Then we can draw a solid circle, or disk.
 
-disk = ui.Disk2D(outer_radius=50, center=(500, 500), color=(1, 1, 0))
+disk = fury.ui.Disk2D(outer_radius=50, center=(500, 500), color=(1, 1, 0))
 
 ###############################################################################
 # Add an inner radius to make a ring.
 
-ring = ui.Disk2D(outer_radius=50, inner_radius=45, center=(500, 300), color=(0, 1, 1))
+ring = fury.ui.Disk2D(
+    outer_radius=50, inner_radius=45, center=(500, 300), color=(0, 1, 1)
+)
 
 ###############################################################################
 # Image
@@ -40,13 +41,13 @@ ring = ui.Disk2D(outer_radius=50, inner_radius=45, center=(500, 300), color=(0, 
 # Now let's display an image. First we need to fetch some icons that are
 # included in FURY.
 
-fetch_viz_icons()
+fury.data.fetch_viz_icons()
 
 ###############################################################################
 # Now we can create an image container.
 
-img = ui.ImageContainer2D(
-    img_path=read_viz_icons(fname="home3.png"), position=(450, 350)
+img = fury.ui.ImageContainer2D(
+    img_path=fury.data.read_viz_icons(fname="home3.png"), position=(450, 350)
 )
 
 ###############################################################################
@@ -56,15 +57,15 @@ img = ui.ImageContainer2D(
 # Let's create some buttons and text and put them in a panel. First we'll
 # make the panel.
 
-panel = ui.Panel2D(size=(300, 150), color=(1, 1, 1), align="right")
+panel = fury.ui.Panel2D(size=(300, 150), color=(1, 1, 1), align="right")
 panel.center = (500, 400)
 
 ###############################################################################
 # Then we'll make two text labels and place them on the panel.
 # Note that we specify the position with integer numbers of pixels.
 
-text = ui.TextBlock2D(text="Click me")
-text2 = ui.TextBlock2D(text="Me too")
+text = fury.ui.TextBlock2D(text="Click me")
+text2 = fury.ui.TextBlock2D(text="Me too")
 panel.add_element(text, (50, 100))
 panel.add_element(text2, (180, 100))
 
@@ -75,17 +76,17 @@ panel.add_element(text2, (180, 100))
 # percentages of the panel size.
 
 
-button_example = ui.Button2D(
-    icon_fnames=[("square", read_viz_icons(fname="stop2.png"))]
+button_example = fury.ui.Button2D(
+    icon_fnames=[("square", fury.data.read_viz_icons(fname="stop2.png"))]
 )
 
 icon_files = []
-icon_files.append(("down", read_viz_icons(fname="circle-down.png")))
-icon_files.append(("left", read_viz_icons(fname="circle-left.png")))
-icon_files.append(("up", read_viz_icons(fname="circle-up.png")))
-icon_files.append(("right", read_viz_icons(fname="circle-right.png")))
+icon_files.append(("down", fury.data.read_viz_icons(fname="circle-down.png")))
+icon_files.append(("left", fury.data.read_viz_icons(fname="circle-left.png")))
+icon_files.append(("up", fury.data.read_viz_icons(fname="circle-up.png")))
+icon_files.append(("right", fury.data.read_viz_icons(fname="circle-right.png")))
 
-second_button_example = ui.Button2D(icon_fnames=icon_files)
+second_button_example = fury.ui.Button2D(icon_fnames=icon_files)
 
 panel.add_element(button_example, (0.25, 0.33))
 panel.add_element(second_button_example, (0.66, 0.33))
@@ -114,7 +115,7 @@ second_button_example.on_left_mouse_button_pressed = change_icon_callback
 # Let's add a cube to the scene and control it with sliders.
 
 
-cube = actor.cube(
+cube = fury.actor.cube(
     centers=np.array([[15, 0, 0]]),
     colors=np.array([[0, 0, 1]]),
     scales=np.array([[20, 20, 20]]),
@@ -124,11 +125,11 @@ cube = actor.cube(
 ###############################################################################
 # Now we'll add three sliders: one circular and two linear.
 
-ring_slider = ui.RingSlider2D(
+ring_slider = fury.ui.RingSlider2D(
     center=(740, 400), initial_value=0, text_template="{angle:5.1f}°"
 )
 
-line_slider_x = ui.LineSlider2D(
+line_slider_x = fury.ui.LineSlider2D(
     center=(500, 250),
     initial_value=0,
     min_value=-10,
@@ -136,7 +137,7 @@ line_slider_x = ui.LineSlider2D(
     orientation="horizontal",
 )
 
-line_slider_y = ui.LineSlider2D(
+line_slider_y = fury.ui.LineSlider2D(
     center=(650, 350),
     initial_value=0,
     min_value=-10,
@@ -187,7 +188,7 @@ line_slider_y.on_change = translate_cube_y
 # Finally, we can add a range slider. This element is composed of two sliders.
 # The first slider has two handles which let you set the range of the second.
 
-range_slider_x = ui.RangeSlider(
+range_slider_x = fury.ui.RangeSlider(
     line_width=8,
     handle_side=25,
     range_slider_center=(450, 450),
@@ -201,7 +202,7 @@ range_slider_x = ui.RangeSlider(
     shape="square",
 )
 
-range_slider_y = ui.RangeSlider(
+range_slider_y = fury.ui.RangeSlider(
     line_width=8,
     handle_side=25,
     range_slider_center=(750, 400),
@@ -263,7 +264,7 @@ values = [
 ###############################################################################
 # Now we can create the menu.
 
-listbox = ui.ListBox2D(
+listbox = fury.ui.ListBox2D(
     values=values, position=(10, 300), size=(300, 200), multiselection=False
 )
 
@@ -291,7 +292,7 @@ listbox.on_change = display_element
 # manager.
 
 current_size = (800, 800)
-show_manager = window.ShowManager(size=current_size, title="FURY UI Example")
+show_manager = fury.window.ShowManager(size=current_size, title="FURY UI Example")
 
 show_manager.scene.add(listbox)
 for example in examples:
@@ -309,4 +310,4 @@ interactive = False
 if interactive:
     show_manager.start()
 
-window.record(show_manager.scene, size=current_size, out_path="viz_ui.png")
+fury.window.record(show_manager.scene, size=current_size, out_path="viz_fury.ui.png")

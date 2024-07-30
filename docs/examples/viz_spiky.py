@@ -9,7 +9,7 @@ import itertools
 
 import numpy as np
 
-from fury import actor, primitive, utils, window
+import fury
 
 ##############################################################################
 # Create a sphere actor. Define the center, radius and color of a sphere.
@@ -17,27 +17,27 @@ from fury import actor, primitive, utils, window
 # sphere.
 # Let's create a scene.
 
-scene = window.Scene()
+scene = fury.window.Scene()
 
 ##############################################################################
 # The vertices are connected with triangles in order to specify the direction
 # of the surface normal.
 # ``prim_sphere`` provides a sphere with evenly distributed points
 
-vertices, triangles = primitive.prim_sphere(name="symmetric362", gen_faces=False)
+vertices, triangles = fury.primitive.prim_sphere(name="symmetric362", gen_faces=False)
 
 ##############################################################################
 # To be able to visualize the vertices, let's define a point actor with
 # green color.
 
-point_actor = actor.point(vertices, point_radius=0.01, colors=(0, 1, 0))
+point_actor = fury.actor.point(vertices, point_radius=0.01, colors=(0, 1, 0))
 
 ##############################################################################
 # Normals are the vectors that are perpendicular to the surface at each
 # vertex. We specify the normals at the vertices to tell the system
 # whether triangles represent curved surfaces.
 
-normals = utils.normals_from_v_f(vertices, triangles)
+normals = fury.utils.normals_from_v_f(vertices, triangles)
 
 ##############################################################################
 # The normals are usually used to calculate how the light will bounce on
@@ -45,7 +45,7 @@ normals = utils.normals_from_v_f(vertices, triangles)
 # spikes (represented with arrows).
 # So, let's create an arrow actor at the center of each vertex.
 
-arrow_actor = actor.arrow(
+arrow_actor = fury.actor.arrow(
     centers=vertices,
     directions=normals,
     colors=(1, 0, 0),
@@ -61,7 +61,7 @@ arrow_actor = actor.arrow(
 
 primitive_colors = np.zeros(vertices.shape)
 primitive_colors[:, 2] = 180
-primitive_actor = utils.get_actor_from_primitive(
+primitive_actor = fury.utils.get_actor_from_primitive(
     vertices=vertices,
     triangles=triangles,
     colors=primitive_colors,
@@ -75,13 +75,13 @@ primitive_actor = utils.get_actor_from_primitive(
 scene.add(point_actor)
 scene.add(arrow_actor)
 scene.add(primitive_actor)
-scene.add(actor.axes())
+scene.add(fury.actor.axes())
 
 ##############################################################################
 # The ShowManager class is the interface between the scene, the window and the
 # interactor.
 
-showm = window.ShowManager(
+showm = fury.window.ShowManager(
     scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 
@@ -108,7 +108,7 @@ def timer_callback(_obj, _event):
 
 showm.add_timer_callback(True, 200, timer_callback)
 showm.start()
-window.record(showm.scene, size=(900, 768), out_path="viz_spiky.png")
+fury.window.record(showm.scene, size=(900, 768), out_path="viz_spiky.png")
 
 ##############################################################################
 # Instead of arrows, you can choose other geometrical objects

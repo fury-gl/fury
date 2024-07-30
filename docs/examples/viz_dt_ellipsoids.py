@@ -16,28 +16,25 @@ import itertools
 from dipy.io.image import load_nifti
 import numpy as np
 
-from fury import actor, ui, window
-from fury.actor import _color_fa, _fa
-from fury.data import fetch_viz_dmri, read_viz_dmri
-from fury.primitive import prim_sphere
+import fury
 
 ###############################################################################
 # Now, we fetch and load the data needed to display the Diffusion Tensor
 # Images.
 
-fetch_viz_dmri()
+fury.data.fetch_viz_dmri()
 
 ###############################################################################
 # The tensor ellipsoids are expressed as eigenvalues and eigenvectors which are
 # the decomposition of the diffusion tensor that describes the water diffusion
 # within a voxel.
 
-slice_evecs, _ = load_nifti(read_viz_dmri("slice_evecs.nii.gz"))
-slice_evals, _ = load_nifti(read_viz_dmri("slice_evals.nii.gz"))
-roi_evecs, _ = load_nifti(read_viz_dmri("roi_evecs.nii.gz"))
-roi_evals, _ = load_nifti(read_viz_dmri("roi_evals.nii.gz"))
-whole_brain_evecs, _ = load_nifti(read_viz_dmri("whole_brain_evecs.nii.gz"))
-whole_brain_evals, _ = load_nifti(read_viz_dmri("whole_brain_evals.nii.gz"))
+slice_evecs, _ = load_nifti(fury.data.read_viz_dmri("slice_evecs.nii.gz"))
+slice_evals, _ = load_nifti(fury.data.read_viz_dmri("slice_evals.nii.gz"))
+roi_evecs, _ = load_nifti(fury.data.read_viz_dmri("roi_evecs.nii.gz"))
+roi_evals, _ = load_nifti(fury.data.read_viz_dmri("roi_evals.nii.gz"))
+whole_brain_evecs, _ = load_nifti(fury.data.read_viz_dmri("whole_brain_evecs.nii.gz"))
+whole_brain_evals, _ = load_nifti(fury.data.read_viz_dmri("whole_brain_evals.nii.gz"))
 
 ###############################################################################
 # Using tensor_slicer actor
@@ -49,7 +46,7 @@ whole_brain_evals, _ = load_nifti(read_viz_dmri("whole_brain_evals.nii.gz"))
 # vertices that made up the sphere, which have a standard number of 100, 200,
 # and 724 vertices.
 
-vertices, faces = prim_sphere("repulsion100", True)
+vertices, faces = fury.prim_sphere("repulsion100", True)
 
 
 ###############################################################################
@@ -70,7 +67,7 @@ sphere100 = Sphere(vertices, faces)
 # brain slice. We also define the scale so that the tensors are not so large
 # and overlap each other.
 
-tensor_slice = actor.tensor_slicer(
+tensor_slice = fury.actor.tensor_slicer(
     evals=slice_evals, evecs=slice_evecs, sphere=sphere100, scale=0.3
 )
 
@@ -78,12 +75,12 @@ tensor_slice = actor.tensor_slicer(
 # Next, we set up a new scene to add and visualize the tensor ellipsoids
 # created.
 
-scene = window.Scene()
+scene = fury.window.Scene()
 scene.background([255, 255, 255])
 scene.add(tensor_slice)
 
 # Create show manager
-showm = window.ShowManager(scene, size=(600, 600))
+showm = fury.window.ShowManager(scene, size=(600, 600))
 
 # Enables/disables interactive visualization
 interactive = False
@@ -91,7 +88,7 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(showm.scene, size=(600, 600), out_path="tensor_slice_100.png")
+fury.window.record(showm.scene, size=(600, 600), out_path="tensor_slice_100.png")
 
 ###############################################################################
 # If we zoom in at the scene to see with detail the tensor ellipsoids displayed
@@ -99,14 +96,14 @@ window.record(showm.scene, size=(600, 600), out_path="tensor_slice_100.png")
 
 scene.roll(10)
 scene.pitch(90)
-showm = window.ShowManager(scene, size=(600, 600), order_transparent=True)
+showm = fury.window.ShowManager(scene, size=(600, 600), order_transparent=True)
 showm.scene.zoom(50)
 
 if interactive:
     showm.render()
     showm.start()
 
-window.record(
+fury.window.record(
     showm.scene,
     out_path="tensor_slice_100_zoom.png",
     size=(600, 300),
@@ -151,7 +148,7 @@ def get_params(evecs, evals):
     # coloring in tensor_slicer that is uses _color_fa that is a way to map
     # colors to each tensor based on the fractional anisotropy (FA) of each
     # diffusion tensor.
-    colors = _color_fa(_fa(fevals), fevecs)
+    colors = fury.actor._color_fa(fury.actor._fa(fevals), fevecs)
 
     return centers, fevecs, fevals, colors
 
@@ -166,7 +163,7 @@ centers, evecs, evals, colors = get_params(slice_evecs, slice_evals)
 # Now, we can use the ``ellipsoid`` actor to create the tensor ellipsoids as
 # follows.
 
-tensors = actor.ellipsoid(
+tensors = fury.actor.ellipsoid(
     centers=centers, colors=colors, axes=evecs, lengths=evals, scales=0.6
 )
 showm.scene.add(tensors)
@@ -174,7 +171,7 @@ showm.scene.add(tensors)
 if interactive:
     showm.start()
 
-window.record(scene, size=(600, 600), out_path="tensor_slice_sdf.png")
+fury.window.record(scene, size=(600, 600), out_path="tensor_slice_sdf.png")
 
 ###############################################################################
 # Thus, one can see that the same result is obtained, however there is a
@@ -185,14 +182,14 @@ window.record(scene, size=(600, 600), out_path="tensor_slice_sdf.png")
 
 scene.roll(10)
 scene.pitch(90)
-showm = window.ShowManager(scene, size=(600, 600), order_transparent=True)
+showm = fury.window.ShowManager(scene, size=(600, 600), order_transparent=True)
 showm.scene.zoom(50)
 
 if interactive:
     showm.render()
     showm.start()
 
-window.record(
+fury.window.record(
     showm.scene,
     out_path="tensor_slice_sdf_zoom.png",
     size=(600, 300),
@@ -224,17 +221,23 @@ evecs = np.zeros((1, 1, 1, 3, 3))
 evals[..., :] = mevals
 evecs[..., :, :] = mevecs
 
-vertices, faces = prim_sphere("repulsion200", True)
+vertices, faces = fury.prim_sphere("repulsion200", True)
 sphere200 = Sphere(vertices, faces)
-vertices, faces = prim_sphere("repulsion724", True)
+vertices, faces = fury.prim_sphere("repulsion724", True)
 sphere724 = Sphere(vertices, faces)
 
-tensor_100 = actor.tensor_slicer(evals=evals, evecs=evecs, sphere=sphere100, scale=1.0)
-tensor_200 = actor.tensor_slicer(evals=evals, evecs=evecs, sphere=sphere200, scale=1.0)
-tensor_724 = actor.tensor_slicer(evals=evals, evecs=evecs, sphere=sphere724, scale=1.0)
+tensor_100 = fury.actor.tensor_slicer(
+    evals=evals, evecs=evecs, sphere=sphere100, scale=1.0
+)
+tensor_200 = fury.actor.tensor_slicer(
+    evals=evals, evecs=evecs, sphere=sphere200, scale=1.0
+)
+tensor_724 = fury.actor.tensor_slicer(
+    evals=evals, evecs=evecs, sphere=sphere724, scale=1.0
+)
 
 centers, evecs, evals, colors = get_params(evecs=evecs, evals=evals)
-tensor_sdf = actor.ellipsoid(
+tensor_sdf = fury.actor.ellipsoid(
     centers=centers, axes=evecs, lengths=evals, colors=colors, scales=2.0
 )
 
@@ -244,13 +247,13 @@ tensor_sdf = actor.ellipsoid(
 
 objects = [tensor_100, tensor_200, tensor_724, tensor_sdf]
 text = [
-    actor.vector_text("Tensor 100"),
-    actor.vector_text("Tensor 200"),
-    actor.vector_text("Tensor 724"),
-    actor.vector_text("Tensor SDF"),
+    fury.actor.vector_text("Tensor 100"),
+    fury.actor.vector_text("Tensor 200"),
+    fury.actor.vector_text("Tensor 724"),
+    fury.actor.vector_text("Tensor SDF"),
 ]
 
-grid_ui = ui.GridUI(
+grid_ui = fury.ui.GridUI(
     actors=objects,
     captions=text,
     cell_padding=0.1,
@@ -258,17 +261,17 @@ grid_ui = ui.GridUI(
     dim=(1, 4),
 )
 
-scene = window.Scene()
+scene = fury.window.Scene()
 scene.background([255, 255, 255])
 scene.zoom(3.5)
 scene.set_camera(position=(3.2, -20, 12), focal_point=(3.2, 0.0, 0.0))
-showm = window.ShowManager(scene, size=(560, 200))
+showm = fury.window.ShowManager(scene, size=(560, 200))
 showm.scene.add(grid_ui)
 
 if interactive:
     showm.start()
 
-window.record(
+fury.window.record(
     showm.scene,
     size=(560, 200),
     out_path="tensor_comparison.png",
@@ -285,7 +288,7 @@ showm.scene.clear()
 # ``display_extent()``. Here we can see an example of a region of interest
 # (ROI) using a sphere of 100 vertices.
 
-tensor_roi = actor.tensor_slicer(
+tensor_roi = fury.actor.tensor_slicer(
     evals=roi_evals, evecs=roi_evecs, sphere=sphere100, scale=0.3
 )
 
@@ -300,7 +303,7 @@ showm.scene.azimuth(87)
 if interactive:
     showm.start()
 
-window.record(showm.scene, size=(600, 600), out_path="tensor_roi_100.png")
+fury.window.record(showm.scene, size=(600, 600), out_path="tensor_roi_100.png")
 
 showm.scene.clear()
 
@@ -312,7 +315,7 @@ showm.scene.clear()
 
 centers, evecs, evals, colors = get_params(roi_evecs, roi_evals)
 
-tensors = actor.ellipsoid(
+tensors = fury.actor.ellipsoid(
     centers=centers, colors=colors, axes=evecs, lengths=evals, scales=0.6
 )
 showm.scene.add(tensors)
@@ -320,7 +323,7 @@ showm.scene.add(tensors)
 if interactive:
     showm.start()
 
-window.record(showm.scene, size=(600, 600), out_path="tensor_roi_sdf.png")
+fury.window.record(showm.scene, size=(600, 600), out_path="tensor_roi_sdf.png")
 
 showm.scene.clear()
 
@@ -338,19 +341,19 @@ colors = np.array(list(itertools.compress(colors, fil)))
 evecs = np.array(list(itertools.compress(evecs, fil)))
 evals = np.array(list(itertools.compress(evals, fil)))
 
-tensors = actor.ellipsoid(
+tensors = fury.actor.ellipsoid(
     centers=centers, colors=colors, axes=evecs, lengths=evals, scales=0.6
 )
 
-scene = window.Scene()
+scene = fury.window.Scene()
 scene.add(tensors)
 scene.pitch(180)
-showm = window.ShowManager(scene, size=(600, 600))
+showm = fury.window.ShowManager(scene, size=(600, 600))
 
 if interactive:
     showm.start()
 
-window.record(
+fury.window.record(
     showm.scene,
     size=(600, 600),
     reset_camera=False,

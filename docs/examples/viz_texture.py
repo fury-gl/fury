@@ -5,13 +5,12 @@ Sphere Texture
 In this tutorial, we will show how to create a sphere with a texture.
 """
 
-from fury import actor, io, window
-from fury.data import fetch_viz_textures, read_viz_textures
+import fury
 
 ##############################################################################
 # Create a scene to start.
 
-scene = window.Scene()
+scene = fury.window.Scene()
 
 ##############################################################################
 # Load an image (png, bmp, jpeg or jpg) using ``io.load_image``. In this
@@ -19,17 +18,17 @@ scene = window.Scene()
 # Earth's surface from the fury Github after using ''fetch_viz_textures()''
 # to download the available textures.
 
-fetch_viz_textures()
-filename = read_viz_textures("1_earth_8k.jpg")
-image = io.load_image(filename)
+fury.data.fetch_viz_textures()
+filename = fury.data.read_viz_textures("1_earth_8k.jpg")
+image = fury.io.load_image(filename)
 
 ##############################################################################
-# Next, use ``actor.texture_on_sphere`` to add a sphere with the texture from
+# Next, use ``fury.actor.texture_on_sphere`` to add a sphere with the texture from
 # your loaded image to the already existing scene.
 # To add a texture to your scene as visualized on a plane, use
-# ``actor.texture`` instead.
+# ``fury.actor.texture`` instead.
 
-scene.add(actor.texture_on_sphere(image))
+scene.add(fury.actor.texture_on_sphere(image))
 
 ##############################################################################
 # Lastly, record the scene, or set interactive to True if you would like to
@@ -37,5 +36,5 @@ scene.add(actor.texture_on_sphere(image))
 
 interactive = False
 if interactive:
-    window.show(scene, size=(600, 600), reset_camera=False)
-window.record(scene, size=(900, 768), out_path="viz_texture.png")
+    fury.window.show(scene, size=(600, 600), reset_camera=False)
+fury.window.record(scene, size=(900, 768), out_path="viz_texture.png")

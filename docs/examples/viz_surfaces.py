@@ -14,9 +14,7 @@ should apply for any surface.
 
 import numpy as np
 
-from fury import utils, window
-from fury.io import load_polydata, save_polydata
-from fury.lib import PolyData
+import fury
 
 ###############################################################################
 # Import useful functions
@@ -25,7 +23,7 @@ from fury.lib import PolyData
 ###############################################################################
 # Create an empty ``PolyData``
 
-my_polydata = PolyData()
+my_polydata = fury.lib.PolyData()
 
 ###############################################################################
 # Create a cube with vertices and triangles as numpy arrays
@@ -65,43 +63,43 @@ my_triangles = np.array(
 ###############################################################################
 # Set vertices and triangles in the ``PolyData``
 
-utils.set_polydata_vertices(my_polydata, my_vertices)
-utils.set_polydata_triangles(my_polydata, my_triangles)
+fury.utils.set_polydata_vertices(my_polydata, my_vertices)
+fury.utils.set_polydata_triangles(my_polydata, my_triangles)
 
 ###############################################################################
 # Save the ``PolyData``
 
 file_name = "my_cube.vtk"
-save_polydata(my_polydata, file_name)
+fury.io.save_polydata(my_polydata, file_name)
 print("Surface saved in " + file_name)
 
 ###############################################################################
 # Load the ``PolyData``
 
-cube_polydata = load_polydata(file_name)
+cube_polydata = fury.io.load_polydata(file_name)
 
 ###############################################################################
 # add color based on vertices position
 
-cube_vertices = utils.get_polydata_vertices(cube_polydata)
+cube_vertices = fury.utils.get_polydata_vertices(cube_polydata)
 colors = cube_vertices * 255
-utils.set_polydata_colors(cube_polydata, colors)
+fury.utils.set_polydata_colors(cube_polydata, colors)
 
 print("new surface colors")
-print(utils.get_polydata_colors(cube_polydata))
+print(fury.utils.get_polydata_colors(cube_polydata))
 
 ###############################################################################
 # Visualize surfaces
 
 # get Actor
-cube_actor = utils.get_actor_from_polydata(cube_polydata)
+cube_actor = fury.utils.get_actor_from_polydata(cube_polydata)
 
 # Create a scene
-scene = window.Scene()
+scene = fury.window.Scene()
 scene.add(cube_actor)
 scene.set_camera(position=(10, 5, 7), focal_point=(0.5, 0.5, 0.5))
 scene.zoom(3)
 
 # display
-# window.show(scene, size=(600, 600), reset_camera=False)
-window.record(scene, out_path="cube.png", size=(600, 600))
+# fury.window.show(scene, size=(600, 600), reset_camera=False)
+fury.window.record(scene, out_path="cube.png", size=(600, 600))

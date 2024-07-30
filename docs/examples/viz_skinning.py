@@ -6,22 +6,20 @@ In this tutorial, we will show how to use skeletal animations (skinning) in a
 glTF model in FURY.
 """
 
-from fury import window
-from fury.data import fetch_gltf, read_viz_gltf
-from fury.gltf import glTF
+import fury
 
 ##############################################################################
 # Retrieving the model with skeletal animations.
 # We're choosing the `RiggedFigure` model here.
 
-fetch_gltf("RiggedFigure", "glTF")
-filename = read_viz_gltf("RiggedFigure")
+fury.data.fetch_gltf("RiggedFigure", "glTF")
+filename = fury.data.read_viz_gltf("RiggedFigure")
 
 ##############################################################################
 # Initializing the glTF object, You can additionally set `apply_normals=True`.
 # Note: Normals might not work well as intended with skinning animations.
 
-gltf_obj = glTF(filename, apply_normals=False)
+gltf_obj = fury.gltf.glTF(filename, apply_normals=False)
 
 ##############################################################################
 # Get the skinning timeline using `skin_timeline` method, Choose the animation
@@ -43,8 +41,8 @@ gltf_obj.initialize_skin(animation, bones=False)
 # Initialize the show manager and add timeline to the scene (No need to add
 # actors to the scene separately).
 
-scene = window.Scene()
-showm = window.ShowManager(
+scene = fury.window.Scene()
+showm = fury.window.ShowManager(
     scene, size=(900, 768), reset_camera=True, order_transparent=True
 )
 showm.initialize()
@@ -73,4 +71,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path="viz_skinning.png", size=(900, 768))
+fury.window.record(scene, out_path="viz_skinning.png", size=(900, 768))

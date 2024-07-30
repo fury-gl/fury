@@ -16,9 +16,7 @@ import itertools
 
 import numpy as np
 
-from fury import actor, window
-from fury.shaders import shader_apply_effects
-from fury.utils import remove_observer_from_actor
+import fury
 
 ###############################################################################
 # We just proceed as usual: creating the actors and initializing a scene in
@@ -27,21 +25,21 @@ from fury.utils import remove_observer_from_actor
 centers = np.array([[0, 0, 0], [-0.1, 0, 0], [0.1, 0, 0]])
 colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
-actor_no_depth_test = actor.markers(
+actor_no_depth_test = fury.actor.markers(
     centers,
     marker="s",
     colors=colors,
     marker_opacity=0.5,
     scales=0.2,
 )
-actor_normal_blending = actor.markers(
+actor_normal_blending = fury.actor.markers(
     centers - np.array([[0, -0.5, 0]]),
     marker="s",
     colors=colors,
     marker_opacity=0.5,
     scales=0.2,
 )
-actor_add_blending = actor.markers(
+actor_add_blending = fury.actor.markers(
     centers - np.array([[0, -1, 0]]),
     marker="s",
     colors=colors,
@@ -49,14 +47,14 @@ actor_add_blending = actor.markers(
     scales=0.2,
 )
 
-actor_sub_blending = actor.markers(
+actor_sub_blending = fury.actor.markers(
     centers - np.array([[0, -1.5, 0]]),
     marker="s",
     colors=colors,
     marker_opacity=0.5,
     scales=0.2,
 )
-actor_mul_blending = actor.markers(
+actor_mul_blending = fury.actor.markers(
     centers - np.array([[0, -2, 0]]),
     marker="s",
     colors=colors,
@@ -65,11 +63,11 @@ actor_mul_blending = actor.markers(
 )
 
 
-scene = window.Scene()
+scene = fury.window.Scene()
 
 
 scene.background((0.5, 0.5, 0.5))
-showm = window.ShowManager(
+showm = fury.window.ShowManager(
     scene, size=(900, 768), reset_camera=False, order_transparent=False
 )
 
@@ -89,36 +87,40 @@ scene.add(actor_mul_blending)
 # Here we're using the pre-build FURY window functions which has already a
 # set of  specific behaviors to  be applied in the OpenGL context
 
-shader_apply_effects(
-    showm.window, actor_normal_blending, effects=window.gl_set_normal_blending
+fury.shaders.shader_apply_effects(
+    showm.window, actor_normal_blending, effects=fury.window.gl_set_normal_blending
 )
 
 # ###############################################################################
 #  It's also possible use a list of effects. The final opengl state it'll
 #  be the composition of each effect that each function has in the opengl state
 
-id_observer = shader_apply_effects(
+id_observer = fury.shaders.shader_apply_effects(
     showm.window,
     actor_no_depth_test,
-    effects=[window.gl_reset_blend, window.gl_disable_blend, window.gl_disable_depth],
-)
-
-shader_apply_effects(
-    showm.window,
-    actor_add_blending,
     effects=[
-        window.gl_reset_blend,
-        window.gl_enable_depth,
-        window.gl_set_additive_blending,
+        fury.window.gl_reset_blend,
+        fury.window.gl_disable_blend,
+        fury.window.gl_disable_depth,
     ],
 )
 
-shader_apply_effects(
-    showm.window, actor_sub_blending, effects=window.gl_set_subtractive_blending
+fury.shaders.shader_apply_effects(
+    showm.window,
+    actor_add_blending,
+    effects=[
+        fury.window.gl_reset_blend,
+        fury.window.gl_enable_depth,
+        fury.window.gl_set_additive_blending,
+    ],
 )
 
-shader_apply_effects(
-    showm.window, actor_mul_blending, effects=window.gl_set_multiplicative_blending
+fury.shaders.shader_apply_effects(
+    showm.window, actor_sub_blending, effects=fury.window.gl_set_subtractive_blending
+)
+
+fury.shaders.shader_apply_effects(
+    showm.window, actor_mul_blending, effects=fury.window.gl_set_multiplicative_blending
 )
 
 ###############################################################################
@@ -137,9 +139,11 @@ def timer_callback(obj, event):
     # the results of each specific opengl-state
     showm.scene.azimuth(1)
     if cnt == 400:
-        remove_observer_from_actor(actor_no_depth_test, id_observer)
-        shader_apply_effects(
-            showm.window, actor_no_depth_test, effects=window.gl_set_additive_blending
+        fury.utils.remove_observer_from_actor(actor_no_depth_test, id_observer)
+        fury.shaders.shader_apply_effects(
+            showm.window,
+            actor_no_depth_test,
+            effects=fury.window.gl_set_additive_blending,
         )
     if cnt == 1000:
         showm.exit()
@@ -150,4 +154,4 @@ showm.add_timer_callback(interactive, 5, timer_callback)
 if interactive:
     showm.start()
 
-window.record(scene, out_path="viz_fine_tuning_gl_context.png", size=(600, 600))
+fury.window.record(scene, out_path="viz_fine_tuning_gl_context.png", size=(600, 600))

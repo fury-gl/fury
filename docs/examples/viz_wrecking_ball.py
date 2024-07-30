@@ -15,7 +15,7 @@ import itertools
 import numpy as np
 import pybullet as p
 
-from fury import actor, ui, utils, window
+import fury
 
 ###############################################################################
 # Initiate pybullet and enable gravity.
@@ -52,7 +52,7 @@ joint_friction = 0.0005
 # Creating the base plane actor.
 
 # Base
-base_actor = actor.box(
+base_actor = fury.actor.box(
     centers=np.array([[0, 0, 0]]),
     directions=[0, 0, 0],
     scales=(5, 5, 0.2),
@@ -108,7 +108,7 @@ for i in range(wall_length):
             p.changeDynamics(bricks[idx], -1, lateralFriction=0.1, restitution=0.1)
             idx += 1
 
-brick_actor = actor.box(
+brick_actor = fury.actor.box(
     centers=brick_centers,
     directions=brick_directions,
     scales=brick_sizes,
@@ -160,7 +160,7 @@ link_radii[:] = radii
 link_heights = np.zeros(n_links)
 link_heights[:] = dx_link
 
-rope_actor = actor.cylinder(
+rope_actor = fury.actor.cylinder(
     centers=linkPositions,
     directions=linkDirections,
     colors=np.random.rand(n_links, 3),
@@ -213,14 +213,14 @@ root_robe_c = p.createConstraint(
     rope, -1, -1, -1, p.JOINT_FIXED, [0, 0, 0], [0, 0, 0], [0, 0, 2]
 )
 
-box_actor = actor.box(
+box_actor = fury.actor.box(
     centers=np.array([[0, 0, 0]]),
     directions=np.array([[0, 0, 0]]),
     scales=(0.02, 0.02, 0.02),
     colors=np.array([[1, 0, 0]]),
 )
 
-ball_actor = actor.sphere(
+ball_actor = fury.actor.sphere(
     centers=np.array([[0, 0, 0]]), radii=ball_radius, colors=np.array([1, 0, 1])
 )
 
@@ -228,12 +228,12 @@ ball_actor = actor.sphere(
 # Now we add the necessary actors to the scene and set the camera for better
 # visualization.
 
-scene = window.Scene()
+scene = fury.window.Scene()
 scene.set_camera((10.28, -7.10, 6.39), (0.0, 0.0, 0.4), (-0.35, 0.26, 1.0))
-scene.add(actor.axes(scale=(0.5, 0.5, 0.5)), base_actor, brick_actor)
+scene.add(fury.actor.axes(scale=(0.5, 0.5, 0.5)), base_actor, brick_actor)
 scene.add(rope_actor, box_actor, ball_actor)
 
-showm = window.ShowManager(
+showm = fury.window.ShowManager(
     scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 
@@ -247,7 +247,7 @@ base_actor.SetPosition(*base_pos)
 ###############################################################################
 # Calculate the vertices of the bricks.
 
-brick_vertices = utils.vertices_from_actor(brick_actor)
+brick_vertices = fury.utils.vertices_from_actor(brick_actor)
 num_vertices = brick_vertices.shape[0]
 num_objects = brick_centers.shape[0]
 brick_sec = int(num_vertices / num_objects)
@@ -255,7 +255,7 @@ brick_sec = int(num_vertices / num_objects)
 ###############################################################################
 # Calculate the vertices of the wrecking ball.
 
-chain_vertices = utils.vertices_from_actor(rope_actor)
+chain_vertices = fury.utils.vertices_from_actor(rope_actor)
 num_vertices = chain_vertices.shape[0]
 num_objects = brick_centers.shape[0]
 chain_sec = int(num_vertices / num_objects)
@@ -316,7 +316,7 @@ def sync_chain(actor_list, multibody):
 
 counter = itertools.count()
 fpss = np.array([])
-tb = ui.TextBlock2D(
+tb = fury.ui.TextBlock2D(
     position=(0, 680), font_size=30, color=(1, 0.5, 0), text="Avg. FPS: \nSim Steps: "
 )
 scene.add(tb)
@@ -355,8 +355,8 @@ def timer_callback(_obj, _event):
     pos = p.getLinkState(rope, p.getNumJoints(rope) - 1)[4]
     ball_actor.SetPosition(*pos)
     sync_chain(rope_actor, rope)
-    utils.update_actor(brick_actor)
-    utils.update_actor(rope_actor)
+    fury.utils.update_actor(brick_actor)
+    fury.utils.update_actor(rope_actor)
 
     # Simulate a step.
     p.stepSimulation()
@@ -375,4 +375,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, size=(900, 768), out_path="viz_wrecking_ball.png")
+fury.window.record(scene, size=(900, 768), out_path="viz_wrecking_ball.png")

@@ -12,18 +12,17 @@ First, some imports.
 
 import numpy as np
 
-from fury import actor, ui, utils, window
-from fury.data import fetch_viz_icons
+import fury
 
 ##############################################################################
 # First we need to fetch some icons that are included in FURY.
 
-fetch_viz_icons()
+fury.data.fetch_viz_icons()
 
 ###############################################################################
 # Let's create a Cone.
 
-cone = actor.cone(
+cone = fury.actor.cone(
     centers=np.random.rand(1, 3),
     directions=np.random.rand(1, 3),
     colors=(1, 1, 1),
@@ -33,7 +32,7 @@ cone = actor.cone(
 ###############################################################################
 # Creating the SpinBox UI.
 
-spinbox = ui.SpinBox(
+spinbox = fury.ui.SpinBox(
     position=(200, 100),
     size=(300, 100),
     min_val=0,
@@ -47,7 +46,7 @@ spinbox = ui.SpinBox(
 # manager.
 
 current_size = (800, 800)
-show_manager = window.ShowManager(size=current_size, title="FURY SpinBox Example")
+show_manager = fury.window.ShowManager(size=current_size, title="FURY SpinBox Example")
 
 show_manager.scene.add(cone)
 show_manager.scene.add(spinbox)
@@ -62,7 +61,7 @@ previous_value = spinbox.value
 def rotate_cone(spinbox):
     global previous_value
     change_in_value = spinbox.value - previous_value
-    utils.rotate(cone, (change_in_value, 1, 0, 0))
+    fury.utils.rotate(cone, (change_in_value, 1, 0, 0))
     previous_value = spinbox.value
 
 
@@ -76,4 +75,4 @@ interactive = False
 if interactive:
     show_manager.start()
 
-window.record(show_manager.scene, size=current_size, out_path="viz_spinbox.png")
+fury.window.record(show_manager.scene, size=current_size, out_path="viz_spinbox.png")

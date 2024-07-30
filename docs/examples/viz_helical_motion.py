@@ -20,7 +20,7 @@ import itertools
 
 import numpy as np
 
-from fury import actor, ui, utils, window
+import fury
 
 ###############################################################################
 # Let's define some variable and their description:
@@ -50,12 +50,12 @@ phase_angle = 0.002
 ###############################################################################
 # Creating a scene object and configuring the camera's position
 
-scene = window.Scene()
+scene = fury.window.Scene()
 scene.zoom(1.2)
 scene.set_camera(
     position=(10, 12.5, 19), focal_point=(3.0, 0.0, 0.0), view_up=(0.0, 0.0, 0.0)
 )
-showm = window.ShowManager(
+showm = fury.window.ShowManager(
     scene, size=(800, 600), reset_camera=True, order_transparent=True
 )
 
@@ -64,11 +64,11 @@ showm = window.ShowManager(
 # Creating a blue colored arrow which shows the direction of magnetic field and
 # electric field.
 
-color_arrow = window.colors.blue  # color of the arrow can be manipulated
+color_arrow = fury.window.colors.blue  # color of the arrow can be manipulated
 centers = np.array([[0, 0, 0]])
 directions = np.array([[1, 0, 0]])
 heights = np.array([8])
-arrow_actor = actor.arrow(
+arrow_actor = fury.actor.arrow(
     centers,
     directions,
     color_arrow,
@@ -90,13 +90,13 @@ z = np.cos(angular_frq * time + phase_angle)
 ###############################################################################
 # Initializing point actor which will represent the charged particle
 
-color_particle = window.colors.red  # color of particle can be manipulated
+color_particle = fury.window.colors.red  # color of particle can be manipulated
 pts = np.array([[x, y, z]])
-charge_actor = actor.point(pts, color_particle, point_radius=radius_particle)
+charge_actor = fury.actor.point(pts, color_particle, point_radius=radius_particle)
 scene.add(charge_actor)
 
-vertices = utils.vertices_from_actor(charge_actor)
-vcolors = utils.colors_from_actor(charge_actor, "colors")
+vertices = fury.utils.vertices_from_actor(charge_actor)
+vcolors = fury.utils.colors_from_actor(charge_actor, "colors")
 no_vertices_per_point = len(vertices)
 initial_vertices = vertices.copy() - np.repeat(pts, no_vertices_per_point, axis=0)
 
@@ -104,7 +104,7 @@ initial_vertices = vertices.copy() - np.repeat(pts, no_vertices_per_point, axis=
 ###############################################################################
 # Initializing text box to display the name of the animation
 
-tb = ui.TextBlock2D(bold=True, position=(100, 90))
+tb = fury.ui.TextBlock2D(bold=True, position=(100, 90))
 m1 = "Motion of a charged particle in a "
 m2 = "combined electric and magnetic field"
 tb.message = m1 + m2
@@ -143,13 +143,13 @@ def timer_callback(_obj, _event):
 
     vertices[:] = initial_vertices + np.repeat(pts, no_vertices_per_point, axis=0)
 
-    utils.update_actor(charge_actor)
+    fury.utils.update_actor(charge_actor)
 
     # Plotting the path followed by the particle
     coor_2 = np.array([x, y, z])
     coors = np.array([coor_1, coor_2])
     coors = [coors]
-    line_actor = actor.line(coors, window.colors.cyan, linewidth=3)
+    line_actor = fury.actor.line(coors, fury.window.colors.cyan, linewidth=3)
     scene.add(line_actor)
     coor_1 = coor_2
 
@@ -166,4 +166,4 @@ def timer_callback(_obj, _event):
 
 showm.add_timer_callback(True, 15, timer_callback)
 showm.start()
-window.record(showm.scene, size=(800, 600), out_path="viz_helical_motion.png")
+fury.window.record(showm.scene, size=(800, 600), out_path="viz_helical_motion.png")

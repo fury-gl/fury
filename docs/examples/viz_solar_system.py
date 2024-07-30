@@ -13,21 +13,24 @@ import itertools
 
 import numpy as np
 
-from fury import actor, io, ui, utils, window
-from fury.data import fetch_viz_textures, read_viz_icons, read_viz_textures
+import fury
 
 ##############################################################################
 # Create a scene to start.
 
-scene = window.Scene()
+scene = fury.window.Scene()
 
 # Create a panel and the start/pause buttons
 
-panel = ui.Panel2D(size=(300, 100), color=(1, 1, 1), align="right")
+panel = fury.ui.Panel2D(size=(300, 100), color=(1, 1, 1), align="right")
 panel.center = (400, 50)
 
-pause_button = ui.Button2D(icon_fnames=[("square", read_viz_icons(fname="pause2.png"))])
-start_button = ui.Button2D(icon_fnames=[("square", read_viz_icons(fname="play3.png"))])
+pause_button = fury.ui.Button2D(
+    icon_fnames=[("square", fury.data.read_viz_icons(fname="pause2.png"))]
+)
+start_button = fury.ui.Button2D(
+    icon_fnames=[("square", fury.data.read_viz_icons(fname="play3.png"))]
+)
 
 # Add the buttons on the panel
 
@@ -91,7 +94,7 @@ planets_data = [
     },
     {"filename": "8k_sun.jpg", "position": 0, "earth_days": 27, "scale": (5, 5, 5)},
 ]
-fetch_viz_textures()
+fury.data.fetch_viz_textures()
 
 ##############################################################################
 # To take advantage of the previously defined data structure we are going to
@@ -114,12 +117,12 @@ def init_planet(planet_data):
     planet_actor: actor
         The corresponding sphere actor with texture applied.
     """
-    planet_file = read_viz_textures(planet_data["filename"])
-    planet_image = io.load_image(planet_file)
-    planet_actor = actor.texture_on_sphere(planet_image)
+    planet_file = fury.data.read_viz_textures(planet_data["filename"])
+    planet_image = fury.io.load_image(planet_file)
+    planet_actor = fury.actor.texture_on_sphere(planet_image)
     planet_actor.SetPosition(planet_data["position"], 0, 0)
     if planet_data["filename"] != "8k_saturn_ring_alpha.png":
-        utils.rotate(planet_actor, (90, 1, 0, 0))
+        fury.utils.rotate(planet_actor, (90, 1, 0, 0))
     planet_actor.SetScale(planet_data["scale"])
     scene.add(planet_actor)
     return planet_actor
@@ -185,7 +188,7 @@ def get_orbital_position(radius, time):
 def rotate_axial(actor, time, radius):
     axis = (0, radius, 0)
     angle = 50 / time
-    utils.rotate(actor, (angle, axis[0], axis[1], axis[2]))
+    fury.utils.rotate(actor, (angle, axis[0], axis[1], axis[2]))
     return angle
 
 
@@ -198,7 +201,7 @@ scene.set_camera(position=(-20, 60, 100))
 # Next, create a ShowManager object. The ShowManager class is the interface
 # between the scene, the window and the interactor.
 
-showm = window.ShowManager(
+showm = fury.window.ShowManager(
     scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 scene.add(panel)
@@ -277,7 +280,7 @@ planet_tracks = [calculate_path(rplanet, rplanet * 85) for rplanet in r_planets]
 # This is for orbit visualization. We are using line actor for orbits.
 # After creating an actor we add it to the scene.
 
-orbit_actor = actor.line(planet_tracks, colors=(1, 1, 1), linewidth=0.1)
+orbit_actor = fury.actor.line(planet_tracks, colors=(1, 1, 1), linewidth=0.1)
 scene.add(orbit_actor)
 
 ##############################################################################
@@ -331,4 +334,6 @@ pause_button.on_left_mouse_button_clicked = pause_animation
 showm.add_timer_callback(True, 10, timer_callback)
 showm.start()
 
-window.record(showm.scene, size=(900, 768), out_path="viz_solar_system_animation.png")
+fury.window.record(
+    showm.scene, size=(900, 768), out_path="viz_solar_system_animation.png"
+)

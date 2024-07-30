@@ -5,20 +5,18 @@ Visualizing a glTF file
 In this tutorial, we will show how to display a glTF file in a scene.
 """
 
-from fury import window
-from fury.data import fetch_gltf, read_viz_gltf
-from fury.gltf import glTF
+import fury
 
 ##############################################################################
 # Create a scene.
 
-scene = window.Scene()
+scene = fury.window.Scene()
 scene.SetBackground(0.1, 0.1, 0.4)
 
 ##############################################################################
 # Retrieving the gltf model.
-fetch_gltf("Duck", "glTF")
-filename = read_viz_gltf("Duck")
+fury.data.fetch_gltf("Duck", "glTF")
+filename = fury.data.read_viz_gltf("Duck")
 
 ##############################################################################
 # Initialize the glTF object and get actors using `actors` method.
@@ -26,7 +24,7 @@ filename = read_viz_gltf("Duck")
 # or materials manually afterwards.
 # Experimental: For smooth mesh/actor you can set `apply_normals=True`.
 
-gltf_obj = glTF(filename, apply_normals=False)
+gltf_obj = fury.gltf.glTF(filename, apply_normals=False)
 actors = gltf_obj.actors()
 
 ##############################################################################
@@ -44,6 +42,6 @@ if cameras:
 interactive = False
 
 if interactive:
-    window.show(scene, size=(1280, 720))
+    fury.window.show(scene, size=(1280, 720))
 
-window.record(scene, out_path="viz_gltf.png", size=(1280, 720))
+fury.window.record(scene, out_path="viz_gltf.png", size=(1280, 720))

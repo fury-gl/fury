@@ -5,22 +5,20 @@ Morphing Animation in a glTF
 In this tutorial, we will show how to use morphing in a glTF model in FURY.
 """
 
-from fury import window
-from fury.data import fetch_gltf, read_viz_gltf
-from fury.gltf import glTF
+import fury
 
 ##############################################################################
 # Retrieving the model with morphing in it (look at Khronoos samples).
 # We're choosing the `MorphStressTest` model here.
 
-fetch_gltf("MorphStressTest", "glTF")
-filename = read_viz_gltf("MorphStressTest")
+fury.data.fetch_gltf("MorphStressTest", "glTF")
+filename = fury.data.read_viz_gltf("MorphStressTest")
 
 ##############################################################################
 # Initializing the glTF object, You can additionally set `apply_normals=True`.
 # Note: Normals might not work as intended with morphing.
 
-gltf_obj = glTF(filename, apply_normals=True)
+gltf_obj = fury.gltf.glTF(filename, apply_normals=True)
 
 ##############################################################################
 # Get the morph timeline using `morph_timeline` method, Choose the animation
@@ -40,8 +38,8 @@ gltf_obj.update_morph(animation)
 # Initialize the show manager and add timeline to the scene (No need to add
 # actors to the scene separately).
 
-scene = window.Scene()
-showm = window.ShowManager(
+scene = fury.window.Scene()
+showm = fury.window.ShowManager(
     scene, size=(900, 768), reset_camera=True, order_transparent=True
 )
 
@@ -71,4 +69,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path="viz_morphing.png", size=(900, 768))
+fury.window.record(scene, out_path="viz_morphing.png", size=(900, 768))

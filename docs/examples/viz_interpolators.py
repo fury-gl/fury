@@ -15,9 +15,7 @@ Minimal tutorial of making keyframe-based animation in FURY.
 
 import numpy as np
 
-from fury import actor, window
-from fury.animation import Animation
-from fury.animation.interpolator import cubic_spline_interpolator
+import fury
 
 keyframes = {
     1.0: {"value": np.array([0, 0, 0])},
@@ -43,7 +41,7 @@ keyframes = {
 # Below there is an example on how to use interpolators manually to interpolate
 # the above defined ``keyframes``.
 
-interpolation_function = cubic_spline_interpolator(keyframes)
+interpolation_function = fury.animation.cubic_spline_interpolator(keyframes)
 
 ###############################################################################
 # Now, if we feed any time to this function it would return the cubic
@@ -61,21 +59,21 @@ position = interpolation_function(1.44434)
 # In order to make any animations in FURY, a `ShowManager` is needed to handle
 # updating the animation and rendering the scene.
 
-scene = window.Scene()
+scene = fury.window.Scene()
 
-showm = window.ShowManager(
+showm = fury.window.ShowManager(
     scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 showm.initialize()
 
-arrow = actor.arrow(np.array([[0, 0, 0]]), (0, 0, 0), (1, 0, 1), scales=6)
+arrow = fury.actor.arrow(np.array([[0, 0, 0]]), (0, 0, 0), (1, 0, 1), scales=6)
 
 ###############################################################################
 # Creating an ``Animation``
 # =========================
 #
 # First step is creating the Animation.
-animation = Animation()
+animation = fury.animation.Animation()
 
 ###############################################################################
 # Adding the sphere actor to the timeline
@@ -104,7 +102,7 @@ animation.set_position(9.0, np.array([10, 6, 20]))
 #
 # Below we set the interpolator for position keyframes to be
 # **cubic spline interpolator**.
-animation.set_position_interpolator(cubic_spline_interpolator)
+animation.set_position_interpolator(fury.animation.cubic_spline_interpolator)
 
 ###############################################################################
 # Adding some rotation keyframes.
@@ -133,4 +131,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path="viz_keyframe_interpolator.png", size=(900, 768))
+fury.window.record(scene, out_path="viz_keyframe_interpolator.png", size=(900, 768))

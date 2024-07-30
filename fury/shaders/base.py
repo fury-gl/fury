@@ -1,7 +1,7 @@
 from functools import partial
 import os
 
-from fury import enable_warnings
+import fury
 from fury.decorators import warn_on_args_to_kwargs
 from fury.deprecator import deprecate_with_version
 from fury.io import load_text
@@ -239,7 +239,7 @@ def shader_to_actor(
         impl_code = block_impl + "\n" + impl_code
 
     if debug:
-        enable_warnings()
+        fury.enable_warnings()
         error_msg = "\n\n--- DEBUG: THIS LINE GENERATES AN ERROR ---\n\n"
         impl_code += error_msg
 

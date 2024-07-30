@@ -53,6 +53,8 @@ jobs:
       USE_PRE: ${{ matrix.use-pre }}
       COVERAGE: ${{ matrix.coverage }}
       PRE_WHEELS: "https://pypi.anaconda.org/scipy-wheels-nightly/simple"
+      # EAGER_IMPORT: 1  # to explore what is the issue.
+
 
     steps:
     - uses: actions/checkout@v4

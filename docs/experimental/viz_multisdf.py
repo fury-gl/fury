@@ -46,7 +46,7 @@ mapper.AddShaderReplacement(
     vtk.vtkShader.Fragment, '//VTK::Light::Impl', True, fs_impl_code, False
 )
 
-scene = window.Scene()
+scene = fury.window.Scene()
 scene.background((1.0, 0.8, 0.8))
 centers = np.array([[0, 0, 0]])
 
@@ -61,7 +61,7 @@ def timer_callback(obj, event):
     showm.render()
 
 
-@window.vtk.calldata_type(window.vtk.VTK_OBJECT)
+@fury.window.vtk.calldata_type(fury.window.vtk.VTK_OBJECT)
 def vtk_shader_callback(caller, event, calldata=None):
     program = calldata
     global timer
@@ -72,15 +72,15 @@ def vtk_shader_callback(caller, event, calldata=None):
             pass
 
 
-mapper.AddObserver(window.vtk.vtkCommand.UpdateShaderEvent, vtk_shader_callback)
+mapper.AddObserver(fury.window.vtk.vtkCommand.UpdateShaderEvent, vtk_shader_callback)
 
-showm = window.ShowManager(scene, reset_camera=False)
+showm = fury.window.ShowManager(scene, reset_camera=False)
 
 
 showm.add_timer_callback(True, 10, timer_callback)
 
 
 scene.add(sdfactor)
-scene.add(actor.axes())
+scene.add(fury.actor.axes())
 
 showm.start()

@@ -21,7 +21,7 @@ import math
 
 import numpy as np
 
-from fury import primitive, ui, utils, window
+import fury
 
 ###############################################################################
 # Before we create our first fractal, let's set some ground rules for us to
@@ -64,7 +64,7 @@ def tetrix(N):
     offset = (4**N - 1) // 3 + 1
 
     # just need the vertices
-    U, _ = primitive.prim_tetrahedron()
+    U, _ = fury.primitive.prim_tetrahedron()
 
     def gen_centers(depth, pos, center, dist):
         if depth == N:
@@ -78,7 +78,7 @@ def tetrix(N):
     # the division by sqrt(6) is to ensure correct scale
     gen_centers(0, 1, np.zeros(3), 2 / (6**0.5))
 
-    vertices, faces = primitive.prim_tetrahedron()
+    vertices, faces = fury.primitive.prim_tetrahedron()
 
     # primitive is scaled down depending on level
     vertices /= 2 ** (N - 1)
@@ -87,10 +87,10 @@ def tetrix(N):
     bounds_min, bounds_max = np.min(centers, axis=0), np.max(centers, axis=0)
     colors = (centers - bounds_min) / (bounds_max - bounds_min)
 
-    vertices, triangles, colors, _ = primitive.repeat_primitive(
+    vertices, triangles, colors, _ = fury.primitive.repeat_primitive(
         centers=centers, colors=colors, vertices=vertices, faces=faces
     )
-    return utils.get_actor_from_primitive(vertices, triangles, colors)
+    return fury.utils.get_actor_from_primitive(vertices, triangles, colors)
 
 
 ###############################################################################
@@ -149,16 +149,16 @@ def sponge(N):
 
     gen_centers(0, 1, np.zeros(3), 1 / 3)
 
-    vertices, faces = primitive.prim_box()
+    vertices, faces = fury.primitive.prim_box()
     vertices /= 3**N
 
     bounds_min, bounds_max = np.min(centers, axis=0), np.max(centers, axis=0)
     colors = (centers - bounds_min) / (bounds_max - bounds_min)
 
-    vertices, triangles, colors, _ = primitive.repeat_primitive(
+    vertices, triangles, colors, _ = fury.primitive.repeat_primitive(
         centers=centers, colors=colors, vertices=vertices, faces=faces
     )
-    return utils.get_actor_from_primitive(vertices, triangles, colors)
+    return fury.utils.get_actor_from_primitive(vertices, triangles, colors)
 
 
 ###############################################################################
@@ -204,24 +204,24 @@ def snowflake(N):
 
     gen_centers(0, 1, np.zeros(3), 1 / 3)
 
-    vertices, faces = primitive.prim_box()
+    vertices, faces = fury.primitive.prim_box()
     vertices /= 3**N
 
     bounds_min, bounds_max = np.min(centers, axis=0), np.max(centers, axis=0)
     colors = (centers - bounds_min) / (bounds_max - bounds_min)
 
-    vertices, triangles, colors, _ = primitive.repeat_primitive(
+    vertices, triangles, colors, _ = fury.primitive.repeat_primitive(
         centers=centers, colors=colors, vertices=vertices, faces=faces
     )
-    return utils.get_actor_from_primitive(vertices, triangles, colors)
+    return fury.utils.get_actor_from_primitive(vertices, triangles, colors)
 
 
 ###############################################################################
 # Now that we have the functions to generate fractals, we can start setting up
 # the Scene and ShowManager.
 
-scene = window.Scene()
-showmgr = window.ShowManager(scene, "Fractals", (800, 800), reset_camera=True)
+scene = fury.window.Scene()
+showmgr = fury.window.ShowManager(scene, "Fractals", (800, 800), reset_camera=True)
 
 ###############################################################################
 # These values are what work nicely on my machine without lagging. If you have
@@ -240,7 +240,7 @@ options = {
     "Snowflake": 2,
 }
 
-shape_chooser = ui.RadioButton(
+shape_chooser = fury.ui.RadioButton(
     options.keys(),
     padding=10,
     font_size=16,
@@ -289,4 +289,4 @@ interactive = False
 if interactive:
     showmgr.start()
 else:
-    window.record(showmgr.scene, out_path="fractals.png", size=(800, 800))
+    fury.window.record(showmgr.scene, out_path="fractals.png", size=(800, 800))

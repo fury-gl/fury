@@ -24,8 +24,7 @@ except ImportError:
 from dipy.tracking import utils
 from dipy.tracking.streamline import Streamlines
 
-from fury import actor, window
-from fury.colormap import line_colors
+import fury
 
 ###############################################################################
 # First, we need to generate some streamlines. For a more complete
@@ -39,7 +38,7 @@ affine = hardi_img.affine
 
 white_matter = (labels == 1) | (labels == 2)
 
-csa_model = CsaOdfModel(gtab, sh_order=6)
+csa_model = CsaOdfModel(gtab, sh_order_max=6)
 csa_peaks = peaks_from_model(
     csa_model,
     data,
@@ -63,7 +62,7 @@ streamlines = Streamlines(streamlines)
 ###############################################################################
 # We will create a streamline actor from the streamlines.
 
-streamlines_actor = actor.line(streamlines, line_colors(streamlines))
+streamlines_actor = fury.actor.line(streamlines, fury.colormap.line_colors(streamlines))
 
 ###############################################################################
 # Next, we create a surface actor from the corpus callosum seed ROI. We
@@ -74,7 +73,7 @@ streamlines_actor = actor.line(streamlines, line_colors(streamlines))
 surface_opacity = 0.5
 surface_color = [0, 1, 1]
 
-seedroi_actor = actor.contour_from_roi(
+seedroi_actor = fury.actor.contour_from_roi(
     seed_mask, affine, surface_color, surface_opacity
 )
 
@@ -82,7 +81,7 @@ seedroi_actor = actor.contour_from_roi(
 # Next, we initialize a ''Scene'' object and add both actors
 # to the rendering.
 
-scene = window.Scene()
+scene = fury.window.Scene()
 scene.add(streamlines_actor)
 scene.add(seedroi_actor)
 
@@ -92,9 +91,9 @@ scene.add(seedroi_actor)
 
 interactive = False
 if interactive:
-    window.show(scene)
+    fury.window.show(scene)
 
 # scene.zoom(1.5)
 # scene.reset_clipping_range()
 
-window.record(scene, out_path="contour_from_roi_tutorial.png", size=(600, 600))
+fury.window.record(scene, out_path="contour_from_roi_tutorial.png", size=(600, 600))
