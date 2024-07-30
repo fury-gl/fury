@@ -34,17 +34,25 @@ def update_coordinates(wavenumber, ang_frq, time, phase_angle):
 
 
 ###############################################################################
-# Variable(s) and their description-
-# npoints: For high quality rendering, keep the number of npoints high
-#          but kindly note that higher values for npoints will slow down the
-#          rendering process (default = 800)
-# wavelength : wavelength of the wave (default = 2)
-# wavenumber : 2*pi/wavelength
-# time: time (default time i.e. time at beginning of the animation = 0)
-# incre_time: value by which time is incremented for each call of
-#             timer_callback (default = 0.1)
-# angular_frq: angular frequency (default = 0.1)
-# phase_angle: phase angle (default = 0.002)
+# Variable(s) and their description
+#
+# npoints: int
+#   For high quality rendering, keep the number of npoints high
+#   but kindly note that higher values for npoints will slow down the
+#   rendering process (default = 800)
+# wavelength: int
+#   wavelength of the wave (default = 2)
+# wavenumber: float
+#   2*pi/wavelength
+# time: float
+#   time (default time i.e. time at beginning of the animation = 0)
+# incre_time: float
+#   value by which time is incremented for each call of
+#   timer_callback (default = 0.1)
+# angular_frq: float
+#   angular frequency (default = 0.1)
+# phase_angle: float
+#   phase angle (default = 0.002)
 
 
 npoints = 800

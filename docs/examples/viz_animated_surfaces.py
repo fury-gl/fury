@@ -40,13 +40,15 @@ def update_surface(x, y, equation, cmap_name="viridis"):
 
 ###############################################################################
 # Variables and their usage:
-# :time - float: initial value of the time variable i.e. value of the time variable at
-#               the beginning of the program; (default = 0)
+#
+# time: float
+#   initial value of the time variable i.e. value of the time variable at
+#   the beginning of the program; (default = 0)
 # dt: float
-#     amount by which ``time`` variable is incremented for every iteration
-#     of timer_callback function (default = 0.1)
+#   amount by which ``time`` variable is incremented for every iteration
+#   of timer_callback function (default = 0.1)
 # lower_xbound: float
-#               lower bound of the x values in which the function is plotted
+#   lower bound of the x values in which the function is plotted
 #               (default = -1)
 # upper_xbound: float
 #               Upper bound of the x values in which the function is plotted

@@ -31,19 +31,22 @@ showm = window.ShowManager(
 # =============================
 # In order to make a cubic bezier curve based animation, you need four values
 # for every keyframe:
+#
 # 1- Timestamp: The time that the keyframe is assigned to.
-# 2- value: The value of the keyframe. This might be position, quaternion, or
-#    scale value.
-# 3- In control point: The control point used when the value is the destination
-#    value.
+#
+# 2- Value: The value of the keyframe. This might be position, quaternion, or scale
+# value.
+#
+# 3- In control point: The control point used when the value is the destination value.
+#
 # 4- Out control point: The control point used when the value is the departure
-#           value::
+# value::
 #
-#         keyframe 0            ----------------->         keyframe 1
-# (time-0) (value-0) (out-cp-0) -----------------> (time-1) (value-1) (in-cp-1)
+#       keyframe 0            ----------------->         keyframe 1
+#       (time-0) (value-0) (out-cp-0) -----------------> (time-1) (value-1) (in-cp-1)
+#       keyframe 1            ----------------->         keyframe 2
+#       (time-1) (value-1) (out-cp-1) -----------------> (time-2) (value-2) (in-cp-2)
 #
-#         keyframe 1            ----------------->         keyframe 2
-# (time-1) (value-1) (out-cp-1) -----------------> (time-2) (value-2) (in-cp-2)
 
 keyframe_1 = {"value": [-2, 0, 0], "out_cp": [-15, 6, 0]}
 keyframe_2 = {"value": [18, 0, 0], "in_cp": [27, 18, 0]}
@@ -79,10 +82,12 @@ animation.add_actor(sphere)
 #
 # Cubic Bezier keyframes consists of 4 data per keyframe
 # Timestamp, position, in control point, and out control point.
+#
 # - In control point is the cubic bezier control point for the associated
 #   position when this position is the destination position.
 # - Out control point is the cubic bezier control point for the associated
 #   position when this position is the origin position or departing position.
+#
 # Note: If a control point is not provided or set `None`, this control point
 # will be the same as the position itself.
 
