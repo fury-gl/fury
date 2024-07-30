@@ -10,7 +10,7 @@ panel having buttons with callbacks.
 First, some imports.
 """
 
-from fury import ui, window
+import fury
 from fury.data import fetch_viz_icons, read_viz_icons
 
 ##############################################################################
@@ -22,15 +22,15 @@ fetch_viz_icons()
 # Let's create some buttons and text and put them in a panel.
 # First we'll make the panel.
 
-panel = ui.Panel2D(size=(300, 150), color=(1, 1, 1), align="right")
+panel = fury.ui.Panel2D(size=(300, 150), color=(1, 1, 1), align="right")
 panel.center = (500, 400)
 
 ###############################################################################
 # Then we'll make two text labels and place them on the panel.
 # Note that we specify the position with integer numbers of pixels.
 
-text = ui.TextBlock2D(text="Click me")
-text2 = ui.TextBlock2D(text="Me too")
+text = fury.ui.TextBlock2D(text="Click me")
+text2 = fury.ui.TextBlock2D(text="Me too")
 panel.add_element(text, (50, 100))
 panel.add_element(text2, (180, 100))
 
@@ -41,7 +41,7 @@ panel.add_element(text2, (180, 100))
 # percentages of the panel size.
 
 
-button_example = ui.Button2D(
+button_example = fury.ui.Button2D(
     icon_fnames=[("square", read_viz_icons(fname="stop2.png"))]
 )
 
@@ -51,7 +51,7 @@ icon_files.append(("left", read_viz_icons(fname="circle-left.png")))
 icon_files.append(("up", read_viz_icons(fname="circle-up.png")))
 icon_files.append(("right", read_viz_icons(fname="circle-right.png")))
 
-second_button_example = ui.Button2D(icon_fnames=icon_files)
+second_button_example = fury.ui.Button2D(icon_fnames=icon_files)
 
 panel.add_element(button_example, (0.25, 0.33))
 panel.add_element(second_button_example, (0.66, 0.33))
@@ -79,7 +79,7 @@ second_button_example.on_left_mouse_button_pressed = change_icon_callback
 # manager.
 
 current_size = (800, 800)
-show_manager = window.ShowManager(size=current_size, title="FURY Button Example")
+show_manager = fury.window.ShowManager(size=current_size, title="FURY Button Example")
 
 show_manager.scene.add(panel)
 
@@ -88,4 +88,4 @@ interactive = False
 if interactive:
     show_manager.start()
 
-window.record(show_manager.scene, size=current_size, out_path="viz_button.png")
+fury.window.record(show_manager.scene, size=current_size, out_path="viz_button.png")

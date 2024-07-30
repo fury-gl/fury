@@ -7,8 +7,7 @@ Keyframe animation using cubic Bezier interpolator.
 """
 
 import numpy as np
-
-from fury import actor, window
+import fury
 from fury.animation import Animation, Timeline
 from fury.animation.interpolator import cubic_bezier_interpolator
 
@@ -20,8 +19,8 @@ from fury.animation.interpolator import cubic_bezier_interpolator
 # This can be achieved using positions and control points between those
 # positions.
 
-scene = window.Scene()
-showm = window.ShowManager(
+scene = fury.window.Scene()
+showm = fury.window.ShowManager(
     scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 
@@ -53,19 +52,19 @@ keyframe_2 = {"value": [18, 0, 0], "in_cp": [27, 18, 0]}
 
 ###############################################################################
 # Visualizing points
-pts_actor = actor.sphere(
+pts_actor = fury.actor.sphere(
     np.array([keyframe_1.get("value"), keyframe_2.get("value")]), (1, 0, 0), radii=0.3
 )
 
 ###############################################################################
 # Visualizing the control points
-cps_actor = actor.sphere(
+cps_actor = fury.actor.sphere(
     np.array([keyframe_2.get("in_cp"), keyframe_1.get("out_cp")]), (0, 0, 1), radii=0.6
 )
 
 ###############################################################################
 # Visualizing the connection between the control points and the points
-cline_actor = actor.line(
+cline_actor = fury.actor.line(
     np.array([list(keyframe_1.values()), list(keyframe_2.values())]),
     colors=np.array([0, 1, 0]),
 )
@@ -73,7 +72,7 @@ cline_actor = actor.line(
 ###############################################################################
 # Initializing an ``Animation`` and adding sphere actor to it.
 animation = Animation()
-sphere = actor.sphere(np.array([[0, 0, 0]]), (1, 0, 1))
+sphere = fury.actor.sphere(np.array([[0, 0, 0]]), (1, 0, 1))
 animation.add_actor(sphere)
 
 ###############################################################################
@@ -115,15 +114,19 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path="viz_keyframe_animation_bezier_1.png", size=(900, 768))
+fury.window.record(
+    scene,
+    out_path="viz_keyframe_animation_bezier_1.png",
+    size=(900, 768),
+)
 
 ###############################################################################
 # A more complex scene scene
 # ==========================
 #
 
-scene = window.Scene()
-show_manager = window.ShowManager(
+scene = fury.window.Scene()
+show_manager = fury.window.ShowManager(
     scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 
@@ -139,7 +142,7 @@ keyframes = {
 
 ###############################################################################
 # Create the sphere actor.
-sphere = actor.sphere(np.array([[0, 0, 0]]), (1, 0, 1))
+sphere = fury.actor.sphere(np.array([[0, 0, 0]]), (1, 0, 1))
 
 ###############################################################################
 # Create an ``Animation`` and adding the sphere actor to it.
@@ -162,15 +165,17 @@ for keyframe in keyframes.values():
 
     ###########################################################################
     # visualizing position keyframe
-    vis_point = actor.sphere(np.array([pos]), (1, 0, 0), radii=0.3)
+    vis_point = fury.actor.sphere(np.array([pos]), (1, 0, 0), radii=0.3)
     scene.add(vis_point)
 
     ###########################################################################
     # Visualizing the control points and their length (if exist)
     for cp in [in_control_point, out_control_point]:
         if cp is not None:
-            vis_cps = actor.sphere(np.array([cp]), (0, 0, 1), radii=0.6)
-            cline_actor = actor.line(np.array([[pos, cp]]), colors=np.array([0, 1, 0]))
+            vis_cps = fury.actor.sphere(np.array([cp]), (0, 0, 1), radii=0.6)
+            cline_actor = fury.actor.line(
+                np.array([[pos, cp]]), colors=np.array([0, 1, 0])
+            )
             scene.add(vis_cps, cline_actor)
 
 ###############################################################################
@@ -187,4 +192,6 @@ show_manager.add_animation(timeline)
 if interactive:
     show_manager.start()
 
-window.record(scene, out_path="viz_keyframe_animation_bezier_2.png", size=(900, 768))
+fury.window.record(
+    scene, out_path="viz_keyframe_animation_bezier_2.png", size=(900, 768)
+)

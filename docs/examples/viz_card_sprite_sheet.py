@@ -10,10 +10,10 @@ sheet to update the image in the card.
 First, some imports.
 """
 
+import fury
 import os
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 
-from fury import ui, window
 from fury.data import fetch_viz_icons
 from fury.io import load_image, load_sprite_sheet, save_image
 
@@ -48,7 +48,7 @@ body = (
     "A software library for scientific visualization in Python."
 )
 
-card = ui.elements.Card2D(
+card = fury.ui.elements.Card2D(
     image_path=img_url,
     title_text=title,
     body_text=body,
@@ -92,7 +92,7 @@ def sprite_to_vtk():
 # manager.
 
 current_size = (1000, 1000)
-show_manager = window.ShowManager(size=current_size, title="FURY Card Example")
+show_manager = fury.window.ShowManager(size=current_size, title="FURY Card Example")
 
 show_manager.scene.add(card)
 show_manager.initialize()
@@ -110,4 +110,4 @@ interactive = False
 if interactive:
     show_manager.start()
 
-window.record(show_manager.scene, out_path="card_ui.png", size=(1000, 1000))
+fury.window.record(show_manager.scene, out_path="card_ui.png", size=(1000, 1000))

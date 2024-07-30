@@ -11,6 +11,7 @@ for backwards compatibility but now there is a more comprehensive way to access
 the main functions using the following modules.
 """
 
+import fury
 from dipy.data.fetcher import fetch_bundles_2_subjects, read_bundles_2_subjects
 
 ###############################################################################
@@ -37,7 +38,6 @@ from dipy.data.fetcher import fetch_bundles_2_subjects, read_bundles_2_subjects
 from dipy.tracking.streamline import Streamlines
 import numpy as np
 
-from fury import actor, ui, window
 
 fetch_bundles_2_subjects()
 
@@ -82,13 +82,13 @@ if not world_coords:
 # Now we create, a ``Scene`` object and add the streamlines using the
 # ``line`` function and an image plane using the ``slice`` function.
 
-scene = window.Scene()
-stream_actor = actor.line(streamlines)
+scene = fury.window.Scene()
+stream_actor = fury.actor.line(streamlines)
 
 if not world_coords:
-    image_actor_z = actor.slicer(data, affine=np.eye(4))
+    image_actor_z = fury.actor.slicer(data, affine=np.eye(4))
 else:
-    image_actor_z = actor.slicer(data, affine)
+    image_actor_z = fury.actor.slicer(data, affine)
 
 ###############################################################################
 # We can also change also the opacity of the slicer.
@@ -123,14 +123,14 @@ scene.add(image_actor_y)
 # ``show``. The more appropriate way is to use them with the ``ShowManager``
 # object which allows accessing the pipeline in different areas. Here is how:
 
-show_m = window.ShowManager(scene, size=(1200, 900))
+show_m = fury.window.ShowManager(scene, size=(1200, 900))
 
 
 ###############################################################################
 # After we have initialized the ``ShowManager`` we can go ahead and create
 # sliders to move the slices and change their opacity.
 
-line_slider_z = ui.LineSlider2D(
+line_slider_z = fury.ui.LineSlider2D(
     min_value=0,
     max_value=shape[2] - 1,
     initial_value=shape[2] / 2,
@@ -138,7 +138,7 @@ line_slider_z = ui.LineSlider2D(
     length=140,
 )
 
-line_slider_x = ui.LineSlider2D(
+line_slider_x = fury.ui.LineSlider2D(
     min_value=0,
     max_value=shape[0] - 1,
     initial_value=shape[0] / 2,
@@ -146,7 +146,7 @@ line_slider_x = ui.LineSlider2D(
     length=140,
 )
 
-line_slider_y = ui.LineSlider2D(
+line_slider_y = fury.ui.LineSlider2D(
     min_value=0,
     max_value=shape[1] - 1,
     initial_value=shape[1] / 2,
@@ -154,7 +154,7 @@ line_slider_y = ui.LineSlider2D(
     length=140,
 )
 
-opacity_slider = ui.LineSlider2D(
+opacity_slider = fury.ui.LineSlider2D(
     min_value=0.0, max_value=1.0, initial_value=slicer_opacity, length=140
 )
 
@@ -194,7 +194,7 @@ opacity_slider.on_change = change_opacity
 
 
 def build_label(text):
-    label = ui.TextBlock2D()
+    label = fury.ui.TextBlock2D()
     label.message = text
     label.font_size = 18
     label.font_family = "Arial"
@@ -216,7 +216,7 @@ opacity_slider_label = build_label(text="Opacity")
 ###############################################################################
 # Now we will create a ``panel`` to contain the sliders and labels.
 
-panel = ui.Panel2D(size=(300, 200), color=(1, 1, 1), opacity=0.1, align="right")
+panel = fury.ui.Panel2D(size=(300, 200), color=(1, 1, 1), opacity=0.1, align="right")
 panel.center = (1030, 120)
 
 panel.add_element(line_slider_label_x, (0.1, 0.75))
@@ -267,7 +267,7 @@ if interactive:
     show_m.start()
 
 else:
-    window.record(
+    fury.window.record(
         scene, out_path="bundles_and_3_slices.png", size=(1200, 900), reset_camera=False
     )
 
