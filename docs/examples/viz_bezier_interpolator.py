@@ -8,8 +8,6 @@ Keyframe animation using cubic Bezier interpolator.
 
 import numpy as np
 import fury
-from fury.animation import Animation, Timeline
-from fury.animation.interpolator import cubic_bezier_interpolator
 
 ###############################################################################
 # Position interpolation using cubic Bezier curve
@@ -71,7 +69,7 @@ cline_actor = fury.actor.line(
 
 ###############################################################################
 # Initializing an ``Animation`` and adding sphere actor to it.
-animation = Animation()
+animation = fury.animation.Animation()
 sphere = fury.actor.sphere(np.array([[0, 0, 0]]), (1, 0, 1))
 animation.add_actor(sphere)
 
@@ -99,7 +97,7 @@ animation.set_position(
 
 ###############################################################################
 # Changing position interpolation into cubic bezier interpolation
-animation.set_position_interpolator(cubic_bezier_interpolator)
+animation.set_position_interpolator(fury.animation.cubic_bezier_interpolator)
 
 ###############################################################################
 # Adding the visualization actors to the scene.
@@ -146,7 +144,7 @@ sphere = fury.actor.sphere(np.array([[0, 0, 0]]), (1, 0, 1))
 
 ###############################################################################
 # Create an ``Animation`` and adding the sphere actor to it.
-animation = Animation(sphere)
+animation = fury.animation.Animation(sphere)
 
 ###############################################################################
 # Setting Cubic Bezier keyframes
@@ -154,7 +152,7 @@ animation.set_position_keyframes(keyframes)
 
 ###############################################################################
 # changing position interpolation into cubic bezier interpolation
-animation.set_position_interpolator(cubic_bezier_interpolator)
+animation.set_position_interpolator(fury.animation.cubic_bezier_interpolator)
 
 ###########################################################################
 # visualizing the points and control points (only for demonstration)
@@ -181,7 +179,7 @@ for keyframe in keyframes.values():
 ###############################################################################
 # Initializing the timeline to be able to control the playback of the
 # animation.
-timeline = Timeline(animation, playback_panel=True)
+timeline = fury.animation.Timeline(animation, playback_panel=True)
 
 ###############################################################################
 # We only need to add the ``Timeline`` to the ``ShowManager``
@@ -193,5 +191,5 @@ if interactive:
     show_manager.start()
 
 fury.window.record(
-    scene, out_path="viz_keyframe_animation_bezier_2.png", size=(900, 768)
+    showm.scene, out_path="viz_keyframe_animation_bezier_2.png", size=(900, 768)
 )
