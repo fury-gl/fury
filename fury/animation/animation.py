@@ -466,7 +466,7 @@ class Animation:
         --------
         >>> Animation.set_position_interpolator(spline_interpolator, degree=5) # doctest: +SKIP
 
-        """
+        """  # noqa: E501
         self.set_interpolator(
             "position", interpolator, is_evaluator=is_evaluator, **kwargs
         )
