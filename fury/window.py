@@ -903,7 +903,7 @@ def show(
     >>> colors=np.array([[0.2,0.2,0.2],[0.8,0.8,0.8]])
     >>> c=actor.line(lines,colors)
     >>> r.add(c)
-    >>> l=actor.label(text="Hello")
+    >>> l=actor.vector_text(text="Hello")
     >>> r.add(l)
     >>> #window.show(r)
 

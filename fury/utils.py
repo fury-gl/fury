@@ -988,13 +988,13 @@ def apply_affine(aff, pts):
            [16, 17, 28],
            [20, 23, 36],
            [24, 29, 44]]...)
-    Just to show that in the simple 3D case, it is equivalent to:
+    >>> # Just to show that in the simple 3D case, it is equivalent to:
     >>> (np.dot(aff[:3,:3], pts.T) + aff[:3,3:4]).T #doctest: +ELLIPSIS
     array([[14, 14, 24],
            [16, 17, 28],
            [20, 23, 36],
            [24, 29, 44]]...)
-    But `pts` can be a more complicated shape:
+    >>> # But `pts` can be a more complicated shape:
     >>> pts = pts.reshape((2,2,3))
     >>> apply_affine(aff, pts) #doctest: +ELLIPSIS
     array([[[14, 14, 24],

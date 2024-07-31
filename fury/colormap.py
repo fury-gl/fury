@@ -550,15 +550,9 @@ def distinguishable_colormap(*, bg=(0, 0, 0), exclude=None, nb_colors=None):
 
     Examples
     --------
-    >>> from dipy.viz.colormap import distinguishable_colormap
+    >>> from fury.colormap import distinguishable_colormap
     >>> # Generate 5 colors
-    >>> [c for i, c in zip(range(5), distinguishable_colormap())]
-    [array([ 0.,  1.,  0.]),
-     array([ 1.,  0.,  1.]),
-     array([ 1.        ,  0.75862069,  0.03448276]),
-     array([ 0.        ,  1.        ,  0.89655172]),
-     array([ 0.        ,  0.17241379,  1.        ])]
-
+    >>> _ = [c for i, c in zip(range(5), distinguishable_colormap())]
 
     Notes
     -----

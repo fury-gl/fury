@@ -242,14 +242,14 @@ def translate(translation):
 
     Examples
     --------
-    >>> import numpy as np
+    >>> import numpy as np; import fury
     >>> tran = np.array([0.3, 0.2, 0.25])
-    >>> transform = translate(tran)
+    >>> transform = fury.transform.translate(tran)
     >>> transform
-    >>> [[1.  0.  0.  0.3 ]
-         [0.  1.  0.  0.2 ]
-         [0.  0.  1.  0.25]
-         [0.  0.  0.  1.  ]]
+    array([[1.  , 0.  , 0.  , 0.3 ],
+           [0.  , 1.  , 0.  , 0.2 ],
+           [0.  , 0.  , 1.  , 0.25],
+           [0.  , 0.  , 0.  , 1.  ]])
 
     """
     iden = np.identity(4)
@@ -280,14 +280,14 @@ def rotate(quat):
 
     Examples
     --------
-    >>> import numpy as np
+    >>> import numpy as np; import fury
     >>> quat = np.array([0.259, 0.0, 0.0, 0.966])
-    >>> rotation = rotate(quat)
+    >>> rotation = fury.transform.rotate(quat)
     >>> rotation
-    >>> [[1.  0.      0.     0.]
-         [0.  0.866  -0.5    0.]
-         [0.  0.5     0.866  0.]
-         [0.  0.      0.     1.]]
+    array([[ 1.        ,  0.        ,  0.        ,  0.        ],
+           [ 0.        ,  0.86586979, -0.50026944,  0.        ],
+           [ 0.        ,  0.50026944,  0.86586979,  0.        ],
+           [ 0.        ,  0.        ,  0.        ,  1.        ]])
 
     """
     iden = np.identity(3)
@@ -318,14 +318,14 @@ def scale(scales):
 
     Examples
     --------
-    >>> import numpy as np
+    >>> import numpy as np; import fury
     >>> scales = np.array([2.0, 1.0, 0.5])
-    >>> transform = scale(scales)
+    >>> transform = fury.transform.scale(scales)
     >>> transform
-    >>> [[2.  0.  0.   0.]
-         [0.  1.  0.   0.]
-         [0.  0.  0.5  0.]
-         [0.  0.  0.   1.]]
+    array([[2. , 0. , 0. , 0. ],
+           [0. , 1. , 0. , 0. ],
+           [0. , 0. , 0.5, 0. ],
+           [0. , 0. , 0. , 1. ]])
 
     """
     scale_mat = np.identity(4)

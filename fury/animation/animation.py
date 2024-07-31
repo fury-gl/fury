@@ -283,11 +283,12 @@ class Animation:
         Notes
         -----
         Keyframes can be on any of the following forms:
+        >>> import numpy as np
         >>> key_frames_simple = {1: [1, 2, 1], 2: [3, 4, 5]}
         >>> key_frames_bezier = {1: {'value': [1, 2, 1]},
-        >>>                       2: {'value': [3, 4, 5], 'in_cp': [1, 2, 3]}}
+        ...                      2: {'value': [3, 4, 5], 'in_cp': [1, 2, 3]}}
         >>> pos_keyframes = {1: np.array([1, 2, 3]), 3: np.array([5, 5, 5])}
-        >>> Animation.set_keyframes('position', pos_keyframes)
+        >>> Animation.set_keyframes('position', pos_keyframes) # doctest: +SKIP
 
         """
         for t, keyframe in keyframes.items():
@@ -377,8 +378,9 @@ class Animation:
         is_evaluator: bool, optional
             Specifies whether the `interpolator` is time-only based evaluation
             function that does not depend on keyframes such as:
-            >>> def get_position(t):
-            >>>     return np.array([np.sin(t), np.cos(t) * 5, 5])
+
+            def get_position(t):
+                return np.array([np.sin(t), np.cos(t) * 5, 5])
 
         Other Parameters
         ----------------
@@ -395,10 +397,9 @@ class Animation:
 
         Examples
         --------
-        >>> Animation.set_interpolator('position', linear_interpolator)
-
-        >>> pos_fun = lambda t: np.array([np.sin(t), np.cos(t), 0])
-        >>> Animation.set_interpolator('position', pos_fun)
+        >>> Animation.set_interpolator('position', linear_interpolator) # doctest: +SKIP
+        >>> pos_fun = lambda t: np.array([np.sin(t), np.cos(t), 0]) # doctest: +SKIP
+        >>> Animation.set_interpolator('position', pos_fun) # doctest: +SKIP
 
         """
         attrib_data = self._get_attribute_data(attrib)
@@ -463,9 +464,9 @@ class Animation:
 
         Examples
         --------
-        >>> Animation.set_position_interpolator(spline_interpolator, degree=5)
+        >>> Animation.set_position_interpolator(spline_interpolator, degree=5) # doctest: +SKIP
 
-        """
+        """  # noqa: E501
         self.set_interpolator(
             "position", interpolator, is_evaluator=is_evaluator, **kwargs
         )
@@ -485,7 +486,7 @@ class Animation:
 
         Examples
         --------
-        >>> Animation.set_scale_interpolator(step_interpolator)
+        >>> Animation.set_scale_interpolator(step_interpolator) # doctest: +SKIP
 
         """
         self.set_interpolator("scale", interpolator, is_evaluator=is_evaluator)
@@ -505,7 +506,7 @@ class Animation:
 
         Examples
         --------
-        >>> Animation.set_rotation_interpolator(slerp)
+        >>> Animation.set_rotation_interpolator(slerp) # doctest: +SKIP
 
         """
         self.set_interpolator("rotation", interpolator, is_evaluator=is_evaluator)
@@ -525,7 +526,7 @@ class Animation:
 
         Examples
         --------
-        >>> Animation.set_color_interpolator(lab_color_interpolator)
+        >>> Animation.set_color_interpolator(lab_color_interpolator) # doctest: +SKIP
 
         """
         self.set_interpolator("color", interpolator, is_evaluator=is_evaluator)
@@ -545,7 +546,7 @@ class Animation:
 
         Examples
         --------
-        >>> Animation.set_opacity_interpolator(step_interpolator)
+        >>> Animation.set_opacity_interpolator(step_interpolator) # doctest: +SKIP
 
         """
         self.set_interpolator("opacity", interpolator, is_evaluator=is_evaluator)
@@ -624,8 +625,8 @@ class Animation:
 
         Examples
         --------
-        >>> pos_keyframes = {1, np.array([0, 0, 0]), 3, np.array([50, 6, 6])}
-        >>> Animation.set_position_keyframes(pos_keyframes)
+        >>> pos_keyframes = {1, (0, 0, 0), 3, (50, 6, 6)}
+        >>> Animation.set_position_keyframes(pos_keyframes) # doctest: +SKIP
 
         """
         self.set_keyframes("position", keyframes)
@@ -704,8 +705,8 @@ class Animation:
 
         Examples
         --------
-        >>> scale_keyframes = {1, np.array([1, 1, 1]), 3, np.array([2, 2, 3])}
-        >>> Animation.set_scale_keyframes(scale_keyframes)
+        >>> scale_keyframes = {1, (1, 1, 1), 3, (2, 2, 3)}
+        >>> Animation.set_scale_keyframes(scale_keyframes) # doctest: +SKIP
 
         """
         self.set_keyframes("scale", keyframes)
@@ -735,8 +736,9 @@ class Animation:
 
         Examples
         --------
-        >>> color_keyframes = {1, np.array([1, 0, 1]), 3, np.array([0, 0, 1])}
-        >>> Animation.set_color_keyframes(color_keyframes)
+        >>> import numpy as np
+        >>> color_keyframes = {1, (1, 0, 1), 3, (0, 0, 1)}
+        >>> Animation.set_color_keyframes(color_keyframes) # doctest: +SKIP
 
         """
         self.set_keyframes("color", keyframes)
@@ -770,8 +772,8 @@ class Animation:
 
         Examples
         --------
-        >>> opacity = {1, np.array([1, 1, 1]), 3, np.array([2, 2, 3])}
-        >>> Animation.set_scale_keyframes(opacity)
+        >>> opacity = {1, (1, 1, 1), 3, (2, 2, 3)}
+        >>> Animation.set_scale_keyframes(opacity) # doctest: +SKIP
 
         """
         self.set_keyframes("opacity", keyframes)
@@ -1299,8 +1301,8 @@ class CameraAnimation(Animation):
 
         Examples
         --------
-        >>> focal_pos = {0, np.array([1, 1, 1]), 3, np.array([20, 0, 0])}
-        >>> CameraAnimation.set_focal_keyframes(focal_pos)
+        >>> focal_pos = {0, (1, 1, 1), 3, (20, 0, 0)}
+        >>> CameraAnimation.set_focal_keyframes(focal_pos) # doctest: +SKIP
 
         """
         self.set_keyframes("focal", keyframes)
@@ -1318,8 +1320,8 @@ class CameraAnimation(Animation):
 
         Examples
         --------
-        >>> view_ups = {0, np.array([1, 0, 0]), 3, np.array([0, 1, 0])}
-        >>> CameraAnimation.set_view_up_keyframes(view_ups)
+        >>> view_ups = {0, np.array([1, 0, 0]), 3, np.array([0, 1, 0])} # doctest: +SKIP
+        >>> CameraAnimation.set_view_up_keyframes(view_ups) # doctest: +SKIP
 
         """
         self.set_keyframes("view_up", keyframes)
