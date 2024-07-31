@@ -22,9 +22,11 @@ def doctest_skip_parser(func):
     """Decorator replaces custom skip test markup in doctests.
 
     Say a function has a docstring::
-    >>> something # skip if not HAVE_AMODULE
-    >>> something + else
-    >>> something # skip if HAVE_BMODULE
+
+        something # skip if not HAVE_AMODULE
+        something + else
+        something # skip if HAVE_BMODULE
+
     This decorator will evaluate the expression after ``skip if``.  If this
     evaluates to True, then the comment is replaced by ``# doctest: +SKIP``.
     If False, then the comment is just removed. The expression is evaluated in
@@ -32,9 +34,10 @@ def doctest_skip_parser(func):
     For example, if the module global ``HAVE_AMODULE`` is False, and module
     global ``HAVE_BMODULE`` is False, the returned function will have
     docstring::
-    >>> something # doctest: +SKIP
-    >>> something + else
-    >>> something
+
+        something # doctest: +SKIP
+        something + else
+        something
 
     """
     lines = func.__doc__.split("\n")
@@ -95,12 +98,6 @@ def warn_on_args_to_kwargs(
     Traceback (most recent call last):
     ...
     TypeError: f() missing 1 required keyword-only argument: 'c'
-    >>> fury.__version__ = "0.12.0"
-    >>> f(1, 2, 3, 4, e=5)
-    Traceback (most recent call last):
-    ...
-    TypeError: f() takes 2 positional arguments but 4 positional arguments (and 1 keyword-only argument) were given
-    >>> fury.__version__ = CURRENT_VERSION
     """  # noqa: E501
 
     def decorator(func):

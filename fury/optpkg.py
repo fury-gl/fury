@@ -48,7 +48,7 @@ class TripWire:
     ... except ImportError:
     ...    silly_module_name = TripWire('We do not have silly_module_name')
     >>> msg = 'with silly string'
-    >>> silly_module_name.do_silly_thing(msg) #doctest: +IGNORE_EXCEPTION_DETAIL # noqa
+    >>> silly_module_name.do_silly_thing(msg) # doctest: +IGNORE_EXCEPTION_DETAIL
     Traceback (most recent call last):
         ...
     TripWireError: We do not have silly_module_name
@@ -97,20 +97,19 @@ def optional_package(name, *, trip_msg=None):
     optional package:
     >>> from fury.optpkg import optional_package
     >>> pkg, have_pkg, setup_module = optional_package('not_a_package')
-    Of course in this case the package doesn't exist, and so, in the module:
+    >>> # Of course in this case the package doesn't exist, and so, in the module:
     >>> have_pkg
     False
-    and
     >>> pkg.some_function() #doctest: +IGNORE_EXCEPTION_DETAIL
     Traceback (most recent call last):
     ...
     TripWireError: We need package not_a_package for these functions, but
     ``import not_a_package`` raised an ImportError
-    If the module does exist - we get the module
+    >>> # If the module does exist - we get the module
     >>> pkg, _, _ = optional_package('os')
     >>> hasattr(pkg, 'path')
     True
-    Or a submodule if that's what we asked for
+    >>> # Or a submodule if that's what we asked for
     >>> subpkg, _, _ = optional_package('os.path')
     >>> hasattr(subpkg, 'dirname')
     True

@@ -675,7 +675,7 @@ def streamtube(
     >>> scene = window.Scene()
     >>> lines = [np.random.rand(10, 3), np.random.rand(20, 3)]
     >>> colors = np.random.rand(2, 3)
-    >>> c = actor.streamtube(lines, colores=colors)
+    >>> c = actor.streamtube(lines, colors=colors)
     >>> scene.add(c)
     >>> #window.show(scene)
 
@@ -2064,9 +2064,9 @@ def disk(
     >>> dirs = np.random.rand(5, 3)
     >>> colors = np.random.rand(5, 4)
     >>> actor = actor.disk(centers, dirs, colors,
-    >>>                    rinner=.1, router=.8, cresolution=30)
+    ...                    rinner=.1, router=.8, cresolution=30)
     >>> scene.add(actor)
-    >>> window.show(scene)
+    >>> # window.show(scene)
 
     """
     if faces is None:
@@ -3747,19 +3747,19 @@ def markers(
     >>> centers = np.random.normal(size=(n, 3), scale=10)
     >>> colors = np.random.rand(n, 4)
     >>> nodes_actor = actor.markers(
-            centers,
-            marker=markers,
-            edge_width=.1,
-            edge_color=[255, 255, 0],
-            colors=colors,
-            scales=10,
-        )
+    ...     centers,
+    ...     marker=markers,
+    ...     edge_width=.1,
+    ...     edge_color=[255, 255, 0],
+    ...     colors=colors,
+    ...     scales=10,
+    ... )
     >>> center = np.random.normal(size=(1, 3), scale=10)
     >>> nodes_3d_actor = actor.markers(
-            center,
-            marker='3d',
-            scales=5,
-        )
+    ...     center,
+    ...     marker='3d',
+    ...     scales=5,
+    ... )
     >>> scene.add(nodes_actor, nodes_3d_actor)
     >>> # window.show(scene, size=(600, 600))
 

@@ -25,7 +25,7 @@ def spline_interpolator(keyframes, degree):
     keyframes: dict
         Keyframe data containing timestamps and values to form the spline
         curve. Data should be on the following format:
-        >>> {1: {'value': np.array([...])}, 2: {'value': np.array([...])}}
+        {1: {'value': np.array([...])}, 2: {'value': np.array([...])}}
 
     Returns
     -------
