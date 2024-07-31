@@ -215,8 +215,7 @@ Doing the release
 
 * Publish a release on PyPI::
 
-    python setup.py sdist
-    python setup.py bdist_wheel
+    python -m build
     twine upload dist/*
 
 

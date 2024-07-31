@@ -1,5 +1,5 @@
 FURY 0.11.0 Released
-===================
+====================
 
 .. post:: July 31 2024
    :author: skoudoro
