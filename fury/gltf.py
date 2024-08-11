@@ -1450,8 +1450,7 @@ def write_accessor(
     ----------
     gltf: GLTF2
         Pygltflib GLTF2 objecomp_type
-
-                      bufferview: int
+    bufferview: int
         BufferView Index
     byte_offset: int
         ByteOffset of the accessor
@@ -1467,6 +1466,7 @@ def write_accessor(
         Minimum elements of an array
 
     """
+
     accessor = gltflib.Accessor()
     accessor.bufferView = bufferview
     accessor.byteOffset = byte_offset

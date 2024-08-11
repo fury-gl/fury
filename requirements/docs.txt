@@ -1,6 +1,7 @@
 # These are dependencies of various sphinx extensions for documentation.
 sphinx>=5.0.0
 ipython
+numpydoc
 matplotlib
 sphinx-copybutton
 sphinx-gallery>=0.10.0
