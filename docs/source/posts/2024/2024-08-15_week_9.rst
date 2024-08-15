@@ -35,7 +35,7 @@ The next thing I did was start working on GitHub integration. Discord Bot is hos
 
 If you do not know GraphQL you can learn about it in detail from `this YouTube playlist <https://www.youtube.com/playlist?list=PL4cUxeGkcC9gUxtblNUahcsg0WLxmrK_y>`_ and later from the `official docs <https://graphql.org/>`_. But I'll give you a quick explanation anyway since I think the playlist and docs miss this part:
 
-GraphQL is essentially HTTP POST/GET calls. We'll avoid all the jargon here and talk from first principles. REST API philosphy is to provide multiple endpoints `/google`, `/groq`, etc (these are FURY-engine endpoints). They do different things. Now these are just styles, remember that. At the end of the day you're still sending network packets to the server, these just dictate which URL you send it to and what data it contains.
+GraphQL is essentially HTTP POST/GET calls. We'll avoid all the jargon here and talk from first principles. REST API philosophy is to provide multiple endpoints `/google`, `/groq`, etc (these are FURY-engine endpoints). They do different things. Now these are just styles, remember that. At the end of the day you're still sending network packets to the server, these just dictate which URL you send it to and what data it contains.
 
 GraphQL is different in the sense it does not have multiple endpoints. There's only one endpoint (example: https://api.github.com/graphql for GitHub). We send all our requests to this endpoint and then the server uses it to do an action and return results. So you may ask "Why" do we need to follow the GraphQL syntax, why not just modify REST API to follow our custom style? You can do that. GraphQL is just a style of doing things that smart people at Meta decided to standardize.
 
