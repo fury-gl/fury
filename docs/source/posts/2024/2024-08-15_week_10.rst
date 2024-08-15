@@ -1,0 +1,39 @@
+Week 10: Learning GraphQL
+=========================
+
+.. post:: Aug 15 2024
+    :author: Robin Roy
+    :tags: google
+    :category: gsoc
+
+Hi, I'm `Robin <https://github.com/robinroy03>`_ and this is my blog about week 10.
+
+This week I worked on GitHub GraphQL implementation. I tested out things and was learning GraphQL properly since I have never used it before.
+
+
+**Learning and testing GraphQL**
+
+I spent time learning and implementing prototypes of the GitHub app. Initially, I tested using `GitHub Explorer <https://docs.github.com/en/graphql/overview/explorer>`_ to control my account. I initially spent some time searching for other GitHub libraries but later gave up and made my custom scripts. There are no Python GraphQL libraries available, and the ones available do not integrate with Discussion tabs.
+
+I used Explorer to mainly focus only on the query language, and not on implementation. The plan was to use a GitHub app to send webhooks to the HuggingFace server, which will respond to it.
+
+We use ``query`` to fetch discussions and ``mutation`` to send a reply. They are GraphQL operations.
+
+
+What is coming up next week?
+----------------------------
+
+- Working GitHub App
+
+
+Did you get stuck anywhere?
+---------------------------
+
+No, I did not get stuck anywhere. I was learning new things and experimenting with stuff.
+
+
+LINKS:
+
+- `GitHub Explorer <https://docs.github.com/en/graphql/overview/explorer>`_
+
+Thank you for reading!
