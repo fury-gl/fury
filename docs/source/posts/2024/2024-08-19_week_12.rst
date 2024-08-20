@@ -19,7 +19,7 @@ Previously the bot responded to every discussion post. It was not a good approac
 
 The new UI looks like this:
 
-.. image:: /_static/images/robin_gsoc_FURY_DISCUSSIONS_TEMPLATE.png
+.. image:: /_static/images/robin_gsoc_FURY_DISCUSSIONS_TEMPLATE.jpg
     :alt: Present GitHub Discussions Template
 
 
