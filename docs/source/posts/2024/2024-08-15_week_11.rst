@@ -1,7 +1,7 @@
 Week 11: Getting the App Live
 =============================
 
-.. post:: Aug 15 2024
+.. post:: Aug 17 2024
     :author: Robin Roy
     :tags: google
     :category: gsoc

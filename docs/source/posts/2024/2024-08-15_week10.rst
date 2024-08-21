@@ -1,7 +1,7 @@
 Week 10: Learning GraphQL
 =========================
 
-.. post:: Aug 15 2024
+.. post:: Aug 16 2024
     :author: Robin Roy
     :tags: google
     :category: gsoc
