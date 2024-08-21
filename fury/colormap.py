@@ -887,9 +887,13 @@ def get_xyz_coords(illuminant, observer):
     Notes
     -----
     Original Implementation from scikit-image package.
-    it can be found at:
+    it can be found here:
     https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
     This implementation might have been modified.
+
+    References
+    ----------
+    .. [1] scikit-image, `colorconv.py` source code
 
     """
     illuminant = illuminant.upper()

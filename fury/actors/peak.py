@@ -28,40 +28,54 @@ class PeakActor(Actor):
 
     Parameters
     ----------
-    directions : ndarray
-        Peak directions. The shape of the array should be (X, Y, Z, D, 3).
-    indices : tuple
-        Indices given in tuple(x_indices, y_indices, z_indices)
-        format for mapping 2D ODF array to 3D voxel grid.
-    values : ndarray, optional
-        Peak values. The shape of the array should be (X, Y, Z, D).
-    affine : array, optional
-        4x4 transformation array from native coordinates to world coordinates.
-    colors : None or string ('rgb_standard') or tuple (3D or 4D) or
-             array/ndarray (N, 3 or 4) or array/ndarray (K, 3 or 4) or
-             array/ndarray(N, ) or array/ndarray (K, )
-        If None a standard orientation colormap is used for every line.
-        If one tuple of color is used. Then all streamlines will have the same
-        color.
-        If an array (N, 3 or 4) is given, where N is equal to the number of
-        points. Then every point is colored with a different RGB(A) color.
-        If an array (K, 3 or 4) is given, where K is equal to the number of
-        lines. Then every line is colored with a different RGB(A) color.
-        If an array (N, ) is given, where N is the number of points then these
-        are considered as the values to be used by the colormap.
-        If an array (K,) is given, where K is the number of lines then these
-        are considered as the values to be used by the colormap.
-    lookup_colormap : vtkLookupTable, optional
-        Add a default lookup table to the colormap. Default is None which calls
-        :func:`fury.actor.colormap_lookup_table`.
-    linewidth : float, optional
-        Line thickness. Default is 1.
-    symmetric: bool, optional
-        If True, peaks are drawn for both peaks_dirs and -peaks_dirs. Else,
-        peaks are only drawn for directions given by peaks_dirs. Default is
-        True.
 
-    """
+    directions : ndarray
+
+      Peak directions. The shape of the array should be (X, Y, Z, D, 3).
+
+    indices : tuple
+
+      Indices given in tuple(x_indices, y_indices, z_indices)
+      format for mapping 2D ODF array to 3D voxel grid.
+
+    values : ndarray, optional
+
+      Peak values. The shape of the array should be (X, Y, Z, D).
+
+    affine : array, optional
+
+      4x4 transformation array from native coordinates to world coordinates.
+
+    colors : None or string ('rgb_standard') or tuple (3D or 4D) or array/ndarray (N, 3 or 4) or array/ndarray (K, 3 or 4) or array/ndarray(N, ) or array/ndarray (K, )
+
+      If None a standard orientation colormap is used for every line.
+      If one tuple of color is used. Then all streamlines will have the same
+      color.
+      If an array (N, 3 or 4) is given, where N is equal to the number of
+      points. Then every point is colored with a different RGB(A) color.
+      If an array (K, 3 or 4) is given, where K is equal to the number of
+      lines. Then every line is colored with a different RGB(A) color.
+      If an array (N, ) is given, where N is the number of points then these
+      are considered as the values to be used by the colormap.
+      If an array (K,) is given, where K is the number of lines then these
+      are considered as the values to be used by the colormap.
+
+    lookup_colormap : vtkLookupTable, optional
+
+      Add a default lookup table to the colormap. Default is None which calls
+      :func:`fury.actor.colormap_lookup_table`.
+
+    linewidth : float, optional
+
+      Line thickness. Default is 1.
+
+    symmetric: bool, optional
+
+      If True, peaks are drawn for both peaks_dirs and -peaks_dirs. Else,
+      peaks are only drawn for directions given by peaks_dirs. Default is
+      True.
+
+    """  # noqa: E501
 
     @warn_on_args_to_kwargs()
     def __init__(
