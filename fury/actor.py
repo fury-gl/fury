@@ -3482,8 +3482,8 @@ def texture_update(texture_actor, arr):
         This is the new image to be rendered on the actor.
         Dtype should be uint8.
 
-    Implementation
-    --------------
+    Notes
+    -----
     Check docs/examples/viz_video_on_plane.py
 
     """

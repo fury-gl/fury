@@ -1395,8 +1395,8 @@ def gl_reset_blend(gl_state):
     ----------
     gl_state : vtkOpenGLState
 
-    See more
-    ---------
+    References
+    ----------
     [1] https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBlendEquation.xhtml
     [2] https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBlendFunc.xhtml
     vtk specification:
@@ -1449,12 +1449,11 @@ def gl_disable_blend(gl_state):
     ----------
     gl_state : vtkOpenGLState
 
-    See more
-    --------
+    References
+    ----------
     [1] https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glFrontFace.xhtml
 
-    """  # noqa
-
+    """
     gl_state.vtkglDisable(_GL["GL_CULL_FACE"])
     gl_state.vtkglDisable(_GL["GL_BLEND"])
 

@@ -289,4 +289,3 @@ else:
 #               antialiased ray tracing of implicit surfaces." The Visual
 #               Computer 12.10 (1996): 527-545.
 #
-# .. include:: ../links_names.inc
