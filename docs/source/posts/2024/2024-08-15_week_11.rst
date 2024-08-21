@@ -32,8 +32,9 @@ You use the ``App ID`` and ``Private Key`` to make a ``JWT``. You use the ``JWT`
 The problem was that the documentation didn't mention how to generate ``Installation Access Token`` and it kept confusing everyone with ``Installation ID``. Even the names were misleading, since it isn't an ``Installation Token`` in the real sense cause it is already installed. I ended up fixing it by landing at `this StackOverflow Post <https://stackoverflow.com/questions/77325437/how-do-i-get-an-github-app-installation-token-to-authenticate-cloning-a-reposito>`_ which took me to this `Discussions Post <https://github.com/orgs/community/discussions/48186>`_. I think the majority uses `Octokit.js SDK` to generate Access Tokens and regenerate JWTs. Sadly Python has no library so we had to go all manual.
 
 So I ended up sending a PR to GitHub Docs :)
-https://github.com/github/docs/issues/34258
-https://github.com/github/docs/pull/34259
+
+- Issue: https://github.com/github/docs/issues/34258
+- PR: https://github.com/github/docs/pull/34259
 
 
 You can test the GitHub App today! Checkout https://github.com/robinroy03/FURY-data-script/discussions
