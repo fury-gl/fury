@@ -19,7 +19,7 @@ Last week I prototyped and got to know the language and the API. But I can't use
 - Send a webhook to https://robinroy03-github-bot.hf.space/github whenever any change happens.
 - Respond to the webhook as required.
 
-I was told by `Serge <https://github.com/skoudoro>`_ to try and fit the endpoint inside the Discord Bot script. I tried but it was weird so I left it. Discord Bot is set up using threading which is a hack (although it is how every discord bot is set up in HuggingFace). Placing it inside any other repository won't be good so I ended up making another new repository.
+I was told by `Serge <https://github.com/skoudoro>`_ to try and fit the endpoint inside the Discord Bot script. I tried but it was weird so I left it. The Discord Bot is set up using threading which is a hack (although it is how every discord bot is set up in HuggingFace). Placing it inside any other repository won't be good so I ended up making another new repository.
 
 I faced an issue while trying to get the app live. I had another documentation rabbit hole situation. So what ended up happening was I was unable to authenticate myself with the GitHub app to send commands. To command an app you have to authenticate as a `GitHub App Installation`. To authenticate as an App installation, you need 3 key things:
 

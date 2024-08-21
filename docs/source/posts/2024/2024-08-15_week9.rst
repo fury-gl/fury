@@ -17,21 +17,21 @@ Things I did in Week 9
 
 Last week we fine-tuned the Gemini model, but it didn't have an endpoint which we could use to connect with Discord/other frontend applications. I thought it would be a simple task until I realized it wasn't. Some features are still in beta phase, like this one :)
 
-Fine-tuned models need more permissions to be used under an API, cause it is your data (as per Google policy). Google Gemini API provides only 1 way to achieve this right now, and that is by using a short-lived token. Short-lived tokens can't be used on a server cause we'll have to rotate it, and to rotate them I'll need to sign in to my Google account every time, can't program it.
+Fine-tuned models need more permissions to be used under an API, cause it is your data (as per Google policy). Google Gemini API provides only 1 way to achieve this right now, and that is by using a short-lived token. Short-lived tokens can't be used on a server cause we'll have to rotate it, and to rotate them I'll need to sign in to my Google account every time, and I can't program it.
 
-The way we generally solve this is by using a token with no expiry - but Gemini API does not support that. I tried making service accounts to bypass expiry but it was all failing. The documentation does not mention anywhere how to fix this issue either.
+The way we generally solve this is by using a token with no expiry - but the Gemini API does not support that. I tried making service accounts to bypass expiry but it was all failing. The documentation does not mention anywhere how to fix this issue either.
 
 After a lot of googling, I ended up checking the `Google Gemini Cookbook repo <https://github.com/google-gemini/cookbook/>`_, here we have a notebook which talks about this problem! I was so happy seeing `this Authentication_with_OAuth.ipynb file <https://github.com/google-gemini/cookbook/blob/main/quickstarts/Authentication_with_OAuth.ipynb>`_. The solution is to essentially add permission to the fine-tuned model through a REST call. There is no UI/SDK way to do this. You'll have to trigger a certain REST endpoint to update the permissions to "EVERYONE" so anyone can access the fine-tuned model. For FURY it's fine since FURY does not contain any sensitive information.
 
 So right now our workflow is as follows:
  - Fine-tune a model on Google AI Studio.
- - Update model permission using a separate script.
+ - Update model permissions using a separate script.
  - Call through the FURY-Engine API as usual.
 
 
 2) **GraphQL work**
 
-The next thing I did was start working on GitHub integration. Discord Bot is hosted and stable, now it was time to do the same with GitHub. For GitHub, the aim is to use the LLM to give a first response to discussions posts. GitHub uses GraphQL instead of REST APIs.
+The next thing I did was start working on GitHub integration. The Discord Bot is hosted and stable, now it was time to do the same with GitHub. For GitHub, the aim is to use the LLM to give a first response to discussions posts. GitHub uses GraphQL instead of REST APIs.
 
 If you do not know GraphQL you can learn about it in detail from `this YouTube playlist <https://www.youtube.com/playlist?list=PL4cUxeGkcC9gUxtblNUahcsg0WLxmrK_y>`_ and later from the `official docs <https://graphql.org/>`_. But I'll give you a quick explanation anyway since I think the playlist and docs miss this part:
 
@@ -39,7 +39,7 @@ GraphQL is essentially HTTP POST/GET calls. We'll avoid all the jargon here and 
 
 GraphQL is different in the sense it does not have multiple endpoints. There's only one endpoint (example: https://api.github.com/graphql for GitHub). We send all our requests to this endpoint and then the server uses it to do an action and return results. So you may ask "Why" do we need to follow the GraphQL syntax, why not just modify REST API to follow our custom style? You can do that. GraphQL is just a style of doing things that smart people at Meta decided to standardize.
 
-The reason people use GraphQL is cause it reduces the number of queries required. You can read the docs to see example GraphQL queries, it is compact and you can easily get a lot of information with one single call. Different people have different opinions about how to make and consume APIs. But fundamentally it's just another layer of abstraction.
+The reason people use GraphQL is because it reduces the number of queries required. You can read the docs to see example GraphQL queries, it is compact and you can easily get a lot of information with one single call. Different people have different opinions about how to make and consume APIs. But fundamentally it's just another layer of abstraction.
 
 What is coming up next week?
 ----------------------------

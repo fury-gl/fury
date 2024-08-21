@@ -8,7 +8,7 @@ Week 10: Learning GraphQL
 
 Hi, I'm `Robin <https://github.com/robinroy03>`_ and this is my blog about week 10.
 
-This week I worked on GitHub GraphQL implementation. I tested out things and was learning GraphQL properly since I have never used it before.
+This week I worked on the GitHub GraphQL implementation. I tested out things and was learning GraphQL properly since I have never used it before.
 
 
 **Learning and testing GraphQL**
