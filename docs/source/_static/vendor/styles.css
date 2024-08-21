@@ -129,6 +129,7 @@ em {
 #feature-card {
     height: 475px;
 }
+
 #backtotop.visible #backtotop-color:hover {
     background: var(--colorHighlight);
 }
@@ -159,7 +160,7 @@ p {
     margin-left: 15px;
 }
 
-.content-container  ol {
+.content-container ol {
     padding: 10px;
     margin-left: 15px;
 }
@@ -248,6 +249,23 @@ p {
     background-color: var(--colorPrimaryDark);
 }
 
+.footer-columns {
+    display: flex;
+    font-weight: bold;
+    justify-content: space-between;
+    padding: 20px 5vw;
+    padding-top: 0;
+    font-family: Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.footer-columns a {
+    color: #fff;
+}
+
+.footer-columns a:hover {
+    color: #fff;
+}
+
 .footer-logo-column {
     display: flex;
     justify-content: center;
@@ -266,9 +284,12 @@ p {
     flex-shrink: 1;
 }
 
-.footer-link, .footer-link:hover {
+.footer-link {
     font-size: 1rem;
-    color: var(--colorSecondary);
+}
+
+.footer-link .footer-link:hover {
+    color: var(--colorPrimaryLight);
 }
 
 .footer-actions {
@@ -276,7 +297,7 @@ p {
     margin: 20px 25px;
 }
 
-.footer-actions > p {
+.footer-actions>p {
     padding-top: 0;
 }
 
@@ -330,6 +351,10 @@ blockquote p::after {
 
 @media only screen and (max-width: 850px) {
 
+    .footer-columns {
+        flex-direction: column;
+    }
+
     .footer-column ul.link-list li.link-list {
         width: calc(50% - 24px);
         display: inline-block;
@@ -356,7 +381,7 @@ div.sphx-glr-download a {
 
 div.sphx-glr-download a:hover {
     background-color: var(--colorPrimaryDark);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 1px 5px rgba(0,0,0,.25);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 1px 5px rgba(0, 0, 0, .25);
     text-decoration: none;
     background-image: none;
 }
