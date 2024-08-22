@@ -38,12 +38,14 @@ Proposed Objectives
 The objectives of the GSoC project could be broadly classified as:
 
 - **Figuring out hosting.**
+
     We had a constraint on hosting to try and minimize the cost. We managed to complete the whole project with 100% free hosting. Work here included:
         * Experiments with `Google Colab <https://colab.research.google.com/>`_ notebook hosting.
         * Experiments with `Kaggle <https://www.kaggle.com/>`_ notebook hosting.
         * Experiments with `HuggingFace <https://huggingface.co/>`_ spaces hosting.
 
 - **Choosing the technologies to use.**
+
     Work here included:
         * Experiments with local `GGUF (GPT-Generated Unified Format) <https://vickiboykis.com/2024/02/28/gguf-the-long-way-around/>`_ models.
         * Experiments with different quantizations.
@@ -53,6 +55,7 @@ The objectives of the GSoC project could be broadly classified as:
         * Experiments with `Google Gemini <gemini.google.com>`_.
 
 - **Work on the backend architecture.**
+
     Backend architecture was heavily influenced by HuggingFace and its limitations. Work here included:
         * Choosing the API architecture.
         * Integrating different models.
@@ -60,6 +63,7 @@ The objectives of the GSoC project could be broadly classified as:
         * Improving the UX of the endpoints.
 
 - **Work on improving model accuracy.**
+
     This was a recurring work and kept happening on most weeks. It included:
         * Model Benchmarking
         * Data Collection
@@ -69,12 +73,14 @@ The objectives of the GSoC project could be broadly classified as:
         * Experiments on Retrieval quantity.
 
 - **Discord Bot integration.**
+
     The work included:
         * Building the Discord Bot.
         * Improving the UX of the bot.
         * Improving the performance of the bot.
 
 - **GitHub App integration.**
+
     The work included:
         * Building the GitHub App integration.
         * Improving the UX of the integration.
@@ -95,7 +101,7 @@ Objectives Completed
         This endpoint converts natural language to embeddings. The model is loaded using HuggingFace SentenceTransformer.
 
     * `Ollama Endpoint <https://huggingface.co/spaces/robinroy03/ollama-server-backend/tree/main>`_
-        This endpoint could be used to communicate with the Ollama models. The perk of using this is it is more convenient and generally faster. A separate repository was required because a single free HuggingFace Space cannot allocate more than 16 GB RAM and 2vCPUs. Token generation speed will be hit if it's not a seperate repository.
+        This endpoint could be used to communicate with the Ollama models. The perk of using this is it is more convenient and generally faster. A separate repository was required because a single free HuggingFace Space cannot allocate more than 16 GB RAM and 2vCPUs. Token generation speed will be hit if it's not a separate repository.
 
     * `Database Endpoint <https://huggingface.co/spaces/robinroy03/fury-db-endpoint/tree/main>`_
         This endpoint was used to get the K-Nearest (or Approximate) embeddings based on cosine similarity. The parameter K could be passed to adjust it. We used Pinecone as the database.
@@ -104,7 +110,7 @@ Objectives Completed
         The repository for the Discord bot. It was required to use threading here which is a quirk of HuggingFace. HuggingFace server only activates once there is an active live endpoint. Discord did not need an endpoint, but we had to make one to get the server activated. The Discord bot ran on a separate thread while a server ran on the main thread.
     
     * `FURY external cloud endpoints <https://huggingface.co/spaces/robinroy03/fury-bot/tree/main>`_
-        This repository orchestrated external APIs from 3rd party providers like Groq and Gemini. We made it a seperate repo to abstract the logic and simplify calling different endpoints as required. You can hot-swap multiple LLM models by changing the REST API parameters.
+        This repository orchestrated external APIs from 3rd party providers like Groq and Gemini. We made it a separate repo to abstract the logic and simplify calling different endpoints as required. You can hot-swap multiple LLM models by changing the REST API parameters.
 
     * `GitHub App <https://huggingface.co/spaces/robinroy03/github-bot/tree/main>`_
         Repository for the GitHub application. Receives webhooks from GitHub and acts upon them using GraphQL queries.
@@ -211,6 +217,7 @@ Other Objectives
     This will continue till I'm satisfied. It's a never ending journey :) Much of this GSoC was setting up things and getting it all to work as one piece. There are tons of new ideas coming up every day to increase LLM accuracy. I'll explore them and try interesting ones.
 
 - **Tests for all endpoints** (ongoing)
+
     It's important to have tests for all endpoints. Testing includes the following:
         * Check the endpoints with valid data to see the response. Validate the JSON format.
         * Check the endpoints with incorrect schema and record the response.
