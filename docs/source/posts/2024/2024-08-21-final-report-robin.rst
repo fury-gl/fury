@@ -38,52 +38,53 @@ Proposed Objectives
 The objectives of the GSoC project could be broadly classified as:
 
 - **Figuring out hosting.**
-
     We had a constraint on hosting to try and minimize the cost. We managed to complete the whole project with 100% free hosting. Work here included:
-        * Experiments with `Google Colab <https://colab.research.google.com/>`_ notebook hosting.
-        * Experiments with `Kaggle <https://www.kaggle.com/>`_ notebook hosting.
-        * Experiments with `HuggingFace <https://huggingface.co/>`_ spaces hosting.
+
+    * Experiments with `Google Colab <https://colab.research.google.com/>`_ notebook hosting.
+    * Experiments with `Kaggle <https://www.kaggle.com/>`_ notebook hosting.
+    * Experiments with `HuggingFace <https://huggingface.co/>`_ spaces hosting.
 
 - **Choosing the technologies to use.**
-
     Work here included:
-        * Experiments with local `GGUF (GPT-Generated Unified Format) <https://vickiboykis.com/2024/02/28/gguf-the-long-way-around/>`_ models.
-        * Experiments with different quantizations.
-        * Experiments with `Ollama <https://ollama.com/>`_.
-        * Experiments with `LlamaCPP. <https://github.com/ggerganov/llama.cpp>`_
-        * Experiments with `Groq <https://groq.com/>`_.
-        * Experiments with `Google Gemini <gemini.google.com>`_.
+
+    * Experiments with local `GGUF (GPT-Generated Unified Format) <https://vickiboykis.com/2024/02/28/gguf-the-long-way-around/>`_ models.
+    * Experiments with different quantizations.
+    * Experiments with `Ollama <https://ollama.com/>`_.
+    * Experiments with `LlamaCPP. <https://github.com/ggerganov/llama.cpp>`_
+    * Experiments with `Groq <https://groq.com/>`_.
+    * Experiments with `Google Gemini <gemini.google.com>`_.
 
 - **Work on the backend architecture.**
-
     Backend architecture was heavily influenced by HuggingFace and its limitations. Work here included:
-        * Choosing the API architecture.
-        * Integrating different models.
-        * Improving concurrent requests support.
-        * Improving the UX of the endpoints.
+
+    * Choosing the API architecture.
+    * Integrating different models.
+    * Improving concurrent requests support.
+    * Improving the UX of the endpoints.
 
 - **Work on improving model accuracy.**
-
     This was a recurring work and kept happening on most weeks. It included:
-        * Model Benchmarking
-        * Data Collection
-        * Experiments on Retrieval Augmented Generation.
-        * Experiments on Fine-Tuning.
-        * Experiments on Chunking.
-        * Experiments on Retrieval quantity.
+
+    * Model Benchmarking
+    * Data Collection
+    * Experiments on Retrieval Augmented Generation.
+    * Experiments on Fine-Tuning.
+    * Experiments on Chunking.
+    * Experiments on Retrieval quantity.
 
 - **Discord Bot integration.**
-
     The work included:
-        * Building the Discord Bot.
-        * Improving the UX of the bot.
-        * Improving the performance of the bot.
+
+    * Building the Discord Bot.
+    * Improving the UX of the bot.
+    * Improving the performance of the bot.
 
 - **GitHub App integration.**
-
     The work included:
-        * Building the GitHub App integration.
-        * Improving the UX of the integration.
+
+    * Building the GitHub App integration.
+    * Improving the UX of the integration.
+
 
 Objectives Completed
 --------------------
@@ -108,7 +109,7 @@ Objectives Completed
 
     * `FURY Discord Bot <https://huggingface.co/spaces/robinroy03/Fury-Discord-Bot/tree/main>`_
         The repository for the Discord bot. It was required to use threading here which is a quirk of HuggingFace. HuggingFace server only activates once there is an active live endpoint. Discord did not need an endpoint, but we had to make one to get the server activated. The Discord bot ran on a separate thread while a server ran on the main thread.
-    
+
     * `FURY external cloud endpoints <https://huggingface.co/spaces/robinroy03/fury-bot/tree/main>`_
         This repository orchestrated external APIs from 3rd party providers like Groq and Gemini. We made it a separate repo to abstract the logic and simplify calling different endpoints as required. You can hot-swap multiple LLM models by changing the REST API parameters.
 
@@ -130,7 +131,7 @@ Objectives Completed
 
     .. image:: /_static/images/gsoc_llm_robin_week5.jpg
         :alt: Present backend architecture
-        
+
 
     You're only hitting the FURY Engine endpoint, the remaining are all abstracted away. You can tell the engine you need to use Gemini and it'll do that for you. This is also expandable, if you have a new provider, you can add a new endpoint and connect it to FURY Engine.
 
@@ -217,11 +218,11 @@ Other Objectives
     This will continue till I'm satisfied. It's a never ending journey :) Much of this GSoC was setting up things and getting it all to work as one piece. There are tons of new ideas coming up every day to increase LLM accuracy. I'll explore them and try interesting ones.
 
 - **Tests for all endpoints** (ongoing)
-
     It's important to have tests for all endpoints. Testing includes the following:
-        * Check the endpoints with valid data to see the response. Validate the JSON format.
-        * Check the endpoints with incorrect schema and record the response.
-        * Test by adjusting parameters like KNN.
+
+    * Check the endpoints with valid data to see the response. Validate the JSON format.
+    * Check the endpoints with incorrect schema and record the response.
+    * Test by adjusting parameters like KNN.
 
 - **X Bot** (Optional Goal, deferred for now)
     I had a talk about this with my mentors. This can be done by plugging the LLM backend into an X bot frontend, but they suggested spending my time improving model accuracy rather than simply adding another frontend for the LLM application.
