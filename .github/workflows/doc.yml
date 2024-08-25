@@ -46,7 +46,7 @@ jobs:
     - name: Build docs
       run: |
         cd docs
-        make -C . html-no-examples
+        make -C . html-no-examples SPHINXOPTS="-W --keep-going"
     - name: Deploy Devs
       if: success() && github.ref == 'refs/heads/master'
       uses: JamesIves/github-pages-deploy-action@v4
