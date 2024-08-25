@@ -16,7 +16,7 @@ I also continued working on the ellipsoid tutorial, which I hope to finish this 
 What is coming up next?
 -----------------------
 
-I will finish defining some details of the tutorial so that it is ready for review, and now I will start working on the tutorial related to the uncertainty, while I receive feedback on the other PRs. Also, as preparation for the next step I will start exploring on how to address visualization of spherical harmonics for ODF glyphs visualization, I found that a previous GSoC participant at FURY started working on that and also did several work with raymarching and SDF (:doc:`here is a summary of the work <../2020/2020-08-24-final-work-lenix>`_), so I will take a deeper look on that to see if I can get something useful I can start with.
+I will finish defining some details of the tutorial so that it is ready for review, and now I will start working on the tutorial related to the uncertainty, while I receive feedback on the other PRs. Also, as preparation for the next step I will start exploring on how to address visualization of spherical harmonics for ODF glyphs visualization, I found that a previous GSoC participant at FURY started working on that and also did several work with raymarching and SDF (`here is a summary of the work <../2020/2020-08-24-final-work-lenix>`_), so I will take a deeper look on that to see if I can get something useful I can start with.
 
 Did I get stuck anywhere?
 -------------------------
