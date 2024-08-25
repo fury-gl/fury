@@ -20,16 +20,16 @@ Google Summer of Code Final Work Product
     :tags: google
     :category: gsoc
 
-- **Name:** `Robin Roy <https://github.com/robinroy03>`_
-- **Organization:** Python Software Foundation
-- **Sub-Organization:** FURY
-- **Project:** `Improving Community Engagement: AI communication automation using LLM <https://github.com/fury-gl/fury/wiki/Google-Summer-of-Code-2024-(GSOC2024)#project-2-improving-community-engagement-ai-communication-automation-using-llm>`_
+- **Name:** `Robin Roy <https://github.com/robinroy03>`__
+- **Organization:** `Python Software Foundation <https://www.python.org/psf-landing/>`__
+- **Sub-Organization:** `FURY <https://fury.gl/latest/index.html>`__
+- **Project:** `Improving Community Engagement: AI communication automation using LLM <https://github.com/fury-gl/fury/wiki/Google-Summer-of-Code-2024-(GSOC2024)#project-2-improving-community-engagement-ai-communication-automation-using-llm>`__
 
 
 Abstract
 --------
 
-The goal of this project was to implement a `Large Language Model(LLM) <https://developers.google.com/machine-learning/resources/intro-llms>`_ chatbot that understands the FURY repository. The purpose of the project is to reduce the barrier of entry to scientific visualization. `Retrieval Augmented Generation(RAG) <https://www.pinecone.io/learn/retrieval-augmented-generation/>`_ was used to get the necessary context for every user query. Multiple variations were explored, including Fine-Tuning models, mixing Fine-Tuning and RAG and RAG alone. Multiple `chunking strategies <https://github.com/FullStackRetrieval-com/RetrievalTutorials/blob/main/tutorials/LevelsOfTextSplitting/5_Levels_Of_Text_Splitting.ipynb>`_ were also explored for data collection and storage. The models are served to the user through a Discord Bot and a GitHub App. All the API endpoints are hosted using `HuggingFace Spaces <https://huggingface.co/robinroy03>`_. `Pinecone <https://www.pinecone.io/>`_ was used as the database for storing embeddings. Benchmarking, data collection, and testing were done on `another repository <https://github.com/robinroy03/FURY-data-script>`_.
+The goal of this project was to implement a `Large Language Model (LLM) <https://developers.google.com/machine-learning/resources/intro-llms>`__ chatbot that understands the FURY repository. The purpose of the project is to reduce the barrier of entry to scientific visualization. `Retrieval Augmented Generation (RAG) <https://www.pinecone.io/learn/retrieval-augmented-generation/>`__ was used to get the necessary context for every user query. Multiple variations were explored, including Fine-Tuning models, mixing Fine-Tuning and RAG and RAG alone. Multiple `chunking strategies <https://github.com/FullStackRetrieval-com/RetrievalTutorials/blob/main/tutorials/LevelsOfTextSplitting/5_Levels_Of_Text_Splitting.ipynb>`__ were also explored for data collection and storage. The models are served to the user through a Discord Bot and a GitHub App. All the API endpoints are hosted using `HuggingFace Spaces <https://huggingface.co/robinroy03>`_. `Pinecone <https://www.pinecone.io/>`__ was used as the database for storing embeddings. Benchmarking, data collection, and testing were done on `another repository <https://github.com/robinroy03/FURY-data-script>`__.
 
 
 Proposed Objectives
@@ -40,19 +40,19 @@ The objectives of the GSoC project could be broadly classified as:
 - **Figuring out hosting.**
     We had a constraint on hosting to try and minimize the cost. We managed to complete the whole project with 100% free hosting. Work here included:
 
-    * Experiments with `Google Colab <https://colab.research.google.com/>`_ notebook hosting.
-    * Experiments with `Kaggle <https://www.kaggle.com/>`_ notebook hosting.
-    * Experiments with `HuggingFace <https://huggingface.co/>`_ spaces hosting.
+    * Experiments with `Google Colab <https://colab.research.google.com/>`__ notebook hosting.
+    * Experiments with `Kaggle <https://www.kaggle.com/>`__ notebook hosting.
+    * Experiments with `HuggingFace <https://huggingface.co/>`__ spaces hosting.
 
 - **Choosing the technologies to use.**
     Work here included:
 
-    * Experiments with local `GGUF (GPT-Generated Unified Format) <https://vickiboykis.com/2024/02/28/gguf-the-long-way-around/>`_ models.
+    * Experiments with local `GGUF (GPT-Generated Unified Format) <https://vickiboykis.com/2024/02/28/gguf-the-long-way-around/>`__ models.
     * Experiments with different quantizations.
-    * Experiments with `Ollama <https://ollama.com/>`_.
-    * Experiments with `LlamaCPP. <https://github.com/ggerganov/llama.cpp>`_
-    * Experiments with `Groq <https://groq.com/>`_.
-    * Experiments with `Google Gemini <gemini.google.com>`_.
+    * Experiments with `Ollama <https://ollama.com/>`__.
+    * Experiments with `LlamaCPP. <https://github.com/ggerganov/llama.cpp>`__
+    * Experiments with `Groq <https://groq.com/>`__.
+    * Experiments with `Google Gemini <gemini.google.com>`__.
 
 - **Work on the backend architecture.**
     Backend architecture was heavily influenced by HuggingFace and its limitations. Work here included:
@@ -90,34 +90,37 @@ Objectives Completed
 --------------------
 
 - **Figuring out hosting.**
-    As mentioned, we had a constraint on the cost. So we searched for how to host the application for free. This took us to explore interesting directions like Google Colab and Kaggle Notebooks. In the end, HuggingFace was decided to be the best place. Everything is containerized and currently hosted on HuggingFace.
+    As mentioned, we had a constraint on the cost. We explored different options for free hosting. This took us to explore interesting directions like Google Colab and Kaggle Notebooks. In the end, HuggingFace was decided to be the best place. Everything is containerized and currently hosted on HuggingFace.
 
-    This also meant that all the upcoming design/architectural choices would have to be based on HuggingFace. This will have some weird quirks at some places but overall HuggingFace was an excellent choice for the job.
+    This also meant that all the upcoming design/architectural choices would have to be based on HuggingFace. This will cause some challenges on the Discord bot hosting but overall HuggingFace was a solid choice.
 
-    A very detailed blog on hosting is available `here <https://fury.gl/latest/posts/2024/2024-05-28-week-0-robin.html>`_.
+    A very detailed blog on hosting is available `here <https://fury.gl/latest/posts/2024/2024-05-28-week-0-robin.html>`__.
 
     The plan is to move all the HuggingFace repositories from my account to FURY's account. But here, I'll link to all my repositories which are currently active as I'm writing this report.
 
-    * `Embeddings Endpoint <https://huggingface.co/spaces/robinroy03/fury-embeddings-endpoint/tree/main>`_
+    * `Embeddings Endpoint <https://huggingface.co/spaces/robinroy03/fury-embeddings-endpoint/tree/main>`__
         This endpoint converts natural language to embeddings. The model is loaded using HuggingFace SentenceTransformer.
 
-    * `Ollama Endpoint <https://huggingface.co/spaces/robinroy03/ollama-server-backend/tree/main>`_
+    * `Ollama Endpoint <https://huggingface.co/spaces/robinroy03/ollama-server-backend/tree/main>`__
         This endpoint could be used to communicate with the Ollama models. The perk of using this is it is more convenient and generally faster. A separate repository was required because a single free HuggingFace Space cannot allocate more than 16 GB RAM and 2vCPUs. Token generation speed will be hit if it's not a separate repository.
 
-    * `Database Endpoint <https://huggingface.co/spaces/robinroy03/fury-db-endpoint/tree/main>`_
+    * `Database Endpoint <https://huggingface.co/spaces/robinroy03/fury-db-endpoint/tree/main>`__
         This endpoint was used to get the K-Nearest (or Approximate) embeddings based on cosine similarity. The parameter K could be passed to adjust it. We used Pinecone as the database.
 
-    * `FURY Discord Bot <https://huggingface.co/spaces/robinroy03/Fury-Discord-Bot/tree/main>`_
-        The repository for the Discord bot. It was required to use threading here which is a quirk of HuggingFace. HuggingFace server only activates once there is an active live endpoint. Discord did not need an endpoint, but we had to make one to get the server activated. The Discord bot ran on a separate thread while a server ran on the main thread.
+    * `FURY Discord Bot <https://huggingface.co/spaces/robinroy03/Fury-Discord-Bot/tree/main>`__
+        The repository for the Discord bot. It was required to use threading here which is a side-effect of HuggingFace Spaces. HuggingFace server only activates once there is an active live endpoint. Discord did not need an endpoint, but we had to make one to get the server activated. The Discord bot ran on a separate thread while a server ran on the main thread.
 
-    * `FURY external cloud endpoints <https://huggingface.co/spaces/robinroy03/fury-bot/tree/main>`_
+    * `FURY external cloud endpoints <https://huggingface.co/spaces/robinroy03/fury-bot/tree/main>`__
         This repository orchestrated external APIs from 3rd party providers like Groq and Gemini. We made it a separate repo to abstract the logic and simplify calling different endpoints as required. You can hot-swap multiple LLM models by changing the REST API parameters.
 
-    * `GitHub App <https://huggingface.co/spaces/robinroy03/github-bot/tree/main>`_
+    * `GitHub App <https://huggingface.co/spaces/robinroy03/github-bot/tree/main>`__
         Repository for the GitHub application. Receives webhooks from GitHub and acts upon them using GraphQL queries.
 
-    * `FURY Engine <https://huggingface.co/spaces/robinroy03/fury-engine/tree/main>`_
+    * `FURY Engine <https://huggingface.co/spaces/robinroy03/fury-engine/tree/main>`__
         This is the main endpoint both Discord and GitHub frontend applications hit. It orchestrates all the other endpoints. The architecture of how it works is detailed later below.
+
+    * `FURY Data Parsing/Benchmarking/Testing Repo (GitHub) <https://github.com/robinroy03/FURY-data-script>`__
+        This is a GitHub repository and contains all the parsing, bechmarking and testing scripts.
 
 
 - **Choosing the technologies to use**
@@ -161,7 +164,7 @@ Objectives Completed
 
     You'll get a response from ``llama3-70b-8192`` using ``Groq``. If you do ``https://robinroy03-fury-engine.hf.space/api/google/generate`` you can call any Google Gemini models like ``gemini-1.5-pro`` or ``gemini-1.5-flash``. Same for ``Ollama``.
 
-    A detailed blog on architecture is available `here. <https://fury.gl/latest/posts/2024/2024-07-01-week-5-robin.html>`_
+    A detailed blog on architecture is available `here. <https://fury.gl/latest/posts/2024/2024-07-01-week-5-robin.html>`__
 
 
 - **Work on improving model accuracy**
@@ -169,15 +172,15 @@ Objectives Completed
 
     The Initial version used a naive parser to parse code, later my mentors told me to use an AST parser. I chunked the entire repo using this and it performed relatively better. For model benchmarking, we had 2 tests, one QnA testing and one code testing. If the code compiles, the model gets one point.
 
-    All the benchmarking, data parsing, and database upsertion scripts are `here. <https://github.com/robinroy03/FURY-data-script>`_
+    All the benchmarking, data parsing, and database upsertion scripts are `here. <https://github.com/robinroy03/FURY-data-script>`__
 
     We used an image model called ``moondream2`` to validate the output generated by the model. Since FURY is a graphics library, we need to judge the image to see whether it is correct or not.
 
-    Fine-tuning was done on Google AI Studio. We Fine-Tuned using question/answer pairs from Discord and GitHub discussions. We later tried mixing RAG + Fine-Tuning. A detailed blog on Fine-Tuning is available `here <https://fury.gl/latest/posts/2024/2024-07-27-week8-robin.html>`_.
+    Fine-tuning was done on Google AI Studio. We Fine-Tuned using question/answer pairs from Discord and GitHub discussions. We later tried mixing RAG + Fine-Tuning. A detailed blog on Fine-Tuning is available `here <https://fury.gl/latest/posts/2024/2024-07-27-week8-robin.html>`__.
 
-    A detailed blog on benchmarking is available `here <https://fury.gl/latest/posts/2024/2024-07-01-week-5-robin.html>`_.
+    A detailed blog on benchmarking is available `here <https://fury.gl/latest/posts/2024/2024-07-01-week-5-robin.html>`__.
 
-    A detailed blog on chunking is available `here <https://fury.gl/latest/posts/2024/2024-06-16-week2-robin.html>`_.
+    A detailed blog on chunking is available `here <https://fury.gl/latest/posts/2024/2024-06-16-week2-robin.html>`__.
 
 
 - **Discord Bot integration**
@@ -201,7 +204,7 @@ Objectives Completed
 
 
 - **GitHub App integration**
-    This included building the GitHub app and figuring out how to setup the UX for it. GitHub used GraphQL, but we didn't use a separate GraphQL library for this. We used a custom setup to query GraphQL endpoints. For us who only work with 1 or 2 commands, it works well. The code is `here <https://huggingface.co/spaces/robinroy03/github-bot/tree/main>`_.
+    This included building the GitHub app and figuring out how to setup the UX for it. GitHub used GraphQL, but we didn't use a separate GraphQL library for this. We used a custom setup to query GraphQL endpoints. For us who only work with 1 or 2 commands, it works well. The code is `here <https://huggingface.co/spaces/robinroy03/github-bot/tree/main>`__.
 
     GitHub App UI looks like this:
 
@@ -231,7 +234,7 @@ Other Objectives
 Other Open Source tasks
 -----------------------
 
-GSoC isn't all about what I do with my project. It exists along with the 3 other cool projects my peers - `Wachiou <https://github.com/WassCodeur>`_, `Iñigo <https://github.com/itellaetxe>`_ and `Kaustav <https://github.com/deka27>`_   did. I learnt a lot through them reviewing my PRs and me reviewing their PRs. I attended all the weekly meetings of Wachiou to learn about his progress and to learn new stuff. He attended all my meetings too, which was awesome :)
+GSoC isn't all about what I do with my project. It exists along with the 3 other cool projects my peers - `Wachiou <https://github.com/WassCodeur>`__, `Iñigo <https://github.com/itellaetxe>`__ and `Kaustav <https://github.com/deka27>`__   did. I learnt a lot through them reviewing my PRs and me reviewing their PRs. I attended all the weekly meetings of Wachiou to learn about his progress and to learn new stuff. He attended all my meetings too, which was awesome :)
 
 Contributions to FURY apart from the ones directly part of GSoC:
     * https://github.com/fury-gl/fury/pull/862 - Rendering videos on a cube
@@ -250,7 +253,7 @@ Contributions to other repositories during this time, due to GSoC work:
 Acknowledgement
 ---------------
 
-I am very thankful to my mentors `Serge Koudoro <https://github.com/skoudoro>`_ and `Mohamed Abouagour <https://github.com/m-agour>`_. They were awesome and provided me with a comfortable environment to work in. Also got to thank `Beleswar Prasad Padhi <https://www.linkedin.com/in/3v3ryone>`_ who gave me a very good introduction to opensource. The good thing about open source is I can still work on this (and other FURY projects) till I'm satisfied. I'm excited to continue contributing to the open source community.
+I am very thankful to my mentors `Serge Koudoro <https://github.com/skoudoro>`__ and `Mohamed Abouagour <https://github.com/m-agour>`__. They were awesome and provided me with a comfortable environment to work in. Also got to thank `Beleswar Prasad Padhi <https://www.linkedin.com/in/3v3ryone>`__ who gave me a very good introduction to opensource. The good thing about open source is I can still work on this (and other FURY projects) till I'm satisfied. I'm excited to continue contributing to the open source community.
 
 
 Timeline
@@ -266,40 +269,40 @@ Timeline
      - Blog Post Link
    * - Week 0
      - Community Bonding!
-     - https://fury.gl/latest/posts/2024/2024-05-28-week-0-robin.html
+     - `Blog 0 <https://fury.gl/latest/posts/2024/2024-05-28-week-0-robin.html>`__
    * - Week 1
      - It officially begins…
-     - https://fury.gl/latest/posts/2024/2024-06-06-week-1-robin.html
+     - `Blog 1 <https://fury.gl/latest/posts/2024/2024-06-06-week-1-robin.html>`__
    * - Week 2
      - The first iteration!
-     - https://fury.gl/latest/posts/2024/2024-06-16-week2-robin.html
+     - `Blog 2 <https://fury.gl/latest/posts/2024/2024-06-16-week2-robin.html>`__
    * - Week 3
      - Data Data Data!
-     - https://fury.gl/latest/posts/2024/2024-06-16-week3-robin.html
+     - `Blog 3 <https://fury.gl/latest/posts/2024/2024-06-16-week3-robin.html>`__
    * - Week 4
      - Pipeline Improvements and Taking The Bot Public!
-     - https://fury.gl/latest/posts/2024/2024-07-01-week-4-robin.html
+     - `Blog 4 <https://fury.gl/latest/posts/2024/2024-07-01-week-4-robin.html>`__
    * - Week 5
      - LLM Benchmarking & Architecture Modifications
-     - https://fury.gl/latest/posts/2024/2024-07-01-week-5-robin.html
+     - `Blog 5 <https://fury.gl/latest/posts/2024/2024-07-01-week-5-robin.html>`__
    * - Week 6
      - UI Improvements and RAG performance evaluation
-     - https://fury.gl/latest/posts/2024/2024-07-27-week6-robin.html
+     - `Blog 6 <https://fury.gl/latest/posts/2024/2024-07-27-week6-robin.html>`__
    * - Week 7
      - Surviving final examinations
-     - https://fury.gl/latest/posts/2024/2024-07-27-week7-robin.html
+     - `Blog 7 <https://fury.gl/latest/posts/2024/2024-07-27-week7-robin.html>`__
    * - Week 8
      - Gemini Finetuning
-     - https://fury.gl/latest/posts/2024/2024-07-27-week8-robin.html
+     - `Blog 8 <https://fury.gl/latest/posts/2024/2024-07-27-week8-robin.html>`__
    * - Week 9
-     - None
-     - None
+     - Hosting FineTuned Models
+     - `Blog 9 <https://fury.gl/stable/posts/2024/2024-08-15_week9.html>`__
    * - Week 10
-     - None
-     - None
+     - Learning GraphQL
+     - `Blog 10 <https://fury.gl/stable/posts/2024/2024-08-16_week10.html>`__
    * - Week 11
-     - None
-     - None
+     - Getting the App Live
+     - `Blog 11 <https://fury.gl/stable/posts/2024/2024-08-17_week_11.html>`__
    * - Week 12
-     - None
-     - None
+     - Wrapping things up
+     - `Blog 12 <https://fury.gl/stable/posts/2024/2024-08-20_week_12.html>`__
