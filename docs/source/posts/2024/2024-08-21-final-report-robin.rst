@@ -38,7 +38,7 @@ Proposed Objectives
 The objectives of the GSoC project could be broadly classified as:
 
 - **Figuring out hosting.**
-    We had a constraint on hosting to try and minimize the cost. We managed to complete the whole project with 100% free hosting. Work here included:
+    We were constrained by the need to minimize hosting costs. We managed to complete the whole project with 100% free hosting. Work here included:
 
     * Experiments with `Google Colab <https://colab.research.google.com/>`__ notebook hosting.
     * Experiments with `Kaggle <https://www.kaggle.com/>`__ notebook hosting.
