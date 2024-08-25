@@ -120,7 +120,7 @@ Objectives Completed
         This is the main endpoint both Discord and GitHub frontend applications hit. It orchestrates all the other endpoints. The architecture of how it works is detailed later below.
 
     * `FURY Data Parsing/Benchmarking/Testing Repo (GitHub) <https://github.com/robinroy03/FURY-data-script>`__
-        This is a GitHub repository and contains all the parsing, bechmarking and testing scripts.
+        This is a GitHub repository and contains all the parsing, benchmarking and testing scripts.
 
 
 - **Choosing the technologies to use**
