@@ -4112,3 +4112,93 @@ def odf(
     coeffs = np.dot(np.diag(1 / total * scales), coeffs) * 1.7
 
     return sh_odf(centers, coeffs, degree, sh_basis, scales, opacity)
+
+
+def odf(
+    centers,
+    coeffs,
+    degree=None,
+    sh_basis='descoteaux',
+    scales=1.0,
+    opacity=1.0
+):
+    """
+    FURY actor for visualizing Orientation Distribution Functions (ODFs) given
+    an array of Spherical Harmonics (SH) coefficients.
+
+    Parameters
+    ----------
+    centers : ndarray(N, 3)
+        ODFs positions.
+    coeffs : (N, M) or (N, 6) or (N, 15) or (N, 28) or (N, 45) or (N, 66) or
+        (N, 91) ndarray.
+        Corresponding SH coefficients for the ODFs.
+    degree: int, optional
+        Index of the highest used band of the spherical harmonics basis. Must
+        be even, at least 2 and at most 12. If None the degree is set based on
+        the number of SH coefficients given.
+    sh_basis: str, optional
+        Type of basis (descoteaux, tournier)
+        'descoteaux' for the default ``descoteaux07`` DYPY basis.
+        'tournier' for the default ``tournier07` DYPY basis.
+    scales : float or ndarray (N, )
+        ODFs size.
+    opacity : float
+        Takes values from 0 (fully transparent) to 1 (opaque).
+
+    Returns
+    -------
+    odf: Actor
+
+    """
+
+    if not isinstance(centers, np.ndarray):
+        centers = np.array(centers)
+    if centers.ndim == 1:
+        centers = np.array([centers])
+
+    if not isinstance(coeffs, np.ndarray):
+        coeffs = np.array(coeffs)
+    if coeffs.ndim != 2:
+        if coeffs.ndim == 1:
+            coeffs = np.array([coeffs])
+        else:
+            raise ValueError('coeffs should be a 2D array.')
+    if coeffs.shape[0] != centers.shape[0]:
+        raise ValueError('number of odf glyphs defined does not match with '
+                         'number of centers')
+
+    coeffs_given = coeffs.shape[-1]
+    max_degree = int((np.sqrt(8 * coeffs_given + 1) - 3) / 2)
+    if degree is None:
+        degree = max_degree
+    else:
+        if degree % 2 != 0:
+            warnings.warn('Invalid degree value. Degree must be a positive '
+                          'even number lower or equal to 12. Ignoring passed '
+                          'value and using maximum degree supported by the '
+                          'number of SH coefficients.')
+            degree = max_degree
+        else:
+            coeffs_needed = int(((degree + 1) * (degree + 2)) / 2)
+            if coeffs_given < coeffs_needed:
+                warnings.warn('Not enough number of coefficient for SH of '
+                              'degree {0}, expected at least {1}. Ignoring '
+                              'passed value and using maximum degree supported '
+                              'by the number of SH coefficients.'
+                              .format(degree, coeffs_needed))
+                degree = max_degree
+    coeffs = coeffs[:, :int(((degree + 1) * (degree + 2)) / 2)]
+
+    if not isinstance(scales, np.ndarray):
+        scales = np.array(scales)
+    if scales.size == 1:
+        scales = np.repeat(scales, centers.shape[0])
+    elif scales.size != centers.shape[0]:
+        scales = np.concatenate(
+            (scales, np.ones(centers.shape[0] - scales.shape[0])), axis=None)
+
+    total = np.sum(abs(coeffs), axis=1)
+    coeffs = np.dot(np.diag(1 / total * scales), coeffs) * 1.7
+
+    return sh_odf(centers, coeffs, degree, sh_basis, scales, opacity)
