@@ -44,8 +44,22 @@ def test_save_and_load_polydata():
 
             npt.assert_array_equal(data, out_data)
 
-    npt.assert_raises(IOError, save_polydata, PolyData(), "test.vti")
-    npt.assert_raises(IOError, save_polydata, PolyData(), "test.obj")
+    npt.assert_raises(
+        IOError,
+        save_polydata,
+        PolyData(),
+        "test.vti",
+        binary=False,
+        color_array_name=None,
+    )
+    npt.assert_raises(
+        IOError,
+        save_polydata,
+        PolyData(),
+        "test.obj",
+        binary=False,
+        color_array_name=None,
+    )
     npt.assert_raises(IOError, load_polydata, "test.vti")
     npt.assert_raises(FileNotFoundError, load_polydata, "does-not-exist.obj")
 
@@ -136,21 +150,56 @@ def test_save_load_image():
                     data[..., 0], out_image[..., 0], decimal=0
                 )
 
-    npt.assert_raises(IOError, load_image, invalid_link)
-    npt.assert_raises(IOError, load_image, "test.vtk")
-    npt.assert_raises(IOError, load_image, "test.vtk", use_pillow=False)
     npt.assert_raises(
-        IOError, save_image, np.random.randint(0, 255, size=(50, 3)), "test.vtk"
+        IOError,
+        load_image,
+        invalid_link,
+        as_vtktype=False,
+        use_pillow=True,
+    )
+    npt.assert_raises(
+        IOError,
+        load_image,
+        "test.vtk",
+        as_vtktype=False,
+        use_pillow=True,
+    )
+    npt.assert_raises(
+        IOError,
+        load_image,
+        "test.vtk",
+        as_vtktype=False,
+        use_pillow=False,
     )
     npt.assert_raises(
         IOError,
         save_image,
         np.random.randint(0, 255, size=(50, 3)),
         "test.vtk",
-        use_pillow=False,
+        compression_quality=75,
+        compression_type="deflation",
+        use_pillow=True,
+        dpi=(72, 72),
     )
     npt.assert_raises(
-        IOError, save_image, np.random.randint(0, 255, size=(50, 3, 1, 1)), "test.png"
+        IOError,
+        save_image,
+        np.random.randint(0, 255, size=(50, 3)),
+        "test.vtk",
+        compression_quality=75,
+        compression_type="deflation",
+        use_pillow=False,
+        dpi=(72, 72),
+    )
+    npt.assert_raises(
+        IOError,
+        save_image,
+        np.random.randint(0, 255, size=(50, 3, 1, 1)),
+        "test.png",
+        compression_quality=75,
+        compression_type="deflation",
+        use_pillow=True,
+        dpi=(72, 72),
     )
 
     compression_type = [None, "bits", "random"]
@@ -221,7 +270,13 @@ def test_load_cubemap_texture():
             save_image(data, fname_path)
 
             fnames = [fname_path] * 5
-            npt.assert_raises(IOError, load_cubemap_texture, fnames)
+            npt.assert_raises(
+                IOError,
+                load_cubemap_texture,
+                fnames,
+                interpolate_on=True,
+                mipmap_on=True,
+            )
 
             fnames = [fname_path] * 6
             texture = load_cubemap_texture(fnames)
@@ -234,7 +289,13 @@ def test_load_cubemap_texture():
             )
 
             fnames = [fname_path] * 7
-            npt.assert_raises(IOError, load_cubemap_texture, fnames)
+            npt.assert_raises(
+                IOError,
+                load_cubemap_texture,
+                fnames,
+                interpolate_on=True,
+                mipmap_on=True,
+            )
 
 
 def test_load_sprite_sheet():

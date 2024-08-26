@@ -36,13 +36,11 @@ import sys
 
 import numpy as np
 
-from fury import actor, window
-from fury.stream.client import FuryStreamClient, FuryStreamInteraction
+import fury
 
 # if this example it's not working for you and you're using MacOs
 # uncomment the following line
 # multiprocessing.set_start_method('spawn')
-from fury.stream.server.main import WEBRTC_AVAILABLE, web_server, web_server_raw_array
 
 if __name__ == "__main__":
     interactive = False
@@ -77,23 +75,23 @@ if __name__ == "__main__":
     centers = np.array([[0, 0, 0], [-1, 0, 0], [1, 0, 0]])
     colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
-    actors = actor.sphere(centers, opacity=0.5, radii=0.4, colors=colors)
-    scene = window.Scene()
+    actors = fury.actor.sphere(centers, opacity=0.5, radii=0.4, colors=colors)
+    scene = fury.window.Scene()
 
     scene.add(actors)
 
-    showm = window.ShowManager(scene, size=(window_size[0], window_size[1]))
+    showm = fury.window.ShowManager(scene, size=(window_size[0], window_size[1]))
 
-    stream = FuryStreamClient(
+    stream = fury.stream.FuryStreamClient(
         showm, max_window_size=max_window_size, use_raw_array=use_raw_array
     )
-    stream_interaction = FuryStreamInteraction(
+    stream_interaction = fury.stream.client.FuryStreamInteraction(
         showm, max_queue_size=max_queue_size, use_raw_array=use_raw_array
     )
 
     if use_raw_array:
         p = multiprocessing.Process(
-            target=web_server_raw_array,
+            target=fury.stream.server.web_server_raw_array,
             args=(
                 stream.img_manager.image_buffers,
                 stream.img_manager.info_buffer,
@@ -102,13 +100,13 @@ if __name__ == "__main__":
                 8000,
                 "localhost",
                 True,
-                WEBRTC_AVAILABLE,
+                fury.stream.server.main.WEBRTC_AVAILABLE,
             ),
         )
 
     else:
         p = multiprocessing.Process(
-            target=web_server,
+            target=fury.stream.server.web_server,
             args=(
                 stream.img_manager.image_buffer_names,
                 stream.img_manager.info_buffer_name,
@@ -117,7 +115,7 @@ if __name__ == "__main__":
                 8000,
                 "localhost",
                 True,
-                WEBRTC_AVAILABLE,
+                fury.stream.server.main.WEBRTC_AVAILABLE,
             ),
         )
     p.start()
@@ -143,4 +141,4 @@ if __name__ == "__main__":
     stream.cleanup()
     stream_interaction.cleanup()
 
-    window.record(showm.scene, size=window_size, out_path="viz_interaction.png")
+    fury.window.record(showm.scene, size=window_size, out_path="viz_interaction.png")

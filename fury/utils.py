@@ -2,6 +2,7 @@ import numpy as np
 from scipy.ndimage import map_coordinates
 
 from fury.colormap import line_colors
+from fury.decorators import warn_on_args_to_kwargs
 from fury.lib import (
     VTK_DOUBLE,
     VTK_FLOAT,
@@ -116,7 +117,8 @@ def numpy_to_vtk_colors(colors):
     return vtk_colors
 
 
-def numpy_to_vtk_cells(data, is_coords=True):
+@warn_on_args_to_kwargs()
+def numpy_to_vtk_cells(data, *, is_coords=True):
     """Convert numpy array to a vtk cell array.
 
     Parameters
@@ -172,8 +174,9 @@ def numpy_to_vtk_cells(data, is_coords=True):
     return cell_array
 
 
+@warn_on_args_to_kwargs()
 def numpy_to_vtk_image_data(
-    array, spacing=(1.0, 1.0, 1.0), origin=(0.0, 0.0, 0.0), deep=True
+    array, *, spacing=(1.0, 1.0, 1.0), origin=(0.0, 0.0, 0.0), deep=True
 ):
     """Convert numpy array to a vtk image data.
 
@@ -243,7 +246,8 @@ def map_coordinates_3d_4d(input_array, indices):
         return np.ascontiguousarray(np.array(values_4d).T)
 
 
-def lines_to_vtk_polydata(lines, colors=None):
+@warn_on_args_to_kwargs()
+def lines_to_vtk_polydata(lines, *, colors=None):
     """Create a vtkPolyData with lines and colors.
 
     Parameters
@@ -501,7 +505,8 @@ def get_polydata_colors(polydata):
     return numpy_support.vtk_to_numpy(vtk_colors)
 
 
-def get_polydata_field(polydata, field_name, as_vtk=False):
+@warn_on_args_to_kwargs()
+def get_polydata_field(polydata, field_name, *, as_vtk=False):
     """Get a field from a vtk polydata.
 
     Parameters
@@ -526,7 +531,8 @@ def get_polydata_field(polydata, field_name, as_vtk=False):
     return numpy_support.vtk_to_numpy(vtk_field_data)
 
 
-def add_polydata_numeric_field(polydata, field_name, field_data, array_type=VTK_INT):
+@warn_on_args_to_kwargs()
+def add_polydata_numeric_field(polydata, field_name, field_data, *, array_type=VTK_INT):
     """Add a field to a vtk polydata.
 
     Parameters
@@ -668,7 +674,8 @@ def set_polydata_tangents(polydata, tangents):
     return polydata
 
 
-def set_polydata_colors(polydata, colors, array_name="colors"):
+@warn_on_args_to_kwargs()
+def set_polydata_colors(polydata, colors, *, array_name="colors"):
     """Set polydata colors with a numpy array (ndarrays Nx3 int).
 
     Parameters
@@ -781,8 +788,15 @@ def get_actor_from_polydata(polydata):
     return get_actor_from_polymapper(poly_mapper)
 
 
+@warn_on_args_to_kwargs()
 def get_actor_from_primitive(
-    vertices, triangles, colors=None, normals=None, backface_culling=True, prim_count=1
+    vertices,
+    triangles,
+    *,
+    colors=None,
+    normals=None,
+    backface_culling=True,
+    prim_count=1,
 ):
     """Get actor from a vtkPolyData.
 
@@ -831,9 +845,11 @@ def get_actor_from_primitive(
     return current_actor
 
 
+@warn_on_args_to_kwargs()
 def repeat_sources(
     centers,
     colors,
+    *,
     active_scalars=1.0,
     directions=None,
     source=None,
@@ -972,13 +988,13 @@ def apply_affine(aff, pts):
            [16, 17, 28],
            [20, 23, 36],
            [24, 29, 44]]...)
-    Just to show that in the simple 3D case, it is equivalent to:
+    >>> # Just to show that in the simple 3D case, it is equivalent to:
     >>> (np.dot(aff[:3,:3], pts.T) + aff[:3,3:4]).T #doctest: +ELLIPSIS
     array([[14, 14, 24],
            [16, 17, 28],
            [20, 23, 36],
            [24, 29, 44]]...)
-    But `pts` can be a more complicated shape:
+    >>> # But `pts` can be a more complicated shape:
     >>> pts = pts.reshape((2,2,3))
     >>> apply_affine(aff, pts) #doctest: +ELLIPSIS
     array([[[14, 14, 24],
@@ -1047,7 +1063,8 @@ def get_bounding_box_sizes(actor):
     return (X2 - X1, Y2 - Y1, Z2 - Z1)
 
 
-def get_grid_cells_position(shapes, aspect_ratio=16 / 9.0, dim=None):
+@warn_on_args_to_kwargs()
+def get_grid_cells_position(shapes, *, aspect_ratio=16 / 9.0, dim=None):
     """Construct a XY-grid based on the cells content shape.
 
     This function generates the coordinates of every grid cell. The width and
@@ -1103,7 +1120,8 @@ def shallow_copy(vtk_object):
     return copy
 
 
-def rotate(actor, rotation=(90, 1, 0, 0)):
+@warn_on_args_to_kwargs()
+def rotate(actor, *, rotation=(90, 1, 0, 0)):
     """Rotate actor around axis by angle.
 
     Parameters
@@ -1286,7 +1304,8 @@ def change_vertices_order(triangle):
     return np.array([triangle[2], triangle[1], triangle[0]])
 
 
-def fix_winding_order(vertices, triangles, clockwise=False):
+@warn_on_args_to_kwargs()
+def fix_winding_order(vertices, triangles, *, clockwise=False):
     """Return corrected triangles.
 
     Given an ordering of the triangle's three vertices, a triangle can appear
@@ -1318,7 +1337,8 @@ def fix_winding_order(vertices, triangles, clockwise=False):
     return corrected_triangles
 
 
-def vertices_from_actor(actor, as_vtk=False):
+@warn_on_args_to_kwargs()
+def vertices_from_actor(actor, *, as_vtk=False):
     """Access to vertices from actor.
 
     Parameters
@@ -1339,7 +1359,8 @@ def vertices_from_actor(actor, as_vtk=False):
     return numpy_support.vtk_to_numpy(vtk_array)
 
 
-def colors_from_actor(actor, array_name="colors", as_vtk=False):
+@warn_on_args_to_kwargs()
+def colors_from_actor(actor, *, array_name="colors", as_vtk=False):
     """Access colors from actor which uses polydata.
 
     Parameters
@@ -1392,7 +1413,8 @@ def tangents_from_actor(act):
     return get_polydata_tangents(polydata)
 
 
-def array_from_actor(actor, array_name, as_vtk=False):
+@warn_on_args_to_kwargs()
+def array_from_actor(actor, array_name, *, as_vtk=False):
     """Access array from actor which uses polydata.
 
     Parameters
@@ -1459,7 +1481,8 @@ def compute_bounds(actor):
     actor.GetMapper().GetInput().ComputeBounds()
 
 
-def update_actor(actor, all_arrays=True):
+@warn_on_args_to_kwargs()
+def update_actor(actor, *, all_arrays=True):
     """Update actor.
 
     Parameters
@@ -1524,7 +1547,8 @@ def update_surface_actor_colors(actor, colors):
     )
 
 
-def color_check(pts_len, colors=None):
+@warn_on_args_to_kwargs()
+def color_check(pts_len, *, colors=None):
     """Returns a VTK scalar array containing colors information for each one of
     the points according to the policy defined by the parameter colors.
 
@@ -1580,7 +1604,8 @@ def is_ui(actor):
     return all(hasattr(actor, attr) for attr in ["add_to_scene", "_setup"])
 
 
-def set_actor_origin(actor, center=None):
+@warn_on_args_to_kwargs()
+def set_actor_origin(actor, *, center=None):
     """Change the origin of an actor to a custom position.
 
     Parameters
@@ -1597,3 +1622,36 @@ def set_actor_origin(actor, center=None):
         center = np.mean(vertices)
     vertices[:] -= center
     update_actor(actor)
+
+
+def minmax_norm(data, axis=1):
+    """Returns the min-max normalization of data along an axis.
+
+    Parameters
+    ----------
+    data: ndarray
+        2D array
+    axis: int
+        axis for the function to be applied on
+
+    Returns
+    -------
+    output : ndarray
+
+    """
+
+    if not isinstance(data, np.ndarray):
+        data = np.array(data)
+    if data.ndim == 1:
+        data = np.array([data])
+    elif data.ndim > 2:
+        raise ValueError('the dimension of the array must be 2.')
+
+    minimum = data.min(axis=axis)
+    maximum = data.max(axis=axis)
+    if np.array_equal(minimum, maximum):
+        return data
+    if (axis == 0):
+        return (data - minimum)/(maximum - minimum)
+    if (axis == 1):
+        return (data - minimum[:, None])/(maximum - minimum)[:, None]

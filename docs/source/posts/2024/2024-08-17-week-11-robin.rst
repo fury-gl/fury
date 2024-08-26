@@ -1,0 +1,63 @@
+Week 11: Getting the App Live
+=============================
+
+.. post:: Aug 17 2024
+    :author: Robin Roy
+    :tags: google
+    :category: gsoc
+
+Hi, I'm `Robin <https://github.com/robinroy03>`_ and this is my blog about week 11.
+
+This week I worked on Getting the GitHub App live.
+
+
+**Getting the App Live**
+
+Last week I prototyped and got to know the language and the API. But I can't use my account as an automated bot account. So it was required to make a GitHub App. The architecture for it is as follows:
+
+- Make a GitHub App to listen to Discussion posts
+- Send a webhook to https://robinroy03-github-bot.hf.space/github whenever any change happens.
+- Respond to the webhook as required.
+
+I was told by `Serge <https://github.com/skoudoro>`_ to try and fit the endpoint inside the Discord Bot script. I tried but it was weird so I left it. The Discord Bot is set up using threading which is a hack (although it is how every discord bot is set up in HuggingFace). Placing it inside any other repository won't be good so I ended up making another new repository.
+
+I faced an issue while trying to get the app live. I had another documentation rabbit hole situation. So what ended up happening was I was unable to authenticate myself with the GitHub app to send commands. To command an app you have to authenticate as a `GitHub App Installation`. To authenticate as an App installation, you need 3 key things:
+
+- Installation ID
+- App ID
+- Private Key of the App
+
+You use the ``App ID`` and ``Private Key`` to make a ``JWT``. You use the ``JWT`` with ``Installation ID`` to make an ``Installation Access Token``. You'll now use this ``Installation Access Token`` to authorize you and then send commands to the GitHub App. The ``Access Token`` will expire after 1 hour, so we'll have to regenerate it.
+
+The problem was that the documentation didn't mention how to generate ``Installation Access Token`` and it kept confusing everyone with ``Installation ID``. Even the names were misleading, since it isn't an ``Installation Token`` in the real sense cause it is already installed. I ended up fixing it by landing at `this StackOverflow Post <https://stackoverflow.com/questions/77325437/how-do-i-get-an-github-app-installation-token-to-authenticate-cloning-a-reposito>`_ which took me to this `Discussions Post <https://github.com/orgs/community/discussions/48186>`_. I think the majority uses `Octokit.js SDK` to generate Access Tokens and regenerate JWTs. Sadly Python has no library so we had to go all manual.
+
+So I ended up sending a PR to GitHub Docs :)
+
+- Issue: https://github.com/github/docs/issues/34258
+- PR: https://github.com/github/docs/pull/34259
+
+
+You can test the GitHub App today! Checkout https://github.com/robinroy03/FURY-data-script/discussions
+
+
+What is coming up next week?
+----------------------------
+
+- Week 12 :) I'll be finalizing stuff.
+- Make the GitHub App respond to mentions.
+
+
+Did you get stuck anywhere?
+---------------------------
+
+Was stuck with the documentation but got it fixed.
+
+
+LINKS:
+
+- `StackOverflow Post <https://stackoverflow.com/questions/77325437/how-do-i-get-an-github-app-installation-token-to-authenticate-cloning-a-reposito>`_
+- `Discussions Post <https://github.com/orgs/community/discussions/48186>`_
+- https://github.com/github/docs/issues/34258
+- https://github.com/github/docs/pull/34259
+
+Thank you for reading!

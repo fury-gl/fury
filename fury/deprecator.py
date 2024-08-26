@@ -13,13 +13,9 @@ from inspect import signature
 import re
 import warnings
 
-from fury import __version__
-from fury.optpkg import optional_package
+from packaging import version
 
-# packaging.version.parse is a third-party utility but is used by setuptools
-# (so probably already installed) and is conformant to the current PEP 440.
-# But just if it is not the case, we use distutils
-packaging, have_pkg, _ = optional_package("setuptools.extern.packaging")
+from fury import __version__
 
 _LEADING_WHITE = re.compile(r"^(\s*)")
 
@@ -116,7 +112,7 @@ def cmp_pkg_version(version_str, pkg_version_str=__version__):
     -1
 
     """
-    version_cmp = packaging.version.parse if have_pkg else None
+    version_cmp = version.parse
 
     if any(re.match(r"^[a-z, A-Z]", v) for v in [version_str, pkg_version_str]):
         msg = "Invalid version {0} or {1}".format(version_str, pkg_version_str)

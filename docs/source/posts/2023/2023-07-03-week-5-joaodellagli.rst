@@ -12,7 +12,7 @@ Hello everyone, time for another weekly blogpost! Today, we will talk about taki
 Last Week's Effort
 ------------------
 After having the FBO properly set up, the plan was to finally *render* something to it. Well, I wished for a less bumpy road
-at my :doc:`last blogpost <2023-06-26-week-4-joaodellagli>` but as in this project things apparently tend to go wrong,
+at my :ref:`last blogpost <2023-06-26-week-4-joaodellagli>` but as in this project things apparently tend to go wrong,
 of course the same happened with this step.
 
 

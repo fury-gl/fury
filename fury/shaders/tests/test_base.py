@@ -3,7 +3,6 @@ from tempfile import TemporaryDirectory as InTemporaryDirectory
 
 import numpy as np
 import numpy.testing as npt
-import pytest
 
 from fury import actor, window
 from fury.deprecator import ExpiredDeprecationError
@@ -191,7 +190,7 @@ def test_add_shader_callback():
     scene = window.Scene()
     scene.add(cube)
 
-    showm = window.ShowManager(scene)
+    showm = window.ShowManager(scene=scene)
 
     class Timer:
         idx = 0.0
@@ -232,10 +231,11 @@ def test_add_shader_callback():
         if program is not None:
             test_values.append(0)
 
-    id_observer = add_shader_callback(cone_actor, callbackLow, 0)
+    id_observer = add_shader_callback(cone_actor, callbackLow, priority=0)
 
-    with pytest.raises(Exception):  # noqa: B017
-        add_shader_callback(cone_actor, callbackLow, priority="str")
+    npt.assert_raises(
+        ValueError, add_shader_callback, cone_actor, callbackLow, priority="str"
+    )
 
     mapper = cone_actor.GetMapper()
     mapper.RemoveObserver(id_observer)
@@ -258,10 +258,10 @@ def test_add_shader_callback():
         if program is not None:
             test_values.append(500)
 
-    add_shader_callback(cone_actor, callbackHigh, 999)
-    add_shader_callback(cone_actor, callbackLow, 0)
+    add_shader_callback(cone_actor, callbackHigh, priority=999)
+    add_shader_callback(cone_actor, callbackLow, priority=0)
 
-    id_mean = add_shader_callback(cone_actor, callbackMean, 500)
+    id_mean = add_shader_callback(cone_actor, callbackMean, priority=500)
 
     # check the priority of each call
     window.snapshot(scene, size=(200, 200))

@@ -129,10 +129,10 @@ is_hetatm = np.array(is_hetatm)
 # 3. Creating and adding axes actor to the scene.
 # 4. Computing the bonding information for the molecule.
 # 5. Generating and adding various molecular representations to the scene.
-scene = window.Scene()
+scene = fury.window.Scene()
 scene.set_camera(position=(20, 10, 0), focal_point=(0, 0, 0), view_up=(0, 1, 0))
 scene.zoom(0.8)
-axes_actor = actor.axes()
+axes_actor = fury.actor.axes()
 scene.add(axes_actor)
 
 molecule = mol.Molecule(
@@ -172,9 +172,9 @@ dims = (screen_x_dim, screen_y_dim)
 
 ###############################################################################
 # creating a ShowManager object
-showm = window.ShowManager(scene, size=dims, reset_camera=True, order_transparent=True)
+showm = fury.window.ShowManager(scene, size=dims, reset_camera=True, order_transparent=True)
 
-tb = ui.TextBlock2D(
+tb = fury.ui.TextBlock2D(
     text=pdb_code.upper(),
     position=(screen_x_dim / 2 - 40, screen_y_dim / 12),
     font_size=30,
@@ -189,5 +189,5 @@ if flag:
 
 interactive = False
 if interactive:
-    window.show(scene, size=dims, title=pdb_code.upper())
-window.record(scene, size=dims, out_path=pdb_code.upper() + '.png')
+    fury.window.show(scene, size=dims, title=pdb_code.upper())
+fury.window.record(scene, size=dims, out_path=pdb_code.upper() + '.png')

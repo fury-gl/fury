@@ -14,17 +14,15 @@ import nibabel as nib
 # First, we import some useful modules and methods.
 import numpy as np
 
-from fury import actor, ui, window
-from fury.data import fetch_viz_dmri, fetch_viz_icons, read_viz_dmri
-from fury.utils import fix_winding_order
+import fury
 
 ###############################################################################
 # Here, we fetch and load the fiber ODF volume to display. The ODF are
 # expressed as spherical harmonics (SH) coefficients in a 3D grid.
-fetch_viz_dmri()
-fetch_viz_icons()
+fury.data.fetch_viz_dmri()
+fury.data.fetch_viz_icons()
 
-fodf_img = nib.load(read_viz_dmri("fodf.nii.gz"))
+fodf_img = nib.load(fury.data.read_viz_dmri("fodf.nii.gz"))
 sh = fodf_img.get_fdata()
 affine = fodf_img.affine
 grid_shape = sh.shape[:-1]
@@ -49,7 +47,7 @@ opacity = 1.0
 global_cm = False
 
 # ODF slicer for axial slice
-odf_actor_z = actor.odf_slicer(
+odf_actor_z = fury.actor.odf_slicer(
     sh,
     affine=affine,
     sphere=sphere_low,
@@ -63,7 +61,7 @@ odf_actor_z = actor.odf_slicer(
 )
 
 # ODF slicer for coronal slice
-odf_actor_y = actor.odf_slicer(
+odf_actor_y = fury.actor.odf_slicer(
     sh,
     affine=affine,
     sphere=sphere_low,
@@ -80,7 +78,7 @@ odf_actor_y.display_extent(
 )
 
 # ODF slicer for sagittal slice
-odf_actor_x = actor.odf_slicer(
+odf_actor_x = fury.actor.odf_slicer(
     sh,
     affine=affine,
     sphere=sphere_low,
@@ -96,18 +94,18 @@ odf_actor_x.display_extent(
     grid_shape[0] // 2, grid_shape[0] // 2, 0, grid_shape[1] - 1, 0, grid_shape[2] - 1
 )
 
-scene = window.Scene()
+scene = fury.window.Scene()
 scene.add(odf_actor_z)
 scene.add(odf_actor_y)
 scene.add(odf_actor_x)
 
-show_m = window.ShowManager(scene, reset_camera=True, size=(1200, 900))
+show_m = fury.window.ShowManager(scene, reset_camera=True, size=(1200, 900))
 
 
 ###############################################################################
 # Now that we have a `ShowManager` containing our slicer, we can go on and
 # configure our UI for changing the slices to visualize.
-line_slider_z = ui.LineSlider2D(
+line_slider_z = fury.ui.LineSlider2D(
     min_value=0,
     max_value=grid_shape[2] - 1,
     initial_value=grid_shape[2] / 2,
@@ -115,7 +113,7 @@ line_slider_z = ui.LineSlider2D(
     length=140,
 )
 
-line_slider_y = ui.LineSlider2D(
+line_slider_y = fury.ui.LineSlider2D(
     min_value=0,
     max_value=grid_shape[1] - 1,
     initial_value=grid_shape[1] / 2,
@@ -123,7 +121,7 @@ line_slider_y = ui.LineSlider2D(
     length=140,
 )
 
-line_slider_x = ui.LineSlider2D(
+line_slider_x = fury.ui.LineSlider2D(
     min_value=0,
     max_value=grid_shape[0] - 1,
     initial_value=grid_shape[0] / 2,
@@ -138,7 +136,9 @@ sphere_high = get_sphere("symmetric362")
 
 # We fix the order of the faces' three vertices to a clockwise winding. This
 # ensures all faces have a normal going away from the center of the sphere.
-sphere_high.faces = fix_winding_order(sphere_high.vertices, sphere_high.faces, True)
+sphere_high.faces = fury.utils.fix_winding_order(
+    sphere_high.vertices, sphere_high.faces, True
+)
 B_high = sh_to_sf_matrix(sphere_high, 8, return_inv=False)
 
 ###############################################################################
@@ -147,7 +147,7 @@ sphere_dict = {
     "Low resolution": (sphere_low, B_low),
     "High resolution": (sphere_high, B_high),
 }
-combobox = ui.ComboBox2D(items=list(sphere_dict))
+combobox = fury.ui.ComboBox2D(items=list(sphere_dict))
 scene.add(combobox)
 
 ###############################################################################
@@ -186,7 +186,7 @@ combobox.on_change = change_sphere
 
 
 def build_label(text):
-    label = ui.TextBlock2D()
+    label = fury.ui.TextBlock2D()
     label.message = text
     label.font_size = 18
     label.font_family = "Arial"
@@ -204,7 +204,7 @@ line_slider_label_z = build_label(text="Z Slice")
 line_slider_label_y = build_label(text="Y Slice")
 line_slider_label_x = build_label(text="X Slice")
 
-panel = ui.Panel2D(size=(300, 200), color=(1, 1, 1), opacity=0.1, align="right")
+panel = fury.ui.Panel2D(size=(300, 200), color=(1, 1, 1), opacity=0.1, align="right")
 panel.center = (1030, 120)
 
 panel.add_element(line_slider_label_x, (0.1, 0.75))
@@ -245,7 +245,7 @@ if interactive:
     show_m.render()
     show_m.start()
 else:
-    window.record(
+    fury.window.record(
         scene, out_path="odf_slicer_3D.png", size=(1200, 900), reset_camera=False
     )
 

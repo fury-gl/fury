@@ -400,18 +400,22 @@ def main_dir_uncertainty(evals, evecs, signal, sigma, b_matrix):
     ----------
     evals : ndarray (3, ) or (N, 3)
         Eigenvalues.
+
     evecs : ndarray (3, 3) or (N, 3, 3)
         Eigenvectors.
+
     signal : 3D or 4D ndarray
         Predicted signal.
+
     sigma : ndarray
         Standard deviation of the noise.
+
     b_matrix : array (N, 7)
         Design matrix for DTI.
 
     Returns
     -------
-    angles: array
+    angles : array
 
     Notes
     -----
@@ -421,12 +425,12 @@ def main_dir_uncertainty(evals, evecs, signal, sigma, b_matrix):
     directly from estimated D and its estimated covariance matrix
     :math:`\\Delta D` (see [2]_, equation 4). The angle :math:`\\Theta`
     between the perturbed principal eigenvector of D,
-    :math:`\\epsilon_1+\\Delta\\epsilon_1`, and the estimated eigenvector
+    :math:`\\epsilon_1 + \\Delta\\epsilon_1`, and the estimated eigenvector
     :math:`\\epsilon_1`, measures the angular deviation of the main fiber
     direction and can be approximated by:
 
     .. math::
-        \\Theta=tan^{-1}(\\|\\Delta\\epsilon_1\\|)
+        \\Theta = tan^{-1}(\\|\\Delta \\ epsilon_1\\|)
 
     Giving way to a graphical construct for displaying both the main
     eigenvector of D and its associated uncertainty, with the so-called
@@ -435,13 +439,13 @@ def main_dir_uncertainty(evals, evecs, signal, sigma, b_matrix):
     References
     ----------
     .. [1] Basser, P. J. (1997). Quantifying errors in fiber direction and
-    diffusion tensor field maps resulting from MR noise. In 5th Scientific
-    Meeting of the ISMRM (Vol. 1740).
+        diffusion tensor field maps resulting from MR noise. In 5th Scientific
+        Meeting of the ISMRM (Vol. 1740).
 
     .. [2] Chang, L. C., Koay, C. G., Pierpaoli, C., & Basser, P. J. (2007).
-    Variance of estimated DTI-derived parameters via first-order perturbation
-    methods. Magnetic Resonance in Medicine: An Official Journal of the
-    International Society for Magnetic Resonance in Medicine, 57(1), 141-149.
+        Variance of estimated DTI-derived parameters via first-order perturbation
+        methods. Magnetic Resonance in Medicine: An Official Journal of the
+        International Society for Magnetic Resonance in Medicine, 57(1), 141-149.
 
     """
     angles = np.ones(evecs.shape[0])

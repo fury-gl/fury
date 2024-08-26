@@ -54,6 +54,7 @@ from fury.utils import (
     update_surface_actor_colors,
     vertices_from_actor,
     vtk_matrix_to_numpy,
+    minmax_norm,
 )
 
 dipy, have_dipy, _ = optional_package("dipy")
@@ -135,7 +136,7 @@ def test_polydata_lines():
     line_2 = line_1 + np.array([0.5, 0.0, 0.0])
     lines = [line_1, line_2]
 
-    pd_lines, is_cmap = utils.lines_to_vtk_polydata(lines, colors)
+    pd_lines, is_cmap = utils.lines_to_vtk_polydata(lines, colors=colors)
     res_lines = utils.get_polydata_lines(pd_lines)
     npt.assert_array_equal(lines, res_lines)
     npt.assert_equal(is_cmap, False)
@@ -440,7 +441,14 @@ def test_numpy_to_vtk_image_data():
     numpy_img_array = numpy_support.vtk_to_numpy(vtk_img_array)
     npt.assert_equal(np.flipud(array), numpy_img_array.reshape(h, w, elements))
 
-    npt.assert_raises(IOError, utils.numpy_to_vtk_image_data, np.array([1, 2, 3]))
+    npt.assert_raises(
+        IOError,
+        utils.numpy_to_vtk_image_data,
+        np.array([1, 2, 3]),
+        spacing=(1, 1, 1),
+        origin=(0, 0, 0),
+        deep=True,
+    )
 
 
 def test_get_grid_cell_position():
@@ -475,7 +483,7 @@ def test_rotate(interactive=False):
 
     rot = (90, 1, 0, 0)
 
-    rotate(act2, rot)
+    rotate(act2, rotation=rot)
 
     act3 = utils.shallow_copy(act)
 
@@ -483,7 +491,7 @@ def test_rotate(interactive=False):
 
     rot = (90, 0, 1, 0)
 
-    rotate(act3, rot)
+    rotate(act3, rotation=rot)
 
     scene.add(act3)
 
@@ -554,7 +562,7 @@ def test_vertices_from_actor(interactive=False):
     big_verts = res[0]
     big_faces = res[1]
     big_colors = res[2]
-    actr = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    actr = get_actor_from_primitive(big_verts, big_faces, colors=big_colors)
     actr.GetProperty().BackfaceCullingOff()
     if interactive:
         scene = window.Scene()
@@ -643,7 +651,14 @@ def test_get_actor_from_primitive():
     vertices, triangles = fp.prim_frustum()
     colors = np.array([1, 0, 0])
     npt.assert_raises(
-        ValueError, get_actor_from_primitive, vertices, triangles, colors=colors
+        ValueError,
+        get_actor_from_primitive,
+        vertices,
+        triangles,
+        colors=colors,
+        normals=None,
+        backface_culling=True,
+        prim_count=1,
     )
 
 
@@ -824,7 +839,7 @@ def test_color_check():
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
     colors = np.array([[1, 0, 0, 0.5], [0, 1, 0, 0.5], [0, 0, 1, 0.5]])
 
-    color_tuple = color_check(len(points), colors)
+    color_tuple = color_check(len(points), colors=colors)
     color_array, global_opacity = color_tuple
 
     npt.assert_equal(color_array, np.floor(colors * 255))
@@ -833,7 +848,7 @@ def test_color_check():
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
     colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
-    color_tuple = color_check(len(points), colors)
+    color_tuple = color_check(len(points), colors=colors)
     color_array, global_opacity = color_tuple
 
     npt.assert_equal(color_array, np.floor(colors * 255))
@@ -842,7 +857,7 @@ def test_color_check():
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
     colors = (1, 1, 1, 0.5)
 
-    color_tuple = color_check(len(points), colors)
+    color_tuple = color_check(len(points), colors=colors)
     color_array, global_opacity = color_tuple
 
     npt.assert_equal(color_array, np.floor(np.array([colors] * 3) * 255))
@@ -851,7 +866,7 @@ def test_color_check():
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
     colors = (1, 0, 0)
 
-    color_tuple = color_check(len(points), colors)
+    color_tuple = color_check(len(points), colors=colors)
     color_array, global_opacity = color_tuple
 
     npt.assert_equal(color_array, np.floor(np.array([colors] * 3) * 255))
@@ -878,12 +893,17 @@ def test_is_ui():
 
 def test_empty_list_to_polydata():
     lines = [[]]
-    npt.assert_raises(ValueError, utils.lines_to_vtk_polydata, lines)
+    npt.assert_raises(
+        ValueError,
+        utils.lines_to_vtk_polydata,
+        lines,
+        colors=None,
+    )
 
 
 def test_empty_array_to_polydata():
     lines = np.array([[]])
-    npt.assert_raises(ValueError, utils.lines_to_vtk_polydata, lines)
+    npt.assert_raises(ValueError, utils.lines_to_vtk_polydata, lines, colors=None)
 
 
 @pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
@@ -891,7 +911,7 @@ def test_empty_array_sequence_to_polydata():
     from dipy.tracking.streamline import Streamlines
 
     lines = Streamlines()
-    npt.assert_raises(ValueError, utils.lines_to_vtk_polydata, lines)
+    npt.assert_raises(ValueError, utils.lines_to_vtk_polydata, lines, colors=None)
 
 
 def test_set_polydata_primitives_count():
@@ -944,10 +964,38 @@ def test_set_actor_origin():
     cube = actor.cube(np.array([[0, 0, 0]]))
     orig_vert = np.copy(vertices_from_actor(cube))
 
-    utils.set_actor_origin(cube, np.array([0.5, 0.5, 0.5]))
+    utils.set_actor_origin(cube, center=np.array([0.5, 0.5, 0.5]))
     new_vert = np.copy(vertices_from_actor(cube))
     npt.assert_array_equal(orig_vert, new_vert + np.array([0.5, 0.5, 0.5]))
 
     utils.set_actor_origin(cube)
     centered_cube_vertices = np.copy(vertices_from_actor(cube))
     npt.assert_array_equal(orig_vert, centered_cube_vertices)
+
+
+def test_minmax_normalization():
+    data1d = np.array([2, -2, 5, -1, 8])
+    actual_data1d = minmax_norm(data1d)
+    expected_data1d = np.array([[0.4, 0. , 0.7, 0.1, 1. ]])
+    npt.assert_array_almost_equal(actual_data1d, expected_data1d, decimal=1)
+
+    data3d = np.array([[[2, 7, 7, 9], [2, -1, -3, 5]],
+                     [[-4, 5, 6, 0], [1, 1, -9, 3]]])
+    npt.assert_raises(ValueError, utils.minmax_norm, data3d)
+    
+    data = np.array([[1, 2, -1, 3], [4, -1, 3, 5], [-1, 9, 8, 0]])
+    actual = minmax_norm(data, axis=0)
+    expected = np.array([[0.4, 0.3, 0, 0.6], [1, 0, 0.444, 1], [0, 1, 1, 0]])
+    npt.assert_array_almost_equal(actual, expected, decimal=3)
+    actual = minmax_norm(data, axis=1)
+    expected = np.array([[0.5, 0.75, 0, 1], [0.833, 0, 0.666, 1],
+                         [0, 1, 0.9, 0.1]])
+    npt.assert_array_almost_equal(actual, expected, decimal=3)
+
+    data2 = np.array([1, 3, 9, 6])
+    actual2 = minmax_norm(data2, axis=0)
+    expected2 = np.array([[1, 3, 9, 6]])
+    npt.assert_array_equal(actual2, expected2)
+    actual2 = minmax_norm(data2, axis=1)
+    expected2 = np.array([[0, 0.25, 1, 0.625]])
+    npt.assert_array_almost_equal(actual2, expected2, decimal=3)

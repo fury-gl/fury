@@ -5,6 +5,7 @@ from warnings import warn
 import numpy as np
 
 from fury.actor import grid
+from fury.decorators import warn_on_args_to_kwargs
 from fury.io import load_image
 from fury.lib import (
     CellArray,
@@ -32,9 +33,11 @@ class Panel2D(UI):
 
     """
 
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
         size,
+        *,
         position=(0, 0),
         color=(0.1, 0.1, 0.1),
         opacity=0.7,
@@ -68,7 +71,7 @@ class Panel2D(UI):
         self.has_border = has_border
         self._border_color = border_color
         self._border_width = border_width
-        super(Panel2D, self).__init__(position)
+        super(Panel2D, self).__init__(position=position)
         self.resize(size)
         self.alignment = align
         self.color = color
@@ -205,7 +208,8 @@ class Panel2D(UI):
     def opacity(self, opacity):
         self.background.opacity = opacity
 
-    def add_element(self, element, coords, anchor="position"):
+    @warn_on_args_to_kwargs()
+    def add_element(self, element, coords, *, anchor="position"):
         """Add a UI component to the panel.
 
         The coordinates represent an offset from the lower left corner of the
@@ -255,7 +259,8 @@ class Panel2D(UI):
         del self._elements[idx]
         del self.element_offsets[idx]
 
-    def update_element(self, element, coords, anchor="position"):
+    @warn_on_args_to_kwargs()
+    def update_element(self, element, coords, *, anchor="position"):
         """Update the position of a UI component in the panel.
 
         Parameters
@@ -271,7 +276,7 @@ class Panel2D(UI):
 
         """
         self.remove_element(element)
-        self.add_element(element, coords, anchor)
+        self.add_element(element, coords, anchor=anchor)
 
     def left_button_pressed(self, i_ren, _obj, panel2d_object):
         click_pos = np.array(i_ren.event.position)
@@ -382,8 +387,10 @@ class TabPanel2D(UI):
 
     """
 
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
+        *,
         position=(0, 0),
         size=(100, 100),
         title="New Tab",
@@ -572,7 +579,8 @@ class TabPanel2D(UI):
         """
         self.text_block.italic = italic
 
-    def add_element(self, element, coords, anchor="position"):
+    @warn_on_args_to_kwargs()
+    def add_element(self, element, coords, *, anchor="position"):
         """Add a UI component to the content panel.
 
         The coordinates represent an offset from the lower left corner of the
@@ -590,7 +598,7 @@ class TabPanel2D(UI):
 
         """
         element.set_visibility(False)
-        self.content_panel.add_element(element, coords, anchor)
+        self.content_panel.add_element(element, coords, anchor=anchor)
 
     def remove_element(self, element):
         """Remove a UI component from the content panel.
@@ -603,7 +611,8 @@ class TabPanel2D(UI):
         """
         self.content_panel.remove_element(element)
 
-    def update_element(self, element, coords, anchor="position"):
+    @warn_on_args_to_kwargs()
+    def update_element(self, element, coords, *, anchor="position"):
         """Update the position of a UI component in the content panel.
 
         Parameters
@@ -631,8 +640,10 @@ class TabUI(UI):
 
     """
 
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
+        *,
         position=(0, 0),
         size=(100, 100),
         nb_tabs=1,
@@ -835,10 +846,11 @@ class TabUI(UI):
         iren.force_render()
         iren.event.abort()
 
-    def add_element(self, tab_idx, element, coords, anchor="position"):
+    @warn_on_args_to_kwargs()
+    def add_element(self, tab_idx, element, coords, *, anchor="position"):
         """Add element to content panel after checking its existence."""
         if tab_idx < self.nb_tabs and tab_idx >= 0:
-            self.tabs[tab_idx].add_element(element, coords, anchor)
+            self.tabs[tab_idx].add_element(element, coords, anchor=anchor)
             if tab_idx == self.active_tab_idx:
                 element.set_visibility(True)
         else:
@@ -851,10 +863,11 @@ class TabUI(UI):
         else:
             raise IndexError("Tab with index " "{} does not exist".format(tab_idx))
 
-    def update_element(self, tab_idx, element, coords, anchor="position"):
+    @warn_on_args_to_kwargs()
+    def update_element(self, tab_idx, element, coords, *, anchor="position"):
         """Update element on content panel after checking its existence."""
         if tab_idx < self.nb_tabs and tab_idx >= 0:
-            self.tabs[tab_idx].update_element(element, coords, anchor)
+            self.tabs[tab_idx].update_element(element, coords, anchor=anchor)
         else:
             raise IndexError("Tab with index " "{} does not exist".format(tab_idx))
 
@@ -886,7 +899,8 @@ class ImageContainer2D(UI):
 
     """
 
-    def __init__(self, img_path, position=(0, 0), size=(100, 100)):
+    @warn_on_args_to_kwargs()
+    def __init__(self, img_path, *, position=(0, 0), size=(100, 100)):
         """Init class instance.
 
         Parameters
@@ -899,7 +913,7 @@ class ImageContainer2D(UI):
             Width and height in pixels of the image.
 
         """
-        super(ImageContainer2D, self).__init__(position)
+        super(ImageContainer2D, self).__init__(position=position)
         self.img = load_image(img_path, as_vtktype=True)
         self.set_img(self.img)
         self.resize(size)
@@ -1028,9 +1042,11 @@ class ImageContainer2D(UI):
 class GridUI(UI):
     """Add actors in a grid and interact with them individually."""
 
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
         actors,
+        *,
         captions=None,
         caption_offset=(0, -100, 0),
         cell_padding=0,

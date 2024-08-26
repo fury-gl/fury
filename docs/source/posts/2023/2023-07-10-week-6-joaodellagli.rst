@@ -9,9 +9,11 @@ Week 6: Things are Starting to Build Up
 
 Hello everyone, time for a other weekly blogpost! Today, I will show you my current progress on my project and latest activities.
 
+W
 What I did Last Week
 --------------------
-Last week I had the goal to implement KDE rendering to the screen (if you want to understand what this is, check my :doc:`last blogpost <2023-07-03-week-5-joaodellagli>`_).
+
+Last week I had the goal to implement KDE rendering to the screen (if you want to understand what this is, check my :ref:`last blogpost <2023-07-03-week-5-joaodellagli>`).
 After some days diving into the code, I finally managed to do it:
 
 .. image:: https://raw.githubusercontent.com/JoaoDell/gsoc_assets/main/images/buffer_compose.png
@@ -29,6 +31,7 @@ to this week, so I had limited time to polish my code, which I plan to do better
 
 Where the Problem Was
 ---------------------
+
 The KDE render basically works rendering the KDE of a point to a texture and summing that texture to the next render. For this to work,
 the texture, rendered to a billboard, needs to be the same size of the screen, otherwise the captured texture will include the black background.
 The problem I faced with that is that the billboard scaling isn't exactly well defined, so I had to guess for a fixed screen size
@@ -52,6 +55,7 @@ to use the right texture coordinates and finally render the results you see abov
 
 This Week's Goals
 -----------------
+
 For this week, I plan to try a different approach Filipi, one of my mentors, told me to do. This approach was supposed to be the original
 one, but a communication failure lead to this path I am currently in. This approach renders each KDE calculation into its own billboard,
 and those are rendered together with additive blending. After this first pass, this render is captured into a texture and then rendered to

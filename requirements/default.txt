@@ -6,3 +6,4 @@ packaging
 pillow>=8.0.1
 aiohttp>=3.8.4
 pygltflib>=1.15.1
+lazy_loader>=0.4

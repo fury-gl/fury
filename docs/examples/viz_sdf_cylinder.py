@@ -19,13 +19,7 @@ import os
 
 import numpy as np
 
-from fury import actor, window
-from fury.shaders import (
-    attribute_to_actor,
-    compose_shader,
-    import_fury_shader,
-    shader_to_actor,
-)
+import fury
 
 ###############################################################################
 # Cylinder using polygons
@@ -87,7 +81,7 @@ height = 1
 # of sides used to define the bases of the cylinder) to see how it changes the
 # surface of the primitive.
 
-cylinders_8 = actor.cylinder(
+cylinders_8 = fury.actor.cylinder(
     centers[:3],
     dirs[:3],
     colors[:3],
@@ -96,7 +90,7 @@ cylinders_8 = actor.cylinder(
     capped=True,
     resolution=8,
 )
-cylinders_16 = actor.cylinder(
+cylinders_16 = fury.actor.cylinder(
     centers[3:6],
     dirs[3:6],
     colors[3:6],
@@ -105,7 +99,7 @@ cylinders_16 = actor.cylinder(
     capped=True,
     resolution=16,
 )
-cylinders_32 = actor.cylinder(
+cylinders_32 = fury.actor.cylinder(
     centers[6:9],
     dirs[6:9],
     colors[6:9],
@@ -118,7 +112,7 @@ cylinders_32 = actor.cylinder(
 ###############################################################################
 # Next, we set up a new scene to add and visualize the actors created.
 
-scene = window.Scene()
+scene = fury.window.Scene()
 
 scene.add(cylinders_8)
 scene.add(cylinders_16)
@@ -127,9 +121,9 @@ scene.add(cylinders_32)
 interactive = False
 
 if interactive:
-    window.show(scene)
+    fury.window.show(scene)
 
-window.record(scene, size=(600, 600), out_path="viz_poly_cylinder.png")
+fury.window.record(scene, size=(600, 600), out_path="viz_poly_cylinder.png")
 
 ###############################################################################
 # Visualize the surface geometry representation for the object.
@@ -139,9 +133,9 @@ cylinders_16.GetProperty().SetRepresentationToWireframe()
 cylinders_32.GetProperty().SetRepresentationToWireframe()
 
 if interactive:
-    window.show(scene)
+    fury.window.show(scene)
 
-window.record(scene, size=(600, 600), out_path="viz_poly_cylinder_geom.png")
+fury.window.record(scene, size=(600, 600), out_path="viz_poly_cylinder_geom.png")
 
 ###############################################################################
 # Then we clean the scene to render the boxes we will use to render our
@@ -167,7 +161,7 @@ scene.clear()
 # Now we create cylinders using box actor and SDF implementation on shaders.
 # For this, we first create a box actor.
 
-box_actor = actor.box(
+box_actor = fury.actor.box(
     centers=centers,
     directions=dirs,
     colors=colors,
@@ -187,10 +181,10 @@ rep_centers = np.repeat(centers, 8, axis=0)
 rep_radii = np.repeat(np.repeat(radius, 9), 8, axis=0)
 rep_heights = np.repeat(np.repeat(height, 9), 8, axis=0)
 
-attribute_to_actor(box_actor, rep_centers, "center")
-attribute_to_actor(box_actor, rep_directions, "direction")
-attribute_to_actor(box_actor, rep_radii, "radius")
-attribute_to_actor(box_actor, rep_heights, "height")
+fury.shaders.attribute_to_actor(box_actor, rep_centers, "center")
+fury.shaders.attribute_to_actor(box_actor, rep_directions, "direction")
+fury.shaders.attribute_to_actor(box_actor, rep_radii, "radius")
+fury.shaders.attribute_to_actor(box_actor, rep_heights, "height")
 
 ###############################################################################
 # Then we have the shader code implementation corresponding to vertex and
@@ -225,7 +219,7 @@ vs_impl = """
 # to apply our implementation to the shader creation process, this function
 # joins our code to the shader template that FURY has by default.
 
-shader_to_actor(box_actor, "vertex", decl_code=vs_dec, impl_code=vs_impl)
+fury.shaders.shader_to_actor(box_actor, "vertex", decl_code=vs_dec, impl_code=vs_impl)
 
 ###############################################################################
 # Fragment shaders are used to define the colors of each pixel being processed,
@@ -252,14 +246,14 @@ fs_vars_dec = """
 # to transform our position vectors in order to align the direction of
 # cylinder with respect to the box.
 
-vec_to_vec_rot_mat = import_fury_shader(
+vec_to_vec_rot_mat = fury.shaders.import_fury_shader(
     os.path.join("utils", "vec_to_vec_rot_mat.glsl")
 )
 
 ###############################################################################
 # We calculate the distance using the SDF function for the cylinder.
 
-sd_cylinder = import_fury_shader(os.path.join("sdf", "sd_cylinder.frag"))
+sd_cylinder = fury.shaders.import_fury_shader(os.path.join("sdf", "sd_cylinder.frag"))
 
 ###############################################################################
 # This is used on calculations for surface normals of the cylinder.
@@ -283,24 +277,28 @@ sdf_map = """
 ###############################################################################
 # We use central differences technique for computing surface normals.
 
-central_diffs_normal = import_fury_shader(os.path.join("sdf", "central_diffs.frag"))
+central_diffs_normal = fury.shaders.import_fury_shader(
+    os.path.join("sdf", "central_diffs.frag")
+)
 
 ###############################################################################
 # We use cast_ray for the implementation of Ray Marching.
 
-cast_ray = import_fury_shader(os.path.join("ray_marching", "cast_ray.frag"))
+cast_ray = fury.shaders.import_fury_shader(
+    os.path.join("ray_marching", "cast_ray.frag")
+)
 
 ###############################################################################
 # For the illumination of the scene we use the Blinn-Phong model.
 
-blinn_phong_model = import_fury_shader(
+blinn_phong_model = fury.shaders.import_fury_shader(
     os.path.join("lighting", "blinn_phong_model.frag")
 )
 
 ###############################################################################
 # Now we use compose_shader to join our pieces of GLSL shader code.
 
-fs_dec = compose_shader(
+fs_dec = fury.shaders.compose_shader(
     [
         fs_vars_dec,
         vec_to_vec_rot_mat,
@@ -312,7 +310,7 @@ fs_dec = compose_shader(
     ]
 )
 
-shader_to_actor(box_actor, "fragment", decl_code=fs_dec)
+fury.shaders.shader_to_actor(box_actor, "fragment", decl_code=fs_dec)
 
 ###############################################################################
 # Here we have the implementation of all the previous code with all the
@@ -350,7 +348,9 @@ sdf_cylinder_frag_impl = """
     }
     """
 
-shader_to_actor(box_actor, "fragment", impl_code=sdf_cylinder_frag_impl, block="light")
+fury.shaders.shader_to_actor(
+    box_actor, "fragment", impl_code=sdf_cylinder_frag_impl, block="light"
+)
 
 ###############################################################################
 # Finally, we visualize the cylinders made using ray marching and SDFs.
@@ -358,9 +358,9 @@ shader_to_actor(box_actor, "fragment", impl_code=sdf_cylinder_frag_impl, block="
 scene.add(box_actor)
 
 if interactive:
-    window.show(scene)
+    fury.window.show(scene)
 
-window.record(scene, size=(600, 600), out_path="viz_sdf_cylinder.png")
+fury.window.record(scene, size=(600, 600), out_path="viz_sdf_cylinder.png")
 
 ###############################################################################
 # References
@@ -369,4 +369,3 @@ window.record(scene, size=(600, 600), out_path="viz_sdf_cylinder.png")
 #                 antialiased ray tracing of implicit surfaces." The Visual
 #                 Computer 12.10 (1996): 527-545.
 #
-# .. include:: ../links_names.inc

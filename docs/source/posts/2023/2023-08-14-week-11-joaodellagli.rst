@@ -11,7 +11,8 @@ I was working on with my mentors.
 
 Last Week's Effort
 ------------------
-As I shared with you :doc:`last week <2023-08-07-week-10-joaodellagli>`, the first draft of my API was finally ready for review, as
+
+As I shared with you :ref:`last week <2023-08-07-week-10-joaodellagli>`, the first draft of my API was finally ready for review, as
 I finished tweaking some remaining details missing. I was tasked with finding a good example of the usage of the tools we proposed,
 and I started to do that, however after testing it with some examples, I figured out some significant bugs were to be fixed. Also,
 after some reviews and hints from some of my mentors and other GSoC contributors, we realised that some refactoring should be done,
@@ -19,6 +20,7 @@ mainly focused on avoiding bad API usage from the user.
 
 So how did it go?
 -----------------
+
 Initially, I thought only one bug was the source of the issues the rendering presented, but it turned out to be two, which I will
 explain further.
 
@@ -80,6 +82,7 @@ parameters passed.
 
 This Week's Goals
 -----------------
+
 Having that refactoring made, now I am awaiting for a second review so we could finally wrap it up and merge the first stage of this API.
 With that being done, I will write the final report and wrap this all up.
 

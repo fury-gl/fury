@@ -108,20 +108,20 @@ def test_deprecate_with_version():
     dec = deprecate_with_version
 
     func = dec("foo")(func_no_doc)
-    with clear_and_catch_warnings(modules=[my_mod]) as w:
+    with clear_and_catch_warnings(record=True, modules=[my_mod]) as w:
         warnings.simplefilter("always")
         npt.assert_equal(func(), None)
         npt.assert_equal(len(w), 1)
         assert_true(w[0].category is DeprecationWarning)
     npt.assert_equal(func.__doc__, "foo\n")
     func = dec("foo")(func_doc)
-    with clear_and_catch_warnings(modules=[my_mod]) as w:
+    with clear_and_catch_warnings(record=True, modules=[my_mod]) as w:
         warnings.simplefilter("always")
         npt.assert_equal(func(1), None)
         npt.assert_equal(len(w), 1)
     npt.assert_equal(func.__doc__, "A docstring\n\nfoo\n")
     func = dec("foo")(func_doc_long)
-    with clear_and_catch_warnings(modules=[my_mod]) as w:
+    with clear_and_catch_warnings(record=True, modules=[my_mod]) as w:
         warnings.simplefilter("always")
         npt.assert_equal(func(1, 2), None)
         npt.assert_equal(len(w), 1)
@@ -130,12 +130,12 @@ def test_deprecate_with_version():
     # Try some since and until versions
     func = dec("foo", "0.2")(func_no_doc)
     npt.assert_equal(func.__doc__, "foo\n\n* deprecated from version: 0.2\n")
-    with clear_and_catch_warnings(modules=[my_mod]) as w:
+    with clear_and_catch_warnings(record=True, modules=[my_mod]) as w:
         warnings.simplefilter("always")
         npt.assert_equal(func(), None)
         npt.assert_equal(len(w), 1)
     func = dec("foo", until="10.6")(func_no_doc)
-    with clear_and_catch_warnings(modules=[my_mod]) as w:
+    with clear_and_catch_warnings(record=True, modules=[my_mod]) as w:
         warnings.simplefilter("always")
         npt.assert_equal(func(), None)
         npt.assert_equal(len(w), 1)
@@ -168,14 +168,14 @@ def test_deprecate_with_version():
 
     # Check different warnings and errors
     func = dec("foo", warn_class=UserWarning)(func_no_doc)
-    with clear_and_catch_warnings(modules=[my_mod]) as w:
+    with clear_and_catch_warnings(record=True, modules=[my_mod]) as w:
         warnings.simplefilter("always")
         npt.assert_equal(func(), None)
         npt.assert_equal(len(w), 1)
         assert_true(w[0].category is UserWarning)
 
     func = dec("foo", error_class=CustomError)(func_no_doc)
-    with clear_and_catch_warnings(modules=[my_mod]) as w:
+    with clear_and_catch_warnings(record=True, modules=[my_mod]) as w:
         warnings.simplefilter("always")
         npt.assert_equal(func(), None)
         npt.assert_equal(len(w), 1)

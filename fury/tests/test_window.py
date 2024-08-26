@@ -36,26 +36,26 @@ def test_scene():
     axes = actor.axes()
     scene.add(axes)
     arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr, bg_color)
+    report = window.analyze_snapshot(arr, bg_color=bg_color)
     npt.assert_equal(report.objects, 1)
     # Test remove actor function by analyzing a snapshot
     scene.rm(axes)
     arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr, bg_color)
+    report = window.analyze_snapshot(arr, bg_color=bg_color)
     npt.assert_equal(report.objects, 0)
     # Add actor to scene to test the remove all actors function by analyzing a
     # snapshot
     scene.add(axes)
     arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr, bg_color)
+    report = window.analyze_snapshot(arr, bg_color=bg_color)
     npt.assert_equal(report.objects, 1)
     # Test remove all actors function by analyzing a snapshot
     scene.rm_all()
     arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr, bg_color)
+    report = window.analyze_snapshot(arr, bg_color=bg_color)
     npt.assert_equal(report.objects, 0)
     # Test change background color from scene by analyzing the scene
-    ren2 = window.Scene(bg_float)
+    ren2 = window.Scene(background=bg_float)
     ren2.background((0, 0, 0.0))
     report = window.analyze_scene(ren2)
     npt.assert_equal(report.bg_color, (0, 0, 0))
@@ -130,7 +130,9 @@ def test_active_camera():
     direction = scene.camera_direction()
     position, focal_point, view_up = scene.get_camera()
 
-    scene.set_camera((0.0, 0.0, 1.0), (0.0, 0.0, 0), view_up)
+    scene.set_camera(
+        position=(0.0, 0.0, 1.0), focal_point=(0.0, 0.0, 0), view_up=view_up
+    )
 
     position, focal_point, view_up = scene.get_camera()
     npt.assert_almost_equal(np.dot(direction, position), -1)
@@ -168,7 +170,9 @@ def test_active_camera():
     report = window.analyze_snapshot(arr, colors=(0, 255, 0))
     npt.assert_equal(report.colors_found, [True])
 
-    scene.set_camera((0.0, 0.0, 1.0), (0.0, 0.0, 0), view_up)
+    scene.set_camera(
+        position=(0.0, 0.0, 1.0), focal_point=(0.0, 0.0, 0), view_up=view_up
+    )
 
     # vertical rotation of the camera around the focal point
     scene.pitch(10)
@@ -203,14 +207,14 @@ def test_parallel_projection():
     # Put the camera on a angle so that the
     # camera can show the difference between perspective
     # and parallel projection
-    scene.set_camera((1.5, 1.5, 1.5))
+    scene.set_camera(position=(1.5, 1.5, 1.5))
     scene.GetActiveCamera().Zoom(2)
 
     # window.show(scene, reset_camera=True)
     scene.reset_camera()
     arr = window.snapshot(scene)
 
-    scene.projection("parallel")
+    scene.projection(proj_type="parallel")
     # window.show(scene, reset_camera=False)
     arr2 = window.snapshot(scene)
     # Because of the parallel projection the two axes
@@ -218,7 +222,7 @@ def test_parallel_projection():
     # pixels rather than in perspective projection were
     # the axes being further will be smaller.
     npt.assert_equal(np.sum(arr2 > 0) > np.sum(arr > 0), True)
-    scene.projection("perspective")
+    scene.projection(proj_type="perspective")
     arr2 = window.snapshot(scene)
     npt.assert_equal(np.sum(arr2 > 0), np.sum(arr > 0))
 
@@ -322,7 +326,7 @@ def test_save_screenshot():
     scene.add(sphere_actor)
 
     window_sz = (400, 400)
-    show_m = window.ShowManager(scene, size=window_sz)
+    show_m = window.ShowManager(scene=scene, size=window_sz)
 
     with InTemporaryDirectory():
         fname = "test.png"
@@ -359,7 +363,7 @@ def test_stereo():
         np.array([[-1, 1, 0.0], [1, 1, 0.0]]),
     ]
     colors = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
-    stream_actor = actor.streamtube(lines, colors, linewidth=0.3, opacity=0.5)
+    stream_actor = actor.streamtube(lines, colors=colors, linewidth=0.3, opacity=0.5)
 
     scene.add(stream_actor)
 
@@ -398,7 +402,7 @@ def test_frame_rate():
     scene.add(sphere_actor)
 
     showm = window.ShowManager(
-        scene, size=(900, 768), reset_camera=False, order_transparent=True
+        scene=scene, size=(900, 768), reset_camera=False, order_transparent=True
     )
 
     counter = itertools.count()
@@ -540,7 +544,7 @@ def test_opengl_state_simple():
             scales=0.2,
         )
         showm = window.ShowManager(
-            scene, size=(900, 768), reset_camera=False, order_transparent=False
+            scene=scene, size=(900, 768), reset_camera=False, order_transparent=False
         )
 
         scene.add(actors)
@@ -566,7 +570,7 @@ def test_opengl_state_add_remove_and_check():
         scales=0.2,
     )
     showm = window.ShowManager(
-        scene, size=(900, 768), reset_camera=False, order_transparent=False
+        scene=scene, size=(900, 768), reset_camera=False, order_transparent=False
     )
 
     scene.add(actor_no_depth_test)
@@ -608,7 +612,7 @@ def test_add_animation_to_show_manager():
     cube = actor.cube(np.array([[2, 2, 3]]))
 
     timeline = Timeline(playback_panel=True)
-    animation = Animation(cube)
+    animation = Animation(actors=cube)
     timeline.add_animation(animation)
     showm.add_animation(timeline)
 

@@ -1,5 +1,6 @@
 """Testing file unittest."""
 
+import operator
 import sys
 import warnings
 
@@ -48,7 +49,9 @@ def test_callback():
     simple_ui = SimplestUI()
     current_size = (900, 600)
     scene = window.Scene()
-    show_manager = window.ShowManager(scene, size=current_size, title="FURY GridUI")
+    show_manager = window.ShowManager(
+        scene=scene, size=current_size, title="FURY GridUI"
+    )
     scene.add(simple_ui)
     event_counter = ft.EventCounter()
     event_counter.monitor(simple_ui)
@@ -69,14 +72,26 @@ def test_captured_output():
 
 
 def test_assert():
-    npt.assert_raises(AssertionError, ft.assert_false, True)
-    npt.assert_raises(AssertionError, ft.assert_true, False)
-    npt.assert_raises(AssertionError, ft.assert_less, 2, 1)
-    npt.assert_raises(AssertionError, ft.assert_less_equal, 2, 1)
-    npt.assert_raises(AssertionError, ft.assert_greater, 1, 2)
-    npt.assert_raises(AssertionError, ft.assert_greater_equal, 1, 2)
-    npt.assert_raises(AssertionError, ft.assert_not_equal, 5, 5)
-    npt.assert_raises(AssertionError, ft.assert_operator, 2, 1)
+    npt.assert_raises(
+        AssertionError, ft.assert_false, True, msg="True is not false", op=operator.eq
+    )
+    npt.assert_raises(
+        AssertionError, ft.assert_true, False, msg="False is not true", op=operator.eq
+    )
+    npt.assert_raises(
+        AssertionError, ft.assert_less, 2, 1, msg="{0} < {1}", op=operator.lt
+    )
+    npt.assert_raises(
+        AssertionError, ft.assert_less_equal, 2, 1, msg="{0} =< {1}", op=operator.le
+    )
+    npt.assert_raises(
+        AssertionError, ft.assert_greater, 1, 2, msg="{0} > {1}", op=operator.gt
+    )
+    npt.assert_raises(
+        AssertionError, ft.assert_greater_equal, 1, 2, msg="{0} >= {1}", op=operator.ge
+    )
+    npt.assert_raises(AssertionError, ft.assert_not_equal, 5, 5, msg="", op=operator.ne)
+    npt.assert_raises(AssertionError, ft.assert_operator, 2, 1, msg="", op=operator.eq)
 
     arr = [np.arange(k) for k in range(2, 12, 3)]
     arr2 = [np.arange(k) for k in range(2, 12, 4)]

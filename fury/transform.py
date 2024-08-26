@@ -3,6 +3,8 @@ import math
 import numpy as np
 from scipy.spatial.transform import Rotation as Rot  # type: ignore
 
+from fury.decorators import warn_on_args_to_kwargs
+
 # axis sequences for Euler angles
 _NEXT_AXIS = [1, 2, 0, 1]
 
@@ -37,7 +39,8 @@ _AXES2TUPLE = {
 _TUPLE2AXES = {v: k for k, v in _AXES2TUPLE.items()}
 
 
-def euler_matrix(ai, aj, ak, axes="sxyz"):
+@warn_on_args_to_kwargs()
+def euler_matrix(ai, aj, ak, *, axes="sxyz"):
     """Return homogeneous rotation matrix from Euler angles and axis sequence.
 
     Code modified from the work of Christoph Gohlke link provided here
@@ -239,20 +242,23 @@ def translate(translation):
 
     Examples
     --------
-    >>> import numpy as np
+    >>> import numpy as np; import fury
     >>> tran = np.array([0.3, 0.2, 0.25])
-    >>> transform = translate(tran)
+    >>> transform = fury.transform.translate(tran)
     >>> transform
-    >>> [[1.  0.  0.  0.3 ]
-         [0.  1.  0.  0.2 ]
-         [0.  0.  1.  0.25]
-         [0.  0.  0.  1.  ]]
+    array([[1.  , 0.  , 0.  , 0.3 ],
+           [0.  , 1.  , 0.  , 0.2 ],
+           [0.  , 0.  , 1.  , 0.25],
+           [0.  , 0.  , 0.  , 1.  ]])
 
     """
     iden = np.identity(4)
     translation = np.append(translation, 0).reshape(-1, 1)
 
-    t = np.array([[0, 0, 0, 1], [0, 0, 0, 1], [0, 0, 0, 1], [0, 0, 0, 1]], np.float32)
+    t = np.array(
+        [[0, 0, 0, 1], [0, 0, 0, 1], [0, 0, 0, 1], [0, 0, 0, 1]],
+        np.float32,
+    )
     translation = np.multiply(t, translation)
     translation = np.add(iden, translation)
 
@@ -274,14 +280,14 @@ def rotate(quat):
 
     Examples
     --------
-    >>> import numpy as np
+    >>> import numpy as np; import fury
     >>> quat = np.array([0.259, 0.0, 0.0, 0.966])
-    >>> rotation = rotate(quat)
+    >>> rotation = fury.transform.rotate(quat)
     >>> rotation
-    >>> [[1.  0.      0.     0.]
-         [0.  0.866  -0.5    0.]
-         [0.  0.5     0.866  0.]
-         [0.  0.      0.     1.]]
+    array([[ 1.        ,  0.        ,  0.        ,  0.        ],
+           [ 0.        ,  0.86586979, -0.50026944,  0.        ],
+           [ 0.        ,  0.50026944,  0.86586979,  0.        ],
+           [ 0.        ,  0.        ,  0.        ,  1.        ]])
 
     """
     iden = np.identity(3)
@@ -312,14 +318,14 @@ def scale(scales):
 
     Examples
     --------
-    >>> import numpy as np
+    >>> import numpy as np; import fury
     >>> scales = np.array([2.0, 1.0, 0.5])
-    >>> transform = scale(scales)
+    >>> transform = fury.transform.scale(scales)
     >>> transform
-    >>> [[2.  0.  0.   0.]
-         [0.  1.  0.   0.]
-         [0.  0.  0.5  0.]
-         [0.  0.  0.   1.]]
+    array([[2. , 0. , 0. , 0. ],
+           [0. , 1. , 0. , 0. ],
+           [0. , 0. , 0.5, 0. ],
+           [0. , 0. , 0. , 1. ]])
 
     """
     scale_mat = np.identity(4)

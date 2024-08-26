@@ -15,7 +15,7 @@ import itertools
 import numpy as np
 import pybullet as p
 
-from fury import actor, ui, window
+import fury
 
 client = p.connect(p.DIRECT)
 
@@ -27,7 +27,7 @@ blue_radius = 0.5
 duration = 50
 
 # Red Ball
-red_ball_actor = actor.sphere(
+red_ball_actor = fury.actor.sphere(
     centers=np.array([[0, 0, 0]]), colors=np.array([[1, 0, 0]]), radii=red_radius
 )
 
@@ -41,7 +41,7 @@ red_ball = p.createMultiBody(
 )
 
 # Blue ball
-blue_ball_actor = actor.sphere(
+blue_ball_actor = fury.actor.sphere(
     centers=np.array([[0, 0, 0]]), colors=np.array([[0, 0, 1]]), radii=blue_radius
 )
 
@@ -63,12 +63,12 @@ p.changeDynamics(blue_ball, -1, restitution=0.6)
 ###############################################################################
 # We add all the actors to the scene.
 
-scene = window.Scene()
-scene.add(actor.axes())
+scene = fury.window.Scene()
+scene.add(fury.actor.axes())
 scene.add(red_ball_actor)
 scene.add(blue_ball_actor)
 
-showm = window.ShowManager(
+showm = fury.window.ShowManager(
     scene, size=(900, 700), reset_camera=False, order_transparent=True
 )
 
@@ -87,7 +87,7 @@ def sync_actor(actor, multibody):
 
 
 apply_force = True
-tb = ui.TextBlock2D(position=(0, 600), font_size=30, color=(1, 0.5, 0), text="")
+tb = fury.ui.TextBlock2D(position=(0, 600), font_size=30, color=(1, 0.5, 0), text="")
 scene.add(tb)
 scene.set_camera(
     position=(0.30, -18.78, 0.89), focal_point=(0.15, 0.25, 0.40), view_up=(0, 0, 1.00)
@@ -138,4 +138,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, size=(900, 700), out_path="viz_ball_collide.png")
+fury.window.record(scene, size=(900, 700), out_path="viz_ball_collide.png")

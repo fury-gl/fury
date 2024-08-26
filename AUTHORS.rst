@@ -17,71 +17,91 @@ Contributors
 
 * Serge Koudoro
 * Eleftherios Garyfallidis
-* Soham Biswas
+* Mohamed Agour
+* Praneeth Shetty
 * Javier Guaje
-* Sajag Swami
+* Anand Shivam
 * Bruno Messias
+* Soham Biswas
+* Sajag Swami
+* Antriksh Misri
+* Tania Castillo
 * Ranveer Aggarwal
 * Lenix Lobo
+* Joao Victor Dell Agli
 * Marc-Alexandre Côté
 * Melina Raglin
-* Antriksh Misri
-* Karan
 * Ariel Rokem
+* Karan
+* maharshigor
+* Filipi Nascimento Silva
 * David Reagan
-* Vivek Choudhary
-* Prashil
-* Saransh Jain
 * Nasim Anousheh
+* Prashil
+* Vivek Choudhary
+* Saransh Jain
 * Shreyas Bhujbal
 * Tushar
-* Matthew Brett
+* Wachiou BOURAÏMA
+* Zhiwen Shi
 * Charles Poirier
+* Ishan Kamboj
+* Matthew Brett
+* Frank Cerasoli
+* Sreekar Chigurupati
+* Francois Rheault
 * Naman Bansal
+* Robin Roy
 * Etienne St-Onge
 * Kesshi Jordan
-* Praneeth Shetty
-* ibrahimAnis
-* Bago Amirbekian
-* Omar Ocegueda
 * Amit Chaudhari
-* Meha Bhalodiya
-* Kevin Sitek
-* Sanjay Marreddi
-* ChenCheng0630
+* Bago Amirbekian
 * Jon Haitz Legarreta Gorroño
+* Omar Ocegueda
+* ibrahimAnis
+* Kevin Sitek
+* Meha Bhalodiya
+* Sanjay Marreddi
+* sparshg
+* ChenCheng0630
 * Gregory R. Lee
-* Filipi Nascimento Silva
-* Liam Donohue
-* Anand Shivam
-* Shahnawaz Ahmed
-* Tingyi Wanyan
 * Enes Albay
+* Liam Donohue
+* Rohit Kharsan
+* Shahnawaz Ahmed
 * Stefan van der Walt
-* PrayasJ
+* Tingyi Wanyan
+* Dwij Raj Hari
 * Guillaume Favelier
+* Johny Daras
+* PrayasJ
 * Samuel St-Jean
-* Gottipati Gautam
-* theaverageguy
-* Hariharan Ayappane
 * Bishakh Ghosh
-* Jhalak Gupta
+* Gottipati Gautam
+* Hariharan Ayappane
+* Maharshi Gor
+* theaverageguy
 * Aju100
-* Christopher Nguyen
 * Alexandre Gauvin
-* Scott Trinkle
+* Christopher Nguyen
+* Jhalak Gupta
 * Jiri Borovec
 * Marssis
+* Sara Hamza
+* Scott Trinkle
+* Siddharth Gautam
+* dependabot[bot]
 * Adam Rybinski
-* LoopThrough-i-j
-* Ian Nimmo-Smith
 * Aman Soni
-* Gauvin Alexandre
-* Pietro Astolfi
-* Gurdit Siyan
-* Devanshu Modi
 * Daniel S. Katz
+* Devanshu Modi
+* Gauvin Alexandre
+* Gurdit Siyan
+* Ian Nimmo-Smith
 * Jacob Wasserth
-* Yaroslav Halchenko
+* Kaustav Deka
+* LoopThrough-i-j
 * MIHIR
-* Shivam Anand
+* Pietro Astolfi
+* Yaroslav Halchenko
+* sailesh

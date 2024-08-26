@@ -17,17 +17,12 @@ Let's start by importing the necessary modules:
 
 import numpy as np
 
-from fury import actor, material, window
-from fury.utils import (
-    normals_from_actor,
-    tangents_from_direction_of_anisotropy,
-    tangents_to_actor,
-)
+import fury
 
 ###############################################################################
 # Now set up a new scene.
 
-scene = window.Scene()
+scene = fury.window.Scene()
 scene.background((0.9, 0.9, 0.9))
 
 ###############################################################################
@@ -59,13 +54,15 @@ for i, mp in enumerate(material_params):
     center = [[0, -5 * i, 0]]
     for j in range(num_values):
         center[0][0] = -25 + 5 * j
-        sphere = actor.sphere(center, color, radii=2, theta=32, phi=32)
-        normals = normals_from_actor(sphere)
-        tangents = tangents_from_direction_of_anisotropy(normals, (0, 1, 0.5))
-        tangents_to_actor(sphere, tangents)
+        sphere = fury.actor.sphere(center, color, radii=2, theta=32, phi=32)
+        normals = fury.utils.normals_from_actor(sphere)
+        tangents = fury.utils.tangents_from_direction_of_anisotropy(
+            normals, (0, 1, 0.5)
+        )
+        fury.utils.tangents_to_actor(sphere, tangents)
         keys = list(params)
         params[keys[0]] = np.round(0.1 * j, decimals=1)
-        material.manifest_pbr(sphere, **params)
+        fury.material.manifest_pbr(sphere, **params)
         scene.add(sphere)
 
 ###############################################################################
@@ -83,12 +80,14 @@ labels = [
 
 for i, name in enumerate(labels):
     pos = [-40, -5 * i, 0]
-    label = actor.vector_text(name, pos=pos, scale=(0.8, 0.8, 0.8), color=(0, 0, 0))
+    label = fury.actor.vector_text(
+        name, pos=pos, scale=(0.8, 0.8, 0.8), color=(0, 0, 0)
+    )
     scene.add(label)
 
 for j in range(num_values):
     pos = [-26 + 5 * j, 3, 0]
-    label = actor.vector_text(
+    label = fury.actor.vector_text(
         str(np.round(j * 0.1, decimals=1)),
         pos=pos,
         scale=(0.8, 0.8, 0.8),
@@ -123,10 +122,10 @@ for i, iorp in enumerate(ior_params):
     center = [[0, -35 - (5 * i), 0]]
     for j in range(num_values):
         center[0][0] = -25 + 5 * j
-        sphere = actor.sphere(center, color, radii=2, theta=32, phi=32)
+        sphere = fury.actor.sphere(center, color, radii=2, theta=32, phi=32)
         keys = list(params)
         params[keys[0]] = iors[j]
-        material.manifest_pbr(sphere, **params)
+        fury.material.manifest_pbr(sphere, **params)
         scene.add(sphere)
 
 ###############################################################################
@@ -136,12 +135,14 @@ labels = ["Base IoR", "Coat IoR"]
 
 for i, name in enumerate(labels):
     pos = [-40, -35 - (5 * i), 0]
-    label = actor.vector_text(name, pos=pos, scale=(0.8, 0.8, 0.8), color=(0, 0, 0))
+    label = fury.actor.vector_text(
+        name, pos=pos, scale=(0.8, 0.8, 0.8), color=(0, 0, 0)
+    )
     scene.add(label)
 
 for j in range(num_values):
     pos = [-26 + 5 * j, -32, 0]
-    label = actor.vector_text(
+    label = fury.actor.vector_text(
         "{:.02f}".format(iors[j]), pos=pos, scale=(0.8, 0.8, 0.8), color=(0, 0, 0)
     )
     scene.add(label)
@@ -151,6 +152,6 @@ for j in range(num_values):
 
 interactive = False
 if interactive:
-    window.show(scene)
+    fury.window.show(scene)
 
-window.record(scene, size=(600, 600), out_path="viz_pbr_spheres.png")
+fury.window.record(scene, size=(600, 600), out_path="viz_pbr_spheres.png")

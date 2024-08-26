@@ -57,12 +57,11 @@ This tutorial explains keyframe animation in FURY.
 
 import numpy as np
 
-from fury import actor, window
-from fury.animation import Animation
+import fury
 
-scene = window.Scene()
+scene = fury.window.Scene()
 
-showm = window.ShowManager(scene, size=(900, 768))
+showm = fury.window.ShowManager(scene, size=(900, 768))
 showm.initialize()
 
 
@@ -73,11 +72,11 @@ showm.initialize()
 # This is a quick demo showing how to translate a sphere from (0, 0, 0) to
 # (1, 1, 1).
 # First, we create an ``Animation``. See ``viz_interpolators.py`` tutorial
-animation = Animation()
+animation = fury.animation.Animation()
 
 ###############################################################################
 # We also create the FURY sphere actor that will be animated.
-sphere = actor.sphere(np.zeros([1, 3]), np.ones([1, 3]))
+sphere = fury.actor.sphere(np.zeros([1, 3]), np.ones([1, 3]))
 
 ###############################################################################
 # Then lets add the sphere actor to the ``Animation``
@@ -112,6 +111,6 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(
+fury.window.record(
     scene, out_path="viz_keyframe_animation_introduction.png", size=(900, 768)
 )

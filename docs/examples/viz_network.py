@@ -15,14 +15,12 @@ from os.path import join as pjoin
 
 import numpy as np
 
-from fury import actor, colormap as cmap, window
-from fury.data import fetch_viz_wiki_nw
+import fury
 
 ###############################################################################
 # Then let's download some available datasets.
 
-
-files, folder = fetch_viz_wiki_nw()
+files, folder = fury.data.fetch_viz_wiki_nw()
 categories_file, edges_file, positions_file = sorted(files.keys())
 
 ###############################################################################
@@ -40,7 +38,7 @@ category2index = {category: i for i, category in enumerate(np.unique(categories)
 
 index2category = np.unique(categories)
 
-categoryColors = cmap.distinguishable_colormap(nb_colors=len(index2category))
+categoryColors = fury.colormap.distinguishable_colormap(nb_colors=len(index2category))
 
 colors = np.array([categoryColors[category2index[category]] for category in categories])
 
@@ -68,7 +66,7 @@ edgesColors = np.average(np.array(edgesColors), axis=1)
 # build 2 actors that we represent our data : sphere_actor for the nodes and
 # lines_actor for the edges.
 
-sphere_actor = actor.sphere(
+sphere_actor = fury.actor.sphere(
     centers=positions,
     colors=colors,
     radii=radii * 0.5,
@@ -76,7 +74,7 @@ sphere_actor = actor.sphere(
     phi=8,
 )
 
-lines_actor = actor.line(
+lines_actor = fury.actor.line(
     edgesPositions,
     colors=edgesColors,
     opacity=0.1,
@@ -86,7 +84,7 @@ lines_actor = actor.line(
 # All actors need to be added in a scene, so we build one and add our
 # lines_actor and sphere_actor.
 
-scene = window.Scene()
+scene = fury.window.Scene()
 
 scene.add(lines_actor)
 scene.add(sphere_actor)
@@ -98,9 +96,9 @@ scene.add(sphere_actor)
 interactive = False
 
 if interactive:
-    window.show(scene, size=(600, 600))
+    fury.window.show(scene, size=(600, 600))
 
-window.record(scene, out_path="journal_networks.png", size=(600, 600))
+fury.window.record(scene, out_path="journal_networks.png", size=(600, 600))
 
 ###############################################################################
 # This example can be improved by adding some interactivy with slider,

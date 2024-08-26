@@ -21,12 +21,12 @@ Let's start by importing the necessary modules:
 
 import numpy as np
 
-from fury import actor, material, window
+import fury
 
 ###############################################################################
 # Now set up a new scene.
 
-scene = window.Scene()
+scene = fury.window.Scene()
 scene.background((0.9, 0.9, 0.9))
 
 ###############################################################################
@@ -56,12 +56,12 @@ for i in range(10):
     center = np.array([[0, -5 * i, 0]])
     for j in range(11):
         center[0][0] = -25 + 5 * j
-        sphere = actor.sphere(
+        sphere = fury.actor.sphere(
             center, colors=material_params[i][0], radii=2, theta=32, phi=32
         )
         keys = list(material_params[i][1])
         material_params[i][1][keys[0]] = np.round(0.1 * j, decimals=1)
-        material.manifest_principled(sphere, **material_params[i][1])
+        fury.material.manifest_principled(sphere, **material_params[i][1])
         scene.add(sphere)
 
 ###############################################################################
@@ -82,14 +82,14 @@ labels = [
 
 for i in range(10):
     pos = [-40, -5 * i, 0]
-    label = actor.vector_text(
+    label = fury.actor.vector_text(
         labels[i], pos=pos, scale=(0.8, 0.8, 0.8), color=(0, 0, 0)
     )
     scene.add(label)
 
 for j in range(11):
     pos = [-26 + 5 * j, 5, 0]
-    label = actor.vector_text(
+    label = fury.actor.vector_text(
         str(np.round(j * 0.1, decimals=1)),
         pos=pos,
         scale=(0.8, 0.8, 0.8),
@@ -102,6 +102,6 @@ for j in range(11):
 
 interactive = False
 if interactive:
-    window.show(scene)
+    fury.window.show(scene)
 
-window.record(scene, size=(600, 600), out_path="viz_principled_spheres.png")
+fury.window.record(scene, size=(600, 600), out_path="viz_principled_spheres.png")

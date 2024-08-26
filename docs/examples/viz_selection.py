@@ -22,7 +22,7 @@ behind that box.
 
 import numpy as np
 
-from fury import actor, pick, utils, window
+import fury
 
 ###############################################################################
 # Adding many cubes of different sizes and colors
@@ -44,31 +44,31 @@ num_faces = num_cubes * 6 * 2
 ###############################################################################
 # Build scene and add an actor with many objects.
 
-scene = window.Scene()
+scene = fury.window.Scene()
 
 ###############################################################################
 # Build the actor containing all the cubes
 
-cube_actor = actor.cube(centers, directions=(1, 0, 0), colors=colors, scales=radii)
+cube_actor = fury.actor.cube(centers, directions=(1, 0, 0), colors=colors, scales=radii)
 
 ###############################################################################
 # Access the memory of the vertices of all the cubes
 
-vertices = utils.vertices_from_actor(cube_actor)
+vertices = fury.utils.vertices_from_actor(cube_actor)
 num_vertices = vertices.shape[0]
 num_objects = centers.shape[0]
 
 ###############################################################################
 # Access the memory of the colors of all the cubes
 
-vcolors = utils.colors_from_actor(cube_actor, "colors")
+vcolors = fury.utils.colors_from_actor(cube_actor, "colors")
 
 ###############################################################################
 # Create a rectangular 2d box as a texture
 
 rgba = 255 * np.ones((100, 200, 4))
 rgba[1:-1, 1:-1] = np.zeros((98, 198, 4)) + 100
-texa = actor.texture_2d(rgba.astype(np.uint8))
+texa = fury.actor.texture_2d(rgba.astype(np.uint8))
 
 scene.add(cube_actor)
 scene.add(texa)
@@ -78,7 +78,7 @@ scene.zoom(3.0)
 ###############################################################################
 # Create the Selection Manager
 
-selm = pick.SelectionManager(select="faces")
+selm = fury.pick.SelectionManager(select="faces")
 
 ###############################################################################
 # Tell Selection Manager to avoid selecting specific actors
@@ -109,14 +109,14 @@ def hover_callback(_obj, _event):
                     vcolors[object_index * sec : object_index * sec + sec] = (
                         color_change
                     )
-                utils.update_actor(cube_actor)
+                fury.utils.update_actor(cube_actor)
     showm.render()
 
 
 ###############################################################################
 # Make the window appear
 
-showm = window.ShowManager(
+showm = fury.window.ShowManager(
     scene, size=(1024, 768), order_transparent=True, reset_camera=False
 )
 
@@ -138,4 +138,4 @@ if interactive:
 ###############################################################################
 # Save the current framebuffer in a PNG file
 
-window.record(showm.scene, size=(1024, 768), out_path="viz_selection.png")
+fury.window.record(showm.scene, size=(1024, 768), out_path="viz_selection.png")

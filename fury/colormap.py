@@ -6,6 +6,7 @@ import numpy as np
 from scipy import linalg
 
 from fury.data import DATA_DIR
+from fury.decorators import warn_on_args_to_kwargs
 from fury.lib import LookupTable
 
 # Allow import, but disable doctests if we don't have matplotlib
@@ -14,7 +15,9 @@ from fury.optpkg import optional_package
 cm, have_matplotlib, _ = optional_package("matplotlib.cm")
 
 
+@warn_on_args_to_kwargs()
 def colormap_lookup_table(
+    *,
     scale_range=(0, 1),
     hue_range=(0.8, 0),
     saturation_range=(1, 1),
@@ -242,7 +245,8 @@ def orient2rgb(v):
     return orient
 
 
-def line_colors(streamlines, cmap="rgb_standard"):
+@warn_on_args_to_kwargs()
+def line_colors(streamlines, *, cmap="rgb_standard"):
     """Create colors for streamlines to be used in actor.line.
 
     Parameters
@@ -308,7 +312,8 @@ def get_cmap(name):
     return simple_cmap
 
 
-def create_colormap(v, name="plasma", auto=True):
+@warn_on_args_to_kwargs()
+def create_colormap(v, *, name="plasma", auto=True):
     """Create colors from a specific colormap and return it
     as an array of shape (N,3) where every row gives the corresponding
     r,g,b value. The colormaps we use are similar with those of matplotlib.
@@ -511,7 +516,8 @@ def _lab2rgb(lab):
     return _xyz2rgb(tmp)
 
 
-def distinguishable_colormap(bg=(0, 0, 0), exclude=None, nb_colors=None):
+@warn_on_args_to_kwargs()
+def distinguishable_colormap(*, bg=(0, 0, 0), exclude=None, nb_colors=None):
     """Generate colors that are maximally perceptually distinct.
 
     This function generates a set of colors which are distinguishable
@@ -544,15 +550,9 @@ def distinguishable_colormap(bg=(0, 0, 0), exclude=None, nb_colors=None):
 
     Examples
     --------
-    >>> from dipy.viz.colormap import distinguishable_colormap
+    >>> from fury.colormap import distinguishable_colormap
     >>> # Generate 5 colors
-    >>> [c for i, c in zip(range(5), distinguishable_colormap())]
-    [array([ 0.,  1.,  0.]),
-     array([ 1.,  0.,  1.]),
-     array([ 1.        ,  0.75862069,  0.03448276]),
-     array([ 0.        ,  1.        ,  0.89655172]),
-     array([ 0.        ,  0.17241379,  1.        ])]
-
+    >>> _ = [c for i, c in zip(range(5), distinguishable_colormap())]
 
     Notes
     -----
@@ -669,7 +669,7 @@ def rgb2hsv(rgb):
     out_v = rgb.max(-1)
 
     # -- S channel
-    delta = rgb.ptp(-1)
+    delta = np.ptp(rgb, -1)
     # Ignore warning for zero divided by zero
     old_settings = np.seterr(invalid="ignore")
     out_s = delta / out_v
@@ -887,9 +887,13 @@ def get_xyz_coords(illuminant, observer):
     Notes
     -----
     Original Implementation from scikit-image package.
-    it can be found at:
+    it can be found here:
     https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
     This implementation might have been modified.
+
+    References
+    ----------
+    .. [1] scikit-image, `colorconv.py` source code
 
     """
     illuminant = illuminant.upper()
@@ -903,7 +907,8 @@ def get_xyz_coords(illuminant, observer):
         ) from err
 
 
-def xyz2lab(xyz, illuminant="D65", observer="2"):
+@warn_on_args_to_kwargs()
+def xyz2lab(xyz, *, illuminant="D65", observer="2"):
     """XYZ to CIE-LAB color space conversion.
 
     Parameters
@@ -950,7 +955,8 @@ def xyz2lab(xyz, illuminant="D65", observer="2"):
     return np.concatenate([x[..., np.newaxis] for x in [L, a, b]], axis=-1)
 
 
-def lab2xyz(lab, illuminant="D65", observer="2"):
+@warn_on_args_to_kwargs()
+def lab2xyz(lab, *, illuminant="D65", observer="2"):
     """CIE-LAB to XYZcolor space conversion.
 
     Parameters
@@ -1001,7 +1007,8 @@ def lab2xyz(lab, illuminant="D65", observer="2"):
     return out
 
 
-def rgb2lab(rgb, illuminant="D65", observer="2"):
+@warn_on_args_to_kwargs()
+def rgb2lab(rgb, *, illuminant="D65", observer="2"):
     """Conversion from the sRGB color space (IEC 61966-2-1:1999)
     to the CIE Lab colorspace under the given illuminant and observer.
 
@@ -1028,10 +1035,11 @@ def rgb2lab(rgb, illuminant="D65", observer="2"):
     This implementation might have been modified.
 
     """
-    return xyz2lab(rgb2xyz(rgb), illuminant, observer)
+    return xyz2lab(rgb2xyz(rgb), illuminant=illuminant, observer=observer)
 
 
-def lab2rgb(lab, illuminant="D65", observer="2"):
+@warn_on_args_to_kwargs()
+def lab2rgb(lab, *, illuminant="D65", observer="2"):
     """Lab to RGB color space conversion.
 
     Parameters
@@ -1057,4 +1065,4 @@ def lab2rgb(lab, illuminant="D65", observer="2"):
     This implementation might have been modified.
 
     """
-    return xyz2rgb(lab2xyz(lab, illuminant, observer))
+    return xyz2rgb(lab2xyz(lab, illuminant=illuminant, observer=observer))

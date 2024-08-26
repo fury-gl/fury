@@ -71,8 +71,20 @@ def test_line_colors():
 
 def test_create_colormap():
     value = np.arange(25)
-    npt.assert_raises(ValueError, colormap.create_colormap, value.reshape((5, 5)))
-    npt.assert_raises(AttributeError, colormap.create_colormap, value, name="fake")
+    npt.assert_raises(
+        ValueError,
+        colormap.create_colormap,
+        value.reshape((5, 5)),
+        name="plasma",
+        auto=True,
+    )
+    npt.assert_raises(
+        AttributeError,
+        colormap.create_colormap,
+        value,
+        name="fake",
+        auto=True,
+    )
     npt.assert_warns(
         PendingDeprecationWarning,
         colormap.create_colormap,
@@ -163,14 +175,16 @@ def test_color_converters():
     illuminant = "D65"
     observer = "2"
     expected_lab = np.array([31.57976662, -1.86550104, -17.84845331])
-    lab_color = colormap.rgb2lab(color, illuminant, observer)
-    rgb_color = colormap.lab2rgb(expected_lab, illuminant, observer)
+    lab_color = colormap.rgb2lab(color, illuminant=illuminant, observer=observer)
+    rgb_color = colormap.lab2rgb(expected_lab, illuminant=illuminant, observer=observer)
     npt.assert_almost_equal(lab_color, expected_lab)
     npt.assert_almost_equal(rgb_color, color)
 
     for color in colors:
-        lab_color = colormap.rgb2lab(color, illuminant, observer)
-        rgb_from_lab_color = colormap.lab2rgb(lab_color, illuminant, observer)
+        lab_color = colormap.rgb2lab(color, illuminant=illuminant, observer=observer)
+        rgb_from_lab_color = colormap.lab2rgb(
+            lab_color, illuminant=illuminant, observer=observer
+        )
         npt.assert_almost_equal(rgb_from_lab_color, color)
 
     # testing rgb2hsv and hsv2rgb

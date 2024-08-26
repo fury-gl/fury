@@ -245,8 +245,7 @@ PolyVertex = cdmvtk.vtkPolyVertex
 UnstructuredGrid = cdmvtk.vtkUnstructuredGrid
 #: class for Polygon
 Polygon = cdmvtk.vtkPolygon
-#: class for DataObject
-DataObject = cdmvtk.vtkDataObject
+
 #: class for Molecule
 Molecule = cdmvtk.vtkMolecule
 #: class for DataSetAttributes

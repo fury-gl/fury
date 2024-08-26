@@ -20,7 +20,7 @@ def test_multithreading():
 
     # Preparing the show manager as usual
     showm = window.ShowManager(
-        scene, size=(900, 768), reset_camera=False, order_transparent=True
+        scene=scene, size=(900, 768), reset_camera=False, order_transparent=True
     )
 
     # showm.initialize()

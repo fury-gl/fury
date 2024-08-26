@@ -1,0 +1,49 @@
+Week 6: UI Improvements and RAG performance evaluation
+======================================================
+
+.. post:: July 27 2024
+   :author: Robin Roy
+   :tags: google
+   :category: gsoc
+
+Hi, I'm `Robin <https://github.com/robinroy03>`_ and this is my blog about week 6.
+
+This week, I worked on some UI improvements and studied and evaluated the RAG performance.
+
+Things I did in week 6
+----------------------
+
+1) **Line number references**
+
+Earlier, the bot used to reference the Python file directly. This made it difficult to search and find the particular function/class. We had to manually go and search. I modified the code to include a link with line numbers. Now the references section will give a link which wraps around the function/class. To do this I had to re-index the whole library again using the new parser code. The present model points to the latest stable release of FURY.
+
+I also tried to compress it all into one Discord message, reducing one extra ping :)
+
+
+2) **RAG Performance Evaluation**
+
+I added a new benchmark to measure RAG performance. It essentially checks whether certain key information was retrieved from the database. There are certain situations where the model fetches data irrelevant to the question, this could help in fixing that.
+
+The RAG benchmark dataset consists of a prompt to the LLM and expected references to be fetched from the database. I'll give a score based on the % of correct fetches.
+
+
+3) **Fine-tuning feasibility study**
+
+It was time to start thinking about fine-tuning. Gemini had a generous free tier and it was possible to fine-tune Gemini-1.0-pro. I looked into it and started collecting data for it. For fine-tuning Gemini, I had to format the data as an input/output pair. Most of the data were planned to be collected from Discord and GitHub.
+
+I also checked into fine-tuning models like phi-3 and llama 7b. It is possible to do the fine-tuning on google colab/kaggle. We could use a small quantized model and fine-tune that without much performance loss.
+
+
+What is coming up next week?
+----------------------------
+
+I'll be taking a break next week due to my semester final examinations. I'll study model finetuning and keep brainstorming interesting trajectories for FURY.
+
+
+Did you get stuck anywhere?
+---------------------------
+
+No, I did not get stuck anywhere.
+
+
+Thank you for reading!

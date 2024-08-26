@@ -5,6 +5,7 @@ import warnings
 import numpy as np
 
 from fury.actor import streamtube
+from fury.decorators import warn_on_args_to_kwargs
 from fury.lib import (
     VTK_FLOAT,
     VTK_ID_TYPE,
@@ -34,8 +35,10 @@ class Molecule(Mol):
     This is a more pythonic version of ``Molecule``.
     """
 
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
+        *,
         atomic_numbers=None,
         coords=None,
         atom_names=None,
@@ -107,7 +110,10 @@ class Molecule(Mol):
             self.helix = helix
             self.is_hetatm = is_hetatm
             coords = numpy_to_vtk_points(coords)
-            atom_nums = nps.numpy_to_vtk(atomic_numbers, array_type=VTK_UNSIGNED_SHORT)
+            atom_nums = nps.numpy_to_vtk(
+                atomic_numbers,
+                array_type=VTK_UNSIGNED_SHORT,
+            )
             atom_nums.SetName("Atomic Numbers")
             fieldData = DataSetAttributes()
             fieldData.AddArray(atom_nums)
@@ -151,7 +157,8 @@ def add_atom(molecule, atomic_num, x_coord, y_coord, z_coord):
     molecule.AppendAtom(atomic_num, x_coord, y_coord, z_coord)
 
 
-def add_bond(molecule, atom1_index, atom2_index, bond_order=1):
+@warn_on_args_to_kwargs()
+def add_bond(molecule, atom1_index, atom2_index, *, bond_order=1):
     """Add bonding data to our molecule. Establish a bond of type bond_order
     between the atom at atom1_index and the atom at atom2_index.
 
@@ -413,7 +420,8 @@ class PTable(PeriodicTable):
         """
         return self.GetAtomicNumber(element_name)
 
-    def atomic_radius(self, atomic_number, radius_type="VDW"):
+    @warn_on_args_to_kwargs()
+    def atomic_radius(self, atomic_number, *, radius_type="VDW"):
         """Given an atomic number, return either the covalent radius of the
         atom (in Å) or return the Van Der Waals radius (in Å) of the atom
         depending on radius_type.
@@ -457,7 +465,8 @@ class PTable(PeriodicTable):
         return rgb
 
 
-def sphere_cpk(molecule, colormode="discrete"):
+@warn_on_args_to_kwargs()
+def sphere_cpk(molecule, *, colormode="discrete"):
     """Create an actor for sphere molecular representation. It's also referred
     to as CPK model and space-filling model.
 
@@ -502,7 +511,10 @@ def sphere_cpk(molecule, colormode="discrete"):
         msp_mapper.SetAtomColorMode(0)
     else:
         msp_mapper.SetAtomColorMode(1)
-        warnings.warn("Incorrect colormode specified! Using discrete.", stacklevel=2)
+        warnings.warn(
+            "Incorrect colormode specified! Using discrete.",
+            stacklevel=2,
+        )
 
     # To-Do manipulate shading properties to make it look aesthetic
     molecule_actor = Actor()
@@ -510,8 +522,10 @@ def sphere_cpk(molecule, colormode="discrete"):
     return molecule_actor
 
 
+@warn_on_args_to_kwargs()
 def ball_stick(
     molecule,
+    *,
     colormode="discrete",
     atom_scale_factor=0.3,
     bond_thickness=0.1,
@@ -586,13 +600,17 @@ def ball_stick(
         bs_mapper.SetBondColorMode(0)
     else:
         bs_mapper.SetAtomColorMode(1)
-        warnings.warn("Incorrect colormode specified! Using discrete.", stacklevel=2)
+        warnings.warn(
+            "Incorrect colormode specified! Using discrete.",
+            stacklevel=2,
+        )
     molecule_actor = Actor()
     molecule_actor.SetMapper(bs_mapper)
     return molecule_actor
 
 
-def stick(molecule, colormode="discrete", bond_thickness=0.1):
+@warn_on_args_to_kwargs()
+def stick(molecule, *, colormode="discrete", bond_thickness=0.1):
     """Create an actor for stick molecular representation.
 
     Parameters
@@ -623,7 +641,10 @@ def stick(molecule, colormode="discrete", bond_thickness=0.1):
     """
     if molecule.total_num_bonds == 0:
         raise ValueError(
-            "No bonding data available for the molecule! Stick " "model cannot be made!"
+            (
+                "No bonding data available for the molecule! Stick "
+                "model cannot be made!"
+            )
         )
     colormode = colormode.lower()
     mst_mapper = OpenGLMoleculeMapper()
@@ -641,7 +662,10 @@ def stick(molecule, colormode="discrete", bond_thickness=0.1):
         mst_mapper.SetBondColorMode(0)
     else:
         mst_mapper.SetAtomColorMode(1)
-        warnings.warn("Incorrect colormode specified! Using discrete.", stacklevel=2)
+        warnings.warn(
+            "Incorrect colormode specified! Using discrete.",
+            stacklevel=2,
+        )
     molecule_actor = Actor()
     molecule_actor.SetMapper(mst_mapper)
     return molecule_actor
@@ -677,13 +701,21 @@ def ribbon(molecule):
         resi = molecule.residue_seq[i]
         for j, _ in enumerate(molecule.sheet):
             sheet = molecule.sheet[j]
-            if molecule.chain[i] != sheet[0] or resi < sheet[1] or resi > sheet[3]:
+            if (
+                (molecule.chain[i] != sheet[0])
+                or (resi < sheet[1])
+                or (resi > sheet[3])
+            ):
                 continue
             secondary_structures[i] = ord("s")
 
         for j, _ in enumerate(molecule.helix):
             helix = molecule.helix[j]
-            if molecule.chain[i] != helix[0] or resi < helix[1] or resi > helix[3]:
+            if (
+                (molecule.chain[i] != helix[0])
+                or (resi < helix[1])
+                or (resi > helix[3])
+            ):
                 continue
             secondary_structures[i] = ord("h")
 
@@ -735,13 +767,21 @@ def ribbon(molecule):
 
     # for secondary structures begin
     newarr = np.ones(num_total_atoms)
-    s_sb = nps.numpy_to_vtk(num_array=newarr, deep=True, array_type=VTK_UNSIGNED_CHAR)
+    s_sb = nps.numpy_to_vtk(
+        num_array=newarr,
+        deep=True,
+        array_type=VTK_UNSIGNED_CHAR,
+    )
     s_sb.SetName("secondary_structures_begin")
     output.GetPointData().AddArray(s_sb)
 
     # for secondary structures end
     newarr = np.ones(num_total_atoms)
-    s_se = nps.numpy_to_vtk(num_array=newarr, deep=True, array_type=VTK_UNSIGNED_CHAR)
+    s_se = nps.numpy_to_vtk(
+        num_array=newarr,
+        deep=True,
+        array_type=VTK_UNSIGNED_CHAR,
+    )
     s_se.SetName("secondary_structures_end")
     output.GetPointData().AddArray(s_se)
 
@@ -766,10 +806,17 @@ def ribbon(molecule):
     rgb = np.ones((num_total_atoms, 3))
 
     for i in range(num_total_atoms):
-        radii[i] = np.repeat(table.atomic_radius(all_atomic_numbers[i], "VDW"), 3)
+        radii[i] = np.repeat(
+            table.atomic_radius(all_atomic_numbers[i], radius_type="VDW"),
+            3,
+        )
         rgb[i] = table.atom_color(all_atomic_numbers[i])
 
-    Rgb = nps.numpy_to_vtk(num_array=rgb, deep=True, array_type=VTK_UNSIGNED_CHAR)
+    Rgb = nps.numpy_to_vtk(
+        num_array=rgb,
+        deep=True,
+        array_type=VTK_UNSIGNED_CHAR,
+    )
     Rgb.SetName("rgb_colors")
     output.GetPointData().SetScalars(Rgb)
 
@@ -792,7 +839,8 @@ def ribbon(molecule):
     return molecule_actor
 
 
-def bounding_box(molecule, colors=(1, 1, 1), linewidth=0.3):
+@warn_on_args_to_kwargs()
+def bounding_box(molecule, *, colors=(1, 1, 1), linewidth=0.3):
     """Create a bounding box for a molecule.
 
     Parameters

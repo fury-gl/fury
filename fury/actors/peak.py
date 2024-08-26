@@ -3,6 +3,7 @@ from os.path import join as pjoin
 import numpy as np
 
 from fury.colormap import boys2rgb, colormap_lookup_table, orient2rgb
+from fury.decorators import warn_on_args_to_kwargs
 from fury.lib import (
     VTK_OBJECT,
     Actor,
@@ -27,45 +28,61 @@ class PeakActor(Actor):
 
     Parameters
     ----------
+
     directions : ndarray
-        Peak directions. The shape of the array should be (X, Y, Z, D, 3).
+
+      Peak directions. The shape of the array should be (X, Y, Z, D, 3).
+
     indices : tuple
-        Indices given in tuple(x_indices, y_indices, z_indices)
-        format for mapping 2D ODF array to 3D voxel grid.
+
+      Indices given in tuple(x_indices, y_indices, z_indices)
+      format for mapping 2D ODF array to 3D voxel grid.
+
     values : ndarray, optional
-        Peak values. The shape of the array should be (X, Y, Z, D).
+
+      Peak values. The shape of the array should be (X, Y, Z, D).
+
     affine : array, optional
-        4x4 transformation array from native coordinates to world coordinates.
-    colors : None or string ('rgb_standard') or tuple (3D or 4D) or
-             array/ndarray (N, 3 or 4) or array/ndarray (K, 3 or 4) or
-             array/ndarray(N, ) or array/ndarray (K, )
-        If None a standard orientation colormap is used for every line.
-        If one tuple of color is used. Then all streamlines will have the same
-        color.
-        If an array (N, 3 or 4) is given, where N is equal to the number of
-        points. Then every point is colored with a different RGB(A) color.
-        If an array (K, 3 or 4) is given, where K is equal to the number of
-        lines. Then every line is colored with a different RGB(A) color.
-        If an array (N, ) is given, where N is the number of points then these
-        are considered as the values to be used by the colormap.
-        If an array (K,) is given, where K is the number of lines then these
-        are considered as the values to be used by the colormap.
+
+      4x4 transformation array from native coordinates to world coordinates.
+
+    colors : None or string ('rgb_standard') or tuple (3D or 4D) or array/ndarray (N, 3 or 4) or array/ndarray (K, 3 or 4) or array/ndarray(N, ) or array/ndarray (K, )
+
+      If None a standard orientation colormap is used for every line.
+      If one tuple of color is used. Then all streamlines will have the same
+      color.
+      If an array (N, 3 or 4) is given, where N is equal to the number of
+      points. Then every point is colored with a different RGB(A) color.
+      If an array (K, 3 or 4) is given, where K is equal to the number of
+      lines. Then every line is colored with a different RGB(A) color.
+      If an array (N, ) is given, where N is the number of points then these
+      are considered as the values to be used by the colormap.
+      If an array (K,) is given, where K is the number of lines then these
+      are considered as the values to be used by the colormap.
+
     lookup_colormap : vtkLookupTable, optional
-        Add a default lookup table to the colormap. Default is None which calls
-        :func:`fury.actor.colormap_lookup_table`.
+
+      Add a default lookup table to the colormap. Default is None which calls
+      :func:`fury.actor.colormap_lookup_table`.
+
     linewidth : float, optional
-        Line thickness. Default is 1.
+
+      Line thickness. Default is 1.
+
     symmetric: bool, optional
-        If True, peaks are drawn for both peaks_dirs and -peaks_dirs. Else,
-        peaks are only drawn for directions given by peaks_dirs. Default is
-        True.
 
-    """
+      If True, peaks are drawn for both peaks_dirs and -peaks_dirs. Else,
+      peaks are only drawn for directions given by peaks_dirs. Default is
+      True.
 
+    """  # noqa: E501
+
+    @warn_on_args_to_kwargs()
     def __init__(
         self,
         directions,
         indices,
+        *,
         values=None,
         affine=None,
         colors=None,
@@ -210,11 +227,12 @@ class PeakActor(Actor):
         self.__cross_section = self.__high_ranges // 2
 
         self.__mapper.AddObserver(
-            Command.UpdateShaderEvent, self.__display_peaks_vtk_callback
+            Command.UpdateShaderEvent, self.__display_peaks_vtk_callback(None, None)
         )
 
+    @warn_on_args_to_kwargs()
     @calldata_type(VTK_OBJECT)
-    def __display_peaks_vtk_callback(self, caller, event, calldata=None):
+    def __display_peaks_vtk_callback(self, caller, event, *, calldata=None):
         if calldata is not None:
             calldata.SetUniformi("isRange", self.__is_range)
             calldata.SetUniform3f("highRanges", self.__high_ranges)
@@ -275,7 +293,8 @@ class PeakActor(Actor):
         return self.__min_centers
 
 
-def _orientation_colors(points, cmap="rgb_standard"):
+@warn_on_args_to_kwargs()
+def _orientation_colors(points, *, cmap="rgb_standard"):
     """
     Parameters
     ----------
@@ -306,7 +325,8 @@ def _orientation_colors(points, cmap="rgb_standard"):
     return np.asarray(col_list)
 
 
-def _peaks_colors_from_points(points, colors=None, points_per_line=2):
+@warn_on_args_to_kwargs()
+def _peaks_colors_from_points(points, *, colors=None, points_per_line=2):
     """Return a VTK scalar array containing colors information for each one of
     the peaks according to the policy defined by the parameter colors.
 
@@ -376,7 +396,8 @@ def _peaks_colors_from_points(points, colors=None, points_per_line=2):
     return color_array, colors_are_scalars, global_opacity
 
 
-def _points_to_vtk_cells(points, points_per_line=2):
+@warn_on_args_to_kwargs()
+def _points_to_vtk_cells(points, *, points_per_line=2):
     """Return the VTK cell array for the peaks given the set of points
     coordinates.
 

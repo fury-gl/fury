@@ -10,9 +10,9 @@ Importing necessary modules
 """
 
 import numpy as np
+import fury
 from scipy.stats import norm
 
-from fury import actor, ui, utils, window
 
 ###############################################################################
 # Let's define some variable and their description:
@@ -58,12 +58,12 @@ def particle(
 ):
     _origin = np.asarray(_origin, dtype=float)
     position = np.tile(origin, (_num_total_steps, 1))
-    path_actor = actor.line([position], colors, linewidth=_path_thickness)
+    path_actor = fury.actor.line([position], colors, linewidth=_path_thickness)
     path_actor.position = position
     path_actor.delta = _delta
     path_actor.num_total_steps = _num_total_steps
     path_actor.time_step = _total_time / _num_total_steps
-    path_actor.vertices = utils.vertices_from_actor(path_actor)
+    path_actor.vertices = fury.utils.vertices_from_actor(path_actor)
     path_actor.no_vertices_per_point = len(path_actor.vertices) / _num_total_steps
     path_actor.initial_vertices = path_actor.vertices.copy() - np.repeat(
         position, path_actor.no_vertices_per_point, axis=0
@@ -85,19 +85,19 @@ def update_path(act, counter_step):
         act.vertices[:] = act.initial_vertices + np.repeat(
             act.position, act.no_vertices_per_point, axis=0
         )
-        utils.update_actor(act)
+        fury.utils.update_actor(act)
 
 
 ###############################################################################
 # Creating a scene object and configuring the camera's position
 
-scene = window.Scene()
+scene = fury.window.Scene()
 scene.background((1.0, 1.0, 1.0))
 scene.zoom(1.7)
 scene.set_camera(
     position=(0, 0, 40), focal_point=(0.0, 0.0, 0.0), view_up=(0.0, 0.0, 0.0)
 )
-showm = window.ShowManager(
+showm = fury.window.ShowManager(
     scene, size=(600, 600), reset_camera=True, order_transparent=True
 )
 
@@ -108,10 +108,10 @@ showm = window.ShowManager(
 l_particle = [
     particle(
         colors=np.random.rand(1, 3),
-        origin=origin,
-        num_total_steps=num_total_steps,
-        total_time=total_time,
-        path_thickness=path_thickness,
+        _origin=origin,
+        _num_total_steps=num_total_steps,
+        _total_time=total_time,
+        _path_thickness=path_thickness,
     )
     for _ in range(num_particles)
 ]
@@ -121,7 +121,7 @@ scene.add(*l_particle)
 ###############################################################################
 # Creating a container (cube actor) inside which the particle(s) move around
 
-container_actor = actor.box(
+container_actor = fury.actor.box(
     centers=np.array([[0, 0, 0]]), colors=(0.5, 0.9, 0.7, 0.4), scales=6
 )
 scene.add(container_actor)
@@ -129,7 +129,7 @@ scene.add(container_actor)
 ###############################################################################
 # Initializing text box to display the name of the animation
 
-tb = ui.TextBlock2D(bold=True, position=(235, 40), color=(0, 0, 0))
+tb = fury.ui.TextBlock2D(bold=True, position=(235, 40), color=(0, 0, 0))
 tb.message = "Brownian Motion"
 scene.add(tb)
 
@@ -155,4 +155,4 @@ def timer_callback(_obj, _event):
 
 showm.add_timer_callback(True, 30, timer_callback)
 showm.start()
-window.record(showm.scene, size=(600, 600), out_path="viz_brownian_motion.png")
+fury.window.record(showm.scene, size=(600, 600), out_path="viz_brownian_motion.png")

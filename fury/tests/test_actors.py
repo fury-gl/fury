@@ -10,7 +10,6 @@ from scipy.ndimage import center_of_mass
 from fury import actor, primitive as fp, shaders, window
 from fury.actor import grid
 from fury.decorators import skip_linux, skip_osx, skip_win
-from fury.deprecator import ExpiredDeprecationError
 
 # Allow import, but disable doctests if we don't have dipy
 from fury.optpkg import optional_package
@@ -48,8 +47,8 @@ def test_slicer(verbose=False):
     scene = window.Scene()
     data = 255 * np.random.rand(50, 50, 50)
     affine = np.eye(4)
-    slicer = actor.slicer(data, affine, value_range=[data.min(), data.max()])
-    slicer.display(None, None, 25)
+    slicer = actor.slicer(data, affine=affine, value_range=[data.min(), data.max()])
+    slicer.display(x=None, y=None, z=25)
     scene.add(slicer)
 
     scene.reset_camera()
@@ -57,7 +56,7 @@ def test_slicer(verbose=False):
     # window.show(scene)
 
     # copy pixels in numpy array directly
-    arr = window.snapshot(scene, "test_slicer.png", offscreen=True)
+    arr = window.snapshot(scene, fname="test_slicer.png", offscreen=True)
 
     if verbose:
         print(arr.sum())
@@ -80,14 +79,22 @@ def test_slicer(verbose=False):
     # save pixels in png file not a numpy array
     with InTemporaryDirectory() as tmpdir:
         fname = os.path.join(tmpdir, "slice.png")
-        window.snapshot(scene, fname, offscreen=True)
+        window.snapshot(scene, fname=fname, offscreen=True)
         report = window.analyze_snapshot(fname, find_objects=True)
         npt.assert_equal(report.objects, 1)
 
     # Test Errors
     data_4d = 255 * np.random.rand(50, 50, 50, 50)
-    npt.assert_raises(ValueError, actor.slicer, data_4d)
-    npt.assert_raises(ValueError, actor.slicer, np.ones(10))
+    npt.assert_raises(
+        ValueError,
+        actor.slicer,
+        data_4d,
+    )
+    npt.assert_raises(
+        ValueError,
+        actor.slicer,
+        np.ones(10),
+    )
 
     scene.clear()
 
@@ -114,9 +121,9 @@ def test_slicer(verbose=False):
     scene.clear()
     slicer_lut = actor.slicer(data, lookup_colormap=lut)
 
-    slicer_lut.display(10, None, None)
-    slicer_lut.display(None, 10, None)
-    slicer_lut.display(None, None, 10)
+    slicer_lut.display(x=10, y=None, z=None)
+    slicer_lut.display(x=None, y=10, z=None)
+    slicer_lut.display(x=None, y=None, z=10)
 
     slicer_lut.opacity(0.5)
     slicer_lut.tolerance(0.03)
@@ -125,7 +132,7 @@ def test_slicer(verbose=False):
     npt.assert_equal(slicer_lut2.picker.GetTolerance(), 0.03)
     slicer_lut2.opacity(1)
     slicer_lut2.tolerance(0.025)
-    slicer_lut2.display(None, None, 10)
+    slicer_lut2.display(x=None, y=None, z=10)
     scene.add(slicer_lut2)
 
     scene.reset_clipping_range()
@@ -138,8 +145,8 @@ def test_slicer(verbose=False):
 
     data = 255 * np.random.rand(50, 50, 50)
     affine = np.diag([1, 3, 2, 1])
-    slicer = actor.slicer(data, affine, interpolation="nearest")
-    slicer.display(None, None, 25)
+    slicer = actor.slicer(data, affine=affine, interpolation="nearest")
+    slicer.display(x=None, y=None, z=25)
 
     scene.add(slicer)
     scene.reset_camera()
@@ -187,7 +194,7 @@ def test_surface():
                 )
                 scene.add(surface_actor)
                 # window.show(scene, size=(600, 600), reset_camera=False)
-                arr = window.snapshot(scene, "test_surface.png", offscreen=True)
+                arr = window.snapshot(scene, fname="test_surface.png", offscreen=True)
                 report = window.analyze_snapshot(arr, find_objects=True)
                 npt.assert_equal(report.objects, 1)
 
@@ -200,7 +207,7 @@ def test_contour_from_roi(interactive=False):
     data[25, 20:30, 25] = 1.0
     affine = np.eye(4)
     surface = actor.contour_from_roi(
-        data, affine, color=np.array([1, 0, 1]), opacity=0.5
+        data, affine=affine, color=np.array([1, 0, 1]), opacity=0.5
     )
     scene.add(surface)
 
@@ -219,7 +226,7 @@ def test_contour_from_roi(interactive=False):
     data2[35:40, 25, 25] = 1.0
     affine = np.eye(4)
     surface2 = actor.contour_from_roi(
-        data2, affine, color=np.array([0, 1, 1]), opacity=0.5
+        data2, affine=affine, color=np.array([0, 1, 1]), opacity=0.5
     )
     scene2.add(surface2)
 
@@ -228,8 +235,8 @@ def test_contour_from_roi(interactive=False):
     if interactive:
         window.show(scene2)
 
-    arr = window.snapshot(scene, "test_surface.png", offscreen=True)
-    arr2 = window.snapshot(scene2, "test_surface2.png", offscreen=True)
+    arr = window.snapshot(scene, fname="test_surface.png", offscreen=True)
+    arr2 = window.snapshot(scene2, fname="test_surface2.png", offscreen=True)
 
     report = window.analyze_snapshot(arr, find_objects=True)
     report2 = window.analyze_snapshot(arr2, find_objects=True)
@@ -287,10 +294,10 @@ def test_contour_from_label(interactive=False):
         window.show(scene2)
 
     arr = window.snapshot(
-        scene, "test_surface.png", offscreen=True, order_transparent=False
+        scene, fname="test_surface.png", offscreen=True, order_transparent=False
     )
     arr2 = window.snapshot(
-        scene2, "test_surface2.png", offscreen=True, order_transparent=True
+        scene2, fname="test_surface2.png", offscreen=True, order_transparent=True
     )
 
     report = window.analyze_snapshot(
@@ -312,14 +319,14 @@ def test_streamtube_and_line_actors():
 
     lines = [line1, line2]
     colors = np.array([[1, 0, 0], [0, 0, 1.0]])
-    c = actor.line(lines, colors, linewidth=3)
+    c = actor.line(lines, colors=colors, linewidth=3)
     scene.add(c)
 
-    c = actor.line(lines, colors, spline_subdiv=5, linewidth=3)
+    c = actor.line(lines, colors=colors, spline_subdiv=5, linewidth=3)
     scene.add(c)
 
     # create streamtubes of the same lines and shift them a bit
-    c2 = actor.streamtube(lines, colors, linewidth=0.1)
+    c2 = actor.streamtube(lines, colors=colors, linewidth=0.1)
     c2.SetPosition(2, 0, 0)
     scene.add(c2)
 
@@ -333,7 +340,7 @@ def test_streamtube_and_line_actors():
     npt.assert_equal(report.colors_found, [True, True])
 
     # as before with splines
-    c2 = actor.streamtube(lines, colors, spline_subdiv=5, linewidth=0.1)
+    c2 = actor.streamtube(lines, colors=colors, spline_subdiv=5, linewidth=0.1)
     c2.SetPosition(2, 0, 0)
     scene.add(c2)
 
@@ -346,7 +353,7 @@ def test_streamtube_and_line_actors():
     npt.assert_equal(report.objects, 4)
     npt.assert_equal(report.colors_found, [True, True])
 
-    c3 = actor.line(lines, colors, depth_cue=True, fake_tube=True)
+    c3 = actor.line(lines, colors=colors, depth_cue=True, fake_tube=True)
 
     shader_obj = c3.GetShaderProperty()
     mapper_code = shader_obj.GetGeometryShaderCode()
@@ -355,9 +362,9 @@ def test_streamtube_and_line_actors():
 
     npt.assert_equal(c3.GetProperty().GetRenderLinesAsTubes(), True)
 
-    c4 = actor.streamtube(lines, colors, replace_strips=False)
+    c4 = actor.streamtube(lines, colors=colors, replace_strips=False)
 
-    c5 = actor.streamtube(lines, colors, replace_strips=True)
+    c5 = actor.streamtube(lines, colors=colors, replace_strips=True)
 
     strips4 = c4.GetMapper().GetInput().GetStrips().GetData().GetSize()
     strips5 = c5.GetMapper().GetInput().GetStrips().GetData().GetSize()
@@ -398,9 +405,9 @@ def test_bundle_maps():
         value_range=(1.0, 1),
     )
 
-    line = actor.line(bundle, metric, linewidth=0.1, lookup_colormap=lut)
+    line = actor.line(bundle, colors=metric, linewidth=0.1, lookup_colormap=lut)
     scene.add(line)
-    scene.add(actor.scalar_bar(lut, " "))
+    scene.add(actor.scalar_bar(lookup_table=lut, title=" "))
 
     report = window.analyze_scene(scene)
 
@@ -413,7 +420,7 @@ def test_bundle_maps():
     values = 100 * np.random.rand(nb_points)
     # values[:nb_points/2] = 0
 
-    line = actor.streamtube(bundle, values, linewidth=0.1, lookup_colormap=lut)
+    line = actor.streamtube(bundle, colors=values, linewidth=0.1, lookup_colormap=lut)
     scene.add(line)
     # window.show(scene)
 
@@ -425,7 +432,7 @@ def test_bundle_maps():
     colors = np.random.rand(nb_points, 3)
     # values[:nb_points/2] = 0
 
-    line = actor.line(bundle, colors, linewidth=2)
+    line = actor.line(bundle, colors=colors, linewidth=2)
     scene.add(line)
     # window.show(scene)
 
@@ -439,8 +446,8 @@ def test_bundle_maps():
 
     # try other input options for colors
     scene.clear()
-    actor.line(bundle, (1.0, 0.5, 0))
-    actor.line(bundle, np.arange(len(bundle)))
+    actor.line(bundle, colors=(1.0, 0.5, 0))
+    actor.line(bundle, colors=np.arange(len(bundle)))
     actor.line(bundle)
     colors = [np.random.rand(*b.shape) for b in bundle]
     actor.line(bundle, colors=colors)
@@ -452,7 +459,7 @@ def test_odf_slicer(interactive=False):
     # vertices and faces of a sphere rather that needing
     # a specific type of sphere. We can use prim_sphere
     # as an alternative to get_sphere.
-    vertices, faces = prim_sphere("repulsion100", True)
+    vertices, faces = prim_sphere(name="repulsion100", gen_faces=True)
     sphere = Sphere()
     sphere.vertices = vertices
     sphere.faces = faces
@@ -521,13 +528,13 @@ def test_odf_slicer(interactive=False):
     # Test that odf_slicer.display works properly
     scene.clear()
     scene.add(odf_actor)
-    scene.add(actor.axes((11, 11, 11)))
+    scene.add(actor.axes(scale=(11, 11, 11)))
     for i in range(11):
-        odf_actor.display(i, None, None)
+        odf_actor.display(x=i, y=None, z=None)
         if interactive:
             window.show(scene)
     for j in range(11):
-        odf_actor.display(None, j, None)
+        odf_actor.display(x=None, y=j, z=None)
         if interactive:
             window.show(scene)
 
@@ -562,7 +569,7 @@ def test_odf_slicer(interactive=False):
         global_cm=True,
     )
 
-    vertices2, faces2 = prim_sphere("repulsion200", True)
+    vertices2, faces2 = prim_sphere(name="repulsion200", gen_faces=True)
     sphere2 = Sphere()
     sphere2.vertices = vertices2
     sphere2.faces = faces2
@@ -607,13 +614,13 @@ def test_peak_slicer(interactive=False):
     scene = window.Scene()
     peak_actor = actor.peak_slicer(peak_dirs)
     scene.add(peak_actor)
-    scene.add(actor.axes((11, 11, 11)))
+    scene.add(actor.axes(scale=(11, 11, 11)))
     if interactive:
         window.show(scene)
 
     scene.clear()
     scene.add(peak_actor)
-    scene.add(actor.axes((11, 11, 11)))
+    scene.add(actor.axes(scale=(11, 11, 11)))
     for k in range(11):
         peak_actor.display_extent(0, 10, 0, 10, k, k)
 
@@ -621,13 +628,13 @@ def test_peak_slicer(interactive=False):
         peak_actor.display_extent(0, 10, j, j, 0, 10)
 
     for i in range(11):
-        peak_actor.display(i, None, None)
+        peak_actor.display(x=i, y=None, z=None)
 
     scene.rm_all()
 
     peak_actor_sym = actor.peak_slicer(
         peak_dirs,
-        peak_values,
+        peaks_values=peak_values,
         mask=None,
         affine=np.diag([3, 2, 1, 1]),
         colors=None,
@@ -640,7 +647,7 @@ def test_peak_slicer(interactive=False):
 
     peak_actor_asym = actor.peak_slicer(
         peak_dirs,
-        peak_values,
+        peaks_values=peak_values,
         mask=None,
         affine=np.diag([3, 2, 1, 1]),
         colors=None,
@@ -654,7 +661,7 @@ def test_peak_slicer(interactive=False):
 
     scene.add(peak_actor_sym)
     scene.add(peak_actor_asym)
-    scene.add(actor.axes((11, 11, 11)))
+    scene.add(actor.axes(scale=(11, 11, 11)))
     if interactive:
         window.show(scene)
 
@@ -739,7 +746,7 @@ def test_tensor_slicer(interactive=False):
     mevals[..., :] = evals
     mevecs[..., :, :] = evecs
 
-    vertices, faces = prim_sphere("symmetric724", True)
+    vertices, faces = prim_sphere(name="symmetric724", gen_faces=True)
     sphere = Sphere()
     sphere.vertices = vertices
     sphere.faces = faces
@@ -891,8 +898,7 @@ def test_points(interactive=False):
 
 
 def test_vector_text(interactive=False):
-    npt.assert_raises(ExpiredDeprecationError, actor.label, "FURY Rocks")
-    text_actor = actor.vector_text("FURY Rocks", direction=None)
+    text_actor = actor.vector_text(text="FURY Rocks", direction=None)
 
     scene = window.Scene()
     scene.add(text_actor)
@@ -904,35 +910,35 @@ def test_vector_text(interactive=False):
     if interactive:
         window.show(scene, reset_camera=False)
 
-    text_actor = actor.vector_text("FURY Rocks")
+    text_actor = actor.vector_text(text="FURY Rocks")
     npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
     center = np.array(text_actor.GetCenter())
     [assert_greater_equal(v, 0) for v in center]
 
-    text_actor_centered = actor.vector_text("FURY Rocks", align_center=True)
+    text_actor_centered = actor.vector_text(text="FURY Rocks", align_center=True)
     center = np.array(text_actor_centered.GetCenter())
     npt.assert_equal(center, np.zeros(3))
 
-    text_actor_rot_1 = actor.vector_text("FURY Rocks", direction=(1, 1, 1))
-    text_actor_rot_2 = actor.vector_text("FURY Rocks", direction=(1, 1, 0))
+    text_actor_rot_1 = actor.vector_text(text="FURY Rocks", direction=(1, 1, 1))
+    text_actor_rot_2 = actor.vector_text(text="FURY Rocks", direction=(1, 1, 0))
     center_1 = text_actor_rot_1.GetCenter()
     center_2 = text_actor_rot_2.GetCenter()
     assert_not_equal(np.linalg.norm(center_1), np.linalg.norm(center_2))
 
     # test centered
-    text_centered = actor.vector_text("FURY Rocks", align_center=True)
+    text_centered = actor.vector_text(text="FURY Rocks", align_center=True)
 
     center_3 = text_centered.GetCenter()
     npt.assert_almost_equal(np.linalg.norm(center_3), 0.0)
 
     text_extruded = actor.vector_text(
-        "FURY Rocks", scale=(0.2, 0.2, 0.2), extrusion=1.123
+        text="FURY Rocks", scale=(0.2, 0.2, 0.2), extrusion=1.123
     )
     z_max = text_extruded.GetBounds()[-1]
     npt.assert_almost_equal(z_max, 1.123)
 
     text_extruded_centered = actor.vector_text(
-        "FURY Rocks",
+        text="FURY Rocks",
         scale=(0.2, 0.2, 0.2),
         direction=None,
         align_center=True,
@@ -1253,16 +1259,31 @@ def test_container():
 def test_grid(_interactive=False):
     vol1 = np.zeros((100, 100, 100))
     vol1[25:75, 25:75, 25:75] = 100
-    contour_actor1 = actor.contour_from_roi(vol1, np.eye(4), (1.0, 0, 0), 1.0)
+    contour_actor1 = actor.contour_from_roi(
+        vol1,
+        affine=np.eye(4),
+        color=(1.0, 0, 0),
+        opacity=1.0,
+    )
 
     vol2 = np.zeros((100, 100, 100))
     vol2[25:75, 25:75, 25:75] = 100
 
-    contour_actor2 = actor.contour_from_roi(vol2, np.eye(4), (1.0, 0.5, 0), 1.0)
+    contour_actor2 = actor.contour_from_roi(
+        vol2,
+        affine=np.eye(4),
+        color=(1.0, 0.5, 0),
+        opacity=1.0,
+    )
     vol3 = np.zeros((100, 100, 100))
     vol3[25:75, 25:75, 25:75] = 100
 
-    contour_actor3 = actor.contour_from_roi(vol3, np.eye(4), (1.0, 0.5, 0.5), 1.0)
+    contour_actor3 = actor.contour_from_roi(
+        vol3,
+        affine=np.eye(4),
+        color=(1.0, 0.5, 0.5),
+        opacity=1.0,
+    )
 
     scene = window.Scene()
     actors = []
@@ -1303,11 +1324,11 @@ def test_grid(_interactive=False):
 
     scene.add(container)
 
-    scene.projection("orthogonal")
+    scene.projection(proj_type="orthogonal")
 
     counter = itertools.count()
 
-    show_m = window.ShowManager(scene)
+    show_m = window.ShowManager(scene=scene)
 
     def timer_callback(_obj, _event):
         nonlocal counter
@@ -1329,7 +1350,7 @@ def test_grid(_interactive=False):
     scene.rm_all()
 
     counter = itertools.count()
-    show_m = window.ShowManager(scene)
+    show_m = window.ShowManager(scene=scene)
 
     # show the grid with the captions
     container = grid(
@@ -1461,8 +1482,8 @@ def test_matplotlib_figure():
 
     arr = matplotlib_figure_to_numpy(fig, dpi=500, transparent=True)
     plt.close("all")
-    fig_actor = actor.figure(arr, "cubic")
-    fig_actor2 = actor.figure(arr, "cubic")
+    fig_actor = actor.figure(arr, interpolation="cubic")
+    fig_actor2 = actor.figure(arr, interpolation="cubic")
     scene = window.Scene()
     scene.background((1, 1, 1.0))
 
@@ -1473,7 +1494,7 @@ def test_matplotlib_figure():
     ax_actor.SetPosition(-50, 500, -800)
     fig_actor2.SetPosition(500, 800, -400)
     display = window.snapshot(
-        scene, "test_mpl.png", order_transparent=False, offscreen=True
+        scene, fname="test_mpl.png", order_transparent=False, offscreen=True
     )
     _ = window.analyze_snapshot(
         display, bg_color=(255, 255, 255.0), colors=[(31, 119, 180)], find_objects=False
@@ -1643,7 +1664,13 @@ def test_sdf_actor(interactive=False):
     scales = [1, 2, 3, 4]
     primitive = ["sphere", "ellipsoid", "torus", "capsule"]
 
-    sdf_actor = actor.sdf(centers, directions, colors, primitive, scales)
+    sdf_actor = actor.sdf(
+        centers,
+        directions=directions,
+        colors=colors,
+        primitives=primitive,
+        scales=scales,
+    )
     scene.add(sdf_actor)
     scene.add(actor.axes())
     if interactive:
@@ -1656,7 +1683,13 @@ def test_sdf_actor(interactive=False):
     # Draw 3 spheres as the primitive type is str
     scene.clear()
     primitive = "sphere"
-    sdf_actor = actor.sdf(centers, directions, colors, primitive, scales)
+    sdf_actor = actor.sdf(
+        centers,
+        directions=directions,
+        colors=colors,
+        primitives=primitive,
+        scales=scales,
+    )
     scene.add(sdf_actor)
     scene.add(actor.axes())
     if interactive:
@@ -1671,7 +1704,13 @@ def test_sdf_actor(interactive=False):
     scene.clear()
     primitive = ["sphere"]
     with npt.assert_warns(UserWarning):
-        sdf_actor = actor.sdf(centers, directions, colors, primitive, scales)
+        sdf_actor = actor.sdf(
+            centers,
+            directions=directions,
+            colors=colors,
+            primitives=primitive,
+            scales=scales,
+        )
 
     scene.add(sdf_actor)
     scene.add(actor.axes())
@@ -1687,7 +1726,13 @@ def test_sdf_actor(interactive=False):
     scene.clear()
     primitive = ["sphere", "ellipsoid"]
     with npt.assert_warns(UserWarning):
-        sdf_actor = actor.sdf(centers, directions, colors, primitive, scales)
+        sdf_actor = actor.sdf(
+            centers,
+            directions=directions,
+            colors=colors,
+            primitives=primitive,
+            scales=scales,
+        )
 
     scene.add(sdf_actor)
     scene.add(actor.axes())
@@ -1905,3 +1950,78 @@ def test_actors_primitives_count():
         primitives_count = test_case[2]
         act = act_func(**args)
         npt.assert_equal(primitives_count_from_actor(act), primitives_count)
+
+
+def test_odf_actor(interactive=False):
+    # number of odf glyphs does not match with number of centers
+    centers = np.array([[0, -1, 0]])
+    coeffs = np.array([[0.282, 0.152, -0.040, -0.112, -0.045, 0.149],
+                       [0.285, 0.097, -0.115, 0.125, -0.001, 0.003]])
+    npt.assert_raises(ValueError, actor.odf, centers, coeffs)
+
+    scene = window.Scene()
+    centers = np.array([[0, -1, 0], [1, -1, 0], [2, -1, 0]])
+    coeffs = np.array([
+        [0.2820735, 0.15236554, -0.04038717, -0.11270988, -0.04532376,
+         0.14921817, 0.00257928, 0.0040734, -0.05313807, 0.03486542,
+         0.04083064, 0.02105767, -0.04389586, -0.04302812, 0.1048641],
+        [0.28549338, 0.0978267, -0.11544838, 0.12525354, -0.00126003,
+         0.00320594, 0.04744155, -0.07141446, 0.03211689, 0.04711322,
+         0.08064896, 0.00154299, 0.00086506, 0.00162543, -0.00444893],
+        [0.28208936, -0.13133252, -0.04701012, -0.06303016, -0.0468775,
+         0.02348355, 0.03991898, 0.02587433, 0.02645416, 0.00668765,
+         0.00890633, 0.02189304, 0.00387415, 0.01665629, -0.01427194]
+    ])
+    odf_actor = actor.odf(centers=centers, coeffs=coeffs)
+    scene.add(odf_actor)
+
+    if interactive:
+        window.show(scene)
+
+    report = window.analyze_scene(scene)
+    npt.assert_equal(report.actors, 1)
+    scene.clear()
+
+    # given degree is not even
+    npt.assert_warns(UserWarning, actor.odf, centers, coeffs, 3)
+
+    centers = np.array([0, 0, 0])
+    coeffs = np.array([
+        [-0.2739740312099, 0.2526670396328, 1.8922271728516, 0.2878578901291,
+         -0.5339795947075, -0.2620058953762, 0.1580424904823, 0.0329004973173,
+         -0.1322413831949, -0.1332057565451, 1.0894461870193, -0.6319401264191,
+         -0.0416776277125, -1.0772529840469,  0.1423762738705, 0.7941166162491,
+         0.7490307092667, -0.3428381681442, 0.1024847552180, -0.0219132602215,
+         0.0499043911695, 0.2162453681231, 0.0921059995890, -0.2611238956451,
+         0.2549301385880, -0.4534865319729, 0.1922748684883, -0.6200597286224]
+    ])
+    odf_actor = actor.odf(centers=centers, coeffs=coeffs, degree=6)
+    scene.add(odf_actor)
+
+    if interactive:
+        window.show(scene)
+
+    report = window.analyze_scene(scene)
+    npt.assert_equal(report.actors, 1)
+    scene.clear()
+
+    odf_actor = actor.odf(centers=centers, coeffs=coeffs, degree=4)
+    scene.add(odf_actor)
+
+    if interactive:
+        window.show(scene)
+
+    report = window.analyze_scene(scene)
+    npt.assert_equal(report.actors, 1)
+    scene.clear()
+
+    odf_actor = actor.odf(centers=centers, coeffs=coeffs, degree=8)
+    # not enough coefficients for given degree
+    npt.assert_warns(UserWarning, actor.odf, centers, coeffs, 8)
+    scene.add(odf_actor)
+
+    if interactive:
+        window.show(scene)
+
+    npt.assert_equal(report.actors, 1)
+    scene.clear()

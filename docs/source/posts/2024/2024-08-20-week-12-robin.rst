@@ -1,0 +1,53 @@
+Week 12: Wrapping things up
+===========================
+
+.. post:: Aug 20 2024
+    :author: Robin Roy
+    :tags: google
+    :category: gsoc
+
+Hi, I'm `Robin <https://github.com/robinroy03>`_ and this is my blog about week 12.
+
+As the final official week, I spent my time wrapping things up and also improving the UX of the GitHub Application.
+
+Things I did in Week 12
+-----------------------
+
+1) **Improving GitHub App UX**
+
+Previously the bot responded to every discussion post. It was not a good approach and we tried stuff like @mentions. The problem is GitHub does not support bot mentions natively. Actually `Serge <https://github.com/skoudoro/>`_ had a better approach that is using Discussion Templates. I integrated that. Right now, you have a checkbox that you can tick to get the LLM answer as the first response.
+
+The new UI looks like this:
+
+.. image:: /_static/images/robin_gsoc_FURY_DISCUSSIONS_TEMPLATE.jpg
+    :alt: Present GitHub Discussions Template
+
+
+2) **Documentation**
+
+Some of the API endpoints had no documentation, the documentation work is still ongoing. But I worked on adding basic info like how to test locally and stuff. It was added directly to the README.md files. I'll also make a separate GitHub Gists where I'll detail all the components and how they integrate with each other.
+
+3) **API testing**
+
+I plan to have testing for every endpoint. Testing includes the following:
+
+- Check the endpoints with valid data to see the response. Validate the JSON format.
+- Check the endpoints with incorrect schema and record the response.
+- Test by adjusting parameters like KNN.
+
+Testing will be a separate file, it'll be production testing. We'll hit the live endpoints directly.
+
+
+What is coming up next week?
+----------------------------
+
+I'm working on the final report. Also, I'm working on finishing testing, documentation and updating the LLM response. The plan is to use a Re-Ranker to rerank the KNN references and filter ones not in context.
+
+
+Did you get stuck anywhere?
+---------------------------
+
+No, I did not get stuck. I was having some health issues this week so was unable to make a lot of progress. But the general plan is prepared, and now I'll have to compile everything.
+
+
+Thank you for reading!

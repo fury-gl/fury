@@ -14,8 +14,7 @@ import itertools
 
 import numpy as np
 
-from fury import actor, utils, window
-from fury.ui import TextBlock2D
+import fury
 
 ###############################################################################
 # Let's define some variables and their descriptions:
@@ -118,11 +117,11 @@ def connect_points(verts3D):
 ###############################################################################
 # Creating a scene object and configuring the camera's position
 
-scene = window.Scene()
+scene = fury.window.Scene()
 scene.set_camera(
     position=(0, 10, -1), focal_point=(0.0, 0.0, 0.0), view_up=(0.0, 0.0, 0.0)
 )
-showm = window.ShowManager(scene, size=(1920, 1080), order_transparent=True)
+showm = fury.window.ShowManager(scene, size=(1920, 1080), order_transparent=True)
 
 
 ###############################################################################
@@ -130,8 +129,8 @@ showm = window.ShowManager(scene, size=(1920, 1080), order_transparent=True)
 
 verts3D = rotate4D(verts4D)
 if not wireframe:
-    points = actor.point(verts3D, colors=p_color)
-    point_verts = utils.vertices_from_actor(points)
+    points = fury.actor.point(verts3D, colors=p_color)
+    point_verts = fury.utils.vertices_from_actor(points)
     no_vertices = len(point_verts) / 16
     initial_verts = point_verts.copy() - np.repeat(verts3D, no_vertices, axis=0)
 
@@ -141,8 +140,10 @@ if not wireframe:
 # Connecting points with lines actor
 
 lines = connect_points(verts3D)
-edges = actor.line(lines=lines, colors=e_color, lod=False, fake_tube=True, linewidth=4)
-lines_verts = utils.vertices_from_actor(edges)
+edges = fury.actor.line(
+    lines=lines, colors=e_color, lod=False, fake_tube=True, linewidth=4
+)
+lines_verts = fury.utils.vertices_from_actor(edges)
 initial_lines = lines_verts.copy() - np.reshape(lines, (-1, 3))
 
 scene.add(edges)
@@ -150,7 +151,7 @@ scene.add(edges)
 ###############################################################################
 # Initializing text box to display the name
 
-tb = TextBlock2D(text="Tesseract", position=(900, 950), font_size=20)
+tb = fury.ui.TextBlock2D(text="Tesseract", position=(900, 950), font_size=20)
 showm.scene.add(tb)
 
 ###############################################################################
@@ -167,11 +168,11 @@ def timer_callback(_obj, _event):
     verts3D = rotate4D(verts4D)
     if not wireframe:
         point_verts[:] = initial_verts + np.repeat(verts3D, no_vertices, axis=0)
-        utils.update_actor(points)
+        fury.utils.update_actor(points)
 
     lines = connect_points(verts3D)
     lines_verts[:] = initial_lines + np.reshape(lines, (-1, 3))
-    utils.update_actor(edges)
+    fury.utils.update_actor(edges)
 
     showm.render()
     angle += dtheta
@@ -186,4 +187,4 @@ def timer_callback(_obj, _event):
 
 showm.add_timer_callback(True, 20, timer_callback)
 showm.start()
-window.record(showm.scene, size=(600, 600), out_path="viz_tesseract.png")
+fury.window.record(showm.scene, size=(600, 600), out_path="viz_tesseract.png")

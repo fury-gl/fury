@@ -57,7 +57,7 @@ def test_timeline():
     anim.set_position(12, [1, 2, 1])
     assert tl_2.duration == length
 
-    tl_2 = Timeline(anim, length=11)
+    tl_2 = Timeline(animations=anim, length=11)
     assert tl_2.duration == 11
 
     tl = Timeline(playback_panel=True)
