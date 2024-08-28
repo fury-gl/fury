@@ -252,7 +252,7 @@ GSoC weekly blogs
 *****************
 
 -  My blog posts can be found on the `FURY
-   website <https://fury.gl/latest/blog/author/Shivam-Anand.html>`__
+   website <https://fury.gl/latest/blog/author/shivam-anand.html>`__
    and the `Python GSoC
    blog <https://blogs.python-gsoc.org/en/xtanions-blog/>`__.
 
