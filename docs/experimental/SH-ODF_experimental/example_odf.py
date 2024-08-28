@@ -21,7 +21,7 @@ if __name__ == "__main__":
     x, y, z, s = coeffs.shape
     coeffs = coeffs[:, :, :].reshape((x * y * z, s))
     
-    '''
+    #'''
     coeffs = np.array([
         [
             -0.2739740312099, 0.2526670396328, 1.8922271728516, 0.2878578901291,
@@ -39,9 +39,9 @@ if __name__ == "__main__":
         ]
     ])
     centers= np.array([0, 0, 0])
-    '''
+    #'''
 
     odf_actor = actor.odf(centers=centers, coeffs=coeffs, scales=1.0, 
-                          sh_basis='descoteaux', degree=2)
+                          sh_basis='descoteaux')
     show_man.scene.add(odf_actor)
     show_man.start()

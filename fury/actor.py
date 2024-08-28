@@ -4025,7 +4025,6 @@ def uncertainty_cone(
 def odf(
     centers,
     coeffs,
-    degree=None,
     sh_basis='descoteaux',
     scales=1.0,
     opacity=1.0
@@ -4041,10 +4040,6 @@ def odf(
     coeffs : (N, M) or (N, 6) or (N, 15) or (N, 28) or (N, 45) or (N, 66) or
         (N, 91) ndarray.
         Corresponding SH coefficients for the ODFs.
-    degree: int, optional
-        Index of the highest used band of the spherical harmonics basis. Must
-        be even, at least 2 and at most 12. If None the degree is set based on
-        the number of SH coefficients given.
     sh_basis: str, optional
         Type of basis (descoteaux, tournier)
         'descoteaux' for the default ``descoteaux07`` DYPY basis.
@@ -4077,27 +4072,9 @@ def odf(
                          'number of centers')
 
     coeffs_given = coeffs.shape[-1]
-    max_degree = int((np.sqrt(8 * coeffs_given + 1) - 3) / 2)
-    if degree is None:
-        degree = max_degree
-    else:
-        if degree % 2 != 0:
-            warnings.warn('Invalid degree value. Degree must be a positive '
-                          'even number lower or equal to 12. Ignoring passed '
-                          'value and using maximum degree supported by the '
-                          'number of SH coefficients.')
-            degree = max_degree
-        else:
-            coeffs_needed = int(((degree + 1) * (degree + 2)) / 2)
-            if coeffs_given < coeffs_needed:
-                warnings.warn('Not enough number of coefficient for SH of '
-                              'degree {0}, expected at least {1}. Ignoring '
-                              'passed value and using maximum degree supported '
-                              'by the number of SH coefficients.'
-                              .format(degree, coeffs_needed))
-                degree = max_degree
+    degree = int((np.sqrt(8 * coeffs_given + 1) - 3) / 2)
+    if (degree%2 != 0): degree -= 1
     coeffs = coeffs[:, :int(((degree + 1) * (degree + 2)) / 2)]
-
     if not isinstance(scales, np.ndarray):
         scales = np.array(scales)
     if scales.size == 1:

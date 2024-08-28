@@ -1,4 +1,4 @@
-void eval_sh_4(out float out_shs[15], vec3 point)
+void evalSH4(out float outSH[15], vec3 point)
 {
     float x, y, z, z2, c0, s0, c1, s1, d, a, b;
     x = point[0];
@@ -6,41 +6,41 @@ void eval_sh_4(out float out_shs[15], vec3 point)
     z = point[2];
     z2 = z * z;
     d = 0.282094792;
-    out_shs[0] = d;
+    outSH[0] = d;
     a = z2 - 0.333333333;
     d = 0.946174696 * a;
-    out_shs[3] = d;
+    outSH[3] = d;
     b = z2 * (a - 0.266666667);
     a = b - 0.257142857 * a;
     d = 3.702494142 * a;
-    out_shs[10] = d;
+    outSH[10] = d;
     c1 = x;
     s1 = y;
     d = -1.092548431 * z;
-    out_shs[2] = -c1 * d;
-    out_shs[4] = s1 * d;
+    outSH[2] = -c1 * d;
+    outSH[4] = s1 * d;
     a = (z2 - 0.2) * z;
     b = a - 0.228571429 * z;
     d = -4.683325805 * b;
-    out_shs[9] = -c1 * d;
-    out_shs[11] = s1 * d;
+    outSH[9] = -c1 * d;
+    outSH[11] = s1 * d;
     c0 = x * c1 - y * s1;
     s0 = y * c1 + x * s1;
     d = 0.546274215;
-    out_shs[1] = c0 * d;
-    out_shs[5] = s0 * d;
+    outSH[1] = c0 * d;
+    outSH[5] = s0 * d;
     a = z2 - 0.142857143;
     d = 3.311611435 * a;
-    out_shs[8] = c0 * d;
-    out_shs[12] = s0 * d;
+    outSH[8] = c0 * d;
+    outSH[12] = s0 * d;
     c1 = x * c0 - y * s0;
     s1 = y * c0 + x * s0;
     d = -1.77013077 * z;
-    out_shs[7] = -c1 * d;
-    out_shs[13] = s1 * d;
+    outSH[7] = -c1 * d;
+    outSH[13] = s1 * d;
     c0 = x * c1 - y * s1;
     s0 = y * c1 + x * s1;
     d = 0.625835735;
-    out_shs[6] = c0 * d;
-    out_shs[14] = s0 * d;
+    outSH[6] = c0 * d;
+    outSH[14] = s0 * d;
 }

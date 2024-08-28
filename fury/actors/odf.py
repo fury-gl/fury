@@ -88,18 +88,27 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
     # Texture is associated with the actor
     odf_actor.GetProperty().SetTexture("texture0", texture)
 
+    max_num_coeffs = coeffs.shape[-1]
+    max_sh_degree = int((np.sqrt(8 * max_num_coeffs + 1) - 3) / 2)
+    max_poly_degree = 2 * max_sh_degree + 2
+    viz_sh_degree = max_sh_degree
+    
     # The number of coefficients is associated to the order of the SH
     odf_actor.GetShaderProperty().GetFragmentCustomUniforms().SetUniformf(
-        "numCoeffs", ((degree + 1) * (degree + 2)) / 2
+        "shDegree", viz_sh_degree
     )
 
     # Start of shader implementation
 
     vs_dec = \
         """
+        uniform float shDegree;
+        
         in vec3 center;
         in vec2 minmax;
 
+        flat out float numCoeffsVSOutput;
+        flat out float maxPolyDegreeVSOutput;
         out vec4 vertexMCVSOutput;
         out vec3 centerMCVSOutput;
         out vec2 minmaxVSOutput;
@@ -110,6 +119,8 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
 
     vs_impl = \
         """
+        numCoeffsVSOutput = (shDegree + 1) * (shDegree + 2) / 2;
+        maxPolyDegreeVSOutput = 2 * shDegree + 2;
         vertexMCVSOutput = vertexMC;
         centerMCVSOutput = center;
         minmaxVSOutput = minmax;
@@ -124,13 +135,13 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
 
     # The index of the highest used band of the spherical harmonics basis. Must
     # be even, at least 2 and at most 12.
-    def_sh_degree = "#define SH_DEGREE " + str(degree)
+    def_sh_degree = f"#define SH_DEGREE {max_sh_degree}"
 
     # The number of spherical harmonics basis functions
-    def_sh_count = "#define SH_COUNT (((SH_DEGREE + 1) * (SH_DEGREE + 2)) / 2)"
+    def_sh_count = f"#define SH_COUNT {max_num_coeffs}"
 
     # Degree of polynomials for which we have to find roots
-    def_max_degree = "#define MAX_DEGREE (2 * SH_DEGREE + 2)"
+    def_max_degree = f"#define MAX_DEGREE {max_poly_degree}"
 
     # If GL_EXT_control_flow_attributes is available, these defines should be
     # defined as [[unroll]] and [[loop]] to give reasonable hints to the
@@ -159,6 +170,8 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
 
     fs_vs_vars = \
         """
+        flat in float numCoeffsVSOutput;
+        flat in float maxPolyDegreeVSOutput;
         in vec4 vertexMCVSOutput;
         in vec3 centerMCVSOutput;
         in vec2 minmaxVSOutput;
@@ -170,7 +183,7 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
     coeffs_norm = import_fury_shader(os.path.join("utils", "minmax_norm.glsl"))
 
     eval_sh_composed = ""
-    for i in range(2, degree + 1, 2): #PUT sh_degree
+    for i in range(2, max_sh_degree + 1, 2):
         eval_sh = import_fury_shader(
             os.path.join("rt_odfs", sh_basis, "eval_sh_" + str(i) + ".frag")
         )
@@ -213,7 +226,7 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
     # M. Descoteaux, E. Angelino, S. Fitzgibbons, and R. Deriche. Regularized,
     # fast, and robust analytical q-ball imaging. Magnetic Resonance in
     # Medicine, 58(3), 2007. https://doi.org/10.1002/mrm.21277
-    #   param out_shs Values of SH basis functions in bands 0, 2, ...,
+    #   param outSH Values of SH basis functions in bands 0, 2, ...,
     #       SH_DEGREE in this order.
     #   param point The point on the unit sphere where the basis should be
     #       evaluated.
@@ -313,12 +326,15 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
     # Define SH coefficients (measured up to band 8, noise beyond that)
     sh_coeffs = \
         """
-        float i = 1 / (numCoeffs * 2);
+        float i = 1 / (numCoeffsVSOutput * 2);
         float sh_coeffs[SH_COUNT];
-        for(int j=0; j<numCoeffs; j++){
-            sh_coeffs[j] = rescale(texture(
-                texture0, vec2(i + j / numCoeffs, tcoordVCVSOutput.y)).x,
-                0, 1, minmaxVSOutput.x, minmaxVSOutput.y);
+        for(int j=0; j < numCoeffsVSOutput; j++){
+            sh_coeffs[j] = rescale(
+                texture(
+                    texture0,
+                    vec2(i + j / numCoeffsVSOutput, tcoordVCVSOutput.y)).x,
+                    0, 1, minmaxVSOutput.x, minmaxVSOutput.y
+            );
         }
         """
 
@@ -326,8 +342,11 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
     intersection_test = \
         """
         float ray_params[MAX_DEGREE];
-        ray_sh_glyph_intersections(ray_params, sh_coeffs,
-                                   ro - centerMCVSOutput,rd);
+        rayGlyphIntersections(
+            ray_params, sh_coeffs, ro - centerMCVSOutput, rd, int(shDegree),
+            int(numCoeffsVSOutput), int(maxPolyDegreeVSOutput), M_PI,
+            NO_INTERSECTION
+        );
         """
 
     # Identify the first intersection
@@ -336,6 +355,7 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
         float first_ray_param = NO_INTERSECTION;
         _unroll_
         for (int i = 0; i != MAX_DEGREE; ++i) {
+        //for (int i = 0; i != maxPolyDegreeVSOutput; ++i) {
             if (ray_params[i] != NO_INTERSECTION && ray_params[i] > 0.0) {
                 first_ray_param = ray_params[i];
                 break;
@@ -349,9 +369,9 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
         vec3 color = vec3(1.);
         if (first_ray_param != NO_INTERSECTION) {
             vec3 intersection = ro - centerMCVSOutput + first_ray_param * rd;
-            vec3 normal = get_sh_glyph_normal(sh_coeffs, intersection);
-            vec3 colorDir = srgb_to_linear_rgb(abs(normalize(intersection)));
-            float attenuation = dot(ld, normal);
+            vec3 normal = getShGlyphNormal(sh_coeffs, intersection, int(shDegree), int(numCoeffsVSOutput));
+            vec3 colorDir = srgbToLinearRgb(abs(normalize(intersection)));
+            float attenuation = ld.z;//dot(ld, normal);
             color = blinnPhongIllumModel(
                 attenuation, lightColor0, colorDir, specularPower,
                 specularColor, ambientColor);
@@ -362,7 +382,7 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
 
     frag_output = \
         """
-        vec3 out_color = linear_rgb_to_srgb(tonemap(color));
+        vec3 out_color = linearRgbToSrgb(tonemap(color));
         fragOutput0 = vec4(out_color, opacity);
         """
 

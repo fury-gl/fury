@@ -1,4 +1,4 @@
-vec3 srgb_to_linear_rgb(vec3 srgb)
+vec3 srgbToLinearRgb(vec3 srgb)
 {
-    return vec3(srgb_to_linear(srgb.r), srgb_to_linear(srgb.g), srgb_to_linear(srgb.b));
+    return vec3(srgbToLinear(srgb.r), srgbToLinear(srgb.g), srgbToLinear(srgb.b));
 }
