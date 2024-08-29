@@ -13,7 +13,8 @@ class ShowManager:
             scene=None,
             camera=None,
             is_jupyter=False,
-            is_offscreen=False
+            is_offscreen=False,
+            pixel_ratio=1
     ):
 
         self._canvas = None
@@ -32,16 +33,20 @@ class ShowManager:
         self._scene.add(gfx.AmbientLight())
 
         if camera is None:
-            camera = gfx.PerspectiveCamera()
+            camera = gfx.PerspectiveCamera(70, 16 / 9)
         self._camera = camera
 
         gfx.OrbitController(self._camera, register_events=self._renderer)
         self._renderer.enable_events()
+        self._renderer.pixel_ratio = pixel_ratio
 
     def render(self):
         self._canvas.request_draw(lambda: self._renderer.render(
             self._scene, self._camera
         ))
+
+    def update(self):
+        self._canvas.request_draw()
 
     def start(self):
         run()
@@ -55,3 +60,10 @@ class ShowManager:
 
     @property
     def canvas(self): return self._canvas
+
+    @property
+    def pixel_ratio(self): return self._renderer.pixel_ratio
+
+    @pixel_ratio.setter
+    def pixel_ratio(self, pixel_ratio):
+        self._renderer.pixel_ratio = pixel_ratio
