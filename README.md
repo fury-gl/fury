@@ -11,6 +11,8 @@
 <p align="center">
 <a href="https://dev.azure.com/fury-gl/fury/_build/latest?definitionId=1&branchName=master"><img src="https://dev.azure.com/fury-gl/fury/_apis/build/status/fury-gl.fury?branchName=master">
 </a>
+<a href="https://github.com/fury-gl/fury/actions/workflows/doc.yml"><img src="https://github.com/fury-gl/fury/actions/workflows/doc.yml/badge.svg">
+</a>
 <a href="https://pypi.python.org/pypi/fury"><img src="https://img.shields.io/pypi/v/fury.svg"></a>
 <a href="https://anaconda.org/conda-forge/fury"><img src="https://anaconda.org/conda-forge/fury/badges/version.svg"></a>
 <a href="https://codecov.io/gh/fury-gl/fury"><img src="https://codecov.io/gh/fury-gl/fury/branch/master/graph/badge.svg"></a>
