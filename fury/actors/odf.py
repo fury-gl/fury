@@ -327,9 +327,9 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
     sh_coeffs = \
         """
         float i = 1 / (numCoeffsVSOutput * 2);
-        float sh_coeffs[SH_COUNT];
+        float shCoeffs[SH_COUNT];
         for(int j=0; j < numCoeffsVSOutput; j++){
-            sh_coeffs[j] = rescale(
+            shCoeffs[j] = rescale(
                 texture(
                     texture0,
                     vec2(i + j / numCoeffsVSOutput, tcoordVCVSOutput.y)).x,
@@ -341,9 +341,9 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
     # Perform the intersection test
     intersection_test = \
         """
-        float ray_params[MAX_DEGREE];
+        float rayParams[MAX_DEGREE];
         rayGlyphIntersections(
-            ray_params, sh_coeffs, ro - centerMCVSOutput, rd, int(shDegree),
+            rayParams, shCoeffs, ro - centerMCVSOutput, rd, int(shDegree),
             int(numCoeffsVSOutput), int(maxPolyDegreeVSOutput), M_PI,
             NO_INTERSECTION
         );
@@ -352,12 +352,11 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
     # Identify the first intersection
     first_intersection = \
         """
-        float first_ray_param = NO_INTERSECTION;
+        float firstRayParam = NO_INTERSECTION;
         _unroll_
-        for (int i = 0; i != MAX_DEGREE; ++i) {
-        //for (int i = 0; i != maxPolyDegreeVSOutput; ++i) {
-            if (ray_params[i] != NO_INTERSECTION && ray_params[i] > 0.0) {
-                first_ray_param = ray_params[i];
+        for (int i = 0; i != maxPolyDegreeVSOutput; ++i) {
+            if (rayParams[i] != NO_INTERSECTION && rayParams[i] > 0.0) {
+                firstRayParam = rayParams[i];
                 break;
             }
         }
@@ -367,11 +366,11 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
     directional_light = \
         """
         vec3 color = vec3(1.);
-        if (first_ray_param != NO_INTERSECTION) {
-            vec3 intersection = ro - centerMCVSOutput + first_ray_param * rd;
-            vec3 normal = getShGlyphNormal(sh_coeffs, intersection, int(shDegree), int(numCoeffsVSOutput));
+        if (firstRayParam != NO_INTERSECTION) {
+            vec3 intersection = ro - centerMCVSOutput + firstRayParam * rd;
+            vec3 normal = getShGlyphNormal(shCoeffs, intersection, int(shDegree), int(numCoeffsVSOutput));
             vec3 colorDir = srgbToLinearRgb(abs(normalize(intersection)));
-            float attenuation = ld.z;//dot(ld, normal);
+            float attenuation = dot(ld, normal);
             color = blinnPhongIllumModel(
                 attenuation, lightColor0, colorDir, specularPower,
                 specularColor, ambientColor);
@@ -382,8 +381,8 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
 
     frag_output = \
         """
-        vec3 out_color = linearRgbToSrgb(tonemap(color));
-        fragOutput0 = vec4(out_color, opacity);
+        vec3 outColor = linearRgbToSrgb(tonemap(color));
+        fragOutput0 = vec4(outColor, opacity);
         """
 
     fs_impl = compose_shader([
