@@ -1982,9 +1982,6 @@ def test_odf_actor(interactive=False):
     npt.assert_equal(report.actors, 1)
     scene.clear()
 
-    # given degree is not even
-    npt.assert_warns(UserWarning, actor.odf, centers, coeffs, 3)
-
     centers = np.array([0, 0, 0])
     coeffs = np.array([
         [-0.2739740312099, 0.2526670396328, 1.8922271728516, 0.2878578901291,
@@ -1995,7 +1992,8 @@ def test_odf_actor(interactive=False):
          0.0499043911695, 0.2162453681231, 0.0921059995890, -0.2611238956451,
          0.2549301385880, -0.4534865319729, 0.1922748684883, -0.6200597286224]
     ])
-    odf_actor = actor.odf(centers=centers, coeffs=coeffs, degree=6)
+    # odf glyph of degree 6
+    odf_actor = actor.odf(centers=centers, coeffs=coeffs)
     scene.add(odf_actor)
 
     if interactive:
@@ -2005,23 +2003,13 @@ def test_odf_actor(interactive=False):
     npt.assert_equal(report.actors, 1)
     scene.clear()
 
-    odf_actor = actor.odf(centers=centers, coeffs=coeffs, degree=4)
+    # odf glyph of degree 4
+    odf_actor = actor.odf(centers=centers, coeffs=coeffs[:15])
     scene.add(odf_actor)
 
     if interactive:
         window.show(scene)
 
     report = window.analyze_scene(scene)
-    npt.assert_equal(report.actors, 1)
-    scene.clear()
-
-    odf_actor = actor.odf(centers=centers, coeffs=coeffs, degree=8)
-    # not enough coefficients for given degree
-    npt.assert_warns(UserWarning, actor.odf, centers, coeffs, 8)
-    scene.add(odf_actor)
-
-    if interactive:
-        window.show(scene)
-
     npt.assert_equal(report.actors, 1)
     scene.clear()
