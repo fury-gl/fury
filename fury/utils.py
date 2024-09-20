@@ -1645,13 +1645,13 @@ def minmax_norm(data, axis=1):
     if data.ndim == 1:
         data = np.array([data])
     elif data.ndim > 2:
-        raise ValueError('the dimension of the array must be 2.')
+        raise ValueError("the dimension of the array dimension must be 2.")
 
     minimum = data.min(axis=axis)
     maximum = data.max(axis=axis)
     if np.array_equal(minimum, maximum):
         return data
-    if (axis == 0):
-        return (data - minimum)/(maximum - minimum)
-    if (axis == 1):
-        return (data - minimum[:, None])/(maximum - minimum)[:, None]
+    if axis == 0:
+        return (data - minimum) / (maximum - minimum)
+    if axis == 1:
+        return (data - minimum[:, None]) / (maximum - minimum)[:, None]

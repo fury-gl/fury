@@ -4022,9 +4022,11 @@ def uncertainty_cone(
     return double_cone(centers, evecs, angles, colors, scales, opacity)
 
 
+@warn_on_args_to_kwargs()
 def odf(
     centers,
     coeffs,
+    *,
     sh_basis='descoteaux',
     scales=1.0,
     opacity=1.0
@@ -4073,7 +4075,8 @@ def odf(
 
     coeffs_given = coeffs.shape[-1]
     degree = int((np.sqrt(8 * coeffs_given + 1) - 3) / 2)
-    if (degree%2 != 0): degree -= 1
+    if (degree%2 != 0):
+        degree -= 1
     coeffs = coeffs[:, :int(((degree + 1) * (degree + 2)) / 2)]
     if not isinstance(scales, np.ndarray):
         scales = np.array(scales)

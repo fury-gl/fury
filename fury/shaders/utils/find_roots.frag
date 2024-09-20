@@ -15,12 +15,12 @@ void findRoots(out float outRoots[MAX_DEGREE + 1], float poly[MAX_DEGREE + 1], f
     // Compute its two roots using the quadratic formula
     float discriminant = derivative[1] * derivative[1] - 4.0 * derivative[0] * derivative[2];
     if (discriminant >= 0.0) {
-        float sqrt_discriminant = sqrt(discriminant);
-        float scaled_root = derivative[1] + ((derivative[1] > 0.0) ? sqrt_discriminant : (-sqrt_discriminant));
-        float root_0 = clamp(-2.0 * derivative[0] / scaled_root, begin, end);
-        float root_1 = clamp(-0.5 * scaled_root / derivative[2], begin, end);
-        outRoots[maxPolyDegree - 2] = min(root_0, root_1);
-        outRoots[maxPolyDegree - 1] = max(root_0, root_1);
+        float sqrtDiscriminant = sqrt(discriminant);
+        float scaledRoot = derivative[1] + ((derivative[1] > 0.0) ? sqrtDiscriminant : (-sqrtDiscriminant));
+        float root0 = clamp(-2.0 * derivative[0] / scaledRoot, begin, end);
+        float root1 = clamp(-0.5 * scaledRoot / derivative[2], begin, end);
+        outRoots[maxPolyDegree - 2] = min(root0, root1);
+        outRoots[maxPolyDegree - 1] = max(root0, root1);
     }
     else {
         // Indicate that the cubic derivative has a single root
@@ -45,30 +45,30 @@ void findRoots(out float outRoots[MAX_DEGREE + 1], float poly[MAX_DEGREE + 1], f
     for (int degree = 3; degree != maxPolyDegree + 1; ++degree) {
         // Take the integral of the previous derivative (scaled such that the
         // constant coefficient can still be copied directly from poly)
-        float prev_derivative_order = float(maxPolyDegree + 1 - degree);
+        float prevDerivativeOrder = float(maxPolyDegree + 1 - degree);
         _unroll_
         for (int i = maxPolyDegree; i != 0; --i)
-            derivative[i] = derivative[i - 1] * (prev_derivative_order * (1.0 / float(i)));
+            derivative[i] = derivative[i - 1] * (prevDerivativeOrder * (1.0 / float(i)));
         // Copy the constant coefficient without causing spilling. This part
         // would be harder if the derivative were not scaled the way it is.
         _unroll_
         for (int i = 0; i != maxPolyDegree - 2; ++i)
             derivative[0] = (degree == maxPolyDegree - i) ? poly[i] : derivative[0];
         // Determine the value of this derivative at begin
-        float begin_value = derivative[maxPolyDegree];
+        float beginValue = derivative[maxPolyDegree];
         _unroll_
         for (int i = maxPolyDegree - 1; i != -1; --i)
-            begin_value = begin_value * begin + derivative[i];
+            beginValue = beginValue * begin + derivative[i];
         // Iterate over the intervals where roots may be found
         _unroll_
         for (int i = 0; i != maxPolyDegree; ++i) {
             if (i < maxPolyDegree - degree)
                 continue;
-            float current_begin = outRoots[i];
-            float current_end = outRoots[i + 1];
+            float currentBegin = outRoots[i];
+            float currentEnd = outRoots[i + 1];
             // Try to find a root
             float root;
-            if (newtonBisection(root, begin_value, derivative, current_begin, current_end, begin_value, tolerance, maxPolyDegree))
+            if (newtonBisection(root, beginValue, derivative, currentBegin, currentEnd, beginValue, tolerance, maxPolyDegree))
                 outRoots[i] = root;
             else if (degree < maxPolyDegree)
                 // Create an empty interval for the next iteration

@@ -10,7 +10,7 @@ void evalShGrad(out float outSH[SH_COUNT], out vec3 outGrads[SH_COUNT], vec3 poi
         #endif
         for (int i = 0; i != numCoeffs; ++i)
             outSH[i] = tmpOutSH[i];
-            
+
     }
     else if (shDegree == 4)
     {

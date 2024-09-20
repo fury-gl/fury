@@ -1,4 +1,4 @@
-void eval_sh_12(out float outSH[91], vec3 point)
+void evalSH12(out float outSH[91], vec3 point)
 {
     float x, y, z, z2, c0, s0, c1, s1, d, a, b;
     x = point[0];

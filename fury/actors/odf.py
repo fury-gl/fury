@@ -57,12 +57,12 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
     attribute_to_actor(odf_actor, big_minmax, "minmax")
 
     odf_actor_pd = odf_actor.GetMapper().GetInput()
-    
+
     n_glyphs = coeffs.shape[0]
     # Coordinates to locate the data of each glyph in the texture.
     uv_vals = np.array(uv_calculations(n_glyphs))
     num_pnts = uv_vals.shape[0]
-    
+
     # Definition of texture coordinates to be associated with the actor.
     t_coords = FloatArray()
     t_coords.SetNumberOfComponents(2)
@@ -70,7 +70,7 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
     [t_coords.SetTuple(i, uv_vals[i]) for i in range(num_pnts)]
 
     set_polydata_tcoords(odf_actor_pd, t_coords)
-    
+
     # The coefficient data is stored in a texture to be passed to the shaders.
 
     # Data is normalized to a range of 0 to 1.
@@ -92,7 +92,7 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
     max_sh_degree = int((np.sqrt(8 * max_num_coeffs + 1) - 3) / 2)
     max_poly_degree = 2 * max_sh_degree + 2
     viz_sh_degree = max_sh_degree
-    
+
     # The number of coefficients is associated to the order of the SH
     odf_actor.GetShaderProperty().GetFragmentCustomUniforms().SetUniformf(
         "shDegree", viz_sh_degree
@@ -103,7 +103,7 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
     vs_dec = \
         """
         uniform float shDegree;
-        
+
         in vec3 center;
         in vec2 minmax;
 
@@ -185,11 +185,13 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
     eval_sh_composed = ""
     for i in range(2, max_sh_degree + 1, 2):
         eval_sh = import_fury_shader(
-            os.path.join("rt_odfs", sh_basis, "eval_sh_" + str(i) + ".frag")
+            os.path.join("ray_tracing", "odf", sh_basis, "eval_sh_" + str(i) +
+                         ".frag")
         )
         eval_sh_grad = import_fury_shader(
             os.path.join(
-                "rt_odfs", sh_basis, "eval_sh_grad_" + str(i) + ".frag"
+                "ray_tracing", "odf", sh_basis, "eval_sh_grad_" + str(i) +
+                ".frag"
             )
         )
         eval_sh_composed = compose_shader(
@@ -230,18 +232,18 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
     #       SH_DEGREE in this order.
     #   param point The point on the unit sphere where the basis should be
     #       evaluated.
-    eval_sh = import_fury_shader(os.path.join("rt_odfs", "eval_sh.frag"))
+    eval_sh = import_fury_shader(os.path.join("ray_tracing", "odf", "eval_sh.frag"))
 
     # Evaluates the gradient of each basis function given by eval_sh() and the
     # basis itself
     eval_sh_grad = import_fury_shader(
-        os.path.join("rt_odfs", "eval_sh_grad.frag")
+        os.path.join("ray_tracing", "odf", "eval_sh_grad.frag")
     )
 
     # Outputs a matrix that turns equidistant samples on the unit circle of a
     # homogeneous polynomial into coefficients of that polynomial.
     get_inv_vandermonde = import_fury_shader(
-        os.path.join("rt_odfs", "get_inv_vandermonde.frag")
+        os.path.join("ray_tracing", "odf", "get_inv_vandermonde.frag")
     )
 
     # Determines all intersections between a ray and a spherical harmonics
@@ -255,7 +257,7 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
     #   param ray_origin The origin of the ray, relative to the glyph center.
     #   param ray_dir The normalized direction vector of the ray.
     ray_sh_glyph_intersections = import_fury_shader(
-        os.path.join("rt_odfs", "ray_sh_glyph_intersections.frag")
+        os.path.join("ray_tracing", "odf", "ray_sh_glyph_intersections.frag")
     )
 
     # Provides a normalized normal vector for a spherical harmonics glyph.
@@ -266,7 +268,7 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
     #
     #   return A normalized surface normal pointing away from the origin.
     get_sh_glyph_normal = import_fury_shader(
-        os.path.join("rt_odfs", "get_sh_glyph_normal.frag")
+        os.path.join("ray_tracing", "odf", "get_sh_glyph_normal.frag")
     )
 
     # Applies the non-linearity that maps linear RGB to sRGB
@@ -290,7 +292,7 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
     )
 
     # Logarithmic tonemapping operator. Input and output are linear RGB.
-    tonemap = import_fury_shader(os.path.join("rt_odfs", "tonemap.frag"))
+    tonemap = import_fury_shader(os.path.join("lighting", "tonemap.frag"))
 
     # Blinn-Phong illumination model
     blinn_phong_model = import_fury_shader(
@@ -368,7 +370,8 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
         vec3 color = vec3(1.);
         if (firstRayParam != NO_INTERSECTION) {
             vec3 intersection = ro - centerMCVSOutput + firstRayParam * rd;
-            vec3 normal = getShGlyphNormal(shCoeffs, intersection, int(shDegree), int(numCoeffsVSOutput));
+            vec3 normal = getShGlyphNormal(shCoeffs, intersection, 
+                          int(shDegree), int(numCoeffsVSOutput));
             vec3 colorDir = srgbToLinearRgb(abs(normalize(intersection)));
             float attenuation = dot(ld, normal);
             color = blinnPhongIllumModel(
