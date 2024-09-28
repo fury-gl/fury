@@ -12,7 +12,7 @@ import fury
 # Retrieving the model with skeletal animations.
 # We're choosing the `RiggedFigure` model here.
 
-fury.data.fetch_gltf("RiggedFigure", "glTF")
+fury.data.fetch_gltf(name="RiggedFigure", mode="glTF")
 filename = fury.data.read_viz_gltf("RiggedFigure")
 
 ##############################################################################

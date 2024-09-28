@@ -11,7 +11,7 @@ import fury
 # Retrieving the model with morphing in it (look at Khronoos samples).
 # We're choosing the `MorphStressTest` model here.
 
-fury.data.fetch_gltf("MorphStressTest", "glTF")
+fury.data.fetch_gltf(name="MorphStressTest", mode="glTF")
 filename = fury.data.read_viz_gltf("MorphStressTest")
 
 ##############################################################################

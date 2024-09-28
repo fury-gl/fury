@@ -15,7 +15,7 @@ scene.SetBackground(0.1, 0.1, 0.4)
 
 ##############################################################################
 # Retrieving the gltf model.
-fury.data.fetch_gltf("Duck", "glTF")
+fury.data.fetch_gltf(name="Duck", mode="glTF")
 filename = fury.data.read_viz_gltf("Duck")
 
 ##############################################################################

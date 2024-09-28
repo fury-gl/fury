@@ -30,7 +30,7 @@ scene.add(cube)
 sphere = fury.actor.sphere(np.add(centers, np.array([0, 2, 0])), colors=colors)
 scene.add(sphere)
 
-fury.data.fetch_gltf("BoxTextured", "glTF")
+fury.data.fetch_gltf(name="BoxTextured", mode="glTF")
 filename = fury.data.read_viz_gltf("BoxTextured")
 gltf_obj = fury.gltf.glTF(filename)
 box_actor = gltf_obj.actors()
