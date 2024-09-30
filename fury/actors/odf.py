@@ -10,12 +10,8 @@ from fury.shaders import (
     import_fury_shader,
     shader_to_actor,
 )
-from fury.utils import (
-    numpy_to_vtk_image_data,
-    set_polydata_tcoords,
-    minmax_norm
-)
 from fury.texture.utils import uv_calculations
+from fury.utils import minmax_norm, numpy_to_vtk_image_data, set_polydata_tcoords
 
 
 def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
@@ -100,8 +96,7 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
 
     # Start of shader implementation
 
-    vs_dec = \
-        """
+    vs_dec = """
         uniform float shDegree;
 
         in vec3 center;
@@ -117,8 +112,7 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
         out vec3 camUpMCVSOutput;
         """
 
-    vs_impl = \
-        """
+    vs_impl = """
         numCoeffsVSOutput = (shDegree + 1) * (shDegree + 2) / 2;
         maxPolyDegreeVSOutput = 2 * shDegree + 2;
         vertexMCVSOutput = vertexMC;
@@ -147,8 +141,7 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
     # defined as [[unroll]] and [[loop]] to give reasonable hints to the
     # compiler. That avoids register spilling, which makes execution
     # considerably faster.
-    def_gl_ext_control_flow_attributes = \
-        """
+    def_gl_ext_control_flow_attributes = """
         #ifndef _unroll_
             #define _unroll_
         #endif
@@ -162,14 +155,12 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
     def_no_intersection = "#define NO_INTERSECTION 3.4e38"
 
     # pi and its reciprocal
-    def_pis = \
-        """
+    def_pis = """
         #define M_PI 3.141592653589793238462643
         #define M_INV_PI 0.318309886183790671537767526745
         """
 
-    fs_vs_vars = \
-        """
+    fs_vs_vars = """
         flat in float numCoeffsVSOutput;
         flat in float maxPolyDegreeVSOutput;
         in vec4 vertexMCVSOutput;
@@ -185,18 +176,14 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
     eval_sh_composed = ""
     for i in range(2, max_sh_degree + 1, 2):
         eval_sh = import_fury_shader(
-            os.path.join("ray_tracing", "odf", sh_basis, "eval_sh_" + str(i) +
-                         ".frag")
+            os.path.join("ray_tracing", "odf", sh_basis, "eval_sh_" + str(i) + ".frag")
         )
         eval_sh_grad = import_fury_shader(
             os.path.join(
-                "ray_tracing", "odf", sh_basis, "eval_sh_grad_" + str(i) +
-                ".frag"
+                "ray_tracing", "odf", sh_basis, "eval_sh_grad_" + str(i) + ".frag"
             )
         )
-        eval_sh_composed = compose_shader(
-            [eval_sh_composed, eval_sh, eval_sh_grad]
-        )
+        eval_sh_composed = compose_shader([eval_sh_composed, eval_sh, eval_sh_grad])
 
     # Searches a single root of a polynomial within a given interval.
     #   param out_root The location of the found root.
@@ -272,14 +259,10 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
     )
 
     # Applies the non-linearity that maps linear RGB to sRGB
-    linear_to_srgb = import_fury_shader(
-        os.path.join("lighting", "linear_to_srgb.frag")
-    )
+    linear_to_srgb = import_fury_shader(os.path.join("lighting", "linear_to_srgb.frag"))
 
     # Inverse of linear_to_srgb()
-    srgb_to_linear = import_fury_shader(
-        os.path.join("lighting", "srgb_to_linear.frag")
-    )
+    srgb_to_linear = import_fury_shader(os.path.join("lighting", "srgb_to_linear.frag"))
 
     # Turns a linear RGB color (i.e. rec. 709) into sRGB
     linear_rgb_to_srgb = import_fury_shader(
@@ -326,8 +309,7 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
     light_direction = "vec3 ld = normalize(ro - pnt);"
 
     # Define SH coefficients (measured up to band 8, noise beyond that)
-    sh_coeffs = \
-        """
+    sh_coeffs = """
         float i = 1 / (numCoeffsVSOutput * 2);
         float shCoeffs[SH_COUNT];
         for(int j=0; j < numCoeffsVSOutput; j++){
@@ -341,8 +323,7 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
         """
 
     # Perform the intersection test
-    intersection_test = \
-        """
+    intersection_test = """
         float rayParams[MAX_DEGREE];
         rayGlyphIntersections(
             rayParams, shCoeffs, ro - centerMCVSOutput, rd, int(shDegree),
@@ -352,8 +333,7 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
         """
 
     # Identify the first intersection
-    first_intersection = \
-        """
+    first_intersection = """
         float firstRayParam = NO_INTERSECTION;
         _unroll_
         for (int i = 0; i != maxPolyDegreeVSOutput; ++i) {
@@ -365,12 +345,11 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
         """
 
     # Evaluate shading for a directional light
-    directional_light = \
-        """
+    directional_light = """
         vec3 color = vec3(1.);
         if (firstRayParam != NO_INTERSECTION) {
             vec3 intersection = ro - centerMCVSOutput + firstRayParam * rd;
-            vec3 normal = getShGlyphNormal(shCoeffs, intersection, 
+            vec3 normal = getShGlyphNormal(shCoeffs, intersection,
                           int(shDegree), int(numCoeffsVSOutput));
             vec3 colorDir = srgbToLinearRgb(abs(normalize(intersection)));
             float attenuation = dot(ld, normal);
@@ -382,16 +361,24 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
         }
         """
 
-    frag_output = \
-        """
+    frag_output = """
         vec3 outColor = linearRgbToSrgb(tonemap(color));
         fragOutput0 = vec4(outColor, opacity);
         """
 
-    fs_impl = compose_shader([
-        point_from_vs, ray_origin, ray_direction, light_direction, sh_coeffs,
-        intersection_test, first_intersection, directional_light, frag_output
-    ])
+    fs_impl = compose_shader(
+        [
+            point_from_vs,
+            ray_origin,
+            ray_direction,
+            light_direction,
+            sh_coeffs,
+            intersection_test,
+            first_intersection,
+            directional_light,
+            frag_output,
+        ]
+    )
 
     shader_to_actor(odf_actor, "fragment", impl_code=fs_impl, block="picking")
 

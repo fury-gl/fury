@@ -1631,7 +1631,7 @@ def minmax_norm(data, axis=1):
     ----------
     data: ndarray
         2D array
-    axis: int
+    axis: int, optional
         axis for the function to be applied on
 
     Returns

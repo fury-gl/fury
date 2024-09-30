@@ -7,6 +7,7 @@ import warnings
 import numpy as np
 
 from fury import layout as lyt
+from fury.actors.odf import sh_odf
 from fury.actors.odf_slicer import OdfSlicerActor
 from fury.actors.peak import PeakActor
 from fury.actors.tensor import (
@@ -14,7 +15,6 @@ from fury.actors.tensor import (
     main_dir_uncertainty,
     tensor_ellipsoid,
 )
-from fury.actors.odf import sh_odf
 from fury.colormap import colormap_lookup_table
 from fury.decorators import warn_on_args_to_kwargs
 from fury.io import load_image
@@ -4022,15 +4022,7 @@ def uncertainty_cone(
     return double_cone(centers, evecs, angles, colors, scales, opacity)
 
 
-@warn_on_args_to_kwargs()
-def odf(
-    centers,
-    coeffs,
-    *,
-    sh_basis='descoteaux',
-    scales=1.0,
-    opacity=1.0
-):
+def odf(centers, coeffs, sh_basis="descoteaux", scales=1.0, opacity=1.0):
     """
     FURY actor for visualizing Orientation Distribution Functions (ODFs) given
     an array of Spherical Harmonics (SH) coefficients.
@@ -4046,9 +4038,9 @@ def odf(
         Type of basis (descoteaux, tournier)
         'descoteaux' for the default ``descoteaux07`` DYPY basis.
         'tournier' for the default ``tournier07` DYPY basis.
-    scales : float or ndarray (N, )
+    scales : float or ndarray (N, ), optional
         ODFs size.
-    opacity : float
+    opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
 
     Returns
@@ -4068,23 +4060,25 @@ def odf(
         if coeffs.ndim == 1:
             coeffs = np.array([coeffs])
         else:
-            raise ValueError('coeffs should be a 2D array.')
+            raise ValueError("coeffs should be a 2D array.")
     if coeffs.shape[0] != centers.shape[0]:
-        raise ValueError('number of odf glyphs defined does not match with '
-                         'number of centers')
+        raise ValueError(
+            "number of odf glyphs defined does not match with number of centers"
+        )
 
     coeffs_given = coeffs.shape[-1]
     degree = int((np.sqrt(8 * coeffs_given + 1) - 3) / 2)
-    if (degree%2 != 0):
+    if degree % 2 != 0:
         degree -= 1
-    coeffs = coeffs[:, :int(((degree + 1) * (degree + 2)) / 2)]
+    coeffs = coeffs[:, : int(((degree + 1) * (degree + 2)) / 2)]
     if not isinstance(scales, np.ndarray):
         scales = np.array(scales)
     if scales.size == 1:
         scales = np.repeat(scales, centers.shape[0])
     elif scales.size != centers.shape[0]:
         scales = np.concatenate(
-            (scales, np.ones(centers.shape[0] - scales.shape[0])), axis=None)
+            (scales, np.ones(centers.shape[0] - scales.shape[0])), axis=None
+        )
 
     total = np.sum(abs(coeffs), axis=1)
     coeffs = np.dot(np.diag(1 / total * scales), coeffs) * 1.7
