@@ -21,7 +21,7 @@ showm.initialize()
 
 ##############################################################################
 # Retrieving the gltf model.
-fury.data.fetch_gltf("InterpolationTest", "glTF")
+fury.data.fetch_gltf(name="InterpolationTest", mode="glTF")
 filename = fury.data.read_viz_gltf("InterpolationTest")
 
 ##############################################################################
