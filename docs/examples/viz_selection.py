@@ -61,7 +61,7 @@ num_objects = centers.shape[0]
 ###############################################################################
 # Access the memory of the colors of all the cubes
 
-vcolors = fury.utils.colors_from_actor(cube_actor, "colors")
+vcolors = fury.utils.colors_from_actor(cube_actor, array_name="colors")
 
 ###############################################################################
 # Create a rectangular 2d box as a texture
@@ -117,7 +117,7 @@ def hover_callback(_obj, _event):
 # Make the window appear
 
 showm = fury.window.ShowManager(
-    scene, size=(1024, 768), order_transparent=True, reset_camera=False
+    scene=scene, size=(1024, 768), order_transparent=True, reset_camera=False
 )
 
 
@@ -138,4 +138,4 @@ if interactive:
 ###############################################################################
 # Save the current framebuffer in a PNG file
 
-fury.window.record(showm.scene, size=(1024, 768), out_path="viz_selection.png")
+fury.window.record(scene=showm.scene, size=(1024, 768), out_path="viz_selection.png")

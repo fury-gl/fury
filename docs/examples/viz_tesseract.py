@@ -121,7 +121,7 @@ scene = fury.window.Scene()
 scene.set_camera(
     position=(0, 10, -1), focal_point=(0.0, 0.0, 0.0), view_up=(0.0, 0.0, 0.0)
 )
-showm = fury.window.ShowManager(scene, size=(1920, 1080), order_transparent=True)
+showm = fury.window.ShowManager(scene=scene, size=(1920, 1080), order_transparent=True)
 
 
 ###############################################################################
@@ -187,4 +187,4 @@ def timer_callback(_obj, _event):
 
 showm.add_timer_callback(True, 20, timer_callback)
 showm.start()
-fury.window.record(showm.scene, size=(600, 600), out_path="viz_tesseract.png")
+fury.window.record(scene=showm.scene, size=(600, 600), out_path="viz_tesseract.png")

@@ -112,7 +112,7 @@ tb.message = "Hello Shaders"
 # manager.
 
 current_size = (1024, 720)
-showm = fury.window.ShowManager(scene, size=current_size, reset_camera=False)
+showm = fury.window.ShowManager(scene=scene, size=current_size, reset_camera=False)
 
 
 showm.add_timer_callback(True, 30, timer_callback)
@@ -124,4 +124,4 @@ interactive = False
 if interactive:
     showm.start()
 
-fury.window.record(showm.scene, size=current_size, out_path="viz_shader.png")
+fury.window.record(scene=showm.scene, size=current_size, out_path="viz_shader.png")

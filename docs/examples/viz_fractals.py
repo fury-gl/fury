@@ -90,7 +90,7 @@ def tetrix(N):
     vertices, triangles, colors, _ = fury.primitive.repeat_primitive(
         centers=centers, colors=colors, vertices=vertices, faces=faces
     )
-    return fury.utils.get_actor_from_primitive(vertices, triangles, colors)
+    return fury.utils.get_actor_from_primitive(vertices, triangles, colors=colors)
 
 
 ###############################################################################
@@ -158,7 +158,7 @@ def sponge(N):
     vertices, triangles, colors, _ = fury.primitive.repeat_primitive(
         centers=centers, colors=colors, vertices=vertices, faces=faces
     )
-    return fury.utils.get_actor_from_primitive(vertices, triangles, colors)
+    return fury.utils.get_actor_from_primitive(vertices, triangles, colors=colors)
 
 
 ###############################################################################
@@ -213,7 +213,7 @@ def snowflake(N):
     vertices, triangles, colors, _ = fury.primitive.repeat_primitive(
         centers=centers, colors=colors, vertices=vertices, faces=faces
     )
-    return fury.utils.get_actor_from_primitive(vertices, triangles, colors)
+    return fury.utils.get_actor_from_primitive(vertices, triangles, colors=colors)
 
 
 ###############################################################################
@@ -221,7 +221,9 @@ def snowflake(N):
 # the Scene and ShowManager.
 
 scene = fury.window.Scene()
-showmgr = fury.window.ShowManager(scene, "Fractals", (800, 800), reset_camera=True)
+showmgr = fury.window.ShowManager(
+    scene=scene, title="Fractals", size=(800, 800), reset_camera=True
+)
 
 ###############################################################################
 # These values are what work nicely on my machine without lagging. If you have
@@ -289,4 +291,4 @@ interactive = False
 if interactive:
     showmgr.start()
 else:
-    fury.window.record(showmgr.scene, out_path="fractals.png", size=(800, 800))
+    fury.window.record(scene=showmgr.scene, out_path="fractals.png", size=(800, 800))

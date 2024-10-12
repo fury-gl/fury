@@ -44,4 +44,4 @@ interactive = False
 if interactive:
     fury.window.show(scene, size=(1280, 720))
 
-fury.window.record(scene, out_path="viz_gltf.png", size=(1280, 720))
+fury.window.record(scene=scene, out_path="viz_gltf.png", size=(1280, 720))

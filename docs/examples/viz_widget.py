@@ -52,7 +52,7 @@ colors = np.random.uniform(0.1, 1.0, size=(N, 3))
 actors = fury.actor.sphere(centers, opacity=0.5, radii=0.4, colors=colors)
 scene = fury.window.Scene()
 scene.add(actors)
-showm = fury.window.ShowManager(scene, size=(window_size[0], window_size[1]))
+showm = fury.window.ShowManager(scene=scene, size=(window_size[0], window_size[1]))
 
 ##########################################################################
 # Create a stream widget
@@ -85,4 +85,4 @@ else:
     time.sleep(time_sleep)
     widget.stop()
 
-fury.window.record(showm.scene, size=window_size, out_path="viz_widget.png")
+fury.window.record(scene=showm.scene, size=window_size, out_path="viz_widget.png")

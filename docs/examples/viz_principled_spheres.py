@@ -83,14 +83,14 @@ labels = [
 for i in range(10):
     pos = [-40, -5 * i, 0]
     label = fury.actor.vector_text(
-        labels[i], pos=pos, scale=(0.8, 0.8, 0.8), color=(0, 0, 0)
+        text=labels[i], pos=pos, scale=(0.8, 0.8, 0.8), color=(0, 0, 0)
     )
     scene.add(label)
 
 for j in range(11):
     pos = [-26 + 5 * j, 5, 0]
     label = fury.actor.vector_text(
-        str(np.round(j * 0.1, decimals=1)),
+        text=str(np.round(j * 0.1, decimals=1)),
         pos=pos,
         scale=(0.8, 0.8, 0.8),
         color=(0, 0, 0),
@@ -104,4 +104,4 @@ interactive = False
 if interactive:
     fury.window.show(scene)
 
-fury.window.record(scene, size=(600, 600), out_path="viz_principled_spheres.png")
+fury.window.record(scene=scene, size=(600, 600), out_path="viz_principled_spheres.png")

@@ -70,7 +70,7 @@ if __name__ == "__main__":
     )
 
     showm = fury.window.ShowManager(
-        scene,
+        scene=scene,
         reset_camera=False,
         size=(window_size[0], window_size[1]),
         order_transparent=False,
@@ -92,11 +92,13 @@ if __name__ == "__main__":
     p.start()
 
     stream.start(
-        ms,
+        ms=ms,
     )
     if interactive:
         showm.start()
     stream.stop()
     stream.cleanup()
 
-    fury.window.record(showm.scene, size=window_size, out_path="viz_no_interaction.png")
+    fury.window.record(
+        scene=showm.scene, size=window_size, out_path="viz_no_interaction.png"
+    )

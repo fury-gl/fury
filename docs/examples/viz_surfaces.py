@@ -102,4 +102,4 @@ scene.zoom(3)
 
 # display
 # fury.window.show(scene, size=(600, 600), reset_camera=False)
-fury.window.record(scene, out_path="cube.png", size=(600, 600))
+fury.window.record(scene=scene, out_path="cube.png", size=(600, 600))

@@ -46,7 +46,7 @@ whole_brain_evals, _ = load_nifti(fury.data.read_viz_dmri("whole_brain_evals.nii
 # vertices that made up the sphere, which have a standard number of 100, 200,
 # and 724 vertices.
 
-vertices, faces = fury.prim_sphere("repulsion100", True)
+vertices, faces = fury.prim_sphere(name="repulsion100", gen_faces=True)
 
 
 ###############################################################################
@@ -80,7 +80,7 @@ scene.background([255, 255, 255])
 scene.add(tensor_slice)
 
 # Create show manager
-showm = fury.window.ShowManager(scene, size=(600, 600))
+showm = fury.window.ShowManager(scene=scene, size=(600, 600))
 
 # Enables/disables interactive visualization
 interactive = False
@@ -88,7 +88,7 @@ interactive = False
 if interactive:
     showm.start()
 
-fury.window.record(showm.scene, size=(600, 600), out_path="tensor_slice_100.png")
+fury.window.record(scene=showm.scene, size=(600, 600), out_path="tensor_slice_100.png")
 
 ###############################################################################
 # If we zoom in at the scene to see with detail the tensor ellipsoids displayed
@@ -96,7 +96,7 @@ fury.window.record(showm.scene, size=(600, 600), out_path="tensor_slice_100.png"
 
 scene.roll(10)
 scene.pitch(90)
-showm = fury.window.ShowManager(scene, size=(600, 600), order_transparent=True)
+showm = fury.window.ShowManager(scene=scene, size=(600, 600), order_transparent=True)
 showm.scene.zoom(50)
 
 if interactive:
@@ -104,7 +104,7 @@ if interactive:
     showm.start()
 
 fury.window.record(
-    showm.scene,
+    scene=showm.scene,
     out_path="tensor_slice_100_zoom.png",
     size=(600, 300),
     reset_camera=False,
@@ -171,7 +171,7 @@ showm.scene.add(tensors)
 if interactive:
     showm.start()
 
-fury.window.record(scene, size=(600, 600), out_path="tensor_slice_sdf.png")
+fury.window.record(scene=scene, size=(600, 600), out_path="tensor_slice_sdf.png")
 
 ###############################################################################
 # Thus, one can see that the same result is obtained, however there is a
@@ -182,7 +182,7 @@ fury.window.record(scene, size=(600, 600), out_path="tensor_slice_sdf.png")
 
 scene.roll(10)
 scene.pitch(90)
-showm = fury.window.ShowManager(scene, size=(600, 600), order_transparent=True)
+showm = fury.window.ShowManager(scene=scene, size=(600, 600), order_transparent=True)
 showm.scene.zoom(50)
 
 if interactive:
@@ -190,7 +190,7 @@ if interactive:
     showm.start()
 
 fury.window.record(
-    showm.scene,
+    scene=showm.scene,
     out_path="tensor_slice_sdf_zoom.png",
     size=(600, 300),
     reset_camera=False,
@@ -221,9 +221,9 @@ evecs = np.zeros((1, 1, 1, 3, 3))
 evals[..., :] = mevals
 evecs[..., :, :] = mevecs
 
-vertices, faces = fury.prim_sphere("repulsion200", True)
+vertices, faces = fury.prim_sphere(name="repulsion200", gen_faces=True)
 sphere200 = Sphere(vertices, faces)
-vertices, faces = fury.prim_sphere("repulsion724", True)
+vertices, faces = fury.prim_sphere(name="repulsion724", gen_faces=True)
 sphere724 = Sphere(vertices, faces)
 
 tensor_100 = fury.actor.tensor_slicer(
@@ -247,10 +247,10 @@ tensor_sdf = fury.actor.ellipsoid(
 
 objects = [tensor_100, tensor_200, tensor_724, tensor_sdf]
 text = [
-    fury.actor.vector_text("Tensor 100"),
-    fury.actor.vector_text("Tensor 200"),
-    fury.actor.vector_text("Tensor 724"),
-    fury.actor.vector_text("Tensor SDF"),
+    fury.actor.vector_text(text="Tensor 100"),
+    fury.actor.vector_text(text="Tensor 200"),
+    fury.actor.vector_text(text="Tensor 724"),
+    fury.actor.vector_text(text="Tensor SDF"),
 ]
 
 grid_ui = fury.ui.GridUI(
@@ -265,14 +265,14 @@ scene = fury.window.Scene()
 scene.background([255, 255, 255])
 scene.zoom(3.5)
 scene.set_camera(position=(3.2, -20, 12), focal_point=(3.2, 0.0, 0.0))
-showm = fury.window.ShowManager(scene, size=(560, 200))
+showm = fury.window.ShowManager(scene=scene, size=(560, 200))
 showm.scene.add(grid_ui)
 
 if interactive:
     showm.start()
 
 fury.window.record(
-    showm.scene,
+    scene=showm.scene,
     size=(560, 200),
     out_path="tensor_comparison.png",
     reset_camera=False,
@@ -303,7 +303,7 @@ showm.scene.azimuth(87)
 if interactive:
     showm.start()
 
-fury.window.record(showm.scene, size=(600, 600), out_path="tensor_roi_100.png")
+fury.window.record(scene=showm.scene, size=(600, 600), out_path="tensor_roi_100.png")
 
 showm.scene.clear()
 
@@ -323,7 +323,7 @@ showm.scene.add(tensors)
 if interactive:
     showm.start()
 
-fury.window.record(showm.scene, size=(600, 600), out_path="tensor_roi_sdf.png")
+fury.window.record(scene=showm.scene, size=(600, 600), out_path="tensor_roi_sdf.png")
 
 showm.scene.clear()
 
@@ -348,13 +348,13 @@ tensors = fury.actor.ellipsoid(
 scene = fury.window.Scene()
 scene.add(tensors)
 scene.pitch(180)
-showm = fury.window.ShowManager(scene, size=(600, 600))
+showm = fury.window.ShowManager(scene=scene, size=(600, 600))
 
 if interactive:
     showm.start()
 
 fury.window.record(
-    showm.scene,
+    scene=showm.scene,
     size=(600, 600),
     reset_camera=False,
     out_path="tensor_whole_brain_sdf.png",

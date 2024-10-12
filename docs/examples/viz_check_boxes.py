@@ -107,7 +107,7 @@ def toggle_color(checkboxes):
 figure_dict = {"cube": cube, "sphere": sphere, "cone": cone, "arrow": arrow}
 check_box = ui.Checkbox(
     list(figure_dict),
-    list(figure_dict),
+    checked_labels=list(figure_dict),
     padding=1,
     font_size=18,
     font_family="Arial",
@@ -161,4 +161,4 @@ interactive = False
 if interactive:
     show_manager.start()
 
-window.record(show_manager.scene, size=current_size, out_path="viz_checkbox.png")
+window.record(scene=show_manager.scene, size=current_size, out_path="viz_checkbox.png")

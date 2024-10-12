@@ -238,7 +238,11 @@ scene.add(sphere_actor)
 # more time.
 
 showm = fury.window.ShowManager(
-    scene, reset_camera=False, size=(900, 768), order_transparent=True, multi_samples=8
+    scene=scene,
+    reset_camera=False,
+    size=(900, 768),
+    order_transparent=True,
+    multi_samples=8,
 )
 
 
@@ -254,4 +258,6 @@ showm.add_timer_callback(True, 16, timer_callback)
 
 showm.start()
 
-fury.window.record(showm.scene, size=(900, 768), out_path="viz_animated_networks.png")
+fury.window.record(
+    scene=showm.scene, size=(900, 768), out_path="viz_animated_networks.png"
+)

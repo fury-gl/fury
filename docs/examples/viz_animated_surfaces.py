@@ -128,7 +128,7 @@ scene = fury.window.Scene()
 scene.set_camera(
     position=(4.45, -21, 12), focal_point=(4.45, 0.0, 0.0), view_up=(0.0, 0.0, 1.0)
 )
-showm = fury.window.ShowManager(scene, size=(600, 600))
+showm = fury.window.ShowManager(scene=scene, size=(600, 600))
 
 ###############################################################################
 # Creating a grid to interact with surfaces individually.
@@ -137,7 +137,7 @@ showm = fury.window.ShowManager(scene, size=(600, 600))
 text = []
 for i in range(4):
     t_actor = fury.actor.vector_text(
-        "Function " + str(i + 1), pos=(0, 0, 0), scale=(0.17, 0.2, 0.2)
+        text="Function " + str(i + 1), pos=(0, 0, 0), scale=(0.17, 0.2, 0.2)
     )
     text.append(t_actor)
 
@@ -207,4 +207,6 @@ interactive = False
 if interactive:
     showm.start()
 
-fury.window.record(showm.scene, size=(600, 600), out_path="viz_animated_surfaces.png")
+fury.window.record(
+    scene=showm.scene, size=(600, 600), out_path="viz_animated_surfaces.png"
+)

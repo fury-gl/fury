@@ -61,7 +61,7 @@ import fury
 
 scene = fury.window.Scene()
 
-showm = fury.window.ShowManager(scene, size=(900, 768))
+showm = fury.window.ShowManager(scene=scene, size=(900, 768))
 showm.initialize()
 
 
@@ -80,7 +80,7 @@ sphere = fury.actor.sphere(np.zeros([1, 3]), np.ones([1, 3]))
 
 ###############################################################################
 # Then lets add the sphere actor to the ``Animation``
-animation.add_actor(sphere)
+animation.add_actor(actor=sphere)
 
 ###############################################################################
 # Then, we set our position keyframes at different timestamps
@@ -112,5 +112,5 @@ if interactive:
     showm.start()
 
 fury.window.record(
-    scene, out_path="viz_keyframe_animation_introduction.png", size=(900, 768)
+    scene=scene, out_path="viz_keyframe_animation_introduction.png", size=(900, 768)
 )

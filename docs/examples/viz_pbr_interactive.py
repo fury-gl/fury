@@ -336,4 +336,4 @@ interactive = False
 if interactive:
     show_m.start()
 
-fury.window.record(scene, size=(1920, 1080), out_path="viz_pbr_interactive.png")
+fury.window.record(scene=scene, size=(1920, 1080), out_path="viz_pbr_interactive.png")

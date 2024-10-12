@@ -81,14 +81,14 @@ labels = [
 for i, name in enumerate(labels):
     pos = [-40, -5 * i, 0]
     label = fury.actor.vector_text(
-        name, pos=pos, scale=(0.8, 0.8, 0.8), color=(0, 0, 0)
+        text=name, pos=pos, scale=(0.8, 0.8, 0.8), color=(0, 0, 0)
     )
     scene.add(label)
 
 for j in range(num_values):
     pos = [-26 + 5 * j, 3, 0]
     label = fury.actor.vector_text(
-        str(np.round(j * 0.1, decimals=1)),
+        text=str(np.round(j * 0.1, decimals=1)),
         pos=pos,
         scale=(0.8, 0.8, 0.8),
         color=(0, 0, 0),
@@ -136,14 +136,14 @@ labels = ["Base IoR", "Coat IoR"]
 for i, name in enumerate(labels):
     pos = [-40, -35 - (5 * i), 0]
     label = fury.actor.vector_text(
-        name, pos=pos, scale=(0.8, 0.8, 0.8), color=(0, 0, 0)
+        text=name, pos=pos, scale=(0.8, 0.8, 0.8), color=(0, 0, 0)
     )
     scene.add(label)
 
 for j in range(num_values):
     pos = [-26 + 5 * j, -32, 0]
     label = fury.actor.vector_text(
-        "{:.02f}".format(iors[j]), pos=pos, scale=(0.8, 0.8, 0.8), color=(0, 0, 0)
+        text="{:.02f}".format(iors[j]), pos=pos, scale=(0.8, 0.8, 0.8), color=(0, 0, 0)
     )
     scene.add(label)
 
@@ -154,4 +154,4 @@ interactive = False
 if interactive:
     fury.window.show(scene)
 
-fury.window.record(scene, size=(600, 600), out_path="viz_pbr_spheres.png")
+fury.window.record(scene=scene, size=(600, 600), out_path="viz_pbr_spheres.png")

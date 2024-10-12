@@ -80,7 +80,7 @@ interactive = False
 if interactive:
     fury.window.show(scene)
 else:
-    fury.window.record(scene, size=(600, 600), out_path="viz_regular_spheres.png")
+    fury.window.record(scene=scene, size=(600, 600), out_path="viz_regular_spheres.png")
 
 ###############################################################################
 # Now, let's explore our scene to understand what we have created. Traditional
@@ -92,7 +92,9 @@ represent_actor_as_wireframe(spheres_actor)
 if interactive:
     fury.window.show(scene)
 else:
-    fury.window.record(scene, size=(600, 600), out_path="viz_low_res_wireframe.png")
+    fury.window.record(
+        scene=scene, size=(600, 600), out_path="viz_low_res_wireframe.png"
+    )
 
 ###############################################################################
 # Let's clean the scene and play with the parameters `phi` and `theta`.
@@ -106,7 +108,9 @@ scene.add(spheres_actor)
 if interactive:
     fury.window.show(scene)
 else:
-    fury.window.record(scene, size=(600, 600), out_path="viz_hi_res_wireframe.png")
+    fury.window.record(
+        scene=scene, size=(600, 600), out_path="viz_hi_res_wireframe.png"
+    )
 
 ###############################################################################
 # As you might have noticed, these parameters control the resolution of the
@@ -137,7 +141,9 @@ scene.add(billboards_actor)
 if interactive:
     fury.window.show(scene)
 else:
-    fury.window.record(scene, size=(600, 600), out_path="viz_billboards_wireframe.png")
+    fury.window.record(
+        scene=scene, size=(600, 600), out_path="viz_billboards_wireframe.png"
+    )
 
 ###############################################################################
 # If you interacted with this actor, you might have noticed how it always
@@ -187,7 +193,9 @@ scene.add(spheres_actor)
 if interactive:
     fury.window.show(scene)
 else:
-    fury.window.record(scene, size=(600, 600), out_path="viz_billboards_circles.png")
+    fury.window.record(
+        scene=scene, size=(600, 600), out_path="viz_billboards_circles.png"
+    )
 
 ###############################################################################
 # Hold on, those actors don't look exactly like the ones we created using
@@ -280,7 +288,9 @@ scene.add(spheres_actor)
 if interactive:
     fury.window.show(scene)
 else:
-    fury.window.record(scene, size=(600, 600), out_path="viz_billboards_spheres.png")
+    fury.window.record(
+        scene=scene, size=(600, 600), out_path="viz_billboards_spheres.png"
+    )
 
 ###############################################################################
 # References

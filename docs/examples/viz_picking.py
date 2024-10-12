@@ -47,7 +47,9 @@ directions = np.array(
         [0, np.sqrt(2) / 2, np.sqrt(2) / 2],
     ]
 )
-fury_actor = fury.actor.cube(centers, directions, colors, scales=radii)
+fury_actor = fury.actor.cube(
+    centers, directions=directions, colors=colors, scales=radii
+)
 
 ###############################################################################
 # Access the memory of the vertices of all the cubes
@@ -59,7 +61,7 @@ num_objects = centers.shape[0]
 ###############################################################################
 # Access the memory of the colors of all the cubes
 
-vcolors = fury.utils.colors_from_actor(fury_actor, "colors")
+vcolors = fury.utils.colors_from_actor(fury_actor, array_name="colors")
 
 ###############################################################################
 # Adding an actor showing the axes of the world coordinates
@@ -139,7 +141,7 @@ fury_actor.AddObserver("LeftButtonPressEvent", left_click_callback, 1)
 ###############################################################################
 # Make the window appear
 
-showm = fury.window.ShowManager(scene, size=(1024, 768), order_transparent=True)
+showm = fury.window.ShowManager(scene=scene, size=(1024, 768), order_transparent=True)
 
 scene.add(panel)
 
@@ -155,4 +157,4 @@ if interactive:
 ###############################################################################
 # Save the current framebuffer in a PNG file
 
-fury.window.record(showm.scene, size=(1024, 768), out_path="viz_picking.png")
+fury.window.record(scene=showm.scene, size=(1024, 768), out_path="viz_picking.png")

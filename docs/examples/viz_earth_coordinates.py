@@ -31,8 +31,8 @@ scene.add(earth_actor)
 # Rotate the Earth to make sure the texture is correctly oriented. Change it's
 # scale using ``actor.SetScale()``.
 
-fury.utils.rotate(earth_actor, (-90, 1, 0, 0))
-fury.utils.rotate(earth_actor, (180, 0, 1, 0))
+fury.utils.rotate(earth_actor, rotation=(-90, 1, 0, 0))
+fury.utils.rotate(earth_actor, rotation=(180, 0, 1, 0))
 earth_actor.SetScale(2, 2, 2)
 
 ###############################################################################
@@ -72,7 +72,7 @@ locationthree = latlong_coordinates(48.864716, 2.349014)  # paris, france
 centers = np.array([[*locationone], [*locationtwo], [*locationthree]])
 colors = np.random.rand(3, 3)
 radii = np.array([0.005, 0.005, 0.005])
-sphere_actor = fury.actor.sphere(centers, colors, radii)
+sphere_actor = fury.actor.sphere(centers, colors, radii=radii)
 scene.add(sphere_actor)
 
 ###############################################################################
@@ -81,32 +81,32 @@ scene.add(sphere_actor)
 
 nyc_actor = fury.actor.text_3d(
     "New York City, New York\n40.7128° N, 74.0060° W",
-    (locationone[0] - 0.04, locationone[1], locationone[2] + 0.07),
-    fury.window.colors.white,
-    0.01,
+    position=(locationone[0] - 0.04, locationone[1], locationone[2] + 0.07),
+    color=fury.window.colors.white,
+    font_size=0.01,
 )
 paris_actor = fury.actor.text_3d(
     "Paris, France\n48.8566° N, 2.3522° E",
-    (locationthree[0] - 0.04, locationthree[1], locationthree[2] - 0.07),
-    fury.window.colors.white,
-    0.01,
+    position=(locationthree[0] - 0.04, locationthree[1], locationthree[2] - 0.07),
+    color=fury.window.colors.white,
+    font_size=0.01,
 )
 beijing_actor = fury.actor.text_3d(
     "Beijing, China\n39.9042° N, 116.4074° E",
-    (locationtwo[0] - 0.06, locationtwo[1], locationtwo[2] - 0.07),
-    fury.window.colors.white,
-    0.01,
+    position=(locationtwo[0] - 0.06, locationtwo[1], locationtwo[2] - 0.07),
+    color=fury.window.colors.white,
+    font_size=0.01,
 )
-fury.utils.rotate(paris_actor, (85, 0, 1, 0))
-fury.utils.rotate(beijing_actor, (180, 0, 1, 0))
-fury.utils.rotate(nyc_actor, (5, 1, 0, 0))
+fury.utils.rotate(paris_actor, rotation=(85, 0, 1, 0))
+fury.utils.rotate(beijing_actor, rotation=(180, 0, 1, 0))
+fury.utils.rotate(nyc_actor, rotation=(5, 1, 0, 0))
 
 ##############################################################################
 # Create a ShowManager object, which acts as the interface between the scene,
 # the window and the interactor.
 
 showm = fury.window.ShowManager(
-    scene, size=(900, 768), reset_camera=False, order_transparent=True
+    scene=scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 
 ###############################################################################
@@ -156,4 +156,6 @@ def timer_callback(_obj, _event):
 showm.add_timer_callback(True, 25, timer_callback)
 showm.start()
 
-fury.window.record(showm.scene, size=(900, 768), out_path="viz_earth_coordinates.png")
+fury.window.record(
+    scene=showm.scene, size=(900, 768), out_path="viz_earth_coordinates.png"
+)

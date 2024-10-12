@@ -58,7 +58,7 @@ def particle(
 ):
     _origin = np.asarray(_origin, dtype=float)
     position = np.tile(origin, (_num_total_steps, 1))
-    path_actor = fury.actor.line([position], colors, linewidth=_path_thickness)
+    path_actor = fury.actor.line([position], colors=colors, linewidth=_path_thickness)
     path_actor.position = position
     path_actor.delta = _delta
     path_actor.num_total_steps = _num_total_steps
@@ -98,7 +98,7 @@ scene.set_camera(
     position=(0, 0, 40), focal_point=(0.0, 0.0, 0.0), view_up=(0.0, 0.0, 0.0)
 )
 showm = fury.window.ShowManager(
-    scene, size=(600, 600), reset_camera=True, order_transparent=True
+    scene=scene, size=(600, 600), reset_camera=True, order_transparent=True
 )
 
 
@@ -155,4 +155,6 @@ def timer_callback(_obj, _event):
 
 showm.add_timer_callback(True, 30, timer_callback)
 showm.start()
-fury.window.record(showm.scene, size=(600, 600), out_path="viz_brownian_motion.png")
+fury.window.record(
+    scene=showm.scene, size=(600, 600), out_path="viz_brownian_motion.png"
+)

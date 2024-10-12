@@ -87,4 +87,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(showm.scene, out_path="combobox_ui.png", size=(400, 400))
+window.record(scene=showm.scene, out_path="combobox_ui.png", size=(400, 400))

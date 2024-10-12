@@ -37,4 +37,4 @@ scene.add(fury.actor.texture_on_sphere(image))
 interactive = False
 if interactive:
     fury.window.show(scene, size=(600, 600), reset_camera=False)
-fury.window.record(scene, size=(900, 768), out_path="viz_texture.png")
+fury.window.record(scene=scene, size=(900, 768), out_path="viz_texture.png")
