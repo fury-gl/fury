@@ -207,4 +207,7 @@ interactive = False
 if interactive:
     showm.start()
 
-fury.window.record(scene=showm.scene, size=(600, 600), out_path="viz_animated_surfaces.png")
+fury.window.record(scene=showm.scene,
+                   size=(600, 600),
+                   out_path="viz_animated_surfaces.png"
+)

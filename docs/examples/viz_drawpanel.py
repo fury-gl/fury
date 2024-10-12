@@ -42,4 +42,6 @@ else:
     drawing_canvas.draw_shape(shape_type="circle", current_position=(275, 275))
     drawing_canvas.shape_list[-1].resize((50, 50))
 
-    fury.window.record(scene=showm.scene, size=current_size, out_path="viz_drawpanel.png")
+    fury.window.record(scene=showm.scene,
+                       size=current_size,
+                       out_path="viz_drawpanel.png")

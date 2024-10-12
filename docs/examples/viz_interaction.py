@@ -141,4 +141,6 @@ if __name__ == "__main__":
     stream.cleanup()
     stream_interaction.cleanup()
 
-    fury.window.record(scene=showm.scene, size=window_size, out_path="viz_interaction.png")
+    fury.window.record(scene=showm.scene,
+                       size=window_size,
+                       out_path="viz_interaction.png")

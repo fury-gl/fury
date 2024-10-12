@@ -17,7 +17,10 @@ showm = fury.window.ShowManager(
 )
 
 
-cube = fury.actor.cube(np.array([[0, 0, 0]]), directions=(0, 0, 0), colors=(1, 0, 1), scales=6)
+cube = fury.actor.cube(np.array([[0, 0, 0]]),
+                       directions=(0, 0, 0),
+                       colors=(1, 0, 1),
+                       scales=6)
 
 ###############################################################################
 # Creating an ``Animation`` to animate the actor and show its motion path.

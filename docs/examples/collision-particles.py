@@ -123,7 +123,10 @@ box_centers = np.array([[0, 0, 0]])
 box_directions = np.array([[0, 1, 0]])
 box_colors = np.array([[1, 1, 1, 0.2]])
 box_actor = actor.box(
-    box_centers, directions=box_directions, colors=box_colors, scales=(box_lx, box_ly, box_lz)
+    box_centers,
+    directions=box_directions,
+    colors=box_colors,
+    scales=(box_lx, box_ly, box_lz)
 )
 scene.add(box_actor)
 

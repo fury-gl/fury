@@ -53,7 +53,10 @@ timeline = fury.animation.Timeline(playback_panel=True)
 
 ###############################################################################
 # Creating animations
-main_arm_animation = fury.animation.Animation(actors=[main_arm, joint_1], length=2 * np.pi)
+main_arm_animation = fury.animation.Animation(
+    actors=[main_arm, joint_1],
+    length=2*np.pi
+)
 child_arm_animation = fury.animation.Animation(actors=[sub_arm, joint_2])
 drill_animation = fury.animation.Animation(actors=end)
 

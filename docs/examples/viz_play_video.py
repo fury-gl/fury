@@ -49,7 +49,10 @@ class VideoPlayer:
         self.initialize_scene()
         # Create a Show Manager and Initialize it
         self.show_manager = fury.window.ShowManager(
-            scene=self.scene, size=(900, 768), reset_camera=False, order_transparent=True
+            scene=self.scene,
+            size=(900, 768),
+            reset_camera=False,
+            order_transparent=True
         )
 
     # Initialize the Scene with actors

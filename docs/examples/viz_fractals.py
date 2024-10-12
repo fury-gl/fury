@@ -221,7 +221,10 @@ def snowflake(N):
 # the Scene and ShowManager.
 
 scene = fury.window.Scene()
-showmgr = fury.window.ShowManager(scene=scene, title="Fractals", size=(800, 800), reset_camera=True)
+showmgr = fury.window.ShowManager(scene=scene,
+                                  title="Fractals",
+                                  size=(800, 800),
+                                  reset_camera=True)
 
 ###############################################################################
 # These values are what work nicely on my machine without lagging. If you have

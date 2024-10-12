@@ -108,4 +108,6 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene=scene, out_path="viz_keyframe_animation_colors.png", size=(900, 768))
+window.record(scene=scene,
+              out_path="viz_keyframe_animation_colors.png",
+              size=(900, 768))

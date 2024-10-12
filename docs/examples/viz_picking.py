@@ -47,7 +47,10 @@ directions = np.array(
         [0, np.sqrt(2) / 2, np.sqrt(2) / 2],
     ]
 )
-fury_actor = fury.actor.cube(centers, directions=directions, colors=colors, scales=radii)
+fury_actor = fury.actor.cube(centers,
+                             directions=directions,
+                             colors=colors,
+                             scales=radii)
 
 ###############################################################################
 # Access the memory of the vertices of all the cubes
