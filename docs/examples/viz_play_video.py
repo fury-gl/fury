@@ -49,7 +49,7 @@ class VideoPlayer:
         self.initialize_scene()
         # Create a Show Manager and Initialize it
         self.show_manager = fury.window.ShowManager(
-            self.scene, size=(900, 768), reset_camera=False, order_transparent=True
+            scene=self.scene, size=(900, 768), reset_camera=False, order_transparent=True
         )
 
     # Initialize the Scene with actors
@@ -91,5 +91,5 @@ video_url = (
 vp = VideoPlayer(video_url)
 vp.run()
 fury.window.record(
-    vp.show_manager.scene, out_path="viz_play_video.png", size=(600, 600)
+    scene=vp.show_manager.scene, out_path="viz_play_video.png", size=(600, 600)
 )

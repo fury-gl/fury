@@ -61,4 +61,4 @@ interactive = False
 if interactive:
     show_manager.start()
 
-fury.window.record(show_manager.scene, out_path="ui_layout.png", size=(400, 400))
+fury.window.record(scene=show_manager.scene, out_path="ui_layout.png", size=(400, 400))

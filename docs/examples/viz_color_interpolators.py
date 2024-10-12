@@ -23,7 +23,7 @@ from fury.colormap import distinguishable_colormap
 scene = window.Scene()
 
 showm = window.ShowManager(
-    scene, size=(900, 768), reset_camera=False, order_transparent=True
+    scene=scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 
 
@@ -41,11 +41,11 @@ cubes_pos = np.array(
 
 ###############################################################################
 # Static labels for different interpolators (for show)
-linear_text = actor.vector_text("Linear", (-2.64, -1, 0))
-lab_text = actor.vector_text("LAB", (-0.37, -1, 0))
-hsv_text = actor.vector_text("HSV", (1.68, -1, 0))
-xyz_text = actor.vector_text("XYZ", (3.6, -1, 0))
-step_text = actor.vector_text("Step", (5.7, -1, 0))
+linear_text = actor.vector_text(text="Linear", pos=(-2.64, -1, 0))
+lab_text = actor.vector_text(text="LAB", pos=(-0.37, -1, 0))
+hsv_text = actor.vector_text(text="HSV", pos=(1.68, -1, 0))
+xyz_text = actor.vector_text(text="XYZ", pos=(3.6, -1, 0))
+step_text = actor.vector_text(text="Step", pos=(5.7, -1, 0))
 scene.add(step_text, lab_text, linear_text, hsv_text, xyz_text)
 
 ###############################################################################
@@ -53,11 +53,11 @@ scene.add(step_text, lab_text, linear_text, hsv_text, xyz_text)
 # Also cube actor is provided for each timeline to handle as follows:
 # ``Animation(actor)``, ``Animation(list_of_actors)``, or actors can be added
 # later using ``animation.add()`` or ``animation.add_actor()``
-anim_linear_color = Animation(actor.cube(cubes_pos[0]))
-anim_LAB_color = Animation(actor.cube(cubes_pos[1]))
-anim_HSV_color = Animation(actor.cube(cubes_pos[2]))
-anim_XYZ_color = Animation(actor.cube(cubes_pos[3]))
-anim_step_color = Animation(actor.cube(cubes_pos[4]))
+anim_linear_color = Animation(actors=actor.cube(cubes_pos[0]))
+anim_LAB_color = Animation(actors=actor.cube(cubes_pos[1]))
+anim_HSV_color = Animation(actors=actor.cube(cubes_pos[2]))
+anim_XYZ_color = Animation(actors=actor.cube(cubes_pos[3]))
+anim_step_color = Animation(actors=actor.cube(cubes_pos[4]))
 
 ###############################################################################
 # Creating a timeline to control all the animations (one for each color
@@ -108,4 +108,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path="viz_keyframe_animation_colors.png", size=(900, 768))
+window.record(scene=scene, out_path="viz_keyframe_animation_colors.png", size=(900, 768))

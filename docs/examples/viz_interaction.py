@@ -80,7 +80,7 @@ if __name__ == "__main__":
 
     scene.add(actors)
 
-    showm = fury.window.ShowManager(scene, size=(window_size[0], window_size[1]))
+    showm = fury.window.ShowManager(scene=scene, size=(window_size[0], window_size[1]))
 
     stream = fury.stream.FuryStreamClient(
         showm, max_window_size=max_window_size, use_raw_array=use_raw_array
@@ -121,7 +121,7 @@ if __name__ == "__main__":
     p.start()
     stream_interaction.start(ms=ms_interaction)
     stream.start(
-        ms_stream,
+        ms=ms_stream,
     )
     ###########################################################################
     # If you have aiortc in your system, you can see your live streaming
@@ -141,4 +141,4 @@ if __name__ == "__main__":
     stream.cleanup()
     stream_interaction.cleanup()
 
-    fury.window.record(showm.scene, size=window_size, out_path="viz_interaction.png")
+    fury.window.record(scene=showm.scene, size=window_size, out_path="viz_interaction.png")

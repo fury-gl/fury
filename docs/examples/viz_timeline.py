@@ -24,7 +24,7 @@ import fury
 # We create our ``Scene`` and ``ShowManager`` as usual.
 scene = fury.window.Scene()
 
-showm = fury.window.ShowManager(scene, size=(900, 768))
+showm = fury.window.ShowManager(scene=scene, size=(900, 768))
 showm.initialize()
 
 ###############################################################################
@@ -88,5 +88,5 @@ if interactive:
     showm.start()
 
 fury.window.record(
-    scene, out_path="viz_keyframe_animation_timeline.png", size=(900, 768)
+    scene=scene, out_path="viz_keyframe_animation_timeline.png", size=(900, 768)
 )

@@ -13,11 +13,11 @@ import fury
 scene = fury.window.Scene()
 
 showm = fury.window.ShowManager(
-    scene, size=(900, 768), reset_camera=False, order_transparent=True
+    scene=scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 
 
-cube = fury.actor.cube(np.array([[0, 0, 0]]), (0, 0, 0), (1, 0, 1), scales=6)
+cube = fury.actor.cube(np.array([[0, 0, 0]]), directions=(0, 0, 0), colors=(1, 0, 1), scales=6)
 
 ###############################################################################
 # Creating an ``Animation`` to animate the actor and show its motion path.
@@ -77,5 +77,5 @@ if interactive:
     showm.start()
 
 fury.window.record(
-    scene, out_path="viz_keyframe_animation_evaluators.png", size=(900, 768)
+    scene=scene, out_path="viz_keyframe_animation_evaluators.png", size=(900, 768)
 )

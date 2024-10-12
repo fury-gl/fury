@@ -13,7 +13,7 @@ import fury
 scene = fury.window.Scene()
 
 showm = fury.window.ShowManager(
-    scene, size=(900, 768), reset_camera=False, order_transparent=True
+    scene=scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 showm.initialize()
 
@@ -44,8 +44,8 @@ end = fury.actor.cone(
 
 ###############################################################################
 # Setting the center of both shafts to the beginning.
-fury.utils.set_actor_origin(main_arm, np.array([-6, 0, 0]))
-fury.utils.set_actor_origin(sub_arm, np.array([-4, 0, 0]))
+fury.utils.set_actor_origin(main_arm, center=np.array([-6, 0, 0]))
+fury.utils.set_actor_origin(sub_arm, center=np.array([-4, 0, 0]))
 
 ###############################################################################
 # Creating a timeline
@@ -53,9 +53,9 @@ timeline = fury.animation.Timeline(playback_panel=True)
 
 ###############################################################################
 # Creating animations
-main_arm_animation = fury.animation.Animation([main_arm, joint_1], length=2 * np.pi)
-child_arm_animation = fury.animation.Animation([sub_arm, joint_2])
-drill_animation = fury.animation.Animation(end)
+main_arm_animation = fury.animation.Animation(actors=[main_arm, joint_1], length=2 * np.pi)
+child_arm_animation = fury.animation.Animation(actors=[sub_arm, joint_2])
+drill_animation = fury.animation.Animation(actors=end)
 
 
 ###############################################################################
@@ -121,4 +121,4 @@ interactive = False
 if interactive:
     showm.start()
 
-fury.window.record(scene, out_path="viz_robot_arm.png", size=(900, 768))
+fury.window.record(scene=scene, out_path="viz_robot_arm.png", size=(900, 768))

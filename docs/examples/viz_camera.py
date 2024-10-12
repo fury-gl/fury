@@ -22,7 +22,7 @@ from fury.animation.interpolator import cubic_spline_interpolator
 scene = fury.window.Scene()
 
 showm = fury.window.ShowManager(
-    scene, size=(900, 768), reset_camera=False, order_transparent=True
+    scene=scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 
 
@@ -60,11 +60,11 @@ plan = fury.actor.box(
 ###############################################################################
 # Creating "FURY" text
 # ====================
-fury_text = fury.actor.vector_text("FURY", pos=(-4.3, 15, 0), scale=(2, 2, 2))
+fury_text = fury.actor.vector_text(text="FURY", pos=(-4.3, 15, 0), scale=(2, 2, 2))
 
 ###############################################################################
 # Creating an ``Animation`` to animate the opacity of ``fury_text``
-text_anim = Animation(fury_text, loop=False)
+text_anim = Animation(actors=fury_text, loop=False)
 
 ###############################################################################
 # opacity is set to 0 at time 29 and set to one at time 35.
@@ -87,14 +87,14 @@ for _ in range(50):
     # and radius.
     actors = [
         fury.actor.sphere(
-            np.array([[0, 0, 0]]), np.random.random([1, 3]), np.random.random([1, 3])
+            np.array([[0, 0, 0]]), np.random.random([1, 3]), radii=np.random.random([1, 3])
         )
     ]
 
     ###########################################################################
     # create a timeline to animate this actor (single actor or list of actors)
     # Actors can be added later using `Timeline.add_actor(actor)`
-    animation = Animation(actors)
+    animation = Animation(actors=actors)
 
     # We generate random position and scale values from time=0 to time=49 each
     # two seconds.
@@ -176,4 +176,4 @@ interactive = False
 if interactive:
     showm.start()
 
-fury.window.record(scene, out_path="viz_keyframe_animation_camera.png", size=(900, 768))
+fury.window.record(scene=scene, out_path="viz_keyframe_animation_camera.png", size=(900, 768))

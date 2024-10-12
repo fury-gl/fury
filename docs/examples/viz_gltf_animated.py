@@ -14,7 +14,7 @@ import fury
 scene = fury.window.Scene()
 
 showm = fury.window.ShowManager(
-    scene, size=(900, 768), reset_camera=False, order_transparent=True
+    scene=scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 showm.initialize()
 
@@ -52,4 +52,4 @@ showm.add_timer_callback(True, 10, timer_callback)
 if interactive:
     showm.start()
 
-fury.window.record(scene, out_path="viz_gltf_animated.png", size=(900, 768))
+fury.window.record(scene=scene, out_path="viz_gltf_animated.png", size=(900, 768))

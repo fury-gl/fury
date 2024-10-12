@@ -116,7 +116,7 @@ def tan_cubic_spline_interpolator(keyframes):
 
 scene = window.Scene()
 showm = window.ShowManager(
-    scene, size=(900, 768), reset_camera=False, order_transparent=True
+    scene=scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 
 
@@ -164,4 +164,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path="viz_keyframe_custom_interpolator.png", size=(900, 768))
+window.record(scene=scene, out_path="viz_keyframe_custom_interpolator.png", size=(900, 768))

@@ -30,7 +30,7 @@ sphere_actor = fury.actor.sphere(centers=xyz, colors=colors, radii=radii)
 scene.add(sphere_actor)
 
 showm = fury.window.ShowManager(
-    scene, size=(900, 768), reset_camera=False, order_transparent=True
+    scene=scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 
 
@@ -66,4 +66,4 @@ timer_id = showm.add_timer_callback(True, 200, timer_callback)
 
 showm.start()
 
-fury.window.record(showm.scene, size=(900, 768), out_path="viz_timer.png")
+fury.window.record(scene=showm.scene, size=(900, 768), out_path="viz_timer.png")

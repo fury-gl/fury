@@ -51,4 +51,4 @@ interactive = False
 if interactive:
     show_manager.start()
 
-fury.window.record(show_manager.scene, size=current_size, out_path="viz_shapes.png")
+fury.window.record(scene=show_manager.scene, size=current_size, out_path="viz_shapes.png")

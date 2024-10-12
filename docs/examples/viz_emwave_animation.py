@@ -71,7 +71,7 @@ scene.set_camera(
     position=(-6, 5, -10), focal_point=(0.0, 0.0, 0.0), view_up=(0.0, 0.0, 0.0)
 )
 showm = fury.window.ShowManager(
-    scene, size=(800, 600), reset_camera=True, order_transparent=True
+    scene=scene, size=(800, 600), reset_camera=True, order_transparent=True
 )
 
 
@@ -86,7 +86,7 @@ arrow_actor = fury.actor.arrow(
     centers,
     directions,
     fury.window.colors.yellow,
-    heights,
+    heights=heights,
     resolution=20,
     tip_length=0.06,
     tip_radius=0.012,
@@ -105,11 +105,11 @@ z = np.array([0 for i in range(npoints)])
 pts = np.array(list(zip(x, y, z)))
 pts = [pts]
 colors = fury.window.colors.red
-wave_actor1 = fury.actor.line(pts, colors, linewidth=3)
+wave_actor1 = fury.actor.line(pts, colors=colors, linewidth=3)
 scene.add(wave_actor1)
 
 vertices = fury.utils.vertices_from_actor(wave_actor1)
-vcolors = fury.utils.colors_from_actor(wave_actor1, "colors")
+vcolors = fury.utils.colors_from_actor(wave_actor1, array_name="colors")
 no_vertices_per_point = len(vertices) / npoints
 initial_vertices = vertices.copy() - np.repeat(pts, no_vertices_per_point, axis=0)
 
@@ -124,11 +124,11 @@ zz = np.sin(wavenumber * xx - angular_frq * time + phase_angle)
 pts2 = np.array(list(zip(xx, yy, zz)))
 pts2 = [pts2]
 colors2 = fury.window.colors.blue
-wave_actor2 = fury.actor.line(pts2, colors2, linewidth=3)
+wave_actor2 = fury.actor.line(pts2, colors=colors2, linewidth=3)
 scene.add(wave_actor2)
 
 vertices2 = fury.utils.vertices_from_actor(wave_actor2)
-vcolors2 = fury.utils.colors_from_actor(wave_actor2, "colors")
+vcolors2 = fury.utils.colors_from_actor(wave_actor2, array_name="colors")
 no_vertices_per_point2 = len(vertices2) / npoints
 initial_vertices2 = vertices2.copy() - np.repeat(pts2, no_vertices_per_point2, axis=0)
 
@@ -186,4 +186,4 @@ showm.add_timer_callback(True, 25, timer_callback)
 interactive = False
 if interactive:
     showm.start()
-fury.window.record(showm.scene, size=(800, 600), out_path="viz_emwave.png")
+fury.window.record(scene=showm.scene, size=(800, 600), out_path="viz_emwave.png")

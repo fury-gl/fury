@@ -236,4 +236,4 @@ interactive = False
 if interactive:
     sm.start()
 
-fury.window.record(sm.scene, size=(500, 500), out_path="viz_tab.png")
+fury.window.record(scene=sm.scene, size=(500, 500), out_path="viz_tab.png")

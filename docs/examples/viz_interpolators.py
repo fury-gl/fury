@@ -62,7 +62,7 @@ position = interpolation_function(1.44434)
 scene = fury.window.Scene()
 
 showm = fury.window.ShowManager(
-    scene, size=(900, 768), reset_camera=False, order_transparent=True
+    scene=scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 showm.initialize()
 
@@ -78,7 +78,7 @@ animation = fury.animation.Animation()
 ###############################################################################
 # Adding the sphere actor to the timeline
 # This could've been done during initialization.
-animation.add_actor(arrow)
+animation.add_actor(actor=arrow)
 
 ###############################################################################
 # Setting position keyframes
@@ -131,4 +131,4 @@ interactive = False
 if interactive:
     showm.start()
 
-fury.window.record(scene, out_path="viz_keyframe_interpolator.png", size=(900, 768))
+fury.window.record(scene=scene, out_path="viz_keyframe_interpolator.png", size=(900, 768))

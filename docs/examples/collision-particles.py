@@ -123,7 +123,7 @@ box_centers = np.array([[0, 0, 0]])
 box_directions = np.array([[0, 1, 0]])
 box_colors = np.array([[1, 1, 1, 0.2]])
 box_actor = actor.box(
-    box_centers, box_directions, box_colors, scales=(box_lx, box_ly, box_lz)
+    box_centers, directions=box_directions, colors=box_colors, scales=(box_lx, box_ly, box_lz)
 )
 scene.add(box_actor)
 
@@ -135,7 +135,7 @@ sphere_actor = actor.sphere(centers=xyz, colors=colors, radii=radii)
 scene.add(sphere_actor)
 
 showm = window.ShowManager(
-    scene, size=(900, 768), reset_camera=True, order_transparent=True
+    scene=scene, size=(900, 768), reset_camera=True, order_transparent=True
 )
 
 tb = ui.TextBlock2D(bold=True)
@@ -146,7 +146,7 @@ scene.azimuth(30)
 counter = itertools.count()
 
 vertices = utils.vertices_from_actor(sphere_actor)
-vcolors = utils.colors_from_actor(sphere_actor, "colors")
+vcolors = utils.colors_from_actor(sphere_actor, array_name="colors")
 no_vertices_per_sphere = len(vertices) / num_particles
 initial_vertices = vertices.copy() - np.repeat(xyz, no_vertices_per_sphere, axis=0)
 
@@ -175,4 +175,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(showm.scene, size=(900, 768), out_path="simple_collisions.png")
+window.record(scene=showm.scene, size=(900, 768), out_path="simple_collisions.png")

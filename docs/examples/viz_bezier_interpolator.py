@@ -19,7 +19,7 @@ import fury
 
 scene = fury.window.Scene()
 showm = fury.window.ShowManager(
-    scene, size=(900, 768), reset_camera=False, order_transparent=True
+    scene=scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 
 
@@ -113,7 +113,7 @@ if interactive:
     showm.start()
 
 fury.window.record(
-    scene,
+    scene=scene,
     out_path="viz_keyframe_animation_bezier_1.png",
     size=(900, 768),
 )
@@ -125,7 +125,7 @@ fury.window.record(
 
 scene = fury.window.Scene()
 show_manager = fury.window.ShowManager(
-    scene, size=(900, 768), reset_camera=False, order_transparent=True
+    scene=scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 
 ###############################################################################
@@ -144,7 +144,7 @@ sphere = fury.actor.sphere(np.array([[0, 0, 0]]), (1, 0, 1))
 
 ###############################################################################
 # Create an ``Animation`` and adding the sphere actor to it.
-animation = fury.animation.Animation(sphere)
+animation = fury.animation.Animation(actors=sphere)
 
 ###############################################################################
 # Setting Cubic Bezier keyframes
@@ -179,7 +179,7 @@ for keyframe in keyframes.values():
 ###############################################################################
 # Initializing the timeline to be able to control the playback of the
 # animation.
-timeline = fury.animation.Timeline(animation, playback_panel=True)
+timeline = fury.animation.Timeline(animations=animation, playback_panel=True)
 
 ###############################################################################
 # We only need to add the ``Timeline`` to the ``ShowManager``
@@ -191,5 +191,5 @@ if interactive:
     show_manager.start()
 
 fury.window.record(
-    showm.scene, out_path="viz_keyframe_animation_bezier_2.png", size=(900, 768)
+    scene=showm.scene, out_path="viz_keyframe_animation_bezier_2.png", size=(900, 768)
 )

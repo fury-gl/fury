@@ -43,7 +43,7 @@ gltf_obj.initialize_skin(animation, bones=False)
 
 scene = fury.window.Scene()
 showm = fury.window.ShowManager(
-    scene, size=(900, 768), reset_camera=True, order_transparent=True
+    scene=scene, size=(900, 768), reset_camera=True, order_transparent=True
 )
 showm.initialize()
 scene.add(animation)
@@ -71,4 +71,4 @@ interactive = False
 if interactive:
     showm.start()
 
-fury.window.record(scene, out_path="viz_skinning.png", size=(900, 768))
+fury.window.record(scene=scene, out_path="viz_skinning.png", size=(900, 768))

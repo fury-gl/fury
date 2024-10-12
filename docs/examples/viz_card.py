@@ -57,4 +57,4 @@ interactive = False
 if interactive:
     show_manager.start()
 
-fury.window.record(show_manager.scene, out_path="card_ui.png", size=(1000, 1000))
+fury.window.record(scene=show_manager.scene, out_path="card_ui.png", size=(1000, 1000))

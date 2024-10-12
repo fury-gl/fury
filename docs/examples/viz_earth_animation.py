@@ -55,14 +55,14 @@ scene.add(moon_actor)
 
 moon_actor.SetPosition(1, 0.1, 0.5)
 moon_actor.SetScale(0.25, 0.25, 0.25)
-fury.utils.rotate(earth_actor, (-90, 1, 0, 0))
+fury.utils.rotate(earth_actor, rotation=(-90, 1, 0, 0))
 
 ##############################################################################
 # The ShowManager class is the interface between the scene, the window and the
 # interactor.
 
 showm = fury.window.ShowManager(
-    scene, size=(900, 768), reset_camera=False, order_transparent=True
+    scene=scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 
 ##############################################################################
@@ -88,15 +88,15 @@ scene.set_camera(
 
 center = np.array([[-0.39, 0.3175, 0.025]])
 radius = 0.002
-sphere_actor = fury.actor.sphere(center, fury.window.colors.blue_medium, radius)
+sphere_actor = fury.actor.sphere(center, fury.window.colors.blue_medium, radii=radius)
 
 ##############################################################################
 # Also creating a text actor to add below the sphere.
 
 text_actor = fury.actor.text_3d(
-    "Bloomington, Indiana", (-0.42, 0.31, 0.03), fury.window.colors.white, 0.004
+    "Bloomington, Indiana", position=(-0.42, 0.31, 0.03), color=fury.window.colors.white, font_size=0.004
 )
-fury.utils.rotate(text_actor, (-90, 0, 1, 0))
+fury.utils.rotate(text_actor, rotation=(-90, 0, 1, 0))
 
 ##############################################################################
 # Let's also import a model of a satellite to visualize circling the moon.
@@ -121,7 +121,7 @@ def timer_callback(_obj, _event):
     cnt = next(counter)
     showm.render()
     if cnt < 450:
-        fury.utils.rotate(earth_actor, (1, 0, 1, 0))
+        fury.utils.rotate(earth_actor, rotation=(1, 0, 1, 0))
     if cnt % 5 == 0 and cnt < 450:
         showm.scene.azimuth(-1)
     if cnt == 300:
@@ -146,15 +146,15 @@ def timer_callback(_obj, _event):
         )
         scene.zoom(0.03)
         scene.add(satellite_actor)
-        fury.utils.rotate(satellite_actor, (180, 0, 1, 0))
+        fury.utils.rotate(satellite_actor, rotation=(180, 0, 1, 0))
         scene.rm(earth_actor)
     if cnt > 575 and cnt < 750:
         showm.scene.azimuth(-2)
-        fury.utils.rotate(moon_actor, (-2, 0, 1, 0))
+        fury.utils.rotate(moon_actor, rotation=(-2, 0, 1, 0))
         satellite_actor.SetPosition(-0.8, 0.1 - cnt / 10000, 0.4)
     if cnt >= 750 and cnt < 1100:
         showm.scene.azimuth(-2)
-        fury.utils.rotate(moon_actor, (-2, 0, 1, 0))
+        fury.utils.rotate(moon_actor, rotation=(-2, 0, 1, 0))
         satellite_actor.SetPosition(-0.8, -0.07 + cnt / 10000, 0.4)
     if cnt == 1100:
         showm.exit()
@@ -166,4 +166,4 @@ def timer_callback(_obj, _event):
 
 showm.add_timer_callback(True, 35, timer_callback)
 showm.start()
-fury.window.record(showm.scene, size=(900, 768), out_path="viz_earth_animation.png")
+fury.window.record(scene=showm.scene, size=(900, 768), out_path="viz_earth_animation.png")

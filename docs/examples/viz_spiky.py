@@ -82,7 +82,7 @@ scene.add(fury.actor.axes())
 # interactor.
 
 showm = fury.window.ShowManager(
-    scene, size=(900, 768), reset_camera=False, order_transparent=True
+    scene=scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 
 ##############################################################################
@@ -108,7 +108,7 @@ def timer_callback(_obj, _event):
 
 showm.add_timer_callback(True, 200, timer_callback)
 showm.start()
-fury.window.record(showm.scene, size=(900, 768), out_path="viz_spiky.png")
+fury.window.record(scene=showm.scene, size=(900, 768), out_path="viz_spiky.png")
 
 ##############################################################################
 # Instead of arrows, you can choose other geometrical objects

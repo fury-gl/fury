@@ -123,7 +123,7 @@ interactive = False
 if interactive:
     fury.window.show(scene)
 
-fury.window.record(scene, size=(600, 600), out_path="viz_poly_cylinder.png")
+fury.window.record(scene=scene, size=(600, 600), out_path="viz_poly_cylinder.png")
 
 ###############################################################################
 # Visualize the surface geometry representation for the object.
@@ -135,7 +135,7 @@ cylinders_32.GetProperty().SetRepresentationToWireframe()
 if interactive:
     fury.window.show(scene)
 
-fury.window.record(scene, size=(600, 600), out_path="viz_poly_cylinder_geom.png")
+fury.window.record(scene=scene, size=(600, 600), out_path="viz_poly_cylinder_geom.png")
 
 ###############################################################################
 # Then we clean the scene to render the boxes we will use to render our
@@ -360,7 +360,7 @@ scene.add(box_actor)
 if interactive:
     fury.window.show(scene)
 
-fury.window.record(scene, size=(600, 600), out_path="viz_sdf_cylinder.png")
+fury.window.record(scene=scene, size=(600, 600), out_path="viz_sdf_cylinder.png")
 
 ###############################################################################
 # References

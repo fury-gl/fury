@@ -122,7 +122,7 @@ def init_planet(planet_data):
     planet_actor = fury.actor.texture_on_sphere(planet_image)
     planet_actor.SetPosition(planet_data["position"], 0, 0)
     if planet_data["filename"] != "8k_saturn_ring_alpha.png":
-        fury.utils.rotate(planet_actor, (90, 1, 0, 0))
+        fury.utils.rotate(planet_actor, rotation=(90, 1, 0, 0))
     planet_actor.SetScale(planet_data["scale"])
     scene.add(planet_actor)
     return planet_actor
@@ -188,7 +188,7 @@ def get_orbital_position(radius, time):
 def rotate_axial(actor, time, radius):
     axis = (0, radius, 0)
     angle = 50 / time
-    fury.utils.rotate(actor, (angle, axis[0], axis[1], axis[2]))
+    fury.utils.rotate(actor, rotation=(angle, axis[0], axis[1], axis[2]))
     return angle
 
 
@@ -202,7 +202,7 @@ scene.set_camera(position=(-20, 60, 100))
 # between the scene, the window and the interactor.
 
 showm = fury.window.ShowManager(
-    scene, size=(900, 768), reset_camera=False, order_transparent=True
+    scene=scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 scene.add(panel)
 
@@ -335,5 +335,5 @@ showm.add_timer_callback(True, 10, timer_callback)
 showm.start()
 
 fury.window.record(
-    showm.scene, size=(900, 768), out_path="viz_solar_system_animation.png"
+    scene=showm.scene, size=(900, 768), out_path="viz_solar_system_animation.png"
 )

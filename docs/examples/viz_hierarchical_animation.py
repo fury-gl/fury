@@ -13,7 +13,7 @@ import fury
 scene = fury.window.Scene()
 
 showm = fury.window.ShowManager(
-    scene, size=(900, 768), reset_camera=False, order_transparent=True
+    scene=scene, size=(900, 768), reset_camera=False, order_transparent=True
 )
 showm.initialize()
 
@@ -34,7 +34,7 @@ body_actor = fury.actor.box(
 
 ###############################################################################
 # Adding the the car's body to an Animation to be able to animate it later.
-car_anim = fury.animation.Animation(body_actor)
+car_anim = fury.animation.Animation(actors=body_actor)
 
 ###############################################################################
 # Creating the wheels of the car
@@ -65,7 +65,7 @@ wheels = [
 # Animating each wheel and setting its position to the right position using a
 # single keyframe that will not change.
 
-wheels_animations = [fury.animation.Animation(wheel) for wheel in wheels]
+wheels_animations = [fury.animation.Animation(actors=wheel) for wheel in wheels]
 
 for wheel_anim in wheels_animations:
     wheel_anim.set_position(0.0, wheel_positions.pop())
@@ -83,7 +83,7 @@ radar_shaft = fury.actor.cylinder(
 
 ###############################################################################
 # In order to animate the shaft actor we have to add it to an Animation
-radar_shaft_anim = fury.animation.Animation(radar_shaft)
+radar_shaft_anim = fury.animation.Animation(actors=radar_shaft)
 
 ###############################################################################
 # Setting a single position keyframe will make sure the actor will be placed at
@@ -104,7 +104,7 @@ radar = fury.actor.cone(
 
 ###############################################################################
 # Then add it to an animation in order to rotate it
-radar_animation = fury.animation.Animation(radar)
+radar_animation = fury.animation.Animation(actors=radar)
 
 ###############################################################################
 # Set position and rotation as done above with the shaft.
@@ -142,5 +142,5 @@ if interactive:
     showm.start()
 
 fury.window.record(
-    scene, out_path="viz_keyframe_hierarchical_animation.png", size=(900, 768)
+    scene=scene, out_path="viz_keyframe_hierarchical_animation.png", size=(900, 768)
 )

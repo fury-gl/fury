@@ -68,7 +68,7 @@ scene = fury.window.Scene()
 
 scene.background((0.5, 0.5, 0.5))
 showm = fury.window.ShowManager(
-    scene, size=(900, 768), reset_camera=False, order_transparent=False
+    scene=scene, size=(900, 768), reset_camera=False, order_transparent=False
 )
 
 ###############################################################################
@@ -154,4 +154,4 @@ showm.add_timer_callback(interactive, 5, timer_callback)
 if interactive:
     showm.start()
 
-fury.window.record(scene, out_path="viz_fine_tuning_gl_context.png", size=(600, 600))
+fury.window.record(scene=scene, out_path="viz_fine_tuning_gl_context.png", size=(600, 600))
