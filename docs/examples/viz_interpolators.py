@@ -131,6 +131,6 @@ interactive = False
 if interactive:
     showm.start()
 
-fury.window.record(scene=scene,
-                   out_path="viz_keyframe_interpolator.png",
-                   size=(900, 768))
+fury.window.record(
+    scene=scene, out_path="viz_keyframe_interpolator.png", size=(900, 768)
+)

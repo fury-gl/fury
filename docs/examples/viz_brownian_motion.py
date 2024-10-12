@@ -155,6 +155,6 @@ def timer_callback(_obj, _event):
 
 showm.add_timer_callback(True, 30, timer_callback)
 showm.start()
-fury.window.record(scene=showm.scene,
-                   size=(600, 600),
-                   out_path="viz_brownian_motion.png")
+fury.window.record(
+    scene=showm.scene, size=(600, 600), out_path="viz_brownian_motion.png"
+)

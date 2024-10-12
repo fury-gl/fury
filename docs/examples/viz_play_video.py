@@ -52,7 +52,7 @@ class VideoPlayer:
             scene=self.scene,
             size=(900, 768),
             reset_camera=False,
-            order_transparent=True
+            order_transparent=True,
         )
 
     # Initialize the Scene with actors

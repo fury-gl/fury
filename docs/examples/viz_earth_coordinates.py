@@ -156,6 +156,6 @@ def timer_callback(_obj, _event):
 showm.add_timer_callback(True, 25, timer_callback)
 showm.start()
 
-fury.window.record(scene=showm.scene,
-                   size=(900, 768),
-                   out_path="viz_earth_coordinates.png")
+fury.window.record(
+    scene=showm.scene, size=(900, 768), out_path="viz_earth_coordinates.png"
+)

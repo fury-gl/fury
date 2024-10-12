@@ -126,7 +126,7 @@ box_actor = actor.box(
     box_centers,
     directions=box_directions,
     colors=box_colors,
-    scales=(box_lx, box_ly, box_lz)
+    scales=(box_lx, box_ly, box_lz),
 )
 scene.add(box_actor)
 

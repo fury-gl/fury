@@ -154,6 +154,6 @@ showm.add_timer_callback(interactive, 5, timer_callback)
 if interactive:
     showm.start()
 
-fury.window.record(scene=scene,
-                   out_path="viz_fine_tuning_gl_context.png",
-                   size=(600, 600))
+fury.window.record(
+    scene=scene, out_path="viz_fine_tuning_gl_context.png", size=(600, 600)
+)

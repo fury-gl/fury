@@ -53,9 +53,9 @@ scene.add(sdfactor)
 # manager.
 
 current_size = (1024, 720)
-showm = fury.window.ShowManager(scene=scene,
-                                size=current_size,
-                                title="Visualize SDF Actor")
+showm = fury.window.ShowManager(
+    scene=scene, size=current_size, title="Visualize SDF Actor"
+)
 
 interactive = False
 

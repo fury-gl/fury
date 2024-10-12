@@ -89,7 +89,7 @@ for _ in range(50):
         fury.actor.sphere(
             np.array([[0, 0, 0]]),
             np.random.random([1, 3]),
-            radii=np.random.random([1, 3])
+            radii=np.random.random([1, 3]),
         )
     ]
 
@@ -178,6 +178,6 @@ interactive = False
 if interactive:
     showm.start()
 
-fury.window.record(scene=scene,
-                   out_path="viz_keyframe_animation_camera.png",
-                   size=(900, 768))
+fury.window.record(
+    scene=scene, out_path="viz_keyframe_animation_camera.png", size=(900, 768)
+)

@@ -99,6 +99,6 @@ if __name__ == "__main__":
     stream.stop()
     stream.cleanup()
 
-    fury.window.record(scene=showm.scene,
-                       size=window_size,
-                       out_path="viz_no_interaction.png")
+    fury.window.record(
+        scene=showm.scene, size=window_size, out_path="viz_no_interaction.png"
+    )

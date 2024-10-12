@@ -97,7 +97,7 @@ text_actor = fury.actor.text_3d(
     "Bloomington, Indiana",
     position=(-0.42, 0.31, 0.03),
     color=fury.window.colors.white,
-    font_size=0.004
+    font_size=0.004,
 )
 fury.utils.rotate(text_actor, rotation=(-90, 0, 1, 0))
 
@@ -169,6 +169,6 @@ def timer_callback(_obj, _event):
 
 showm.add_timer_callback(True, 35, timer_callback)
 showm.start()
-fury.window.record(scene=showm.scene,
-                   size=(900, 768),
-                   out_path="viz_earth_animation.png")
+fury.window.record(
+    scene=showm.scene, size=(900, 768), out_path="viz_earth_animation.png"
+)
