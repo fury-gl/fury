@@ -37,6 +37,7 @@ from fury.utils import (
     get_polydata_tangents,
     is_ui,
     map_coordinates_3d_4d,
+    minmax_norm,
     normals_from_actor,
     normals_to_actor,
     numpy_to_vtk_matrix,
@@ -970,3 +971,29 @@ def test_set_actor_origin():
     utils.set_actor_origin(cube)
     centered_cube_vertices = np.copy(vertices_from_actor(cube))
     npt.assert_array_equal(orig_vert, centered_cube_vertices)
+
+
+def test_minmax_normalization():
+    data1d = np.array([2, -2, 5, -1, 8])
+    actual_data1d = minmax_norm(data1d)
+    expected_data1d = np.array([[0.4, 0.0, 0.7, 0.1, 1.0]])
+    npt.assert_array_almost_equal(actual_data1d, expected_data1d, decimal=1)
+
+    data3d = np.array([[[2, 7, 7, 9], [2, -1, -3, 5]], [[-4, 5, 6, 0], [1, 1, -9, 3]]])
+    npt.assert_raises(ValueError, utils.minmax_norm, data3d)
+
+    data = np.array([[1, 2, -1, 3], [4, -1, 3, 5], [-1, 9, 8, 0]])
+    actual = minmax_norm(data, axis=0)
+    expected = np.array([[0.4, 0.3, 0, 0.6], [1, 0, 0.444, 1], [0, 1, 1, 0]])
+    npt.assert_array_almost_equal(actual, expected, decimal=3)
+    actual = minmax_norm(data, axis=1)
+    expected = np.array([[0.5, 0.75, 0, 1], [0.833, 0, 0.666, 1], [0, 1, 0.9, 0.1]])
+    npt.assert_array_almost_equal(actual, expected, decimal=3)
+
+    data2 = np.array([1, 3, 9, 6])
+    actual2 = minmax_norm(data2, axis=0)
+    expected2 = np.array([[1, 3, 9, 6]])
+    npt.assert_array_equal(actual2, expected2)
+    actual2 = minmax_norm(data2, axis=1)
+    expected2 = np.array([[0, 0.25, 1, 0.625]])
+    npt.assert_array_almost_equal(actual2, expected2, decimal=3)
