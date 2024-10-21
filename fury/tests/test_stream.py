@@ -102,9 +102,7 @@ def test_pillow():
     centers = np.array([[0, 0, 0], [-1, 0, 0], [1, 0, 0]])
     colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
-    actors = [actor.sphere(center, color, radii=0.1) for center, color in zip(centers, colors)]
-    print(f"Number of actors created: {len(actors)}")
-
+    actors = actor.sphere(centers, colors=colors, radii=0.1)
 
     scene = window.Scene()
     scene.add(actors)
@@ -129,30 +127,21 @@ def test_pillow():
             info_buffer_name=stream.img_manager.info_buffer_name,
             image_buffer_names=stream.img_manager.image_buffer_names,
         )
+    showm.render()
+    stream.start(ms=ms_stream)
+    showm.render()
+    # test jpeg method
+    img_buffer_manager.get_jpeg()
+    width, height, frame = img_buffer_manager.get_current_frame()
 
-    try: 
-        showm.render()
-        stream.start(ms=ms_stream)
-        showm.render()
-        # test jpeg method
-        img_buffer_manager.get_jpeg()
-        width, height, frame = img_buffer_manager.get_current_frame()
-
-        image = np.frombuffer(frame, "uint8")[0 : width * height * 3].reshape(
-            (height, width, 3)
-        )
-        report = window.analyze_snapshot(image, find_objects=True)
-        print(f"Detected objects: {report.objects}")
-        npt.assert_equal(report.objects, 3)
-
-    except Exception as e:
-        print(f"An error occurred during testing: {e}")
-
-    finally:
-        img_buffer_manager.cleanup()
-        stream.stop()
-        stream.cleanup()
-        print("Cleanup completed.")
+    image = np.frombuffer(frame, "uint8")[0 : width * height * 3].reshape(
+        (height, width, 3)
+    )
+    report = window.analyze_snapshot(image, find_objects=True)
+    npt.assert_equal(report.objects, 3)
+    img_buffer_manager.cleanup()
+    stream.stop()
+    stream.cleanup()
 
 
 def test_rtc_video_stream_whitout_cython(loop: asyncio.AbstractEventLoop):
