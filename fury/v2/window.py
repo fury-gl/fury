@@ -33,19 +33,24 @@ class ShowManager:
         self._scene.add(gfx.AmbientLight())
 
         if camera is None:
-            camera = gfx.PerspectiveCamera(70, 16 / 9)
+            camera = gfx.OrthographicCamera(70, 16 / 9)
+
         self._camera = camera
 
         gfx.OrbitController(self._camera, register_events=self._renderer)
         self._renderer.enable_events()
         self._renderer.pixel_ratio = pixel_ratio
+        self._renderer.blend_mode = 'weighted_plus'
+        self._renderer.add_event_handler(self.update,
+                                         'pointer_up',
+                                         'pointer_down',
+                                         'pointer_move')
 
     def render(self):
         self._canvas.request_draw(lambda: self._renderer.render(
-            self._scene, self._camera
-        ))
+            self._scene, self._camera))
 
-    def update(self):
+    def update(self, _event):
         self._canvas.request_draw()
 
     def start(self):
