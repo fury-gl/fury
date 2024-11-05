@@ -26,8 +26,8 @@ def sh_odf(centers, coeffs, degree, sh_basis, scales, opacity):
         2D ODFs array in SH coefficients.
     sh_basis: str, optional
         Type of basis (descoteaux, tournier)
-        'descoteaux' for the default ``descoteaux07`` DYPY basis.
-        'tournier' for the default ``tournier07` DYPY basis.
+        'descoteaux' for the default ``descoteaux07`` DIPY basis.
+        'tournier' for the default ``tournier07`` DIPY basis.
     degree: int, optional
         Index of the highest used band of the spherical harmonics basis. Must
         be even, at least 2 and at most 12.

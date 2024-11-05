@@ -4036,8 +4036,8 @@ def odf(centers, coeffs, sh_basis="descoteaux", scales=1.0, opacity=1.0):
         Corresponding SH coefficients for the ODFs.
     sh_basis: str, optional
         Type of basis (descoteaux, tournier)
-        'descoteaux' for the default ``descoteaux07`` DYPY basis.
-        'tournier' for the default ``tournier07` DYPY basis.
+        'descoteaux' for the default ``descoteaux07`` DIPY basis.
+        'tournier' for the default ``tournier07`` DIPY basis.
     scales : float or ndarray (N, ), optional
         ODFs size.
     opacity : float, optional
