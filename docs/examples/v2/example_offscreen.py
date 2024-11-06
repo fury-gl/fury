@@ -1,4 +1,4 @@
-from fury.v2.window import ShowManager
+from fury.v2.windowed import ShowManager
 import pygfx as gfx
 
 show_m = ShowManager(is_offscreen=True)

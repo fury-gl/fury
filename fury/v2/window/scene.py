@@ -1,4 +1,9 @@
-from pygfx import Background, BackgroundSkyboxMaterial, Scene as GfxScene
+from pygfx import (
+    AmbientLight,
+    Background,
+    BackgroundSkyboxMaterial,
+    Scene as GfxScene,
+)
 
 from fury.decorators import warn_on_args_to_kwargs
 
@@ -6,7 +11,14 @@ from fury.decorators import warn_on_args_to_kwargs
 class Scene(GfxScene):
 
     @warn_on_args_to_kwargs()
-    def __init__(self, *, background=(0, 0, 0, 1), skybox=None):
+    def __init__(
+        self,
+        *,
+        background=(0, 0, 0, 1),
+        skybox=None,
+        lights=None,
+    ):
+
         super().__init__()
 
         self._bg_color = background
@@ -19,13 +31,17 @@ class Scene(GfxScene):
 
         self.add(self._bg_actor)
 
-        self._lights = []
+        self.lights = lights
+        if self.lights is None:
+            self.lights = []
+            self.lights.append(AmbientLight())
 
+        self.add(*self.lights)
 
     def _skybox(self, cube_map):
         return Background(
                 geometry=None,
-                material=BackgroundSkyboxMaterial(cube_map)
+                material=BackgroundSkyboxMaterial(map=cube_map)
             )
 
     @property
