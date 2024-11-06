@@ -34,7 +34,7 @@ scene.add(sphere_actor)
 
 show_m = ShowManager(scene=scene, title="FURY 2.0: Skybox Example")
 
-interactive = True
+interactive = False
 
 if __name__ == "__main__":
 

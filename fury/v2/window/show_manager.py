@@ -29,14 +29,14 @@ class ShowManager:
         window_type="auto",
         controller_style="orbit",
         pixel_ratio=1,
-        attach_light_on_camera=True
+        camera_light=True
     ):
 
         if scene is None:
             scene = Scene()
         if camera is None:
             camera = gfx.PerspectiveCamera()
-            if attach_light_on_camera:
+            if camera_light:
                 camera.add(gfx.DirectionalLight())
             scene.add(camera)
             camera.local.position = (0, 0, 100)
