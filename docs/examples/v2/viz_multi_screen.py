@@ -27,14 +27,23 @@ cube_map = load_cube_map_texture(texture_files)
 # interactions. The ``skybox`` parameter takes as input a cube map texture and
 # performs the previously described process.
 
-scene = Scene(skybox=cube_map)
+scene0 = Scene(skybox=cube_map)
+scene1 = Scene(background=(1, 1, 1, 1))
+scene2 = Scene(background=(1, 0, 1, 1))
 
-sphere_actor = sphere(15, color=(1, 0, 1, 1), position=(0, 0, 0))
-sphere_actor1 = sphere(15, color=(1, 0, 1, 1), position=(10, 10, 10))
-scene.add(sphere_actor)
-scene.add(sphere_actor1)
+sphere_actor0 = sphere(15, color=(1, 0, 0, 1), position=(0, 0, 0))
+sphere_actor1 = sphere(15, color=(1, 0, 0, 1), position=(0, 0, 0))
+sphere_actor2 = sphere(15, color=(1, 0, 0, 1), position=(0, 0, 0))
 
-show_m = ShowManager(scene=scene, title="FURY 2.0: Skybox Example")
+scene0.add(sphere_actor0)
+scene1.add(sphere_actor1)
+scene2.add(sphere_actor2)
+
+show_m = ShowManager(
+    scene=[scene0, scene1, scene2],
+    title="FURY 2.0: Multi Screen Example",
+    screen_config=[2, 1],
+)
 
 interactive = False
 
@@ -42,4 +51,4 @@ if __name__ == "__main__":
     if interactive:
         show_m.start()
     else:
-        record(scene=scene, fname="skybox.png")
+        record(scene=[scene0, scene1, scene2], fname="multi_screen.png")

@@ -1,57 +1,95 @@
-import numpy as np
-import pygfx as gfx
+from pygfx import (
+    DirectionalLight,
+    OrbitController,
+    PerspectiveCamera,
+    Viewport as GfxViewport,
+    WgpuRenderer,
+)
 
+from fury.decorators import warn_on_args_to_kwargs
 from fury.v2.window import Scene
 
 
-class Renderer(gfx.WgpuRenderer):
-
-    def __init__(self, *, scene=None, camera=None):
-        super().__init__()
-
+class Screen(GfxViewport):
+    @warn_on_args_to_kwargs()
+    def __init__(
+        self, renderer, *, rect=None, scene=None, camera=None, camera_light=True
+    ):
+        super().__init__(renderer, rect)
         if scene is None:
             scene = Scene()
         if camera is None:
-            camera = gfx.PerspectiveCamera()
+            camera = PerspectiveCamera(50)
+            if camera_light:
+                light = DirectionalLight()
+                camera.add(light)
+            scene.add(camera)
+            camera.show_object(scene)
+
+        controller = OrbitController(camera, register_events=self)
+        controller.add_camera(camera, include_state={"position", "rotation"})
 
         self.scene = scene
         self.camera = camera
 
-    def reset_camera(self, pos=(0, 0, 0)):
-        self.camera.show_pos(pos)
+    def add(self, *actors):
+        self.scene.add(*actors)
 
-    def reset_camera_tight(self, *, margin_factor=1.02):
-        wobjects_bb = []
+    def remove(self, *actors):
+        self.scene.remove(*actors)
 
-        self.scene.traverse(
-            lambda ob: wobjects_bb.append(ob.get_bounding_box()), True
+    def update_camera(self):
+        self.camera.width = self.rect[2]
+        self.camera.height = self.rect[3]
+        self.camera.show_object(self.scene)
+
+    def render(self, flush=False):
+        super().render(self.scene, self.camera, flush=flush)
+
+    def reset_camera(self):
+        self.camera.local.position = (0, 0, 100)
+        self.camera.look_at((0, 0, 0))
+
+
+class Renderer(WgpuRenderer):
+    @warn_on_args_to_kwargs()
+    def __init__(
+        self,
+        target,
+        *args,
+        pixel_ratio=None,
+        pixel_filter=None,
+        show_fps=False,
+        blend_mode="default",
+        sort_objects=False,
+        enable_events=True,
+        gamma_correction=1,
+        **kwargs,
+    ):
+        super().__init__(
+            target,
+            *args,
+            pixel_ratio=pixel_ratio,
+            pixel_filter=pixel_filter,
+            show_fps=show_fps,
+            blend_mode=blend_mode,
+            sort_objects=sort_objects,
+            enable_events=enable_events,
+            gamma_correction=gamma_correction,
+            **kwargs,
         )
+        self.screens = []
 
-        min_x = wobjects_bb[0][0][0]
-        max_x = wobjects_bb[0][1][0]
-        min_y = wobjects_bb[0][0][1]
-        max_y = wobjects_bb[0][1][1]
+    def update_screens(self, screen_bbs):
+        for screen, screen_bb in zip(self.screens, screen_bbs):
+            screen.rect = screen_bb
+            screen.update_camera()
 
-        for bb in wobjects_bb:
-            min_x = min(min_x, bb[0][0], bb[1][0])
-            max_x = max(max_x, bb[0][0], bb[1][0])
-            min_y = min(min_y, bb[0][1], bb[1][1])
-            max_y = max(max_y, bb[0][1], bb[1][1])
+    def render_screens(self, screen=None):
+        if screen is None:
+            for s in self.screens:
+                s.render(flush=False)
+        else:
+            self.screens[screen].render(flush=False)
 
-        width, height = max_x - min_x, max_y - min_y
-        center = np.array((min_x + width / 2.0, min_y + height / 2.0, 0))
-
-        angle = np.pi * self.camera.fov / 180.0
-        dist = max(width / self.camera.width, height) / np.sin(angle / 2.0) / 2.0
-        position = center + np.array((0, 0, dist * margin_factor))
-
-        self.reset_camera((0, 1, 0))
-        self.camera.set_state({ 'position': position })
-
-    def camera_info(self):
-        print("# Active Camera")
-        print(self.camera.get_state())
-
-
-    def zoom(self, value):
-        self.camera.zoom(value)
+        self.flush()
