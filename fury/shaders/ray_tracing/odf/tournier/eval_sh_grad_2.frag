@@ -1,0 +1,46 @@
+void evalShGrad2(out float outSH[6], out vec3 outGrads[6], vec3 point)
+{
+    float x, y, z, z2, c0, s0, c1, s1, d, a;
+    x = point[0];
+    y = point[1];
+    z = point[2];
+    z2 = z * z;
+    c0 = 1.0;
+    s0 = 0.0;
+    d = 0.282094792;
+    outSH[0] = d;
+    a = z2 - 0.333333333;
+    d = 0.946174696 * a;
+    outSH[3] = d;
+    c1 = x;
+    s1 = y;
+    d = -1.092548431 * z;
+    outSH[4] = c1 * d;
+    outSH[2] = s1 * d;
+    outGrads[4][0] = c0 * d;
+    outGrads[2][0] = s0 * d;
+    outGrads[4][1] = s0 * d;
+    outGrads[2][1] = c0 * d;
+    d = 1.892349392 * z;
+    outGrads[3][2] = d;
+    c0 = x * c1 - y * s1;
+    s0 = y * c1 + x * s1;
+    d = 0.546274215;
+    outSH[5] = c0 * d;
+    outSH[1] = s0 * d;
+    d = 1.092548431;
+    outGrads[1][0] = c1 * d;
+    outGrads[5][0] = s1 * d;
+    outGrads[5][1] = -s1 * d;
+    outGrads[1][1] = c1 * d;
+    d = -1.092548431;
+    outGrads[4][2] = c1 * d;
+    outGrads[2][2] = s1 * d;
+    outGrads[0][0] = 0.0;
+    outGrads[0][1] = 0.0;
+    outGrads[0][2] = 0.0;
+    outGrads[5][2] = 0.0;
+    outGrads[3][0] = 0.0;
+    outGrads[3][1] = 0.0;
+    outGrads[1][2] = 0.0;
+}
