@@ -34,6 +34,7 @@ import urllib
 import numpy as np
 
 from fury import actor, molecular as mol, ui, window
+import time
 
 ###############################################################################
 # Downloading the PDB file of the protein to be rendered (the user can change
@@ -46,10 +47,22 @@ if not os.path.isfile(pdbfn):
     flag = 1
     url = downloadurl + pdbfn
     outfnm = os.path.join(pdbfn)
-    try:
-        urllib.request.urlretrieve(url, outfnm)
-    except Exception:
-        print('Error in downloading the file!')
+
+    max_retries = 5
+    retry_delay = 1  # seconds
+
+    for attempt in range(max_retries):
+        try:
+            urllib.request.urlretrieve(url, outfnm)
+            break  # If successful, exit the loop
+        except Exception as e:
+            print(f'Error in downloading the file: {e}')
+            if attempt < max_retries - 1:  # Check if it's not the last attempt
+                time.sleep(retry_delay)
+                retry_delay *= 2  # Exponentially increase the delay
+            else:
+                print('Max retries reached. Could not download the file.')
+
 
 ###############################################################################
 # Creating a `PeriodicTable()` object to obtain atomic numbers from names of
