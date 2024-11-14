@@ -32,11 +32,12 @@ class ShowManager:
         multi_samples=8,
         max_peels=4,
         occlusion_ratio=0.0,
+        blend_mode="weighted_plus",
         window_type="auto",
-        controller_style="orbit",
         pixel_ratio=1,
         camera_light=True,
         screen_config=None,
+        enable_events=True,
     ):
         self.size = size
         self._title = title
@@ -45,11 +46,30 @@ class ShowManager:
         if renderer is None:
             renderer = WgpuRenderer(self.window)
         self.renderer = renderer
+        self.renderer.pixel_ratio = pixel_ratio
+        self.renderer.blend_mode = blend_mode
+        self.renderer.add_event_handler(self.resize, "resize")
 
-        self._screen_config = screen_config
         self._total_screens = 0
+        self._screen_config = screen_config
         self._calculate_total_screens()
+        self._screen_setup(scene, camera, controller, camera_light)
+        self.screens = self._create_screens()
+        update_viewports(
+            self.screens,
+            calculate_screen_sizes(self._screen_config, self.renderer.logical_size),
+        )
 
+        self.enable_events = enable_events
+
+        self.png_magnify = png_magnify
+        self.order_transparent = order_transparent
+        self.stereo = stereo
+        self.timers = []
+        self._fps = 0
+        self._last_render_time = 0
+
+    def _screen_setup(self, scene, camera, controller, camera_light):
         self._scene = scene
         if not isinstance(scene, list):
             self._scene = [scene] * self._total_screens
@@ -65,26 +85,6 @@ class ShowManager:
         self._camera_light = camera_light
         if not isinstance(camera_light, list):
             self._camera_light = [camera_light] * self._total_screens
-
-        self.screens = self._create_screens()
-        update_viewports(
-            self.screens,
-            calculate_screen_sizes(self._screen_config, self.renderer.logical_size),
-        )
-
-        self.png_magnify = png_magnify
-        self.order_transparent = order_transparent
-        self.stereo = stereo
-        self.timers = []
-        self._fps = 0
-        self._last_render_time = 0
-
-        self.renderer.pixel_ratio = pixel_ratio
-        self.renderer.blend_mode = "weighted_plus"
-
-        self.renderer.enable_events()
-
-        self.renderer.add_event_handler(self.resize, "resize")
 
     def _setup_window(self, window_type):
         if window_type == "auto":
@@ -134,6 +134,20 @@ class ShowManager:
     @title.setter
     def title(self, value):
         self.renderer.pixel_ratio = value
+
+    @property
+    def enable_events(self):
+        return self._enable_events
+
+    @enable_events.setter
+    def enable_events(self, value):
+        self._enable_events = value
+        if value:
+            self.renderer.enable_events()
+        else:
+            self.renderer.disable_events()
+        for s in self.screens:
+            s.controller.enabled = value
 
     def snapshot(self, fname):
         img = image_from_array(np_asarray(self.renderer.snapshot()))
