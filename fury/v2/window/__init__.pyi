@@ -4,19 +4,20 @@ __all__ = [
     "record",
     "reset_camera",
     "update_camera",
-    "update_screens",
+    "update_viewports",
     "render_screens",
     "calculate_screen_sizes",
     "create_screen",
+    "display",
 ]
 
-from .containers import (
+from .screen import (
     Scene,
     calculate_screen_sizes,
     create_screen,
     render_screens,
     reset_camera,
     update_camera,
-    update_screens,
+    update_viewports,
 )
-from .show_manager import ShowManager, record
+from .show_manager import ShowManager, display, record

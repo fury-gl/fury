@@ -39,16 +39,20 @@ scene0.add(sphere_actor0)
 scene1.add(sphere_actor1)
 scene2.add(sphere_actor2)
 
-show_m = ShowManager(
-    scene=[scene0, scene1, scene2],
-    title="FURY 2.0: Multi Screen Example",
-    screen_config=[2, 1],
-)
 
 interactive = False
 
 if __name__ == "__main__":
     if interactive:
+        show_m = ShowManager(
+            scene=[scene0, scene1, scene2],
+            title="FURY 2.0: Multi Screen Example",
+            screen_config=[2, 1],
+        )
         show_m.start()
     else:
-        record(scene=[scene0, scene1, scene2], fname="multi_screen.png")
+        record(
+            scene=[scene0, scene1, scene2],
+            fname="multi_screen.png",
+            screen_config=[2, 1],
+        )

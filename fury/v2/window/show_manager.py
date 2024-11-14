@@ -8,10 +8,11 @@ from wgpu.gui.jupyter import WgpuCanvas as JupyterWgpuCanvas
 from wgpu.gui.offscreen import WgpuCanvas as OffscreenWgpuCanvas
 
 from fury.v2.window import (
+    Scene,
     calculate_screen_sizes,
     create_screen,
     render_screens,
-    update_screens,
+    update_viewports,
 )
 
 
@@ -22,10 +23,10 @@ class ShowManager:
         renderer=None,
         scene=None,
         camera=None,
+        controller=None,
         title="FURY 2.0",
         size=(800, 800),
         png_magnify=1,
-        reset_camera=True,
         order_transparent=False,
         stereo="off",
         multi_samples=8,
@@ -49,19 +50,29 @@ class ShowManager:
         self._total_screens = 0
         self._calculate_total_screens()
 
-        self.scene = scene
+        self._scene = scene
         if not isinstance(scene, list):
-            self.scene = [scene] * self._total_screens
+            self._scene = [scene] * self._total_screens
+
+        self._camera = camera
+        if not isinstance(camera, list):
+            self._camera = [camera] * self._total_screens
+
+        self._controller = controller
+        if not isinstance(controller, list):
+            self._controller = [controller] * self._total_screens
+
+        self._camera_light = camera_light
+        if not isinstance(camera_light, list):
+            self._camera_light = [camera_light] * self._total_screens
 
         self.screens = self._create_screens()
-        update_screens(
+        update_viewports(
             self.screens,
             calculate_screen_sizes(self._screen_config, self.renderer.logical_size),
         )
 
-        self.camera = camera
         self.png_magnify = png_magnify
-        self.reset_camera = reset_camera
         self.order_transparent = order_transparent
         self.stereo = stereo
         self.timers = []
@@ -96,7 +107,15 @@ class ShowManager:
     def _create_screens(self):
         screens = []
         for i in range(self._total_screens):
-            screens.append(create_screen(self.renderer, scene=self.scene[i]))
+            screens.append(
+                create_screen(
+                    self.renderer,
+                    scene=self._scene[i],
+                    camera=self._camera[i],
+                    controller=self._controller[i],
+                    camera_light=self._camera_light[i],
+                )
+            )
         return screens
 
     @property
@@ -128,18 +147,28 @@ class ShowManager:
         run()
 
     def resize(self, _event):
-        update_screens(
+        update_viewports(
             self.screens,
             calculate_screen_sizes(self._screen_config, self.renderer.logical_size),
         )
         self.render()
 
 
-def record(*, renderer=None, scene=None, fname="output.png"):
-    if renderer is None:
-        show_m = ShowManager(scene=scene, window_type="offscreen")
-        show_m.render()
-        show_m.window.draw()
-        show_m.snapshot(fname)
-    else:
-        show_m = ShowManager(renderer=renderer, window_type="offscreen")
+def record(*, scene=None, screen_config=None, fname="output.png", actors=None):
+    if actors is not None:
+        scene = Scene()
+        scene.add(*actors)
+
+    show_m = ShowManager(
+        scene=scene, screen_config=screen_config, window_type="offscreen"
+    )
+    show_m.render()
+    show_m.window.draw()
+    show_m.snapshot(fname)
+
+
+def display(*, actors):
+    scene = Scene()
+    scene.add(*actors)
+    show_m = ShowManager(scene=scene)
+    show_m.start()

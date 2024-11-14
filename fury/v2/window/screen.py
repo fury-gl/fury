@@ -1,12 +1,16 @@
+from dataclasses import dataclass
+
 from pygfx import (
     AmbientLight,
     Background,
     BackgroundSkyboxMaterial,
+    Camera,
+    Controller,
     DirectionalLight,
     OrbitController,
     PerspectiveCamera,
     Scene as GfxScene,
-    Viewport as GfxViewport,
+    Viewport,
 )
 
 
@@ -61,10 +65,34 @@ class Scene(GfxScene):
         self.remove(*self.children)
 
 
+@dataclass
+class Screen:
+    viewport: Viewport
+    scene: Scene
+    camera: Camera
+    controller: Controller
+
+    @property
+    def size(self):
+        return self.viewport.rect[2:]
+
+    @property
+    def position(self):
+        return self.viewport.rect[:2]
+
+    @property
+    def bounding_box(self):
+        return self.viewport.rect
+
+    @bounding_box.setter
+    def bounding_box(self, value):
+        self.viewport.rect = value
+
+
 def create_screen(
     renderer, *, rect=None, scene=None, camera=None, controller=None, camera_light=True
 ):
-    screen = GfxViewport(renderer, rect)
+    vp = Viewport(renderer, rect)
     if scene is None:
         scene = Scene()
     if camera is None:
@@ -74,34 +102,33 @@ def create_screen(
             camera.add(light)
             scene.add(camera)
 
-    camera.show_object(scene)
-
     if controller is None:
-        OrbitController(camera, register_events=screen)
+        controller = OrbitController(camera, register_events=vp)
 
+    screen = Screen(vp, scene, camera, controller)
+    update_camera(camera, screen.size, scene)
     return screen
 
 
-def reset_camera(screen):
-    screen.camera.local.position = (0, 0, 100)
-    screen.camera.look_at((0, 0, 0))
+def update_camera(camera, size, target):
+    camera.width = size[0]
+    camera.height = size[1]
+
+    if (isinstance(target, Scene) and len(target.children) > 3) or not isinstance(
+        target, Scene
+    ):
+        camera.show_object(target)
 
 
-def update_camera(screen):
-    screen.camera.width = screen.rect[2]
-    screen.camera.height = screen.rect[3]
-    screen.camera.show_object(screen.scene)
-
-
-def update_screens(screens, screen_bbs):
+def update_viewports(screens, screen_bbs):
     for screen, screen_bb in zip(screens, screen_bbs):
-        screen.rect = screen_bb
-        update_camera(screen)
+        screen.bounding_box = screen_bb
+        update_camera(screen.camera, screen.size, screen.scene)
 
 
 def render_screens(renderer, screens):
-    for s in screens:
-        s.render(s.scene, s.camera, flush=False)
+    for screen in screens:
+        screen.viewport.render(screen.scene, screen.camera, flush=False)
 
     renderer.flush()
 

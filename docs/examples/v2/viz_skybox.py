@@ -34,12 +34,12 @@ sphere_actor1 = sphere(15, color=(1, 0, 1, 1), position=(10, 10, 10))
 scene.add(sphere_actor)
 scene.add(sphere_actor1)
 
-show_m = ShowManager(scene=scene, title="FURY 2.0: Skybox Example")
 
 interactive = False
 
 if __name__ == "__main__":
     if interactive:
+        show_m = ShowManager(scene=scene, title="FURY 2.0: Skybox Example")
         show_m.start()
     else:
         record(scene=scene, fname="skybox.png")
