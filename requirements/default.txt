@@ -1,6 +1,5 @@
 # List required packages in this file, one per line.
 numpy>=1.7.1
-vtk>=9.1.0
 scipy>=1.4.0
 packaging
 pillow>=8.0.1
@@ -9,4 +8,3 @@ pygltflib>=1.15.1
 lazy_loader>=0.4
 pygfx>=0.3.0
 glfw>=2.7.0
-jupyter-rfb>=0.4.4

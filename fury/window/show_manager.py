@@ -7,7 +7,7 @@ from wgpu.gui.auto import WgpuCanvas, run
 from wgpu.gui.jupyter import WgpuCanvas as JupyterWgpuCanvas
 from wgpu.gui.offscreen import WgpuCanvas as OffscreenWgpuCanvas
 
-from fury.v2.window import (
+from fury.window import (
     Scene,
     calculate_screen_sizes,
     create_screen,
