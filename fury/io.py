@@ -382,7 +382,8 @@ def load_polydata(file_name):
 
 
 @warn_on_args_to_kwargs()
-def save_polydata(polydata, file_name, *, binary=False, color_array_name=None):
+def save_polydata(polydata, file_name, *, binary=False, color_array_name=None,
+                  legacy_vtk_format=False):
     """Save a vtk polydata to a supported format file.
 
     Save formats can be VTK, FIB, PLY, STL and XML.
@@ -393,6 +394,7 @@ def save_polydata(polydata, file_name, *, binary=False, color_array_name=None):
     file_name : string
     binary : bool
     color_array_name: ndarray
+    legacy_vtk_format: bool
 
     """
     # get file extension (type)
@@ -426,6 +428,8 @@ def save_polydata(polydata, file_name, *, binary=False, color_array_name=None):
     if color_array_name is not None and file_extension == "ply":
         writer.SetArrayName(color_array_name)
 
+    if legacy_vtk_format and file_extension in ["vtk", "vtp", "fib"]:
+        writer.SetFileVersion(42)
     if binary:
         writer.SetFileTypeToBinary()
     writer.Update()
