@@ -46,7 +46,7 @@ jobs:
     - name: Build docs
       run: |
         cd docs
-        make -C . html-no-examples
+        make -C . html-no-examples SPHINXOPTS="-W --keep-going"
     - name: Deploy Devs
       if: success() && github.ref == 'refs/heads/master'
       uses: JamesIves/github-pages-deploy-action@v4
@@ -62,5 +62,5 @@ jobs:
         ssh-key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
         repository-name: fury-gl/fury-website
         folder: ./docs/build/html-web-only
-        target-folder: v0.10.x
+        target-folder: v0.11.x
         clean: false

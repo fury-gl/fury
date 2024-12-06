@@ -38,7 +38,7 @@ class ApiDocWriter:
     def __init__(
         self,
         package_name,
-        rst_extension=".txt",
+        rst_extension=".rst",
         package_skip_patterns=None,
         module_skip_patterns=None,
         object_skip_patterns=None,
@@ -235,6 +235,7 @@ class ApiDocWriter:
 
         functions = []
         classes = []
+        constant_variables = []
         for n in node.body:
             if not hasattr(n, "name"):
                 if not isinstance(n, ast.Assign):
@@ -254,7 +255,7 @@ class ApiDocWriter:
                     if isinstance(n.value, ast.Call):
                         if isinstance(n.targets[0], ast.Tuple):
                             continue
-                        functions.append(n.targets[0].id)
+                        constant_variables.append(n.targets[0].id)
                     elif hasattr(n.value, "attr") and n.value.attr.startswith("vtk"):
                         classes.append(n.targets[0].id)
                 except Exception:
@@ -262,7 +263,7 @@ class ApiDocWriter:
                     print(n.lineno)
                     print(n.targets[0])
 
-        return functions, classes
+        return functions, classes, constant_variables
 
     def _parse_lines(self, linesource):
         """Parse lines of text for functions and classes."""
@@ -302,7 +303,7 @@ class ApiDocWriter:
 
         """
         # get the names of all classes and functions
-        functions, classes = self._parse_module_with_import(uri)
+        functions, classes, constant_variables = self._parse_module_with_import(uri)
         if not len(functions) and not len(classes) and DEBUG:
             print("WARNING: Empty -", uri)  # dbg
 
@@ -323,8 +324,21 @@ class ApiDocWriter:
             head += title + "\n" + self.rst_section_levels[1] * len(title)
 
         head += "\n.. automodule:: " + uri + "\n"
+
         head += "\n.. currentmodule:: " + uri + "\n"
+
         body += "\n.. currentmodule:: " + uri + "\n\n"
+
+        for c in constant_variables:
+            # must NOT exclude from index to keep cross-refs working
+            body += c + "\n"
+            body += self.rst_section_levels[3] * len(c) + "\n"
+            body += "\n.. autodata:: " + c + "\n"
+            body += "   :no-value:\n"
+            body += "   :annotation:\n"
+
+            body += "\n\n"
+
         for c in classes:
             body += (
                 "\n:class:`"
@@ -335,23 +349,18 @@ class ApiDocWriter:
             )
             body += "\n.. autoclass:: " + c + "\n"
             # must NOT exclude from index to keep cross-refs working
-            body += (
-                "  :members:\n"
-                "  :undoc-members:\n"
-                "  :show-inheritance:\n"
-                "\n"
-                "  .. automethod:: __init__\n\n"
-            )
+            body += "  :members:\n" "  :undoc-members:\n" "  :show-inheritance:\n" "\n"
         head += ".. autosummary::\n\n"
-        for f in classes + functions:
+        for f in constant_variables + classes + functions:
             head += "   " + f + "\n"
-        head += "\n"
+        head += "\n\n"
 
         for f in functions:
             # must NOT exclude from index to keep cross-refs working
             body += f + "\n"
             body += self.rst_section_levels[3] * len(f) + "\n"
-            body += "\n.. autofunction:: " + f + "\n\n"
+            body += "\n.. autofunction:: " + f + "\n"
+            body += "\n\n"
 
         return head, body
 
