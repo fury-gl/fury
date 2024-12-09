@@ -59,8 +59,11 @@ def disk():
     n_points = 1
     centers = np.random.rand(n_points, 3)
     colors = 255 * np.random.rand(n_points, 3)
+    print("Centers shape:", centers.shape)  
+    print("Colors shape:", colors.shape)
 
     vtk_points = numpy_to_vtk_points(centers)
+    print("VTK Points:", vtk_points)
 
     points_polydata = vtk.vtkPolyData()
     points_polydata.SetPoints(vtk_points)

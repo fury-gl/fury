@@ -26,7 +26,6 @@ from fury.stream.server.async_app import (
 from fury.stream.server.main import RTCServer, web_server, web_server_raw_array
 from fury.stream.widget import Widget, check_port_is_available
 
-
 @pytest.fixture
 def loop():
     """Use this fixture to get the event loop.
@@ -107,6 +106,7 @@ def test_pillow():
 
     scene = window.Scene()
     scene.add(actors)
+
     showm = window.ShowManager(
         scene=scene,
         reset_camera=False,
@@ -127,7 +127,6 @@ def test_pillow():
             info_buffer_name=stream.img_manager.info_buffer_name,
             image_buffer_names=stream.img_manager.image_buffer_names,
         )
-
     showm.render()
     stream.start(ms=ms_stream)
     showm.render()
