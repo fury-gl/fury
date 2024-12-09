@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name =  "fury"
 description = "FURY - Free Unified Rendering in pYthon. A free and open-source software library for Scientific Visualization and 3D animations"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 license.file="LICENSE"
 keywords = ["Scientific Visualization", "shaders", "animation", "simulation",
             "Physically based rendering", "3D", "3D rendering", "networks",
@@ -33,22 +33,19 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
-    "Programming Language :: Python",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering",
 ]
 
 dependencies = [
-    "numpy >=1.15",
-	"scipy>=1.0",
-    "vtk>=9.1.0",
-    "pillow>=5.4.1",
-    "packaging >=17.0",
-    "pygltflib>=1.15.3",
-    "aiohttp>=3.8.4",
+    "numpy>=2.0",
+	"scipy>=1.13.0",
+    "pillow>=10.4.0",
+    "packaging >=23.0",
     "lazy_loader>=0.4",
 ]
 
@@ -62,14 +59,14 @@ Tracker = "https://github.com/fury-gl/fury/issues"
 [project.optional-dependencies]
 
 all = ["fury[plot, dev, doc, medical, style, test, typing]"]
-plot = ["matplotlib>=1.5.3", ]
+plot = ["matplotlib>=3.9.0", ]
 medical = ["dipy", "nibabel"]
 dev = [
     "gitpython",
     "twine",
     ]
 doc = [
-    "matplotlib >= 1.5.3",
+    "fury[plot]",
     "numpydoc",
     "sphinx >=6.1.2",
     "texext",
