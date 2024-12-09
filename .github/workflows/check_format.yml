@@ -2,9 +2,9 @@ name: code format
 
 on:
   push:
-    branches: [master]
+    branches: [master, v2]
   pull_request:
-    branches: [master]
+    branches: [master, v2]
 
 jobs:
   pre-commit:
@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: ['3.10']
+        python-version: ['3.12']
         requires: ['latest']
 
     steps:
