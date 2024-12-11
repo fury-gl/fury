@@ -316,7 +316,6 @@ from .shaders import (
     attribute_to_actor as attribute_to_actor,
     compose_shader as compose_shader,
     import_fury_shader as import_fury_shader,
-    load as load,
     load_shader as load_shader,
     replace_shader_in_actor as replace_shader_in_actor,
     shader_apply_effects as shader_apply_effects,

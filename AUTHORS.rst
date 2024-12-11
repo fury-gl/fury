@@ -105,3 +105,4 @@ Contributors
 * Pietro Astolfi
 * Yaroslav Halchenko
 * sailesh
+* Akwasi Wireko
