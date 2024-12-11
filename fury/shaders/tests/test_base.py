@@ -5,14 +5,12 @@ import numpy as np
 import numpy.testing as npt
 
 from fury import actor, window
-from fury.deprecator import ExpiredDeprecationError
 from fury.lib import Actor, CellArray, Points, PolyData, PolyDataMapper, numpy_support
 from fury.shaders import (
     add_shader_callback,
     attribute_to_actor,
     compose_shader,
     import_fury_shader,
-    load,
     load_shader,
     replace_shader_in_actor,
     shader_to_actor,
@@ -342,18 +340,6 @@ def test_load_shader():
         test_file.close()
 
         npt.assert_string_equal(load_shader(fname_test), str_test)
-
-
-def test_load():
-    dummy_file_name = "dummy.txt"
-    dummy_file_contents = "This is some dummy text."
-
-    dummy_file = open(os.path.join(SHADERS_DIR, dummy_file_name), "w")
-    dummy_file.write(dummy_file_contents)
-    dummy_file.close()
-
-    npt.assert_raises(ExpiredDeprecationError, load, dummy_file_name)
-    os.remove(os.path.join(SHADERS_DIR, dummy_file_name))
 
 
 def test_replace_shader_in_actor(interactive=False):
