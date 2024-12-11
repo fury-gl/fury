@@ -45,7 +45,7 @@ dependencies = [
     "numpy>=2.0",
     "scipy>=1.13.0",
     "pillow>=10.4.0",
-    "packaging >=23.0",
+    "packaging>=23.0",
     "lazy_loader>=0.4",
 ]
 
