@@ -1,4 +1,4 @@
-FURY 0.11.0 Released
+FURY 0.12.0 Released
 ====================
 
 .. post:: December 11 2024
