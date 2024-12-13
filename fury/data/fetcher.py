@@ -567,7 +567,7 @@ fetch_viz_models = _make_fetcher(
     MODEL_DATA_URL,
     ["utah.obj", "suzanne.obj", "satellite_obj.obj", "dragon.obj"],
     ["utah.obj", "suzanne.obj", "satellite_obj.obj", "dragon.obj"],
-   sha_list= [
+    sha_list=[
         "0B50F12CEDCDC27377AC702B1EE331223BECEC59593B3F00A9E06B57A9C1B7C3",
         "BB4FF4E65D65D71D53000E06D2DC7BF89B702223657C1F64748811A3A6C8D621",
         "90213FAC81D89BBB59FA541643304E0D95C2D446157ACE044D46F259454C0E74",

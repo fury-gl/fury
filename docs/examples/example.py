@@ -11,15 +11,15 @@ show_m = ShowManager()
 
 s = sphere(15, color=(1, 0, 1, 1), position=(25, 25, 25))
 
-point_cloud = points(3,
-                     point_positions=[(5, -5, 5), (-5, 5, 5), (5, 5, -5)],
-                     colors=[(1, 1, 1, 1), (1, 1, 0, 1), (1, 0, 0, 1)])
+point_cloud = points(
+    3,
+    point_positions=[(5, -5, 5), (-5, 5, 5), (5, 5, -5)],
+    colors=[(1, 1, 1, 1), (1, 1, 0, 1), (1, 0, 0, 1)],
+)
 
 # show_m.scene.add(cube)
 show_m.scene.add(s)
 show_m.scene.add(point_cloud)
-
-
 
 
 # def screenshot(event):

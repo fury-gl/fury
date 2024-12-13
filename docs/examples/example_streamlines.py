@@ -7,9 +7,10 @@ from dipy.io.streamline import load_tractogram
 from fury.colormap import distinguishable_colormap
 
 fname = os.path.expanduser(
-    '~/.dipy/bundle_atlas_hcp842/Atlas_80_Bundles/bundles/AC.trk')
+    "~/.dipy/bundle_atlas_hcp842/Atlas_80_Bundles/bundles/AC.trk"
+)
 
-sft = load_tractogram(fname, 'same', bbox_valid_check=False)
+sft = load_tractogram(fname, "same", bbox_valid_check=False)
 streamlines = sft.streamlines
 
 # Pygfx window setup
@@ -33,16 +34,11 @@ for i in range(no_streamlines):
     color = next(color_gen)
     start_idx = int(pygfx_offsets[i] + i)
     end_idx = int(start_idx + pygfx_lengths[i])
-    pygfx_streamlines = np.insert(
-        pygfx_streamlines, end_idx, nan_buffer, axis=0)
+    pygfx_streamlines = np.insert(pygfx_streamlines, end_idx, nan_buffer, axis=0)
     pygfx_colors[start_idx:end_idx] = (*color, 1)
 
 # Pygfx line definition
-lines = lines(
-    positions=pygfx_streamlines,
-    colors=pygfx_colors,
-    color_mode='vertex'
-)
+lines = lines(positions=pygfx_streamlines, colors=pygfx_colors, color_mode="vertex")
 
 show_m.scene.add(lines)
 
@@ -60,7 +56,7 @@ def on_pick(event):
     print("Vertex Coord: ", pygfx_streamlines[vertex])
     selected = find_line(vertex)
     color = pygfx_colors[selected[0]][:3]
-    pygfx_colors[selected[0]:selected[1] + 1] = (*color, 0.5)
+    pygfx_colors[selected[0] : selected[1] + 1] = (*color, 0.5)
     lines.geometry.colors.update_range()
     show_m.update()
 
@@ -78,6 +74,6 @@ def find_line(vertex):
     return [left + 1, right - 1]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     show_m.render()
     show_m.start()
