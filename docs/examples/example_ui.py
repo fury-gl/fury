@@ -22,8 +22,7 @@ def clicked(event):
 
 # panel.obj.add_event_handler(clicked, 'pointer_down')
 show_m.scene.add(panel.obj)
-panel.obj.handle_event(gfx.PointerEvent(x=10, y=10, type='pointer_down'))
-
+panel.obj.handle_event(gfx.PointerEvent(x=10, y=10, type="pointer_down"))
 
 
 # geo = gfx.plane_geometry(200, 50)
@@ -31,7 +30,6 @@ panel.obj.handle_event(gfx.PointerEvent(x=10, y=10, type='pointer_down'))
 # obj = gfx.Mesh(geo, mat)
 # obj.add_event_handler(clicked, 'pointer_down')
 # show_m.scene.add(obj)
-
 
 
 if __name__ == "__main__":

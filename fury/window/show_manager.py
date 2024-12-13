@@ -131,8 +131,8 @@ class ShowManager:
     def pixel_ratio(self):
         return self.renderer.pixel_ratio
 
-    @title.setter
-    def title(self, value):
+    @pixel_ratio.setter
+    def pixel_ratio(self, value):
         self.renderer.pixel_ratio = value
 
     @property

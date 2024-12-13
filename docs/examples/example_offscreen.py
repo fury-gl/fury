@@ -12,7 +12,7 @@ show_m.scene.add(cube)
 
 
 def screenshot(event):
-    show_m.snapshot('snapshot.png')
+    show_m.snapshot("snapshot.png")
 
 
 # cube.add_event_handler(screenshot, "click")
@@ -20,4 +20,4 @@ def screenshot(event):
 if __name__ == "__main__":
     show_m.render()
     show_m.canvas.draw()
-    show_m.snapshot('offscreen.png')
+    show_m.snapshot("offscreen.png")

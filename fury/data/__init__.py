@@ -1,6 +1,5 @@
 """Read or fetch test or example data."""
 
-
 from os.path import dirname, join as pjoin
 
 import lazy_loader as lazy

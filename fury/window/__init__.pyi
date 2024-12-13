@@ -2,7 +2,6 @@ __all__ = [
     "ShowManager",
     "Scene",
     "record",
-    "reset_camera",
     "update_camera",
     "update_viewports",
     "render_screens",
@@ -16,7 +15,6 @@ from .screen import (
     calculate_screen_sizes,
     create_screen,
     render_screens,
-    reset_camera,
     update_camera,
     update_viewports,
 )
