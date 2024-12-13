@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.11]
+        python-version: [3.12]
     steps:
     - uses: actions/checkout@v4
       with:
@@ -47,20 +47,20 @@ jobs:
       run: |
         cd docs
         make -C . html-no-examples
-    - name: Deploy Devs
-      if: success() && github.ref == 'refs/heads/master'
-      uses: JamesIves/github-pages-deploy-action@v4
-      with:
-        ssh-key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-        repository-name: fury-gl/fury-website
-        folder: ./docs/build/html
-        target-folder: dev
-    - name: Update last release
-      if: success() && github.ref == 'refs/heads/master'
-      uses: JamesIves/github-pages-deploy-action@v4
-      with:
-        ssh-key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-        repository-name: fury-gl/fury-website
-        folder: ./docs/build/html-web-only
-        target-folder: v0.10.x
-        clean: false
+    # - name: Deploy Devs
+    #   iff: success() && github.ref == 'refs/heads/master'
+    #   uses: JamesIves/github-pages-deploy-action@v4
+    #   with:
+    #     ssh-key: {{ secrets.ACTIONS_DEPLOY_KEY }}
+    #     repository-name: fury-gl/fury-website
+    #     folder: ./docs/build/html
+    #     target-folder: dev
+    # - name: Update last release
+    #   iff: success() && github.ref == 'refs/heads/master'
+    #   uses: JamesIves/github-pages-deploy-action@v4
+    #   with:
+    #     ssh-key: {{ secrets.ACTIONS_DEPLOY_KEY }}
+    #     repository-name: fury-gl/fury-website
+    #     folder: ./docs/build/html-web-only
+    #     target-folder: v0.10.x
+    #     clean: false
