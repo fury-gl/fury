@@ -13,6 +13,11 @@ def buffer_to_geometry(positions, **kwargs):
         A dict of attributes to define on the geometry object. Keys can be
         "colors", "normals", "texcoords",
         "indices", ...
+
+    Returns
+    -------
+    geo : Geometry
+        The geometry object.
     """
     geo = Geometry(positions=positions, **kwargs)
     return geo
@@ -28,6 +33,11 @@ def create_mesh(geometry, material):
         The geometry object.
     material : Material
         The material object.
+
+    Returns
+    -------
+    mesh : Mesh
+        The mesh object.
     """
     mesh = Mesh(geometry=geometry, material=material)
     return mesh

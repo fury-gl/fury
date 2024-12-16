@@ -2,27 +2,27 @@ import pygfx as gfx
 
 
 def _create_mesh_material(
-
-        material='phong',
-        enable_picking=True,
-        color=None,
-        opacity=1.0):
+    *, material="phong", enable_picking=True, color=None, opacity=1.0, mode="vertex"
+):
     """
     Create a mesh material.
 
     Parameters
     ----------
-    material : str
+    material : str, optional
         The type of material to create. Options are 'phong' (default) and
         'basic'.
-    enable_picking : bool
-        Whether the material should be pickable in a scene. Defaults to True.
-    color : tuple or None
+    enable_picking : bool, optional
+        Whether the material should be pickable in a scene.
+    color : tuple or None, optional
         The color of the material, represented as an RGBA tuple. If None, the
-        default color is used. Defaults to None.
-    opacity : float
+        default color is used.
+    opacity : float, optional
         The opacity of the material, from 0 (transparent) to 1 (opaque).
-        Defaults to 1.0.
+        If RGBA is provided, the final alpha will be:
+        final_alpha = alpha_in_RGBA * opacity
+    mode : str, optional
+        The color mode of the material. Options are 'auto' and 'vertex'.
 
     Returns
     -------

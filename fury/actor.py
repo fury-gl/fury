@@ -1,7 +1,8 @@
 import numpy as np
-import fury.primitive as fp
-from fury.material import _create_mesh_material
+
 from fury.geometry import buffer_to_geometry, create_mesh
+from fury.material import _create_mesh_material
+import fury.primitive as fp
 
 
 def sphere(
@@ -12,8 +13,8 @@ def sphere(
     phi=16,
     theta=16,
     opacity=None,
-    material='phong',
-    enable_picking=True
+    material="phong",
+    enable_picking=True,
 ):
     """
     Visualize one or many spheres with different colors and radii.
@@ -28,17 +29,17 @@ def sphere(
         Sphere radius. Can be a single value for all spheres or an array of
         radii for each sphere.
     phi : int, optional
-        The number of segments in the longitude direction. Default is 16.
+        The number of segments in the longitude direction.
     theta : int, optional
-        The number of segments in the latitude direction. Default is 16.
+        The number of segments in the latitude direction.
     opacity : float, optional
-        Takes values from 0 (fully transparent) to 1 (opaque). Default is None
-        (fully opaque).
+        Takes values from 0 (fully transparent) to 1 (opaque).
+        If both `opacity` and RGBA are provided, the final alpha will be:
+        final_alpha = alpha_in_RGBA * opacity
     material : str, optional
-        The material type for the spheres. Options are 'phong' (default)
-        and 'basic'.
+        The material type for the spheres. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
-        Whether the spheres should be pickable in a 3D scene. Defaults to True.
+        Whether the spheres should be pickable in a 3D scene.
 
     Returns
     -------
@@ -74,26 +75,24 @@ def sphere(
 
     prim_count = len(centers)
 
-    big_colors = big_colors / 255.
+    big_colors = big_colors / 255.0
 
     if isinstance(opacity, (int, float)):
         if big_colors.shape[1] == 3:
             big_colors = np.hstack(
-                (big_colors, np.full(
-                    (big_colors.shape[0], 1), opacity)))
+                (big_colors, np.full((big_colors.shape[0], 1), opacity))
+            )
         else:
             big_colors[:, 3] *= opacity
 
     geo = buffer_to_geometry(
-        indices=big_faces.astype('int32'),
-        positions=big_vertices.astype('float32'),
-        texcoords=big_vertices.astype('float32'),
-        colors=big_colors.astype('float32'),
+        indices=big_faces.astype("int32"),
+        positions=big_vertices.astype("float32"),
+        texcoords=big_vertices.astype("float32"),
+        colors=big_colors.astype("float32"),
     )
 
-    mat = _create_mesh_material(
-        material=material,
-        enable_picking=enable_picking)
+    mat = _create_mesh_material(material=material, enable_picking=enable_picking)
     obj = create_mesh(geometry=geo, material=mat)
     obj.local.position = centers[0]
     obj.prim_count = prim_count
