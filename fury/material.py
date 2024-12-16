@@ -29,15 +29,36 @@ def _create_mesh_material(
     gfx.MeshMaterial
         A mesh material object of the specified type with the given properties.
     """
-    if material == 'phong':
+
+    if not (0 <= opacity <= 1):
+        raise ValueError("Opacity must be between 0 and 1.")
+
+    if color is None and mode == "auto":
+        raise ValueError("Color must be specified when mode is 'auto'.")
+
+    elif color is not None:
+        if len(color) == 3:
+            color = (*color, opacity)
+        elif len(color) == 4:
+            color = color
+            color[3] *= opacity
+        else:
+            raise ValueError("Color must be a tuple of length 3 or 4.")
+
+    if mode == "vertex":
+        color = (1, 1, 1)
+
+    if material == "phong":
         return gfx.MeshPhongMaterial(
             pick_write=enable_picking,
-            color_mode='vertex' if color is None else 'auto',
-            color=color if color is not None else (1, 1, 1, opacity),
+            color_mode=mode,
+            color=color,
         )
-    elif material == 'basic':
+    elif material == "basic":
         return gfx.MeshBasicMaterial(
             pick_write=enable_picking,
-            color_mode='vertex' if color is None else 'auto',
-            color=color if color is not None else (1, 1, 1, opacity),
+            color_mode=mode,
+            color=color,
         )
+    else:
+        raise ValueError(f"Unsupported material type: {material}")
