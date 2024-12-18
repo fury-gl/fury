@@ -26,8 +26,7 @@ def map_coordinates_3d_4d(input_array, indices):
     if input_array.ndim == 4:
         values_4d = []
         for i in range(input_array.shape[-1]):
-            values_tmp = map_coordinates(
-                input_array[..., i], indices.T, order=1)
+            values_tmp = map_coordinates(input_array[..., i], indices.T, order=1)
             values_4d.append(values_tmp)
         return np.ascontiguousarray(np.array(values_4d).T)
 
@@ -152,8 +151,7 @@ def get_grid_cells_position(shapes, *, aspect_ratio=16 / 9.0, dim=None):
 
     # Use indexing="xy" so the cells are in row-major (C-order). Also,
     # the Y coordinates are negative so the cells are order from top to bottom.
-    X, Y, Z = np.meshgrid(np.arange(n_cols), -
-                          np.arange(n_rows), [0], indexing="xy")
+    X, Y, Z = np.meshgrid(np.arange(n_cols), -np.arange(n_rows), [0], indexing="xy")
     return cell_shape * np.array([X.flatten(), Y.flatten(), Z.flatten()]).T
 
 

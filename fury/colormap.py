@@ -7,51 +7,51 @@ from scipy import linalg
 
 from fury.data import DATA_DIR
 from fury.decorators import warn_on_args_to_kwargs
-from fury.lib import LookupTable
 
+# from fury.lib import LookupTable
 # Allow import, but disable doctests if we don't have matplotlib
 from fury.optpkg import optional_package
 
 cm, have_matplotlib, _ = optional_package("matplotlib.cm")
 
 
-@warn_on_args_to_kwargs()
-def colormap_lookup_table(
-    *,
-    scale_range=(0, 1),
-    hue_range=(0.8, 0),
-    saturation_range=(1, 1),
-    value_range=(0.8, 0.8),
-):
-    """Lookup table for the colormap.
+# @warn_on_args_to_kwargs()
+# def colormap_lookup_table(
+#     *,
+#     scale_range=(0, 1),
+#     hue_range=(0.8, 0),
+#     saturation_range=(1, 1),
+#     value_range=(0.8, 0.8),
+# ):
+#     """Lookup table for the colormap.
 
-    Parameters
-    ----------
-    scale_range : tuple
-        It can be anything e.g. (0, 1) or (0, 255). Usually it is the minimum
-        and maximum value of your data. Default is (0, 1).
-    hue_range : tuple of floats
-        HSV values (min 0 and max 1). Default is (0.8, 0).
-    saturation_range : tuple of floats
-        HSV values (min 0 and max 1). Default is (1, 1).
-    value_range : tuple of floats
-        HSV value (min 0 and max 1). Default is (0.8, 0.8).
+#     Parameters
+#     ----------
+#     scale_range : tuple
+#         It can be anything e.g. (0, 1) or (0, 255). Usually it is the minimum
+#         and maximum value of your data. Default is (0, 1).
+#     hue_range : tuple of floats
+#         HSV values (min 0 and max 1). Default is (0.8, 0).
+#     saturation_range : tuple of floats
+#         HSV values (min 0 and max 1). Default is (1, 1).
+#     value_range : tuple of floats
+#         HSV value (min 0 and max 1). Default is (0.8, 0.8).
 
-    Returns
-    -------
-    lookup_table : LookupTable
+#     Returns
+#     -------
+#     lookup_table : LookupTable
 
-    """
-    lookup_table = LookupTable()
-    lookup_table.SetRange(scale_range)
-    lookup_table.SetTableRange(scale_range)
+#     """
+#     lookup_table = LookupTable()
+#     lookup_table.SetRange(scale_range)
+#     lookup_table.SetTableRange(scale_range)
 
-    lookup_table.SetHueRange(hue_range)
-    lookup_table.SetSaturationRange(saturation_range)
-    lookup_table.SetValueRange(value_range)
+#     lookup_table.SetHueRange(hue_range)
+#     lookup_table.SetSaturationRange(saturation_range)
+#     lookup_table.SetValueRange(value_range)
 
-    lookup_table.Build()
-    return lookup_table
+#     lookup_table.Build()
+#     return lookup_table
 
 
 def cc(na, nd):

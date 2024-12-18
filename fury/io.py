@@ -48,8 +48,8 @@ def load_cube_map_texture(fnames, *, size=None, generate_mipmaps=True):
     size : tuple, optional
         The display extent (width, height, depth), by default None
     generate_mipmaps : bool, optional
-        automatically generates mipmaps when transferring data to the GPU, by default
-        True
+        automatically generates mipmaps when transferring data to the GPU,
+        by default True
 
     Returns
     -------
