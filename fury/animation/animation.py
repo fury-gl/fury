@@ -6,7 +6,8 @@ import numpy as np
 from scipy.spatial import transform
 
 from fury import utils
-from fury.actor import line
+
+# from fury.actor import line
 from fury.animation.interpolator import (  # noqa F401
     linear_interpolator,
     slerp,
@@ -14,7 +15,8 @@ from fury.animation.interpolator import (  # noqa F401
     step_interpolator,
 )
 from fury.decorators import warn_on_args_to_kwargs
-from fury.lib import Actor, Camera, Transform
+
+# from fury.lib import Actor, Camera, Transform
 
 
 class Animation:
@@ -62,7 +64,7 @@ class Animation:
         self._added_to_scene = True
         self._motion_path_res = motion_path_res
         self._motion_path_actor = None
-        self._transform = Transform()
+        # self._transform = Transform()
         self._general_callbacks = []
         # Adding actors to the animation
         if actors is not None:
@@ -141,18 +143,18 @@ class Animation:
             else:
                 colors = [1, 1, 1]
 
-        if len(lines) > 0:
-            lines = np.array([lines])
-            if isinstance(colors, list):
-                colors = np.array([colors])
+        # if len(lines) > 0:
+        #     lines = np.array([lines])
+        #     if isinstance(colors, list):
+        #         colors = np.array([colors])
 
-            mpa = line(lines, colors=colors, opacity=0.6)
-            if self._scene:
-                # remove old motion path actor
-                if self._motion_path_actor is not None:
-                    self._scene.rm(self._motion_path_actor)
-                self._scene.add(mpa)
-            self._motion_path_actor = mpa
+        #     mpa = line(lines, colors=colors, opacity=0.6)
+        #     if self._scene:
+        #         # remove old motion path actor
+        #         if self._motion_path_actor is not None:
+        #             self._scene.rm(self._motion_path_actor)
+        #         self._scene.add(mpa)
+        #     self._motion_path_actor = mpa
 
     def _get_data(self):
         """Get animation data.
@@ -447,24 +449,25 @@ class Animation:
     def set_position_interpolator(self, interpolator, *, is_evaluator=False, **kwargs):
         """Set the position interpolator.
 
-        Parameters
-        ----------
-        interpolator: callable
-            The generator function of the interpolator that would handle the
-             position keyframes.
-        is_evaluator: bool, optional
-            Specifies whether the `interpolator` is time-only based evaluation
-            function that does not depend on keyframes.
+                Parameters
+                ----------
+                interpolator: callable
+                    The generator function of the interpolator that would handle the
+                     position keyframes.
+                is_evaluator: bool, optional
+                    Specifies whether the `interpolator` is time-only based evaluation
+                    function that does not depend on keyframes.
 
-        Other Parameters
-        ----------------
-        degree: int
-            The degree of the spline interpolation in case of setting
-            the `spline_interpolator`.
+                Other Parameters
+                ----------------
+                degree: int
+                    The degree of the spline interpolation in case of setting
+                    the `spline_interpolator`.
 
-        Examples
-        --------
-        >>> Animation.set_position_interpolator(spline_interpolator, degree=5) # doctest: +SKIP
+                Examples
+                --------
+                >>> Animation.set_position_interpolator(
+        spline_interpolator, degree=5) # doctest: +SKIP
 
         """  # noqa: E501
         self.set_interpolator(
@@ -886,8 +889,8 @@ class Animation:
             for a in item:
                 self.add(a)
             return
-        elif isinstance(item, Actor):
-            self.add_actor(item)
+        # elif isinstance(item, Actor):
+        #     self.add_actor(item)
         elif isinstance(item, Animation):
             self.add_child_animation(item)
         else:
@@ -1238,29 +1241,29 @@ class CameraAnimation(Animation):
         )
         self._camera = camera
 
-    @property
-    def camera(self) -> Camera:
-        """Return the camera assigned to this animation.
+    # @property
+    # def camera(self) -> Camera:
+    #     """Return the camera assigned to this animation.
 
-        Returns
-        -------
-        Camera:
-            The camera that is being animated by this CameraAnimation.
+    #     Returns
+    #     -------
+    #     Camera:
+    #         The camera that is being animated by this CameraAnimation.
 
-        """
-        return self._camera
+    #     """
+    #     return self._camera
 
-    @camera.setter
-    def camera(self, camera: Camera):
-        """Set a camera to be animated.
+    # @camera.setter
+    # def camera(self, camera: Camera):
+    #     """Set a camera to be animated.
 
-        Parameters
-        ----------
-        camera: Camera
-            The camera to be animated
+    #     Parameters
+    #     ----------
+    #     camera: Camera
+    #         The camera to be animated
 
-        """
-        self._camera = camera
+    #     """
+    #     self._camera = camera
 
     def set_focal(self, timestamp, position, **kwargs):
         """Set camera's focal position keyframe.
@@ -1309,19 +1312,20 @@ class CameraAnimation(Animation):
 
     def set_view_up_keyframes(self, keyframes):
         """Set multiple camera view up direction keyframes.
-        Should be in the following form:
-        {timestamp_1: view_up_1, timestamp_2: view_up_2, ...}
+                Should be in the following form:
+                {timestamp_1: view_up_1, timestamp_2: view_up_2, ...}
 
-        Parameters
-        ----------
-        keyframes: dict
-            A dict with timestamps as keys and camera view up vectors as
-            values.
+                Parameters
+                ----------
+                keyframes: dict
+                    A dict with timestamps as keys and camera view up vectors as
+                    values.
 
-        Examples
-        --------
-        >>> view_ups = {0, np.array([1, 0, 0]), 3, np.array([0, 1, 0])} # doctest: +SKIP
-        >>> CameraAnimation.set_view_up_keyframes(view_ups) # doctest: +SKIP
+                Examples
+                --------
+                >>> view_ups = {
+        0, np.array([1, 0, 0]), 3, np.array([0, 1, 0])} # doctest: +SKIP
+                >>> CameraAnimation.set_view_up_keyframes(view_ups) # doctest: +SKIP
 
         """
         self.set_keyframes("view_up", keyframes)

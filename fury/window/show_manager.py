@@ -2,11 +2,11 @@ from functools import reduce
 
 from PIL.Image import fromarray as image_from_array
 from numpy import asarray as np_asarray
-from pygfx import WgpuRenderer
 from wgpu.gui.auto import WgpuCanvas, run
 from wgpu.gui.jupyter import WgpuCanvas as JupyterWgpuCanvas
 from wgpu.gui.offscreen import WgpuCanvas as OffscreenWgpuCanvas
 
+from fury.lib import WgpuRenderer
 from fury.window import (
     Scene,
     calculate_screen_sizes,
