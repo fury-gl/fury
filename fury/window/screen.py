@@ -1,15 +1,15 @@
 from dataclasses import dataclass
 
-from pygfx import (
+from fury.lib import (
     AmbientLight,
     Background,
     BackgroundSkyboxMaterial,
     Camera,
     Controller,
     DirectionalLight,
+    GfxScene,
     OrbitController,
     PerspectiveCamera,
-    Scene as GfxScene,
     Viewport,
 )
 

@@ -1,38 +1,75 @@
-# import os
-# from tempfile import TemporaryDirectory as InTemporaryDirectory
-# from urllib.request import urlretrieve
-# import warnings
+import os
 
-# from PIL import Image
-# import numpy as np
+# from tempfile import TemporaryDirectory as InTemporaryDirectory
+from urllib.request import urlretrieve
+
+# import warnings
+from PIL import Image
+import numpy as np
 
 # from fury.decorators import warn_on_args_to_kwargs
-# from fury.lib import (
-#     BMPReader,
-#     BMPWriter,
-#     ImageData,
-#     ImageFlip,
-#     JPEGReader,
-#     JPEGWriter,
-#     MNIObjectReader,
-#     MNIObjectWriter,
-#     OBJReader,
-#     PLYReader,
-#     PLYWriter,
-#     PNGReader,
-#     PNGWriter,
-#     PolyDataReader,
-#     PolyDataWriter,
-#     STLReader,
-#     STLWriter,
-#     TIFFReader,
-#     TIFFWriter,
-#     Texture,
-#     XMLPolyDataReader,
-#     XMLPolyDataWriter,
-#     numpy_support,
-# )
+from fury.lib import (
+    #     BMPReader,
+    #     BMPWriter,
+    #     ImageData,
+    #     ImageFlip,
+    #     JPEGReader,
+    #     JPEGWriter,
+    #     MNIObjectReader,
+    #     MNIObjectWriter,
+    #     OBJReader,
+    #     PLYReader,
+    #     PLYWriter,
+    #     PNGReader,
+    #     PNGWriter,
+    #     PolyDataReader,
+    #     PolyDataWriter,
+    #     STLReader,
+    #     STLWriter,
+    #     TIFFReader,
+    #     TIFFWriter,
+    #     Texture,
+    #     XMLPolyDataReader,
+    #     XMLPolyDataWriter,
+    #     numpy_support,
+    Texture,
+)
+
 # from fury.utils import set_input
+
+
+def load_cube_map_texture(fnames, *, size=None, generate_mipmaps=True):
+    """Load Texture
+
+    Parameters
+    ----------
+    fnames : list
+        filenames to generate cube map.
+    size : tuple, optional
+        The display extent (width, height, depth), by default None
+    generate_mipmaps : bool, optional
+        automatically generates mipmaps when transferring data to the GPU, by default
+        True
+
+    Returns
+    -------
+    Texture
+        PyGfx Texture object.
+    """
+    images = []
+
+    for fname in fnames:
+        images.append(load_image(fname))
+
+    if size is None:
+        min_side = min(*images[0].shape[:2])
+        for image in images:
+            min_side = min(*image.shape[:2])
+        size = (min_side, min_side, 6)
+
+    data = np.stack(images, axis=0)
+
+    return Texture(data, dim=2, size=size, generate_mipmaps=generate_mipmaps)
 
 
 # @warn_on_args_to_kwargs()
@@ -76,127 +113,56 @@
 #     return texture
 
 
-# @warn_on_args_to_kwargs()
-# def load_image(filename, *, as_vtktype=False, use_pillow=True):
-#     """Load an image.
+def load_image(filename):
+    """Load an image.
 
-#     Parameters
-#     ----------
-#     filename: str
-#         should be png, bmp, jpeg or jpg files
-#     as_vtktype: bool, optional
-#         if True, return vtk output otherwise an ndarray. Default False.
-#     use_pillow: bool, optional
-#         Use pillow python library to load the files. Default True
+    Parameters
+    ----------
+    filename: str
+        should be png, bmp, jpeg or jpg files
 
-#     Returns
-#     -------
-#     image: ndarray or vtk output
-#         desired image array
+    Returns
+    -------
+    image: ndarray
+        desired image array
 
-#     """
-#     is_url = (filename.lower().startswith("http://")) or (
-#         filename.lower().startswith("https://")
-#     )
+    """
+    is_url = (filename.lower().startswith("http://")) or (
+        filename.lower().startswith("https://")
+    )
 
-#     if is_url:
-#         image_name = os.path.basename(filename)
+    if is_url:
+        image_name = os.path.basename(filename)
 
-#         if len(image_name.split(".")) < 2:
-#             raise IOError(f"{filename} is not a valid image URL")
+        if len(image_name.split(".")) < 2:
+            raise IOError(f"{filename} is not a valid image URL")
 
-#         urlretrieve(filename, image_name)
-#         filename = image_name
+        urlretrieve(filename, image_name)
+        filename = image_name
 
-#     if use_pillow:
-#         with Image.open(filename) as pil_image:
-#             if pil_image.mode in ["P"]:
-#                 pil_image = pil_image.convert("RGB")
+    with Image.open(filename) as pil_image:
+        if pil_image.mode in ["P"]:
+            pil_image = pil_image.convert("RGB")
 
-#             if pil_image.mode in ["RGBA", "RGB", "L"]:
-#                 image = np.asarray(pil_image)
-#             elif pil_image.mode.startswith("I;16"):
-#                 raw = pil_image.tobytes("raw", pil_image.mode)
-#                 dtype = ">u2" if pil_image.mode.endswith("B") else "<u2"
-#                 image = np.frombuffer(raw, dtype=dtype)
-#                 image.reshape(pil_image.size[::-1]).astype("=u2")
-#             else:
-#                 try:
-#                     image = pil_image.convert("RGBA")
-#                 except ValueError as err:
-#                     raise RuntimeError(
-#                         "Unknown image mode {}".format(pil_image.mode)
-#                     ) from err
-#                 image = np.asarray(pil_image)
+        if pil_image.mode in ["RGBA", "RGB", "L"]:
+            image = np.asarray(pil_image)
+        elif pil_image.mode.startswith("I;16"):
+            raw = pil_image.tobytes("raw", pil_image.mode)
+            dtype = ">u2" if pil_image.mode.endswith("B") else "<u2"
+            image = np.frombuffer(raw, dtype=dtype)
+            image.reshape(pil_image.size[::-1]).astype("=u2")
+        else:
+            try:
+                image = pil_image.convert("RGBA")
+            except ValueError as err:
+                raise RuntimeError(
+                    "Unknown image mode {}".format(pil_image.mode)
+                ) from err
+            image = np.asarray(pil_image)
 
-#         if as_vtktype:
-#             if image.ndim not in [2, 3]:
-#                 raise IOError("only 2D (L, RGB, RGBA) or 3D image available")
-
-#             vtk_image = ImageData()
-#             depth = 1 if image.ndim == 2 else image.shape[2]
-
-#             # width, height
-#             vtk_image.SetDimensions(image.shape[1], image.shape[0], depth)
-#             vtk_image.SetExtent(
-#                 0,
-#                 image.shape[1] - 1,
-#                 0,
-#                 image.shape[0] - 1,
-#                 0,
-#                 0,
-#             )
-#             vtk_image.SetSpacing(1.0, 1.0, 1.0)
-#             vtk_image.SetOrigin(0.0, 0.0, 0.0)
-
-#             image = np.flipud(image)
-#             image = image.reshape(image.shape[1] * image.shape[0], depth)
-#             image = np.ascontiguousarray(image, dtype=image.dtype)
-#             vtk_array_type = numpy_support.get_vtk_array_type(image.dtype)
-#             uchar_array = numpy_support.numpy_to_vtk(
-#                 image, deep=True, array_type=vtk_array_type
-#             )
-#             vtk_image.GetPointData().SetScalars(uchar_array)
-#             image = vtk_image
-
-#         if is_url:
-#             os.remove(filename)
-#         return image
-
-#     d_reader = {
-#         ".png": PNGReader,
-#         ".bmp": BMPReader,
-#         ".jpeg": JPEGReader,
-#         ".jpg": JPEGReader,
-#         ".tiff": TIFFReader,
-#         ".tif": TIFFReader,
-#     }
-
-#     extension = os.path.splitext(os.path.basename(filename).lower())[1]
-
-#     if extension.lower() not in d_reader.keys():
-#         raise IOError(
-#             "Impossible to read the file {0}: Unknown extension {1}".format(
-#                 filename, extension
-#             )
-#         )
-
-#     reader = d_reader.get(extension)()
-#     reader.SetFileName(filename)
-#     reader.Update()
-#     reader.GetOutput().GetPointData().GetArray(0).SetName("original")
-
-#     if not as_vtktype:
-#         w, h, _ = reader.GetOutput().GetDimensions()
-#         vtk_array = reader.GetOutput().GetPointData().GetScalars()
-
-#         components = vtk_array.GetNumberOfComponents()
-#         image = numpy_support.vtk_to_numpy(vtk_array).reshape(h, w, components)
-#         image = np.flipud(image)
-
-#     if is_url:
-#         os.remove(filename)
-#     return reader.GetOutput() if as_vtktype else image
+    if is_url:
+        os.remove(filename)
+    return image
 
 
 # def load_text(file):
