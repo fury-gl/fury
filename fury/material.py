@@ -41,7 +41,7 @@ def _create_mesh_material(
             color = (*color, opacity)
         elif len(color) == 4:
             color = color
-            color[3] *= opacity
+            color = (*color[:3], color[3] * opacity)
         else:
             raise ValueError("Color must be a tuple of length 3 or 4.")
 
