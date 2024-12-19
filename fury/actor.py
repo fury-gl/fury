@@ -25,7 +25,7 @@ def sphere(
         Spheres positions.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,)
         RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
-    radii : float or ndarray, shape (N,)
+    radii : float or ndarray, shape (N,), optional
         Sphere radius. Can be a single value for all spheres or an array of
         radii for each sphere.
     phi : int, optional
@@ -50,12 +50,15 @@ def sphere(
     Examples
     --------
     >>> from fury import window, actor
+    >>> import numpy as np
     >>> scene = window.Scene()
-    >>> centers = np.random.rand(5, 3)
+    >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
-    >>> sphere_actor = actor.sphere(centers, colors, radii=0.5)
+    >>> radii = np.random.rand(5)
+    >>> sphere_actor = actor.sphere(centers=centers, colors=colors, radii=radii)
     >>> scene.add(sphere_actor)
-    >>> # window.show(scene)
+    >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
+    >>> show_manager.start()
     """
 
     scales = radii
