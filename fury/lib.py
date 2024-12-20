@@ -34,5 +34,6 @@ Renderer = gfx.WgpuRenderer
 run = run
 Canvas = WgpuCanvas
 OffscreenCanvas = OffscreenWgpuCanvas
+JupyterCanvas = None
 if have_jupyter_rfb:
     JupyterCanvas = JupyterWgpuCanvas

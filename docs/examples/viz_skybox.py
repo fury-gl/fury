@@ -1,7 +1,9 @@
-from fury.v2.window import ShowManager, Scene, record
-from fury.v2.actor import sphere
+import numpy as np
+
+from fury.window import ShowManager, Scene, snapshot
+from fury.actor import sphere
 from fury.data import read_viz_cubemap, fetch_viz_cubemaps
-from fury.v2.io import load_cube_map_texture
+from fury.io import load_cube_map_texture
 
 
 ###############################################################################
@@ -29,11 +31,14 @@ cube_map = load_cube_map_texture(texture_files)
 
 scene = Scene(skybox=cube_map)
 
-sphere_actor = sphere(15, color=(1, 0, 1, 1), position=(0, 0, 0))
-sphere_actor1 = sphere(15, color=(1, 0, 1, 1), position=(10, 10, 10))
+sphere_actor = sphere(
+    np.zeros((1, 3)),
+    colors=(1, 0, 1, 1),
+    radii=15.0,
+    phi=48,
+    theta=48,
+)
 scene.add(sphere_actor)
-scene.add(sphere_actor1)
-
 
 interactive = False
 
@@ -42,4 +47,4 @@ if __name__ == "__main__":
         show_m = ShowManager(scene=scene, title="FURY 2.0: Skybox Example")
         show_m.start()
     else:
-        record(scene=scene, fname="skybox.png")
+        snapshot(scene=scene, fname="skybox.png")
