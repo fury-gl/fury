@@ -1,7 +1,9 @@
-from fury.v2.window import ShowManager, Scene, record
-from fury.v2.actor import sphere
+import numpy as np
+
+from fury.window import ShowManager, Scene, snapshot
+from fury.actor import sphere
 from fury.data import read_viz_cubemap, fetch_viz_cubemaps
-from fury.v2.io import load_cube_map_texture
+from fury.io import load_cube_map_texture
 
 
 ###############################################################################
@@ -29,11 +31,34 @@ cube_map = load_cube_map_texture(texture_files)
 
 scene0 = Scene(skybox=cube_map)
 scene1 = Scene(background=(1, 1, 1, 1))
-scene2 = Scene(background=(1, 0, 1, 1))
+scene2 = Scene(background=(1, 0, 0, 1))
 
-sphere_actor0 = sphere(15, color=(1, 0, 0, 1), position=(0, 0, 0))
-sphere_actor1 = sphere(15, color=(1, 0, 0, 1), position=(0, 0, 0))
-sphere_actor2 = sphere(15, color=(1, 0, 0, 1), position=(0, 0, 0))
+###############################################################################
+# Let's create three different sphere actors to add to respective scenes.
+# Note: Adding same actor to multiple scenes will not work and only add to the
+# last scene that got the actor added to it.
+
+sphere_actor0 = sphere(
+    np.zeros((1, 3)),
+    colors=(1, 0, 1, 1),
+    radii=15.0,
+    phi=48,
+    theta=48,
+)
+sphere_actor1 = sphere(
+    np.zeros((1, 3)),
+    colors=(1, 0, 1, 1),
+    radii=15.0,
+    phi=48,
+    theta=48,
+)
+sphere_actor2 = sphere(
+    np.zeros((1, 3)),
+    colors=(1, 0, 1, 1),
+    radii=15.0,
+    phi=48,
+    theta=48,
+)
 
 scene0.add(sphere_actor0)
 scene1.add(sphere_actor1)
@@ -51,7 +76,7 @@ if __name__ == "__main__":
         )
         show_m.start()
     else:
-        record(
+        snapshot(
             scene=[scene0, scene1, scene2],
             fname="multi_screen.png",
             screen_config=[2, 1],

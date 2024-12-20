@@ -1,16 +1,23 @@
-from fury.v2.window import display, record
-from fury.v2.actor import sphere
+import numpy as np
 
-sphere_actor0 = sphere(15, color=(1, 0, 0, 1), position=(15, 0, 0))
-sphere_actor1 = sphere(15, color=(0, 1, 0, 1), position=(0, 15, 0))
-sphere_actor2 = sphere(15, color=(0, 0, 1, 1), position=(0, 0, 15))
+from fury.window import display, snapshot
+from fury.actor import sphere
+
+###############################################################################
+# Let's create sphere actor to add three spheres to display.
+
+sphere_actor = sphere(
+    np.asarray([(15, 0, 0), (0, 15, 0), (0, 0, 15)]).reshape((3, 3)),
+    radii=15,
+    colors=np.asarray([(1, 0, 0), (0, 1, 0), (0, 0, 1)]).reshape((3, 3)),
+    phi=48,
+    theta=48,
+)
 
 interactive = False
 
 if __name__ == "__main__":
     if interactive:
-        display(actors=(sphere_actor0, sphere_actor1, sphere_actor2))
+        display(actors=[sphere_actor])
     else:
-        record(
-            actors=(sphere_actor0, sphere_actor1, sphere_actor2), fname="display.png"
-        )
+        snapshot(actors=[sphere_actor], fname="display.png")
