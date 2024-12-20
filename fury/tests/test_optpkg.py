@@ -19,7 +19,6 @@ def test_get_info():
         "sys_platform",
         "numpy_version",
         "scipy_version",
-        "vtk_version",
     ]
     info = get_info()
     current_keys = info.keys()

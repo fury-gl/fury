@@ -11,7 +11,9 @@ jupyter_pckg_msg = (
     "you. Please install or upgrade jupyter-rfb using pip install -U jupyter-rfb"
 )
 
-_, have_jupyter_rfb, _ = optional_package("jupyter-rfb", trip_msg=jupyter_pckg_msg)
+jupyter_rfb, have_jupyter_rfb, _ = optional_package(
+    "jupyter-rfb", trip_msg=jupyter_pckg_msg
+)
 
 if have_jupyter_rfb:
     from wgpu.gui.jupyter import WgpuCanvas as JupyterWgpuCanvas
@@ -34,6 +36,7 @@ Renderer = gfx.WgpuRenderer
 run = run
 Canvas = WgpuCanvas
 OffscreenCanvas = OffscreenWgpuCanvas
-JupyterCanvas = None
 if have_jupyter_rfb:
     JupyterCanvas = JupyterWgpuCanvas
+else:
+    JupyterCanvas = jupyter_rfb
