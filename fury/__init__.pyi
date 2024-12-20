@@ -30,7 +30,9 @@ __all__ = [
     "transform",
     #     "ui",
     "utils",
-    #     "window",
+    "window",
+    "ShowManager",
+    "Scene",
 ]
 
 # #  the explicit definition of `__all__` will enable type inference for engines.
@@ -46,8 +48,6 @@ from . import (
     #     gltf,
     #     interactor,
     io,
-    #     ui,
-    #     window,
     lib,
     #     layout,
     optpkg,
@@ -58,6 +58,8 @@ from . import (
     testing,
     transform,
     utils,
+    #     ui,
+    window,
 )
 
 # # from .actor import (
@@ -407,31 +409,18 @@ from .utils import (
     tangents_from_direction_of_anisotropy as tangents_from_direction_of_anisotropy,
     triangle_order as triangle_order,
 )
-
-# from .window import (
-#     Scene as Scene,
-#     ShowManager as ShowManager,
-#     analyze_scene as analyze_scene,
-#     analyze_snapshot as analyze_snapshot,
-#     antialiasing as antialiasing,
-#     enable_stereo as enable_stereo,
-#     gl_disable_blend as gl_disable_blend,
-#     gl_disable_depth as gl_disable_depth,
-#     gl_enable_blend as gl_enable_blend,
-#     gl_enable_depth as gl_enable_depth,
-#     gl_get_current_state as gl_get_current_state,
-#     gl_reset_blend as gl_reset_blend,
-#     gl_set_additive_blending as gl_set_additive_blending,
-#     gl_set_additive_blending_white_background
-# as gl_set_additive_blending_white_background,
-#     gl_set_multiplicative_blending as gl_set_multiplicative_blending,
-#     gl_set_normal_blending as gl_set_normal_blending,
-#     gl_set_subtractive_blending as gl_set_subtractive_blending,
-#     record as record,
-#     release_context as release_context,
-#     show as show,
-#     snapshot as snapshot,
-# )
+from .window import (
+    Scene as Scene,
+    Screen as Screen,
+    ShowManager as ShowManager,
+    calculate_screen_sizes as calculate_screen_sizes,
+    create_screen as create_screen,
+    display as display,
+    render_screens as render_screens,
+    snapshot as snapshot,
+    update_camera as update_camera,
+    update_viewports as update_viewports,
+)
 
 __version__: str
 
