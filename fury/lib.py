@@ -1,14 +1,38 @@
+from typing import TypeAlias
+
 import pygfx as gfx
+from wgpu.gui.auto import WgpuCanvas, run
+from wgpu.gui.offscreen import WgpuCanvas as OffscreenWgpuCanvas
+
+from fury.optpkg import optional_package
+
+jupyter_pckg_msg = (
+    "You do not have jupyter-rfb installed. The jupyter widget will not work for "
+    "you. Please install or upgrade jupyter-rfb using pip install -U jupyter-rfb"
+)
+
+_, have_jupyter_rfb, _ = optional_package("jupyter-rfb", trip_msg=jupyter_pckg_msg)
+
+if have_jupyter_rfb:
+    from wgpu.gui.jupyter import WgpuCanvas as JupyterWgpuCanvas
 
 Texture = gfx.Texture
 AmbientLight = gfx.AmbientLight
 Background = gfx.Background
 BackgroundSkyboxMaterial = gfx.BackgroundSkyboxMaterial
-Camera = gfx.Camera
-Controller = gfx.Controller
+
+# Classes that needed to be written as types
+Camera: TypeAlias = gfx.Camera
+Controller: TypeAlias = gfx.Controller
+Scene: TypeAlias = gfx.Scene
+Viewport: TypeAlias = gfx.Viewport
+
 DirectionalLight = gfx.DirectionalLight
 OrbitController = gfx.OrbitController
 PerspectiveCamera = gfx.PerspectiveCamera
-GfxScene = gfx.Scene
-Viewport = gfx.Viewport
-WgpuRenderer = gfx.WgpuRenderer
+Renderer = gfx.WgpuRenderer
+run = run
+Canvas = WgpuCanvas
+OffscreenCanvas = OffscreenWgpuCanvas
+if have_jupyter_rfb:
+    JupyterCanvas = JupyterWgpuCanvas
