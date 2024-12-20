@@ -4,7 +4,7 @@
 __all__ = [
     "Animation",
     "CameraAnimation",
-    # "Timeline",
+    "Timeline",
     "euclidean_distances",
     "get_next_timestamp",
     "get_previous_timestamp",
@@ -48,4 +48,4 @@ from .interpolator import (
     tan_cubic_spline_interpolator,
     xyz_color_interpolator,
 )
-# from .timeline import Timeline
+from .timeline import Timeline

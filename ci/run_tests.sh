@@ -17,32 +17,13 @@ if [ "$COVERAGE" == "1" ] || [ "$COVERAGE" == true ]; then
     cp ../.coveragerc .;
     cp ../.codecov.yml .;
     # Run the tests and check for test coverage.
-    # coverage run -m pytest -svv --verbose --durations=10 --pyargs fury   # Need to --doctest-modules flag
-    for file in `find ../fury -name 'test_*.py' -print`;
-    do
-        coverage run -m -p pytest -svv $file;
-        retVal=$?
-        if [ $retVal -ne 0 ]; then
-            echo "THE CURRENT ERROR CODE IS $retVal";
-            error_code=1
-        fi
-    done
-    coverage combine .
+    coverage run -m pytest -svv --verbose --durations=10 --pyargs fury   # Need to --doctest-modules flag
     coverage report -m  # Generate test coverage report.
     coverage xml  # Generate coverage report in xml format for codecov.
     # codecov  # Upload the report to codecov.
 else
     # Threads issue so we run test on individual file
-    # pytest -svv --verbose --durations=10 --pyargs fury # Need to --doctest-modules flag
-    for file in `find ../fury -name 'test_*.py' -print`;
-    do
-      pytest -svv $file;
-      retVal=$?
-      if [ $retVal -ne 0 ]; then
-      echo "THE CURRENT ERROR CODE IS $retVal";
-      error_code=1
-      fi
-    done
+    pytest -svv --verbose --durations=10 --pyargs fury # Need to --doctest-modules flag
 fi
 
 cd ..

@@ -35,7 +35,6 @@ def get_info(verbose=False):
 
     import numpy
     import scipy
-    import vtkmodules.vtkCommonCore as ccvtk
 
     from fury.optpkg import optional_package
 
@@ -53,7 +52,7 @@ def get_info(verbose=False):
         "sys_platform": sys.platform,
         "numpy_version": numpy.__version__,
         "scipy_version": scipy.__version__,
-        "vtk_version": ccvtk.vtkVersion.GetVTKVersion(),
+        # TODO: add pygfx version
     }
 
     d_mpl = {"matplotlib_version": mpl.__version__} if have_mpl else {}
