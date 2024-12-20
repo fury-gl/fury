@@ -9,7 +9,7 @@ if [ "$RUNNER_OS" == "Linux" ]; then
 	Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1  &
     sleep 3
 elif [ "$RUNNER_OS" == "Windows" ]; then
-	powershell ./ci/windows/install_opengl.ps1
+	powershell ./ci/install_opengl.ps1
 elif [ "$RUNNER_OS" == "macOS" ]; then
 	echo 'Install Xquartz package for headless'
 	brew install --cask xquartz

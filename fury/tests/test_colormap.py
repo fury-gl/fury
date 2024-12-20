@@ -79,7 +79,7 @@ def test_create_colormap():
         auto=True,
     )
     npt.assert_raises(
-        AttributeError,
+        AttributeError if have_matplotlib else ValueError,
         colormap.create_colormap,
         value,
         name="fake",
