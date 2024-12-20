@@ -1,19 +1,171 @@
+from dataclasses import dataclass
 from functools import reduce
 
 from PIL.Image import fromarray as image_from_array
-from numpy import asarray as np_asarray
-from wgpu.gui.auto import WgpuCanvas, run
-from wgpu.gui.jupyter import WgpuCanvas as JupyterWgpuCanvas
-from wgpu.gui.offscreen import WgpuCanvas as OffscreenWgpuCanvas
+import numpy as np
 
-from fury.lib import WgpuRenderer
-from fury.window import (
-    Scene,
-    calculate_screen_sizes,
-    create_screen,
-    render_screens,
-    update_viewports,
+from fury.lib import (
+    AmbientLight,
+    Background,
+    BackgroundSkyboxMaterial,
+    Camera,
+    Canvas,
+    Controller,
+    DirectionalLight,
+    JupyterCanvas,
+    OffscreenCanvas,
+    OrbitController,
+    PerspectiveCamera,
+    Renderer,
+    Scene as GfxScene,  # type: ignore
+    Viewport,
+    run,
 )
+
+
+class Scene(GfxScene):
+    def __init__(
+        self,
+        *,
+        background=(0, 0, 0, 1),
+        skybox=None,
+        lights=None,
+    ):
+        super().__init__()
+
+        self._bg_color = background
+        self._bg_actor = None
+
+        if skybox:
+            self._bg_actor = self._skybox(skybox)
+        else:
+            self._bg_actor = Background.from_color(background)
+
+        self.add(self._bg_actor)
+
+        self.lights = lights
+        if self.lights is None:
+            self.lights = []
+            self.lights.append(AmbientLight())
+
+        self.add(*self.lights)
+
+    def _skybox(self, cube_map):
+        return Background(
+            geometry=None, material=BackgroundSkyboxMaterial(map=cube_map)
+        )
+
+    @property
+    def background(self):
+        return self._background_color
+
+    @background.setter
+    def background(self, value):
+        self.remove(self._bg_actor)
+        self._bg_actor = Background.from_color(value)
+        self.add(self._bg_actor)
+
+    def set_skybox(self, cube_map):
+        self.remove(self._bg_actor)
+        self._bg_actor = self._skybox(cube_map)
+        self.add(self._bg_actor)
+
+    def clear(self):
+        self.remove(*self.children)
+
+
+@dataclass
+class Screen:
+    viewport: Viewport
+    scene: Scene
+    camera: Camera
+    controller: Controller
+
+    @property
+    def size(self):
+        return self.viewport.rect[2:]
+
+    @property
+    def position(self):
+        return self.viewport.rect[:2]
+
+    @property
+    def bounding_box(self):
+        return self.viewport.rect
+
+    @bounding_box.setter
+    def bounding_box(self, value):
+        self.viewport.rect = value
+
+
+def create_screen(
+    renderer, *, rect=None, scene=None, camera=None, controller=None, camera_light=True
+):
+    vp = Viewport(renderer, rect)
+    if scene is None:
+        scene = Scene()
+    if camera is None:
+        camera = PerspectiveCamera(50)
+        if camera_light:
+            light = DirectionalLight()
+            camera.add(light)
+            scene.add(camera)
+
+    if controller is None:
+        controller = OrbitController(camera, register_events=vp)
+
+    screen = Screen(vp, scene, camera, controller)
+    update_camera(camera, screen.size, scene)
+    return screen
+
+
+def update_camera(camera, size, target):
+    camera.width = size[0]
+    camera.height = size[1]
+
+    if (isinstance(target, Scene) and len(target.children) > 3) or not isinstance(
+        target, Scene
+    ):
+        camera.show_object(target)
+
+
+def update_viewports(screens, screen_bbs):
+    for screen, screen_bb in zip(screens, screen_bbs):
+        screen.bounding_box = screen_bb
+        update_camera(screen.camera, screen.size, screen.scene)
+
+
+def render_screens(renderer, screens):
+    for screen in screens:
+        screen.viewport.render(screen.scene, screen.camera, flush=False)
+
+    renderer.flush()
+
+
+def calculate_screen_sizes(screens, size):
+    if screens is None:
+        return [(0, 0, *size)]
+
+    screen_bbs = []
+
+    v_sections = len(screens)
+    width = (1 / v_sections) * size[0]
+    x = 0
+
+    for h_section in screens:
+        if h_section == 0:
+            continue
+
+        height = (1 / h_section) * size[1]
+        y = 0
+
+        for _ in range(h_section):
+            screen_bbs.append((x, y, width, height))
+            y += height
+
+        x += width
+
+    return screen_bbs
 
 
 class ShowManager:
@@ -44,7 +196,7 @@ class ShowManager:
         self._setup_window(window_type)
 
         if renderer is None:
-            renderer = WgpuRenderer(self.window)
+            renderer = Renderer(self.window)
         self.renderer = renderer
         self.renderer.pixel_ratio = pixel_ratio
         self.renderer.blend_mode = blend_mode
@@ -88,13 +240,13 @@ class ShowManager:
 
     def _setup_window(self, window_type):
         if window_type == "auto":
-            self.window = WgpuCanvas(size=self.size, title=self._title)
+            self.window = Canvas(size=self.size, title=self._title)
         elif window_type == "jupyter":
-            self.window = JupyterWgpuCanvas(size=self.size, title=self._title)
+            self.window = JupyterCanvas(size=self.size, title=self._title)
         elif window_type == "offscreen":
-            self.window = OffscreenWgpuCanvas(size=self.size, title=self._title)
+            self.window = OffscreenCanvas(size=self.size, title=self._title)
         else:
-            self.window = WgpuCanvas(size=self.size, title=self._title)
+            self.window = Canvas(size=self.size, title=self._title)
 
     def _calculate_total_screens(self):
         if self._screen_config is None:
@@ -150,8 +302,10 @@ class ShowManager:
             s.controller.enabled = value
 
     def snapshot(self, fname):
-        img = image_from_array(np_asarray(self.renderer.snapshot()))
+        arr = np.asarray(self.renderer.snapshot())
+        img = image_from_array(arr)
         img.save(fname)
+        return arr
 
     def render(self):
         self.window.request_draw(lambda: render_screens(self.renderer, self.screens))
@@ -168,7 +322,14 @@ class ShowManager:
         self.render()
 
 
-def record(*, scene=None, screen_config=None, fname="output.png", actors=None):
+def snapshot(
+    *,
+    scene=None,
+    screen_config=None,
+    fname="output.png",
+    actors=None,
+    return_array=False,
+):
     if actors is not None:
         scene = Scene()
         scene.add(*actors)
@@ -178,7 +339,10 @@ def record(*, scene=None, screen_config=None, fname="output.png", actors=None):
     )
     show_m.render()
     show_m.window.draw()
-    show_m.snapshot(fname)
+    arr = show_m.snapshot(fname)
+
+    if return_array:
+        return arr
 
 
 def display(*, actors):
