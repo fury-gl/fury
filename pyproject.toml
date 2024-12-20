@@ -47,6 +47,8 @@ dependencies = [
     "pillow>=10.4.0",
     "packaging>=23.0",
     "lazy_loader>=0.4",
+    "pygfx>=0.3.0",
+    "glfw>=2.7.0",
 ]
 
 dynamic = ["version"]
