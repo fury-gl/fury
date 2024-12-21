@@ -382,8 +382,9 @@ def load_polydata(file_name):
 
 
 @warn_on_args_to_kwargs()
-def save_polydata(polydata, file_name, *, binary=False, color_array_name=None,
-                  legacy_vtk_format=False):
+def save_polydata(
+    polydata, file_name, *, binary=False, color_array_name=None, legacy_vtk_format=False
+):
     """Save a vtk polydata to a supported format file.
 
     Save formats can be VTK, FIB, PLY, STL and XML.
