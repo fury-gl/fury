@@ -3,7 +3,6 @@ import os
 
 import fury
 from fury.decorators import warn_on_args_to_kwargs
-from fury.deprecator import deprecate_with_version
 from fury.io import load_text
 from fury.lib import (
     VTK_OBJECT,
@@ -144,29 +143,6 @@ def load_shader(shader_file):
             "extensions: {}.".format(shader_file, SHADERS_EXTS)
         )
     return load_text(shader_file)
-
-
-@deprecate_with_version(
-    message="Load function has been reimplemented as import_fury_shader.",
-    since="0.8.1",
-    until="0.9.0",
-)
-def load(filename):
-    """Load a Fury shader file.
-
-    Parameters
-    ----------
-    filename : str
-        Filename of the shader file.
-
-    Returns
-    -------
-    code: str
-        Shader code.
-
-    """
-    with open(os.path.join(SHADERS_DIR, filename)) as shader_file:
-        return shader_file.read()
 
 
 @warn_on_args_to_kwargs()

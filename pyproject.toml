@@ -42,9 +42,9 @@ classifiers = [
 ]
 
 dependencies = [
-    "numpy >=1.15",
+    "numpy>=1.15",
 	"scipy>=1.0",
-    "vtk>=9.1.0",
+    "vtk>=9.1.0, <9.4.0",
     "pillow>=5.4.1",
     "packaging >=17.0",
     "pygltflib>=1.15.3",
@@ -69,9 +69,9 @@ dev = [
     "twine",
     ]
 doc = [
-    "matplotlib >= 1.5.3",
+    "matplotlib>=1.5.3",
     "numpydoc",
-    "sphinx >=6.1.2",
+    "sphinx>=6.1.2",
     "texext",
     "tomli; python_version < \"3.11\"",
     ]
@@ -79,7 +79,7 @@ style = ["ruff", "pre-commit"]
 typing = ["mypy", "types-Pillow", "data-science-types"]
 test = [
     "coverage",
-    "pytest !=5.3.4",
+    "pytest!=5.3.4",
     "pytest-cov",
     "pytest-doctestplus",
     ]
