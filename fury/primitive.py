@@ -262,42 +262,45 @@ def prim_box():
     Returns
     -------
     vertices: ndarray
-        8 vertices coords that composed our box
+        24 vertices coords that composed our box
     triangles: ndarray
         12 triangles that composed our box
+    normals: ndarray
+        24 normals for each vertex of the box
 
     """
-    vertices = np.array(
-        [
-            [-0.5, -0.5, -0.5],
-            [-0.5, -0.5, 0.5],
-            [-0.5, 0.5, -0.5],
-            [-0.5, 0.5, 0.5],
-            [0.5, -0.5, -0.5],
-            [0.5, -0.5, 0.5],
-            [0.5, 0.5, -0.5],
-            [0.5, 0.5, 0.5],
-        ]
-    )
-    triangles = np.array(
-        [
-            [0, 6, 4],
-            [0, 2, 6],
-            [0, 3, 2],
-            [0, 1, 3],
-            [2, 7, 6],
-            [2, 3, 7],
-            [4, 6, 7],
-            [4, 7, 5],
-            [0, 4, 5],
-            [0, 5, 1],
-            [1, 5, 7],
-            [1, 7, 3],
-        ],
-        dtype="i8",
-    )
-    return vertices, triangles
 
+    vertices = np.array([
+        # Back
+        [-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1],
+        # Front
+        [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1],
+        # Left
+        [-1, -1, -1], [-1, 1, -1], [-1, 1, 1], [-1, -1, 1],
+        # Right
+        [1, -1, -1], [1, 1, -1], [1, 1, 1], [1, -1, 1],
+        # Top
+        [-1, 1, -1], [1, 1, -1], [1, 1, 1], [-1, 1, 1],
+        # Bottom
+        [-1, -1, -1], [1, -1, -1], [1, -1, 1], [-1, -1, 1],
+    ], dtype=np.float32) * 0.5
+
+    faces = np.array([
+        # Back
+        [2, 1, 0], [3, 2, 0],
+        # Front
+        [4, 5, 6], [4, 6, 7],
+        # Left
+        [8, 10, 9], [11, 10, 8],
+        # Right
+        [12, 13, 14], [12, 14, 15],
+        # Top
+        [16, 17, 18], [16, 18, 19],
+        # Bottom
+        [20, 21, 22], [20, 22, 23],
+    ], dtype=np.uint32)
+
+    return vertices, faces
 
 @warn_on_args_to_kwargs()
 def prim_sphere(*, name="symmetric362", gen_faces=False, phi=None, theta=None):
