@@ -95,9 +95,7 @@ def sphere(
         colors=big_colors.astype("float32"),
     )
 
-    mat = _create_mesh_material(
-        material=material,
-        enable_picking=enable_picking)
+    mat = _create_mesh_material(material=material, enable_picking=enable_picking)
     obj = create_mesh(geometry=geo, material=mat)
     obj.local.position = centers[0]
     obj.prim_count = prim_count
@@ -105,14 +103,14 @@ def sphere(
 
 
 def box(
-        centers,
-        *,
-        directions=(1, 0, 0),
-        colors=(1, 0, 0),
-        scales=(1, 1, 1),
-        opacity=None,
-        material="phong",
-        enable_picking=True,
+    centers,
+    *,
+    directions=(1, 0, 0),
+    colors=(1, 0, 0),
+    scales=(1, 1, 1),
+    opacity=None,
+    material="phong",
+    enable_picking=True,
 ):
     """Visualize one or many boxes with different features.
 
@@ -148,10 +146,8 @@ def box(
     >>> import numpy as np
     >>> scene = window.Scene()
     >>> centers = np.random.rand(5, 3) * 10
-    >>> directions = np.random.rand(5, 3)
-    >>> colors = np.random.rand(5, 3)
     >>> scales = np.random.rand(5, 3)
-    >>> box_actor = actor.box(centers=centers, directions=directions, colors=colors, scales=scales)
+    >>> box_actor = actor.box(centers=centers, scales=scales)
     >>> scene.add(box_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()

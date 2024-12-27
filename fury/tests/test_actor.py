@@ -73,6 +73,7 @@ def test_sphere():
 
     npt.assert_array_almost_equal(len(faces), (2 * phi * (theta - 2)))
 
+
 def test_box():
     scene = window.Scene()
     centers = np.array([[0, 0, 0]])
