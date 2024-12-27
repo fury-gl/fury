@@ -72,3 +72,21 @@ def test_sphere():
     assert len(vertices) == len(colors)
 
     npt.assert_array_almost_equal(len(faces), (2 * phi * (theta - 2)))
+
+def test_box():
+    scene = window.Scene()
+    centers = np.array([[0, 0, 0]])
+    colors = np.array([[1, 0, 0]])
+    scales = np.array([[1, 1, 7]])
+
+    box_actor = actor.box(centers=centers, colors=colors, scales=scales)
+    scene.add(box_actor)
+
+    npt.assert_array_equal(box_actor.local.position, centers[0])
+
+    mean_vertex = np.mean(box_actor.geometry.positions.view, axis=0)
+    npt.assert_array_almost_equal(mean_vertex, centers[0])
+
+    assert box_actor.prim_count == 1
+
+    scene.remove(box_actor)
