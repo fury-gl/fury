@@ -111,6 +111,7 @@ def box(
     opacity=None,
     material="phong",
     enable_picking=True,
+    detailed=True,
 ):
     """Visualize one or many boxes with different features.
 
@@ -133,6 +134,9 @@ def box(
         The material type for the boxes. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
         Whether the boxes should be pickable in a 3D scene.
+    detailed : bool, optional
+        Whether to create a detailed box with 24 vertices or a simple box with
+        8 vertices.
 
     Returns
     -------
@@ -152,7 +156,7 @@ def box(
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
-    vertices, faces = fp.prim_box()
+    vertices, faces = fp.prim_box(detailed=detailed)
     res = fp.repeat_primitive(
         vertices,
         faces,

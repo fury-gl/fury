@@ -10,8 +10,8 @@ def test_vertices_primitives():
     # Tests the default vertices of all the built in primitive shapes.
     l_primitives = [
         (fp.prim_square, (4, 3), -0.5, 0.5, 0, {}),
-        (fp.prim_box, (24, 3), -0.5, 0.5, 0, {"shared_vertices": False}),
-        (fp.prim_box, (8, 3), -0.5, 0.5, 0, {"shared_vertices": True}),
+        (fp.prim_box, (24, 3), -0.5, 0.5, 0, {"detailed": True}),
+        (fp.prim_box, (8, 3), -0.5, 0.5, 0, {"detailed": False}),
         (fp.prim_tetrahedron, (4, 3), -0.5, 0.5, 0, {}),
         (fp.prim_star, (10, 3), -3, 3, -0.0666666666, {}),
         (fp.prim_rhombicuboctahedron, (24, 3), -0.5, 0.5, 0, {}),

@@ -256,14 +256,14 @@ def prim_square():
     return vertices, triangles
 
 
-def prim_box(shared_vertices=False):
+def prim_box(detailed=True):
     """Return vertices and triangles for a box geometry.
 
     Parameters
     ----------
-    shared_vertices : bool, optional
-        If False, returns 24 vertices (no shared vertices between orthogonal faces).
-        If True, returns 8 unique vertices.
+    detailed : bool, optional
+        If True, returns 24 vertices (no shared vertices between orthogonal faces).
+        If False, returns 8 unique vertices.
 
     Returns
     -------
@@ -273,7 +273,7 @@ def prim_box(shared_vertices=False):
         Array of triangle indices.
 
     """
-    if not shared_vertices:
+    if detailed:
         vertices = (
             np.array(
                 [
