@@ -394,9 +394,10 @@ def save_polydata(
     polydata : vtkPolyData
     file_name : string
     binary : bool
-    color_array_name: ndarray
+    color_array_name: string
+        Name of the color array in the polydata to save in the file.
     legacy_vtk_format: bool
-
+        If True, save the file in legacy VTK format (42).
     """
     # get file extension (type)
     file_extension = file_name.split(".")[-1].lower()
