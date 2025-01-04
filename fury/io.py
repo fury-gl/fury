@@ -430,6 +430,7 @@ def save_polydata(
     if color_array_name is not None and file_extension == "ply":
         writer.SetArrayName(color_array_name)
 
+    # Only applicable for VTK files
     if legacy_vtk_format and file_extension in ["vtk", "vtp", "fib"]:
         writer.SetFileVersion(42)
     if binary:
