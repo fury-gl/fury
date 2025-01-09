@@ -9,16 +9,17 @@ import fury.primitive as fp
 def test_vertices_primitives():
     # Tests the default vertices of all the built in primitive shapes.
     l_primitives = [
-        (fp.prim_square, (4, 3), -0.5, 0.5, 0),
-        (fp.prim_box, (8, 3), -0.5, 0.5, 0),
-        (fp.prim_tetrahedron, (4, 3), -0.5, 0.5, 0),
-        (fp.prim_star, (10, 3), -3, 3, -0.0666666666),
-        (fp.prim_rhombicuboctahedron, (24, 3), -0.5, 0.5, 0),
-        (fp.prim_frustum, (8, 3), -0.5, 0.5, 0),
+        (fp.prim_square, (4, 3), -0.5, 0.5, 0, {}),
+        (fp.prim_box, (24, 3), -0.5, 0.5, 0, {"detailed": True}),
+        (fp.prim_box, (8, 3), -0.5, 0.5, 0, {"detailed": False}),
+        (fp.prim_tetrahedron, (4, 3), -0.5, 0.5, 0, {}),
+        (fp.prim_star, (10, 3), -3, 3, -0.0666666666, {}),
+        (fp.prim_rhombicuboctahedron, (24, 3), -0.5, 0.5, 0, {}),
+        (fp.prim_frustum, (8, 3), -0.5, 0.5, 0, {}),
     ]
 
-    for func, shape, e_min, e_max, e_mean in l_primitives:
-        vertices, _ = func()
+    for func, shape, e_min, e_max, e_mean, kwargs in l_primitives:
+        vertices, _ = func(**kwargs)
         npt.assert_equal(vertices.shape, shape)
         npt.assert_almost_equal(np.mean(vertices), e_mean)
         npt.assert_equal(vertices.min(), e_min)

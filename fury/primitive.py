@@ -256,46 +256,111 @@ def prim_square():
     return vertices, triangles
 
 
-def prim_box():
-    """Return vertices and triangle for a box geometry.
+def prim_box(detailed=True):
+    """Return vertices and triangles for a box geometry.
+
+    Parameters
+    ----------
+    detailed : bool, optional
+        If True, returns 24 vertices (no shared vertices between orthogonal faces).
+        If False, returns 8 unique vertices.
 
     Returns
     -------
-    vertices: ndarray
-        8 vertices coords that composed our box
-    triangles: ndarray
-        12 triangles that composed our box
+    vertices : ndarray
+        Array of vertex coordinates.
+    triangles : ndarray
+        Array of triangle indices.
 
     """
-    vertices = np.array(
-        [
-            [-0.5, -0.5, -0.5],
-            [-0.5, -0.5, 0.5],
-            [-0.5, 0.5, -0.5],
-            [-0.5, 0.5, 0.5],
-            [0.5, -0.5, -0.5],
-            [0.5, -0.5, 0.5],
-            [0.5, 0.5, -0.5],
-            [0.5, 0.5, 0.5],
-        ]
-    )
-    triangles = np.array(
-        [
-            [0, 6, 4],
-            [0, 2, 6],
-            [0, 3, 2],
-            [0, 1, 3],
-            [2, 7, 6],
-            [2, 3, 7],
-            [4, 6, 7],
-            [4, 7, 5],
-            [0, 4, 5],
-            [0, 5, 1],
-            [1, 5, 7],
-            [1, 7, 3],
-        ],
-        dtype="i8",
-    )
+    if detailed:
+        vertices = (
+            np.array(
+                [
+                    [-1, -1, -1],
+                    [1, -1, -1],
+                    [1, 1, -1],
+                    [-1, 1, -1],
+                    [-1, -1, 1],
+                    [1, -1, 1],
+                    [1, 1, 1],
+                    [-1, 1, 1],
+                    [-1, -1, -1],
+                    [-1, 1, -1],
+                    [-1, 1, 1],
+                    [-1, -1, 1],
+                    [1, -1, -1],
+                    [1, 1, -1],
+                    [1, 1, 1],
+                    [1, -1, 1],
+                    [-1, 1, -1],
+                    [1, 1, -1],
+                    [1, 1, 1],
+                    [-1, 1, 1],
+                    [-1, -1, -1],
+                    [1, -1, -1],
+                    [1, -1, 1],
+                    [-1, -1, 1],
+                ],
+                dtype=np.float32,
+            )
+            * 0.5
+        )
+
+        triangles = np.array(
+            [
+                [2, 1, 0],
+                [3, 2, 0],
+                [4, 5, 6],
+                [4, 6, 7],
+                [8, 10, 9],
+                [11, 10, 8],
+                [12, 13, 14],
+                [12, 14, 15],
+                [16, 17, 18],
+                [16, 18, 19],
+                [20, 21, 22],
+                [20, 22, 23],
+            ],
+            dtype=np.uint32,
+        )
+
+    else:
+        vertices = (
+            np.array(
+                [
+                    [-1, -1, -1],
+                    [-1, -1, 1],
+                    [-1, 1, -1],
+                    [-1, 1, 1],
+                    [1, -1, -1],
+                    [1, -1, 1],
+                    [1, 1, -1],
+                    [1, 1, 1],
+                ],
+                dtype=np.float32,
+            )
+            * 0.5
+        )
+
+        triangles = np.array(
+            [
+                [0, 6, 4],
+                [0, 2, 6],
+                [0, 3, 2],
+                [0, 1, 3],
+                [2, 7, 6],
+                [2, 3, 7],
+                [4, 6, 7],
+                [4, 7, 5],
+                [0, 4, 5],
+                [0, 5, 1],
+                [1, 5, 7],
+                [1, 7, 3],
+            ],
+            dtype=np.uint32,
+        )
+
     return vertices, triangles
 
 
