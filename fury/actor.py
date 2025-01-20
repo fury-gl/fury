@@ -15,6 +15,7 @@ def sphere(
     opacity=None,
     material="phong",
     enable_picking=True,
+    smooth=True,
 ):
     """
     Visualize one or many spheres with different colors and radii.
@@ -40,6 +41,8 @@ def sphere(
         The material type for the spheres. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
         Whether the spheres should be pickable in a 3D scene.
+    smooth : bool, optional
+        Whether to create a smooth sphere or a faceted sphere.
 
     Returns
     -------
@@ -95,7 +98,9 @@ def sphere(
         colors=big_colors.astype("float32"),
     )
 
-    mat = _create_mesh_material(material=material, enable_picking=enable_picking)
+    mat = _create_mesh_material(
+        material=material, enable_picking=enable_picking, flat_shading=not smooth
+    )
     obj = create_mesh(geometry=geo, material=mat)
     obj.local.position = centers[0]
     obj.prim_count = prim_count
@@ -121,7 +126,7 @@ def box(
         Box positions.
     directions : ndarray, shape (N, 3), optional
         The orientation vector of the box.
-    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
+    colors : ndarray, shape (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     scales : int or ndarray (N,3) or tuple (3,), optional
         The size of the box in each dimension.  If a single value is provided,
