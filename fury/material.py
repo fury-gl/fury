@@ -23,6 +23,7 @@ class MeshBasicMaterial(gfx.MeshBasicMaterial):
         super().__init__(**kwargs)
 
 
+# Register the custom shaders for the mesh materials
 register_wgpu_render_function(Mesh, MeshPhongMaterial)(MeshPhongShader)
 register_wgpu_render_function(Mesh, MeshBasicMaterial)(MeshBasicShader)
 

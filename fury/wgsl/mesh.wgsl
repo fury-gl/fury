@@ -331,7 +331,7 @@ struct ReflectedLight {
 fn fs_main(varyings: Varyings, @builtin(front_facing) is_front: bool) -> FragmentOutput {
 
     // Get the surface normal from the geometry.
-    // This is the unflipped normal, because thet NormalMaterial needs that.
+    // This is the unflipped normal, because the NormalMaterial needs that.
     var surface_normal = normalize(vec3<f32>(varyings.normal));
     $$ if flat_shading
         let u = dpdx(varyings.world_pos);
