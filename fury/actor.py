@@ -196,15 +196,15 @@ def cylinder(
     centers,
     colors,
     *,
-    height= 1,
-    sectors= 36,
-    radii= 0.5,
+    height=1,
+    sectors=36,
+    radii=0.5,
     scales=(1, 1, 1),
     directions=(0, 1, 0),
-    capped= True,
-    opacity= None,
-    material= "phong",
-    enable_picking= True,
+    capped=True,
+    opacity=None,
+    material="phong",
+    enable_picking=True,
 ):
     """Visualize one or many cylinders with different features.
 
@@ -259,7 +259,8 @@ def cylinder(
     >>> show_manager.start()
     """
     
-    vertices, faces = fp.prim_cylinder(radius= radii, height= height, sectors= sectors, capped= capped)
+    vertices, faces = fp.prim_cylinder(
+        radius=radii, height=height, sectors=sectors, capped=capped)
     res = fp.repeat_primitive(
         vertices,
         faces,
@@ -287,7 +288,8 @@ def cylinder(
         texcoords=big_vertices.astype("float32"),
         colors=big_colors.astype("float32"),
     )
-    mat = _create_mesh_material(material=material, enable_picking=enable_picking)
+    mat = _create_mesh_material(material=material,
+                                enable_picking=enable_picking)
     obj = create_mesh(geometry=geo, material=mat)
     obj.local.position = centers[0]
 
