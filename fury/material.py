@@ -1,8 +1,41 @@
 import pygfx as gfx
+from pygfx import Mesh
+from pygfx.renderers.wgpu import register_wgpu_render_function
+
+from fury.shader import MeshBasicShader, MeshPhongShader
+
+
+class MeshPhongMaterial(gfx.MeshPhongMaterial):
+    """
+    Phong material.
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+
+class MeshBasicMaterial(gfx.MeshBasicMaterial):
+    """
+    Basic material.
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+
+# Register the custom shaders for the mesh materials
+register_wgpu_render_function(Mesh, MeshPhongMaterial)(MeshPhongShader)
+register_wgpu_render_function(Mesh, MeshBasicMaterial)(MeshBasicShader)
 
 
 def _create_mesh_material(
-    *, material="phong", enable_picking=True, color=None, opacity=1.0, mode="vertex"
+    *,
+    material="phong",
+    enable_picking=True,
+    color=None,
+    opacity=1.0,
+    mode="vertex",
+    flat_shading=True,
 ):
     """
     Create a mesh material.
@@ -23,10 +56,12 @@ def _create_mesh_material(
         final_alpha = alpha_in_RGBA * opacity
     mode : str, optional
         The color mode of the material. Options are 'auto' and 'vertex'.
+    flat_shading : bool, optional
+        Whether to use flat shading (True) or smooth shading (False).
 
     Returns
     -------
-    gfx.MeshMaterial
+    MeshMaterial
         A mesh material object of the specified type with the given properties.
     """
 
@@ -49,16 +84,18 @@ def _create_mesh_material(
         color = (1, 1, 1)
 
     if material == "phong":
-        return gfx.MeshPhongMaterial(
+        return MeshPhongMaterial(
             pick_write=enable_picking,
             color_mode=mode,
             color=color,
+            flat_shading=flat_shading,
         )
     elif material == "basic":
-        return gfx.MeshBasicMaterial(
+        return MeshBasicMaterial(
             pick_write=enable_picking,
             color_mode=mode,
             color=color,
+            flat_shading=flat_shading,
         )
     else:
         raise ValueError(f"Unsupported material type: {material}")
