@@ -191,15 +191,13 @@ def box(
     mat = _create_mesh_material(material=material, enable_picking=enable_picking)
     obj = create_mesh(geometry=geo, material=mat)
     obj.local.position = centers[0]
-
     obj.prim_count = prim_count
-
     return obj
 
 
 def cylinder(
     centers,
-    colors,
+    colors=(1, 1, 1),
     *,
     height=1,
     sectors=36,
@@ -234,9 +232,6 @@ def cylinder(
         The orientation vector of the box.
     capped : bool, optional
         Whether to add caps (circular ends) to the cylinders. Default is True.
-    scales : int or ndarray (N,3) or tuple (3,), optional
-        The size of the box in each dimension.  If a single value is provided,
-        the same size will be used for all boxes.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
@@ -297,15 +292,15 @@ def cylinder(
     mat = _create_mesh_material(material=material, enable_picking=enable_picking)
     obj = create_mesh(geometry=geo, material=mat)
     obj.local.position = centers[0]
-
     obj.prim_count = prim_count
     return obj
 
 
 def square(
     centers,
+    *,
     directions=(0, 0, 0),
-    colors=(1, 0, 0),
+    colors=(1, 1, 1),
     scales=(1, 1, 1),
     opacity=None,
     material="phong",
@@ -381,6 +376,5 @@ def square(
     mat = _create_mesh_material(material=material, enable_picking=enable_picking)
     obj = create_mesh(geometry=geo, material=mat)
     obj.local.position = centers[0]
-
     obj.prim_count = prim_count
     return obj
