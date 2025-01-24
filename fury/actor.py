@@ -197,8 +197,8 @@ def box(
 
 def cylinder(
     centers,
-    colors=(1, 1, 1),
     *,
+    colors=(1, 1, 1),
     height=1,
     sectors=36,
     radii=0.5,
