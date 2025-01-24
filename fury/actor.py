@@ -5,10 +5,96 @@ from fury.material import _create_mesh_material
 import fury.primitive as fp
 
 
+def actor_from_primitive(
+    vertices,
+    faces,
+    centers,
+    *,
+    colors=(1, 0, 0),
+    scales=(1, 1, 1),
+    directions=(1, 0, 0),
+    opacity=None,
+    material="phong",
+    smooth=False,
+    enable_picking=True,
+):
+    """Build an actor from a primitive.
+
+    Parameters
+    ----------
+    vertices : ndarray
+        Vertices of the primitive.
+    faces : ndarray
+        Faces of the primitive.
+    centers : ndarray, shape (N, 3)
+        Box positions.
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+    scales : int or ndarray (N,3) or tuple (3,)
+        The size of the box in each dimension.  If a single value is provided,
+        the same size will be used for all boxes.
+    directions : ndarray, shape (N, 3), optional
+        The orientation vector of the box.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
+        If both `opacity` and RGBA are provided, the final alpha will be:
+        final_alpha = alpha_in_RGBA * opacity
+    material : str, optional
+        The material type for the boxes. Options are 'phong' and 'basic'.
+    smooth : bool, optional
+        Whether to create a smooth sphere or a faceted sphere.
+    enable_picking : bool, optional
+        Whether the boxes should be pickable in a 3D scene.
+
+    Returns
+    -------
+    mesh_actor : Actor
+        A mesh actor containing the generated boxes, with the specified
+        material and properties
+
+    """
+    res = fp.repeat_primitive(
+        vertices,
+        faces,
+        directions=directions,
+        centers=centers,
+        colors=colors,
+        scales=scales,
+    )
+    big_vertices, big_faces, big_colors, _ = res
+
+    prim_count = len(centers)
+
+    big_colors = big_colors / 255.0
+
+    if isinstance(opacity, (int, float)):
+        if big_colors.shape[1] == 3:
+            big_colors = np.hstack(
+                (big_colors, np.full((big_colors.shape[0], 1), opacity))
+            )
+        else:
+            big_colors[:, 3] *= opacity
+
+    geo = buffer_to_geometry(
+        indices=big_faces.astype("int32"),
+        positions=big_vertices.astype("float32"),
+        texcoords=big_vertices.astype("float32"),
+        colors=big_colors.astype("float32"),
+    )
+
+    mat = _create_mesh_material(
+        material=material, enable_picking=enable_picking, flat_shading=not smooth
+    )
+    obj = create_mesh(geometry=geo, material=mat)
+    obj.local.position = centers[0]
+    obj.prim_count = prim_count
+    return obj
+
+
 def sphere(
     centers,
-    colors,
     *,
+    colors=(1, 0, 0),
     radii=1.0,
     phi=16,
     theta=16,
@@ -24,7 +110,7 @@ def sphere(
     ----------
     centers : ndarray, shape (N, 3)
         Spheres positions.
-    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,)
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
     radii : float or ndarray, shape (N,), optional
         Sphere radius. Can be a single value for all spheres or an array of
@@ -68,43 +154,18 @@ def sphere(
     directions = (1, 0, 0)
 
     vertices, faces = fp.prim_sphere(phi=phi, theta=theta)
-
-    res = fp.repeat_primitive(
+    return actor_from_primitive(
         vertices,
         faces,
-        directions=directions,
         centers=centers,
         colors=colors,
         scales=scales,
+        directions=directions,
+        opacity=opacity,
+        material=material,
+        smooth=smooth,
+        enable_picking=enable_picking,
     )
-    big_vertices, big_faces, big_colors, _ = res
-
-    prim_count = len(centers)
-
-    big_colors = big_colors / 255.0
-
-    if isinstance(opacity, (int, float)):
-        if big_colors.shape[1] == 3:
-            big_colors = np.hstack(
-                (big_colors, np.full((big_colors.shape[0], 1), opacity))
-            )
-        else:
-            big_colors[:, 3] *= opacity
-
-    geo = buffer_to_geometry(
-        indices=big_faces.astype("int32"),
-        positions=big_vertices.astype("float32"),
-        texcoords=big_vertices.astype("float32"),
-        colors=big_colors.astype("float32"),
-    )
-
-    mat = _create_mesh_material(
-        material=material, enable_picking=enable_picking, flat_shading=not smooth
-    )
-    obj = create_mesh(geometry=geo, material=mat)
-    obj.local.position = centers[0]
-    obj.prim_count = prim_count
-    return obj
 
 
 def box(
@@ -162,37 +223,17 @@ def box(
     >>> show_manager.start()
     """
     vertices, faces = fp.prim_box(detailed=detailed)
-    res = fp.repeat_primitive(
+    return actor_from_primitive(
         vertices,
         faces,
-        directions=directions,
         centers=centers,
         colors=colors,
         scales=scales,
+        directions=directions,
+        opacity=opacity,
+        material=material,
+        enable_picking=enable_picking,
     )
-    big_vertices, big_faces, big_colors, _ = res
-    prim_count = len(centers)
-    big_colors = big_colors / 255.0
-
-    if isinstance(opacity, (int, float)):
-        if big_colors.shape[1] == 3:
-            big_colors = np.hstack(
-                (big_colors, np.full((big_colors.shape[0], 1), opacity))
-            )
-        else:
-            big_colors[:, 3] *= opacity
-
-    geo = buffer_to_geometry(
-        indices=big_faces.astype("int32"),
-        positions=big_vertices.astype("float32"),
-        texcoords=big_vertices.astype("float32"),
-        colors=big_colors.astype("float32"),
-    )
-    mat = _create_mesh_material(material=material, enable_picking=enable_picking)
-    obj = create_mesh(geometry=geo, material=mat)
-    obj.local.position = centers[0]
-    obj.prim_count = prim_count
-    return obj
 
 
 def cylinder(
@@ -263,37 +304,17 @@ def cylinder(
     vertices, faces = fp.prim_cylinder(
         radius=radii, height=height, sectors=sectors, capped=capped
     )
-    res = fp.repeat_primitive(
+    return actor_from_primitive(
         vertices,
         faces,
-        directions=directions,
         centers=centers,
         colors=colors,
         scales=scales,
+        directions=directions,
+        opacity=opacity,
+        material=material,
+        enable_picking=enable_picking,
     )
-    big_vertices, big_faces, big_colors, _ = res
-    prim_count = len(centers)
-    big_colors = big_colors / 255.0
-
-    if isinstance(opacity, (int, float)):
-        if big_colors.shape[1] == 3:
-            big_colors = np.hstack(
-                (big_colors, np.full((big_colors.shape[0], 1), opacity))
-            )
-        else:
-            big_colors[:, 3] *= opacity
-
-    geo = buffer_to_geometry(
-        indices=big_faces.astype("int32"),
-        positions=big_vertices.astype("float32"),
-        texcoords=big_vertices.astype("float32"),
-        colors=big_colors.astype("float32"),
-    )
-    mat = _create_mesh_material(material=material, enable_picking=enable_picking)
-    obj = create_mesh(geometry=geo, material=mat)
-    obj.local.position = centers[0]
-    obj.prim_count = prim_count
-    return obj
 
 
 def square(
@@ -347,34 +368,14 @@ def square(
     >>> show_manager.start()
     """
     vertices, faces = fp.prim_square()
-    res = fp.repeat_primitive(
+    return actor_from_primitive(
         vertices,
         faces,
-        directions=directions,
         centers=centers,
         colors=colors,
         scales=scales,
+        directions=directions,
+        opacity=opacity,
+        material=material,
+        enable_picking=enable_picking,
     )
-    big_vertices, big_faces, big_colors, _ = res
-    prim_count = len(centers)
-    big_colors = big_colors / 255.0
-
-    if isinstance(opacity, (int, float)):
-        if big_colors.shape[1] == 3:
-            big_colors = np.hstack(
-                (big_colors, np.full((big_colors.shape[0], 1), opacity))
-            )
-        else:
-            big_colors[:, 3] *= opacity
-
-    geo = buffer_to_geometry(
-        indices=big_faces.astype("int32"),
-        positions=big_vertices.astype("float32"),
-        texcoords=big_vertices.astype("float32"),
-        colors=big_colors.astype("float32"),
-    )
-    mat = _create_mesh_material(material=material, enable_picking=enable_picking)
-    obj = create_mesh(geometry=geo, material=mat)
-    obj.local.position = centers[0]
-    obj.prim_count = prim_count
-    return obj
