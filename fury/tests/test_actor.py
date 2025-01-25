@@ -173,3 +173,20 @@ def test_square():
 
     assert square_actor.prim_count == 1
     scene.remove(square_actor)
+
+
+def test_frustum():
+    scene = window.Scene()
+    centers = np.array([[0, 0, 0]])
+    colors = np.array([[1, 0, 0]])
+
+    frustum_actor = actor.frustum(centers=centers, colors=colors)
+    scene.add(frustum_actor)
+
+    npt.assert_array_equal(frustum_actor.local.position, centers[0])
+
+    mean_vertex = np.mean(frustum_actor.geometry.positions.view, axis=0)
+    npt.assert_array_almost_equal(mean_vertex, centers[0])
+
+    assert frustum_actor.prim_count == 1
+    scene.remove(frustum_actor)
