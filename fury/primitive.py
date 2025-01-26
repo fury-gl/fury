@@ -198,7 +198,6 @@ def repeat_primitive(
     # update colors
     colors = normalize_input(colors, arr_name="colors")
     big_colors = np.repeat(colors, unit_verts_size, axis=0)
-    big_colors *= 255
 
     # update orientations
     directions = normalize_input(directions, arr_name="directions")

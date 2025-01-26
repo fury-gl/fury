@@ -65,8 +65,6 @@ def actor_from_primitive(
 
     prim_count = len(centers)
 
-    big_colors = big_colors / 255.0
-
     if isinstance(opacity, (int, float)):
         if big_colors.shape[1] == 3:
             big_colors = np.hstack(
