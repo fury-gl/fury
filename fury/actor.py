@@ -255,7 +255,7 @@ def cylinder(
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        Box positions.
+        cylinder positions.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     height: float, optional
@@ -270,7 +270,7 @@ def cylinder(
         Scaling factors for the cylinders in the (x, y, z) dimensions.
         Default is uniform scaling (1, 1, 1).
     directions : ndarray, shape (N, 3), optional
-        The orientation vector of the box.
+        The orientation vector of the cylinder.
     capped : bool, optional
         Whether to add caps (circular ends) to the cylinders. Default is True.
     opacity : float, optional
@@ -278,14 +278,14 @@ def cylinder(
         If both `opacity` and RGBA are provided, the final alpha will be:
         final_alpha = alpha_in_RGBA * opacity
     material : str, optional
-        The material type for the boxes. Options are 'phong' and 'basic'.
+        The material type for the cylinders. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
-        Whether the boxes should be pickable in a 3D scene.
+        Whether the cylinders should be pickable in a 3D scene.
 
     Returns
     -------
     mesh_actor : Actor
-        A mesh actor containing the generated boxes, with the specified
+        A mesh actor containing the generated cylinders, with the specified
         material and properties.
 
     Examples
@@ -332,27 +332,27 @@ def square(
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        Box positions.
+        square positions.
     directions : ndarray, shape (N, 3), optional
-        The orientation vector of the box.
+        The orientation vector of the square.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     scales : int or ndarray (N,3) or tuple (3,), optional
-        The size of the box in each dimension.  If a single value is provided,
-        the same size will be used for all boxes.
+        The size of the square in each dimension.  If a single value is provided,
+        the same size will be used for all squares.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
         final_alpha = alpha_in_RGBA * opacity
     material : str, optional
-        The material type for the boxes. Options are 'phong' and 'basic'.
+        The material type for the squares. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
-        Whether the boxes should be pickable in a 3D scene.
+        Whether the squares should be pickable in a 3D scene.
 
     Returns
     -------
     mesh_actor : Actor
-        A mesh actor containing the generated boxes, with the specified
+        A mesh actor containing the generated squares, with the specified
         material and properties.
 
     Examples
@@ -396,27 +396,27 @@ def frustum(
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        Box positions.
+        frustum positions.
     directions : ndarray, shape (N, 3), optional
-        The orientation vector of the box.
+        The orientation vector of the frustum.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     scales : int or ndarray (N,3) or tuple (3,), optional
-        The size of the box in each dimension.  If a single value is provided,
-        the same size will be used for all boxes.
+        The size of the frustum in each dimension.  If a single value is provided,
+        the same size will be used for all frustums.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
         final_alpha = alpha_in_RGBA * opacity
     material : str, optional
-        The material type for the boxes. Options are 'phong' and 'basic'.
+        The material type for the frustums. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
-        Whether the boxes should be pickable in a 3D scene.
+        Whether the frustums should be pickable in a 3D scene.
 
     Returns
     -------
     mesh_actor : Actor
-        A mesh actor containing the generated boxes, with the specified
+        A mesh actor containing the generated frustums, with the specified
         material and properties.
 
     Examples
@@ -426,8 +426,8 @@ def frustum(
     >>> scene = window.Scene()
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
-    >>> square_actor = actor.square(centers=centers, colors=colors)
-    >>> scene.add(square_actor)
+    >>> frustum_actor = actor.frustum(centers=centers, colors=colors)
+    >>> scene.add(frustum_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """

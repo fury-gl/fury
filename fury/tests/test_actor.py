@@ -188,4 +188,44 @@ def test_frustum():
     npt.assert_array_almost_equal(mean_vertex, centers[0])
 
     assert frustum_actor.prim_count == 1
+
+    window.snapshot(scene=scene, fname="frustum_test_1.png")
+
+    img = Image.open("frustum_test_1.png")
+    img_array = np.array(img)
+
+    mean_r, mean_g, mean_b, mean_a = np.mean(
+        img_array.reshape(-1, img_array.shape[2]), axis=0
+    )
+
+    assert mean_r > mean_b and mean_r > mean_g
+    assert 0 < mean_r < 255 and 0 < mean_g < 255 and 0 <= mean_b < 255
+
+    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
+    r, g, b, a = middle_pixel
+    assert r > g and r > b
+    assert g == b
+    assert r > 0 and g > 0 and b > 0
     scene.remove(frustum_actor)
+
+    frustum_actor_2 = actor.frustum(centers=centers, colors=colors, material="basic")
+    scene.add(frustum_actor_2)
+    window.snapshot(scene=scene, fname="frustum_test_2.png")
+
+    img = Image.open("frustum_test_2.png")
+    img_array = np.array(img)
+
+    mean_r, mean_g, mean_b, mean_a = np.mean(
+        img_array.reshape(-1, img_array.shape[2]), axis=0
+    )
+
+    assert mean_r > mean_b and mean_r > mean_g
+    assert 0 < mean_r < 255
+    assert mean_g == 0 and mean_b == 0
+
+    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
+    r, g, b, a = middle_pixel
+    assert r > g and r > b
+    assert g == 0 and b == 0
+    assert r == 255
+    scene.remove(frustum_actor_2)
