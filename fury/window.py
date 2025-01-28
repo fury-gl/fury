@@ -1103,19 +1103,22 @@ def antialiasing(scene, win, *, multi_samples=8, max_peels=4, occlusion_ratio=0.
         Occlusion ratio for depth peeling (Default 0 - exact image).
 
     """
+
+    win.SetGlobalMaximumNumberOfMultiSamples(32)
     # Use a render window with alpha bits
     # as default is 0 (false))
     win.SetAlphaBitPlanes(True)
+    print('In antialiasing')
 
     # Force to not pick a framebuffer with a multisample buffer
     # (default is 8)
     win.SetMultiSamples(multi_samples)
 
     # TODO: enable these but test
-    # win.SetBorders(True)
-    # win.LineSmoothingOn(True)
-    # win.PointSmoothingOn(True)
-    # win.PolygonSmoothingOn(True)
+    win.SetBorders(True)
+    win.LineSmoothingOn()
+    win.PointSmoothingOn()
+    win.PolygonSmoothingOn()
 
     # Choose to use depth peeling (if supported)
     # (default is 0 (false)):
