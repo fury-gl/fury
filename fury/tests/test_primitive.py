@@ -260,6 +260,9 @@ def test_repeat_primitive():
         npt.assert_equal(big_vert_origin.max(), 0.5)
         npt.assert_equal(np.mean(big_vert_origin), 0)
 
+        npt.assert_equal(big_colors.min(), 0)
+        npt.assert_equal(big_colors.max(), 1)
+
 
 def test_repeat_primitive_function():
     # init variables
