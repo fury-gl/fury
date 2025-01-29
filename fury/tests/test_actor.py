@@ -573,3 +573,55 @@ def test_octagonalprism():
     assert g == 0 and b == 0
     assert r == 255
     scene.remove(octagonalprism_actor_2)
+
+
+def test_arrow():
+    scene = window.Scene()
+    centers = np.array([[0, 0, 0]])
+    colors = np.array([[1, 0, 0]])
+
+    arrow_actor = actor.arrow(centers=centers, colors=colors)
+    scene.add(arrow_actor)
+
+    npt.assert_array_equal(arrow_actor.local.position, centers[0])
+
+    assert arrow_actor.prim_count == 1
+
+    window.snapshot(scene=scene, fname="arrow_test_1.png")
+
+    img = Image.open("arrow_test_1.png")
+    img_array = np.array(img)
+
+    mean_r, mean_g, mean_b, mean_a = np.mean(
+        img_array.reshape(-1, img_array.shape[2]), axis=0
+    )
+
+    assert mean_r > mean_b and mean_r > mean_g
+
+    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
+    r, g, b, a = middle_pixel
+    assert r > g and r > b
+    assert g == b
+    scene.remove(arrow_actor)
+
+    arrow_actor_2 = actor.arrow(centers=centers, colors=colors, material="basic")
+    scene.add(arrow_actor_2)
+    window.snapshot(scene=scene, fname="arrow_test_2.png")
+
+    img = Image.open("arrow_test_2.png")
+    img_array = np.array(img)
+
+    mean_r, mean_g, mean_b, mean_a = np.mean(
+        img_array.reshape(-1, img_array.shape[2]), axis=0
+    )
+
+    assert mean_r > mean_b and mean_r > mean_g
+    assert 0 < mean_r < 255
+    assert mean_g == 0 and mean_b == 0
+
+    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
+    r, g, b, a = middle_pixel
+    assert r > g and r > b
+    assert g == 0 and b == 0
+    assert r == 255
+    scene.remove(arrow_actor_2)
