@@ -647,32 +647,32 @@ def triangularprism(
     material="phong",
     enable_picking=True,
 ):
-    """Visualize one or many triangularprism with different features.
+    """Visualize one or many triangular prism with different features.
 
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        triangularprism positions.
+        triangular prism positions.
     directions : ndarray, shape (N, 3), optional
-        The orientation vector of the triangularprism.
+        The orientation vector of the triangular prism.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     scales : int or ndarray (N,3) or tuple (3,), optional
-        The size of the triangularprism in each dimension. If a single value is
-        provided, the same size will be used for all triangularprism.
+        The size of the triangular prism in each dimension. If a single value is
+        provided, the same size will be used for all triangular prism.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
         final_alpha = alpha_in_RGBA * opacity
     material : str, optional
-        The material type for the triangularprisms. Options are 'phong' and 'basic'.
+        The material type for the triangular prisms. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
-        Whether the triangularprisms should be pickable in a 3D scene.
+        Whether the triangular prisms should be pickable in a 3D scene.
 
     Returns
     -------
     mesh_actor : Actor
-        A mesh actor containing the generated triangularprisms, with the specified
+        A mesh actor containing the generated triangular prisms, with the specified
         material and properties.
 
     Examples
@@ -712,32 +712,32 @@ def pentagonalprism(
     material="phong",
     enable_picking=True,
 ):
-    """Visualize one or many pentagonalprism with different features.
+    """Visualize one or many pentagonal prism with different features.
 
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        pentagonalprism positions.
+        pentagonal prism positions.
     directions : ndarray, shape (N, 3), optional
-        The orientation vector of the pentagonalprism.
+        The orientation vector of the pentagonal prism.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     scales : int or ndarray (N,3) or tuple (3,), optional
-        The size of the pentagonalprism in each dimension. If a single value is
-        provided, the same size will be used for all pentagonalprism.
+        The size of the pentagonal prism in each dimension. If a single value is
+        provided, the same size will be used for all pentagonal prism.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
         final_alpha = alpha_in_RGBA * opacity
     material : str, optional
-        The material type for the pentagonalprisms. Options are 'phong' and 'basic'.
+        The material type for the pentagonal prisms. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
-        Whether the pentagonalprisms should be pickable in a 3D scene.
+        Whether the pentagonal prisms should be pickable in a 3D scene.
 
     Returns
     -------
     mesh_actor : Actor
-        A mesh actor containing the generated pentagonalprism, with the specified
+        A mesh actor containing the generated pentagonal prism, with the specified
         material and properties.
 
     Examples
@@ -754,6 +754,71 @@ def pentagonalprism(
     >>> show_manager.start()
     """
     vertices, faces = fp.prim_pentagonalprism()
+    return actor_from_primitive(
+        vertices,
+        faces,
+        centers=centers,
+        colors=colors,
+        scales=scales,
+        directions=directions,
+        opacity=opacity,
+        material=material,
+        enable_picking=enable_picking,
+    )
+
+
+def octagonalprism(
+    centers,
+    *,
+    directions=(0, 0, 0),
+    colors=(1, 1, 1),
+    scales=(1, 1, 1),
+    opacity=None,
+    material="phong",
+    enable_picking=True,
+):
+    """Visualize one or many octagonal prism with different features.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+        octagonal prism positions.
+    directions : ndarray, shape (N, 3), optional
+        The orientation vector of the octagonal prism.
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
+    scales : int or ndarray (N,3) or tuple (3,), optional
+        The size of the octagonal prism in each dimension. If a single value is
+        provided, the same size will be used for all octagonal prism.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
+        If both `opacity` and RGBA are provided, the final alpha will be:
+        final_alpha = alpha_in_RGBA * opacity
+    material : str, optional
+        The material type for the octagonal prisms. Options are 'phong' and 'basic'.
+    enable_picking : bool, optional
+        Whether the octagonal prisms should be pickable in a 3D scene.
+
+    Returns
+    -------
+    mesh_actor : Actor
+        A mesh actor containing the generated octagonal prisms, with the specified
+        material and properties.
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> import numpy as np
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(5, 3) * 10
+    >>> colors = np.random.rand(5, 3)
+    >>> octagonalprism_actor = actor.octagonalprism(
+    centers=centers, colors=colors)
+    >>> scene.add(octagonalprism_actor)
+    >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
+    >>> show_manager.start()
+    """
+    vertices, faces = fp.prim_octagonalprism()
     return actor_from_primitive(
         vertices,
         faces,
