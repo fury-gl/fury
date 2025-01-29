@@ -625,3 +625,60 @@ def test_arrow():
     assert g == 0 and b == 0
     assert r == 255
     scene.remove(arrow_actor_2)
+
+
+def test_superquadric():
+    scene = window.Scene()
+    centers = np.array([[0, 0, 0]])
+    colors = np.array([[1, 0, 0]])
+
+    superquadric_actor = actor.superquadric(centers=centers, colors=colors)
+    scene.add(superquadric_actor)
+
+    npt.assert_array_equal(superquadric_actor.local.position, centers[0])
+
+    mean_vertex = np.mean(superquadric_actor.geometry.positions.view, axis=0)
+    npt.assert_array_almost_equal(mean_vertex, centers[0])
+
+    assert superquadric_actor.prim_count == 1
+
+    window.snapshot(scene=scene, fname="superquadric_test_1.png")
+
+    img = Image.open("superquadric_test_1.png")
+    img_array = np.array(img)
+
+    mean_r, mean_g, mean_b, mean_a = np.mean(
+        img_array.reshape(-1, img_array.shape[2]), axis=0
+    )
+
+    assert mean_r > mean_b and mean_r > mean_g
+
+    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
+    r, g, b, a = middle_pixel
+    assert r > g and r > b
+    assert g == b
+    scene.remove(superquadric_actor)
+
+    superquadric_actor_2 = actor.superquadric(
+        centers=centers, colors=colors, material="basic"
+    )
+    scene.add(superquadric_actor_2)
+    window.snapshot(scene=scene, fname="superquadric_test_2.png")
+
+    img = Image.open("superquadric_test_2.png")
+    img_array = np.array(img)
+
+    mean_r, mean_g, mean_b, mean_a = np.mean(
+        img_array.reshape(-1, img_array.shape[2]), axis=0
+    )
+
+    assert mean_r > mean_b and mean_r > mean_g
+    assert 0 < mean_r < 255
+    assert mean_g == 0 and mean_b == 0
+
+    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
+    r, g, b, a = middle_pixel
+    assert r > g and r > b
+    assert g == 0 and b == 0
+    assert r == 255
+    scene.remove(superquadric_actor_2)
