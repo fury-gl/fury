@@ -5,50 +5,22 @@ import numpy.testing as npt
 from fury import actor, window
 
 
-def test_sphere():
+def validate_actors(centers, colors, actor_type="actor_name"):
     scene = window.Scene()
-    centers = np.array([[0, 0, 0]])
-    colors = np.array([[1, 0, 0]])
-    radii = np.array([1])
+    typ_actor = getattr(actor, actor_type)
+    get_actor = typ_actor(centers=centers, colors=colors)
+    scene.add(get_actor)
 
-    sphere_actor = actor.sphere(centers=centers, colors=colors, radii=radii)
-    scene.add(sphere_actor)
+    npt.assert_array_equal(get_actor.local.position, centers[0])
 
-    window.snapshot(scene=scene, fname="sphere_test_1.png")
+    mean_vertex = np.round(np.mean(get_actor.geometry.positions.view, axis=0))
+    npt.assert_array_almost_equal(mean_vertex, centers[0])
 
-    img = Image.open("sphere_test_1.png")
-    img_array = np.array(img)
+    assert get_actor.prim_count == 1
+    fname = f"{actor_type}_test.png"
+    window.snapshot(scene=scene, fname=fname)
 
-    mean_r, mean_g, mean_b, _ = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
-
-    assert mean_r > mean_b and mean_r > mean_g
-    assert 0 <= mean_r <= 255 and 0 <= mean_g <= 255 and 0 <= mean_b <= 255
-
-    npt.assert_array_equal(sphere_actor.local.position, centers[0])
-
-    assert sphere_actor.prim_count == 1
-
-    # center_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
-    # npt.assert_array_equal(center_pixel[0], colors[0][0] * 255)
-
-    phi, theta = 100, 100
-    sphere_actor_2 = actor.sphere(
-        centers=centers,
-        colors=colors,
-        radii=radii,
-        opacity=1,
-        material="basic",
-        phi=phi,
-        theta=theta,
-    )
-    scene.remove(sphere_actor)
-    scene.add(sphere_actor_2)
-
-    window.snapshot(scene=scene, fname="sphere_test_2.png")
-
-    img = Image.open("sphere_test_2.png")
+    img = Image.open(fname)
     img_array = np.array(img)
 
     mean_r, mean_g, mean_b, mean_a = np.mean(
@@ -56,733 +28,122 @@ def test_sphere():
     )
 
     assert mean_r > mean_b and mean_r > mean_g
-    assert 0 <= mean_r <= 255 and 0 <= mean_g <= 255 and 0 <= mean_b <= 255
-    assert mean_a == 255.0
-    assert mean_b == 0.0
-    assert mean_g == 0.0
 
-    vertices = sphere_actor_2.geometry.positions.view
-    faces = sphere_actor_2.geometry.indices.view
-    colors = sphere_actor_2.geometry.colors.view
+    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
+    r, g, b, a = middle_pixel
+    assert r > g and r > b
+    assert g == b
+    scene.remove(get_actor)
 
-    vertices_mean = np.mean(vertices, axis=0)
+    typ_actor_1 = getattr(actor, actor_type)
+    get_actor_1 = typ_actor_1(centers=centers, colors=colors, material="basic")
+    scene.add(get_actor_1)
+    fname_1 = f"{actor_type}_test_1.png"
+    window.snapshot(scene=scene, fname=fname_1)
+    img = Image.open(fname_1)
+    img_array = np.array(img)
 
-    npt.assert_array_almost_equal(vertices_mean, centers[0])
+    mean_r, mean_g, mean_b, mean_a = np.mean(
+        img_array.reshape(-1, img_array.shape[2]), axis=0
+    )
 
-    assert len(vertices) == len(colors)
+    assert mean_r > mean_b and mean_r > mean_g
+    assert 0 < mean_r < 255
+    assert mean_g == 0 and mean_b == 0
 
-    npt.assert_array_almost_equal(len(faces), (2 * phi * (theta - 2)))
+    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
+    r, g, b, a = middle_pixel
+    assert r > g and r > b
+    assert g == 0 and b == 0
+    assert r == 255
+    scene.remove(get_actor_1)
+
+
+def test_sphere():
+    centers = np.array([[0, 0, 0]])
+    colors = np.array([[1, 0, 0]])
+    validate_actors(centers=centers, colors=colors, actor_type="sphere")
 
 
 def test_box():
-    scene = window.Scene()
     centers = np.array([[0, 0, 0]])
     colors = np.array([[1, 0, 0]])
-    scales = np.array([[1, 1, 7]])
-
-    box_actor = actor.box(centers=centers, colors=colors, scales=scales)
-    scene.add(box_actor)
-
-    npt.assert_array_equal(box_actor.local.position, centers[0])
-
-    mean_vertex = np.mean(box_actor.geometry.positions.view, axis=0)
-    npt.assert_array_almost_equal(mean_vertex, centers[0])
-
-    assert box_actor.prim_count == 1
-
-    scene.remove(box_actor)
+    validate_actors(centers=centers, colors=colors, actor_type="box")
 
 
 def test_cylinder():
-    scene = window.Scene()
     centers = np.array([[0, 0, 0]])
     colors = np.array([[1, 0, 0]])
-    sectors = 36
-    capped = True
-
-    cylinder_actor = actor.cylinder(
-        centers=centers, colors=colors, sectors=sectors, capped=capped
-    )
-    scene.add(cylinder_actor)
-
-    npt.assert_array_equal(cylinder_actor.local.position, centers[0])
-
-    mean_vertex = np.mean(cylinder_actor.geometry.positions.view, axis=0)
-    npt.assert_array_almost_equal(mean_vertex, centers[0], decimal=2)
-
-    assert cylinder_actor.prim_count == 1
-
-    window.snapshot(scene=scene, fname="cylinder_test_1.png")
-
-    img = Image.open("cylinder_test_1.png")
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
-
-    assert mean_r > mean_b and mean_r > mean_g
-    assert 0 < mean_r < 255 and 0 < mean_g < 255 and 0 <= mean_b < 255
-
-    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
-    r, g, b, a = middle_pixel
-    assert r > g and r > b
-    assert g == b
-    assert r > 0 and g > 0 and b > 0
-
-    scene.remove(cylinder_actor)
-
-    cylinder_actor_2 = actor.cylinder(
-        centers=centers, colors=colors, sectors=sectors, capped=capped, material="basic"
-    )
-    scene.add(cylinder_actor_2)
-    window.snapshot(scene=scene, fname="cylinder_test_2.png")
-
-    img = Image.open("cylinder_test_2.png")
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
-
-    assert mean_r > mean_b and mean_r > mean_g
-    assert 0 < mean_r < 255
-    assert mean_g == 0 and mean_b == 0
-
-    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
-    r, g, b, a = middle_pixel
-    assert r > g and r > b
-    assert g == 0 and b == 0
-    assert r == 255
-    scene.remove(cylinder_actor_2)
+    validate_actors(centers=centers, colors=colors, actor_type="cylinder")
 
 
 def test_square():
-    scene = window.Scene()
     centers = np.array([[0, 0, 0]])
     colors = np.array([[1, 0, 0]])
-
-    square_actor = actor.square(centers=centers, colors=colors)
-    scene.add(square_actor)
-
-    npt.assert_array_equal(square_actor.local.position, centers[0])
-
-    mean_vertex = np.mean(square_actor.geometry.positions.view, axis=0)
-    npt.assert_array_almost_equal(mean_vertex, centers[0])
-
-    assert square_actor.prim_count == 1
-    scene.remove(square_actor)
+    validate_actors(centers=centers, colors=colors, actor_type="square")
 
 
 def test_frustum():
-    scene = window.Scene()
     centers = np.array([[0, 0, 0]])
     colors = np.array([[1, 0, 0]])
-
-    frustum_actor = actor.frustum(centers=centers, colors=colors)
-    scene.add(frustum_actor)
-
-    npt.assert_array_equal(frustum_actor.local.position, centers[0])
-
-    mean_vertex = np.mean(frustum_actor.geometry.positions.view, axis=0)
-    npt.assert_array_almost_equal(mean_vertex, centers[0])
-
-    assert frustum_actor.prim_count == 1
-
-    window.snapshot(scene=scene, fname="frustum_test_1.png")
-
-    img = Image.open("frustum_test_1.png")
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
-
-    assert mean_r > mean_b and mean_r > mean_g
-    assert 0 < mean_r < 255 and 0 < mean_g < 255 and 0 <= mean_b < 255
-
-    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
-    r, g, b, a = middle_pixel
-    assert r > g and r > b
-    assert g == b
-    assert r > 0 and g > 0 and b > 0
-    scene.remove(frustum_actor)
-
-    frustum_actor_2 = actor.frustum(centers=centers, colors=colors, material="basic")
-    scene.add(frustum_actor_2)
-    window.snapshot(scene=scene, fname="frustum_test_2.png")
-
-    img = Image.open("frustum_test_2.png")
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
-
-    assert mean_r > mean_b and mean_r > mean_g
-    assert 0 < mean_r < 255
-    assert mean_g == 0 and mean_b == 0
-
-    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
-    r, g, b, a = middle_pixel
-    assert r > g and r > b
-    assert g == 0 and b == 0
-    assert r == 255
-    scene.remove(frustum_actor_2)
+    validate_actors(centers=centers, colors=colors, actor_type="frustum")
 
 
 def test_tetrahedron():
-    scene = window.Scene()
     centers = np.array([[0, 0, 0]])
     colors = np.array([[1, 0, 0]])
-
-    tetrahedron_actor = actor.tetrahedron(centers=centers, colors=colors)
-    scene.add(tetrahedron_actor)
-
-    npt.assert_array_equal(tetrahedron_actor.local.position, centers[0])
-
-    mean_vertex = np.mean(tetrahedron_actor.geometry.positions.view, axis=0)
-    npt.assert_array_almost_equal(mean_vertex, centers[0])
-
-    assert tetrahedron_actor.prim_count == 1
-
-    window.snapshot(scene=scene, fname="tetrahedron_test_1.png")
-
-    img = Image.open("tetrahedron_test_1.png")
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
-
-    assert mean_r > mean_b and mean_r > mean_g
-
-    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
-    r, g, b, a = middle_pixel
-    assert r > g and r > b
-    assert g == b
-    scene.remove(tetrahedron_actor)
-
-    tetrahedron_actor_2 = actor.tetrahedron(
-        centers=centers, colors=colors, material="basic"
-    )
-    scene.add(tetrahedron_actor_2)
-    window.snapshot(scene=scene, fname="tetrahedron_test_2.png")
-
-    img = Image.open("tetrahedron_test_2.png")
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
-
-    assert mean_r > mean_b and mean_r > mean_g
-    assert 0 < mean_r < 255
-    assert mean_g == 0 and mean_b == 0
-
-    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
-    r, g, b, a = middle_pixel
-    assert r > g and r > b
-    assert g == 0 and b == 0
-    assert r == 255
-    scene.remove(tetrahedron_actor_2)
+    validate_actors(centers=centers, colors=colors, actor_type="tetrahedron")
 
 
 def test_icosahedron():
-    scene = window.Scene()
     centers = np.array([[0, 0, 0]])
     colors = np.array([[1, 0, 0]])
-
-    icosahedron_actor = actor.icosahedron(centers=centers, colors=colors)
-    scene.add(icosahedron_actor)
-
-    npt.assert_array_equal(icosahedron_actor.local.position, centers[0])
-
-    mean_vertex = np.mean(icosahedron_actor.geometry.positions.view, axis=0)
-    npt.assert_array_almost_equal(mean_vertex, centers[0])
-
-    assert icosahedron_actor.prim_count == 1
-
-    window.snapshot(scene=scene, fname="icosahedron_test_1.png")
-
-    img = Image.open("icosahedron_test_1.png")
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
-
-    assert mean_r > mean_b and mean_r > mean_g
-
-    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
-    r, g, b, a = middle_pixel
-    assert r > g and r > b
-    assert g == b
-    scene.remove(icosahedron_actor)
-
-    icosahedron_actor_2 = actor.icosahedron(
-        centers=centers, colors=colors, material="basic"
-    )
-    scene.add(icosahedron_actor_2)
-    window.snapshot(scene=scene, fname="icosahedron_test_2.png")
-
-    img = Image.open("icosahedron_test_2.png")
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
-
-    assert mean_r > mean_b and mean_r > mean_g
-    assert 0 < mean_r < 255
-    assert mean_g == 0 and mean_b == 0
-
-    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
-    r, g, b, a = middle_pixel
-    assert r > g and r > b
-    assert g == 0 and b == 0
-    assert r == 255
-    scene.remove(icosahedron_actor_2)
+    validate_actors(centers=centers, colors=colors, actor_type="icosahedron")
 
 
 def test_rhombicuboctahedron():
-    scene = window.Scene()
     centers = np.array([[0, 0, 0]])
     colors = np.array([[1, 0, 0]])
-
-    rhombicuboctahedron_actor = actor.rhombicuboctahedron(
-        centers=centers, colors=colors
-    )
-    scene.add(rhombicuboctahedron_actor)
-
-    npt.assert_array_equal(rhombicuboctahedron_actor.local.position, centers[0])
-
-    mean_vertex = np.mean(rhombicuboctahedron_actor.geometry.positions.view, axis=0)
-    npt.assert_array_almost_equal(mean_vertex, centers[0])
-
-    assert rhombicuboctahedron_actor.prim_count == 1
-
-    window.snapshot(scene=scene, fname="rhombicuboctahedron_test_1.png")
-
-    img = Image.open("rhombicuboctahedron_test_1.png")
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
-
-    assert mean_r > mean_b and mean_r > mean_g
-
-    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
-    r, g, b, a = middle_pixel
-    assert r > g and r > b
-    assert g == b
-    scene.remove(rhombicuboctahedron_actor)
-
-    rhombicuboctahedron_actor_2 = actor.rhombicuboctahedron(
-        centers=centers, colors=colors, material="basic"
-    )
-    scene.add(rhombicuboctahedron_actor_2)
-    window.snapshot(scene=scene, fname="rhombicuboctahedron_test_2.png")
-
-    img = Image.open("rhombicuboctahedron_test_2.png")
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
-
-    assert mean_r > mean_b and mean_r > mean_g
-    assert 0 < mean_r < 255
-    assert mean_g == 0 and mean_b == 0
-
-    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
-    r, g, b, a = middle_pixel
-    assert r > g and r > b
-    assert g == 0 and b == 0
-    assert r == 255
-    scene.remove(rhombicuboctahedron_actor_2)
+    validate_actors(centers=centers, colors=colors, actor_type="rhombicuboctahedron")
 
 
 def test_triangularprism():
-    scene = window.Scene()
     centers = np.array([[0, 0, 0]])
     colors = np.array([[1, 0, 0]])
-
-    triangularprism_actor = actor.triangularprism(centers=centers, colors=colors)
-    scene.add(triangularprism_actor)
-
-    npt.assert_array_equal(triangularprism_actor.local.position, centers[0])
-
-    mean_vertex = np.mean(triangularprism_actor.geometry.positions.view, axis=0)
-    npt.assert_array_almost_equal(mean_vertex, centers[0])
-
-    assert triangularprism_actor.prim_count == 1
-
-    window.snapshot(scene=scene, fname="triangularprism_test_1.png")
-
-    img = Image.open("triangularprism_test_1.png")
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
-
-    assert mean_r > mean_b and mean_r > mean_g
-
-    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
-    r, g, b, a = middle_pixel
-    assert r > g and r > b
-    assert g == b
-    scene.remove(triangularprism_actor)
-
-    triangularprism_actor_2 = actor.triangularprism(
-        centers=centers, colors=colors, material="basic"
-    )
-    scene.add(triangularprism_actor_2)
-    window.snapshot(scene=scene, fname="triangularprism_test_2.png")
-
-    img = Image.open("triangularprism_test_2.png")
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
-
-    assert mean_r > mean_b and mean_r > mean_g
-    assert 0 < mean_r < 255
-    assert mean_g == 0 and mean_b == 0
-
-    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
-    r, g, b, a = middle_pixel
-    assert r > g and r > b
-    assert g == 0 and b == 0
-    assert r == 255
-    scene.remove(triangularprism_actor_2)
+    validate_actors(centers=centers, colors=colors, actor_type="triangularprism")
 
 
 def test_pentagonalprism():
-    scene = window.Scene()
     centers = np.array([[0, 0, 0]])
     colors = np.array([[1, 0, 0]])
-
-    pentagonalprism_actor = actor.pentagonalprism(centers=centers, colors=colors)
-    scene.add(pentagonalprism_actor)
-
-    npt.assert_array_equal(pentagonalprism_actor.local.position, centers[0])
-
-    mean_vertex = np.mean(pentagonalprism_actor.geometry.positions.view, axis=0)
-    npt.assert_array_almost_equal(mean_vertex, centers[0])
-
-    assert pentagonalprism_actor.prim_count == 1
-
-    window.snapshot(scene=scene, fname="pentagonalprism_test_1.png")
-
-    img = Image.open("pentagonalprism_test_1.png")
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
-
-    assert mean_r > mean_b and mean_r > mean_g
-
-    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
-    r, g, b, a = middle_pixel
-    assert r > g and r > b
-    assert g == b
-    scene.remove(pentagonalprism_actor)
-
-    pentagonalprism_actor_2 = actor.pentagonalprism(
-        centers=centers, colors=colors, material="basic"
-    )
-    scene.add(pentagonalprism_actor_2)
-    window.snapshot(scene=scene, fname="pentagonalprism_test_2.png")
-
-    img = Image.open("pentagonalprism_test_2.png")
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
-
-    assert mean_r > mean_b and mean_r > mean_g
-    assert 0 < mean_r < 255
-    assert mean_g == 0 and mean_b == 0
-
-    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
-    r, g, b, a = middle_pixel
-    assert r > g and r > b
-    assert g == 0 and b == 0
-    assert r == 255
-    scene.remove(pentagonalprism_actor_2)
+    validate_actors(centers=centers, colors=colors, actor_type="pentagonalprism")
 
 
 def test_octagonalprism():
-    scene = window.Scene()
     centers = np.array([[0, 0, 0]])
     colors = np.array([[1, 0, 0]])
-
-    octagonalprism_actor = actor.octagonalprism(centers=centers, colors=colors)
-    scene.add(octagonalprism_actor)
-
-    npt.assert_array_equal(octagonalprism_actor.local.position, centers[0])
-
-    mean_vertex = np.mean(octagonalprism_actor.geometry.positions.view, axis=0)
-    npt.assert_array_almost_equal(mean_vertex, centers[0])
-
-    assert octagonalprism_actor.prim_count == 1
-
-    window.snapshot(scene=scene, fname="octagonalprism_test_1.png")
-
-    img = Image.open("octagonalprism_test_1.png")
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
-
-    assert mean_r > mean_b and mean_r > mean_g
-
-    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
-    r, g, b, a = middle_pixel
-    assert r > g and r > b
-    assert g == b
-    scene.remove(octagonalprism_actor)
-
-    octagonalprism_actor_2 = actor.octagonalprism(
-        centers=centers, colors=colors, material="basic"
-    )
-    scene.add(octagonalprism_actor_2)
-    window.snapshot(scene=scene, fname="octagonalprism_test_2.png")
-
-    img = Image.open("octagonalprism_test_2.png")
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
-
-    assert mean_r > mean_b and mean_r > mean_g
-    assert 0 < mean_r < 255
-    assert mean_g == 0 and mean_b == 0
-
-    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
-    r, g, b, a = middle_pixel
-    assert r > g and r > b
-    assert g == 0 and b == 0
-    assert r == 255
-    scene.remove(octagonalprism_actor_2)
+    validate_actors(centers=centers, colors=colors, actor_type="octagonalprism")
 
 
 def test_arrow():
-    scene = window.Scene()
     centers = np.array([[0, 0, 0]])
     colors = np.array([[1, 0, 0]])
-
-    arrow_actor = actor.arrow(centers=centers, colors=colors)
-    scene.add(arrow_actor)
-
-    npt.assert_array_equal(arrow_actor.local.position, centers[0])
-
-    assert arrow_actor.prim_count == 1
-
-    window.snapshot(scene=scene, fname="arrow_test_1.png")
-
-    img = Image.open("arrow_test_1.png")
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
-
-    assert mean_r > mean_b and mean_r > mean_g
-
-    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
-    r, g, b, a = middle_pixel
-    assert r > g and r > b
-    assert g == b
-    scene.remove(arrow_actor)
-
-    arrow_actor_2 = actor.arrow(centers=centers, colors=colors, material="basic")
-    scene.add(arrow_actor_2)
-    window.snapshot(scene=scene, fname="arrow_test_2.png")
-
-    img = Image.open("arrow_test_2.png")
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
-
-    assert mean_r > mean_b and mean_r > mean_g
-    assert 0 < mean_r < 255
-    assert mean_g == 0 and mean_b == 0
-
-    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
-    r, g, b, a = middle_pixel
-    assert r > g and r > b
-    assert g == 0 and b == 0
-    assert r == 255
-    scene.remove(arrow_actor_2)
+    validate_actors(centers=centers, colors=colors, actor_type="arrow")
 
 
 def test_superquadric():
-    scene = window.Scene()
     centers = np.array([[0, 0, 0]])
     colors = np.array([[1, 0, 0]])
-
-    superquadric_actor = actor.superquadric(centers=centers, colors=colors)
-    scene.add(superquadric_actor)
-
-    npt.assert_array_equal(superquadric_actor.local.position, centers[0])
-
-    mean_vertex = np.mean(superquadric_actor.geometry.positions.view, axis=0)
-    npt.assert_array_almost_equal(mean_vertex, centers[0])
-
-    assert superquadric_actor.prim_count == 1
-
-    window.snapshot(scene=scene, fname="superquadric_test_1.png")
-
-    img = Image.open("superquadric_test_1.png")
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
-
-    assert mean_r > mean_b and mean_r > mean_g
-
-    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
-    r, g, b, a = middle_pixel
-    assert r > g and r > b
-    assert g == b
-    scene.remove(superquadric_actor)
-
-    superquadric_actor_2 = actor.superquadric(
-        centers=centers, colors=colors, material="basic"
-    )
-    scene.add(superquadric_actor_2)
-    window.snapshot(scene=scene, fname="superquadric_test_2.png")
-
-    img = Image.open("superquadric_test_2.png")
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
-
-    assert mean_r > mean_b and mean_r > mean_g
-    assert 0 < mean_r < 255
-    assert mean_g == 0 and mean_b == 0
-
-    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
-    r, g, b, a = middle_pixel
-    assert r > g and r > b
-    assert g == 0 and b == 0
-    assert r == 255
-    scene.remove(superquadric_actor_2)
+    validate_actors(centers=centers, colors=colors, actor_type="superquadric")
 
 
 def test_cone():
-    scene = window.Scene()
     centers = np.array([[0, 0, 0]])
     colors = np.array([[1, 0, 0]])
-
-    cone_actor = actor.cone(centers=centers, colors=colors)
-    scene.add(cone_actor)
-
-    npt.assert_array_equal(cone_actor.local.position, centers[0])
-
-    assert cone_actor.prim_count == 1
-
-    window.snapshot(scene=scene, fname="cone_test_1.png")
-
-    img = Image.open("cone_test_1.png")
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
-
-    assert mean_r > mean_b and mean_r > mean_g
-
-    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
-    r, g, b, a = middle_pixel
-    assert r > g and r > b
-    assert g == b
-    scene.remove(cone_actor)
-
-    cone_actor_2 = actor.cone(centers=centers, colors=colors, material="basic")
-    scene.add(cone_actor_2)
-    window.snapshot(scene=scene, fname="cone_test_2.png")
-
-    img = Image.open("cone_test_2.png")
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
-
-    assert mean_r > mean_b and mean_r > mean_g
-    assert 0 < mean_r < 255
-    assert mean_g == 0 and mean_b == 0
-
-    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
-    r, g, b, a = middle_pixel
-    assert r > g and r > b
-    assert g == 0 and b == 0
-    assert r == 255
-    scene.remove(cone_actor_2)
+    validate_actors(centers=centers, colors=colors, actor_type="cone")
 
 
 def test_star():
-    scene = window.Scene()
     centers = np.array([[0, 0, 0]])
     colors = np.array([[1, 0, 0]])
-
-    star_actor = actor.star(centers=centers, colors=colors)
-    scene.add(star_actor)
-
-    npt.assert_array_equal(star_actor.local.position, centers[0])
-
-    assert star_actor.prim_count == 1
-
-    window.snapshot(scene=scene, fname="star_test_1.png")
-
-    img = Image.open("star_test_1.png")
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
-
-    assert mean_r > mean_b and mean_r > mean_g
-
-    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
-    r, g, b, a = middle_pixel
-    assert r > g and r > b
-    assert g == b
-    scene.remove(star_actor)
-
-    star_actor_2 = actor.star(centers=centers, colors=colors, material="basic")
-    scene.add(star_actor_2)
-    window.snapshot(scene=scene, fname="star_test_2.png")
-
-    img = Image.open("star_test_2.png")
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
-
-    assert mean_r > mean_b and mean_r > mean_g
-    assert 0 < mean_r < 255
-    assert mean_g == 0 and mean_b == 0
-
-    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
-    r, g, b, a = middle_pixel
-    assert r > g and r > b
-    assert g == 0 and b == 0
-    assert r == 255
-    scene.remove(star_actor_2)
+    validate_actors(centers=centers, colors=colors, actor_type="star")

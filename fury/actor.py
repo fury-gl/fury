@@ -257,20 +257,20 @@ def cylinder(
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     height: float, optional
-        The height of the cylinder. Default is 1.
+        The height of the cylinder.
     sectors: int, optional
         The number of divisions around the cylinder's circumference .
-        Higher values produce smoother cylinders. Default is 36.
+        Higher values produce smoother cylinders.
     radii : float or ndarray (N,) or tuple, optional
         The radius of the base of the cylinders, single value applies to all cylinders,
-        while an array specifies a radius for each cylinder individually. Default:0.5.
-    scales : int or ndarray (N, 3) or tuple (3,), optional
-        Scaling factors for the cylinders in the (x, y, z) dimensions.
-        Default is uniform scaling (1, 1, 1).
+        while an array specifies a radius for each cylinder individually.
+    scales : int or ndarray (N,3) or tuple (3,), optional
+        The size of the square in each dimension.  If a single value is provided,
+        the same size will be used for all cylinders.
     directions : ndarray, shape (N, 3), optional
         The orientation vector of the cylinder.
     capped : bool, optional
-        Whether to add caps (circular ends) to the cylinders. Default is True.
+        Whether to add caps (circular ends) to the cylinders.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
@@ -465,7 +465,7 @@ def tetrahedron(
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     scales : int or ndarray (N,3) or tuple (3,), optional
         The size of the tetrahedron in each dimension.  If a single value is provided,
-        the same size will be used for all tetrahedron.
+        the same size will be used for all tetrahedrons.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
@@ -529,7 +529,7 @@ def icosahedron(
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     scales : int or ndarray (N,3) or tuple (3,), optional
         The size of the icosahedron in each dimension.  If a single value is provided,
-        the same size will be used for all icosahedron.
+        the same size will be used for all icosahedrons.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
@@ -593,7 +593,7 @@ def rhombicuboctahedron(
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     scales : int or ndarray (N,3) or tuple (3,), optional
         The size of the rhombicuboctahedro in each dimension. If a single value is
-        provided, the same size will be used for all rhombicuboctahedron.
+        provided, the same size will be used for all rhombicuboctahedrons.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
@@ -659,7 +659,7 @@ def triangularprism(
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     scales : int or ndarray (N,3) or tuple (3,), optional
         The size of the triangular prism in each dimension. If a single value is
-        provided, the same size will be used for all triangular prism.
+        provided, the same size will be used for all triangular prisms.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
@@ -724,7 +724,7 @@ def pentagonalprism(
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     scales : int or ndarray (N,3) or tuple (3,), optional
         The size of the pentagonal prism in each dimension. If a single value is
-        provided, the same size will be used for all pentagonal prism.
+        provided, the same size will be used for all pentagonal prisms.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
@@ -789,7 +789,7 @@ def octagonalprism(
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     scales : int or ndarray (N,3) or tuple (3,), optional
         The size of the octagonal prism in each dimension. If a single value is
-        provided, the same size will be used for all octagonal prism.
+        provided, the same size will be used for all octagonal prisms.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
@@ -858,19 +858,19 @@ def arrow(
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     height : float, optional
-        The total height of the arrow, including the shaft and tip. Default is 1.0.
+        The total height of the arrow, including the shaft and tip.
     resolution : int, optional
         The number of divisions along the arrow's circular cross-sections.
-        Higher values produce smoother arrows. Default is 10.
+        Higher values produce smoother arrows.
     tip_length : float, optional
-        The length of the arrowhead tip relative to the total height. Default is 0.35.
+        The length of the arrowhead tip relative to the total height.
     tip_radius : float, optional
-        The radius of the arrowhead tip. Default is 0.1.
+        The radius of the arrowhead tip.
     shaft_radius : float, optional
-        The radius of the arrow shaft. Default is 0.03.
+        The radius of the arrow shaft.
     scales : int or ndarray (N,3) or tuple (3,), optional
         The size of the arrow in each dimension. If a single value is
-        provided, the same size will be used for all arrow.
+        provided, the same size will be used for all arrows.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
@@ -922,8 +922,8 @@ def arrow(
 def superquadric(
     centers,
     *,
-    roundness=(1, 1),
     directions=(0, 0, 0),
+    roundness=(1, 1),
     colors=(1, 1, 1),
     scales=(1, 1, 1),
     opacity=None,
@@ -940,12 +940,11 @@ def superquadric(
         The orientation vector of the superquadric.
     roundness : tuple, optional
         parameters (Phi and Theta) that control the shape of the superquadric.
-        Default is (1,1).
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     scales : int or ndarray (N,3) or tuple (3,), optional
         The size of the superquadric in each dimension. If a single value is
-        provided, the same size will be used for all superquadric.
+        provided, the same size will be used for all superquadrics.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
@@ -1009,16 +1008,16 @@ def cone(
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     height: float, optional
-        The height of the cone. Default is 1.
+        The height of the cone.
     sectors: int, optional
         The number of divisions around the cones's circumference .
-        Higher values produce smoother cones. Default is 10.
+        Higher values produce smoother cones.
     radii : float or ndarray (N,) or tuple, optional
         The radius of the base of the cones, single value applies to all cones,
-        while an array specifies a radius for each cone individually. Default:0.5.
-    scales : int or ndarray (N, 3) or tuple (3,), optional
-        Scaling factors for the cones in the (x, y, z) dimensions.
-        Default is uniform scaling (1, 1, 1).
+        while an array specifies a radius for each cone individually.
+    scales : int or ndarray (N,3) or tuple (3,), optional
+        The size of the square in each dimension.  If a single value is provided,
+        the same size will be used for all cones.
     directions : ndarray, shape (N, 3), optional
         The orientation vector of the cone.
     opacity : float, optional
@@ -1081,14 +1080,14 @@ def star(
     centers : ndarray, shape (N, 3)
         star positions.
     dim : int, optional.
-        The dimensionality of the star (2D or 3D). Default is 2.
+        The dimensionality of the star (2D or 3D).
     directions : ndarray, shape (N, 3), optional
         The orientation vector of the star.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     scales : int or ndarray (N,3) or tuple (3,), optional
         The size of the star in each dimension. If a single value is
-        provided, the same size will be used for all star.
+        provided, the same size will be used for all stars.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
