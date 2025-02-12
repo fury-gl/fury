@@ -1,6 +1,6 @@
 import numpy as np
 
-from fury.window import display, snapshot
+from fury.window import show, snapshot
 from fury.actor import sphere
 
 ###############################################################################
@@ -18,6 +18,6 @@ interactive = False
 
 if __name__ == "__main__":
     if interactive:
-        display(actors=[sphere_actor])
+        show(actors=[sphere_actor])
     else:
-        snapshot(actors=[sphere_actor], fname="display.png")
+        snapshot(actors=[sphere_actor], fname="show.png")
