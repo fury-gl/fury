@@ -30,3 +30,14 @@ def test_create_mesh():
     mesh = geometry.create_mesh(geometry=geo, material=mat)
     assert mesh.geometry == geo
     assert mesh.material == mat
+
+
+def test_create_point():
+    vertices = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2]]).astype("float32")
+    geo = geometry.buffer_to_geometry(vertices)
+    mat = material._create_points_material(
+        material="basic", color=(1, 0, 0), opacity=0.5, mode="auto"
+    )
+    point = geometry.create_point(geometry=geo, material=mat)
+    assert point.geometry == geo
+    assert point.material == mat

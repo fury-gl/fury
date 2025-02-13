@@ -1,4 +1,4 @@
-from pygfx import Geometry, Mesh
+from pygfx import Geometry, Mesh, Points
 
 
 def buffer_to_geometry(positions, **kwargs):
@@ -41,3 +41,23 @@ def create_mesh(geometry, material):
     """
     mesh = Mesh(geometry=geometry, material=material)
     return mesh
+
+
+def create_point(geometry, material):
+    """
+    Create a point object.
+
+    Parameters
+    ----------
+    geometry : Geometry
+        The geometry object.
+    material : Material
+        The material object.
+
+    Returns
+    -------
+    points : Points
+        The point object.
+    """
+    point = Points(geometry=geometry, material=material)
+    return point

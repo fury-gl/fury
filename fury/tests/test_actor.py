@@ -147,3 +147,46 @@ def test_star():
     centers = np.array([[0, 0, 0]])
     colors = np.array([[1, 0, 0]])
     validate_actors(centers=centers, colors=colors, actor_type="star")
+
+
+def test_point():
+    centers = np.array([[0, 0, 0]])
+    colors = np.array([[1, 0, 0]])
+    scene = window.Scene()
+    get_actor = actor.point(centers=centers, colors=colors)
+    scene.add(get_actor)
+
+    npt.assert_array_equal(get_actor.local.position, centers[0])
+
+    mean_vertex = np.round(np.mean(get_actor.geometry.positions.view, axis=0))
+    npt.assert_array_almost_equal(mean_vertex, centers[0])
+
+    fname = "point_test.png"
+    window.snapshot(scene=scene, fname=fname)
+
+    img = Image.open(fname)
+    img_array = np.array(img)
+
+    mean_r, mean_g, mean_b, mean_a = np.mean(
+        img_array.reshape(-1, img_array.shape[2]), axis=0
+    )
+
+    assert mean_r > mean_b and mean_r > mean_g
+    scene.remove(get_actor)
+
+    get_actor_1 = actor.point(centers=centers, colors=colors, material="gaussian")
+    scene.add(get_actor_1)
+    fname_1 = "point_test_1.png"
+    window.snapshot(scene=scene, fname=fname_1)
+    img = Image.open(fname_1)
+    img_array = np.array(img)
+
+    mean_r, mean_g, mean_b, mean_a = np.mean(
+        img_array.reshape(-1, img_array.shape[2]), axis=0
+    )
+
+    assert mean_r > mean_b and mean_r > mean_g
+    assert 0 < mean_r < 255
+    assert mean_g == 0 and mean_b == 0
+
+    scene.remove(get_actor_1)
