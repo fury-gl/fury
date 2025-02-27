@@ -1,3 +1,4 @@
+import argparse
 import numpy as np
 
 from fury.window import ShowManager, Scene, snapshot
@@ -40,10 +41,15 @@ sphere_actor = sphere(
 )
 scene.add(sphere_actor)
 
-interactive = False
-
 if __name__ == "__main__":
-    if interactive:
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "-i", "--interactive", action="store_true", help="Enable interactive mode"
+    )
+    args = parser.parse_args()
+
+    if args.interactive:
         show_m = ShowManager(scene=scene, title="FURY 2.0: Skybox Example")
         show_m.start()
     else:

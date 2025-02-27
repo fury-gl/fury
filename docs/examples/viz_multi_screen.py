@@ -1,3 +1,4 @@
+import argparse
 import numpy as np
 
 from fury.window import ShowManager, Scene, snapshot
@@ -65,10 +66,15 @@ scene1.add(sphere_actor1)
 scene2.add(sphere_actor2)
 
 
-interactive = False
-
 if __name__ == "__main__":
-    if interactive:
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "-i", "--interactive", action="store_true", help="Enable interactive mode"
+    )
+    args = parser.parse_args()
+
+    if args.interactive:
         show_m = ShowManager(
             scene=[scene0, scene1, scene2],
             title="FURY 2.0: Multi Screen Example",
