@@ -3,9 +3,7 @@ from functools import reduce
 
 from PIL.Image import fromarray as image_from_array
 import numpy as np
-from scipy import ndimage
 
-from fury.io import load_image
 from fury.lib import (
     AmbientLight,
     Background,
@@ -473,7 +471,8 @@ class ShowManager:
             - glfw or default : select default GLFW canvas window.
             - qt : select Qt canvas window.
             - jupyter : select jupyter_rfb canvas widget.
-            - offscreen : select offscreen canvas to not show any window for remote runs.
+            - offscreen : select offscreen canvas to not show any window for remote
+            runs.
         """
         window_type = window_type.lower()
 
@@ -720,4 +719,5 @@ def show(actors, *, window_type="default"):
     scene = Scene()
     scene.add(*actors)
     show_m = ShowManager(scene=scene, window_type=window_type)
-    show_m.start()
+    if window_type != "offscreen":
+        show_m.start()

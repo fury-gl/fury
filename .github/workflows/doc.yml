@@ -23,6 +23,8 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [3.12]
+    env:
+      INTERACTIVE_TUTORIALS: false
     steps:
     - uses: actions/checkout@v4
       with:

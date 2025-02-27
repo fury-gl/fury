@@ -1,5 +1,5 @@
 import numpy as np
-import argparse
+import os
 
 from fury.window import show, snapshot
 from fury.actor import sphere
@@ -16,15 +16,14 @@ sphere_actor = sphere(
 )
 
 
+interactive = True
+
+if "INTERACTIVE_TUTORIALS" in os.environ:
+    interactive = os.environ["INTERACTIVE_TUTORIALS"].lower() == "true"
+
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "-i", "--interactive", action="store_true", help="Enable interactive mode"
-    )
-    args = parser.parse_args()
-
-    if args.interactive:
+    if interactive:
         show(actors=[sphere_actor])
     else:
         snapshot(actors=[sphere_actor], fname="show.png")

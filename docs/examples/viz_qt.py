@@ -1,4 +1,4 @@
-import argparse
+import os
 import numpy as np
 
 from fury.window import ShowManager, Scene, snapshot, QtWidgets
@@ -51,15 +51,14 @@ class Main(QtWidgets.QWidget):
 m = Main()
 m.setWindowTitle("FURY 2.0: Qt Example")
 
+interactive = True
+
+if "INTERACTIVE_TUTORIALS" in os.environ:
+    interactive = os.environ["INTERACTIVE_TUTORIALS"].lower() == "true"
+
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "-i", "--interactive", action="store_true", help="Enable interactive mode"
-    )
-    args = parser.parse_args()
-
-    if args.interactive:
+    if interactive:
         m.show()
         m.show_manager.start()
     else:

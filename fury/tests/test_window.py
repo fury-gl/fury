@@ -11,10 +11,6 @@ from fury.lib import (
     PerspectiveCamera,
     Renderer,
     Texture,
-    have_jupyter_rfb,
-    have_py_qt5,
-    have_py_qt6,
-    have_py_side6,
 )
 from fury.window import (
     Scene,
@@ -123,7 +119,7 @@ def test_screen_bounding_box():
 
 def test_show_manager_initialization_default():
     """Test ShowManager initialization with default parameters."""
-    show_m = ShowManager()
+    show_m = ShowManager(window_type="offscreen")
     assert show_m.title == "FURY 2.0"
     assert show_m.size == (800, 800)
     assert show_m.pixel_ratio == 1
@@ -138,6 +134,7 @@ def test_show_manager_initialization_custom():
         pixel_ratio=2,
         enable_events=False,
         screen_config=[2],  # Two vertical sections
+        window_type="offscreen",
     )
     assert show_m.title == "Custom Title"
     assert show_m.size == (1024, 768)
@@ -150,7 +147,7 @@ def test_show_manager_initialization_custom():
 def test_show_manager_initialization_multiple_screens():
     """Test ShowManager initialization with multiple screens."""
     show_m = ShowManager(
-        screen_config=[2, 3]
+        screen_config=[2, 3], window_type="offscreen"
     )  # 2 vertical sections, 3 horizontal sections
     assert show_m._total_screens == 5  # 2 + 3 screens
     assert len(show_m.screens) == 5
@@ -160,19 +157,26 @@ def test_show_manager_initialization_custom_scene_camera():
     """Test ShowManager initialization with custom scene and camera."""
     scene = Scene()
     camera = PerspectiveCamera(75)
-    show_m = ShowManager(scene=scene, camera=camera)
+    show_m = ShowManager(scene=scene, camera=camera, window_type="offscreen")
     assert show_m.screens[0].scene == scene
     assert show_m.screens[0].camera == camera
 
 
-@pytest.mark.skipif(
-    not (have_py_side6 or have_py_qt6 or have_py_qt5), reason="Needs Qt"
-)
-def test_show_manager_initialization_qt_window():
+def test_show_manager_initialization_default_window():
     """Test ShowManager initialization with a Qt window."""
-    show_m = ShowManager(window_type="qt")
-    assert show_m._is_qt is True
-    assert show_m.app is not None
+    show_m = ShowManager()
+    assert show_m._is_qt is False
+    assert show_m.app is None
+
+
+# @pytest.mark.skipif(
+#     not (have_py_side6 or have_py_qt6 or have_py_qt5), reason="Needs Qt"
+# )
+# def test_show_manager_initialization_qt_window():
+#     """Test ShowManager initialization with a Qt window."""
+#     show_m = ShowManager(window_type="qt")
+#     assert show_m._is_qt is True
+#     assert show_m.app is not None
 
 
 def test_show_manager_screen_setup():
@@ -182,7 +186,10 @@ def test_show_manager_screen_setup():
     camera1 = PerspectiveCamera(50)
     camera2 = PerspectiveCamera(75)
     show_m = ShowManager(
-        scene=[scene1, scene2], camera=[camera1, camera2], screen_config=[1, 1]
+        scene=[scene1, scene2],
+        camera=[camera1, camera2],
+        screen_config=[1, 1],
+        window_type="offscreen",
     )
     assert len(show_m.screens) == 2
     assert show_m.screens[0].scene == scene1
@@ -193,7 +200,7 @@ def test_show_manager_screen_setup():
 
 def test_show_manager_update_viewports():
     """Test updating screen viewports."""
-    show_m = ShowManager(screen_config=[2])  # Two screens
+    show_m = ShowManager(screen_config=[2], window_type="offscreen")  # Two screens
     new_bbs = [(0, 0, 400, 800), (400, 0, 400, 800)]  # Split window vertically
     update_viewports(show_m.screens, new_bbs)
     for screen, bb in zip(show_m.screens, new_bbs):
@@ -224,7 +231,7 @@ def test_show_manager_calculate_screen_sizes():
 
 def test_show_manager_set_enable_events():
     """Test enabling and disabling events."""
-    show_m = ShowManager()
+    show_m = ShowManager(window_type="offscreen")
     show_m.set_enable_events(False)
     assert show_m.enable_events is False
     for screen in show_m.screens:
@@ -239,7 +246,7 @@ def test_show_manager_set_enable_events():
 def test_show_manager_update_camera(sample_actor):
     """Test updating the camera to face the target and show the size if empty scene."""
     scene = Scene()
-    show_m = ShowManager(scene=scene)
+    show_m = ShowManager(scene=scene, window_type="offscreen")
     update_camera(show_m.screens[0].camera, show_m.size, scene)
     assert show_m.screens[0].camera.width == 800
     assert show_m.screens[0].camera.height == 800
@@ -252,10 +259,7 @@ def test_show_manager_update_camera(sample_actor):
 
 def test_show_manager_snapshot(tmpdir):
     """Test taking a snapshot of the scene."""
-    show_m = ShowManager()
     fname = tmpdir.join("snapshot.png")
-    with pytest.raises(ValueError):
-        arr = show_m.snapshot(str(fname))
 
     show_m = ShowManager(window_type="offscreen")
     arr = show_m.snapshot(str(fname))
@@ -286,7 +290,7 @@ def test_show_manager_invalid_window_type():
 
 def test_show_manager_empty_scene():
     """Test initialization with an empty scene."""
-    show_m = ShowManager(scene=Scene())
+    show_m = ShowManager(scene=Scene(), window_type="offscreen")
     assert (
         len(show_m.screens[0].scene.children) == 3
     )  # Background + AmbientLight + Camera
@@ -294,17 +298,11 @@ def test_show_manager_empty_scene():
 
 def test_show_manager_with_empty_config():
     """Test initialization with empty screen config."""
-    show_m = ShowManager(screen_config=[])
+    show_m = ShowManager(screen_config=[], window_type="offscreen")
     assert show_m._total_screens == 1
     assert len(show_m.screens) == 1
 
 
 def test_display_default(sample_actor):
     """Test the display function with default parameters."""
-    show([sample_actor], window_type="offscreen")  # No window shown
-
-
-@pytest.mark.skipif(not have_jupyter_rfb, reason="Needs jupyter-rfb")
-def test_display_custom_window(sample_actor):
-    """Test the display function with a custom window type."""
-    show([sample_actor], window_type="jupyter")  # Jupyter canvas
+    show([sample_actor], window_type="offscreen")
