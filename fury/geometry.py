@@ -1,4 +1,15 @@
-from pygfx import Geometry, Mesh, Points
+from fury.lib import (
+    Geometry,
+    Mesh,
+    MeshBasicMaterial,
+    MeshPhongMaterial,
+    Points,
+    PointsGaussianBlobMaterial,
+    PointsMarkerMaterial,
+    PointsMaterial,
+    Text,
+    TextMaterial,
+)
 
 
 def buffer_to_geometry(positions, **kwargs):
@@ -19,6 +30,9 @@ def buffer_to_geometry(positions, **kwargs):
     geo : Geometry
         The geometry object.
     """
+    if positions is None or positions.size == 0:
+        raise ValueError("positions array cannot be empty or None.")
+
     geo = Geometry(positions=positions, **kwargs)
     return geo
 
@@ -39,6 +53,14 @@ def create_mesh(geometry, material):
     mesh : Mesh
         The mesh object.
     """
+    if not isinstance(geometry, Geometry):
+        raise TypeError("geometry must be an instance of Geometry.")
+
+    if not isinstance(material, (MeshPhongMaterial, MeshBasicMaterial)):
+        raise TypeError(
+            "material must be an instance of MeshPhongMaterial or MeshBasicMaterial."
+        )
+
     mesh = Mesh(geometry=geometry, material=material)
     return mesh
 
@@ -59,5 +81,44 @@ def create_point(geometry, material):
     points : Points
         The point object.
     """
+    if not isinstance(geometry, Geometry):
+        raise TypeError("geometry must be an instance of Geometry.")
+
+    if not isinstance(
+        material, (PointsMaterial, PointsGaussianBlobMaterial, PointsMarkerMaterial)
+    ):
+        raise TypeError(
+            "material must be an instance of PointsMaterial, "
+            "PointsGaussianBlobMaterial or PointsMarkerMaterial."
+        )
+
     point = Points(geometry=geometry, material=material)
     return point
+
+
+def create_text(text, material, **kwargs):
+    """
+    Create a text object.
+
+    Parameters
+    ----------
+    text : str
+        The text content.
+    material : Material
+        The material object.
+    kwargs : dict
+        Additional properties like font_size, anchor, etc.
+
+    Returns
+    -------
+    text : Text
+        The text object.
+    """
+    if not isinstance(text, str):
+        raise TypeError("text must be a string.")
+
+    if not isinstance(material, TextMaterial):
+        raise TypeError("material must be an instance of TextMaterial.")
+
+    text = Text(text=text, material=material, **kwargs)
+    return text

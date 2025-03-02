@@ -1,8 +1,13 @@
 import numpy as np
-import pygfx as gfx
 
 from fury import material, window
 from fury.geometry import buffer_to_geometry, create_mesh
+from fury.lib import (
+    PointsGaussianBlobMaterial,
+    PointsMarkerMaterial,
+    PointsMaterial,
+    TextMaterial,
+)
 from fury.material import _create_mesh_material
 from fury.primitive import prim_sphere
 
@@ -84,7 +89,7 @@ def test_create_point_material():
     mat = material._create_points_material(
         material="basic", color=color, opacity=0.5, mode="auto"
     )
-    assert isinstance(mat, gfx.PointsMaterial)
+    assert isinstance(mat, PointsMaterial)
     assert mat.color == color + (0.5,)
     assert mat.color_mode == "auto"
 
@@ -92,15 +97,7 @@ def test_create_point_material():
     mat = material._create_points_material(
         material="gaussian", color=color, opacity=0.5, mode="auto"
     )
-    assert isinstance(mat, gfx.PointsGaussianBlobMaterial)
-    assert mat.color == color + (0.5,)
-    assert mat.color_mode == "auto"
-
-    color = (1, 0, 0)
-    mat = material._create_points_material(
-        material="marker", color=color, opacity=0.5, mode="auto"
-    )
-    assert isinstance(mat, gfx.PointsMarkerMaterial)
+    assert isinstance(mat, PointsGaussianBlobMaterial)
     assert mat.color == color + (0.5,)
     assert mat.color_mode == "auto"
 
@@ -108,7 +105,7 @@ def test_create_point_material():
     mat = material._create_points_material(
         material="basic", color=color, opacity=0.5, mode="auto"
     )
-    assert isinstance(mat, gfx.PointsMaterial)
+    assert isinstance(mat, PointsMaterial)
     assert mat.color == (1, 0, 0, 0.25)
     assert mat.color_mode == "auto"
 
@@ -116,6 +113,46 @@ def test_create_point_material():
     mat = material._create_points_material(
         material="basic", color=color, opacity=0.5, mode="vertex"
     )
-    assert isinstance(mat, gfx.PointsMaterial)
+    assert isinstance(mat, PointsMaterial)
     assert mat.color == (1, 1, 1)
     assert mat.color_mode == "vertex"
+
+
+def test_create_marker_material():
+    color = (1, 0, 0)
+    mat = material._create_marker_material(color=color, opacity=0.5, mode="auto")
+    assert isinstance(mat, PointsMarkerMaterial)
+    assert mat.color == color + (0.5,)
+    assert mat.color_mode == "auto"
+
+    color = (1, 0, 0, 0.5)
+    mat = material._create_marker_material(color=color, opacity=0.5, mode="auto")
+    assert isinstance(mat, PointsMarkerMaterial)
+    assert mat.color == (1, 0, 0, 0.25)
+    assert mat.color_mode == "auto"
+
+    color = (1, 0, 0)
+    mat = material._create_marker_material(color=color, opacity=0.5, mode="vertex")
+    assert isinstance(mat, PointsMarkerMaterial)
+    assert mat.color == (1, 1, 1)
+    assert mat.color_mode == "vertex"
+
+
+def test_create_text_material():
+    color = (1, 0, 0)
+    mat = material._create_text_material(color=color, opacity=0.5)
+    assert isinstance(mat, TextMaterial)
+    assert mat.color == color + (0.5,)
+    assert mat.outline_color == (0, 0, 0)
+    assert mat.outline_thickness == 0.0
+    assert mat.weight_offset == 1.0
+    assert mat.aa is True
+
+    color = (1, 0, 0, 0.5)
+    mat = material._create_text_material(color=color, opacity=0.5)
+    assert isinstance(mat, TextMaterial)
+    assert mat.color == (1, 0, 0, 0.25)
+    assert mat.outline_color == (0, 0, 0)
+    assert mat.outline_thickness == 0.0
+    assert mat.weight_offset == 1.0
+    assert mat.aa is True

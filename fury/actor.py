@@ -1,7 +1,17 @@
 import numpy as np
 
-from fury.geometry import buffer_to_geometry, create_mesh, create_point
-from fury.material import _create_mesh_material, _create_points_material
+from fury.geometry import (
+    buffer_to_geometry,
+    create_mesh,
+    create_point,
+    create_text,
+)
+from fury.material import (
+    _create_marker_material,
+    _create_mesh_material,
+    _create_points_material,
+    _create_text_material,
+)
 import fury.primitive as fp
 
 
@@ -1132,8 +1142,11 @@ def star(
 def point(
     centers,
     *,
-    colors=(1, 1, 1),
+    size=4,
+    colors=(1.0, 0.0, 0.0),
     material="basic",
+    map=None,
+    aa=True,
     opacity=1.0,
     enable_picking=True,
 ):
@@ -1143,12 +1156,18 @@ def point(
     ----------
     centers : ndarray, shape (N, 3), optional
         The positions of the points. If None, random points will be generated.
+    size : float
+        The size (diameter) of the points in logical pixels. Default 4.
     colors : ndarray (N,3) or (N,4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA values in the range [0, 1].
+    material : str, optional
+        The material type for the points. Options are 'basic', 'gaussian'.
+    map : TextureMap | Texture
+        The texture map specifying the color for each texture coordinate.
+    aa : bool
+        Whether or not the points are anti-aliased in the shader. Default True.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
-    material : str, optional
-        The material type for the points. Options are 'basic', 'gaussian' and 'marker'.
     enable_picking : bool, optional
         Whether the points should be pickable in a 3D scene.
 
@@ -1176,8 +1195,165 @@ def point(
     )
 
     mat = _create_points_material(
-        material=material, opacity=opacity, enable_picking=enable_picking
+        size=size,
+        material=material,
+        map=map,
+        aa=aa,
+        opacity=opacity,
+        enable_picking=enable_picking,
     )
 
     obj = create_point(geo, mat)
+    return obj
+
+
+def marker(
+    centers,
+    *,
+    size=15,
+    colors=(1.0, 0.0, 0.0),
+    marker="circle",
+    edge_color="black",
+    edge_width=1,
+    opacity=1.0,
+    enable_picking=True,
+):
+    """Visualize one or many marker with different features.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3), optional
+        The positions of the points. If None, random points will be generated.
+    size : float
+        The size (diameter) of the points in logical pixels. Default 4.
+    colors : ndarray (N,3) or (N,4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA values in the range [0, 1].
+    marker : str | MarkerShape
+        The shape of the marker. Options are "●": "circle", "+": "plus",
+        "x": "cross", "♥": "heart", "✳": "asterix", Default 'circle'.
+    edge_color : str | tuple | Color
+        The color of line marking the edge of the markers. Default 'black'.
+    edge_width : float
+        The width of the edge of the markers. Default 1.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
+    enable_picking : bool, optional
+        Whether the points should be pickable in a 3D scene.
+
+    Returns
+    -------
+    marker_actor : Actor
+        An marker actor containing the generated points with the specified material
+        and properties.
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> import numpy as np
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(1000, 3) * 10
+    >>> colors = np.random.rand(1000, 3)
+    >>> marker_actor = actor.marker(centers=centers, colors=colors)
+    >>> scene.add(marker_actor)
+    >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
+    >>> show_manager.start()
+    """
+    geo = buffer_to_geometry(
+        positions=centers.astype("float32"),
+        colors=colors.astype("float32"),
+    )
+
+    mat = _create_marker_material(
+        size=size,
+        marker=marker,
+        edge_color=edge_color,
+        edge_width=edge_width,
+        opacity=opacity,
+        enable_picking=enable_picking,
+    )
+
+    obj = create_point(geo, mat)
+    return obj
+
+
+def text(
+    text="FURY",
+    *,
+    colors=(1.0, 1.0, 1.0),
+    font_size=1.0,
+    family="Arial",
+    anchor="middle-center",
+    max_width=0.0,
+    line_height=1.2,
+    text_align="start",
+    outline_color=(0.0, 0.0, 0.0),
+    outline_thickness=0.0,
+    opacity=1.0,
+):
+    """Visualize text with different features.
+
+    Parameters
+    ----------
+    text : str | list[str]
+        The plain text to render (optional).
+        The text is split in one TextBlock per line,
+        unless a list is given, in which case each (str) item become a TextBlock.
+    colors : ndarray (N,3) or (N,4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA values in the range [0, 1].
+    font_size : float
+        The size of the font, in object coordinates or pixel screen coordinates.
+    family : str, tuple
+        The name(s) of the font to prefer. Default "Arial".
+    anchor : str | TextAnchor
+        The position of the origin of the text. Default "middle-center".
+    max_width : float
+        The maximum width of the text. Words are wrapped if necessary.
+    line_height : float
+        A factor to scale the distance between lines. A value of 1 means the
+        "native" font's line distance. Default 1.2.
+    text_align : str | TextAlign
+        The horizontal alignment of the text. Can be "start",
+        "end", "left", "right", "center", "justify" or "justify_all".
+        Text alignment is ignored for vertical text.
+    outline_color : Color
+        The color of the outline of the text.
+    outline_thickness : int
+        A value indicating the relative width of the outline. Valid values are
+        between 0.0 and 0.5.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
+
+    Returns
+    -------
+    text_actor : Actor
+        An text actor containing the generated text with the specified material
+        and properties.
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> import numpy as np
+    >>> scene = window.Scene()
+    >>> text_actor = actor.text(text='FURY', colors=colors)
+    >>> scene.add(text_actor)
+    >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
+    >>> show_manager.start()
+    """
+    mat = _create_text_material(
+        color=colors,
+        opacity=opacity,
+        outline_color=outline_color,
+        outline_thickness=outline_thickness,
+    )
+
+    obj = create_text(
+        text=text,
+        material=mat,
+        font_size=font_size,
+        family=family,
+        anchor=anchor,
+        max_width=max_width,
+        line_height=line_height,
+        text_align=text_align,
+    )
     return obj

@@ -29,6 +29,18 @@ Controller: TypeAlias = gfx.Controller
 Scene: TypeAlias = gfx.Scene
 Viewport: TypeAlias = gfx.Viewport
 
+Geometry = gfx.Geometry
+Mesh = gfx.Mesh
+Points = gfx.Points
+
+MeshBasicMaterial = gfx.MeshBasicMaterial
+MeshPhongMaterial = gfx.MeshPhongMaterial
+PointsMaterial = gfx.PointsMaterial
+PointsGaussianBlobMaterial = gfx.PointsGaussianBlobMaterial
+PointsMarkerMaterial = gfx.PointsMarkerMaterial
+TextMaterial = gfx.TextMaterial
+Text = gfx.Text
+
 DirectionalLight = gfx.DirectionalLight
 OrbitController = gfx.OrbitController
 PerspectiveCamera = gfx.PerspectiveCamera
