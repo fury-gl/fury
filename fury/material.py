@@ -104,35 +104,43 @@ def _create_mesh_material(
 def _create_points_material(
     *,
     material="basic",
-    enable_picking=True,
-    color=None,
-    opacity=1.0,
+    color=(1.0, 1.0, 1.0),
+    size=4,
+    map=None,
+    aa=True,
     mode="vertex",
+    opacity=1.0,
+    enable_picking=True,
 ):
     """
-    Create a points material.
+     Create a points material.
 
-    Parameters
-    ----------
-    material : str, optional
-        The type of material to create. Options are 'baisc' (default),
-        'gaussian', and 'marker'.
-    enable_picking : bool, optional
-        Whether the material should be pickable in a scene.
-    color : tuple or None, optional
-        The color of the material, represented as an RGBA tuple. If None, the
-        default color is used.
-    opacity : float, optional
-        The opacity of the material, from 0 (transparent) to 1 (opaque).
-        If RGBA is provided, the final alpha will be:
-        final_alpha = alpha_in_RGBA * opacity
-    mode : str, optional
-        The color mode of the material. Options are 'auto' and 'vertex'.
+     Parameters
+     ----------
+     material : str, optional
+         The type of material to create. Options are 'baisc' (default),
+         'gaussian', and 'marker'.
+    colors : ndarray (N,3) or (N,4) or tuple (3,) or tuple (4,), optional
+         RGB or RGBA values in the range [0, 1].
+     size : float
+         The size (diameter) of the points in logical pixels. Default 4.
+     map : TextureMap | Texture
+         The texture map specifying the color for each texture coordinate.
+     aa : bool
+         Whether or not the points are anti-aliased in the shader. Default True.
+     mode : str, optional
+         The color mode of the material. Options are 'auto' and 'vertex'.
+     opacity : float, optional
+         The opacity of the material, from 0 (transparent) to 1 (opaque).
+         If RGBA is provided, the final alpha will be:
+         final_alpha = alpha_in_RGBA * opacity
+     enable_picking : bool, optional
+         Whether the material should be pickable in a scene.
 
-    Returns
-    -------
-    PointsMaterial
-        A point material object of the specified type with the given properties.
+     Returns
+     -------
+     PointsMaterial
+         A point material object of the specified type with the given properties.
     """
 
     if not (0 <= opacity <= 1):
@@ -155,24 +163,98 @@ def _create_points_material(
 
     if material == "basic":
         return gfx.PointsMaterial(
-            size=4,
-            pick_write=enable_picking,
-            color_mode=mode,
             color=color,
+            size=size,
+            color_mode=mode,
+            map=map,
+            aa=aa,
+            pick_write=enable_picking,
         )
     elif material == "gaussian":
         return gfx.PointsGaussianBlobMaterial(
-            size=4,
-            pick_write=enable_picking,
-            color_mode=mode,
             color=color,
+            size=size,
+            color_mode=mode,
+            map=map,
+            aa=aa,
+            pick_write=enable_picking,
         )
-    elif material == "marker":
+    else:
+        raise ValueError(f"Unsupported material type: {material}")
+
+
+def _create_marker_material(
+    *,
+    material="marker",
+    color=(1.0, 1.0, 1.0),
+    size=4,
+    marker="circle",
+    edge_color="black",
+    edge_width=1,
+    mode="vertex",
+    opacity=1.0,
+    enable_picking=True,
+):
+    """
+     Create a marker material.
+
+     Parameters
+     ----------
+     material : str, optional
+         The type of material to create. Options are 'baisc' (default),
+         'gaussian', and 'marker'.
+    colors : ndarray (N,3) or (N,4) or tuple (3,) or tuple (4,), optional
+         RGB or RGBA values in the range [0, 1].
+     size : float
+         The size (diameter) of the points in logical pixels. Default 4.
+     marker : str | MarkerShape
+         The shape of the marker. Default 'circle'.
+     edge_color : str | tuple | Color
+         The color of line marking the edge of the markers. Default 'black'.
+     edge_width : float
+         The width of the edge of the markers. Default 1.
+     mode : str, optional
+         The color mode of the material. Options are 'auto' and 'vertex'.
+     opacity : float, optional
+         The opacity of the material, from 0 (transparent) to 1 (opaque).
+         If RGBA is provided, the final alpha will be:
+         final_alpha = alpha_in_RGBA * opacity
+     enable_picking : bool, optional
+         Whether the material should be pickable in a scene.
+
+     Returns
+     -------
+     MarkerMaterial
+         A marker material object of the specified type with the given properties.
+    """
+
+    if not (0 <= opacity <= 1):
+        raise ValueError("Opacity must be between 0 and 1.")
+
+    if color is None and mode == "auto":
+        raise ValueError("Color must be specified when mode is 'auto'.")
+
+    elif color is not None:
+        if len(color) == 3:
+            color = (*color, opacity)
+        elif len(color) == 4:
+            color = color
+            color = (*color[:3], color[3] * opacity)
+        else:
+            raise ValueError("Color must be a tuple of length 3 or 4.")
+
+    if mode == "vertex":
+        color = (1, 1, 1)
+
+    if material == "marker":
         return gfx.PointsMarkerMaterial(
-            size=4,
+            color=color,
+            size=size,
+            marker=marker,
+            edge_color=edge_color,
+            edge_width=edge_width,
             pick_write=enable_picking,
             color_mode=mode,
-            color=color,
         )
     else:
         raise ValueError(f"Unsupported material type: {material}")
