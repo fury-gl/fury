@@ -116,7 +116,7 @@ jobs:
           ci/run_tests.sh
         fi
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v5
+      uses: codecov/codecov-action@v5.0.2
       if: ${{ matrix.coverage }}
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
