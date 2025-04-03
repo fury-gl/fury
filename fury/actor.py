@@ -1223,7 +1223,8 @@ def marker(
     colors : ndarray (N,3) or (N,4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA values in the range [0, 1].
     marker : str | MarkerShape
-        The shape of the marker. Default 'circle'.
+        The shape of the marker. Options are "●": "circle", "+": "plus",
+        "x": "cross", "♥": "heart", "✳": "asterix", Default 'circle'.
     edge_color : str | tuple | Color
         The color of line marking the edge of the markers. Default 'black'.
     edge_width : float

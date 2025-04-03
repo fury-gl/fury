@@ -1,7 +1,12 @@
 import pygfx as gfx
-from pygfx import Mesh
 from pygfx.renderers.wgpu import register_wgpu_render_function
 
+from fury.lib import (
+    Mesh,
+    PointsGaussianBlobMaterial,
+    PointsMarkerMaterial,
+    PointsMaterial,
+)
 from fury.shader import MeshBasicShader, MeshPhongShader
 
 
@@ -26,6 +31,31 @@ class MeshBasicMaterial(gfx.MeshBasicMaterial):
 # Register the custom shaders for the mesh materials
 register_wgpu_render_function(Mesh, MeshPhongMaterial)(MeshPhongShader)
 register_wgpu_render_function(Mesh, MeshBasicMaterial)(MeshBasicShader)
+
+
+def validate_opacity(opacity):
+    """Ensure opacity is between 0 and 1."""
+    if not (0 <= opacity <= 1):
+        raise ValueError("Opacity must be between 0 and 1.")
+    return opacity
+
+
+def validate_color(color, opacity, mode):
+    """Validate and modify color based on opacity and mode."""
+    if color is None and mode == "auto":
+        raise ValueError("Color must be specified when mode is 'auto'.")
+
+    if mode == "vertex":
+        return (1, 1, 1)
+
+    if color is not None:
+        if len(color) == 3:
+            return (*color, opacity)
+        elif len(color) == 4:
+            return (*color[:3], color[3] * opacity)
+        else:
+            raise ValueError("Color must be a tuple of length 3 or 4.")
+    return color
 
 
 def _create_mesh_material(
@@ -64,24 +94,8 @@ def _create_mesh_material(
     MeshMaterial
         A mesh material object of the specified type with the given properties.
     """
-
-    if not (0 <= opacity <= 1):
-        raise ValueError("Opacity must be between 0 and 1.")
-
-    if color is None and mode == "auto":
-        raise ValueError("Color must be specified when mode is 'auto'.")
-
-    elif color is not None:
-        if len(color) == 3:
-            color = (*color, opacity)
-        elif len(color) == 4:
-            color = color
-            color = (*color[:3], color[3] * opacity)
-        else:
-            raise ValueError("Color must be a tuple of length 3 or 4.")
-
-    if mode == "vertex":
-        color = (1, 1, 1)
+    opacity = validate_opacity(opacity)
+    color = validate_color(color, opacity, mode)
 
     if material == "phong":
         return MeshPhongMaterial(
@@ -142,27 +156,11 @@ def _create_points_material(
      PointsMaterial
          A point material object of the specified type with the given properties.
     """
-
-    if not (0 <= opacity <= 1):
-        raise ValueError("Opacity must be between 0 and 1.")
-
-    if color is None and mode == "auto":
-        raise ValueError("Color must be specified when mode is 'auto'.")
-
-    elif color is not None:
-        if len(color) == 3:
-            color = (*color, opacity)
-        elif len(color) == 4:
-            color = color
-            color = (*color[:3], color[3] * opacity)
-        else:
-            raise ValueError("Color must be a tuple of length 3 or 4.")
-
-    if mode == "vertex":
-        color = (1, 1, 1)
+    opacity = validate_opacity(opacity)
+    color = validate_color(color, opacity, mode)
 
     if material == "basic":
-        return gfx.PointsMaterial(
+        return PointsMaterial(
             color=color,
             size=size,
             color_mode=mode,
@@ -171,7 +169,7 @@ def _create_points_material(
             pick_write=enable_picking,
         )
     elif material == "gaussian":
-        return gfx.PointsGaussianBlobMaterial(
+        return PointsGaussianBlobMaterial(
             color=color,
             size=size,
             color_mode=mode,
@@ -227,27 +225,11 @@ def _create_marker_material(
      MarkerMaterial
          A marker material object of the specified type with the given properties.
     """
-
-    if not (0 <= opacity <= 1):
-        raise ValueError("Opacity must be between 0 and 1.")
-
-    if color is None and mode == "auto":
-        raise ValueError("Color must be specified when mode is 'auto'.")
-
-    elif color is not None:
-        if len(color) == 3:
-            color = (*color, opacity)
-        elif len(color) == 4:
-            color = color
-            color = (*color[:3], color[3] * opacity)
-        else:
-            raise ValueError("Color must be a tuple of length 3 or 4.")
-
-    if mode == "vertex":
-        color = (1, 1, 1)
+    opacity = validate_opacity(opacity)
+    color = validate_color(color, opacity, mode)
 
     if material == "marker":
-        return gfx.PointsMarkerMaterial(
+        return PointsMarkerMaterial(
             color=color,
             size=size,
             marker=marker,
