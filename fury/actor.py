@@ -2,7 +2,6 @@ import numpy as np
 
 from fury.geometry import buffer_to_geometry, create_mesh, create_point
 from fury.material import (
-    _create_marker_material,
     _create_mesh_material,
     _create_points_material,
 )
@@ -1136,7 +1135,7 @@ def star(
 def point(
     centers,
     *,
-    size=4,
+    size=4.0,
     colors=(1.0, 0.0, 0.0),
     material="basic",
     map=None,
@@ -1148,18 +1147,19 @@ def point(
 
     Parameters
     ----------
-    centers : ndarray, shape (N, 3), optional
-        The positions of the points. If None, random points will be generated.
+    centers : ndarray, shape (N, 3).
+        The positions of the points.
     size : float
-        The size (diameter) of the points in logical pixels. Default 4.
+        The size (diameter) of the points in logical pixels.
     colors : ndarray (N,3) or (N,4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA values in the range [0, 1].
     material : str, optional
-        The material type for the points. Options are 'basic', 'gaussian'.
+        The material type for the points.
+        Options are 'basic', 'gaussian'.
     map : TextureMap | Texture
         The texture map specifying the color for each texture coordinate.
-    aa : bool
-        Whether or not the points are anti-aliased in the shader. Default True.
+    aa : bool, optional
+        Whether or not the points are anti-aliased in the shader.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
     enable_picking : bool, optional
@@ -1206,9 +1206,10 @@ def marker(
     *,
     size=15,
     colors=(1.0, 0.0, 0.0),
+    material="marker",
     marker="circle",
     edge_color="black",
-    edge_width=1,
+    edge_width=1.0,
     opacity=1.0,
     enable_picking=True,
 ):
@@ -1216,19 +1217,22 @@ def marker(
 
     Parameters
     ----------
-    centers : ndarray, shape (N, 3), optional
-        The positions of the points. If None, random points will be generated.
+    centers : ndarray, shape (N, 3).
+        The positions of the markers.
     size : float
-        The size (diameter) of the points in logical pixels. Default 4.
+        The size (diameter) of the points in logical pixels.
     colors : ndarray (N,3) or (N,4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA values in the range [0, 1].
+    material : str
+        The material type used for markers. Only 'marker' is supported.
     marker : str | MarkerShape
-        The shape of the marker. Options are "●": "circle", "+": "plus",
-        "x": "cross", "♥": "heart", "✳": "asterix", Default 'circle'.
+        The shape of the marker.
+        Options are "●": "circle", "+": "plus", "x": "cross", "♥": "heart",
+        "✳": "asterix".
     edge_color : str | tuple | Color
-        The color of line marking the edge of the markers. Default 'black'.
-    edge_width : float
-        The width of the edge of the markers. Default 1.
+        The color of line marking the edge of the markers.
+    edge_width : float, optional
+        The width of the edge of the markers.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
     enable_picking : bool, optional
@@ -1257,7 +1261,8 @@ def marker(
         colors=colors.astype("float32"),
     )
 
-    mat = _create_marker_material(
+    mat = _create_points_material(
+        material=material,
         size=size,
         marker=marker,
         edge_color=edge_color,
