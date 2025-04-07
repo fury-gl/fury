@@ -1206,7 +1206,6 @@ def marker(
     *,
     size=15,
     colors=(1.0, 0.0, 0.0),
-    material="marker",
     marker="circle",
     edge_color="black",
     edge_width=1.0,
@@ -1223,8 +1222,6 @@ def marker(
         The size (diameter) of the points in logical pixels.
     colors : ndarray (N,3) or (N,4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA values in the range [0, 1].
-    material : str
-        The material type used for markers. Only 'marker' is supported.
     marker : str | MarkerShape
         The shape of the marker.
         Options are "●": "circle", "+": "plus", "x": "cross", "♥": "heart",
@@ -1262,7 +1259,7 @@ def marker(
     )
 
     mat = _create_points_material(
-        material=material,
+        material="marker",
         size=size,
         marker=marker,
         edge_color=edge_color,
