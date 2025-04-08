@@ -1,7 +1,6 @@
 import numpy as np
-import os
 
-from fury.window import show, snapshot
+from fury.window import show
 from fury.actor import sphere
 
 ###############################################################################
@@ -16,14 +15,5 @@ sphere_actor = sphere(
 )
 
 
-interactive = True
-
-if "INTERACTIVE_TUTORIALS" in os.environ:
-    interactive = os.environ["INTERACTIVE_TUTORIALS"].lower() == "true"
-
-
 if __name__ == "__main__":
-    if interactive:
-        show(actors=[sphere_actor])
-    else:
-        snapshot(actors=[sphere_actor], fname="show.png")
+    show(actors=[sphere_actor])

@@ -24,7 +24,7 @@ jobs:
       matrix:
         python-version: [3.12]
     env:
-      INTERACTIVE_TUTORIALS: false
+      FURY_OFFSCREEN: true
     steps:
     - uses: actions/checkout@v4
       with:

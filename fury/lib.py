@@ -28,7 +28,7 @@ PyQt6, have_py_qt6, _ = optional_package("PyQt6", trip_msg=qt_pckg_msg)
 PyQt5, have_py_qt5, _ = optional_package("PyQt5", trip_msg=qt_pckg_msg)
 
 if have_py_side6 or have_py_qt6 or have_py_qt5:
-    from wgpu.gui.qt import WgpuCanvas as QtWgpuCanvas
+    from wgpu.gui.qt import WgpuCanvas as QtWgpuCanvas, get_app
 
 if have_py_side6:
     from PySide6 import QtWidgets
@@ -66,3 +66,4 @@ if have_py_side6 or have_py_qt6 or have_py_qt5:
 else:
     QtCanvas = PySide6
     QtWidgets = PySide6
+    get_app = PySide6

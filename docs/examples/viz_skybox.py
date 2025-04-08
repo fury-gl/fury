@@ -1,7 +1,6 @@
-import os
 import numpy as np
 
-from fury.window import ShowManager, Scene, snapshot
+from fury.window import ShowManager, Scene
 from fury.actor import sphere
 from fury.data import read_viz_cubemap, fetch_viz_cubemaps
 from fury.io import load_cube_map_texture
@@ -41,15 +40,7 @@ sphere_actor = sphere(
 )
 scene.add(sphere_actor)
 
-interactive = True
-
-if "INTERACTIVE_TUTORIALS" in os.environ:
-    interactive = os.environ["INTERACTIVE_TUTORIALS"].lower() == "true"
-
 
 if __name__ == "__main__":
-    if interactive:
-        show_m = ShowManager(scene=scene, title="FURY 2.0: Skybox Example")
-        show_m.start()
-    else:
-        snapshot(scene=scene, fname="skybox.png")
+    show_m = ShowManager(scene=scene, title="FURY 2.0: Skybox Example")
+    show_m.start()

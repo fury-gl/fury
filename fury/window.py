@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from functools import reduce
+import os
 
 from PIL.Image import fromarray as image_from_array
 import numpy as np
@@ -17,10 +18,10 @@ from fury.lib import (
     OrbitController,
     PerspectiveCamera,
     QtCanvas,
-    QtWidgets,
     Renderer,
     Scene as GfxScene,  # type: ignore
     Viewport,
+    get_app,
     run,
 )
 
@@ -412,8 +413,7 @@ class ShowManager:
         self._is_qt = False
         self._qt_app = qt_app
         self._qt_parent = qt_parent
-        self._window_type = window_type
-        self._setup_window(window_type)
+        self._window_type = self._setup_window(window_type)
 
         if renderer is None:
             renderer = Renderer(self.window)
@@ -488,7 +488,7 @@ class ShowManager:
             self.window = Canvas(size=self._size, title=self._title)
         elif window_type == "qt":
             if self._qt_app is None:
-                self._qt_app = QtWidgets.QApplication([])
+                self._qt_app = get_app()
             self.window = QtCanvas(
                 size=self._size, title=self._title, parent=self._qt_parent
             )
@@ -497,6 +497,8 @@ class ShowManager:
             self.window = JupyterCanvas(size=self._size, title=self._title)
         else:
             self.window = OffscreenCanvas(size=self._size, title=self._title)
+
+        return window_type
 
     def _calculate_total_screens(self):
         """Calculate the total screens from the screen configurations."""
@@ -622,7 +624,7 @@ class ShowManager:
 
     def snapshot(self, fname):
         """Save a copy of the rasterized image of the scene(s).
-        The window_type needs to be offscreen for snapshot to work.
+        The canvas needs to be drawn before calling this method.
 
         Parameters
         ----------
@@ -634,15 +636,7 @@ class ShowManager:
         narray
             numpy array of the image.
         """
-        if self._window_type != "offscreen":
-            raise ValueError(
-                "Invalid window_type: {}. "
-                "Snapshot functionality is only allowed on offscreen".format(
-                    self._window_type
-                )
-            )
-        self.render()
-        self.window.draw()
+
         arr = np.asarray(self.renderer.snapshot())
         img = image_from_array(arr)
         img.save(fname)
@@ -650,15 +644,31 @@ class ShowManager:
 
     def render(self):
         """Rasterize the scene(s)."""
+
+        if self._is_qt and self._qt_parent is not None:
+            self._qt_parent.show()
         self.window.request_draw(lambda: render_screens(self.renderer, self.screens))
 
     def start(self):
         """Start the visualization using show manager."""
+
         self.render()
+        if "FURY_OFFSCREEN" in os.environ and os.environ["FURY_OFFSCREEN"].lower() in [
+            "true",
+            "1",
+        ]:
+            self.window.draw_frame()
+            self.snapshot(f"{self._title}.png")
+            return
+
         if self._is_qt:
             self._qt_app.exec()
         else:
             run()
+
+    def close(self):
+        """Close the window."""
+        self.window.close()
 
 
 def snapshot(
@@ -696,6 +706,8 @@ def snapshot(
     show_m = ShowManager(
         scene=scene, screen_config=screen_config, window_type="offscreen"
     )
+    show_m.render()
+    show_m.window.draw_frame()
     arr = show_m.snapshot(fname)
 
     if return_array:
@@ -719,5 +731,4 @@ def show(actors, *, window_type="default"):
     scene = Scene()
     scene.add(*actors)
     show_m = ShowManager(scene=scene, window_type=window_type)
-    if window_type != "offscreen":
-        show_m.start()
+    show_m.start()

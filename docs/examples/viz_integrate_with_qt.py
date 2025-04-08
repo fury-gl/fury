@@ -1,7 +1,7 @@
-import os
 import numpy as np
 
-from fury.window import ShowManager, Scene, snapshot, QtWidgets
+from fury.window import ShowManager, Scene
+from fury.lib import QtWidgets
 from fury.actor import sphere
 
 
@@ -19,6 +19,7 @@ class Main(QtWidgets.QWidget):
         self.show_manager = ShowManager(
             scene=self.scene,
             window_type="qt",
+            title="FURY 2.0: Integrate Qt Example",
             size=None,
             qt_app=app,
             qt_parent=self,
@@ -51,18 +52,5 @@ class Main(QtWidgets.QWidget):
 m = Main()
 m.setWindowTitle("FURY 2.0: Qt Example")
 
-interactive = True
-
-if "INTERACTIVE_TUTORIALS" in os.environ:
-    interactive = os.environ["INTERACTIVE_TUTORIALS"].lower() == "true"
-
-
 if __name__ == "__main__":
-    if interactive:
-        m.show()
-        m.show_manager.start()
-    else:
-        snapshot(
-            scene=m.scene,
-            fname="qt.png",
-        )
+    m.show_manager.start()
