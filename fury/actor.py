@@ -1,7 +1,10 @@
 import numpy as np
 
-from fury.geometry import buffer_to_geometry, create_mesh
-from fury.material import _create_mesh_material
+from fury.geometry import buffer_to_geometry, create_mesh, create_point
+from fury.material import (
+    _create_mesh_material,
+    _create_points_material,
+)
 import fury.primitive as fp
 
 
@@ -1127,3 +1130,143 @@ def star(
         material=material,
         enable_picking=enable_picking,
     )
+
+
+def point(
+    centers,
+    *,
+    size=4.0,
+    colors=(1.0, 0.0, 0.0),
+    material="basic",
+    map=None,
+    aa=True,
+    opacity=1.0,
+    enable_picking=True,
+):
+    """Visualize one or many points with different features.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3).
+        The positions of the points.
+    size : float
+        The size (diameter) of the points in logical pixels.
+    colors : ndarray (N,3) or (N,4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA values in the range [0, 1].
+    material : str, optional
+        The material type for the points.
+        Options are 'basic', 'gaussian'.
+    map : TextureMap | Texture
+        The texture map specifying the color for each texture coordinate.
+    aa : bool, optional
+        Whether or not the points are anti-aliased in the shader.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
+    enable_picking : bool, optional
+        Whether the points should be pickable in a 3D scene.
+
+    Returns
+    -------
+    point_actor : Actor
+        An point actor containing the generated points with the specified material
+        and properties.
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> import numpy as np
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(1000, 3) * 10
+    >>> colors = np.random.rand(1000, 3)
+    >>> point_actor = actor.point(centers=centers, colors=colors)
+    >>> scene.add(point_actor)
+    >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
+    >>> show_manager.start()
+    """
+    geo = buffer_to_geometry(
+        positions=centers.astype("float32"),
+        colors=colors.astype("float32"),
+    )
+
+    mat = _create_points_material(
+        size=size,
+        material=material,
+        map=map,
+        aa=aa,
+        opacity=opacity,
+        enable_picking=enable_picking,
+    )
+
+    obj = create_point(geo, mat)
+    return obj
+
+
+def marker(
+    centers,
+    *,
+    size=15,
+    colors=(1.0, 0.0, 0.0),
+    marker="circle",
+    edge_color="black",
+    edge_width=1.0,
+    opacity=1.0,
+    enable_picking=True,
+):
+    """Visualize one or many marker with different features.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3).
+        The positions of the markers.
+    size : float
+        The size (diameter) of the points in logical pixels.
+    colors : ndarray (N,3) or (N,4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA values in the range [0, 1].
+    marker : str | MarkerShape
+        The shape of the marker.
+        Options are "●": "circle", "+": "plus", "x": "cross", "♥": "heart",
+        "✳": "asterix".
+    edge_color : str | tuple | Color
+        The color of line marking the edge of the markers.
+    edge_width : float, optional
+        The width of the edge of the markers.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
+    enable_picking : bool, optional
+        Whether the points should be pickable in a 3D scene.
+
+    Returns
+    -------
+    marker_actor : Actor
+        An marker actor containing the generated points with the specified material
+        and properties.
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> import numpy as np
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(1000, 3) * 10
+    >>> colors = np.random.rand(1000, 3)
+    >>> marker_actor = actor.marker(centers=centers, colors=colors)
+    >>> scene.add(marker_actor)
+    >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
+    >>> show_manager.start()
+    """
+    geo = buffer_to_geometry(
+        positions=centers.astype("float32"),
+        colors=colors.astype("float32"),
+    )
+
+    mat = _create_points_material(
+        material="marker",
+        size=size,
+        marker=marker,
+        edge_color=edge_color,
+        edge_width=edge_width,
+        opacity=opacity,
+        enable_picking=enable_picking,
+    )
+
+    obj = create_point(geo, mat)
+    return obj

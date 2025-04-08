@@ -2,6 +2,11 @@ import numpy as np
 
 from fury import material, window
 from fury.geometry import buffer_to_geometry, create_mesh
+from fury.lib import (
+    PointsGaussianBlobMaterial,
+    PointsMarkerMaterial,
+    PointsMaterial,
+)
 from fury.material import _create_mesh_material
 from fury.primitive import prim_sphere
 
@@ -76,3 +81,45 @@ def test_create_mesh_material():
     # assert 0 <= mean_r <= 255 and 0 <= mean_g <= 255 and 0 <= mean_b <= 255
     #
     # assert sum([mean_r, mean_g, mean_b]) > 0
+
+
+def test_create_point_material():
+    color = (1, 0, 0)
+    mat = material._create_points_material(
+        material="basic", color=color, opacity=0.5, mode="auto"
+    )
+    assert isinstance(mat, PointsMaterial)
+    assert mat.color == color + (0.5,)
+    assert mat.color_mode == "auto"
+
+    color = (1, 0, 0)
+    mat = material._create_points_material(
+        material="gaussian", color=color, opacity=0.5, mode="auto"
+    )
+    assert isinstance(mat, PointsGaussianBlobMaterial)
+    assert mat.color == color + (0.5,)
+    assert mat.color_mode == "auto"
+
+    color = (1, 0, 0)
+    mat = material._create_points_material(
+        material="marker", color=color, opacity=0.5, mode="auto"
+    )
+    assert isinstance(mat, PointsMarkerMaterial)
+    assert mat.color == color + (0.5,)
+    assert mat.color_mode == "auto"
+
+    color = (1, 0, 0, 0.5)
+    mat = material._create_points_material(
+        material="basic", color=color, opacity=0.5, mode="auto"
+    )
+    assert isinstance(mat, PointsMaterial)
+    assert mat.color == (1, 0, 0, 0.25)
+    assert mat.color_mode == "auto"
+
+    color = (1, 0, 0)
+    mat = material._create_points_material(
+        material="basic", color=color, opacity=0.5, mode="vertex"
+    )
+    assert isinstance(mat, PointsMaterial)
+    assert mat.color == (1, 1, 1)
+    assert mat.color_mode == "vertex"
