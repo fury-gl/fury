@@ -12,7 +12,7 @@ jupyter_pckg_msg = (
 )
 
 jupyter_rfb, have_jupyter_rfb, _ = optional_package(
-    "jupyter-rfb", trip_msg=jupyter_pckg_msg
+    "jupyter_rfb", trip_msg=jupyter_pckg_msg
 )
 
 if have_jupyter_rfb:
