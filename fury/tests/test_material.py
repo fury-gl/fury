@@ -101,6 +101,14 @@ def test_create_point_material():
     assert mat.color == color + (0.5,)
     assert mat.color_mode == "auto"
 
+    color = (1, 0, 0)
+    mat = material._create_points_material(
+        material="marker", color=color, opacity=0.5, mode="auto"
+    )
+    assert isinstance(mat, PointsMarkerMaterial)
+    assert mat.color == color + (0.5,)
+    assert mat.color_mode == "auto"
+
     color = (1, 0, 0, 0.5)
     mat = material._create_points_material(
         material="basic", color=color, opacity=0.5, mode="auto"
@@ -114,26 +122,6 @@ def test_create_point_material():
         material="basic", color=color, opacity=0.5, mode="vertex"
     )
     assert isinstance(mat, PointsMaterial)
-    assert mat.color == (1, 1, 1)
-    assert mat.color_mode == "vertex"
-
-
-def test_create_marker_material():
-    color = (1, 0, 0)
-    mat = material._create_marker_material(color=color, opacity=0.5, mode="auto")
-    assert isinstance(mat, PointsMarkerMaterial)
-    assert mat.color == color + (0.5,)
-    assert mat.color_mode == "auto"
-
-    color = (1, 0, 0, 0.5)
-    mat = material._create_marker_material(color=color, opacity=0.5, mode="auto")
-    assert isinstance(mat, PointsMarkerMaterial)
-    assert mat.color == (1, 0, 0, 0.25)
-    assert mat.color_mode == "auto"
-
-    color = (1, 0, 0)
-    mat = material._create_marker_material(color=color, opacity=0.5, mode="vertex")
-    assert isinstance(mat, PointsMarkerMaterial)
     assert mat.color == (1, 1, 1)
     assert mat.color_mode == "vertex"
 
