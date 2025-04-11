@@ -53,14 +53,22 @@ Viewport: TypeAlias = gfx.Viewport
 Geometry = gfx.Geometry
 Mesh = gfx.Mesh
 Points = gfx.Points
+Line = gfx.Line
 
 MeshBasicMaterial = gfx.MeshBasicMaterial
 MeshPhongMaterial = gfx.MeshPhongMaterial
 PointsMaterial = gfx.PointsMaterial
 PointsGaussianBlobMaterial = gfx.PointsGaussianBlobMaterial
 PointsMarkerMaterial = gfx.PointsMarkerMaterial
+
 TextMaterial = gfx.TextMaterial
 Text = gfx.Text
+LineMaterial = gfx.LineMaterial
+LineArrowMaterial = gfx.LineArrowMaterial
+LineThinMaterial = gfx.LineThinMaterial
+LineThinSegmentMaterial = gfx.LineThinSegmentMaterial
+LineSegmentMaterial = gfx.LineSegmentMaterial
+LineDebugMaterial = gfx.LineDebugMaterial
 
 DirectionalLight = gfx.DirectionalLight
 OrbitController = gfx.OrbitController

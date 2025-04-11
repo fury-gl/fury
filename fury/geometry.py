@@ -1,5 +1,8 @@
+import numpy as np
+
 from fury.lib import (
     Geometry,
+    Line,
     Mesh,
     MeshBasicMaterial,
     MeshPhongMaterial,
@@ -63,6 +66,99 @@ def create_mesh(geometry, material):
 
     mesh = Mesh(geometry=geometry, material=material)
     return mesh
+
+
+def create_line(geometry, material):
+    """
+    Create a line object.
+
+    Parameters
+    ----------
+    geometry : Geometry
+        The geometry object.
+    material : Material
+        The material object.
+
+    Returns
+    -------
+    line : Line
+        The line object.
+    """
+    line = Line(geometry=geometry, material=material)
+    return line
+
+
+def line_buffer_separator(line_vertices, color=None, color_mode="auto"):
+    """
+    Create a line buffer with separators between segments.
+
+    Parameters
+    ----------
+    line_vertices : list of array_like
+        The line vertices as a list of segments (each segment is an array of points).
+    color : array_like, optional
+        The color of the line segments.
+    color_mode : str, optional
+        The color mode, can be 'auto', 'vertex', or 'line'.
+        - 'auto': Automatically determine based on color array shape
+        - 'vertex': One color per vertex (must match total vertex count)
+        - 'line': One color per line segment
+
+    Returns
+    -------
+    positions : array_like
+        The positions buffer with NaN separators.
+    colors : array_like, optional
+        The colors buffer with NaN separators (if color is provided).
+    """
+    # Calculate total size including separators
+    total_vertices = sum(len(segment) for segment in line_vertices)
+    total_size = total_vertices + len(line_vertices) - 1
+
+    positions_result = np.empty((total_size, 3), dtype=np.float32)
+    colors_result = None
+
+    if color is not None:
+        colors_result = np.empty((total_size, 3), dtype=np.float32)
+        if color_mode == "auto":
+            if len(color) == len(line_vertices):
+                color_mode = "line"
+            elif len(color) == total_vertices:
+                color_mode = "vertex"
+            else:
+                raise ValueError(
+                    "Color array size doesn't match "
+                    "either vertex count or segment count"
+                )
+
+    idx = 0
+    color_idx = 0
+
+    for i, segment in enumerate(line_vertices):
+        segment_length = len(segment)
+
+        positions_result[idx : idx + segment_length] = segment
+
+        if color is not None:
+            if color_mode == "vertex":
+                colors_result[idx : idx + segment_length] = color[
+                    color_idx : color_idx + segment_length
+                ]
+                color_idx += segment_length
+            else:
+                colors_result[idx : idx + segment_length] = np.tile(
+                    color[i], (segment_length, 1)
+                )
+
+        idx += segment_length
+
+        if i < len(line_vertices) - 1:
+            positions_result[idx] = np.nan
+            if color is not None:
+                colors_result[idx] = np.nan
+            idx += 1
+
+    return positions_result, colors_result if color is not None else None
 
 
 def create_point(geometry, material):

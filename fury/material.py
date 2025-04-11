@@ -1,6 +1,12 @@
 from fury.lib import (
     MeshBasicMaterial,
     MeshPhongMaterial,
+    LineArrowMaterial,
+    LineMaterial,
+    LineSegmentMaterial,
+    LineThinMaterial,
+    LineThinSegmentMaterial,
+    Mesh,
     PointsGaussianBlobMaterial,
     PointsMarkerMaterial,
     PointsMaterial,
@@ -85,6 +91,134 @@ def _create_mesh_material(
             color_mode=mode,
             color=color,
             flat_shading=flat_shading,
+        )
+    else:
+        raise ValueError(f"Unsupported material type: {material}")
+
+
+def _create_line_material(
+    *,
+    material="basic",
+    enable_picking=True,
+    color=None,
+    opacity=1.0,
+    mode="auto",
+    thickness=2.0,
+    thickness_space="screen",
+    dash_pattern=(),
+    dash_offset=0.0,
+    aa=True,
+):
+    """
+    Create a line material.
+
+    Parameters
+    ----------
+    material : str, optional
+        The type of line material to create. Options are 'line' (default),
+        'segment', 'arrow', 'thin', and 'thin_segment'.
+    enable_picking : bool, optional
+        Whether the material should be pickable in a scene.
+    color : tuple or None, optional
+        The color of the material, represented as an RGBA tuple. If None, the
+        default color is used.
+    opacity : float, optional
+        The opacity of the material, from 0 (transparent) to 1 (opaque).
+        If RGBA is provided, the final alpha will be:
+        final_alpha = alpha_in_RGBA * opacity
+    mode : str, optional
+        The color mode of the material. Options are 'auto' and 'vertex'.
+    thickness : float, optional
+        The line thickness expressed in logical pixels.
+    thickness_space : str, optional
+        The coordinate space in which the thickness is
+        expressed ('screen', 'world', 'model').
+    dash_pattern : tuple, optional
+        The pattern of the dash, e.g., [2, 3]. Defaults to an empty tuple,
+        meaning no dashing.
+    dash_offset : float, optional
+        The offset into the dash cycle to start drawing at.
+    aa : bool, optional
+        Whether or not the line is anti-aliased in the shader.
+
+    Returns
+    -------
+    LineMaterial
+        A line material object of the specified type with the given properties.
+    """
+
+    if opacity and not (0 <= opacity <= 1):
+        raise ValueError("Opacity must be between 0 and 1.")
+
+    if color is None and mode == "auto":
+        raise ValueError("Color must be specified when mode is 'auto'.")
+
+    elif color is not None:
+        if len(color) == 3:
+            color = (*color, opacity)
+        elif len(color) == 4:
+            color = color
+            color = (*color[:3], color[3] * opacity)
+        else:
+            raise ValueError("Color must be a tuple of length 3 or 4.")
+
+    if mode == "vertex":
+        color = (1, 1, 1)
+
+    if material == "basic":
+        return LineMaterial(
+            pick_write=enable_picking,
+            color_mode=mode,
+            color=color,
+            thickness=thickness,
+            thickness_space=thickness_space,
+            dash_pattern=dash_pattern,
+            dash_offset=dash_offset,
+            aa=aa,
+        )
+    elif material == "segment":
+        return LineSegmentMaterial(
+            pick_write=enable_picking,
+            color_mode=mode,
+            color=color,
+            thickness=thickness,
+            thickness_space=thickness_space,
+            dash_pattern=dash_pattern,
+            dash_offset=dash_offset,
+            aa=aa,
+        )
+    elif material == "arrow":
+        return LineArrowMaterial(
+            pick_write=enable_picking,
+            color_mode=mode,
+            color=color,
+            thickness=thickness,
+            thickness_space=thickness_space,
+            dash_pattern=dash_pattern,
+            dash_offset=dash_offset,
+            aa=aa,
+        )
+    elif material == "thin":
+        return LineThinMaterial(
+            pick_write=enable_picking,
+            color_mode=mode,
+            color=color,
+            thickness=thickness,
+            thickness_space=thickness_space,
+            dash_pattern=dash_pattern,
+            dash_offset=dash_offset,
+            aa=aa,
+        )
+    elif material == "thin_segment":
+        return LineThinSegmentMaterial(
+            pick_write=enable_picking,
+            color_mode=mode,
+            color=color,
+            thickness=thickness,
+            thickness_space=thickness_space,
+            dash_pattern=dash_pattern,
+            dash_offset=dash_offset,
+            aa=aa,
         )
     else:
         raise ValueError(f"Unsupported material type: {material}")
