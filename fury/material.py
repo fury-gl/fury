@@ -216,22 +216,22 @@ def _create_text_material(
     Create a text material.
     Parameters
     ----------
-    color : Color
+    color : Color, tuple
         The color of the text.
     opacity : float, optional
         The opacity of the material, from 0 (transparent) to 1 (opaque).
         If RGBA is provided, the final alpha will be:
         final_alpha = alpha_in_RGBA * opacity
-    outline_color : Color
+    outline_color : Color, tuple
         The color of the outline of the text.
-    outline_thickness : int
+    outline_thickness : float, optional
         A value indicating the relative width of the outline. Valid values are
         between 0.0 and 0.5.
-    weight_offset : int
+    weight_offset : float, optional
         A value representing an offset to the font weight. Font weights are in
         the range 100-900, so this value should be in the same order of
-        magnitude. Can be negative to make text thinner. Default zero.
-    aa : bool
+        magnitude. Can be negative to make text thinner.
+    aliasing : bool
         If True, use anti-aliasing while rendering glyphs. Aliasing gives
         prettier results, but may affect performance for very large texts.
 
