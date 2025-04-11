@@ -165,61 +165,27 @@ def _create_line_material(
     if mode == "vertex":
         color = (1, 1, 1)
 
+    args = {
+        "pick_write": enable_picking,
+        "color_mode": mode,
+        "color": color,
+        "thickness": thickness,
+        "thickness_space": thickness_space,
+        "dash_pattern": dash_pattern,
+        "dash_offset": dash_offset,
+        "aa": aa,
+    }
+
     if material == "basic":
-        return LineMaterial(
-            pick_write=enable_picking,
-            color_mode=mode,
-            color=color,
-            thickness=thickness,
-            thickness_space=thickness_space,
-            dash_pattern=dash_pattern,
-            dash_offset=dash_offset,
-            aa=aa,
-        )
+        return LineMaterial(**args)
     elif material == "segment":
-        return LineSegmentMaterial(
-            pick_write=enable_picking,
-            color_mode=mode,
-            color=color,
-            thickness=thickness,
-            thickness_space=thickness_space,
-            dash_pattern=dash_pattern,
-            dash_offset=dash_offset,
-            aa=aa,
-        )
+        return LineSegmentMaterial(**args)
     elif material == "arrow":
-        return LineArrowMaterial(
-            pick_write=enable_picking,
-            color_mode=mode,
-            color=color,
-            thickness=thickness,
-            thickness_space=thickness_space,
-            dash_pattern=dash_pattern,
-            dash_offset=dash_offset,
-            aa=aa,
-        )
+        return LineArrowMaterial(**args)
     elif material == "thin":
-        return LineThinMaterial(
-            pick_write=enable_picking,
-            color_mode=mode,
-            color=color,
-            thickness=thickness,
-            thickness_space=thickness_space,
-            dash_pattern=dash_pattern,
-            dash_offset=dash_offset,
-            aa=aa,
-        )
+        return LineThinMaterial(**args)
     elif material == "thin_segment":
-        return LineThinSegmentMaterial(
-            pick_write=enable_picking,
-            color_mode=mode,
-            color=color,
-            thickness=thickness,
-            thickness_space=thickness_space,
-            dash_pattern=dash_pattern,
-            dash_offset=dash_offset,
-            aa=aa,
-        )
+        return LineThinSegmentMaterial(**args)
     else:
         raise ValueError(f"Unsupported material type: {material}")
 
