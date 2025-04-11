@@ -1279,7 +1279,7 @@ def marker(
 
 
 def text(
-    text="FURY",
+    text,
     *,
     colors=(1.0, 1.0, 1.0),
     font_size=1.0,
@@ -1302,24 +1302,26 @@ def text(
         unless a list is given, in which case each (str) item become a TextBlock.
     colors : ndarray (N,3) or (N,4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA values in the range [0, 1].
-    font_size : float
+    font_size : float, optional
         The size of the font, in object coordinates or pixel screen coordinates.
     family : str, tuple
-        The name(s) of the font to prefer. Default "Arial".
-    anchor : str | TextAnchor
-        The position of the origin of the text. Default "middle-center".
-    max_width : float
+        The name(s) of the font to prefer.
+    anchor : str, optional
+        The position of the origin of the text. Can be "top-left",
+        "top-center", "top-right", "middle-left", "middle-center",
+        "middle-right", "bottom-left", "bottom-center", "bottom-right".
+    max_width : float, optional
         The maximum width of the text. Words are wrapped if necessary.
-    line_height : float
+    line_height : float, optional
         A factor to scale the distance between lines. A value of 1 means the
-        "native" font's line distance. Default 1.2.
-    text_align : str | TextAlign
+        "native" font's line distance.
+    text_align : str, optional
         The horizontal alignment of the text. Can be "start",
         "end", "left", "right", "center", "justify" or "justify_all".
         Text alignment is ignored for vertical text.
-    outline_color : Color
+    outline_color : tuple
         The color of the outline of the text.
-    outline_thickness : int
+    outline_thickness : float, optional
         A value indicating the relative width of the outline. Valid values are
         between 0.0 and 0.5.
     opacity : float, optional
@@ -1336,7 +1338,7 @@ def text(
     >>> from fury import window, actor
     >>> import numpy as np
     >>> scene = window.Scene()
-    >>> text_actor = actor.text(text='FURY', colors=colors)
+    >>> text_actor = actor.text(text='FURY')
     >>> scene.add(text_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
