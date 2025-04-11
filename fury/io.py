@@ -1,7 +1,4 @@
-import functools
-import importlib.resources
 import os
-import sys
 
 # from tempfile import TemporaryDirectory as InTemporaryDirectory
 from urllib.request import urlretrieve
@@ -237,19 +234,6 @@ def save_image(
 
     im = Image.fromarray(arr)
     im.save(filename, quality=compression_quality, dpi=dpi)
-
-
-@functools.lru_cache(maxsize=None)
-def load_wgsl(shader_name, *, package_name="fury.wgsl"):
-    """Load wgsl code from pygfx builtin shader snippets."""
-    if sys.version_info < (3, 9):
-        context = importlib.resources.path(package_name, shader_name)
-    else:
-        ref = importlib.resources.files(package_name) / shader_name
-        context = importlib.resources.as_file(ref)
-    with context as path:
-        with open(path, "rb") as f:
-            return f.read().decode()
 
 
 # def load_polydata(file_name):

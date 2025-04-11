@@ -1,36 +1,10 @@
-import pygfx as gfx
-from pygfx.renderers.wgpu import register_wgpu_render_function
-
 from fury.lib import (
-    Mesh,
+    MeshBasicMaterial,
+    MeshPhongMaterial,
     PointsGaussianBlobMaterial,
     PointsMarkerMaterial,
     PointsMaterial,
 )
-from fury.shader import MeshBasicShader, MeshPhongShader
-
-
-class MeshPhongMaterial(gfx.MeshPhongMaterial):
-    """
-    Phong material.
-    """
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-
-class MeshBasicMaterial(gfx.MeshBasicMaterial):
-    """
-    Basic material.
-    """
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-
-# Register the custom shaders for the mesh materials
-register_wgpu_render_function(Mesh, MeshPhongMaterial)(MeshPhongShader)
-register_wgpu_render_function(Mesh, MeshBasicMaterial)(MeshBasicShader)
 
 
 def validate_opacity(opacity):
