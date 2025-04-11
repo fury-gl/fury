@@ -210,7 +210,7 @@ def _create_text_material(
     outline_color=(0, 0, 0),
     outline_thickness=0.0,
     weight_offset=1.0,
-    aa=True,
+    aliasing=True,
 ):
     """
     Create a text material.
@@ -258,5 +258,5 @@ def _create_text_material(
         outline_color=outline_color,
         outline_thickness=outline_thickness,
         weight_offset=weight_offset,
-        aa=aa,
+        aa=aliasing,
     )

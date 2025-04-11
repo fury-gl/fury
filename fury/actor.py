@@ -1336,7 +1336,6 @@ def text(
     Examples
     --------
     >>> from fury import window, actor
-    >>> import numpy as np
     >>> scene = window.Scene()
     >>> text_actor = actor.text(text='FURY')
     >>> scene.add(text_actor)
