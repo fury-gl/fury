@@ -146,7 +146,7 @@ def line(
     """
 
     lines_positions, lines_colors = line_buffer_separator(
-        lines, color=colors, color_mode="line"
+        lines, color=colors, color_mode="auto"
     )
 
     geo = buffer_to_geometry(

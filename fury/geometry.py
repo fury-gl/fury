@@ -121,9 +121,13 @@ def line_buffer_separator(line_vertices, color=None, color_mode="auto"):
     if color is not None:
         colors_result = np.empty((total_size, 3), dtype=np.float32)
         if color_mode == "auto":
-            if len(color) == len(line_vertices):
+            if len(color) == len(line_vertices) and (
+                len(color[0]) == 3 or len(color[0]) == 4
+            ):
                 color_mode = "line"
             elif len(color) == total_vertices:
+                color_mode = "vertex_flattened"
+            elif len(color) == len(line_vertices):
                 color_mode = "vertex"
             else:
                 raise ValueError(
@@ -141,14 +145,18 @@ def line_buffer_separator(line_vertices, color=None, color_mode="auto"):
 
         if color is not None:
             if color_mode == "vertex":
+                colors_result[idx : idx + segment_length] = color[i]
+                color_idx += segment_length
+
+            elif color_mode == "line":
+                colors_result[idx : idx + segment_length] = np.tile(
+                    color[i], (segment_length, 1)
+                )
+            elif color_mode == "vertex_flattened":
                 colors_result[idx : idx + segment_length] = color[
                     color_idx : color_idx + segment_length
                 ]
                 color_idx += segment_length
-            else:
-                colors_result[idx : idx + segment_length] = np.tile(
-                    color[i], (segment_length, 1)
-                )
 
         idx += segment_length
 
