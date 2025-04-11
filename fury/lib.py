@@ -19,6 +19,9 @@ if have_jupyter_rfb:
     from wgpu.gui.jupyter import WgpuCanvas as JupyterWgpuCanvas
 
 Texture = gfx.Texture
+VolumeSliceMaterial = gfx.VolumeSliceMaterial
+Group = gfx.Group
+Volume = gfx.Volume
 AmbientLight = gfx.AmbientLight
 Background = gfx.Background
 BackgroundSkyboxMaterial = gfx.BackgroundSkyboxMaterial

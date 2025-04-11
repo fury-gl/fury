@@ -1,8 +1,10 @@
 from PIL import Image
 import numpy as np
 import numpy.testing as npt
+import pytest
 
 from fury import actor, window
+from fury.lib import Group
 
 
 def validate_actors(centers, colors, actor_type="actor_name"):
@@ -233,3 +235,67 @@ def test_marker():
     assert mean_g == 0 and mean_b == 0
 
     scene.remove(marker_actor_1)
+
+
+def test_valid_3d_data():
+    """Test valid 3D input with default parameters (Test Case 1)."""
+    data = np.random.rand(10, 20, 30)
+    slicer_obj = actor.slicer(data)
+
+    # Verify object type and visibility
+    assert isinstance(slicer_obj, Group)
+    assert slicer_obj.visible
+    assert len(slicer_obj.children) == 3
+    assert all(child.visible for child in slicer_obj.children)
+
+
+def test_invalid_4d_data():
+    """Test invalid 4D data shape (Test Case 4)."""
+    data = np.random.rand(10, 20, 30, 4)  # Last dim ≠ 3
+    with pytest.raises(ValueError) as excinfo:
+        actor.slicer(data)
+    assert "Last dimension must be of size 3" in str(excinfo.value)
+
+
+def test_opacity_validation():
+    """Test opacity validation raises errors for out-of-bounds values"""
+    data = np.random.rand(10, 20, 30)
+
+    # Test valid values
+    for valid_opacity in [0, 0.5, 1]:
+        slicer_obj = actor.slicer(data, opacity=valid_opacity)
+        for child in slicer_obj.children:
+            assert child.material.opacity == valid_opacity
+
+    # Test invalid values
+    for invalid_opacity in [-0.1, 1.1, 2.0]:
+        with pytest.raises(ValueError) as excinfo:
+            actor.slicer(data, opacity=invalid_opacity)
+        assert "Opacity must be between 0 and 1" in str(excinfo.value)
+
+
+def test_custom_initial_slices():
+    """Test custom initial slice positions (Test Case 10)."""
+    data = np.random.rand(10, 20, 30)
+    slicer_obj = actor.slicer(data, initial_slices=(5, 10, 15))
+
+    # Verify slice positions match input
+    assert np.array_equal(slicer_obj.get_slices(), [5, 10, 15])
+
+    # Verify positions update correctly
+    slicer_obj.show_slices((2, 4, 6))
+    assert np.array_equal(slicer_obj.get_slices(), [2, 4, 6])
+
+
+def test_visibility_control():
+    """Test visibility settings through methods (Test Case 13)."""
+    data = np.random.rand(10, 20, 30)
+    slicer_obj = actor.slicer(data, visibility=(True, True, True))
+
+    # Verify initial visibility
+    assert all(child.visible for child in slicer_obj.children)
+
+    # Update and verify new visibility
+    slicer_obj.set_visibility((False, True, False))
+    visibilities = [child.visible for child in slicer_obj.children]
+    assert visibilities == [False, True, False]
