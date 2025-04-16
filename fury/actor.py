@@ -1304,7 +1304,7 @@ def text(
         RGB or RGBA values in the range [0, 1].
     font_size : float, optional
         The size of the font, in object coordinates or pixel screen coordinates.
-    family : str, tuple
+    family : str, optional
         The name(s) of the font to prefer.
     anchor : str, optional
         The position of the origin of the text. Can be "top-left",
@@ -1319,7 +1319,7 @@ def text(
         The horizontal alignment of the text. Can be "start",
         "end", "left", "right", "center", "justify" or "justify_all".
         Text alignment is ignored for vertical text.
-    outline_color : tuple
+    outline_color : tuple, optional
         The color of the outline of the text.
     outline_thickness : float, optional
         A value indicating the relative width of the outline. Valid values are
