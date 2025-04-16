@@ -14,9 +14,30 @@ jupyter_pckg_msg = (
 jupyter_rfb, have_jupyter_rfb, _ = optional_package(
     "jupyter_rfb", trip_msg=jupyter_pckg_msg
 )
-
 if have_jupyter_rfb:
     from wgpu.gui.jupyter import WgpuCanvas as JupyterWgpuCanvas
+
+qt_pckg_msg = (
+    "You do not have any qt package installed. The qt window will not work for "
+    "you. Please install or upgrade any of PySide6, PyQt6, PyQt5, PySide2 "
+    "using pip install -U <QtPackageName>"
+)
+
+PySide6, have_py_side6, _ = optional_package("PySide6", trip_msg=qt_pckg_msg)
+PyQt6, have_py_qt6, _ = optional_package("PyQt6", trip_msg=qt_pckg_msg)
+PyQt5, have_py_qt5, _ = optional_package("PyQt5", trip_msg=qt_pckg_msg)
+
+if have_py_side6 or have_py_qt6 or have_py_qt5:
+    from wgpu.gui.qt import WgpuCanvas as QtWgpuCanvas, get_app
+
+if have_py_side6:
+    from PySide6 import QtWidgets
+
+if have_py_qt6:
+    from PyQt6 import QtWidgets
+
+if have_py_qt5:
+    from PyQt5 import QtWidgets
 
 Texture = gfx.Texture
 AmbientLight = gfx.AmbientLight
@@ -50,3 +71,9 @@ if have_jupyter_rfb:
     JupyterCanvas = JupyterWgpuCanvas
 else:
     JupyterCanvas = jupyter_rfb
+if have_py_side6 or have_py_qt6 or have_py_qt5:
+    QtCanvas = QtWgpuCanvas
+else:
+    QtCanvas = PySide6
+    QtWidgets = PySide6
+    get_app = PySide6

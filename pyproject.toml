@@ -60,8 +60,9 @@ Tracker = "https://github.com/fury-gl/fury/issues"
 
 [project.optional-dependencies]
 
-all = ["fury[plot, dev, doc, medical, style, test, typing]"]
-plot = ["matplotlib>=3.9.0", "jupyter-rfb"]
+all = ["fury[window, plot, dev, doc, medical, style, test, typing]"]
+window = ["PySide6", "jupyter-rfb"]
+plot = ["matplotlib>=3.9.0"]
 medical = ["dipy", "nibabel"]
 dev = [
     "gitpython",
