@@ -4,6 +4,7 @@ from fury.lib import (
     PointsGaussianBlobMaterial,
     PointsMarkerMaterial,
     PointsMaterial,
+    TextMaterial,
 )
 
 
@@ -174,3 +175,62 @@ def _create_points_material(
         )
     else:
         raise ValueError(f"Unsupported material type: {material}")
+
+
+def _create_text_material(
+    *,
+    color=(0, 0, 0),
+    opacity=1.0,
+    outline_color=(0, 0, 0),
+    outline_thickness=0.0,
+    weight_offset=1.0,
+    aliasing=True,
+):
+    """
+    Create a text material.
+
+    Parameters
+    ----------
+    color : tuple, optional
+        The color of the text.
+    opacity : float, optional
+        The opacity of the material, from 0 (transparent) to 1 (opaque).
+        If RGBA is provided, the final alpha will be:
+        final_alpha = alpha_in_RGBA * opacity
+    outline_color : tuple, optional
+        The color of the outline of the text.
+    outline_thickness : float, optional
+        A value indicating the relative width of the outline. Valid values are
+        between 0.0 and 0.5.
+    weight_offset : float, optional
+        A value representing an offset to the font weight. Font weights are in
+        the range 100-900, so this value should be in the same order of
+        magnitude. Can be negative to make text thinner.
+    aliasing : bool, optional
+        If True, use anti-aliasing while rendering glyphs. Aliasing gives
+        prettier results, but may affect performance for very large texts.
+
+
+    Returns
+    -------
+    TextMaterial
+        A text material object of the specified type with the given properties.
+    """
+    opacity = validate_opacity(opacity)
+
+    if color is not None:
+        if len(color) == 3:
+            color = (*color, opacity)
+        elif len(color) == 4:
+            color = color
+            color = (*color[:3], color[3] * opacity)
+        else:
+            raise ValueError("Color must be a tuple of length 3 or 4.")
+
+    return TextMaterial(
+        color=color,
+        outline_color=outline_color,
+        outline_thickness=outline_thickness,
+        weight_offset=weight_offset,
+        aa=aliasing,
+    )

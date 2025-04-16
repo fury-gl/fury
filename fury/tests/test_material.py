@@ -6,6 +6,7 @@ from fury.lib import (
     PointsGaussianBlobMaterial,
     PointsMarkerMaterial,
     PointsMaterial,
+    TextMaterial,
 )
 from fury.material import _create_mesh_material
 from fury.primitive import prim_sphere
@@ -123,3 +124,23 @@ def test_create_point_material():
     assert isinstance(mat, PointsMaterial)
     assert mat.color == (1, 1, 1)
     assert mat.color_mode == "vertex"
+
+
+def test_create_text_material():
+    color = (1, 0, 0)
+    mat = material._create_text_material(color=color, opacity=0.5)
+    assert isinstance(mat, TextMaterial)
+    assert mat.color == color + (0.5,)
+    assert mat.outline_color == (0, 0, 0)
+    assert mat.outline_thickness == 0.0
+    assert mat.weight_offset == 1.0
+    assert mat.aa is True
+
+    color = (1, 0, 0, 0.5)
+    mat = material._create_text_material(color=color, opacity=0.5)
+    assert isinstance(mat, TextMaterial)
+    assert mat.color == (1, 0, 0, 0.25)
+    assert mat.outline_color == (0, 0, 0)
+    assert mat.outline_thickness == 0.0
+    assert mat.weight_offset == 1.0
+    assert mat.aa is True
