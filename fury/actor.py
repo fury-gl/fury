@@ -1270,3 +1270,51 @@ def marker(
 
     obj = create_point(geo, mat)
     return obj
+
+
+def axes(
+    *,
+    scale=(1.0, 1.0, 1.0),
+    colorx=(1.0, 0.0, 0.0),
+    colory=(0.0, 1.0, 0.0),
+    colorz=(0.0, 0.0, 1.0),
+    opacity=1.0,
+):
+    """Create an actor with the coordinate's system axes where
+    red = x, green = y, blue = z.
+
+    Parameters
+    ----------
+    scale : tuple (3,)
+        Axes size.
+    colorx : tuple (3,)
+        x-axis color.
+    colory : tuple (3,)
+        y-axis color.
+    colorz : tuple (3,)
+        z-axis color.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
+
+    Returns
+    -------
+    axes_actor: Actor
+        An axes actor representing the coordinate axes with the specified
+        material and properties.
+
+     Examples
+    --------
+    >>> from fury import window, actor
+    >>> scene = window.Scene()
+    >>> axes_actor = actor.axes()
+    >>> scene.add(axes_actor)
+    >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
+    >>> show_manager.start()
+    """
+    centers = np.zeros((3, 3))
+    directions = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    colors = np.array([colorx + (opacity,), colory + (opacity,), colorz + (opacity,)])
+    scales = np.asarray(scale)
+
+    obj = arrow(centers=centers, directions=directions, colors=colors, scales=scales)
+    return obj

@@ -233,3 +233,25 @@ def test_marker():
     assert mean_g == 0 and mean_b == 0
 
     scene.remove(marker_actor_1)
+
+
+def test_axes():
+    scene = window.Scene()
+    axes_actor = actor.axes()
+    scene.add(axes_actor)
+
+    assert axes_actor.prim_count == 3
+
+    fname = "axes_test.png"
+    window.snapshot(scene=scene, fname=fname)
+    img = Image.open(fname)
+    img_array = np.array(img)
+    mean_r, mean_g, mean_b, _mean_a = np.mean(
+        img_array.reshape(-1, img_array.shape[2]), axis=0
+    )
+    assert np.isclose(mean_r, mean_g, atol=0.02)
+    assert 0 < mean_r < 255
+    assert 0 < mean_g < 255
+    assert 0 < mean_b < 255
+
+    scene.remove(axes_actor)
