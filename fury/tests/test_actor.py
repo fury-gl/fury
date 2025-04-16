@@ -238,6 +238,76 @@ def test_marker():
     scene.remove(marker_actor_1)
 
 
+def test_text():
+    text = "FURY"
+    position = np.array([0, 0, 0])
+    scene = window.Scene()
+
+    text_actor = actor.text(text=text, anchor="middle-center")
+    scene.add(text_actor)
+
+    npt.assert_array_equal(text_actor.local.position, position)
+
+    fname = "text_test.png"
+    window.snapshot(scene=scene, fname=fname)
+
+    img = Image.open(fname)
+    img_array = np.array(img)
+
+    mean_r, mean_g, mean_b, _mean_a = np.mean(
+        img_array.reshape(-1, img_array.shape[2]), axis=0
+    )
+
+    assert mean_r == mean_b and mean_r == mean_g
+    assert 0 < mean_r < 255
+    assert 0 < mean_g < 255
+    assert 0 < mean_b < 255
+
+    scene.remove(text_actor)
+
+    text1 = "HELLO"
+    text_actor_1 = actor.text(text=text1, anchor="middle-center")
+    text_actor_1.local.position = position
+    scene.add(text_actor_1)
+    fname_1 = "text_test_1.png"
+    window.snapshot(scene=scene, fname=fname_1)
+    img = Image.open(fname_1)
+    img_array = np.array(img)
+
+    mean_r, mean_g, mean_b, _mean_a = np.mean(
+        img_array.reshape(-1, img_array.shape[2]), axis=0
+    )
+
+    assert mean_r == mean_b and mean_r == mean_g
+    assert 0 < mean_r < 255
+    assert 0 < mean_g < 255
+    assert 0 < mean_b < 255
+
+    scene.remove(text_actor_1)
+
+
+def test_axes():
+    scene = window.Scene()
+    axes_actor = actor.axes()
+    scene.add(axes_actor)
+
+    assert axes_actor.prim_count == 3
+
+    fname = "axes_test.png"
+    window.snapshot(scene=scene, fname=fname)
+    img = Image.open(fname)
+    img_array = np.array(img)
+    mean_r, mean_g, mean_b, _mean_a = np.mean(
+        img_array.reshape(-1, img_array.shape[2]), axis=0
+    )
+    assert np.isclose(mean_r, mean_g, atol=0.02)
+    assert 0 < mean_r < 255
+    assert 0 < mean_g < 255
+    assert 0 < mean_b < 255
+
+    scene.remove(axes_actor)
+
+
 def test_valid_3d_data():
     """Test valid 3D input with default parameters (Test Case 1)."""
     data = np.random.rand(10, 20, 30)

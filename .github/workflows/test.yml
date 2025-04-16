@@ -53,6 +53,7 @@ jobs:
       USE_PRE: ${{ matrix.use-pre }}
       COVERAGE: ${{ matrix.coverage }}
       PRE_WHEELS: "https://pypi.anaconda.org/scipy-wheels-nightly/simple"
+      QT_QPA_PLATFORM: "offscreen"
       # EAGER_IMPORT: 1  # to explore what is the issue.
 
 

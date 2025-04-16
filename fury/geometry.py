@@ -7,6 +7,8 @@ from fury.lib import (
     PointsGaussianBlobMaterial,
     PointsMarkerMaterial,
     PointsMaterial,
+    Text,
+    TextMaterial,
 )
 
 
@@ -92,3 +94,31 @@ def create_point(geometry, material):
 
     point = Points(geometry=geometry, material=material)
     return point
+
+
+def create_text(text, material, **kwargs):
+    """
+    Create a text object.
+
+    Parameters
+    ----------
+    text : str
+        The text content.
+    material : Material
+        The material object.
+    kwargs : dict
+        Additional properties like font_size, anchor, etc.
+
+    Returns
+    -------
+    text : Text
+        The text object.
+    """
+    if not isinstance(text, str):
+        raise TypeError("text must be a string.")
+
+    if not isinstance(material, TextMaterial):
+        raise TypeError("material must be an instance of TextMaterial.")
+
+    text = Text(text=text, material=material, **kwargs)
+    return text

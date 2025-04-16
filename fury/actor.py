@@ -1,10 +1,16 @@
 import numpy as np
 
-from fury.geometry import buffer_to_geometry, create_mesh, create_point
+from fury.geometry import (
+    buffer_to_geometry,
+    create_mesh,
+    create_point,
+    create_text,
+)
 from fury.lib import Geometry, Group, Texture, Volume, VolumeSliceMaterial
 from fury.material import (
     _create_mesh_material,
     _create_points_material,
+    _create_text_material,
     validate_opacity,
 )
 import fury.primitive as fp
@@ -1272,6 +1278,143 @@ def marker(
     )
 
     obj = create_point(geo, mat)
+    return obj
+
+
+def text(
+    text,
+    *,
+    colors=(1.0, 1.0, 1.0),
+    font_size=1.0,
+    family="Arial",
+    anchor="middle-center",
+    max_width=0.0,
+    line_height=1.2,
+    text_align="start",
+    outline_color=(0.0, 0.0, 0.0),
+    outline_thickness=0.0,
+    opacity=1.0,
+):
+    """Visualize text with different features.
+
+    Parameters
+    ----------
+    text : str | list[str]
+        The plain text to render (optional).
+        The text is split in one TextBlock per line,
+        unless a list is given, in which case each (str) item become a TextBlock.
+    colors : ndarray (N,3) or (N,4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA values in the range [0, 1].
+    font_size : float, optional
+        The size of the font, in object coordinates or pixel screen coordinates.
+    family : str, optional
+        The name(s) of the font to prefer.
+    anchor : str, optional
+        The position of the origin of the text. Can be "top-left",
+        "top-center", "top-right", "middle-left", "middle-center",
+        "middle-right", "bottom-left", "bottom-center", "bottom-right".
+    max_width : float, optional
+        The maximum width of the text. Words are wrapped if necessary.
+    line_height : float, optional
+        A factor to scale the distance between lines. A value of 1 means the
+        "native" font's line distance.
+    text_align : str, optional
+        The horizontal alignment of the text. Can be "start",
+        "end", "left", "right", "center", "justify" or "justify_all".
+        Text alignment is ignored for vertical text.
+    outline_color : tuple, optional
+        The color of the outline of the text.
+    outline_thickness : float, optional
+        A value indicating the relative width of the outline. Valid values are
+        between 0.0 and 0.5.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
+
+    Returns
+    -------
+    text_actor : Actor
+        An text actor containing the generated text with the specified material
+        and properties.
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> scene = window.Scene()
+    >>> text_actor = actor.text(text='FURY')
+    >>> scene.add(text_actor)
+    >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
+    >>> show_manager.start()
+    """
+    mat = _create_text_material(
+        color=colors,
+        opacity=opacity,
+        outline_color=outline_color,
+        outline_thickness=outline_thickness,
+    )
+
+    obj = create_text(
+        text=text,
+        material=mat,
+        font_size=font_size,
+        family=family,
+        anchor=anchor,
+        max_width=max_width,
+        line_height=line_height,
+        text_align=text_align,
+    )
+    return obj
+
+
+def axes(
+    *,
+    scale=(1.0, 1.0, 1.0),
+    color_x=(1.0, 0.0, 0.0),
+    color_y=(0.0, 1.0, 0.0),
+    color_z=(0.0, 0.0, 1.0),
+    opacity=1.0,
+):
+    """Visualize coordinate system axes using colored arrow.
+
+    The axes are represented as arrows with different colors:
+    red = X-axis, green = Y-axis, blue = Z-axis.
+
+    Parameters
+    ----------
+    scale : tuple (3,), optional
+         The size (length) of each axis in the x, y, and z directions.
+    color_x : tuple (3,), optional
+        Color for the X-axis.
+    color_y : tuple (3,), optional
+        Color for the Y-axis.
+    color_z : tuple (3,), optional
+        Color for the Z-axis.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
+
+    Returns
+    -------
+    axes_actor: Actor
+        An axes actor representing the coordinate axes with the specified
+        material and properties.
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> scene = window.Scene()
+    >>> axes_actor = actor.axes()
+    >>> scene.add(axes_actor)
+    >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
+    >>> show_manager.start()
+
+    """
+    centers = np.zeros((3, 3))
+    directions = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    colors = np.array(
+        [color_x + (opacity,), color_y + (opacity,), color_z + (opacity,)]
+    )
+    scales = np.asarray(scale)
+
+    obj = arrow(centers=centers, directions=directions, colors=colors, scales=scales)
     return obj
 
 
