@@ -8,6 +8,7 @@ from fury.material import (
     validate_opacity,
 )
 import fury.primitive as fp
+from fury.utils import set_group_opacity, set_group_visibility, show_slices
 
 
 def actor_from_primitive(
@@ -1347,70 +1348,16 @@ def slicer(
             abcd,
             clim=value_range,
             interpolation=interpolation,
-            opacity=opacity,
             pick_write=True,
         )
         geo = Geometry(grid=texture)
         plane = Volume(geo, mat)
         slices.append(plane)
 
-    class Slicer(Group):
-        def __init__(
-            self,
-            *,
-            visible=True,
-        ):
-            super().__init__(visible=visible, name="Slicer")
-
-        def show_slices(self, position):
-            """Show the slices at the specified position.
-
-            Parameters
-            ----------
-            position : tuple
-                A tuple containing the positions of the slices in the 3D space.
-            """
-            for i, child in enumerate(self.children):
-                a, b, c, _ = child.material.plane
-                child.material.plane = (a, b, c, position[i])
-
-        def set_opacity(self, opacity):
-            """Set the opacity of the slices.
-
-            Parameters
-            ----------
-            opacity : float
-                The opacity value to set for the slices,
-                ranging from 0 (fully transparent) to 1 (opaque).
-            """
-            for child in self.children:
-                child.material.opacity = opacity
-
-        def set_visibility(self, visibility):
-            """Set the visibility of the slices.
-
-            Parameters
-            ----------
-            visibility : tuple
-                A tuple of three boolean values indicating the visibility of the slices
-                in the x, y, and z dimensions, respectively.
-            """
-            for i, child in enumerate(self.children):
-                child.visible = visibility[i]
-
-        def get_slices(self):
-            """Get the current positions of the slices.
-
-            Returns
-            -------
-            position : ndarray
-                An array containing the current positions of the slices.
-            """
-            return np.asarray([child.material.plane[-1] for child in self.children])
-
-    obj = Slicer()
+    obj = Group(name="Slicer")
     obj.add(*slices)
-    obj.set_visibility(visibility)
-    obj.show_slices(initial_slices)
+    set_group_visibility(obj, visibility)
+    show_slices(obj, initial_slices)
+    set_group_opacity(obj, opacity)
 
     return obj

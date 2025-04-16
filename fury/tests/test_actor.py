@@ -5,6 +5,7 @@ import pytest
 
 from fury import actor, window
 from fury.lib import Group
+from fury.utils import get_slices, set_group_visibility, show_slices
 
 
 def validate_actors(centers, colors, actor_type="actor_name"):
@@ -280,11 +281,11 @@ def test_custom_initial_slices():
     slicer_obj = actor.slicer(data, initial_slices=(5, 10, 15))
 
     # Verify slice positions match input
-    assert np.array_equal(slicer_obj.get_slices(), [5, 10, 15])
+    assert np.array_equal(get_slices(slicer_obj), [5, 10, 15])
 
     # Verify positions update correctly
-    slicer_obj.show_slices((2, 4, 6))
-    assert np.array_equal(slicer_obj.get_slices(), [2, 4, 6])
+    show_slices(slicer_obj, (2, 4, 6))
+    assert np.array_equal(get_slices(slicer_obj), [2, 4, 6])
 
 
 def test_visibility_control():
@@ -296,6 +297,6 @@ def test_visibility_control():
     assert all(child.visible for child in slicer_obj.children)
 
     # Update and verify new visibility
-    slicer_obj.set_visibility((False, True, False))
+    set_group_visibility(slicer_obj, (False, True, False))
     visibilities = [child.visible for child in slicer_obj.children]
     assert visibilities == [False, True, False]

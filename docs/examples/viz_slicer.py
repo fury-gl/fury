@@ -1,5 +1,6 @@
 import numpy as np
 from fury import actor, window
+from fury.utils import get_slices, show_slices
 from dipy.data import read_mni_template
 
 ###############################################################################
@@ -24,11 +25,11 @@ def handle_pick_event(event):
 
 
 def handle_wheel_event(event):
-    position = slicer_actor.get_slices()
+    position = get_slices(slicer_actor)
     position += event.dy // 20
     position = np.maximum(np.zeros((3,)), position)
     position = np.minimum(np.asarray(data.shape), position)
-    slicer_actor.show_slices(position)
+    show_slices(slicer_actor, position)
 
 
 slicer_actor.add_event_handler(handle_pick_event, "pointer_down")
