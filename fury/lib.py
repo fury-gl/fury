@@ -59,6 +59,8 @@ MeshPhongMaterial = gfx.MeshPhongMaterial
 PointsMaterial = gfx.PointsMaterial
 PointsGaussianBlobMaterial = gfx.PointsGaussianBlobMaterial
 PointsMarkerMaterial = gfx.PointsMarkerMaterial
+TextMaterial = gfx.TextMaterial
+Text = gfx.Text
 
 DirectionalLight = gfx.DirectionalLight
 OrbitController = gfx.OrbitController
