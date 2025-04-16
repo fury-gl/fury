@@ -2,10 +2,10 @@ import numpy as np
 
 from fury.geometry import (
     buffer_to_geometry,
+    create_line,
     create_mesh,
     create_point,
     create_text,
-    create_line,
     line_buffer_separator,
 )
 from fury.material import (

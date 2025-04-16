@@ -1,12 +1,11 @@
 from fury.lib import (
-    MeshBasicMaterial,
-    MeshPhongMaterial,
     LineArrowMaterial,
     LineMaterial,
     LineSegmentMaterial,
     LineThinMaterial,
     LineThinSegmentMaterial,
-    Mesh,
+    MeshBasicMaterial,
+    MeshPhongMaterial,
     PointsGaussianBlobMaterial,
     PointsMarkerMaterial,
     PointsMaterial,
@@ -16,6 +15,8 @@ from fury.lib import (
 
 def validate_opacity(opacity):
     """Ensure opacity is between 0 and 1."""
+    if opacity is None:
+        return 1.0
     if not (0 <= opacity <= 1):
         raise ValueError("Opacity must be between 0 and 1.")
     return opacity
@@ -24,7 +25,7 @@ def validate_opacity(opacity):
 def validate_color(color, opacity, mode):
     """Validate and modify color based on opacity and mode."""
     if color is None and mode == "auto":
-        raise ValueError("Color must be specified when mode is 'auto'.")
+        return (1, 1, 1, opacity)
 
     if mode == "vertex":
         return (1, 1, 1)
@@ -147,8 +148,8 @@ def _create_line_material(
         A line material object of the specified type with the given properties.
     """
 
-    validate_opacity(opacity)
-    validate_color(color, opacity, mode)
+    opacity = validate_opacity(opacity)
+    color = validate_color(color, opacity, mode)
 
     args = {
         "pick_write": enable_picking,
