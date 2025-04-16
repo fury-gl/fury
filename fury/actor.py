@@ -1360,3 +1360,56 @@ def text(
         text_align=text_align,
     )
     return obj
+
+
+def axes(
+    *,
+    scale=(1.0, 1.0, 1.0),
+    color_x=(1.0, 0.0, 0.0),
+    color_y=(0.0, 1.0, 0.0),
+    color_z=(0.0, 0.0, 1.0),
+    opacity=1.0,
+):
+    """Visualize coordinate system axes using colored arrow.
+
+    The axes are represented as arrows with different colors:
+    red = X-axis, green = Y-axis, blue = Z-axis.
+
+    Parameters
+    ----------
+    scale : tuple (3,), optional
+         The size (length) of each axis in the x, y, and z directions.
+    color_x : tuple (3,), optional
+        Color for the X-axis.
+    color_y : tuple (3,), optional
+        Color for the Y-axis.
+    color_z : tuple (3,), optional
+        Color for the Z-axis.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
+
+    Returns
+    -------
+    axes_actor: Actor
+        An axes actor representing the coordinate axes with the specified
+        material and properties.
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> scene = window.Scene()
+    >>> axes_actor = actor.axes()
+    >>> scene.add(axes_actor)
+    >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
+    >>> show_manager.start()
+
+    """
+    centers = np.zeros((3, 3))
+    directions = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    colors = np.array(
+        [color_x + (opacity,), color_y + (opacity,), color_z + (opacity,)]
+    )
+    scales = np.asarray(scale)
+
+    obj = arrow(centers=centers, directions=directions, colors=colors, scales=scales)
+    return obj
