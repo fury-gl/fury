@@ -1370,7 +1370,9 @@ def axes(
     color_z=(0.0, 0.0, 1.0),
     opacity=1.0,
 ):
-    """Visualize coordinate system axes using colored arrow:
+    """Visualize coordinate system axes using colored arrow.
+
+    The axes are represented as arrows with different colors:
     red = X-axis, green = Y-axis, blue = Z-axis.
 
     Parameters
@@ -1392,7 +1394,7 @@ def axes(
         An axes actor representing the coordinate axes with the specified
         material and properties.
 
-     Examples
+    Examples
     --------
     >>> from fury import window, actor
     >>> scene = window.Scene()
@@ -1400,6 +1402,7 @@ def axes(
     >>> scene.add(axes_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
+
     """
     centers = np.zeros((3, 3))
     directions = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
