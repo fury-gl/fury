@@ -157,6 +157,8 @@ def line_buffer_separator(line_vertices, color=None, color_mode="auto"):
                     color_idx : color_idx + segment_length
                 ]
                 color_idx += segment_length
+            else:
+                raise ValueError("Invalid color mode")
 
         idx += segment_length
 

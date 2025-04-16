@@ -107,7 +107,7 @@ def _create_line_material(
     thickness_space="screen",
     dash_pattern=(),
     dash_offset=0.0,
-    aa=True,
+    anti_aliasing=True,
 ):
     """
     Create a line material.
@@ -134,11 +134,11 @@ def _create_line_material(
         The coordinate space in which the thickness is
         expressed ('screen', 'world', 'model').
     dash_pattern : tuple, optional
-        The pattern of the dash, e.g., [2, 3]. Defaults to an empty tuple,
+        The pattern of the dash, e.g., [2, 3].
         meaning no dashing.
     dash_offset : float, optional
         The offset into the dash cycle to start drawing at.
-    aa : bool, optional
+    anti_aliasing : bool, optional
         Whether or not the line is anti-aliased in the shader.
 
     Returns
@@ -147,23 +147,8 @@ def _create_line_material(
         A line material object of the specified type with the given properties.
     """
 
-    if opacity and not (0 <= opacity <= 1):
-        raise ValueError("Opacity must be between 0 and 1.")
-
-    if color is None and mode == "auto":
-        raise ValueError("Color must be specified when mode is 'auto'.")
-
-    elif color is not None:
-        if len(color) == 3:
-            color = (*color, opacity)
-        elif len(color) == 4:
-            color = color
-            color = (*color[:3], color[3] * opacity)
-        else:
-            raise ValueError("Color must be a tuple of length 3 or 4.")
-
-    if mode == "vertex":
-        color = (1, 1, 1)
+    validate_opacity(opacity)
+    validate_color(color, opacity, mode)
 
     args = {
         "pick_write": enable_picking,
@@ -173,7 +158,7 @@ def _create_line_material(
         "thickness_space": thickness_space,
         "dash_pattern": dash_pattern,
         "dash_offset": dash_offset,
-        "aa": aa,
+        "aa": anti_aliasing,
     }
 
     if material == "basic":

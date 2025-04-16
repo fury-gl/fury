@@ -121,7 +121,8 @@ def line(
     opacity: float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
     material: str, optional
-        The material type for the lines. Options are 'phong' and 'basic'.
+        The material type for the lines. Options are 'basic', 'segment', 'arrow',
+        'thin', and 'thin_segment'.
     enable_picking: bool, optional
         Whether the lines should be pickable in a 3D scene.
 
@@ -157,7 +158,7 @@ def line(
     )
 
     mat = _create_line_material(
-        material=material, enable_picking=enable_picking, mode="vertex", opacity=opacity
+        material=material, enable_picking=enable_picking, mode="auto", opacity=opacity
     )
 
     obj = create_line(geometry=geo, material=mat)
