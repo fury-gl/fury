@@ -2,6 +2,7 @@ import numpy as np
 
 from fury.geometry import (
     buffer_to_geometry,
+    create_image,
     create_line,
     create_mesh,
     create_point,
@@ -9,6 +10,7 @@ from fury.geometry import (
     line_buffer_separator,
 )
 from fury.material import (
+    _create_image_material,
     _create_line_material,
     _create_mesh_material,
     _create_points_material,
@@ -1484,4 +1486,68 @@ def axes(
     scales = np.asarray(scale)
 
     obj = arrow(centers=centers, directions=directions, colors=colors, scales=scales)
+    return obj
+
+
+def image(
+    *,
+    image,
+    position=(0.0, 0.0, 0.0),
+    visible=True,
+    clim=None,
+    map=None,
+    gamma=1.0,
+    interpolation="nearest",
+):
+    """
+    Visualize a 2D image from a NumPy array or image file.
+
+    Parameters
+    ----------
+    image : str or ndarray
+        The image input. Can be a file path (string) or a NumPy array.
+    position : tuple, optional
+        The position of the image in 3D space.
+    visible : bool, optional
+        Whether the image should be visible.
+    clim : tuple, optional
+        Contrast limits for image scaling.
+    map : TextureMap or Texture, optional
+        The texture map used to convert image values into color.
+    gamma : float, optional
+        Gamma correction to apply to the image.
+        Must be greater than 0.
+    interpolation : str, optional
+        Interpolation method for rendering the image.
+        Either 'nearest' or 'linear'.
+
+    Returns
+    -------
+    image_actor : Image
+        An image actor containing the rendered 2D image.
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> import numpy as np
+    >>> scene = window.Scene()
+    >>> image_data = np.random.rand(256, 256)
+    >>> image_actor = actor.image(image=image_data)
+    >>> scene.add(image_actor)
+    >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
+    >>> show_manager.start()
+    """
+    mat = _create_image_material(
+        clim=clim,
+        map=map,
+        gamma=gamma,
+        interpolation=interpolation,
+    )
+
+    obj = create_image(
+        image_input=image,
+        material=mat,
+        position=position,
+        visible=visible,
+    )
     return obj

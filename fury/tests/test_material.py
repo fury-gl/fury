@@ -3,6 +3,7 @@ import numpy as np
 from fury import material, window
 from fury.geometry import buffer_to_geometry, create_mesh
 from fury.lib import (
+    ImageBasicMaterial,
     LineArrowMaterial,
     LineMaterial,
     LineSegmentMaterial,
@@ -12,6 +13,8 @@ from fury.lib import (
     PointsMarkerMaterial,
     PointsMaterial,
     TextMaterial,
+    Texture,
+    TextureMap,
 )
 from fury.material import _create_mesh_material
 from fury.primitive import prim_sphere
@@ -191,3 +194,22 @@ def test_create_line_material():
     assert isinstance(mat, LineSegmentMaterial)
     assert mat.color == color + (0.5,)
     assert mat.color_mode == "auto"
+
+
+def test_create_image_material():
+    mat = material._create_image_material()
+    assert isinstance(mat, ImageBasicMaterial)
+    assert mat.clim == (0.0, 1.0)
+    assert mat.map is None
+    assert mat.gamma == 1.0
+    assert mat.interpolation == "nearest"
+
+    texture = Texture(np.random.rand(256, 256).astype(np.float32), dim=2)
+    mat = material._create_image_material(
+        map=TextureMap(texture), gamma=0.5, clim=(0.2, 0.8), interpolation="linear"
+    )
+    assert isinstance(mat, ImageBasicMaterial)
+    assert isinstance(mat.map, TextureMap)
+    assert mat.gamma == 0.5
+    assert mat.interpolation == "linear"
+    assert np.allclose(mat.clim, (0.2, 0.8))

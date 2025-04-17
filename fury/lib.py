@@ -54,6 +54,9 @@ Geometry = gfx.Geometry
 Mesh = gfx.Mesh
 Points = gfx.Points
 Line = gfx.Line
+Text = gfx.Text
+Image = gfx.Image
+TextureMap = gfx.TextureMap
 
 MeshBasicMaterial = gfx.MeshBasicMaterial
 MeshPhongMaterial = gfx.MeshPhongMaterial
@@ -62,7 +65,7 @@ PointsGaussianBlobMaterial = gfx.PointsGaussianBlobMaterial
 PointsMarkerMaterial = gfx.PointsMarkerMaterial
 
 TextMaterial = gfx.TextMaterial
-Text = gfx.Text
+ImageBasicMaterial = gfx.ImageBasicMaterial
 LineMaterial = gfx.LineMaterial
 LineArrowMaterial = gfx.LineArrowMaterial
 LineThinMaterial = gfx.LineThinMaterial

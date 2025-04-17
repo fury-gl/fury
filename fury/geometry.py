@@ -1,7 +1,10 @@
+from imageio import imread
 import numpy as np
 
 from fury.lib import (
     Geometry,
+    Image,
+    ImageBasicMaterial,
     Line,
     Mesh,
     MeshBasicMaterial,
@@ -12,6 +15,7 @@ from fury.lib import (
     PointsMaterial,
     Text,
     TextMaterial,
+    Texture,
 )
 
 
@@ -228,3 +232,35 @@ def create_text(text, material, **kwargs):
 
     text = Text(text=text, material=material, **kwargs)
     return text
+
+
+def create_image(image_input, material, **kwargs):
+    """
+    Create an image object.
+
+    Parameters
+    ----------
+    image_input : str or np.ndarray, optional
+        The image content.
+    material : Material
+        The material object.
+    kwargs : dict
+        Additional properties like position, visible, etc.
+
+    Returns
+    -------
+    image : Image
+        The image object.
+    """
+    if isinstance(image_input, str):
+        image = np.flipud(imread(image_input))
+    elif isinstance(image_input, np.ndarray):
+        image = image_input.astype(np.float32)
+    else:
+        raise TypeError("image_input must be a file path (str) or a NumPy array.")
+
+    if not isinstance(material, ImageBasicMaterial):
+        raise TypeError("material must be an instance of ImageBasicMaterial.")
+
+    image = Image(Geometry(grid=Texture(image, dim=2)), material=material)
+    return image
