@@ -31,6 +31,7 @@ def actor_from_primitive(
     material="phong",
     smooth=False,
     enable_picking=True,
+    repeat_primitive=True,
 ):
     """Build an actor from a primitive.
 
@@ -59,6 +60,9 @@ def actor_from_primitive(
         Whether to create a smooth primitive or a faceted primitive.
     enable_picking : bool, optional
         Whether the primitive should be pickable in a 3D scene.
+    repeat_primitive : bool, optional
+        Whether to repeat the primitive for each center. If False,
+        only one instance of the primitive is created at the first center.
 
     Returns
     -------
@@ -66,15 +70,22 @@ def actor_from_primitive(
         A mesh actor containing the generated primitive, with the specified
         material and properties.
     """
-    res = fp.repeat_primitive(
-        vertices,
-        faces,
-        directions=directions,
-        centers=centers,
-        colors=colors,
-        scales=scales,
-    )
-    big_vertices, big_faces, big_colors, _ = res
+
+    if repeat_primitive:
+        res = fp.repeat_primitive(
+            vertices,
+            faces,
+            directions=directions,
+            centers=centers,
+            colors=colors,
+            scales=scales,
+        )
+        big_vertices, big_faces, big_colors, _ = res
+
+    else:
+        big_vertices = vertices
+        big_faces = faces
+        big_colors = colors
 
     prim_count = len(centers)
 
@@ -254,6 +265,138 @@ def sphere(
         material=material,
         smooth=smooth,
         enable_picking=enable_picking,
+    )
+
+
+def ellipsoid(
+    centers,
+    *,
+    axes=None,
+    lengths=(4, 3, 2),
+    colors=(1, 0, 0),
+    opacity=None,
+    phi=16,
+    theta=16,
+    material="phong",
+    enable_picking=True,
+    smooth=True,
+):
+    """
+    Create ellipsoid actor(s) with specified orientation and scaling.
+
+    Parameters
+    ----------
+    centers : ndarray (N, 3)
+        Centers of the ellipsoids
+    axes : ndarray, shape (N, 3, 3) or (3, 3), optional
+        Rotation matrices for ellipsoids. Each 3×3 matrix defines a local
+        coordinate frame, where the columns represent the ellipsoid’s x, y, and z
+        axes in world space. This determines the ellipsoid's orientation.
+        Must be orthonormal and right-handed.
+    lengths : ndarray (N, 3) or (3,) or tuple (3,), optional
+        Scaling factors along each axis
+    colors : array-like or tuple, optional
+        RGB/RGBA colors for each ellipsoid
+    opacity : float, optional
+        Overall transparency (0-1)
+    phi : int, optional
+        Latitude divisions
+    theta : int, optional
+        Longitude divisions
+    material : str, optional
+        Surface material type
+    enable_picking : bool, optional
+        Allow mouse selection
+    smooth : bool, optional
+        Smooth shading
+
+    Returns
+    -------
+    actor : fury.actor.Actor
+        Ellipsoid actor with transformations applied
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> import numpy as np
+    >>> scene = window.Scene()
+    >>> centers = np.array([[0, 0, 0]])
+    >>> lengths = np.array([[2, 1, 1]])
+    >>> colors = np.array([[1, 0, 0]])
+    >>> ellipsoid = actor.ellipsoid(centers=centers,
+    ...                             lengths=lengths,
+    ...                             colors=colors)
+    >>> scene.add(ellipsoid)
+    >>> window.show(scene)
+    """
+
+    centers = np.asarray(centers)
+
+    if axes is None:
+        axes = np.tile(np.eye(3), (centers.shape[0], 1, 1))
+
+    axes = np.asarray(axes)
+    lengths = np.asarray(lengths)
+
+    if centers.ndim == 1:
+        centers = centers.reshape(1, 3)
+    if centers.ndim != 2 or centers.shape[1] != 3:
+        raise ValueError("Centers must be (N, 3) array")
+    if axes.ndim == 2:
+        axes = np.tile(axes, (centers.shape[0], 1, 1))
+    if axes.ndim != 3 or axes.shape[1:] != (3, 3):
+        raise ValueError("Axes must be (N, 3, 3) array")
+    if lengths.ndim == 1:
+        lengths = lengths.reshape(1, 3)
+    if lengths.ndim != 2 or lengths.shape[1] != 3:
+        raise ValueError("Lengths must be (N, 3) array")
+    if lengths.shape != centers.shape:
+        raise ValueError("Lengths must match centers shape")
+
+    base_verts, base_faces = fp.prim_sphere(phi=phi, theta=theta)
+
+    base_verts = np.asarray(base_verts)
+    base_faces = np.asarray(base_faces)
+
+    if base_verts.ndim != 2 or base_verts.shape[1] != 3:
+        raise ValueError(f"base_verts has unexpected shape {base_verts.shape}")
+
+    if isinstance(colors, (list, tuple)):
+        colors = np.asarray(colors)
+        if colors.ndim == 1:
+            colors = np.tile(colors, (centers.shape[0], 1))
+
+    all_vertices = []
+    all_faces = []
+    all_colors = []
+
+    for i in range(len(centers)):
+        center = centers[i]
+        orientation = axes[i]
+        scale = lengths[i]
+
+        transform = orientation @ np.diag(scale)
+        transformed = (transform @ base_verts.T).T + center
+
+        all_vertices.append(transformed)
+        all_faces.append(base_faces + i * len(base_verts))
+
+        all_colors.append(np.tile(colors[i], (len(base_verts), 1)))
+
+    all_vertices = np.vstack(all_vertices)
+    all_faces = np.vstack(all_faces)
+    all_colors = np.vstack(all_colors)
+
+    return actor_from_primitive(
+        centers=centers,
+        vertices=all_vertices,
+        faces=all_faces,
+        colors=all_colors,
+        opacity=opacity,
+        material=material,
+        smooth=smooth,
+        enable_picking=enable_picking,
+        repeat_primitive=False,
     )
 
 
