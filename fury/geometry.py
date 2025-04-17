@@ -1,4 +1,4 @@
-from imageio import imread
+from imageio.v3 import imread
 import numpy as np
 
 from fury.lib import (
