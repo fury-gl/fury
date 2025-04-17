@@ -486,6 +486,19 @@ def test_visibility_control():
     assert visibilities == [False, True, False]
 
 
+def test_image():
+    scene = window.Scene()
+    image = np.random.rand(100, 100)
+    position = np.array([10, 10, 10])
+    image_actor = actor.image(image=image, position=position)
+    scene.add(image_actor)
+
+    npt.assert_array_equal(image_actor.local.position, position)
+    assert image_actor.visible
+
+    scene.remove(image_actor)
+
+
 def test_surface_basic_vertices_and_faces():
     """Test surface creation with basic vertices and faces."""
     vertices = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]], dtype=np.float32)

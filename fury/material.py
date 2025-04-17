@@ -3,6 +3,7 @@
 import numpy as np
 
 from fury.lib import (
+    ImageBasicMaterial,
     LineArrowMaterial,
     LineMaterial,
     LineSegmentMaterial,
@@ -426,6 +427,42 @@ def _create_text_material(
         outline_thickness=outline_thickness,
         weight_offset=weight_offset,
         aa=aliasing,
+    )
+
+
+def _create_image_material(
+    *,
+    clim=None,
+    map=None,
+    gamma=1.0,
+    interpolation="nearest",
+):
+    """
+    Rasterized image material.
+
+    Parameters
+    ----------
+    clim : tuple, optional
+        The contrast limits to scale the data values with.
+    map : Texture or TextureMap, optional
+        The texture map to turn the image values into its final color.
+    gamma : float, optional
+        The gamma correction to apply to the image data.
+        Must be greater than 0.0.
+    interpolation : str, optional
+        The method to interpolate the image data.
+        Either 'nearest' or 'linear'.
+
+    Returns
+    -------
+    ImageMaterial
+        A rasterized image material object with the specified properties.
+    """
+    return ImageBasicMaterial(
+        clim=clim,
+        map=map,
+        gamma=gamma,
+        interpolation=interpolation,
     )
 
 

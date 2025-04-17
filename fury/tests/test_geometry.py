@@ -181,3 +181,12 @@ def test_create_text():
     text_obj = geometry.create_text(text=text, material=mat)
     assert text_obj.material == mat
     assert isinstance(text_obj, Text)
+
+
+def test_create_image():
+    img_data = np.random.rand(128, 128)
+    mat = material._create_image_material()
+    image_obj = geometry.create_image(image_input=img_data, material=mat)
+    assert image_obj.material == mat
+    assert isinstance(image_obj, geometry.Image)
+    assert image_obj.geometry.grid.dim == 2
