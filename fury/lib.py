@@ -77,6 +77,10 @@ Renderer = gfx.WgpuRenderer
 run = run
 Canvas = WgpuCanvas
 OffscreenCanvas = OffscreenWgpuCanvas
+BaseShader = gfx.renderers.wgpu.BaseShader
+LineShader = gfx.renderers.wgpu.shaders.lineshader.LineShader
+register_wgpu_render_function = gfx.renderers.wgpu.register_wgpu_render_function
+WorldObject = gfx.WorldObject
 if have_jupyter_rfb:
     JupyterCanvas = JupyterWgpuCanvas
 else:
