@@ -340,7 +340,7 @@ def _create_image_material(
         The texture map to turn the image values into its final color.
     gamma : float, optional
         The gamma correction to apply to the image data.
-        Must be grater than 0.0.
+        Must be greater than 0.0.
     interpolation : str, optional
         The method to interpolate the image data.
         Either 'nearest' or 'linear'.
