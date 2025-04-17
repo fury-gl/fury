@@ -1,4 +1,9 @@
 from fury.lib import (
+    LineArrowMaterial,
+    LineMaterial,
+    LineSegmentMaterial,
+    LineThinMaterial,
+    LineThinSegmentMaterial,
     MeshBasicMaterial,
     MeshPhongMaterial,
     PointsGaussianBlobMaterial,
@@ -10,6 +15,8 @@ from fury.lib import (
 
 def validate_opacity(opacity):
     """Ensure opacity is between 0 and 1."""
+    if opacity is None:
+        return 1.0
     if not (0 <= opacity <= 1):
         raise ValueError("Opacity must be between 0 and 1.")
     return opacity
@@ -18,7 +25,7 @@ def validate_opacity(opacity):
 def validate_color(color, opacity, mode):
     """Validate and modify color based on opacity and mode."""
     if color is None and mode == "auto":
-        raise ValueError("Color must be specified when mode is 'auto'.")
+        return (1, 1, 1, opacity)
 
     if mode == "vertex":
         return (1, 1, 1)
@@ -86,6 +93,85 @@ def _create_mesh_material(
             color=color,
             flat_shading=flat_shading,
         )
+    else:
+        raise ValueError(f"Unsupported material type: {material}")
+
+
+def _create_line_material(
+    *,
+    material="basic",
+    enable_picking=True,
+    color=None,
+    opacity=1.0,
+    mode="auto",
+    thickness=2.0,
+    thickness_space="screen",
+    dash_pattern=(),
+    dash_offset=0.0,
+    anti_aliasing=True,
+):
+    """
+    Create a line material.
+
+    Parameters
+    ----------
+    material : str, optional
+        The type of line material to create. Options are 'line' (default),
+        'segment', 'arrow', 'thin', and 'thin_segment'.
+    enable_picking : bool, optional
+        Whether the material should be pickable in a scene.
+    color : tuple or None, optional
+        The color of the material, represented as an RGBA tuple. If None, the
+        default color is used.
+    opacity : float, optional
+        The opacity of the material, from 0 (transparent) to 1 (opaque).
+        If RGBA is provided, the final alpha will be:
+        final_alpha = alpha_in_RGBA * opacity
+    mode : str, optional
+        The color mode of the material. Options are 'auto' and 'vertex'.
+    thickness : float, optional
+        The line thickness expressed in logical pixels.
+    thickness_space : str, optional
+        The coordinate space in which the thickness is
+        expressed ('screen', 'world', 'model').
+    dash_pattern : tuple, optional
+        The pattern of the dash, e.g., [2, 3].
+        meaning no dashing.
+    dash_offset : float, optional
+        The offset into the dash cycle to start drawing at.
+    anti_aliasing : bool, optional
+        Whether or not the line is anti-aliased in the shader.
+
+    Returns
+    -------
+    LineMaterial
+        A line material object of the specified type with the given properties.
+    """
+
+    opacity = validate_opacity(opacity)
+    color = validate_color(color, opacity, mode)
+
+    args = {
+        "pick_write": enable_picking,
+        "color_mode": mode,
+        "color": color,
+        "thickness": thickness,
+        "thickness_space": thickness_space,
+        "dash_pattern": dash_pattern,
+        "dash_offset": dash_offset,
+        "aa": anti_aliasing,
+    }
+
+    if material == "basic":
+        return LineMaterial(**args)
+    elif material == "segment":
+        return LineSegmentMaterial(**args)
+    elif material == "arrow":
+        return LineArrowMaterial(**args)
+    elif material == "thin":
+        return LineThinMaterial(**args)
+    elif material == "thin_segment":
+        return LineThinSegmentMaterial(**args)
     else:
         raise ValueError(f"Unsupported material type: {material}")
 

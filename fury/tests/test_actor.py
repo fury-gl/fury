@@ -5,18 +5,26 @@ import numpy.testing as npt
 from fury import actor, window
 
 
-def validate_actors(centers, colors, actor_type="actor_name"):
+def validate_actors(actor_type="actor_name", prim_count=1, **kwargs):
     scene = window.Scene()
     typ_actor = getattr(actor, actor_type)
-    get_actor = typ_actor(centers=centers, colors=colors)
+    get_actor = typ_actor(**kwargs)
     scene.add(get_actor)
 
-    npt.assert_array_equal(get_actor.local.position, centers[0])
+    centers = kwargs.get("centers", None)
+    colors = kwargs.get("colors", None)
 
-    mean_vertex = np.round(np.mean(get_actor.geometry.positions.view, axis=0))
-    npt.assert_array_almost_equal(mean_vertex, centers[0])
+    if centers is not None:
+        npt.assert_array_equal(get_actor.local.position, centers[0])
 
-    assert get_actor.prim_count == 1
+        mean_vertex = np.round(np.mean(get_actor.geometry.positions.view, axis=0))
+        npt.assert_array_almost_equal(mean_vertex, centers[0])
+
+    assert get_actor.prim_count == prim_count
+
+    if actor_type == "line":
+        return
+
     fname = f"{actor_type}_test.png"
     window.snapshot(scene=scene, fname=fname)
 
@@ -63,6 +71,12 @@ def test_sphere():
     centers = np.array([[0, 0, 0]])
     colors = np.array([[1, 0, 0]])
     validate_actors(centers=centers, colors=colors, actor_type="sphere")
+
+
+def test_line():
+    lines_points = np.array([[[0, 0, 0], [1, 1, 1]], [[1, 1, 1], [2, 2, 2]]])
+    colors = np.array([[[1, 0, 0]], [[0, 1, 0]]])
+    validate_actors(lines=lines_points, colors=colors, actor_type="line", prim_count=2)
 
 
 def test_box():

@@ -2,11 +2,14 @@ import numpy as np
 
 from fury.geometry import (
     buffer_to_geometry,
+    create_line,
     create_mesh,
     create_point,
     create_text,
+    line_buffer_separator,
 )
 from fury.material import (
+    _create_line_material,
     _create_mesh_material,
     _create_points_material,
     _create_text_material,
@@ -95,6 +98,75 @@ def actor_from_primitive(
     obj = create_mesh(geometry=geo, material=mat)
     obj.local.position = centers[0]
     obj.prim_count = prim_count
+    return obj
+
+
+def line(
+    lines,
+    *,
+    colors=(1, 0, 0),
+    opacity=None,
+    material="basic",
+    enable_picking=True,
+):
+    """
+    Visualize one or many lines with different colors.
+
+    Parameters
+    ----------
+    lines: list of ndarray of shape (P, 3) or ndarray of shape (N, P, 3)
+        Lines points.
+    colors: ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
+    opacity: float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
+    material: str, optional
+        The material type for the lines. Options are 'basic', 'segment', 'arrow',
+        'thin', and 'thin_segment'.
+    enable_picking: bool, optional
+        Whether the lines should be pickable in a 3D scene.
+
+    Returns
+    -------
+    mesh_actor : Actor
+        A mesh actor containing the generated lines, with the specified
+        material and properties.
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> import numpy as np
+    >>> scene = window.Scene()
+    >>> lines = [np.random.rand(10, 3) for _ in range(5)]
+    >>> colors = np.random.rand(5, 3)
+    >>> line_actor = actor.line(lines=lines, colors=colors)
+    >>> scene.add(line_actor)
+    >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
+    >>> show_manager.start()
+
+    """
+
+    lines_positions, lines_colors = line_buffer_separator(
+        lines, color=colors, color_mode="auto"
+    )
+
+    geo = buffer_to_geometry(
+        positions=lines_positions.astype("float32"),
+        colors=lines_colors.astype("float32")
+        if lines_colors is not None
+        else np.empty_like(lines_positions),
+    )
+
+    mat = _create_line_material(
+        material=material, enable_picking=enable_picking, mode="auto", opacity=opacity
+    )
+
+    obj = create_line(geometry=geo, material=mat)
+
+    obj.local.position = lines_positions[0]
+
+    obj.prim_count = len(lines)
+
     return obj
 
 
