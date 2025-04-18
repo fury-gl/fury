@@ -1,6 +1,8 @@
 import numpy as np
 
 from fury.geometry import (
+    _generate_smooth_points,
+    _tube_frame,
     buffer_to_geometry,
     create_line,
     create_mesh,
@@ -1628,3 +1630,186 @@ def axes(
 
     obj = arrow(centers=centers, directions=directions, colors=colors, scales=scales)
     return obj
+
+
+def tube(
+    points,
+    *,
+    opacity=1.0,
+    colors=(1, 1, 1),
+    radius=0.2,
+    segments=8,
+    end_caps=True,
+    num_interpolation_points=10,
+    material="phong",
+    enable_picking=True,
+):
+    """
+    Create a stream tube actor from a set of control points.
+
+    Parameters
+    ----------
+    points : ndarray (N, 3)
+        The control points defining the path of the tube.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
+    colors : ndarray (N,3) or (N,4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA values in the range [0, 1].
+        If a single color is provided, it will be applied to all points.
+        If an array of colors is provided, each point will have its own color.
+        (WIP)
+    radius : float, optional
+        The radius of the tube.
+    segments : int, optional
+        The number of segments around the circumference of the tube.
+    end_caps : bool, optional
+        Whether to add end caps to the tube.
+    num_interpolation_points : int, optional
+        The number of interpolation points to generate between each pair
+        of original points to smooth the curve.
+    material : str, optional
+        The material type for the tube. Options are 'phong' and 'basic'.
+    enable_picking : bool, optional
+        Whether the tube should be pickable in a 3D scene.
+
+    Returns
+    -------
+    tube_actor : Actor
+        A mesh actor containing the generated tube with the specified
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> import numpy as np
+    >>> scene = window.Scene()
+    >>> points = np.array([[0, 0, 0], [0, 1, 1], [2, 0, 2],
+    ...                   [3, 1, 3], [4, 0, 4], [5, 1, 5]])
+    >>> colors = (1, 0, 1)
+    >>> tube_actor = actor.tube(points=points, colors=colors)
+    >>> scene.add(tube_actor)
+    >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
+    >>> show_manager.start()
+
+    """
+
+    smooth_points = _generate_smooth_points(points, num_interpolation_points)
+
+    vertices = []
+    indices = []
+
+    if len(smooth_points) < 2:
+        raise ValueError("At least two points are required to create a tube.")
+
+    tangents = []
+    for i in range(len(smooth_points)):
+        if i == 0:
+            t = smooth_points[1] - smooth_points[0]
+        elif i == len(smooth_points) - 1:
+            t = smooth_points[-1] - smooth_points[-2]
+        else:
+            t = smooth_points[i + 1] - smooth_points[i - 1]
+        norm = np.linalg.norm(t)
+        tangents.append(
+            t / norm
+            if norm > 0
+            else (tangents[-1] if len(tangents) > 0 else np.array([0.0, 0.0, 1.0]))
+        )
+
+    frames = []
+    _tube_frame(frames, tangents)
+
+    for i, point in enumerate(smooth_points):
+        if i < len(frames):
+            n, b = frames[i]
+        else:
+            n, b = (np.array([1.0, 0.0, 0.0]), np.array([0.0, 1.0, 0.0]))
+
+        angle_step = 2 * np.pi / segments
+        for seg in range(segments):
+            angle = seg * angle_step
+            x = np.cos(angle) * radius
+            y = np.sin(angle) * radius
+            vertex = point + n * x + b * y
+            vertices.append(vertex)
+
+    for i in range(len(smooth_points) - 1):
+        for j in range(segments):
+            next_j = (j + 1) % segments
+            idx0 = i * segments + j
+            idx1 = i * segments + next_j
+            idx2 = (i + 1) * segments + j
+            idx3 = (i + 1) * segments + next_j
+            indices.extend([idx0, idx2, idx1])
+            indices.extend([idx1, idx2, idx3])
+
+    if end_caps and len(smooth_points) > 1:
+        start_center = smooth_points[0]
+        start_frame = (
+            frames[0] if len(frames) > 0 else (np.array([1, 0, 0]), np.array([0, 1, 0]))
+        )
+
+        start_cap_start_index = len(vertices)
+        vertices.append(start_center)
+
+        angle_step = 2 * np.pi / segments
+        for seg in range(segments):
+            angle = seg * angle_step
+            x = np.cos(angle) * radius
+            y = np.sin(angle) * radius
+            vertex = start_center + start_frame[0] * x + start_frame[1] * y
+            vertices.append(vertex)
+
+        for seg in range(segments):
+            next_seg = (seg + 1) % segments
+            indices.extend(
+                [
+                    start_cap_start_index,
+                    start_cap_start_index + seg + 1,
+                    start_cap_start_index + next_seg + 1,
+                ]
+            )
+
+        end_center = smooth_points[-1]
+
+        end_frame = (
+            frames[-1]
+            if len(frames) > 0
+            else (np.array([1, 0, 0]), np.array([0, 1, 0]))
+        )
+
+        end_cap_start_index = len(vertices)
+        vertices.append(end_center)
+
+        angle_step = 2 * np.pi / segments
+        for seg in range(segments):
+            angle = seg * angle_step
+            x = np.cos(angle) * radius
+            y = np.sin(angle) * radius
+            vertex = end_center + end_frame[0] * x + end_frame[1] * y
+            vertices.append(vertex)
+
+        for seg in range(segments):
+            next_seg = (seg + 1) % segments
+            indices.extend(
+                [
+                    end_cap_start_index,
+                    end_cap_start_index + seg + 1,
+                    end_cap_start_index + next_seg + 1,
+                ]
+            )
+    vertices = np.array(vertices, dtype=np.float32)
+    indices = np.array(indices, dtype=np.uint32).reshape(-1, 3)
+
+    tube_actor = actor_from_primitive(
+        centers=np.zeros((1, 3)),
+        vertices=vertices,
+        faces=indices,
+        colors=colors,
+        scales=(1, 1, 1),
+        opacity=opacity,
+        material=material,
+        enable_picking=enable_picking,
+        smooth=True,
+    )
+
+    return tube_actor

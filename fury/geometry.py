@@ -1,4 +1,6 @@
 import numpy as np
+from scipy.interpolate import splev, splprep
+from scipy.spatial.transform import Rotation
 
 from fury.lib import (
     Geometry,
@@ -228,3 +230,104 @@ def create_text(text, material, **kwargs):
 
     text = Text(text=text, material=material, **kwargs)
     return text
+
+
+def _tube_frame(frames, tangents):
+    """
+    Calculates a frame along a curve defined by tangents.
+
+    Parameters
+    ----------
+    frames : list
+        An empty list to be filled with (n, b) tuples representing the normal
+        and bi normal vectors at each point.
+    tangents : ndarray (N, 3)
+        The tangent vectors along the curve.
+    """
+    t0 = tangents[0] / np.linalg.norm(tangents[0])
+    if np.linalg.norm(t0) < 1e-6:
+        cross_vec = (
+            np.array([0, 0, 1])
+            if np.linalg.norm(np.cross(t0, np.array([0, 1, 0]))) < 1e-6
+            else np.array([0, 1, 0])
+        )
+        n0 = np.cross(t0, cross_vec)
+    else:
+        n0 = np.cross(t0, np.array([0, 1, 0]))
+        if np.linalg.norm(n0) < 1e-6:
+            n0 = np.cross(t0, np.array([0, 0, 1]))
+
+    n0 = n0 / np.linalg.norm(n0)
+    if np.linalg.norm(n0) < 1e-6:
+        n0 = np.array([1.0, 0.0, 0.0])
+
+    b0 = np.cross(t0, n0)
+    b0 = b0 / np.linalg.norm(b0)
+    if np.linalg.norm(b0) < 1e-6:
+        b0 = np.array([0.0, 1.0, 0.0])
+
+    frames.append((n0, b0))
+
+    for i in range(1, len(tangents)):
+        t1 = tangents[i] / np.linalg.norm(tangents[i])
+        if np.linalg.norm(t1) < 1e-6:
+            frames.append(frames[-1])
+            t0 = t1
+            continue
+
+        axis = np.cross(t0, t1)
+        axis_len = np.linalg.norm(axis)
+
+        if axis_len < 1e-6:
+            frames.append(frames[-1])
+            t0 = t1
+            continue
+
+        axis /= axis_len
+        angle = np.arctan2(axis_len, np.dot(t0, t1))
+        rot = Rotation.from_rotvec(axis * angle)
+
+        # n_rot = rot.apply(frames[-1][0])
+        b_rot = rot.apply(frames[-1][1])
+
+        t_new = t1
+        n_new = np.cross(b_rot, t_new)
+        n_new = n_new / np.linalg.norm(n_new)
+        if np.linalg.norm(n_new) < 1e-6:
+            n_new = frames[-1][0]
+
+        b_new = np.cross(t_new, n_new)
+        b_new = b_new / np.linalg.norm(b_new)
+        if np.linalg.norm(b_new) < 1e-6:
+            b_new = frames[-1][1]
+
+        frames.append((n_new, b_new))
+        t0 = t_new
+
+
+def _generate_smooth_points(points, num_interpolation_points=10):
+    """
+    Generates smooth points along a curve using spline interpolation.
+
+    Parameters
+    ----------
+    points : ndarray (N, 3)
+        The control points for the spline.
+    num_interpolation_points : int, optional
+        The number of interpolation points to generate between each pair
+        of original points.
+
+    Returns
+    -------
+    smooth_points : ndarray (M, 3)
+        The array of smoothly interpolated points.
+    """
+    if len(points) < 2:
+        return np.array(points, dtype=np.float32)
+
+    tck, u = splprep(points.T, s=0)
+
+    u_new = np.linspace(u.min(), u.max(), len(points) * num_interpolation_points)
+    smooth_points = np.array(splev(u_new, tck)).T
+
+    return smooth_points
