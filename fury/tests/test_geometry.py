@@ -146,9 +146,9 @@ def test_line_buffer_separator():
         np.array([[0, 0, 0]], dtype=np.float32),
         np.array([[1, 1, 1]], dtype=np.float32),
     ]
-    color = np.array([1, 0, 0], dtype=np.float32)  # Invalid shape
-    with npt.assert_raises(ValueError):
-        geometry.line_buffer_separator(line_vertices, color=color, color_mode="auto")
+    color = np.array([1, 0, 0], dtype=np.float32)  # valid color now
+
+    geometry.line_buffer_separator(line_vertices, color=color, color_mode="auto")
 
     line_vertices = [np.array([[0, 0, 0], [1, 1, 1]], dtype=np.float32)]
     positions, colors = geometry.line_buffer_separator(line_vertices)
