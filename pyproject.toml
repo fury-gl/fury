@@ -118,3 +118,19 @@ fail_under = 100
 skip = '*.po,*.ts,*.html,./docs/build,./.mypy_cache,./build,./dist,.git,*.pdf,*.svg,*.bib'
 count = ''
 quiet-level = 3
+
+[tool.numpydoc_validation]
+checks = [
+    "all",   # report on all checks, except the below
+    "EX01",
+    "SA01", # no see also
+    "SA04",  # no description in See Also
+    "ES01", # no extended summary
+    "GL01", # Docstring should start in the line immediately after the quotes
+    "GL02", # Closing quotes on own line (doesn't work on Python 3.13 anyway)
+]
+# remember to use single quotes for regex in TOML
+exclude = [  # don't report on objects that match any of these regex
+    '\.undocumented_method$',
+    '\.__repr__$',
+]

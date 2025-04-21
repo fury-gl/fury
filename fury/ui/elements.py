@@ -1,4 +1,4 @@
-# """UI components module."""
+"""UI components module."""
 
 # __all__ = [
 #     "TextBox2D",

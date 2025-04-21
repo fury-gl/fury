@@ -1,3 +1,5 @@
+"""Animation module."""
+
 from collections import defaultdict
 from time import perf_counter
 from warnings import warn
@@ -14,39 +16,68 @@ from fury.animation.interpolator import (  # noqa F401
     spline_interpolator,
     step_interpolator,
 )
-from fury.decorators import warn_on_args_to_kwargs
 
 # from fury.lib import Actor, Camera, Transform
 
 
 class Animation:
-    """Keyframe animation class.
+    """Create and manage keyframe animations for Fury actors.
 
-    Animation is responsible for keyframe animations for a single or a
-    group of actors.
-    It's used to handle multiple attributes and properties of Fury actors such
-    as transformations, color, and scale.
-    It also accepts custom data and interpolates them, such as temperature.
-    Linear interpolation is used by default to interpolate data between the
-    main keyframes.
+    Animation is responsible for handling keyframe animations for a single actor
+    or a group of actors. It provides control over multiple attributes and
+    properties of Fury actors including position, rotation, scale, color, and
+    opacity. The class also supports custom data interpolation. By default,
+    linear interpolation is used to interpolate data between keyframes.
+
+    Parameters
+    ----------
+    actors : Actor or list of Actor, optional
+        Actor(s) to be animated.
+    length : float or int, optional
+        The fixed length/duration of the animation in seconds. If None,
+        the animation will derive its duration from the keyframes.
+    loop : bool, optional
+        Whether to loop the animation (True) or play once (False).
+    motion_path_res : int, optional
+        The number of line segments used to visualize the animation's motion
+        path (position visualization). Higher values create smoother paths.
 
     Attributes
     ----------
-    actors : Actor or list[Actor], optional, default: None
-        Actor/s to be animated.
-    length : float or int, default: None, optional
-        the fixed length of the animation. If set to None, the animation will
-        get its duration from the keyframes being set.
-    loop : bool, optional, default: True
-        Whether to loop the animation (True) of play once (False).
-    motion_path_res : int, default: None
-        the number of line segments used to visualizer the animation's motion
-        path (visualizing position).
-
+    actors : list
+        List of actors controlled by the Animation.
+    child_animations : list
+        List of child Animations of this Animation.
+    duration : float
+        The duration of the animation in seconds.
+    current_timestamp : float
+        The current time of the animation in seconds.
+    loop : bool
+        Whether the animation is in loop mode (True) or play once mode (False).
+    parent_animation : Animation
+        The hierarchical parent Animation for the current Animation.
+    static_actors : list
+        List of static actors that are not animated but added to the scene.
+    timeline : Timeline
+        The Timeline instance handling the current animation.
     """
 
-    @warn_on_args_to_kwargs()
     def __init__(self, *, actors=None, length=None, loop=True, motion_path_res=None):
+        """Initialize the Animation.
+
+        Parameters
+        ----------
+        actors : Actor or list of Actor, optional
+            Actor(s) to be animated.
+        length : float or int, optional
+            The fixed length/duration of the animation in seconds. If None,
+            the animation will derive its duration from the keyframes.
+        loop : bool, optional
+            Whether to loop the animation (True) or play once (False).
+        motion_path_res : int, optional
+            The number of line segments used to visualize the animation's motion
+            path (position visualization). Higher values create smoother paths.
+        """
         super().__init__()
         self._data = defaultdict(dict)
         self._animations = []
@@ -73,11 +104,13 @@ class Animation:
     def update_duration(self):
         """Update and return the duration of the Animation.
 
+        Update the animation duration based on the length parameter or the maximum
+        timestamp of all keyframes and child animations.
+
         Returns
         -------
         float
-            The duration of the animation.
-
+            The duration of the animation in seconds.
         """
         if self._length is not None:
             self._duration = self._length
@@ -97,7 +130,6 @@ class Animation:
         -------
         float
             The duration of the animation.
-
         """
         return self._duration
 
@@ -109,7 +141,6 @@ class Animation:
         -------
         float
             The current time of the animation.
-
         """
         if self._timeline:
             return self._timeline.current_timestamp
@@ -118,7 +149,11 @@ class Animation:
         return self._current_timestamp
 
     def update_motion_path(self):
-        """Update motion path visualization actor"""
+        """Update motion path visualization actor.
+
+        Creates or updates the motion path visualization actor that represents the
+        animation path. The resolution of the path is determined by motion_path_res.
+        """
         res = self._motion_path_res
         tl = self
         while isinstance(tl._parent_animation, Animation):
@@ -161,9 +196,8 @@ class Animation:
 
         Returns
         -------
-        dict:
+        dict
             The animation data containing keyframes and interpolators.
-
         """
         return self._data
 
@@ -172,14 +206,13 @@ class Animation:
 
         Parameters
         ----------
-        attrib: str
+        attrib : str
             The attribute name to get data for.
 
         Returns
         -------
-        dict:
+        dict
             The animation data for a specific attribute.
-
         """
         data = self._get_data()
 
@@ -195,16 +228,19 @@ class Animation:
             }
         return data.get(attrib)
 
-    @warn_on_args_to_kwargs()
     def get_keyframes(self, *, attrib=None):
-        """Get a keyframe for a specific or all attributes.
+        """Get keyframes for a specific or all attributes.
 
         Parameters
         ----------
-        attrib: str, optional, default: None
+        attrib : str, optional
             The name of the attribute.
             If None, all keyframes for all set attributes will be returned.
 
+        Returns
+        -------
+        dict
+            Dictionary of keyframes for the specified attribute(s).
         """
         data = self._get_data()
         if attrib is None:
@@ -214,7 +250,6 @@ class Animation:
             }
         return data.get(attrib, {}).get("keyframes", {})
 
-    @warn_on_args_to_kwargs()
     def set_keyframe(
         self, attrib, timestamp, value, *, update_interpolator=True, **kwargs
     ):
@@ -222,26 +257,19 @@ class Animation:
 
         Parameters
         ----------
-        attrib: str
+        attrib : str
             The name of the attribute.
-        timestamp: float
+        timestamp : float
             Timestamp of the keyframe.
-        value: ndarray or float or bool
+        value : ndarray or float or bool
             Value of the keyframe at the given timestamp.
-        update_interpolator: bool, optional
-            Interpolator will be reinitialized if True
-
-        Other Parameters
-        ----------------
-        in_cp: ndarray, shape (1, M), optional
-            The in control point in case of using cubic Bézier interpolator.
-        out_cp: ndarray, shape (1, M), optional
-            The out control point in case of using cubic Bézier interpolator.
-        in_tangent: ndarray, shape (1, M), optional
-            The in tangent at that position for the cubic spline curve.
-        out_tangent: ndarray, shape (1, M), optional
-            The out tangent at that position for the cubic spline curve.
-
+        update_interpolator : bool, optional
+            Interpolator will be reinitialized if True.
+        **kwargs : dict, optional
+            Additional parameters for the keyframe. This can include:
+            - `in_cp` and `out_cp` for cubic Bézier interpolation (float).
+            - `in_tangent` and `out_tangent` for cubic spline interpolation,
+                ndarray, shape (1, M).
         """
         attrib_data = self._get_attribute_data(attrib)
         keyframes = attrib_data.get("keyframes")
@@ -277,9 +305,9 @@ class Animation:
 
         Parameters
         ----------
-        attrib: str
+        attrib : str
             The name of the attribute.
-        keyframes: dict
+        keyframes : dict
             A dict object containing keyframes to be set.
 
         Notes
@@ -291,7 +319,6 @@ class Animation:
         ...                      2: {'value': [3, 4, 5], 'in_cp': [1, 2, 3]}}
         >>> pos_keyframes = {1: np.array([1, 2, 3]), 3: np.array([5, 5, 5])}
         >>> Animation.set_keyframes('position', pos_keyframes) # doctest: +SKIP
-
         """
         for t, keyframe in keyframes.items():
             if isinstance(keyframe, dict):
@@ -300,8 +327,12 @@ class Animation:
                 self.set_keyframe(attrib, t, keyframe)
 
     def is_inside_scene_at(self, timestamp):
-        """Check if the Animation is set to be inside the scene at a specific
-        timestamp.
+        """Check if the Animation is set to be inside the scene at a specific timestamp.
+
+        Parameters
+        ----------
+        timestamp : float
+            The timestamp to check scene presence at.
 
         Returns
         -------
@@ -313,7 +344,6 @@ class Animation:
         -----
         If the parent Animation is set to be out of the scene at that time, all
         of their child animations will be out of the scene as well.
-
         """
         parent = self._parent_animation
         parent_in_scene = True
@@ -331,9 +361,8 @@ class Animation:
 
         Parameters
         ----------
-        timestamp: float
-            Timestamp of the event.
-
+        timestamp : float
+            Timestamp of the event when the animation should be added to the scene.
         """
         if not self.is_interpolatable("in_scene"):
             self.set_keyframe("in_scene", timestamp, True)
@@ -342,13 +371,12 @@ class Animation:
             self.set_keyframe("in_scene", timestamp, True)
 
     def remove_from_scene_at(self, timestamp):
-        """Set timestamp for removing Animation to scene event.
+        """Set timestamp for removing Animation from scene event.
 
         Parameters
         ----------
-        timestamp: float
-            Timestamp of the event.
-
+        timestamp : float
+            Timestamp of the event when the animation should be removed from the scene.
         """
         if not self.is_interpolatable("in_scene"):
             self.set_keyframe("in_scene", timestamp, False)
@@ -357,6 +385,13 @@ class Animation:
             self.set_keyframe("in_scene", timestamp, False)
 
     def _handle_scene_event(self, timestamp):
+        """Handle adding/removing actors from scene at a specific timestamp.
+
+        Parameters
+        ----------
+        timestamp : float
+            The timestamp to handle the scene event at.
+        """
         should_be_in_scene = self.is_inside_scene_at(timestamp)
         if self._scene is not None:
             if should_be_in_scene and not self._added_to_scene:
@@ -366,28 +401,26 @@ class Animation:
                 self._scene.rm(*self._actors)
                 self._added_to_scene = False
 
-    @warn_on_args_to_kwargs()
     def set_interpolator(self, attrib, interpolator, *, is_evaluator=False, **kwargs):
-        """Set keyframes interpolator for a certain property
+        """Set keyframes interpolator for a certain property.
 
         Parameters
         ----------
-        attrib: str
+        attrib : str
             The name of the property.
-        interpolator: callable
+        interpolator : callable
             The generator function of the interpolator to be used to
             interpolate/evaluate keyframes.
-        is_evaluator: bool, optional
+        is_evaluator : bool, optional
             Specifies whether the `interpolator` is time-only based evaluation
             function that does not depend on keyframes such as:
 
             def get_position(t):
                 return np.array([np.sin(t), np.cos(t) * 5, 5])
-
-        Other Parameters
-        ----------------
-        spline_degree: int, optional
-            The degree of the spline in case of setting a spline interpolator.
+        **kwargs : dict, optional
+            Additional parameters for the interpolator. This can include:
+            - spline_degree : int - The degree of the spline in case of setting a
+              spline interpolator.
 
         Notes
         -----
@@ -402,7 +435,6 @@ class Animation:
         >>> Animation.set_interpolator('position', linear_interpolator) # doctest: +SKIP
         >>> pos_fun = lambda t: np.array([np.sin(t), np.cos(t), 0]) # doctest: +SKIP
         >>> Animation.set_interpolator('position', pos_fun) # doctest: +SKIP
-
         """
         attrib_data = self._get_attribute_data(attrib)
         keyframes = attrib_data.get("keyframes", {})
@@ -428,7 +460,7 @@ class Animation:
 
         Parameters
         ----------
-        attrib: str
+        attrib : str
             The name of the property.
 
         Returns
@@ -440,117 +472,99 @@ class Animation:
         -----
         True means that it's safe to use `Interpolator.interpolate(t)` for the
         specified property. And False means the opposite.
-
         """
         data = self._data
         return bool(data.get(attrib, {}).get("interpolator", {}).get("func"))
 
-    @warn_on_args_to_kwargs()
     def set_position_interpolator(self, interpolator, *, is_evaluator=False, **kwargs):
         """Set the position interpolator.
 
-                Parameters
-                ----------
-                interpolator: callable
-                    The generator function of the interpolator that would handle the
-                     position keyframes.
-                is_evaluator: bool, optional
-                    Specifies whether the `interpolator` is time-only based evaluation
-                    function that does not depend on keyframes.
-
-                Other Parameters
-                ----------------
-                degree: int
-                    The degree of the spline interpolation in case of setting
-                    the `spline_interpolator`.
-
-                Examples
-                --------
-                >>> Animation.set_position_interpolator(
-        spline_interpolator, degree=5) # doctest: +SKIP
-
-        """  # noqa: E501
+        Parameters
+        ----------
+        interpolator : callable
+            The generator function of the interpolator that would handle the
+            position keyframes.
+        is_evaluator : bool, optional
+            Specifies whether the `interpolator` is time-only based evaluation
+            function that does not depend on keyframes.
+        **kwargs : dict, optional
+            Additional parameters for the interpolator. This can include:
+            - degree : int - The degree of the spline interpolation in case of setting
+              the `spline_interpolator`.
+        """
         self.set_interpolator(
             "position", interpolator, is_evaluator=is_evaluator, **kwargs
         )
 
-    @warn_on_args_to_kwargs()
     def set_scale_interpolator(self, interpolator, *, is_evaluator=False):
         """Set the scale interpolator.
 
         Parameters
         ----------
-        interpolator: callable
+        interpolator : callable
             The generator function of the interpolator that would handle
             the scale keyframes.
-        is_evaluator: bool, optional
+        is_evaluator : bool, optional
             Specifies whether the `interpolator` is time-only based evaluation
             function that does not depend on keyframes.
 
         Examples
         --------
         >>> Animation.set_scale_interpolator(step_interpolator) # doctest: +SKIP
-
         """
         self.set_interpolator("scale", interpolator, is_evaluator=is_evaluator)
 
-    @warn_on_args_to_kwargs()
     def set_rotation_interpolator(self, interpolator, *, is_evaluator=False):
-        """Set the rotation interpolator .
+        """Set the rotation interpolator.
 
         Parameters
         ----------
-        interpolator: callable
+        interpolator : callable
             The generator function of the interpolator that would handle the
             rotation (orientation) keyframes.
-        is_evaluator: bool, optional
+        is_evaluator : bool, optional
             Specifies whether the `interpolator` is time-only based evaluation
             function that does not depend on keyframes.
 
         Examples
         --------
         >>> Animation.set_rotation_interpolator(slerp) # doctest: +SKIP
-
         """
         self.set_interpolator("rotation", interpolator, is_evaluator=is_evaluator)
 
-    @warn_on_args_to_kwargs()
     def set_color_interpolator(self, interpolator, *, is_evaluator=False):
         """Set the color interpolator.
 
         Parameters
         ----------
-        interpolator: callable
+        interpolator : callable
             The generator function of the interpolator that would handle
             the color keyframes.
-        is_evaluator: bool, optional
+        is_evaluator : bool, optional
             Specifies whether the `interpolator` is time-only based evaluation
             function that does not depend on keyframes.
 
         Examples
         --------
         >>> Animation.set_color_interpolator(lab_color_interpolator) # doctest: +SKIP
-
         """
         self.set_interpolator("color", interpolator, is_evaluator=is_evaluator)
 
-    @warn_on_args_to_kwargs()
     def set_opacity_interpolator(self, interpolator, *, is_evaluator=False):
         """Set the opacity interpolator.
 
         Parameters
         ----------
-        interpolator: callable
+        interpolator : callable
             The generator function of the interpolator that would handle
             the opacity keyframes.
-        is_evaluator: bool, optional
+        is_evaluator : bool, optional
             Specifies whether the `interpolator` is time-only based evaluation
             function that does not depend on keyframes.
 
         Examples
         --------
         >>> Animation.set_opacity_interpolator(step_interpolator) # doctest: +SKIP
-
         """
         self.set_interpolator("opacity", interpolator, is_evaluator=is_evaluator)
 
@@ -559,11 +573,15 @@ class Animation:
 
         Parameters
         ----------
-        attrib: str
+        attrib : str
             The attribute name.
-        timestamp: float
+        timestamp : float
             The timestamp to interpolate at.
 
+        Returns
+        -------
+        ndarray or float or bool
+            The interpolated value of the attribute at the given timestamp.
         """
         value = (
             self._data.get(attrib, {}).get("interpolator", {}).get("func")(timestamp)
@@ -575,9 +593,13 @@ class Animation:
 
         Parameters
         ----------
-        attrib: str
+        attrib : str
             The attribute name.
 
+        Returns
+        -------
+        ndarray or float or bool
+            The interpolated value of the attribute at the current timestamp.
         """
         return (
             self._data.get(attrib)
@@ -590,47 +612,37 @@ class Animation:
 
         Parameters
         ----------
-        timestamp: float
-            Timestamp of the keyframe
-        position: ndarray, shape (1, 3)
-            Position value
-
-        Other Parameters
-        ----------------
-        in_cp: float
-            The control point in case of using `cubic Bézier interpolator` when
-            time exceeds this timestamp.
-        out_cp: float
-            The control point in case of using `cubic Bézier interpolator` when
-            time precedes this timestamp.
-        in_tangent: ndarray, shape (1, M), optional
-            The in tangent at that position for the cubic spline curve.
-        out_tangent: ndarray, shape (1, M), optional
-            The out tangent at that position for the cubic spline curve.
+        timestamp : float
+            Timestamp of the keyframe.
+        position : ndarray, shape (1, 3)
+            Position value.
+        **kwargs : dict, optional
+            Additional parameters for the keyframe. This can include:
+            - `in_cp` and `out_cp` for cubic Bézier interpolation (float).
+            - `in_tangent` and `out_tangent` for cubic spline interpolation,
+              ndarray, shape (1, M).
 
         Notes
         -----
         `in_cp` and `out_cp` only needed when using the cubic bezier
         interpolation method.
-
         """
         self.set_keyframe("position", timestamp, position, **kwargs)
 
     def set_position_keyframes(self, keyframes):
         """Set a dict of position keyframes at once.
-        Should be in the following form:
-        {timestamp_1: position_1, timestamp_2: position_2}
 
         Parameters
         ----------
-        keyframes: dict
+        keyframes : dict
             A dict with timestamps as keys and positions as values.
+            Should be in the following form:
+            {timestamp_1: position_1, timestamp_2: position_2}.
 
         Examples
         --------
         >>> pos_keyframes = {1, (0, 0, 0), 3, (50, 6, 6)}
         >>> Animation.set_position_keyframes(pos_keyframes) # doctest: +SKIP
-
         """
         self.set_keyframes("position", keyframes)
 
@@ -639,17 +651,18 @@ class Animation:
 
         Parameters
         ----------
-        timestamp: float
-            Timestamp of the keyframe
-        rotation: ndarray, shape(1, 3) or shape(1, 4)
+        timestamp : float
+            Timestamp of the keyframe.
+        rotation : ndarray, shape(1, 3) or shape(1, 4)
             Rotation data in euler degrees with shape(1, 3) or in quaternions
             with shape(1, 4).
+        **kwargs : dict, optional
+            Additional parameters for the keyframe.
 
         Notes
         -----
         Euler rotations are executed by rotating first around Z then around X,
         and finally around Y.
-
         """
         no_components = len(np.array(rotation).flatten())
         if no_components == 4:
@@ -674,11 +687,12 @@ class Animation:
 
         Parameters
         ----------
-        timestamp: float
-            Timestamp of the keyframe
-        vector: ndarray, shape(1, 3)
+        timestamp : float
+            Timestamp of the keyframe.
+        vector : ndarray, shape(1, 3)
             Directional vector that describes the rotation.
-
+        **kwargs : dict, optional
+            Additional parameters for the keyframe.
         """
         quat = transform.Rotation.from_rotvec(vector).as_quat()
         self.set_keyframe("rotation", timestamp, quat, **kwargs)
@@ -688,29 +702,29 @@ class Animation:
 
         Parameters
         ----------
-        timestamp: float
-            Timestamp of the keyframe
-        scalar: ndarray, shape(1, 3)
+        timestamp : float
+            Timestamp of the keyframe.
+        scalar : ndarray, shape(1, 3)
             Scale keyframe value associated with the timestamp.
-
+        **kwargs : dict, optional
+            Additional parameters for the keyframe.
         """
         self.set_keyframe("scale", timestamp, scalar, **kwargs)
 
     def set_scale_keyframes(self, keyframes):
         """Set a dict of scale keyframes at once.
-        Should be in the following form:
-        {timestamp_1: scale_1, timestamp_2: scale_2}
 
         Parameters
         ----------
-        keyframes: dict
+        keyframes : dict
             A dict with timestamps as keys and scales as values.
+            Should be in the following form:
+            {timestamp_1: scale_1, timestamp_2: scale_2}.
 
         Examples
         --------
         >>> scale_keyframes = {1, (1, 1, 1), 3, (2, 2, 3)}
         >>> Animation.set_scale_keyframes(scale_keyframes) # doctest: +SKIP
-
         """
         self.set_keyframes("scale", keyframes)
 
@@ -719,30 +733,30 @@ class Animation:
 
         Parameters
         ----------
-        timestamp: float
-            Timestamp of the keyframe
-        color: ndarray, shape(1, 3)
+        timestamp : float
+            Timestamp of the keyframe.
+        color : ndarray, shape(1, 3)
             Color keyframe value associated with the timestamp.
-
+        **kwargs : dict, optional
+            Additional parameters for the keyframe.
         """
         self.set_keyframe("color", timestamp, color, **kwargs)
 
     def set_color_keyframes(self, keyframes):
         """Set a dict of color keyframes at once.
-        Should be in the following form:
-        {timestamp_1: color_1, timestamp_2: color_2}
 
         Parameters
         ----------
-        keyframes: dict
+        keyframes : dict
             A dict with timestamps as keys and color as values.
+            Should be in the following form:
+            {timestamp_1: color_1, timestamp_2: color_2}.
 
         Examples
         --------
         >>> import numpy as np
         >>> color_keyframes = {1, (1, 0, 1), 3, (0, 0, 1)}
         >>> Animation.set_color_keyframes(color_keyframes) # doctest: +SKIP
-
         """
         self.set_keyframes("color", keyframes)
 
@@ -751,23 +765,24 @@ class Animation:
 
         Parameters
         ----------
-        timestamp: float
-            Timestamp of the keyframe
-        opacity: ndarray, shape(1, 3)
+        timestamp : float
+            Timestamp of the keyframe.
+        opacity : ndarray, shape(1, 3)
             Opacity keyframe value associated with the timestamp.
-
+        **kwargs : dict
+            Additional parameters for the keyframe.
         """
         self.set_keyframe("opacity", timestamp, opacity, **kwargs)
 
     def set_opacity_keyframes(self, keyframes):
         """Set a dict of opacity keyframes at once.
-        Should be in the following form:
-        {timestamp_1: opacity_1, timestamp_2: opacity_2}
 
         Parameters
         ----------
-        keyframes: dict(float: ndarray, shape(1, 1) or float or int)
+        keyframes : dict
             A dict with timestamps as keys and opacities as values.
+            Should be in the following form:
+            {timestamp_1: opacity_1, timestamp_2: opacity_2}.
 
         Notes
         -----
@@ -777,7 +792,6 @@ class Animation:
         --------
         >>> opacity = {1, (1, 1, 1), 3, (2, 2, 3)}
         >>> Animation.set_scale_keyframes(opacity) # doctest: +SKIP
-
         """
         self.set_keyframes("opacity", keyframes)
 
@@ -786,14 +800,13 @@ class Animation:
 
         Parameters
         ----------
-        t: float
+        t : float
             The time to interpolate position at.
 
         Returns
         -------
-        ndarray(1, 3):
+        ndarray, shape (1, 3)
             The interpolated position.
-
         """
         return self.get_value("position", t)
 
@@ -802,16 +815,16 @@ class Animation:
 
         Parameters
         ----------
-        t: float
-            the time to interpolate rotation at.
-        as_quat: bool
+        t : float
+            The time to interpolate rotation at.
+        as_quat : bool
             Returned rotation will be as quaternion if True.
 
         Returns
         -------
-        ndarray(1, 3):
-            The interpolated rotation as Euler degrees by default.
-
+        ndarray, shape (1, 3) or shape (1, 4)
+            The interpolated rotation as Euler degrees by default or as quaternion if
+            as_quat is True.
         """
         rot = self.get_value("rotation", t)
         if len(rot) == 4:
@@ -831,14 +844,13 @@ class Animation:
 
         Parameters
         ----------
-        t: float
+        t : float
             The time to interpolate scale at.
 
         Returns
         -------
-        ndarray(1, 3):
+        ndarray, shape (1, 3)
             The interpolated scale.
-
         """
         return self.get_value("scale", t)
 
@@ -847,14 +859,13 @@ class Animation:
 
         Parameters
         ----------
-        t: float
+        t : float
             The time to interpolate color value at.
 
         Returns
         -------
-        ndarray(1, 3):
+        ndarray, shape (1, 3)
             The interpolated color.
-
         """
         return self.get_value("color", t)
 
@@ -863,27 +874,26 @@ class Animation:
 
         Parameters
         ----------
-        t: float
+        t : float
             The time to interpolate opacity at.
 
         Returns
         -------
-        ndarray(1, 1):
+        ndarray or float
             The interpolated opacity.
-
         """
         return self.get_value("opacity", t)
 
     def add(self, item):
         """Add an item to the Animation.
+
         This item can be an Actor, Animation, list of Actors, or a list of
         Animations.
 
         Parameters
         ----------
-        item: Animation, vtkActor, list[Animation], or list[vtkActor]
+        item : Animation, vtkActor, list[Animation], or list[vtkActor]
             Actor/s to be animated by the Animation.
-
         """
         if isinstance(item, list):
             for a in item:
@@ -901,9 +911,8 @@ class Animation:
 
         Parameters
         ----------
-        animation: Animation or list[Animation]
+        animation : Animation or list[Animation]
             Animation/s to be added.
-
         """
         if isinstance(animation, list):
             for a in animation:
@@ -914,19 +923,17 @@ class Animation:
         self._animations.append(animation)
         self.update_duration()
 
-    @warn_on_args_to_kwargs()
     def add_actor(self, actor, *, static=False):
         """Add an actor or list of actors to the Animation.
 
         Parameters
         ----------
-        actor: vtkActor or list(vtkActor)
+        actor : vtkActor or list(vtkActor)
             Actor/s to be animated by the Animation.
-        static: bool
+        static : bool
             Indicated whether the actor should be animated and controlled by
             the animation or just a static actor that gets added to the scene
             along with the Animation.
-
         """
         if isinstance(actor, list):
             for a in actor:
@@ -945,10 +952,9 @@ class Animation:
 
         Returns
         -------
-        Timeline:
+        Timeline
             The Timeline handling the current animation, None, if there is no
             associated Timeline.
-
         """
         return self._timeline
 
@@ -958,10 +964,9 @@ class Animation:
 
         Parameters
         ----------
-        timeline: Timeline
+        timeline : Timeline
             The Timeline handling the current animation, None, if there is no
             associated Timeline.
-
         """
         self._timeline = timeline
         if self._animations:
@@ -974,9 +979,8 @@ class Animation:
 
         Returns
         -------
-        Animation:
+        Animation
             The parent Animation.
-
         """
         return self._parent_animation
 
@@ -986,9 +990,8 @@ class Animation:
 
         Parameters
         ----------
-        parent_animation: Animation
+        parent_animation : Animation
             The parent Animation instance.
-
         """
         self._parent_animation = parent_animation
 
@@ -998,9 +1001,8 @@ class Animation:
 
         Returns
         -------
-        list:
+        list
             List of actors controlled by the Animation.
-
         """
         return self._actors
 
@@ -1010,22 +1012,21 @@ class Animation:
 
         Returns
         -------
-        list:
+        list
             List of child Animations of this Animation.
-
         """
         return self._animations
 
     def add_static_actor(self, actor):
-        """Add an actor or list of actors as static actor/s which will not be
-        controlled nor animated by the Animation. All static actors will be
-        added to the scene when the Animation is added to the scene.
+        """Add static actor(s) which will not be controlled/animated by the Animation.
+
+        All static actors will be added to the scene when the Animation is added to the
+        scene.
 
         Parameters
         ----------
-        actor: vtkActor or list(vtkActor)
+        actor : vtkActor or list(vtkActor)
             Static actor/s.
-
         """
         self.add_actor(actor, static=True)
 
@@ -1035,14 +1036,13 @@ class Animation:
 
         Returns
         -------
-        list:
+        list
             List of static actors.
-
         """
         return self._static_actors
 
     def remove_animations(self):
-        """Remove all child Animations from the Animation"""
+        """Remove all child Animations from the Animation."""
         self._animations.clear()
 
     def remove_actor(self, actor):
@@ -1050,14 +1050,13 @@ class Animation:
 
         Parameters
         ----------
-        actor: vtkActor
+        actor : vtkActor
             Actor to be removed from the Animation.
-
         """
         self._actors.remove(actor)
 
     def remove_actors(self):
-        """Remove all actors from the Animation"""
+        """Remove all actors from the Animation."""
         self._actors.clear()
 
     @property
@@ -1068,7 +1067,6 @@ class Animation:
         -------
         bool
             Whether the animation in loop mode (True) or play one mode (False).
-
         """
         return self._loop
 
@@ -1078,31 +1076,30 @@ class Animation:
 
         Parameters
         ----------
-        loop: bool
+        loop : bool
             The loop condition to be set. (True) to loop the animation, and
             (False) to play only once.
-
         """
         self._loop = loop
 
     def add_update_callback(self, callback, prop=None):
-        """Add a function to be called each time animation is updated
-        This function must accept only one argument which is the current value
-        of the named property.
+        """Add a function to be called each time animation is updated.
 
+        Add a callback function that will be invoked whenever the animation is updated.
+        The function must accept only one argument which is the current value
+        of the named property.
 
         Parameters
         ----------
-        callback: callable
+        callback : callable
             The function to be called whenever the animation is updated.
-        prop: str, optional, default: None
+        prop : str, optional
             The name of the property.
 
         Notes
         -----
         If no attribute name was provided, current time of the animation will
         be provided instead of current value for the callback.
-
         """
         if prop is None:
             self._general_callbacks.append(callback)
@@ -1110,7 +1107,6 @@ class Animation:
         attrib = self._get_attribute_data(prop)
         attrib.get("callbacks", []).append(callback)
 
-    @warn_on_args_to_kwargs()
     def update_animation(self, *, time=None):
         """Update the animation.
 
@@ -1119,10 +1115,9 @@ class Animation:
 
         Parameters
         ----------
-        time: float or int, optional, default: None
+        time : float or int, optional
             The time to update animation at. If None, the animation will play
             without adding it to a Timeline.
-
         """
         has_handler = True
         if time is None:
@@ -1191,7 +1186,13 @@ class Animation:
             self._scene.reset_clipping_range()
 
     def add_to_scene(self, scene):
-        """Add this Animation, its actors and sub Animations to the scene"""
+        """Add this Animation, its actors and sub Animations to the scene.
+
+        Parameters
+        ----------
+        scene : Scene
+            The scene to add the animation, actors, and sub-animations to.
+        """
         [scene.add(actor) for actor in self._actors]
         [scene.add(static_act) for static_act in self._static_actors]
         [scene.add(animation) for animation in self._animations]
@@ -1204,7 +1205,13 @@ class Animation:
         self.update_animation(time=0)
 
     def remove_from_scene(self, scene):
-        """Remove Animation, its actors and sub Animations from the scene"""
+        """Remove Animation, its actors and sub Animations from the scene.
+
+        Parameters
+        ----------
+        scene : Scene
+            The scene from which to remove the animation, actors, and sub-animations.
+        """
         [scene.rm(act) for act in self.actors]
         [scene.rm(static_act) for static_act in self._static_actors]
         for anim in self.child_animations:
@@ -1219,62 +1226,68 @@ class CameraAnimation(Animation):
 
     This is used for animating a single camera using a set of keyframes.
 
+    Parameters
+    ----------
+    camera : Camera, optional
+        Camera to be animated. If None, active camera will be animated.
+    length : float or int, optional
+        The fixed length/duration of the animation in seconds. If None,
+        the animation will derive its duration from the keyframes.
+    loop : bool, optional
+        Whether to loop the animation (True) or play once (False).
+    motion_path_res : int, optional
+        The number of line segments used to visualize the animation's motion
+        path (position visualization). Higher values create smoother paths.
+
     Attributes
     ----------
-    camera : Camera, optional, default: None
-        Camera to be animated. If None, active camera will be animated.
-    length : float or int, default: None, optional
-        the fixed length of the animation. If set to None, the animation will
-        get its duration from the keyframes being set.
-    loop : bool, optional, default: True
-        Whether to loop the animation (True) of play once (False).
-    motion_path_res : int, default: None
-        the number of line segments used to visualizer the animation's motion
-        path (visualizing position).
-
+    camera : Camera
+        Camera being animated by the CameraAnimation.
+    duration : float
+        The duration of the animation in seconds.
+    loop : bool
+        Whether the animation is in loop mode (True) or play one mode (False).
     """
 
-    @warn_on_args_to_kwargs()
     def __init__(self, *, camera=None, length=None, loop=True, motion_path_res=None):
+        """Initialize CameraAnimation.
+
+        Parameters
+        ----------
+        camera : Camera, optional
+            Camera to be animated. If None, active camera will be animated.
+        length : float or int, optional
+            The fixed length/duration of the animation in seconds. If None,
+            the animation will derive its duration from the keyframes.
+        loop : bool, optional
+            Whether to loop the animation (True) or play once (False).
+        motion_path_res : int, optional
+            The number of line segments used to visualize the animation's motion
+            path (position visualization). Higher values create smoother paths.
+        """
         super(CameraAnimation, self).__init__(
             length=length, loop=loop, motion_path_res=motion_path_res
         )
         self._camera = camera
-
-    # @property
-    # def camera(self) -> Camera:
-    #     """Return the camera assigned to this animation.
-
-    #     Returns
-    #     -------
-    #     Camera:
-    #         The camera that is being animated by this CameraAnimation.
-
-    #     """
-    #     return self._camera
-
-    # @camera.setter
-    # def camera(self, camera: Camera):
-    #     """Set a camera to be animated.
-
-    #     Parameters
-    #     ----------
-    #     camera: Camera
-    #         The camera to be animated
-
-    #     """
-    #     self._camera = camera
 
     def set_focal(self, timestamp, position, **kwargs):
         """Set camera's focal position keyframe.
 
         Parameters
         ----------
-        timestamp: float
-            The time to interpolate opacity at.
-        position: ndarray, shape(1, 3)
-            The camera position
-
+        timestamp : float
+            The time to set the keyframe at.
+        position : ndarray, shape (1, 3)
+            The camera focal position.
+        **kwargs : dict, optional
+            Additional keyword arguments for the keyframe. The following
+            parameters are supported:
+            - in_cp: ndarray - The in control point for cubic Bézier interpolation.
+            - out_cp: ndarray - The out control point for cubic Bézier interpolation.
+            - in_tangent: ndarray - The in tangent at that position for cubic spline
+              curve.
+            - out_tangent: ndarray - The out tangent at that position for cubic spline
+              curve.
         """
         self.set_keyframe("focal", timestamp, position, **kwargs)
 
@@ -1283,50 +1296,53 @@ class CameraAnimation(Animation):
 
         Parameters
         ----------
-        timestamp: float
-            The time to interpolate at.
-        direction: ndarray, shape(1, 3)
-            The camera view-up direction
-
+        timestamp : float
+            The time to set the keyframe at.
+        direction : ndarray, shape (1, 3)
+            The camera view-up direction vector.
+        **kwargs : dict, optional
+            Additional keyword arguments for the keyframe. The following
+            parameters are supported:
+            - in_cp: ndarray - The in control point for cubic Bézier interpolation.
+            - out_cp: ndarray - The out control point for cubic Bézier interpolation.
+            - in_tangent: ndarray - The in tangent at that position for cubic spline
+              curve.
+            - out_tangent: ndarray - The out tangent at that position for cubic spline
+              curve.
         """
         self.set_keyframe("view_up", timestamp, direction, **kwargs)
 
     def set_focal_keyframes(self, keyframes):
         """Set multiple camera focal position keyframes at once.
-        Should be in the following form:
-        {timestamp_1: focal_1, timestamp_2: focal_1, ...}
 
         Parameters
         ----------
-        keyframes: dict
+        keyframes : dict
             A dict with timestamps as keys and camera focal positions as
-            values.
+            values. Should be in the following form:
+            {timestamp_1: focal_1, timestamp_2: focal_1, ...}.
 
         Examples
         --------
         >>> focal_pos = {0, (1, 1, 1), 3, (20, 0, 0)}
         >>> CameraAnimation.set_focal_keyframes(focal_pos) # doctest: +SKIP
-
         """
         self.set_keyframes("focal", keyframes)
 
     def set_view_up_keyframes(self, keyframes):
         """Set multiple camera view up direction keyframes.
-                Should be in the following form:
-                {timestamp_1: view_up_1, timestamp_2: view_up_2, ...}
 
-                Parameters
-                ----------
-                keyframes: dict
-                    A dict with timestamps as keys and camera view up vectors as
-                    values.
+        Parameters
+        ----------
+        keyframes : dict
+            A dict with timestamps as keys and camera view up vectors as
+            values. Should be in the following form:
+            {timestamp_1: view_up_1, timestamp_2: view_up_2, ...}.
 
-                Examples
-                --------
-                >>> view_ups = {
-        0, np.array([1, 0, 0]), 3, np.array([0, 1, 0])} # doctest: +SKIP
-                >>> CameraAnimation.set_view_up_keyframes(view_ups) # doctest: +SKIP
-
+        Examples
+        --------
+        >>> view_ups = {0: np.array([1, 0, 0]), 3: np.array([0, 1, 0])}
+        >>> CameraAnimation.set_view_up_keyframes(view_ups) # doctest: +SKIP
         """
         self.set_keyframes("view_up", keyframes)
 
@@ -1335,19 +1351,18 @@ class CameraAnimation(Animation):
 
         Parameters
         ----------
-        t: float
+        t : float
             The time to interpolate at.
 
         Returns
         -------
-        ndarray(1, 3):
+        ndarray, shape (1, 3)
             The interpolated camera's focal position.
 
         Notes
         -----
         The returned focal position does not necessarily reflect the current
         camera's focal position, but the expected one.
-
         """
         return self.get_value("focal", t)
 
@@ -1356,64 +1371,57 @@ class CameraAnimation(Animation):
 
         Parameters
         ----------
-        t: float
+        t : float
             The time to interpolate at.
 
         Returns
         -------
-        ndarray(1, 3):
+        ndarray, shape (1, 3)
             The interpolated camera view-up directional vector.
 
         Notes
         -----
         The returned focal position does not necessarily reflect the actual
         camera view up directional vector, but the expected one.
-
         """
         return self.get_value("view_up", t)
 
-    @warn_on_args_to_kwargs()
     def set_focal_interpolator(self, interpolator, *, is_evaluator=False):
         """Set the camera focal position interpolator.
 
         Parameters
         ----------
-        interpolator: callable
+        interpolator : callable
             The generator function of the interpolator that would handle the
             interpolation of the camera focal position keyframes.
-        is_evaluator: bool, optional
+        is_evaluator : bool, optional
             Specifies whether the `interpolator` is time-only based evaluation
             function that does not depend on keyframes.
-
         """
         self.set_interpolator("focal", interpolator, is_evaluator=is_evaluator)
 
-    @warn_on_args_to_kwargs()
     def set_view_up_interpolator(self, interpolator, *, is_evaluator=False):
         """Set the camera up-view vector animation interpolator.
 
         Parameters
         ----------
-        interpolator: callable
+        interpolator : callable
             The generator function of the interpolator that would handle the
             interpolation of the camera view-up keyframes.
-        is_evaluator: bool, optional
+        is_evaluator : bool, optional
             Specifies whether the `interpolator` is time-only based evaluation
             function that does not depend on keyframes.
-
         """
         self.set_interpolator("view_up", interpolator, is_evaluator=is_evaluator)
 
-    @warn_on_args_to_kwargs()
     def update_animation(self, *, time=None):
         """Update the camera animation.
 
         Parameters
         ----------
-        time: float or int, optional, default: None
+        time : float or int, optional
             The time to update the camera animation at. If None, the animation
             will play.
-
         """
         if self._camera is None:
             if self._scene:

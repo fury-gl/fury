@@ -1,3 +1,5 @@
+"""Interface to pygfx and wgpu."""
+
 from typing import TypeAlias
 
 import pygfx as gfx

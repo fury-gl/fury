@@ -143,7 +143,7 @@ def test_map_coordinates_3d_4d():
         ]
     )
 
-    for d, e in zip([data_1, data_2], [expected, expected2]):
+    for d, e in zip([data_1, data_2], [expected, expected2], strict=False):
         values = map_coordinates_3d_4d(d, indices)
         npt.assert_array_almost_equal(values, e)
 

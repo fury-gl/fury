@@ -1,10 +1,10 @@
+"""Package information."""
+
 from __future__ import annotations
 
 from subprocess import run
 
 from packaging.version import Version
-
-from fury.decorators import warn_on_args_to_kwargs
 
 try:
     from ._version import __version__
@@ -14,9 +14,8 @@ except ImportError:
 COMMIT_HASH = "$Format:%h$"
 
 
-@warn_on_args_to_kwargs()
 def pkg_commit_hash(pkg_path: str | None = None) -> tuple[str, str]:
-    """Get short form of commit hash
+    """Get short form of commit hash.
 
     In this file is a variable called COMMIT_HASH. This contains a substitution
     pattern that may have been filled by the execution of ``git archive``.
@@ -33,15 +32,14 @@ def pkg_commit_hash(pkg_path: str | None = None) -> tuple[str, str]:
     Parameters
     ----------
     pkg_path : str
-       directory containing package
+       Directory containing package.
 
     Returns
     -------
-    hash_from : str
-       Where we got the hash from - description
-    hash_str : str
-       short form of hash
-
+    str
+       Where we got the hash from - description.
+    str
+       Short form of hash.
     """
     if not COMMIT_HASH.startswith("$Format"):  # it has been substituted
         return "archive substitution", COMMIT_HASH

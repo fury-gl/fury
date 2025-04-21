@@ -1,4 +1,8 @@
-"""Module dedicated for basic primitive."""
+"""Module dedicated for basic primitives.
+
+This module provides functions to create basic geometric primitives like
+spheres, boxes, cylinders, etc. that can be used for visualization.
+"""
 
 import math
 from os.path import join as pjoin
@@ -30,14 +34,13 @@ def faces_from_sphere_vertices(vertices):
 
     Parameters
     ----------
-    vertices : (M, 3) ndarray
+    vertices : ndarray, shape (M, 3)
         XYZ coordinates of vertices on the sphere.
 
     Returns
     -------
-    faces : (N, 3) ndarray
+    ndarray, shape (N, 3)
         Indices into vertices; forms triangular faces.
-
     """
     hull = ConvexHull(vertices, qhull_options="Qbb Qc")
     faces = np.ascontiguousarray(hull.simplices)
@@ -51,35 +54,35 @@ def faces_from_sphere_vertices(vertices):
 def repeat_primitive_function(
     func, centers, *, func_args=None, directions=(1, 0, 0), colors=(1, 0, 0), scales=1
 ):
-    """Repeat Vertices and triangles of a specific primitive function.
+    """Repeat vertices and triangles of a specific primitive function.
 
     It could be seen as a glyph. The primitive function should generate and
-    return vertices and faces
+    return vertices and faces.
 
     Parameters
     ----------
     func : callable
-        primitive functions
+        Primitive function.
     centers : ndarray, shape (N, 3)
-        Superquadrics positions
-    func_args : args
-        primitive functions arguments/parameters
+        Positions for repeated primitives.
+    func_args : list or None, optional
+        Primitive function arguments/parameters.
     directions : ndarray, shape (N, 3) or tuple (3,), optional
-        The orientation vector of the cone.
-    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
-    scales : ndarray, shape (N) or (N,3) or float or int, optional
-        The height of the cone.
+        Orientation vectors for the primitives.
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) colors for the primitives.
+        R, G, B and A should be in the range [0, 1].
+    scales : ndarray, shape (N,) or (N, 3) or float or int, optional
+        Scaling factors for the primitives.
 
     Returns
     -------
-    big_vertices: ndarray
-        Expanded vertices at the centers positions
-    big_triangles: ndarray
-        Expanded triangles that composed our shape to duplicate
+    big_vertices : ndarray
+        Expanded vertices at the centers positions.
+    big_triangles : ndarray
+        Expanded triangles that compose the repeated primitives.
     big_colors : ndarray
-        Expanded colors applied to all vertices/faces
-
+        Expanded colors applied to all vertices/faces.
     """
     if func_args is None:
         func_args = []
@@ -89,7 +92,7 @@ def repeat_primitive_function(
     if len(func_args) == 1:
         func_args = np.squeeze(np.array([func_args] * centers.shape[0]))
     elif len(func_args) != centers.shape[0]:
-        raise IOError(
+        raise OSError(
             "sq_params should 1 or equal to the numbers \
                         of centers"
         )
@@ -116,38 +119,38 @@ def repeat_primitive(
     scales=1,
     have_tiled_verts=False,
 ):
-    """Repeat Vertices and triangles of a specific primitive shape.
+    """Repeat vertices and triangles of a specific primitive shape.
 
     It could be seen as a glyph.
 
     Parameters
     ----------
-    vertices: ndarray
-        vertices coords to duplicate at the centers positions
-    triangles: ndarray
-        triangles that composed our shape to duplicate
+    vertices : ndarray
+        Vertices coordinates to duplicate at the centers positions.
+    faces : ndarray
+        Triangles that compose the shape to duplicate.
     centers : ndarray, shape (N, 3)
-        Superquadrics positions
+        Positions for repeated primitives.
     directions : ndarray, shape (N, 3) or tuple (3,), optional
-        The orientation vector of the cone.
-    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
-    scales : ndarray, shape (N) or (N,3) or float or int, optional
-        The height of the cone.
-    have_tiled_verts : bool
-        option to control if we need to duplicate vertices of a shape or not
+        Orientation vectors for the primitives.
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) colors for the primitives.
+        R, G, B and A should be in the range [0, 1].
+    scales : ndarray, shape (N,) or (N, 3) or float or int, optional
+        Scaling factors for the primitives.
+    have_tiled_verts : bool, optional
+        Option to control if vertices need to be duplicated or not.
 
     Returns
     -------
-    big_vertices: ndarray
-        Expanded vertices at the centers positions
-    big_triangles: ndarray
-        Expanded triangles that composed our shape to duplicate
+    big_vertices : ndarray
+        Expanded vertices at the centers positions.
+    big_triangles : ndarray
+        Expanded triangles that compose the repeated primitives.
     big_colors : ndarray
-        Expanded colors applied to all vertices/faces
+        Expanded colors applied to all vertices/faces.
     big_centers : ndarray
-        Expanded centers for all vertices/faces
-
+        Expanded centers for all vertices/faces.
     """
     # duplicated vertices if needed
     if not have_tiled_verts:
@@ -176,8 +179,21 @@ def repeat_primitive(
         axis=0,
     ).reshape((big_triangles.shape[0], 1))
 
-    @warn_on_args_to_kwargs()
     def normalize_input(arr, *, arr_name=""):
+        """Normalize input array for colors and directions.
+
+        Parameters
+        ----------
+        arr : array-like
+            Input array to normalize.
+        arr_name : str, optional
+            Name of the array for error messages.
+
+        Returns
+        -------
+        np.ndarray
+            Normalized array.
+        """
         if (
             isinstance(arr, (tuple, list, np.ndarray))
             and len(arr) in [3, 4]
@@ -189,9 +205,9 @@ def repeat_primitive(
         elif arr is None:
             return np.array([])
         elif len(arr) != len(centers):
-            msg = "{} size should be 1 or ".format(arr_name)
+            msg = f"{arr_name} size should be 1 or "
             msg += "equal to the numbers of centers"
-            raise IOError(msg)
+            raise OSError(msg)
         else:
             return np.array(arr)
 
@@ -242,11 +258,10 @@ def prim_square():
 
     Returns
     -------
-    vertices: ndarray
-        4 vertices coords that composed our square
-    triangles: ndarray
-        2 triangles that composed our square
-
+    vertices : ndarray, shape (4, 3)
+        Coordinates of the 4 vertices that compose the square.
+    triangles : ndarray, shape (2, 3)
+        Indices of the 2 triangles that compose the square.
     """
     vertices = np.array(
         [[-0.5, -0.5, 0.0], [-0.5, 0.5, 0.0], [0.5, 0.5, 0.0], [0.5, -0.5, 0.0]]
@@ -270,7 +285,6 @@ def prim_box(detailed=True):
         Array of vertex coordinates.
     triangles : ndarray
         Array of triangle indices.
-
     """
     if detailed:
         vertices = (
@@ -370,7 +384,7 @@ def prim_sphere(*, name="symmetric362", gen_faces=False, phi=None, theta=None):
     Parameters
     ----------
     name : str, optional
-        which sphere - one of:
+        Which sphere to use, one of:
         * 'symmetric362'
         * 'symmetric642'
         * 'symmetric724'
@@ -379,18 +393,18 @@ def prim_sphere(*, name="symmetric362", gen_faces=False, phi=None, theta=None):
         * 'repulsion200'
     gen_faces : bool, optional
         If True, triangulate a set of vertices on the sphere to get the faces.
-        Otherwise, we load the saved faces from a file. Default: False
+        Otherwise, load the saved faces from a file.
     phi : int, optional
-        Set the number of points in the latitude direction
+        Number of points in the latitude direction.
     theta : int, optional
-        Set the number of points in the longitude direction
+        Number of points in the longitude direction.
 
     Returns
     -------
-    vertices: ndarray
-        vertices coords that composed our sphere
-    triangles: ndarray
-        triangles that composed our sphere
+    vertices : ndarray
+        Vertices coordinates that compose the sphere.
+    triangles : ndarray
+        Triangles that compose the sphere.
 
     Examples
     --------
@@ -401,7 +415,6 @@ def prim_sphere(*, name="symmetric362", gen_faces=False, phi=None, theta=None):
     True
     >>> faces.shape == (720, 3)
     True
-
     """
     if phi is None or theta is None:
         fname = SPHERE_FILES.get(name)
@@ -443,15 +456,14 @@ def prim_sphere(*, name="symmetric362", gen_faces=False, phi=None, theta=None):
 
 
 def prim_superquadric(roundness=(1, 1), sphere_name="symmetric362"):
-    """Provide vertices and triangles of a superquadrics.
+    """Provide vertices and triangles of a superquadric.
 
     Parameters
     ----------
-    roundness : tuple, optional
-        parameters (Phi and Theta) that control the shape of the superquadric
-
+    roundness : tuple of float, optional
+        Parameters (Phi and Theta) that control the shape of the superquadric.
     sphere_name : str, optional
-        which sphere - one of:
+        Which sphere to use as a base, one of:
         * 'symmetric362'
         * 'symmetric642'
         * 'symmetric724'
@@ -461,10 +473,10 @@ def prim_superquadric(roundness=(1, 1), sphere_name="symmetric362"):
 
     Returns
     -------
-    vertices: ndarray
-        vertices coords that composed our sphere
-    triangles: ndarray
-        triangles that composed our sphere
+    vertices : ndarray
+        Vertices coordinates that compose the superquadric.
+    triangles : ndarray
+        Triangles that compose the superquadric.
 
     Examples
     --------
@@ -475,11 +487,23 @@ def prim_superquadric(roundness=(1, 1), sphere_name="symmetric362"):
     True
     >>> faces.shape == (720, 3)
     True
-
     """
 
     def _fexp(x, p):
-        """Return a different kind of exponentiation."""
+        """Return a different kind of exponentiation.
+
+        Parameters
+        ----------
+        x : float
+            Input value.
+        p : float
+            Exponent value.
+
+        Returns
+        -------
+        float
+            Result of the exponentiation.
+        """
         return np.sign(x) * (np.abs(x) ** p)
 
     sphere_verts, sphere_triangles = prim_sphere(name=sphere_name)
@@ -503,11 +527,10 @@ def prim_tetrahedron():
 
     Returns
     -------
-    pyramid_vert: numpy.ndarray
-        4 vertices coordinates
-    triangles: numpy.ndarray
-        4 triangles representing the tetrahedron
-
+    vertices : ndarray, shape (4, 3)
+        Coordinates of the 4 vertices.
+    triangles : ndarray, shape (4, 3)
+        Indices of the 4 triangles representing the tetrahedron.
     """
     pyramid_vert = np.array(
         [[0.5, 0.5, 0.5], [0.5, -0.5, -0.5], [-0.5, 0.5, -0.5], [-0.5, -0.5, 0.5]]
@@ -519,15 +542,14 @@ def prim_tetrahedron():
 
 
 def prim_icosahedron():
-    """Return vertices and triangles for icosahedron.
+    """Return vertices and triangles for an icosahedron.
 
     Returns
     -------
-    icosahedron_vertices: numpy.ndarray
-        12 vertices coordinates to the icosahedron
-    icosahedron_mesh: numpy.ndarray
-        20 triangles representing the tetrahedron
-
+    vertices : ndarray, shape (12, 3)
+        Coordinates of the 12 vertices of the icosahedron.
+    triangles : ndarray, shape (20, 3)
+        Indices of the 20 triangles representing the icosahedron.
     """
     phi = (1 + math.sqrt(5)) / 2.0
 
@@ -578,15 +600,14 @@ def prim_icosahedron():
 
 
 def prim_rhombicuboctahedron():
-    """Return vertices and triangles for rhombicuboctahedron.
+    """Return vertices and triangles for a rhombicuboctahedron.
 
     Returns
     -------
-    vertices: numpy.ndarray
-        24 vertices coordinates to the rhombicuboctahedron
-    triangles: numpy.ndarray
-        44 triangles representing the rhombicuboctahedron
-
+    vertices : ndarray, shape (24, 3)
+        Coordinates of the 24 vertices of the rhombicuboctahedron.
+    triangles : ndarray, shape (44, 3)
+        Indices of the 44 triangles representing the rhombicuboctahedron.
     """
     phi = (math.sqrt(2) - 1) / 2.0
 
@@ -674,22 +695,20 @@ def prim_rhombicuboctahedron():
     return vertices, triangles
 
 
-@warn_on_args_to_kwargs()
 def prim_star(*, dim=2):
-    """Return vertices and triangle for star geometry.
+    """Return vertices and triangles for star geometry.
 
     Parameters
     ----------
-    dim: int
-        Represents the dimension of the wanted star
+    dim : int, optional
+        Dimension of the star (2 or 3).
 
     Returns
     -------
-    vertices: ndarray
-        vertices coords that composed our star
-    triangles: ndarray
-        Triangles that composed our star
-
+    vertices : ndarray
+        Vertices coordinates that compose the star.
+    triangles : ndarray
+        Triangles that compose the star.
     """
     if dim == 2:
         vert = np.array(
@@ -779,15 +798,14 @@ def prim_triangularprism():
 
     Returns
     -------
-    vertices: ndarray
-        vertices coords that compose our prism
-    triangles: ndarray
-        triangles that compose our prism
-
+    vertices : ndarray
+        Vertices coords that compose our prism.
+    triangles : ndarray
+        Triangles that compose our prism.
     """
     # Local variable to represent the square root of three rounded
     # to 7 decimal places
-    three = float("{:.7f}".format(math.sqrt(3)))
+    three = float(f"{math.sqrt(3):.7f}")
     vertices = np.array(
         [
             [0, -1 / three, 1 / 2],
@@ -819,11 +837,10 @@ def prim_pentagonalprism():
 
     Returns
     -------
-    vertices: ndarray
-        vertices coords that compose our prism
-    triangles: ndarray
-        triangles that compose our prism
-
+    vertices : ndarray
+        Vertices coords that compose our pentagonal prism.
+    triangles : ndarray
+        Triangles that compose our pentagonal prism.
     """
     # Local variable to represent the square root of five
     five = math.sqrt(5)
@@ -875,15 +892,14 @@ def prim_octagonalprism():
 
     Returns
     -------
-    vertices: ndarray
-        vertices coords that compose our prism
-    triangles: ndarray
-        triangles that compose our prism
-
+    vertices : ndarray
+        Vertices coords that compose our octagonal prism.
+    triangles : ndarray
+        Triangles that compose our octagonal prism.
     """
     # Local variable to represent the square root of two rounded
     # to 7 decimal places
-    two = float("{:.7f}".format(math.sqrt(2)))
+    two = float(f"{math.sqrt(2):.7f}")
 
     vertices = np.array(
         [
@@ -944,15 +960,14 @@ def prim_octagonalprism():
 
 
 def prim_frustum():
-    """Return vertices and triangle for a square frustum prism.
+    """Return vertices and triangles for a square frustum prism.
 
     Returns
     -------
-    vertices: ndarray
-        vertices coords that compose our prism
-    triangles: ndarray
-        triangles that compose our prism
-
+    vertices : ndarray
+        Vertices coordinates that compose the frustum prism.
+    triangles : ndarray
+        Triangles that compose the frustum prism.
     """
     vertices = np.array(
         [
@@ -994,22 +1009,28 @@ def prim_cylinder(*, radius=0.5, height=1, sectors=36, capped=True):
 
     Parameters
     ----------
-    radius: float
-        Radius of the cylinder
-    height: float
-        Height of the cylinder
-    sectors: int
-        Sectors in the cylinder
-    capped: bool
-        Whether the cylinder is capped at both ends or open
+    radius : float, optional
+        Radius of the cylinder.
+    height : float, optional
+        Height of the cylinder.
+    sectors : int, optional
+        Number of sectors in the cylinder. Must be greater than 7.
+    capped : bool, optional
+        Whether the cylinder is capped at both ends or open.
 
     Returns
     -------
-    vertices: ndarray
-        vertices coords that compose our cylinder
-    triangles: ndarray
-        triangles that compose our cylinder
+    vertices : ndarray
+        Vertices coordinates that compose the cylinder.
+    triangles : ndarray
+        Triangles that compose the cylinder.
 
+    Raises
+    ------
+    TypeError
+        If sectors is not an integer.
+    ValueError
+        If sectors is not greater than 7.
     """
     if not isinstance(sectors, int):
         raise TypeError("Only integers are allowed for sectors parameter")
@@ -1125,28 +1146,27 @@ def prim_arrow(
     tip_radius=0.1,
     shaft_radius=0.03,
 ):
-    """Return vertices and triangle for arrow geometry.
+    """Return vertices and triangles for arrow geometry.
 
     Parameters
     ----------
-    height : float
-        The height of the arrow (default: 1.0).
-    resolution : int
-        The resolution of the arrow.
-    tip_length : float
-        The tip size of the arrow (default: 0.35)
-    tip_radius : float
-        the tip radius of the arrow (default: 0.1)
-    shaft_radius : float
-        The shaft radius of the arrow (default: 0.03)
+    height : float, optional
+        Height of the arrow.
+    resolution : int, optional
+        Resolution of the arrow.
+    tip_length : float, optional
+        Length of the arrow tip.
+    tip_radius : float, optional
+        Radius of the arrow tip.
+    shaft_radius : float, optional
+        Radius of the arrow shaft.
 
     Returns
     -------
-    vertices: ndarray
-        vertices of the Arrow
-    triangles: ndarray
-        Triangles of the Arrow
-
+    vertices : ndarray
+        Vertices coordinates of the arrow.
+    triangles : ndarray
+        Triangles that compose the arrow.
     """
     shaft_height = height - tip_length
 
@@ -1212,26 +1232,29 @@ def prim_arrow(
     return vertices, triangles
 
 
-@warn_on_args_to_kwargs()
 def prim_cone(*, radius=0.5, height=1, sectors=10):
-    """Return vertices and triangle of a Cone.
+    """Return vertices and triangles of a cone.
 
     Parameters
     ----------
-    radius: float, optional
-        Radius of the cone
-    height: float, optional
-        Height of the cone
-    sectors: int, optional
-        Sectors in the cone
+    radius : float, optional
+        Radius of the cone.
+    height : float, optional
+        Height of the cone.
+    sectors : int, optional
+        Number of sectors in the cone. Must be greater than 2.
 
     Returns
     -------
-    vertices: ndarray
-        vertices coords that compose our cone
-    triangles: ndarray
-        triangles that compose our cone
+    vertices : ndarray
+        Vertices coordinates that compose the cone.
+    triangles : ndarray
+        Triangles that compose the cone.
 
+    Raises
+    ------
+    ValueError
+        If sectors is less than 3.
     """
     if sectors < 3:
         raise ValueError("Sectors parameter should be greater than 2")

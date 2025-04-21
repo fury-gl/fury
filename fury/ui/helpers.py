@@ -2,14 +2,11 @@
 
 import numpy as np
 
-from fury.decorators import warn_on_args_to_kwargs
-
 TWO_PI = 2 * np.pi
 
 
-@warn_on_args_to_kwargs()
 def clip_overflow(textblock, width, *, side="right"):
-    """Clips overflowing text of TextBlock2D with respect to width.
+    """Clip overflowing text of TextBlock2D with respect to width.
 
     Parameters
     ----------
@@ -19,13 +16,12 @@ def clip_overflow(textblock, width, *, side="right"):
         Required width of the clipped text.
     side : str, optional
         Clips the overflowing text according to side.
-        It takes values "left" or "right".
+        It takes values "left" or "right". Default is "right".
 
     Returns
     -------
-    clipped text : str
+    str
         Clipped version of the text.
-
     """
     original_str = textblock.message
     prev_bg = textblock.have_bg
@@ -39,9 +35,8 @@ def clip_overflow(textblock, width, *, side="right"):
     return textblock.message
 
 
-@warn_on_args_to_kwargs()
 def wrap_overflow(textblock, wrap_width, *, side="right"):
-    """Wraps overflowing text of TextBlock2D with respect to width.
+    """Wrap overflowing text of TextBlock2D with respect to width.
 
     Parameters
     ----------
@@ -51,13 +46,12 @@ def wrap_overflow(textblock, wrap_width, *, side="right"):
         Required width of the wrapped text.
     side : str, optional
         Clips the overflowing text according to side.
-        It takes values "left" or "right".
+        It takes values "left" or "right". Default is "right".
 
     Returns
     -------
-    wrapped text : str
+    str
         Wrapped version of the text.
-
     """
     original_str = textblock.message
     str_copy = textblock.message
@@ -84,24 +78,25 @@ def wrap_overflow(textblock, wrap_width, *, side="right"):
     return textblock.message
 
 
-@warn_on_args_to_kwargs()
 def check_overflow(textblock, width, *, overflow_postfix="", side="right"):
-    """Checks if the text is overflowing.
+    """Check if the text is overflowing.
 
     Parameters
     ----------
     textblock : TextBlock2D
         The textblock object whose text is to be checked.
-    width: int
+    width : int
         Required width of the text.
-    overflow_postfix: str, optional
-        Postfix to be added to the text if it is overflowing.
+    overflow_postfix : str, optional
+        Postfix to be added to the text if it is overflowing. Default is "".
+    side : str, optional
+        Side from which to check overflow. It takes values "left" or "right".
+        Default is "right".
 
     Returns
     -------
-    mid_ptr: int
-        Overflow index of the text.
-
+    int
+        Overflow index of the text. Returns 0 if text is not overflowing.
     """
     side = side.lower()
     if side not in ["left", "right"]:
@@ -142,11 +137,26 @@ def cal_bounding_box_2d(vertices):
     Parameters
     ----------
     vertices : ndarray
-        vertices of the actors.
+        Vertices of the actors with shape (n,2) or (n,3).
 
+    Returns
+    -------
+    tuple
+        A tuple containing three arrays:
+        - bounding_box_min : ndarray
+            Minimum coordinates of the bounding box [min_x, min_y].
+        - bounding_box_max : ndarray
+            Maximum coordinates of the bounding box [max_x, max_y].
+        - bounding_box_size : ndarray
+            Size of the bounding box [width, height].
+
+    Raises
+    ------
+    OSError
+        If vertices is not a 2D array with shape (n,2) or (n,3).
     """
     if vertices.ndim != 2 or vertices.shape[1] not in [2, 3]:
-        raise IOError("vertices should be a 2D array with shape (n,2) or (n,3).")
+        raise OSError("vertices should be a 2D array with shape (n,2) or (n,3).")
 
     if vertices.shape[1] == 3:
         vertices = vertices[:, :-1]
@@ -177,13 +187,22 @@ def rotate_2d(vertices, angle):
     Parameters
     ----------
     vertices : ndarray
-        vertices of the actors.
-    angle: float
-        Value by which the vertices are rotated in radian.
+        Vertices of the actors with shape (n,3).
+    angle : float
+        Value by which the vertices are rotated in radians.
 
+    Returns
+    -------
+    ndarray
+        Rotated vertices.
+
+    Raises
+    ------
+    OSError
+        If vertices is not a 2D array with shape (n,3).
     """
     if vertices.ndim != 2 or vertices.shape[1] != 3:
-        raise IOError("vertices should be a 2D array with shape (n,3).")
+        raise OSError("vertices should be a 2D array with shape (n,3).")
 
     rotation_matrix = np.array(
         [

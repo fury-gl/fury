@@ -25,7 +25,7 @@ pytest.skip(allow_module_level=True)
     skip_win, reason="This test does not work on Windows." " Need to be introspected"
 )
 def test_custom_interactor_style_events(recording=False):
-    print("Using VTK {}".format(VTK_VERSION))
+    print(f"Using VTK {VTK_VERSION}")
     filename = "test_custom_interactor_style_events.log.gz"
     recording_filename = pjoin(DATA_DIR, filename)
     scene = window.Scene()
@@ -149,7 +149,7 @@ def test_custom_interactor_style_events(recording=False):
         # Useful loop for debugging.
         for event, count in expected:
             if states[event] != count:
-                print("{}: {} vs. {} (expected)".format(event, states[event], count))
+                print(f"{event}: {states[event]} vs. {count} (expected)")
 
         for event, count in expected:
             npt.assert_equal(states[event], count, err_msg=msg.format(event))
@@ -239,7 +239,7 @@ def test_double_click_events(recording=False):
         # Useful loop for debugging.
         for event, count in expected:
             if states[event] != count:
-                print("{}: {} vs. {} (expected)".format(event, states[event], count))
+                print(f"{event}: {states[event]} vs. {count} (expected)")
 
         for event, count in expected:
             npt.assert_equal(states[event], count, err_msg=msg.format(event))
