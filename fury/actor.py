@@ -272,7 +272,7 @@ def ellipsoid(
     centers,
     *,
     orientation_matrices=None,
-    lengths=(4, 3, 2),
+    lengths=(4, 2, 2),
     colors=(1, 0, 0),
     opacity=None,
     phi=16,
@@ -335,6 +335,7 @@ def ellipsoid(
 
     orientation_matrices = np.asarray(orientation_matrices)
     lengths = np.asarray(lengths)
+    colors = np.asarray(colors)
 
     if centers.ndim == 1:
         centers = centers.reshape(1, 3)
@@ -348,8 +349,12 @@ def ellipsoid(
         lengths = lengths.reshape(1, 3)
     if lengths.ndim != 2 or lengths.shape[1] != 3:
         raise ValueError("Lengths must be (N, 3) array")
+    if lengths.size == 3:
+        lengths = np.tile(lengths.reshape(1, -1), (centers.shape[0], 1))
     if lengths.shape != centers.shape:
         raise ValueError("Lengths must match centers shape")
+    if colors.size == 3 or colors.size == 4:
+        colors = np.tile(colors.reshape(1, -1), (centers.shape[0], 1))
 
     base_verts, base_faces = fp.prim_sphere(phi=phi, theta=theta)
 
@@ -364,26 +369,21 @@ def ellipsoid(
         if colors.ndim == 1:
             colors = np.tile(colors, (centers.shape[0], 1))
 
-    all_vertices = []
-    all_faces = []
-    all_colors = []
+    n_ellipsoids = centers.shape[0]
+    n_verts = base_verts.shape[0]
 
-    for i in range(len(centers)):
-        center = centers[i]
-        orientation = orientation_matrices[i]
-        scale = lengths[i]
+    scaled_transforms = orientation_matrices * lengths[:, np.newaxis, :]
 
-        transform = orientation @ np.diag(scale)
-        transformed = (transform @ base_verts.T).T + center
-
-        all_vertices.append(transformed)
-        all_faces.append(base_faces + i * len(base_verts))
-
-        all_colors.append(np.tile(colors[i], (len(base_verts), 1)))
-
-    all_vertices = np.vstack(all_vertices)
-    all_faces = np.vstack(all_faces)
-    all_colors = np.vstack(all_colors)
+    transformed = (
+        np.einsum("nij,mj->nmi", scaled_transforms, base_verts)
+        + centers[:, np.newaxis, :]
+    )
+    all_vertices = transformed.reshape(-1, 3)
+    all_faces = np.tile(base_faces, (n_ellipsoids, 1)) + (
+        np.arange(n_ellipsoids)[:, None, None] * n_verts
+    )
+    all_faces = all_faces.reshape(-1, 3)
+    all_colors = np.repeat(colors, n_verts, axis=0)
 
     return actor_from_primitive(
         centers=centers,
