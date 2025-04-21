@@ -328,3 +328,38 @@ def test_axes():
     assert 0 < mean_b < 255
 
     scene.remove(axes_actor)
+
+
+def test_ellipsoid():
+    centers = np.array([[0, 0, 0]])
+    lengths = np.array([[2, 1, 1]])
+    axes = np.array([np.eye(3)])
+    colors = np.array([[1, 0, 0]])
+
+    validate_actors(
+        centers=centers,
+        lengths=lengths,
+        axes=axes,
+        colors=colors,
+        actor_type="ellipsoid",
+    )
+
+
+def test_tube():
+    points = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 4], [3, 3, 9], [4, 4, 16]])
+    colors = np.array([[1, 0, 0]])
+
+    tube_actor = actor.tube(points=points, colors=colors, radius=0.2, segments=8)
+    scene = window.Scene()
+    scene.add(tube_actor)
+    fname = "tube_test.png"
+    window.snapshot(scene=scene, fname=fname)
+    img = Image.open(fname)
+    img_array = np.array(img)
+    mean_r, mean_g, mean_b, _mean_a = np.mean(
+        img_array.reshape(-1, img_array.shape[2]), axis=0
+    )
+    assert mean_r > mean_b and mean_r > mean_g
+    assert 0 < mean_r < 255
+    assert mean_g != 0 and mean_b != 0
+    scene.remove(tube_actor)
