@@ -75,8 +75,8 @@ def actor_from_primitive(
         res = fp.repeat_primitive(
             vertices,
             faces,
+            centers,
             directions=directions,
-            centers=centers,
             colors=colors,
             scales=scales,
         )
@@ -271,7 +271,7 @@ def sphere(
 def ellipsoid(
     centers,
     *,
-    axes=None,
+    orientation_matrices=None,
     lengths=(4, 3, 2),
     colors=(1, 0, 0),
     opacity=None,
@@ -288,11 +288,12 @@ def ellipsoid(
     ----------
     centers : ndarray (N, 3)
         Centers of the ellipsoids
-    axes : ndarray, shape (N, 3, 3) or (3, 3), optional
-        Rotation matrices for ellipsoids. Each 3×3 matrix defines a local
-        coordinate frame, where the columns represent the ellipsoid’s x, y, and z
-        axes in world space. This determines the ellipsoid's orientation.
-        Must be orthonormal and right-handed.
+    orientation_matrices : ndarray, shape (N, 3, 3) or (3, 3), optional
+        Orthonormal rotation matrices defining the orientation of each ellipsoid.
+        Each 3×3 matrix represents a local coordinate frame, with columns
+        corresponding to the ellipsoid’s x-, y-, and z-axes in world coordinates.
+        Must be right-handed and orthonormal. If a single (3, 3) matrix is
+        provided, it is broadcast to all ellipsoids.
     lengths : ndarray (N, 3) or (3,) or tuple (3,), optional
         Scaling factors along each axis
     colors : array-like or tuple, optional
@@ -312,39 +313,36 @@ def ellipsoid(
 
     Returns
     -------
-    actor : fury.actor.Actor
+    mesh_actor : Actor
         Ellipsoid actor with transformations applied
 
     Examples
     --------
     >>> from fury import window, actor
     >>> import numpy as np
-    >>> scene = window.Scene()
+    >>> from fury import actor, window
     >>> centers = np.array([[0, 0, 0]])
     >>> lengths = np.array([[2, 1, 1]])
     >>> colors = np.array([[1, 0, 0]])
-    >>> ellipsoid = actor.ellipsoid(centers=centers,
-    ...                             lengths=lengths,
-    ...                             colors=colors)
-    >>> scene.add(ellipsoid)
-    >>> window.show(scene)
+    >>> ellipsoid = actor.ellipsoid(centers=centers, lengths=lengths, colors=colors)
+    >>> window.show([ellipsoid])
     """
 
     centers = np.asarray(centers)
 
-    if axes is None:
-        axes = np.tile(np.eye(3), (centers.shape[0], 1, 1))
+    if orientation_matrices is None:
+        orientation_matrices = np.tile(np.eye(3), (centers.shape[0], 1, 1))
 
-    axes = np.asarray(axes)
+    orientation_matrices = np.asarray(orientation_matrices)
     lengths = np.asarray(lengths)
 
     if centers.ndim == 1:
         centers = centers.reshape(1, 3)
     if centers.ndim != 2 or centers.shape[1] != 3:
         raise ValueError("Centers must be (N, 3) array")
-    if axes.ndim == 2:
-        axes = np.tile(axes, (centers.shape[0], 1, 1))
-    if axes.ndim != 3 or axes.shape[1:] != (3, 3):
+    if orientation_matrices.ndim == 2:
+        orientation_matrices = np.tile(orientation_matrices, (centers.shape[0], 1, 1))
+    if orientation_matrices.ndim != 3 or orientation_matrices.shape[1:] != (3, 3):
         raise ValueError("Axes must be (N, 3, 3) array")
     if lengths.ndim == 1:
         lengths = lengths.reshape(1, 3)
@@ -372,7 +370,7 @@ def ellipsoid(
 
     for i in range(len(centers)):
         center = centers[i]
-        orientation = axes[i]
+        orientation = orientation_matrices[i]
         scale = lengths[i]
 
         transform = orientation @ np.diag(scale)

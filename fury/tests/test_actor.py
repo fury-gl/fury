@@ -339,7 +339,7 @@ def test_ellipsoid():
     validate_actors(
         centers=centers,
         lengths=lengths,
-        axes=axes,
+        orientation_matrices=axes,
         colors=colors,
         actor_type="ellipsoid",
     )
