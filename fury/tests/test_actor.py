@@ -78,6 +78,17 @@ def test_line():
     colors = np.array([[[1, 0, 0]], [[0, 1, 0]]])
     validate_actors(lines=lines_points, colors=colors, actor_type="line", prim_count=2)
 
+    line = np.array([[0, 0, 0], [1, 1, 1]])
+    colors = None
+    validate_actors(lines=line, colors=colors, actor_type="line", prim_count=2)
+
+    line = np.array([[0, 0, 0], [1, 1, 1]])
+    actor.line(line, colors=colors)
+    actor.line(line)
+    actor.line(line, colors=colors)
+    actor.line(line, colors=colors, material="basic")
+    actor.line(line, colors=line, material="basic")
+
 
 def test_box():
     centers = np.array([[0, 0, 0]])

@@ -129,6 +129,8 @@ def line_buffer_separator(line_vertices, color=None, color_mode="auto"):
                 color_mode = "vertex_flattened"
             elif len(color) == len(line_vertices):
                 color_mode = "vertex"
+            elif len(color) == 3 or len(color) == 4:
+                color = None
             else:
                 raise ValueError(
                     "Color array size doesn't match "

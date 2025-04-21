@@ -158,8 +158,19 @@ def line(
         else np.empty_like(lines_positions),
     )
 
+    if lines_colors is None:
+        material_mode = "auto"
+        material_colors = None
+    else:
+        material_mode = "vertex"
+        material_colors = lines_colors
+
     mat = _create_line_material(
-        material=material, enable_picking=enable_picking, mode="auto", opacity=opacity
+        material=material,
+        enable_picking=enable_picking,
+        mode=material_mode,
+        opacity=opacity,
+        color=material_colors,
     )
 
     obj = create_line(geometry=geo, material=mat)
