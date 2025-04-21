@@ -287,7 +287,7 @@ def ellipsoid(
     Parameters
     ----------
     centers : ndarray (N, 3)
-        Centers of the ellipsoids
+        Centers of the ellipsoids.
     orientation_matrices : ndarray, shape (N, 3, 3) or (3, 3), optional
         Orthonormal rotation matrices defining the orientation of each ellipsoid.
         Each 3×3 matrix represents a local coordinate frame, with columns
@@ -295,26 +295,28 @@ def ellipsoid(
         Must be right-handed and orthonormal. If a single (3, 3) matrix is
         provided, it is broadcast to all ellipsoids.
     lengths : ndarray (N, 3) or (3,) or tuple (3,), optional
-        Scaling factors along each axis
+        Scaling factors along each axis.
     colors : array-like or tuple, optional
-        RGB/RGBA colors for each ellipsoid
+        RGB/RGBA colors for each ellipsoid.
     opacity : float, optional
-        Overall transparency (0-1)
+        Opacity of the ellipsoids. Takes values from 0 (fully transparent) to
+        1 (opaque). If both `opacity` and RGBA are provided, the final alpha
+        will be: final_alpha = alpha_in_RGBA * opacity.
     phi : int, optional
-        Latitude divisions
+        The number of segments in the longitude direction.
     theta : int, optional
-        Longitude divisions
+        The number of segments in the latitude direction.
     material : str, optional
-        Surface material type
+        The material type for the ellipsoids. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
-        Allow mouse selection
+        Allow picking of the ellipsoids in a 3D scene.
     smooth : bool, optional
-        Smooth shading
+        Whether to create a smooth ellipsoid or a faceted ellipsoid.
 
     Returns
     -------
-    mesh_actor : Actor
-        Ellipsoid actor with transformations applied
+    Actor
+        A mesh actor containing the generated ellipsoids.
 
     Examples
     --------
