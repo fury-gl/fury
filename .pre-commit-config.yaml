@@ -45,3 +45,12 @@ repos:
         args: [ --fix]
       # Run the formatter
       - id: ruff-format
+  - repo: https://github.com/numpy/numpydoc
+    rev: v1.8.0
+    hooks:
+      - id: numpydoc-validation
+        exclude: |
+          (?x)(
+              /tests/|
+              docs/
+          )

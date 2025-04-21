@@ -2,8 +2,6 @@
 
 import importlib
 
-from fury.decorators import warn_on_args_to_kwargs
-
 try:
     import pytest
 except ImportError:
@@ -13,11 +11,25 @@ else:
 
 
 class TripWireError(AttributeError):
-    """Exception if trying to use TripWire object."""
+    """Exception if trying to use TripWire object.
+
+    This exception is raised when attempting to use a TripWire object,
+    which is typically a proxy for a module that could not be imported.
+    """
 
 
 def is_tripwire(obj):
     """Return True if `obj` appears to be a TripWire object.
+
+    Parameters
+    ----------
+    obj : object
+        Object to check.
+
+    Returns
+    -------
+    bool
+        True if `obj` is a TripWire object, False otherwise.
 
     Examples
     --------
@@ -25,7 +37,6 @@ def is_tripwire(obj):
     False
     >>> is_tripwire(TripWire('some message'))
     True
-
     """
     try:
         _ = obj.any_attribute
@@ -39,7 +50,12 @@ def is_tripwire(obj):
 class TripWire:
     """Class raising error if used.
 
-    Standard use is to proxy modules that we could not import
+    Standard use is to proxy modules that we could not import.
+
+    Parameters
+    ----------
+    msg : str
+        Error message to display when the TripWire is triggered.
 
     Examples
     --------
@@ -52,43 +68,82 @@ class TripWire:
     Traceback (most recent call last):
         ...
     TripWireError: We do not have silly_module_name
-
     """
 
     def __init__(self, msg):
+        """Initialize TripWire with error message.
+
+        Parameters
+        ----------
+        msg : str
+            Error message to display when the TripWire is triggered.
+        """
         self._msg = msg
 
     def __getattr__(self, attr_name):
-        """Raise informative error accessing attributes."""
+        """Raise informative error accessing attributes.
+
+        Parameters
+        ----------
+        attr_name : str
+            Name of the attribute.
+
+        Returns
+        -------
+        None
+            This method does not return as it always raises an error.
+
+        Raises
+        ------
+        TripWireError
+            Always raises this error with the message provided during initialization.
+        """
         raise TripWireError(self._msg)
 
     def __call__(self, *args, **kwargs):
-        """Raise informative error while calling."""
+        """Raise informative error while calling.
+
+        Parameters
+        ----------
+        *args : tuple
+            Positional arguments passed to the call.
+        **kwargs : dict
+            Keyword arguments passed to the call.
+
+        Returns
+        -------
+        None
+            This method does not return as it always raises an error.
+
+        Raises
+        ------
+        TripWireError
+            Always raises this error with the message provided during initialization.
+        """
         raise TripWireError(self._msg)
 
 
-@warn_on_args_to_kwargs()
 def optional_package(name, *, trip_msg=None):
     """Return package-like thing and module setup for package `name`.
 
     Parameters
     ----------
     name : str
-        package name
-    trip_msg : None or str
-        message to give when someone tries to use the return package, but we
+        Package name to be imported.
+    trip_msg : None or str, optional
+        Message to give when someone tries to use the return package, but we
         could not import it, and have returned a TripWire object instead.
         Default message if None.
 
     Returns
     -------
     pkg_like : module or ``TripWire`` instance
-        If we can import the package, return it.  Otherwise return an object
-        raising an error when accessed
+        If we can import the package, return it. Otherwise return an object
+        raising an error when accessed.
     have_pkg : bool
-        True if import for package was successful, false otherwise
+        True if import for package was successful, false otherwise.
     module_setup : function
-        callable usually set as ``setup_module`` in calling namespace, to allow
+        Callable usually set as ``setup_module`` in calling namespace, to allow
         skipping tests.
 
     Examples
@@ -113,7 +168,6 @@ def optional_package(name, *, trip_msg=None):
     >>> subpkg, _, _ = optional_package('os.path')
     >>> hasattr(subpkg, 'dirname')
     True
-
     """
     try:
         pkg = importlib.import_module(name)
@@ -130,7 +184,8 @@ def optional_package(name, *, trip_msg=None):
     pkg = TripWire(trip_msg)
 
     def setup_module():
+        """Configure test module to skip tests if package is missing."""
         if have_pytest:
-            pytest.mark.skip("No {0} for these tests".format(name))
+            pytest.mark.skip(f"No {name} for these tests")
 
     return pkg, False, setup_module

@@ -1,3 +1,5 @@
+"""Geometry utilities for FURY."""
+
 import numpy as np
 
 from fury.lib import (
@@ -16,22 +18,25 @@ from fury.lib import (
 
 
 def buffer_to_geometry(positions, **kwargs):
-    """
-    Convert a buffer to a geometry object.
+    """Convert a buffer to a geometry object.
 
     Parameters
     ----------
     positions : array_like
         The positions buffer.
-    kwargs : dict
+    **kwargs : dict
         A dict of attributes to define on the geometry object. Keys can be
-        "colors", "normals", "texcoords",
-        "indices", ...
+        "colors", "normals", "texcoords", "indices", etc.
 
     Returns
     -------
-    geo : Geometry
+    Geometry
         The geometry object.
+
+    Raises
+    ------
+    ValueError
+        If positions array is empty or None.
     """
     if positions is None or positions.size == 0:
         raise ValueError("positions array cannot be empty or None.")
@@ -41,20 +46,25 @@ def buffer_to_geometry(positions, **kwargs):
 
 
 def create_mesh(geometry, material):
-    """
-    Create a mesh object.
+    """Create a mesh object.
 
     Parameters
     ----------
     geometry : Geometry
         The geometry object.
     material : Material
-        The material object.
+        The material object. Must be either MeshPhongMaterial or MeshBasicMaterial.
 
     Returns
     -------
-    mesh : Mesh
+    Mesh
         The mesh object.
+
+    Raises
+    ------
+    TypeError
+        If geometry is not an instance of Geometry or material is not an
+        instance of MeshPhongMaterial or MeshBasicMaterial.
     """
     if not isinstance(geometry, Geometry):
         raise TypeError("geometry must be an instance of Geometry.")
@@ -81,7 +91,7 @@ def create_line(geometry, material):
 
     Returns
     -------
-    line : Line
+    Line
         The line object.
     """
     line = Line(geometry=geometry, material=material)
@@ -174,20 +184,26 @@ def line_buffer_separator(line_vertices, color=None, color_mode="auto"):
 
 
 def create_point(geometry, material):
-    """
-    Create a point object.
+    """Create a point object.
 
     Parameters
     ----------
     geometry : Geometry
         The geometry object.
     material : Material
-        The material object.
+        The material object. Must be either PointsMaterial, PointsGaussianBlobMaterial,
+        or PointsMarkerMaterial.
 
     Returns
     -------
-    points : Points
+    Points
         The point object.
+
+    Raises
+    ------
+    TypeError
+        If geometry is not an instance of Geometry or material is not an
+        instance of PointsMaterial, PointsGaussianBlobMaterial, or PointsMarkerMaterial.
     """
     if not isinstance(geometry, Geometry):
         raise TypeError("geometry must be an instance of Geometry.")
@@ -205,22 +221,26 @@ def create_point(geometry, material):
 
 
 def create_text(text, material, **kwargs):
-    """
-    Create a text object.
+    """Create a text object.
 
     Parameters
     ----------
     text : str
         The text content.
-    material : Material
+    material : TextMaterial
         The material object.
-    kwargs : dict
+    **kwargs : dict
         Additional properties like font_size, anchor, etc.
 
     Returns
     -------
-    text : Text
+    Text
         The text object.
+
+    Raises
+    ------
+    TypeError
+        If text is not a string or material is not an instance of TextMaterial.
     """
     if not isinstance(text, str):
         raise TypeError("text must be a string.")

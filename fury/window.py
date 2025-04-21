@@ -1,3 +1,11 @@
+"""FURY window module.
+
+This module provides functionality for creating and managing
+rendering windows using PyGfx. It includes classes and functions
+for handling scenes, cameras, controllers, and rendering
+multiple screens.
+"""
+
 from dataclasses import dataclass
 from functools import reduce
 import os
@@ -27,6 +35,26 @@ from fury.lib import (
 
 
 class Scene(GfxScene):
+    """Scene class to hold the actors in the scene.
+
+    Data Structure to arrange the logical and spatial representation of the
+    actors in the graphical scene. It is a subclass of PyGfx Scene class.
+    It holds the background color and skybox texture. It also holds the lights in the
+    scene. The background color and skybox texture can be set using the background
+    property. The lights can be set using the lights property. The scene can be cleared
+    using the clear method. The scene can be rendered using the render method.
+
+    Parameters
+    ----------
+    background : tuple, optional
+        The background color of the scene. It is a tuple of 4 floats (R, G, B, A).
+    skybox : Texture, optional
+        The skybox texture of the scene. It is a PyGfx Texture object.
+    lights : list of Light, optional
+        The lights in the scene. It is a list of PyGfx Light objects.
+        If None, a default AmbientLight is added.
+    """
+
     def __init__(
         self,
         *,
@@ -34,19 +62,22 @@ class Scene(GfxScene):
         skybox=None,
         lights=None,
     ):
-        """Data Structure to arrange the logical and spatial representation of the
-        actors in the graphical scene.
+        """Arrange the logical and spatial representation of actors.
+
+        This class acts as a scene graph container, managing actors, background,
+        and lighting for rendering.
 
         Parameters
         ----------
         background : tuple, optional
-            Uniform color to show in the background of scene, by default (0, 0, 0, 1)
+            Uniform color (R, G, B, A) for the scene background.
+            Defaults to (0, 0, 0, 1).
         skybox : Texture, optional
-            PyGfx Texture object
-        lights : list, optional
-            list of Light objects to add to the scene. If not passed AmbientLight is
-            added to the scene
-        """
+            A PyGfx Texture object representing a cubemap for the background.
+            If provided, overrides the `background` color. Defaults to None.
+        lights : list of Light, optional
+            A list of PyGfx Light objects to illuminate the scene. If None,
+            a default AmbientLight is added. Defaults to None."""
         super().__init__()
 
         self._bg_color = background
@@ -67,61 +98,63 @@ class Scene(GfxScene):
         self.add(*self.lights)
 
     def _skybox(self, cube_map):
-        """Create skybox background from cubemap.
+        """Create a skybox background actor from a cubemap texture.
 
         Parameters
         ----------
         cube_map : Texture
-            PyGfx Texture object
+            A PyGfx Texture object (cubemap).
 
         Returns
         -------
         Background
-            PyGfx background object
-        """
+            A PyGfx Background object configured with the skybox material."""
         return Background(
             geometry=None, material=BackgroundSkyboxMaterial(map=cube_map)
         )
 
     @property
     def background(self):
-        """Get background Color of the scene.
+        """Get the background color of the scene.
 
         Returns
         -------
         tuple
-            (R, G, B, A) tuple
-        """
+            The current background color as an (R, G, B, A) tuple."""
         return self._bg_color
 
     @background.setter
     def background(self, value):
-        """Set background color of the scene.
+        """Set the background color of the scene.
+
+        This replaces the current background actor (color or skybox)
+        with a new uniform color background.
 
         Parameters
         ----------
         value : tuple
-            (R, G, B, A) tuple
-        """
+            The desired background color as an (R, G, B, A) tuple."""
         self.remove(self._bg_actor)
         self._bg_color = value
         self._bg_actor = Background.from_color(value)
         self.add(self._bg_actor)
 
     def set_skybox(self, cube_map):
-        """Set skybox from cubemap as background.
+        """Set a skybox as the scene background using a cubemap texture.
+
+        This replaces the current background actor (color or skybox)
+        with a new skybox background.
 
         Parameters
         ----------
         cube_map : Texture
-            PyGfx Texture object
-        """
+            A PyGfx Texture object (cubemap) for the skybox."""
         self.remove(self._bg_actor)
         self._bg_actor = self._skybox(cube_map)
         self.add(self._bg_actor)
 
     def clear(self):
-        """Removes all the children from the scene graph."""
+        """Remove all actors from the scene, keeping background and lights."""
         super().clear()
         self.add(self._bg_actor)
         self.add(*self.lights)
@@ -129,9 +162,10 @@ class Scene(GfxScene):
 
 @dataclass
 class Screen:
-    """Define an independent viewport to show in the window, it holds a scene graph to
-    show actors in the defined space.
-    """
+    """Define an independent viewport within the window.
+
+    Holds a scene graph, camera, and controller for rendering actors
+    within a specific rectangular area of the window."""
 
     viewport: Viewport
     scene: Scene
@@ -140,73 +174,73 @@ class Screen:
 
     @property
     def size(self):
-        """Size of the screen.
+        """Get the size of the screen viewport.
 
         Returns
         -------
         tuple
-            (w, h)
-        """
+            The width and height (w, h) of the viewport in pixels."""
         return self.viewport.rect[2:]
 
     @property
     def position(self):
-        """Position of the screen in the window.
+        """Get the position of the screen viewport within the window.
 
         Returns
         -------
         tuple
-            (x, y)
-        """
+            The x and y coordinates (x, y) of the viewport's top-left corner."""
         return self.viewport.rect[:2]
 
     @property
     def bounding_box(self):
-        """Bounding box of the screen in the window.
+        """Get the bounding box of the screen viewport within the window.
 
         Returns
         -------
         tuple
-            (x, y, w, h)
-        """
+            The position and size (x, y, w, h) of the viewport."""
         return self.viewport.rect
 
     @bounding_box.setter
     def bounding_box(self, value):
-        """Set bounding box of the screen in the window.
+        """Set the bounding box of the screen viewport within the window.
 
         Parameters
         ----------
         value : tuple
-            (x, y, w, h)
-        """
+            The desired position and size (x, y, w, h) for the viewport."""
         self.viewport.rect = value
 
 
 def create_screen(
     renderer, *, rect=None, scene=None, camera=None, controller=None, camera_light=True
 ):
-    """Compose a screen.
+    """Compose a Screen object with viewport, scene, camera, and controller.
 
     Parameters
     ----------
     renderer : Renderer
-        PyGfx Renderer object to hold the viewport of the screen
+        The PyGfx Renderer object associated with the window.
     rect : tuple, optional
-        Bounding box of (x, y, w, h)
+        The bounding box (x, y, w, h) for the screen's viewport. If None,
+        the viewport covers the entire renderer area initially. Defaults to None.
     scene : Scene, optional
-        scene graph of the screen. If None, a new scene is created
-        PyGfx camera of choice to visualize. If None, Perspective Camera is used
+        The scene graph to be rendered in this screen. If None, a new empty
+        Scene is created. Defaults to None.
+    camera : Camera, optional
+        The PyGfx camera used to view the scene. If None, a PerspectiveCamera
+        is created. Defaults to None.
     controller : Controller, optional
-        PyGfx Controller of choice to visualize. If None, Orbit Controller is used
+        The PyGfx controller for camera interaction. If None, an OrbitController
+        is created and associated with the camera and viewport. Defaults to None.
     camera_light : bool, optional
-        If True a directional light is attached on top of the camera
+        If True, attach a DirectionalLight to the camera. Defaults to True.
 
     Returns
     -------
     Screen
-        screen object to render.
-    """
+        A configured Screen object ready for rendering."""
     vp = Viewport(renderer, rect)
     if scene is None:
         scene = Scene()
@@ -226,19 +260,20 @@ def create_screen(
 
 
 def update_camera(camera, size, target):
-    """Updates the camera to face the target. The size will be used when the target is
-    an empty scene.
+    """Update the camera's view to encompass the target object or scene.
+
+    If the target is a non-empty scene or another object, the camera adjusts
+    to show it. If the target is an empty scene, the camera's aspect ratio
+    is updated based on the provided size.
 
     Parameters
     ----------
     camera : Camera
-        PyGfx camera object to face the target
+        The PyGfx camera object to update.
     size : tuple
-        Size of the target object
-    target : Object
-        PyGfx Object to show on camera.
-    """
-
+        The size (width, height) of the viewport, used if the target is empty.
+    target : Object or Scene
+        The PyGfx object or scene the camera should focus on."""
     if (isinstance(target, Scene) and len(target.children) > 3) or not isinstance(
         target, Scene
     ):
@@ -249,30 +284,28 @@ def update_camera(camera, size, target):
 
 
 def update_viewports(screens, screen_bbs):
-    """Update the screen viewports to given bounding boxes.
+    """Update the bounding boxes and cameras of multiple screens.
 
     Parameters
     ----------
-    screens : list
-        list of Screen objects
-    screen_bbs : list
-        list of tuple of bounding boxes
-    """
-    for screen, screen_bb in zip(screens, screen_bbs):
+    screens : list of Screen
+        The list of Screen objects to update.
+    screen_bbs : list of tuple
+        A list of bounding boxes (x, y, w, h), one for each screen in `screens`."""
+    for screen, screen_bb in zip(screens, screen_bbs, strict=False):
         screen.bounding_box = screen_bb
         update_camera(screen.camera, screen.size, screen.scene)
 
 
 def render_screens(renderer, screens):
-    """Render screens in renderer on update.
+    """Render multiple screens within a single renderer update cycle.
 
     Parameters
     ----------
     renderer : Renderer
-        PyGfx Renderer to update
-    screens : list
-        list of Screen objects
-    """
+        The PyGfx Renderer object to draw into.
+    screens : list of Screen
+        The list of Screen objects to render."""
     for screen in screens:
         screen.viewport.render(screen.scene, screen.camera, flush=False)
 
@@ -280,22 +313,24 @@ def render_screens(renderer, screens):
 
 
 def calculate_screen_sizes(screens, size):
-    """Calculate the screen sizes based on the configurations of the screens.
+    """Calculate screen bounding boxes based on a layout configuration.
+
+    The `screens` list defines vertical sections, and each element within
+    specifies the number of horizontal sections in that vertical column.
 
     Parameters
     ----------
-    screens : list
-        List of screen config. Each entry in the list indicates a vertical section. Each
-        value in the list indicates horizontal sections in the respective vertical
-        section.
+    screens : list of int or None
+        Layout configuration. Each integer represents a vertical column
+        and specifies the number of horizontal rows within it. If None or
+        empty, assumes a single screen covering the full size.
     size : tuple
-        Size of the window
+        The total size (width, height) of the window or area to divide.
 
     Returns
     -------
-    list
-        list of bounding box of each screen.
-    """
+    list of tuple
+        A list of calculated bounding boxes (x, y, w, h) for each screen."""
     if screens is None or not screens:
         return [(0, 0, *size)]
 
@@ -322,6 +357,44 @@ def calculate_screen_sizes(screens, size):
 
 
 class ShowManager:
+    """Show manager for the rendering window.
+
+    It manages the rendering of the scene(s) in the window. It also handles the
+    events from the window and the controller.
+
+    Parameters
+    ----------
+    renderer : Renderer
+        The PyGfx Renderer object associated with the window.
+    scene : Scene
+        The scene graph to be rendered in the window.
+    camera : Camera
+        The PyGfx camera used to view the scene.
+    controller : Controller
+        The PyGfx controller for camera interaction.
+    title : str
+        The title of the window.
+    size : tuple
+        The size (width, height) of the window in pixels.
+    blend_mode : str
+        The blending mode used by the renderer.
+    window_type : str
+        The type of window canvas to create ('default', 'qt', 'jupyter', 'offscreen').
+    pixel_ratio : float
+        The ratio between render buffer and display buffer pixels.
+    camera_light : bool
+        Whether to attach a DirectionalLight to the camera.
+    screen_config : list
+        Defines the screen layout. Can be a list of integers (vertical/horizontal
+        sections) or a list of explicit bounding box tuples (x, y, w, h).
+    enable_events : bool
+        Whether to enable mouse and keyboard interactions initially.
+    qt_app : QApplication
+        An existing QtWidgets QApplication instance (if `window_type` is 'qt').
+    qt_parent : QWidget
+        An existing QWidget to embed the QtCanvas within (if `window_type` is 'qt').
+    """
+
     def __init__(
         self,
         *,
@@ -340,74 +413,56 @@ class ShowManager:
         qt_app=None,
         qt_parent=None,
     ):
-        """Show manager for the rendering window.
+        """Manage the rendering window, scenes, and interactions.
+
+        Handles window creation, screen layout, rendering loop, and event handling.
 
         Parameters
         ----------
         renderer : Renderer, optional
-            PyGfx Renderer object. If None, a new Renderer object is created
-        scene : Scene or list, optional
-            If scene is passed same scene is applied to all the screens.
-            Else each scene is provided to respective screen from the list.
-            If None, a new scene object is created.
-        camera : Camera or list, optional
-            If camera is passed same camera is applied to all the screens.
-            Else each camera is provided to respective screen from the list.
-            If None, a new camera object is created.
-        controller : Controller or list, optional
-            If controller is passed same controller is applied to all the screens.
-            Else each controller is provided to respective screen from the list.
-            If None, a new controller object is created.
+            A PyGfx Renderer object. If None, a new one is created based on the
+            `window_type`.
+        scene : Scene or list of Scene, optional
+            A single Scene object to be used for all screens, or a list of Scene
+            objects, one for each screen defined by `screen_config`. If None,
+            new Scene objects are created.
+        camera : Camera or list of Camera, optional
+            A single Camera object for all screens, or a list of Camera objects,
+            one for each screen. If None, new PerspectiveCamera objects are
+            created.
+        controller : Controller or list of Controller, optional
+            A single Controller for all screens, or a list of Controller objects,
+            one for each screen. If None, new OrbitController objects are
+            created.
         title : str, optional
-            Title of the window.
+            The title displayed in the window's title bar. Defaults to "FURY 2.0".
         size : tuple, optional
-            Size of the window.
+            The initial size (width, height) of the window in pixels.
         blend_mode : str, optional
-            Renderer blend mode. One of the following blend mode is accepted
-            - additive or default : single-pass approach that adds fragments together.
-            - opaque : single-pass approach that ignores transparency.
-            - ordered1 : single-pass approach that blends fragments (using alpha
-            blending). Can only produce correct results if fragments are drawn
-            from back to front.
-            - ordered2 : two-pass approach that first processes all opaque
-            fragments and then blends transparent fragments (using alpha blending)
-            with depth-write disabled. The visual results are usually better than
-            ordered1, but still depend on the drawing order.
-            - weighted : two-pass approach for order independent transparency based
-            on alpha weights.
-            - weighted_depth : two-pass approach for order independent transparency
-            based on alpha weights and depth [1]. Note that the depth range
-            affects the (quality of the) visual result.
-            - weighted_plus : three-pass approach for order independent
-            transparency, in which the front-most transparent layer is rendered
-            correctly, while transparent layers behind it are blended using alpha
-            weights.
+            The blending mode used by the renderer. Accepted values include
+            'default', 'additive', 'opaque', 'ordered1', 'ordered2', 'weighted',
+            'weighted_depth', 'weighted_plus'.
         window_type : str, optional
-            Type of the window. One of the following window type is accepted
-            - glfw or default: select default GLFW canvas window.
-            - qt: select Qt canvas window.
-            - jupyter: select jupyter_rfb canvas widget.
-            - offscreen: select offscreen canvas to not show any window for remote runs.
+            The type of window canvas to create. Accepted values are 'default'
+            (or 'glfw'), 'qt', 'jupyter', 'offscreen'.
         pixel_ratio : float, optional
-            The ratio between the number of pixels in the render buffer versus the
-            number of pixels in the display buffer. If None, this will be 1 for high-res
-            canvases and 2 otherwise. If greater than 1, SSAA (supersampling
-            anti-aliasing) is applied while converting a render buffer to a display
-            buffer. If smaller than 1, pixels from the render buffer are replicated
-            while converting to a display buffer. This has positive performance
-            implications.
-        camera_light : bool, optional
-            To attach a light on top of camera
+            The ratio between render buffer and display buffer pixels. Affects
+            anti-aliasing and performance.
+        camera_light : bool or list of bool, optional
+            Whether to attach a DirectionalLight to the camera(s). Can be a
+            single value for all screens or a list.
         screen_config : list, optional
-            List of all the vertical and horizontal section or list of all the bounding
-            boxes of the screens. If None, single screen is assumed.
+            Defines the screen layout. Can be a list of integers (vertical/horizontal
+            sections) or a list of explicit bounding box tuples (x, y, w, h).
+            If None, assumes a single screen covering the window. Defaults to None.
         enable_events : bool, optional
-            Enable the events from mouse and keyboard on the visualization.
+            Whether to enable mouse and keyboard interactions initially.
         qt_app : QApplication, optional
-            QtWidgets QApplication object for QtCanvas.
+            An existing QtWidgets QApplication instance (required if `window_type`
+            is 'qt' and no global app exists).
         qt_parent : QWidget, optional
-            QWidget object for putting the window in a QLayout.
-        """
+            An existing QWidget to embed the QtCanvas within (if `window_type`
+            is 'qt')."""
         self._size = size
         self._title = title
         self._is_qt = False
@@ -435,16 +490,20 @@ class ShowManager:
         self.enable_events = enable_events
 
     def _screen_setup(self, scene, camera, controller, camera_light):
-        """Setup to create the screens.
+        """Prepare scene, camera, controller, and light lists for screen creation.
+
+        Ensures that lists match the total number of screens required.
 
         Parameters
         ----------
-        scene : Scene
-        camera : Camera
-        controller : Controller
-        camera_light : bool
-            If True, attach a direction light with the camera
-        """
+        scene : Scene or list of Scene or None
+            Input scene configuration.
+        camera : Camera or list of Camera or None
+            Input camera configuration.
+        controller : Controller or list of Controller or None
+            Input controller configuration.
+        camera_light : bool or list of bool
+            Input camera light configuration."""
         self._scene = scene
         if not isinstance(scene, list):
             self._scene = [scene] * self._total_screens
@@ -462,26 +521,29 @@ class ShowManager:
             self._camera_light = [camera_light] * self._total_screens
 
     def _setup_window(self, window_type):
-        """Initialize the canvas window.
+        """Initialize the appropriate canvas window based on the type.
 
         Parameters
         ----------
         window_type : str
-            Type of the window. One of the following window type is accepted
-            - glfw or default : select default GLFW canvas window.
-            - qt : select Qt canvas window.
-            - jupyter : select jupyter_rfb canvas widget.
-            - offscreen : select offscreen canvas to not show any window for remote
-            runs.
-        """
+            The requested window type ('default', 'glfw', 'qt', 'jupyter',
+            'offscreen').
+
+        Returns
+        -------
+        str
+            The validated window type string.
+
+        Raises
+        ------
+        ValueError
+            If an invalid `window_type` is provided."""
         window_type = window_type.lower()
 
         if window_type not in ["default", "glfw", "qt", "jupyter", "offscreen"]:
             raise ValueError(
-                "Invalid window_type: {}. "
-                "Valid values are default, glfw, qt, jupyter, offscreen".format(
-                    window_type
-                )
+                f"Invalid window_type: {window_type}. "
+                "Valid values are default, glfw, qt, jupyter, offscreen"
             )
 
         if window_type == "default" or window_type == "glfw":
@@ -501,7 +563,7 @@ class ShowManager:
         return window_type
 
     def _calculate_total_screens(self):
-        """Calculate the total screens from the screen configurations."""
+        """Determine the total number of screens based on `screen_config`."""
         if self._screen_config is None or not self._screen_config:
             self._total_screens = 1
         elif isinstance(self._screen_config[0], int):
@@ -510,13 +572,12 @@ class ShowManager:
             self._total_screens = len(self._screen_config)
 
     def _create_screens(self):
-        """Create screens from screen setup.
+        """Create all Screen objects based on the prepared configurations.
 
         Returns
         -------
-        list
-            list of Screen objects
-        """
+        list of Screen
+            The list of created Screen objects."""
         screens = []
         for i in range(self._total_screens):
             screens.append(
@@ -531,13 +592,12 @@ class ShowManager:
         return screens
 
     def _resize(self, _event):
-        """Resize the inner screens based on the event on the window.
+        """Handle window resize events by updating viewports and re-rendering.
 
         Parameters
         ----------
         _event : Event
-            PyGfx Event object for window.
-        """
+            The PyGfx resize event object (unused in current implementation)."""
         update_viewports(
             self.screens,
             calculate_screen_sizes(self._screen_config, self.renderer.logical_size),
@@ -546,74 +606,72 @@ class ShowManager:
 
     @property
     def app(self):
-        """QtApplication
+        """Get the associated QApplication instance, if any.
 
         Returns
         -------
-        QtApplication or None
-            If window type is qt returns QtApplication object else returns None.
-        """
+        QApplication or None
+            The QApplication instance if the window type is 'qt', otherwise None."""
         return self._qt_app
 
     @property
     def title(self):
-        """Title of the window.
+        """Get the current window title.
 
         Returns
         -------
         str
-        """
+            The text displayed in the window's title bar."""
         return self._title
 
     @title.setter
     def title(self, value):
-        """Set title of the window.
+        """Set the window title.
 
         Parameters
         ----------
         value : str
-        """
+            The desired text for the window's title bar."""
         self._title = value
         self.window.set_title(self._title)
 
     @property
     def pixel_ratio(self):
-        """Pixel ratio of the renderer.
+        """Get the current pixel ratio of the renderer.
 
         Returns
         -------
         float
-        """
+            The ratio between render buffer and display buffer pixels."""
         return self.renderer.pixel_ratio
 
     @pixel_ratio.setter
     def pixel_ratio(self, value):
-        """Set pixel ratio of the renderer.
+        """Set the pixel ratio of the renderer.
 
         Parameters
         ----------
         value : float
-        """
+            The desired pixel ratio."""
         self.renderer.pixel_ratio = value
 
     @property
     def size(self):
-        """Size of the window.
+        """Get the current size of the window.
 
         Returns
         -------
         tuple
-            (w, h) of the window.
-        """
+            The current (width, height) of the window in logical pixels."""
         return self._size
 
     def set_enable_events(self, value):
-        """Enable or disables the events on the rendering window.
+        """Enable or disable mouse and keyboard interactions for all screens.
 
         Parameters
         ----------
         value : bool
-        """
+            Set to True to enable events, False to disable them."""
         self.enable_events = value
         if value:
             self.renderer.enable_events()
@@ -623,35 +681,36 @@ class ShowManager:
             s.controller.enabled = value
 
     def snapshot(self, fname):
-        """Save a copy of the rasterized image of the scene(s).
-        The canvas needs to be drawn before calling this method.
+        """Save a snapshot of the current rendered content to a file.
+
+        The window must have been rendered at least once before calling this.
 
         Parameters
         ----------
         fname : str
-            file name or path to store the file
+            The file path (including extension, e.g., 'image.png') where the
+            snapshot will be saved.
 
         Returns
         -------
-        narray
-            numpy array of the image.
-        """
-
+        ndarray
+            A NumPy array representing the captured image data (RGBA)."""
         arr = np.asarray(self.renderer.snapshot())
         img = image_from_array(arr)
         img.save(fname)
         return arr
 
     def render(self):
-        """Rasterize the scene(s)."""
-
+        """Request a redraw of all screens in the window."""
         if self._is_qt and self._qt_parent is not None:
             self._qt_parent.show()
         self.window.request_draw(lambda: render_screens(self.renderer, self.screens))
 
     def start(self):
-        """Start the visualization using show manager."""
+        """Start the rendering event loop and display the window.
 
+        This call blocks until the window is closed, unless running in an
+        offscreen or specific environment (like FURY_OFFSCREEN)."""
         self.render()
         if "FURY_OFFSCREEN" in os.environ and os.environ["FURY_OFFSCREEN"].lower() in [
             "true",
@@ -667,7 +726,7 @@ class ShowManager:
             run()
 
     def close(self):
-        """Close the window."""
+        """Close the rendering window and terminate the application if necessary."""
         self.window.close()
 
 
@@ -679,26 +738,32 @@ def snapshot(
     actors=None,
     return_array=False,
 ):
-    """Save a snapshot of the rasterized image of the window.
+    """Take a snapshot using an offscreen window.
+
+    Creates a temporary offscreen ShowManager, renders the scene(s),
+    saves the image, and optionally returns the image data.
 
     Parameters
     ----------
-    scene : Scene or list, optional
-        scene(s) graph to capture the image.
+    scene : Scene or list of Scene, optional
+        The scene(s) to render. If `actors` is provided, this is ignored.
+        Defaults to None.
     screen_config : list, optional
-        List of all the vertical and horizontal section or list of all the bounding
-        boxes of the screens. If None, single screen is assumed.
+        Screen layout configuration (see ShowManager). Defaults to None (single screen).
     fname : str, optional
-        Name or path of the output image file.
-    actors : Object, optional
-        PyGfx Objects to show on the scene. Works with single scene configuration.
+        The file path to save the snapshot image. Defaults to "output.png".
+    actors : Object or list of Object, optional
+        Convenience parameter. If provided, a new Scene is created containing
+        these actors, and the `scene` parameter is ignored. Defaults to None.
     return_array : bool, optional
-        If True, return the numpy array of the image.
+        If True, the function returns the image data as a NumPy array in addition
+        to saving the file. Defaults to False.
+
     Returns
     -------
-    narray
-        numpy array of the image
-    """
+    ndarray or None
+        If `return_array` is True, returns the RGBA image data as a NumPy array.
+        Otherwise, returns None."""
     if actors is not None:
         scene = Scene()
         scene.add(*actors)
@@ -715,19 +780,18 @@ def snapshot(
 
 
 def show(actors, *, window_type="default"):
-    """Display given actors in a fury window. A Quick way to visualize the actors.
+    """Display one or more actors in a new window quickly.
+
+    A convenience function to quickly visualize actors without manually
+    setting up a Scene or ShowManager.
 
     Parameters
     ----------
-    actors : Object
-        PyGfx Object
+    actors : Object or list of Object
+        The PyGfx actor(s) to display.
     window_type : str, optional
-        Type of the window. One of the following window type is accepted
-        - glfw or default : select default GLFW canvas window.
-        - qt : select Qt canvas window.
-        - jupyter : select jupyter_rfb canvas widget.
-        - offscreen : select offscreen canvas to not show any window for remote runs.
-    """
+        The type of window canvas to create ('default', 'glfw', 'qt',
+        'jupyter', 'offscreen'). Defaults to 'default'."""
     scene = Scene()
     scene.add(*actors)
     show_m = ShowManager(scene=scene, window_type=window_type)

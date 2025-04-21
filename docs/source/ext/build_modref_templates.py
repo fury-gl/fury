@@ -29,7 +29,7 @@ def generate_api_reference_rst(
 
     module = sys.modules[package]
     installed_version = parse(module.__version__)
-    print("Generation API for {} v{}".format(package, installed_version))
+    print(f"Generation API for {package} v{installed_version}")
 
     docwriter = ApiDocWriter(package, rst_extension=".rst", other_defines=defines)
     docwriter.package_skip_patterns += [

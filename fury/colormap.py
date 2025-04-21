@@ -1,3 +1,5 @@
+"""Colormaps module."""
+
 import json
 from os.path import join as pjoin
 from warnings import warn
@@ -6,7 +8,6 @@ import numpy as np
 from scipy import linalg
 
 from fury.data import DATA_DIR
-from fury.decorators import warn_on_args_to_kwargs
 
 # from fury.lib import LookupTable
 # Allow import, but disable doctests if we don't have matplotlib
@@ -15,7 +16,6 @@ from fury.optpkg import optional_package
 cm, have_matplotlib, _ = optional_package("matplotlib.cm")
 
 
-# @warn_on_args_to_kwargs()
 # def colormap_lookup_table(
 #     *,
 #     scale_range=(0, 1),
@@ -24,7 +24,7 @@ cm, have_matplotlib, _ = optional_package("matplotlib.cm")
 #     value_range=(0.8, 0.8),
 # ):
 #     """Lookup table for the colormap.
-
+#
 #     Parameters
 #     ----------
 #     scale_range : tuple
@@ -36,34 +36,62 @@ cm, have_matplotlib, _ = optional_package("matplotlib.cm")
 #         HSV values (min 0 and max 1). Default is (1, 1).
 #     value_range : tuple of floats
 #         HSV value (min 0 and max 1). Default is (0.8, 0.8).
-
+#
 #     Returns
 #     -------
 #     lookup_table : LookupTable
-
+#
 #     """
 #     lookup_table = LookupTable()
 #     lookup_table.SetRange(scale_range)
 #     lookup_table.SetTableRange(scale_range)
-
+#
 #     lookup_table.SetHueRange(hue_range)
 #     lookup_table.SetSaturationRange(saturation_range)
 #     lookup_table.SetValueRange(value_range)
-
+#
 #     lookup_table.Build()
 #     return lookup_table
 
 
 def cc(na, nd):
+    """Calculate cosine component for Boy's surface.
+
+    Parameters
+    ----------
+    na : float
+        Amplitude parameter.
+    nd : float
+        Angle parameter in degrees.
+
+    Returns
+    -------
+    float
+        Cosine component value.
+    """
     return na * np.cos(nd * np.pi / 180.0)
 
 
 def ss(na, nd):
+    """Calculate sine component for Boy's surface.
+
+    Parameters
+    ----------
+    na : float
+        Amplitude parameter.
+    nd : float
+        Angle parameter in degrees.
+
+    Returns
+    -------
+    float
+        Sine component value.
+    """
     return na * np.sin(nd * np.pi / 180.0)
 
 
 def boys2rgb(v):
-    """Boys 2 rgb cool colormap
+    """Convert orientation vectors to RGB colors using Boy's Surface.
 
     Maps a given field of undirected lines (line field) to rgb
     colors using Boy's Surface immersion of the real projective
@@ -83,21 +111,20 @@ def boys2rgb(v):
 
     Parameters
     ----------
-    v : array, shape (N, 3) of unit vectors (e.g., principal eigenvectors of
-       tensor data) representing one of the two directions of the
-       undirected lines in a line field.
+    v : array, shape (N, 3) or (3,)
+        Unit vectors (e.g., principal eigenvectors of tensor data) representing
+        one of the two directions of the undirected lines in a line field.
 
     Returns
     -------
-    c : array, shape (N, 3) matrix of rgb colors corresponding to the vectors
-           given in V.
+    array, shape (N, 3) or (3,)
+        RGB colors corresponding to the vectors given in v.
 
     Examples
     --------
     >>> from fury import colormap
     >>> v = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
     >>> c = colormap.boys2rgb(v)
-
     """
     if v.ndim == 1:
         x = v[0]
@@ -199,35 +226,37 @@ def boys2rgb(v):
         N = len(x)
         C = np.zeros((N, 3))
 
-        C[:, 0] = 0.9 * np.abs(((X - trl_x) / w_x)) + 0.05
-        C[:, 1] = 0.9 * np.abs(((Y - trl_y) / w_y)) + 0.05
-        C[:, 2] = 0.9 * np.abs(((Z - trl_z) / w_z)) + 0.05
+        C[:, 0] = 0.9 * np.abs((X - trl_x) / w_x) + 0.05
+        C[:, 1] = 0.9 * np.abs((Y - trl_y) / w_y) + 0.05
+        C[:, 2] = 0.9 * np.abs((Z - trl_z) / w_z) + 0.05
 
     if v.ndim == 1:
         C = np.zeros((3,))
-        C[0] = 0.9 * np.abs(((X - trl_x) / w_x)) + 0.05
-        C[1] = 0.9 * np.abs(((Y - trl_y) / w_y)) + 0.05
-        C[2] = 0.9 * np.abs(((Z - trl_z) / w_z)) + 0.05
+        C[0] = 0.9 * np.abs((X - trl_x) / w_x) + 0.05
+        C[1] = 0.9 * np.abs((Y - trl_y) / w_y) + 0.05
+        C[2] = 0.9 * np.abs((Z - trl_z) / w_z) + 0.05
 
     return C
 
 
 def orient2rgb(v):
-    """Get Standard orientation 2 rgb colormap.
+    """Convert orientation vectors to RGB colors based on absolute values.
 
-    v : array, shape (N, 3) of vectors not necessarily normalized
+    Parameters
+    ----------
+    v : array, shape (N, 3) or (3,)
+        Vectors not necessarily normalized.
 
     Returns
     -------
-    c : array, shape (N, 3) matrix of rgb colors corresponding to the vectors
-           given in V.
+    array, shape (N, 3) or (3,)
+        RGB colors corresponding to the vectors given in v.
 
     Examples
     --------
     >>> from fury import colormap
     >>> v = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
     >>> c = colormap.orient2rgb(v)
-
     """
     if v.ndim == 1:
         r = np.linalg.norm(v)
@@ -238,26 +267,27 @@ def orient2rgb(v):
         orientn.shape = orientn.shape + (1,)
         orient = np.abs(np.divide(v, orientn, where=orientn != 0))
     else:
-        raise IOError(
+        raise OSError(
             "Wrong vector dimension, It should be an array" " with a shape (N, 3)"
         )
 
     return orient
 
 
-@warn_on_args_to_kwargs()
 def line_colors(streamlines, *, cmap="rgb_standard"):
-    """Create colors for streamlines to be used in actor.line.
+    """Create colors for streamlines based on their orientation.
 
     Parameters
     ----------
     streamlines : sequence of ndarrays
-    cmap : ('rgb_standard', 'boys_standard')
+        Sequence of streamlines, each represented as an ndarray.
+    cmap : str, optional
+        Colormap to use, either 'rgb_standard' or 'boys_standard'.
 
     Returns
     -------
-    colors : ndarray
-
+    ndarray
+        Array of colors for each streamline.
     """
     if cmap == "rgb_standard":
         col_list = [
@@ -277,7 +307,23 @@ dipy_cmaps = None
 
 
 def get_cmap(name):
-    """Make a callable, similar to maptlotlib.pyplot.get_cmap."""
+    """Create a colormap callable similar to matplotlib.pyplot.get_cmap.
+
+    Parameters
+    ----------
+    name : str
+        Name of the colormap.
+
+    Returns
+    -------
+    callable
+        A function that takes values between 0 and 1 and returns RGBA colors.
+
+    Notes
+    -----
+    This function creates a simple colormap function that emulates matplotlib's
+    behavior for use when matplotlib is not available.
+    """
     if name.lower() == "accent":
         warn(
             "The `Accent` colormap is deprecated as of version"
@@ -298,10 +344,21 @@ def get_cmap(name):
         return None
 
     def simple_cmap(v):
-        """Emulate matplotlib colormap callable."""
+        """Emulate matplotlib colormap callable.
+
+        Parameters
+        ----------
+        v : array-like
+            Values between 0 and 1 to map to colors.
+
+        Returns
+        -------
+        ndarray
+            RGBA colors corresponding to the input values.
+        """
         rgba = np.ones((len(v), 4))
         for i, color in enumerate(("red", "green", "blue")):
-            x, y0, _ = zip(*desc[color])
+            x, y0, _ = zip(*desc[color], strict=False)
             # Matplotlib allows more complex colormaps, but for users who do
             # not have Matplotlib fury makes a few simple colormaps available.
             # These colormaps are simple because y0 == y1, and therefore we
@@ -312,31 +369,34 @@ def get_cmap(name):
     return simple_cmap
 
 
-@warn_on_args_to_kwargs()
 def create_colormap(v, *, name="plasma", auto=True):
-    """Create colors from a specific colormap and return it
-    as an array of shape (N,3) where every row gives the corresponding
-    r,g,b value. The colormaps we use are similar with those of matplotlib.
+    """Create colors from a specific colormap.
+
+    Creates an array of shape (N,3) where every row gives the corresponding
+    r,g,b value. The colormaps used are similar to those of matplotlib.
 
     Parameters
     ----------
     v : (N,) array
-        vector of values to be mapped in RGB colors according to colormap
-    name : str.
+        Vector of values to be mapped to RGB colors according to colormap.
+    name : str, optional
         Name of the colormap. Currently implemented: 'jet', 'blues',
-        'accent', 'bone' and matplotlib colormaps if you have matplotlib
+        'accent', 'bone' and matplotlib colormaps if matplotlib is
         installed. For example, we suggest using 'plasma', 'viridis' or
-        'inferno'. 'jet' is popular but can be often misleading and we will
-        deprecate it the future.
-    auto : bool,
-        if auto is True then v is interpolated to [0, 1] from v.min()
-        to v.max()
+        'inferno'. Default is 'plasma'.
+    auto : bool, optional
+        If True, v is interpolated to [0, 1] from v.min() to v.max().
+        Default is True.
+
+    Returns
+    -------
+    ndarray, shape (N, 3)
+        Array of RGB colors corresponding to the input values.
 
     Notes
     -----
     FURY supports a few colormaps for those who do not use Matplotlib, for
     more colormaps consider downloading Matplotlib (see matplotlib.org).
-
     """
     if not have_matplotlib:
         msg = "You do not have Matplotlib installed. Some colormaps"
@@ -362,7 +422,7 @@ def create_colormap(v, *, name="plasma", auto=True):
 
     colormap = getattr(cm, newname) if have_matplotlib else get_cmap(newname)
     if colormap is None:
-        e_s = "Colormap {} is not yet implemented ".format(name)
+        e_s = f"Colormap {name} is not yet implemented "
         raise ValueError(e_s)
 
     rgba = colormap(v)
@@ -371,6 +431,20 @@ def create_colormap(v, *, name="plasma", auto=True):
 
 
 def _lab_delta(x, y):
+    """Calculate CIELAB Delta E distance between colors.
+
+    Parameters
+    ----------
+    x : ndarray, shape (..., 3)
+        First set of LAB color values.
+    y : ndarray, shape (..., 3)
+        Second set of LAB color values.
+
+    Returns
+    -------
+    ndarray
+        The Delta E distance between corresponding colors in x and y.
+    """
     dL = y[:, 0] - x[:, 0]  # L
     dA = y[:, 1] - x[:, 1]  # A
     dB = y[:, 2] - x[:, 2]  # B
@@ -378,12 +452,38 @@ def _lab_delta(x, y):
 
 
 def _rgb_lab_delta(x, y):
+    """Calculate CIELAB Delta E distance between RGB colors.
+
+    Parameters
+    ----------
+    x : ndarray, shape (..., 3)
+        First set of RGB color values.
+    y : ndarray, shape (..., 3)
+        Second set of RGB color values.
+
+    Returns
+    -------
+    ndarray
+        The Delta E distance between corresponding colors in x and y.
+    """
     labX = _rgb2lab(x)
     labY = _rgb2lab(y)
     return _lab_delta(labX, labY)
 
 
 def _rgb2xyz(rgb):
+    """Convert from RGB to XYZ color space.
+
+    Parameters
+    ----------
+    rgb : ndarray, shape (..., 3)
+        RGB values in range [0, 255].
+
+    Returns
+    -------
+    ndarray, shape (..., 3)
+        XYZ values.
+    """
     var_R = rgb[:, 0] / 255  # R from 0 to 255
     var_G = rgb[:, 1] / 255  # G from 0 to 255
     var_B = rgb[:, 2] / 255  # B from 0 to 255
@@ -416,6 +516,18 @@ def _rgb2xyz(rgb):
 
 
 def _xyz2lab(xyz):
+    """Convert from XYZ to CIELAB color space.
+
+    Parameters
+    ----------
+    xyz : ndarray, shape (..., 3)
+        XYZ values.
+
+    Returns
+    -------
+    ndarray, shape (..., 3)
+        LAB values.
+    """
     ref_X = 095.047
     ref_Y = 100.000
     ref_Z = 108.883
@@ -446,6 +558,18 @@ def _xyz2lab(xyz):
 
 
 def _lab2xyz(lab):
+    """Convert from CIELAB to XYZ color space.
+
+    Parameters
+    ----------
+    lab : ndarray, shape (..., 3)
+        LAB values.
+
+    Returns
+    -------
+    ndarray, shape (..., 3)
+        XYZ values.
+    """
     var_Y = (lab[:, 0] + 16) / 116.0
     var_X = lab[:, 1] / 500.0 + var_Y
     var_Z = var_Y - lab[:, 2] / 200.0
@@ -476,6 +600,18 @@ def _lab2xyz(lab):
 
 
 def _xyz2rgb(xyz):
+    """Convert from XYZ to RGB color space.
+
+    Parameters
+    ----------
+    xyz : ndarray, shape (..., 3)
+        XYZ values.
+
+    Returns
+    -------
+    ndarray, shape (..., 3)
+        RGB values in range [0, 255].
+    """
     var_X = xyz[:, 0] / 100  # X from 0 to  95.047
     var_Y = xyz[:, 1] / 100  # Y from 0 to 100.000
     var_Z = xyz[:, 2] / 100  # Z from 0 to 108.883
@@ -507,16 +643,39 @@ def _xyz2rgb(xyz):
 
 
 def _rgb2lab(rgb):
+    """Convert from RGB to CIELAB color space.
+
+    Parameters
+    ----------
+    rgb : ndarray, shape (..., 3)
+        RGB values in range [0, 255].
+
+    Returns
+    -------
+    ndarray, shape (..., 3)
+        LAB values.
+    """
     tmp = _rgb2xyz(rgb)
     return _xyz2lab(tmp)
 
 
 def _lab2rgb(lab):
+    """Convert from CIELAB to RGB color space.
+
+    Parameters
+    ----------
+    lab : ndarray, shape (..., 3)
+        LAB values.
+
+    Returns
+    -------
+    ndarray, shape (..., 3)
+        RGB values in range [0, 255].
+    """
     tmp = _lab2xyz(lab)
     return _xyz2rgb(tmp)
 
 
-@warn_on_args_to_kwargs()
 def distinguishable_colormap(*, bg=(0, 0, 0), exclude=None, nb_colors=None):
     """Generate colors that are maximally perceptually distinct.
 
@@ -533,19 +692,19 @@ def distinguishable_colormap(*, bg=(0, 0, 0), exclude=None, nb_colors=None):
 
     Parameters
     ----------
-    bg : tuple (optional)
+    bg : tuple, optional
         Background RGB color, to make sure that your colors are also
-        distinguishable from the background. Default: (0, 0, 0).
-    exclude : list of tuples (optional)
+        distinguishable from the background. Default is (0, 0, 0).
+    exclude : list of tuples, optional
         Additional RGB colors to be distinguishable from.
-    nb_colors : int (optional)
+    nb_colors : int, optional
         Number of colors desired. Default: generate as many colors as needed.
 
     Returns
     -------
     iterable of ndarray
-        If `nb_colors` is provided, returns a list of RBG colors.
-        Otherwise, yields the next RBG color maximally perceptually
+        If `nb_colors` is provided, returns a list of RGB colors.
+        Otherwise, yields the next RGB color maximally perceptually
         distinct from previous ones.
 
     Examples
@@ -560,7 +719,6 @@ def distinguishable_colormap(*, bg=(0, 0, 0), exclude=None, nb_colors=None):
     the Dipy Team. Thank you Tim Holy for putting this online. Visit
     http://www.mathworks.com/matlabcentral/fileexchange/29702 for the
     original implementation (v1.2), 14 Dec 2010 (Updated 07 Feb 2011).
-
     """
     if exclude is None:
         exclude = []
@@ -581,6 +739,7 @@ def distinguishable_colormap(*, bg=(0, 0, 0), exclude=None, nb_colors=None):
     bglab = _rgb2lab(colors_to_exclude)
 
     def _generate_next_color():
+        """Generate the next color in the sequence."""
         lastlab = bglab[0]
         mindist2 = np.ones(len(rgb)) * np.inf
         for bglab_i in bglab[1:]:
@@ -600,32 +759,35 @@ def distinguishable_colormap(*, bg=(0, 0, 0), exclude=None, nb_colors=None):
             lastlab = lab[idx]
 
     if nb_colors is not None:
-        return [c for i, c in zip(range(nb_colors), _generate_next_color())]
+        return [
+            c for i, c in zip(range(nb_colors), _generate_next_color(), strict=False)
+        ]
 
     return _generate_next_color()
 
 
 def hex_to_rgb(color):
-    """Converts Hexadecimal color code to rgb()
+    """Convert hexadecimal color code to RGB values.
 
-    color : string containing hexcode of color (can also start with a hash)
+    Parameters
+    ----------
+    color : str
+        String containing hexcode of color (can also start with a hash).
 
     Returns
     -------
-    c : array, shape(1, 3) matrix of rbg colors corresponding to the
-        hexcode string given in color.
+    ndarray, shape (3,)
+        Array of RGB values (between 0 and 1) corresponding to the hexcode.
 
     Examples
     --------
     >>> from fury import colormap
     >>> color = "#FFFFFF"
     >>> c = colormap.hex_to_rgb(color)
-
-
+    >>>
     >>> from fury import colormap
     >>> color = "FFFFFF"
     >>> c = colormap.hex_to_rgb(color)
-
     """
     if color[0] == "#":
         color = color[1:]
@@ -638,26 +800,25 @@ def hex_to_rgb(color):
 
 
 def rgb2hsv(rgb):
-    """RGB to HSV color space conversion.
+    """Convert RGB color values to HSV color space.
 
     Parameters
     ----------
-    rgb : (..., 3, ...) array_like
+    rgb : ndarray (..., 3, ...)
         The image in RGB format. By default, the final dimension denotes
         channels.
 
     Returns
     -------
-    out : (..., 3, ...) ndarray
+    ndarray (..., 3, ...)
         The image in HSV format. Same dimensions as input.
 
     Notes
     -----
     Original Implementation from scikit-image package.
-    it can be found at:
+    It can be found at:
     https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
     This implementation might have been modified.
-
     """
     input_is_one_pixel = rgb.ndim == 1
     if input_is_one_pixel:
@@ -707,26 +868,25 @@ def rgb2hsv(rgb):
 
 
 def hsv2rgb(hsv):
-    """HSV to RGB color space conversion.
+    """Convert HSV color values to RGB color space.
 
     Parameters
     ----------
-    hsv : (..., 3, ...) array_like
+    hsv : ndarray (..., 3, ...)
         The image in HSV format. By default, the final dimension denotes
         channels.
 
     Returns
     -------
-    out : (..., 3, ...) ndarray
+    ndarray (..., 3, ...)
         The image in RGB format. Same dimensions as input.
 
     Notes
     -----
     Original Implementation from scikit-image package.
-    it can be found at:
+    It can be found at:
     https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
     This implementation might have been modified.
-
     """
     hi = np.floor(hsv[..., 0] * 6)
     f = hsv[..., 0] * 6 - hi
@@ -765,26 +925,25 @@ rgb_from_xyz = linalg.inv(xyz_from_rgb)
 
 
 def xyz2rgb(xyz):
-    """XYZ to RGB color space conversion.
+    """Convert XYZ color values to RGB color space.
 
     Parameters
     ----------
-    xyz : (..., 3, ...) array_like
+    xyz : ndarray (..., 3, ...)
         The image in XYZ format. By default, the final dimension denotes
         channels.
 
     Returns
     -------
-    out : (..., 3, ...) ndarray
+    ndarray (..., 3, ...)
         The image in RGB format. Same dimensions as input.
 
     Notes
     -----
     Original Implementation from scikit-image package.
-    it can be found at:
+    It can be found at:
     https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
     This implementation might have been modified.
-
     """
     arr = xyz @ rgb_from_xyz.T.astype(xyz.dtype)
     mask = arr > 0.0031308
@@ -795,7 +954,7 @@ def xyz2rgb(xyz):
 
 
 def rgb2xyz(rgb):
-    """RGB to XYZ color space conversion.
+    """Convert RGB color values to XYZ color space.
 
     Parameters
     ----------
@@ -805,16 +964,15 @@ def rgb2xyz(rgb):
 
     Returns
     -------
-    out : (..., 3, ...) ndarray
+    ndarray (..., 3, ...)
         The image in XYZ format. Same dimensions as input.
 
     Notes
     -----
     Original Implementation from scikit-image package.
-    it can be found at:
+    It can be found at:
     https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
     This implementation might have been modified.
-
     """
     rgb = rgb.astype(float)
     mask = rgb > 0.04045
@@ -868,29 +1026,28 @@ illuminants = {
 
 
 def get_xyz_coords(illuminant, observer):
-    """Get the XYZ coordinates of the given illuminant and observer [1]_.
+    """Get the XYZ coordinates of the given illuminant and observer.
 
     Parameters
     ----------
-    illuminant : {"A", "B", "C", "D50", "D55", "D65", "D75", "E"}, optional
+    illuminant : {"A", "B", "C", "D50", "D55", "D65", "D75", "E"}
         The name of the illuminant (the function is NOT case sensitive).
-    observer : {"2", "10", "R"}, optional
+    observer : {"2", "10", "R"}
         One of: 2-degree observer, 10-degree observer, or 'R' observer as in
         R function grDevices::convertColor.
 
     Returns
     -------
-    out : array
+    ndarray
         Array with 3 elements containing the XYZ coordinates of the given
         illuminant.
 
     Notes
     -----
     Original Implementation from scikit-image package.
-    it can be found at:
+    It can be found at:
     https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
     This implementation might have been modified.
-
     """
     illuminant = illuminant.upper()
     observer = observer.upper()
@@ -903,9 +1060,8 @@ def get_xyz_coords(illuminant, observer):
         ) from err
 
 
-@warn_on_args_to_kwargs()
 def xyz2lab(xyz, *, illuminant="D65", observer="2"):
-    """XYZ to CIE-LAB color space conversion.
+    """Convert XYZ color values to CIE-LAB color space.
 
     Parameters
     ----------
@@ -914,22 +1070,22 @@ def xyz2lab(xyz, *, illuminant="D65", observer="2"):
         channels.
     illuminant : {"A", "B", "C", "D50", "D55", "D65", "D75", "E"}, optional
         The name of the illuminant (the function is NOT case sensitive).
+        Default is "D65".
     observer : {"2", "10", "R"}, optional
         One of: 2-degree observer, 10-degree observer, or 'R' observer as in
-        R function grDevices::convertColor.
+        R function grDevices::convertColor. Default is "2".
 
     Returns
     -------
-    out : (..., 3, ...) ndarray
+    ndarray (..., 3, ...)
         The image in CIE-LAB format. Same dimensions as input.
 
     Notes
     -----
     Original Implementation from scikit-image package.
-    it can be found at:
+    It can be found at:
     https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
     This implementation might have been modified.
-
     """
     xyz_ref_white = get_xyz_coords(illuminant, observer)
 
@@ -951,9 +1107,8 @@ def xyz2lab(xyz, *, illuminant="D65", observer="2"):
     return np.concatenate([x[..., np.newaxis] for x in [L, a, b]], axis=-1)
 
 
-@warn_on_args_to_kwargs()
 def lab2xyz(lab, *, illuminant="D65", observer="2"):
-    """CIE-LAB to XYZcolor space conversion.
+    """Convert CIE-LAB color values to XYZ color space.
 
     Parameters
     ----------
@@ -962,21 +1117,21 @@ def lab2xyz(lab, *, illuminant="D65", observer="2"):
         channels.
     illuminant : {"A", "B", "C", "D50", "D55", "D65", "D75", "E"}, optional
         The name of the illuminant (the function is NOT case-sensitive).
+        Default is "D65".
     observer : {"2", "10", "R"}, optional
-        The aperture angle of the observer.
+        The aperture angle of the observer. Default is "2".
 
     Returns
     -------
-    out : (..., 3, ...) ndarray
+    ndarray (..., 3, ...)
         The image in XYZ format. Same dimensions as input.
 
     Notes
     -----
     Original Implementation from scikit-image package.
-    it can be found at:
+    It can be found at:
     https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
     This implementation might have been modified.
-
     """
     L, a, b = lab[..., 0], lab[..., 1], lab[..., 2]
     y = (L + 16.0) / 116.0
@@ -1003,9 +1158,10 @@ def lab2xyz(lab, *, illuminant="D65", observer="2"):
     return out
 
 
-@warn_on_args_to_kwargs()
 def rgb2lab(rgb, *, illuminant="D65", observer="2"):
-    """Conversion from the sRGB color space (IEC 61966-2-1:1999)
+    """Convert from RGB color space to CIE-Lab color space.
+
+    Converts from the sRGB color space (IEC 61966-2-1:1999)
     to the CIE Lab colorspace under the given illuminant and observer.
 
     Parameters
@@ -1015,28 +1171,27 @@ def rgb2lab(rgb, *, illuminant="D65", observer="2"):
         channels.
     illuminant : {"A", "B", "C", "D50", "D55", "D65", "D75", "E"}, optional
         The name of the illuminant (the function is NOT case sensitive).
+        Default is "D65".
     observer : {"2", "10", "R"}, optional
-        The aperture angle of the observer.
+        The aperture angle of the observer. Default is "2".
 
     Returns
     -------
-    out : (..., 3, ...) ndarray
+    ndarray (..., 3, ...)
         The image in Lab format. Same dimensions as input.
 
     Notes
     -----
     Original Implementation from scikit-image package.
-    it can be found at:
+    It can be found at:
     https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
     This implementation might have been modified.
-
     """
     return xyz2lab(rgb2xyz(rgb), illuminant=illuminant, observer=observer)
 
 
-@warn_on_args_to_kwargs()
 def lab2rgb(lab, *, illuminant="D65", observer="2"):
-    """Lab to RGB color space conversion.
+    """Convert from CIE-Lab color space to RGB color space.
 
     Parameters
     ----------
@@ -1045,20 +1200,20 @@ def lab2rgb(lab, *, illuminant="D65", observer="2"):
         channels.
     illuminant : {"A", "B", "C", "D50", "D55", "D65", "D75", "E"}, optional
         The name of the illuminant (the function is NOT case sensitive).
+        Default is "D65".
     observer : {"2", "10", "R"}, optional
-        The aperture angle of the observer.
+        The aperture angle of the observer. Default is "2".
 
     Returns
     -------
-    out : (..., 3, ...) ndarray
+    ndarray (..., 3, ...)
         The image in RGB format. Same dimensions as input.
 
     Notes
     -----
     Original Implementation from scikit-image package.
-    it can be found at:
+    It can be found at:
     https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
     This implementation might have been modified.
-
     """
     return xyz2rgb(lab2xyz(lab, illuminant=illuminant, observer=observer))

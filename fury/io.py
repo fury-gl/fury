@@ -1,3 +1,5 @@
+"""I/O functions for loading and saving images, textures."""
+
 import os
 
 # from tempfile import TemporaryDirectory as InTemporaryDirectory
@@ -39,16 +41,16 @@ from fury.lib import (
 
 
 def load_cube_map_texture(fnames, *, size=None, generate_mipmaps=True):
-    """Load Texture
+    """Load a cube map texture from a list of images.
 
     Parameters
     ----------
     fnames : list
-        filenames to generate cube map.
+        Filenames to generate cube map.
     size : tuple, optional
         The display extent (width, height, depth) of the cubemap.
     generate_mipmaps : bool, optional
-        automatically generates mipmaps when transferring data to the GPU.
+        Whether to automatically generate mipmaps when transferring data to the GPU.
 
     Returns
     -------
@@ -113,18 +115,17 @@ def load_cube_map_texture(fnames, *, size=None, generate_mipmaps=True):
 
 
 def load_image(filename):
-    """Load an image.
+    """Load an image from a file or URL.
 
     Parameters
     ----------
-    filename: str
-        should be png, bmp, jpeg or jpg files
+    filename : str
+        Path to image file or URL. Should be png, bmp, jpeg or jpg files.
 
     Returns
     -------
-    image: ndarray
-        desired image array
-
+    ndarray
+        Loaded image array.
     """
     is_url = (filename.lower().startswith("http://")) or (
         filename.lower().startswith("https://")
@@ -134,7 +135,7 @@ def load_image(filename):
         image_name = os.path.basename(filename)
 
         if len(image_name.split(".")) < 2:
-            raise IOError(f"{filename} is not a valid image URL")
+            raise OSError(f"{filename} is not a valid image URL")
 
         urlretrieve(filename, image_name)
         filename = image_name
@@ -154,9 +155,7 @@ def load_image(filename):
             try:
                 image = pil_image.convert("RGBA")
             except ValueError as err:
-                raise RuntimeError(
-                    "Unknown image mode {}".format(pil_image.mode)
-                ) from err
+                raise RuntimeError(f"Unknown image mode {pil_image.mode}") from err
             image = np.asarray(pil_image)
 
     if is_url:
@@ -169,14 +168,13 @@ def load_image(filename):
 
 #     Parameters
 #     ----------
-#     file: str
+#     file : str
 #         Path to the text file.
 
 #     Returns
 #     -------
-#     text: str
+#     text : str
 #         Text contained in the file.
-
 #     """
 #     if not os.path.isfile(file):
 #         raise IOError("File {} does not exist.".format(file))
@@ -193,30 +191,24 @@ def save_image(
     compression_type="deflation",
     dpi=(72, 72),
 ):
-    """Save a 2d or 3d image.
-
-    Expect an image with the following shape: (H, W) or (H, W, 1) or
-    (H, W, 3) or (H, W, 4).
+    """Save a 2D or 3D image to a file.
 
     Parameters
     ----------
     arr : ndarray
-        array to save
-    filename : string
-        should be png, bmp, jpeg or jpg files
+        Array to save with shape (H, W) or (H, W, 1) or (H, W, 3) or (H, W, 4).
+    filename : str
+        Output filename. Should be png, bmp, jpeg, jpg, tiff, or tif file.
     compression_quality : int, optional
-        compression_quality for jpeg data.
-        0 = Low quality, 100 = High quality
+        Compression quality for jpeg data. 0 = Low quality, 100 = High quality.
     compression_type : str, optional
-        compression type for tiff file
-        select between: None, lzw, deflation (default)
-    dpi : float or (float, float)
+        Compression type for tiff file. Select between: None, lzw, deflation (default).
+    dpi : float or tuple of float, optional
         Dots per inch (dpi) for saved image.
         Single values are applied as dpi for both dimensions.
-
     """
     if arr.ndim > 3:
-        raise IOError("Image Dimensions should be <=3")
+        raise OSError("Image Dimensions should be <=3")
 
     if isinstance(dpi, (float, int)):
         dpi = (dpi, dpi)
@@ -226,10 +218,8 @@ def save_image(
     extension = os.path.splitext(os.path.basename(filename).lower())[1]
 
     if extension.lower() not in allowed_extensions:
-        raise IOError(
-            "Impossible to save the file {0}: Unknown extension {1}".format(
-                filename, extension
-            )
+        raise OSError(
+            f"Impossible to save the file {filename}: Unknown extension {extension}"
         )
 
     im = Image.fromarray(arr)
