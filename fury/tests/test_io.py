@@ -140,7 +140,7 @@ def test_save_load_image():
             url_image = load_image(fury_logo_link)
 
             url_fname_path = pjoin(odir, f"fury_logo.{ext}")
-            fname_path = pjoin(odir, "{0}.{1}".format(fname, ext))
+            fname_path = pjoin(odir, f"{fname}.{ext}")
 
             save_image(data, fname_path, compression_quality=100)
             save_image(url_image, url_fname_path, compression_quality=100)
@@ -203,7 +203,7 @@ def test_save_load_image():
         with InTemporaryDirectory() as odir:
             try:
                 data = np.random.randint(0, 255, size=(50, 3), dtype=np.uint8)
-                fname_path = pjoin(odir, "{0}.tif".format(fname))
+                fname_path = pjoin(odir, f"{fname}.tif")
 
                 save_image(data, fname_path, compression_type=ct)
                 npt.assert_equal(os.path.isfile(fname_path), True)

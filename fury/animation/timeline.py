@@ -1,3 +1,5 @@
+"""Timeline class for keyframe animation."""
+
 import os
 from time import perf_counter
 
@@ -19,29 +21,69 @@ class Timeline:
     """Keyframe animation Timeline.
 
     Timeline is responsible for handling the playback of keyframes animations.
-    It has multiple playback options which makes it easy
-    to control the playback, speed, state of the animation with/without a GUI
-    playback panel.
+    It has multiple playback options which makes it easy to control the playback,
+    speed, state of the animation with/without a GUI playback panel.
+
+    Parameters
+    ----------
+    animations : Animation or list[Animation], optional
+        Actor/s to be animated directly by the Timeline (main Animation).
+        Default is None.
+    playback_panel : bool, optional
+        If True, the timeline will have a playback panel set, which can be used
+        to control the playback of the timeline. Default is False.
+    loop : bool, optional
+        Whether to loop playing the timeline or play once. Default is True.
+    length : float or int, optional
+        The fixed length of the timeline. If set to None, the timeline will get
+        its length from the animations that it controls automatically.
+        Default is None.
 
     Attributes
     ----------
-    animations : Animation or list[Animation], optional, default: None
-        Actor/s to be animated directly by the Timeline (main Animation).
-    playback_panel : bool, optional
-        If True, the timeline will have a playback panel set, which can be used
-        to control the playback of the timeline.
-    length : float or int, default: None, optional
-        the fixed length of the timeline. If set to None, the timeline will get
-         its length from the animations that it controls automatically.
-    loop : bool, optional
-        Whether loop playing the timeline or play once.
-
+    playback_panel : PlaybackPanel or None
+        The panel used to control the playback of the timeline.
+    duration : float
+        The duration of the timeline in seconds.
+    current_timestamp : float
+        The current time position in the timeline.
+    speed : float
+        The playback speed multiplier.
+    playing : bool
+        Whether the timeline is currently playing.
+    stopped : bool
+        Whether the timeline is currently stopped.
+    paused : bool
+        Whether the timeline is currently paused.
+    loop : bool
+        Whether the timeline is set to loop or play once.
+    animations : list
+        List of animations controlled by the timeline.
+    has_playback_panel : bool
+        Whether the timeline has a playback panel.
     """
 
     @warn_on_args_to_kwargs()
     def __init__(
         self, *, animations=None, playback_panel=False, loop=True, length=None
     ):
+        """Initialize the Timeline.
+
+        Parameters
+        ----------
+        animations : Animation or list[Animation], optional
+            Actor/s to be animated directly by the Timeline (main Animation).
+            Default is None.
+        playback_panel : bool, optional
+            If True, the timeline will have a playback panel set, which can be used
+            to control the playback of the timeline. Default is False.
+        loop : bool, optional
+            Whether to loop playing the timeline or play once. Default is True.
+        length : float or int, optional
+            The fixed length of the timeline. If set to None, the timeline will get
+            its length from the animations that it controls automatically.
+            Default is None.
+        """
         self._scene = None
         self.playback_panel = None
         self._current_timestamp = 0
@@ -75,11 +117,13 @@ class Timeline:
     def update_duration(self):
         """Update and return the duration of the Timeline.
 
+        Calculate the duration based on either a fixed length or the maximum
+        duration of all animations controlled by this Timeline.
+
         Returns
         -------
         float
-            The duration of the Timeline.
-
+            The duration of the Timeline in seconds.
         """
         if self._length is not None:
             self._duration = self._length
@@ -98,13 +142,16 @@ class Timeline:
         Returns
         -------
         float
-            The duration of the Timeline.
-
+            The duration of the Timeline in seconds.
         """
         return self._duration
 
     def play(self):
-        """Play the animation"""
+        """Play the animation.
+
+        Start playing the timeline from the current timestamp. If the current timestamp
+        is at the end of the timeline, it will reset to the beginning.
+        """
         if not self.playing:
             if self.current_timestamp >= self.duration:
                 self.current_timestamp = 0
@@ -114,18 +161,27 @@ class Timeline:
             self._playing = True
 
     def pause(self):
-        """Pause the animation"""
+        """Pause the animation.
+
+        Freeze the animation at its current timestamp.
+        """
         self._current_timestamp = self.current_timestamp
         self._playing = False
 
     def stop(self):
-        """Stop the animation"""
+        """Stop the animation.
+
+        Reset the timeline to the beginning and stop playback.
+        """
         self._current_timestamp = 0
         self._playing = False
         self.update(force=True)
 
     def restart(self):
-        """Restart the animation"""
+        """Restart the animation.
+
+        Reset the timeline to the beginning and start playing.
+        """
         self._current_timestamp = 0
         self._playing = True
         self.update(force=True)
@@ -137,8 +193,7 @@ class Timeline:
         Returns
         -------
         float
-            The current time of the Timeline.
-
+            The current position in seconds of the Timeline.
         """
         if self.playing:
             self._current_timestamp = (
@@ -152,9 +207,8 @@ class Timeline:
 
         Parameters
         ----------
-        timestamp: float
-            The time to set as current time of the Timeline.
-
+        timestamp : float
+            The time to set as current position of the Timeline in seconds.
         """
         self.seek(timestamp)
 
@@ -163,9 +217,9 @@ class Timeline:
 
         Parameters
         ----------
-        timestamp: float
-            The time to seek.
-
+        timestamp : float
+            The time in seconds to seek to. Will be clamped between 0 and the
+            timeline duration.
         """
         # assuring timestamp value is in the timeline range
         if timestamp < 0:
@@ -179,13 +233,12 @@ class Timeline:
             self.update(force=True)
 
     def seek_percent(self, percent):
-        """Seek a percentage of the Timeline's final timestamp.
+        """Seek to a percentage of the Timeline's duration.
 
         Parameters
         ----------
-        percent: float
-            Value from 1 to 100.
-
+        percent : float
+            Percentage value from 0 to 100 of the timeline duration to seek to.
         """
         t = percent * self.duration / 100
         self.seek(t)
@@ -197,8 +250,7 @@ class Timeline:
         Returns
         -------
         bool
-            True if the Timeline is playing.
-
+            True if the Timeline is currently playing, False otherwise.
         """
         return self._playing
 
@@ -209,8 +261,8 @@ class Timeline:
         Returns
         -------
         bool
-            True if Timeline is stopped.
-
+            True if the Timeline is stopped (not playing and at timestamp 0),
+            False otherwise.
         """
         return not self.playing and not self._current_timestamp
 
@@ -221,8 +273,8 @@ class Timeline:
         Returns
         -------
         bool
-            True if the Timeline is paused.
-
+            True if the Timeline is paused (not playing but at a non-zero timestamp),
+            False otherwise.
         """
         return not self.playing and self._current_timestamp is not None
 
@@ -233,8 +285,7 @@ class Timeline:
         Returns
         -------
         float
-            The speed of the timeline's playback.
-
+            The playback speed multiplier.
         """
         return self._speed
 
@@ -244,9 +295,9 @@ class Timeline:
 
         Parameters
         ----------
-        speed: float
-            The speed of the timeline's playback.
-
+        speed : float
+            The playback speed multiplier. Values greater than 1 speed up playback,
+            values between 0 and 1 slow it down. Values of 0 or less are ignored.
         """
         current = self.current_timestamp
         if speed <= 0:
@@ -257,14 +308,12 @@ class Timeline:
 
     @property
     def loop(self):
-        """Get loop condition of the timeline.
+        """Return the loop setting of the timeline.
 
         Returns
         -------
         bool
-            Whether the playback is in loop mode (True) or play one mode
-            (False).
-
+            True if the timeline is set to loop playback, False if set to play once.
         """
         return self._loop
 
@@ -274,21 +323,20 @@ class Timeline:
 
         Parameters
         ----------
-        loop: bool
-            The loop condition to be set. (True) to loop the playback, and
-            (False) to play only once.
-
+        loop : bool
+            When True, playback will loop continuously.
+            When False, playback will stop at the end of the timeline.
         """
         self._loop = loop
 
     @property
     def has_playback_panel(self):
-        """Return whether the `Timeline` has a playback panel.
+        """Return whether the Timeline has a playback panel.
 
         Returns
         -------
-        bool: 'True' if the `Timeline` has a playback panel. otherwise, 'False'
-
+        bool
+            True if the Timeline has a playback panel, False otherwise.
         """
         return self.playback_panel is not None
 
@@ -305,41 +353,41 @@ class Timeline:
         max_peels=4,
         show_panel=False,
     ):
-        """Record the animation
+        """Record the animation to a file or return frames.
 
         Parameters
         ----------
         fname : str, optional
-            The file name. Save a GIF file if name ends with '.gif', or mp4
-            video if name ends with'.mp4'.
-            If None, this method will only return an array of frames.
+            The output filename. Creates a GIF if name ends with '.gif', or an MP4
+            video if name ends with '.mp4'. If None, only returns the frames array.
+            Default is None.
         fps : int, optional
-            The number of frames per second of the record.
-        size : (int, int)
-            ``(width, height)`` of the window. Default is (900, 768).
-        speed : float, optional, default 1.0
-            The speed of the animation.
+            The number of frames per second to record. Default is 30.
+        speed : float, optional
+            The playback speed multiplier for the recording. Default is 1.0.
+        size : tuple of int, optional
+            The dimensions of the recording as (width, height). Default is (900, 768).
         order_transparent : bool, optional
-            Default False. Use depth peeling to sort transparent objects.
-            If True also enables anti-aliasing.
+            Whether to use depth peeling to sort transparent objects. If True,
+            also enables anti-aliasing. Default is True.
         multi_samples : int, optional
-            Number of samples for anti-aliasing (Default 8).
-            For no anti-aliasing use 0.
+            Number of samples for anti-aliasing. Use 0 for no anti-aliasing.
+            Default is 8.
         max_peels : int, optional
-            Maximum number of peels for depth peeling (Default 4).
-        show_panel : bool, optional, default False
-            Controls whether to show the playback (if True) panel of hide it
-            (if False)
+            Maximum number of peels for depth peeling. Default is 4.
+        show_panel : bool, optional
+            Controls whether to show the playback panel (if True) or hide it
+            (if False) in the recording. Default is False.
 
         Returns
         -------
-        ndarray:
-            The recorded frames.
+        list
+            List of frames as PIL Image objects.
 
         Notes
         -----
-        It's recommended to use 50 or 30 FPS while recording to a GIF file.
-
+        It's recommended to use 30 or 50 FPS when recording to a GIF file.
+        To save as MP4, OpenCV must be installed.
         """
         ext = os.path.splitext(fname)[-1]
 
@@ -431,13 +479,18 @@ class Timeline:
         return frames
 
     def add_animation(self, animation):
-        """Add Animation or list of Animations.
+        """Add Animation or list of Animations to the Timeline.
 
         Parameters
         ----------
-        animation: Animation or list[Animation] or tuple[Animation]
-            Animation/s to be added.
+        animation : Animation or list[Animation] or tuple[Animation]
+            Animation object(s) to be added to this Timeline.
 
+        Raises
+        ------
+        TypeError
+            If the provided animation is not an Animation object or a collection
+            of Animation objects.
         """
         if isinstance(animation, (list, tuple)):
             [self.add_animation(anim) for anim in animation]
@@ -450,29 +503,27 @@ class Timeline:
 
     @property
     def animations(self) -> "list[Animation]":
-        """Return a list of Animations.
+        """Return all animations controlled by this Timeline.
 
         Returns
         -------
-        list:
-            List of Animations controlled by the timeline.
-
+        list
+            List of Animation objects controlled by the timeline.
         """
         return self._animations
 
     @warn_on_args_to_kwargs()
     def update(self, *, force=False):
-        """Update the timeline.
+        """Update the timeline and all controlled animations.
 
-        Update the Timeline and all the animations that it controls. As well as
-        the playback of the Timeline (if exists).
+        Updates the Timeline and all animations it controls. Also updates the
+        playback panel if one exists.
 
         Parameters
         ----------
-        force: bool, optional, default: False
-            If True, the timeline will update even when the timeline is paused
-            or stopped and hence, more resources will be used.
-
+        force : bool, optional
+            If True, the timeline will update even when paused or stopped,
+            which may use more resources. Default is False.
         """
         time = self.current_timestamp
         if self.has_playback_panel:
@@ -491,14 +542,26 @@ class Timeline:
             [anim.update_animation(time=time) for anim in self._animations]
 
     def add_to_scene(self, scene):
-        """Add Timeline and all of its Animations to the scene"""
+        """Add Timeline and all of its Animations to the scene.
+
+        Parameters
+        ----------
+        scene : Scene
+            The scene to add the Timeline and its Animations to.
+        """
         self._scene = scene
         if self.has_playback_panel:
             self.playback_panel.add_to_scene(scene)
         [animation.add_to_scene(scene) for animation in self._animations]
 
     def remove_from_scene(self, scene):
-        """Remove Timeline and all of its Animations to the scene"""
+        """Remove Timeline and all of its Animations from the scene.
+
+        Parameters
+        ----------
+        scene : Scene
+            The scene from which to remove the Timeline and its Animations.
+        """
         self._scene = None
         if self.has_playback_panel:
             scene.rm(*tuple(self.playback_panel.actors))

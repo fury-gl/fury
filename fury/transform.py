@@ -1,9 +1,9 @@
+"""Transformation functions for 3D graphics."""
+
 import math
 
 import numpy as np
 from scipy.spatial.transform import Rotation as Rot  # type: ignore
-
-from fury.decorators import warn_on_args_to_kwargs
 
 # axis sequences for Euler angles
 _NEXT_AXIS = [1, 2, 0, 1]
@@ -39,23 +39,28 @@ _AXES2TUPLE = {
 _TUPLE2AXES = {v: k for k, v in _AXES2TUPLE.items()}
 
 
-@warn_on_args_to_kwargs()
 def euler_matrix(ai, aj, ak, *, axes="sxyz"):
     """Return homogeneous rotation matrix from Euler angles and axis sequence.
 
-    Code modified from the work of Christoph Gohlke link provided here
-    http://www.lfd.uci.edu/~gohlke/code/transformations.py.html
-
     Parameters
     ----------
-    ai, aj, ak : Euler's roll, pitch and yaw angles
-    axes : One of 24 axis sequences as string or encoded tuple
+    ai : float
+        First Euler angle in radians.
+    aj : float
+        Second Euler angle in radians.
+    ak : float
+        Third Euler angle in radians.
+    axes : str or tuple, optional
+        One of 24 axis sequences as string or encoded tuple. Default is 'sxyz'.
 
     Returns
     -------
-    matrix : ndarray (4, 4)
+    ndarray (4, 4)
+        Homogeneous rotation matrix.
 
-    Code modified from the work of Christoph Gohlke link provided here
+    Notes
+    -----
+    Code modified from the work of Christoph Gohlke:
     http://www.lfd.uci.edu/~gohlke/code/transformations.py.html
 
     Examples
@@ -72,7 +77,6 @@ def euler_matrix(ai, aj, ak, *, axes="sxyz"):
     ...    _ = euler_matrix(ai, aj, ak, axes)
     >>> for axes in _TUPLE2AXES.keys():
     ...    _ = euler_matrix(ai, aj, ak, axes)
-
     """
     try:
         firstaxis, parity, repetition, frame = _AXES2TUPLE[axes]
@@ -118,18 +122,35 @@ def euler_matrix(ai, aj, ak, *, axes="sxyz"):
 
 
 def sphere2cart(r, theta, phi):
-    """Spherical to Cartesian coordinates.
+    """Convert spherical coordinates to Cartesian coordinates.
 
-    This is the standard physics convention where `theta` is the
-    inclination (polar) angle, and `phi` is the azimuth angle.
+    Parameters
+    ----------
+    r : array_like
+        Radius.
+    theta : array_like
+        Inclination or polar angle.
+    phi : array_like
+        Azimuth angle.
 
-    Imagine a sphere with center (0,0,0).  Orient it with the z axis
+    Returns
+    -------
+    x : array
+        X coordinate(s) in Cartesian space.
+    y : array
+        Y coordinate(s) in Cartesian space.
+    z : array
+        Z coordinate(s) in Cartesian space.
+
+    Notes
+    -----
+    Imagine a sphere with center (0,0,0). Orient it with the z axis
     running south-north, the y axis running west-east and the x axis
-    from posterior to anterior.  `theta` (the inclination angle) is the
+    from posterior to anterior. `theta` (the inclination angle) is the
     angle to rotate from the z-axis (the zenith) around the y-axis,
-    towards the x axis.  Thus the rotation is counter-clockwise from the
-    point of view of positive y.  `phi` (azimuth) gives the angle of
-    rotation around the z-axis towards the y axis.  The rotation is
+    towards the x axis. Thus the rotation is counter-clockwise from the
+    point of view of positive y. `phi` (azimuth) gives the angle of
+    rotation around the z-axis towards the y axis. The rotation is
     counter-clockwise from the point of view of positive z.
 
     Equivalently, given a point P on the sphere, with coordinates x, y,
@@ -138,50 +159,15 @@ def sphere2cart(r, theta, phi):
     axis.
 
     Geographical nomenclature designates theta as 'co-latitude', and phi
-    as 'longitude'
+    as 'longitude'.
 
-    Parameters
-    ----------
-    r : array_like
-       radius
-    theta : array_like
-       inclination or polar angle
-    phi : array_like
-       azimuth angle
-
-    Returns
-    -------
-    x : array
-       x coordinate(s) in Cartesian space
-    y : array
-       y coordinate(s) in Cartesian space
-    z : array
-       z coordinate
-
-    Notes
-    -----
-    See these pages:
-
+    See these pages for more details:
     * http://en.wikipedia.org/wiki/Spherical_coordinate_system
     * http://mathworld.wolfram.com/SphericalCoordinates.html
 
-    for excellent discussion of the many different conventions
-    possible.  Here we use the physics conventions, used in the
-    wikipedia page.
-
-    Derivations of the formulae are simple. Consider a vector x, y, z of
-    length r (norm of x, y, z).  The inclination angle (theta) can be
-    found from: cos(theta) == z / r -> z == r * cos(theta).  This gives
-    the hypotenuse of the projection onto the XY plane, which we will
-    call Q. Q == r*sin(theta). Now x / Q == cos(phi) -> x == r *
-    sin(theta) * cos(phi) and so on.
-
     We have deliberately named this function ``sphere2cart`` rather than
     ``sph2cart`` to distinguish it from the Matlab function of that
-    name, because the Matlab function uses an unusual convention for the
-    angles that we did not want to replicate.  The Matlab function is
-    trivial to implement with the formulae given in the Matlab help.
-
+    name, which uses a different convention.
     """
     sin_theta = np.sin(theta)
     x = r * np.cos(phi) * sin_theta
@@ -192,31 +178,34 @@ def sphere2cart(r, theta, phi):
 
 
 def cart2sphere(x, y, z):
-    r"""Return angles for Cartesian 3D coordinates `x`, `y`, and `z`.
-
-    See doc for ``sphere2cart`` for angle conventions and derivation
-    of the formulae.
-
-    $0\le\theta\mathrm{(theta)}\le\pi$ and $-\pi\le\phi\mathrm{(phi)}\le\pi$
+    r"""Convert Cartesian coordinates to spherical coordinates.
 
     Parameters
     ----------
     x : array_like
-       x coordinate in Cartesian space
+        X coordinate in Cartesian space.
     y : array_like
-       y coordinate in Cartesian space
+        Y coordinate in Cartesian space.
     z : array_like
-       z coordinate
+        Z coordinate in Cartesian space.
 
     Returns
     -------
     r : array
-       radius
+        Radius.
     theta : array
-       inclination (polar) angle
+        Inclination (polar) angle in range [0, π].
     phi : array
-       azimuth angle
+        Azimuth angle in range [-π, π].
 
+    Notes
+    -----
+    Uses the same convention as sphere2cart. The inclination angle theta
+    is in range [0, π] and the azimuth angle phi is in range [-π, π].
+
+    $0\le\theta\mathrm{(theta)}\le\pi$ and $-\pi\le\phi\mathrm{(phi)}\le\pi$
+
+    See sphere2cart for detailed description of the coordinate convention.
     """
     r = np.sqrt(x * x + y * y + z * z)
     theta = np.arccos(np.divide(z, r, where=r > 0))
@@ -227,18 +216,18 @@ def cart2sphere(x, y, z):
 
 
 def translate(translation):
-    """Return transformation matrix for translation array.
+    """Create a transformation matrix for translation.
 
     Parameters
     ----------
-    translation : ndarray
-        translation in x, y and z directions.
+    translation : ndarray (3,)
+        Translation vector in x, y and z directions.
 
     Returns
     -------
-    translation : ndarray (4, 4)
-        Numpy array of shape 4,4 containing translation parameter in the last
-        column of the matrix.
+    ndarray (4, 4)
+        Homogeneous transformation matrix with translation parameters in the
+        last column.
 
     Examples
     --------
@@ -250,7 +239,6 @@ def translate(translation):
            [0.  , 1.  , 0.  , 0.2 ],
            [0.  , 0.  , 1.  , 0.25],
            [0.  , 0.  , 0.  , 1.  ]])
-
     """
     iden = np.identity(4)
     translation = np.append(translation, 0).reshape(-1, 1)
@@ -266,17 +254,17 @@ def translate(translation):
 
 
 def rotate(quat):
-    """Return transformation matrix for rotation quaternion.
+    """Create a transformation matrix for rotation using quaternion.
 
     Parameters
     ----------
-    quat : ndarray (4, )
-        rotation quaternion.
+    quat : ndarray (4,)
+        Rotation quaternion in form [x, y, z, w].
 
     Returns
     -------
-    rotation_mat : ndarray (4, 4)
-        Transformation matrix of shape (4, 4) to rotate a vector.
+    ndarray (4, 4)
+        Homogeneous transformation matrix for rotation.
 
     Examples
     --------
@@ -288,7 +276,6 @@ def rotate(quat):
            [ 0.        ,  0.86586979, -0.50026944,  0.        ],
            [ 0.        ,  0.50026944,  0.86586979,  0.        ],
            [ 0.        ,  0.        ,  0.        ,  1.        ]])
-
     """
     iden = np.identity(3)
     rotation_mat = Rot.from_quat(quat).as_matrix()
@@ -303,18 +290,17 @@ def rotate(quat):
 
 
 def scale(scales):
-    """Return transformation matrix for scales array.
+    """Create a transformation matrix for scaling.
 
     Parameters
     ----------
-    scales : ndarray
-        scales in x, y and z directions.
+    scales : ndarray (3,)
+        Scale factors for x, y and z directions.
 
     Returns
     -------
-    scale_mat : ndarray (4, 4)
-        Numpy array of shape 4,4 containing elements of scale matrix along
-        the diagonal.
+    ndarray (4, 4)
+        Homogeneous transformation matrix with scale factors along the diagonal.
 
     Examples
     --------
@@ -326,7 +312,6 @@ def scale(scales):
            [0. , 1. , 0. , 0. ],
            [0. , 0. , 0.5, 0. ],
            [0. , 0. , 0. , 1. ]])
-
     """
     scale_mat = np.identity(4)
     scales = np.append(scales, [1])
@@ -338,20 +323,25 @@ def scale(scales):
 
 
 def apply_transformation(vertices, transformation):
-    """Multiplying transformation matrix with vertices
+    """Apply transformation matrix to vertices.
 
     Parameters
     ----------
     vertices : ndarray (n, 3)
-        vertices of the mesh
+        Array of vertices to be transformed.
     transformation : ndarray (4, 4)
-        transformation matrix
+        Homogeneous transformation matrix.
 
     Returns
     -------
-    vertices : ndarray (n, 3)
-        transformed vertices of the mesh
+    ndarray (n, 3)
+        Transformed vertices.
 
+    Notes
+    -----
+    This function multiplies the transformation matrix with the vertices to
+    transform them in 3D space. The vertices are converted to homogeneous
+    coordinates before multiplication.
     """
     shape = vertices.shape
     temp = np.full((shape[0], 1), 1)
@@ -365,23 +355,29 @@ def apply_transformation(vertices, transformation):
 
 
 def transform_from_matrix(matrix):
-    """Returns translation, rotation and scale arrays from transformation
-    matrix.
+    """Decompose transformation matrix into components.
 
     Parameters
     ----------
     matrix : ndarray (4, 4)
-        the transformation matrix of shape 4*4
+        Homogeneous transformation matrix.
 
     Returns
     -------
-    translate : ndarray (3, )
-        translation component from the transformation matrix
-    rotate : ndarray (4, )
-        rotation component from the transformation matrix
-    scale : ndarray (3, )
-        scale component from the transformation matrix.
+    translation : ndarray (3,)
+        Translation vector (tx, ty, tz) extracted from the matrix.
+    rotation : ndarray (4,)
+        Rotation parameters as [angle, rx, ry, rz] where angle is in degrees
+        and rx, ry, rz represent the rotation vector direction.
+    scale : ndarray (3,)
+        Scale factors (sx, sy, sz) extracted from the matrix.
 
+    Notes
+    -----
+    The function extracts the translation directly from the last column of
+    the matrix, calculates the scale by computing the norm of each of the
+    first three columns, and then derives the rotation matrix after
+    normalizing for scale.
     """
     translate = matrix[:, -1:].reshape((-1,))[:-1]
 

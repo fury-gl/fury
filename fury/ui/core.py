@@ -1,4 +1,4 @@
-# """UI core module that describe UI abstract class."""
+"""UI core module that describe UI abstract class."""
 
 # import abc
 

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # FURY documentation build configuration file, created by
 # sphinx-quickstart on Thu Jun 28 12:35:56 2018.
@@ -87,7 +86,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "FURY"
-copyright = "2018-{0}, FURY".format(datetime.now().year)
+copyright = f"2018-{datetime.now().year}, FURY"
 author = "FURY"
 
 # The version info for the project you're documenting, acts as replacement for
