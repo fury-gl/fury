@@ -1153,7 +1153,7 @@ def test_basic_geometry_actor(interactive=False):
 
             arr = window.snapshot(scene)
             report = window.analyze_snapshot(arr, colors=colors)
-            msg = "Failed with {}, scale={}".format(act_func.__name__, scale)
+            msg = f"Failed with {act_func.__name__}, scale={scale}"
             npt.assert_equal(report.objects, 3, err_msg=msg)
 
 

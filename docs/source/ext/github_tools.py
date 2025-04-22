@@ -50,7 +50,7 @@ def fetch_url(url):
     """
     req = Request(url)
     if GH_TOKEN:
-        req.add_header("Authorization", "token {0}".format(GH_TOKEN))
+        req.add_header("Authorization", f"token {GH_TOKEN}")
     try:
         print("fetching %s" % url, file=sys.stderr)
         # url = Request(url,
@@ -73,7 +73,7 @@ def parse_link_header(headers):
     urls = element_pat.findall(link_s)
     rels = rel_pat.findall(link_s)
     d = {}
-    for rel, url in zip(rels, urls):
+    for rel, url in zip(rels, urls, strict=False):
         d[rel] = url
     return d
 
@@ -116,7 +116,7 @@ def get_issues(project="fury-gl/fury", state="closed", pulls=False):
 
 def get_tags(project="fury-gl/fury"):
     """Get a list of the tags from the Github API."""
-    url = "https://api.github.com/repos/{0}/tags".format(project)
+    url = f"https://api.github.com/repos/{project}/tags"
     return get_paged_request(url)
 
 
@@ -149,7 +149,7 @@ def fetch_basic_stats(project="fury-gl/fury"):
         "subscribers_count",
         "subscribers_url",
     ]
-    url = "https://api.github.com/repos/{0}".format(project)
+    url = f"https://api.github.com/repos/{project}"
     r_json = get_json_from_url(url)
     basic_stats = {k: r_json[k] for k in desired_keys if k in r_json}
     return basic_stats
@@ -184,7 +184,7 @@ def fetch_contributor_stats(project="fury-gl/fury"):
         }
 
     """
-    url = "https://api.github.com/repos/{0}/stats/contributors".format(project)
+    url = f"https://api.github.com/repos/{project}/stats/contributors"
     r_json = get_json_from_url(url)
 
     contributor_stats = {}
@@ -263,7 +263,7 @@ def cumulative_contributors(project="fury-gl/fury", show=True):
         ]
 
     """
-    url = "https://api.github.com/repos/{0}/stats/contributors".format(project)
+    url = f"https://api.github.com/repos/{project}/stats/contributors"
     r_json = get_json_from_url(url)
     contributors_join_date = {}
 
@@ -291,12 +291,12 @@ def cumulative_contributors(project="fury-gl/fury", show=True):
         import matplotlib.pyplot as plt
         import numpy as np
 
-        years, c_cum = zip(*cumulative_list)
+        years, c_cum = zip(*cumulative_list, strict=False)
         years_ticks = np.linspace(min(years), max(years), 15)
         years_labels = []
         for y in years_ticks:
             date = datetime.utcfromtimestamp(int(y))
-            date_str = "Q{} - ".format((date.month - 1) // 3 + 1)
+            date_str = f"Q{(date.month - 1) // 3 + 1} - "
             date_str += date.strftime("%Y")
             years_labels.append(date_str)
         plt.fill_between(years, c_cum, color="skyblue", alpha=0.4)
@@ -498,11 +498,9 @@ def github_stats(**kwargs):
         print(".. _{}".format(fname.replace(".rst", ":")))
         print()
         print(
-            (
-                "==============================\n"
-                " Release notes v{}\n  ()"
-                "=============================="
-            ).format(version)
+            "==============================\n"
+            f" Release notes v{version}\n  ()"
+            "=============================="
         )
 
     # By default, search one month back

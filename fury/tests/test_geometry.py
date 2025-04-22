@@ -33,6 +33,137 @@ def test_create_mesh():
     assert mesh.material == mat
 
 
+def test_line_buffer_separator():
+    line_vertices = [
+        np.array([[0, 0, 0], [1, 1, 1]], dtype=np.float32),
+        np.array([[2, 2, 2], [3, 3, 3]], dtype=np.float32),
+    ]
+    positions, colors = geometry.line_buffer_separator(line_vertices)
+    # Check positions
+    npt.assert_array_equal(positions[:2], line_vertices[0])
+    assert np.all(np.isnan(positions[2]))
+    npt.assert_array_equal(positions[3:], line_vertices[1])
+    assert colors is None
+
+    line_vertices = [
+        np.array([[0, 0, 0], [1, 1, 1]], dtype=np.float32),
+        np.array([[2, 2, 2], [3, 3, 3]], dtype=np.float32),
+    ]
+    color = np.array([[1.0, 0, 0], [0.0, 1.0, 0.0]], dtype=np.float32)
+    positions, colors = geometry.line_buffer_separator(
+        line_vertices, color=color, color_mode="line"
+    )
+    expected_colors = np.array(
+        [
+            [1, 0, 0],
+            [1, 0, 0],
+            [np.nan, np.nan, np.nan],
+            [0, 1, 0],
+            [0, 1, 0],
+        ],
+        dtype=np.float32,
+    )
+    npt.assert_array_equal(colors, expected_colors)
+
+    line_vertices = [
+        np.array([[0, 0, 0], [1, 1, 1]], dtype=np.float32),
+        np.array([[2, 2, 2], [3, 3, 3]], dtype=np.float32),
+    ]
+    color = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 0]], dtype=np.float32)
+    positions, colors = geometry.line_buffer_separator(
+        line_vertices, color=color, color_mode="vertex_flattened"
+    )
+    expected_colors = np.array(
+        [
+            [1, 0, 0],
+            [0, 1, 0],
+            [np.nan, np.nan, np.nan],
+            [0, 0, 1],
+            [1, 1, 0],
+        ],
+        dtype=np.float32,
+    )
+    npt.assert_array_equal(colors, expected_colors)
+
+    line_vertices = [
+        np.array([[0, 0, 0], [1, 1, 1]], dtype=np.float32),
+        np.array([[2, 2, 2], [3, 3, 3]], dtype=np.float32),
+    ]
+    color = np.array([[1.0, 0, 0], [0.0, 1.0, 0.0]], dtype=np.float32)
+    positions, colors = geometry.line_buffer_separator(line_vertices, color=color)
+    expected_colors = np.array(
+        [
+            [1, 0, 0],
+            [1, 0, 0],
+            [np.nan, np.nan, np.nan],
+            [0, 1, 0],
+            [0, 1, 0],
+        ],
+        dtype=np.float32,
+    )
+    npt.assert_array_equal(colors, expected_colors)
+
+    line_vertices = [
+        np.array([[0, 0, 0], [1, 1, 1]], dtype=np.float32),
+        np.array([[2, 2, 2], [3, 3, 3]], dtype=np.float32),
+    ]
+    color = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 0]], dtype=np.float32)
+    positions, colors = geometry.line_buffer_separator(line_vertices, color=color)
+    expected_colors = np.array(
+        [
+            [1, 0, 0],
+            [0, 1, 0],
+            [np.nan, np.nan, np.nan],
+            [0, 0, 1],
+            [1, 1, 0],
+        ],
+        dtype=np.float32,
+    )
+    npt.assert_array_equal(colors, expected_colors)
+
+    line_vertices = [
+        np.array([[0, 0, 0], [1, 1, 1]], dtype=np.float32),
+        np.array([[2, 2, 2], [3, 3, 3]], dtype=np.float32),
+    ]
+    color = [
+        np.array([[1, 0, 0], [0, 1, 0]], dtype=np.float32),
+        np.array([[0, 0, 1], [1, 1, 0]], dtype=np.float32),
+    ]
+    positions, colors = geometry.line_buffer_separator(line_vertices, color=color)
+    expected_colors = np.array(
+        [
+            [1, 0, 0],
+            [0, 1, 0],
+            [np.nan, np.nan, np.nan],
+            [0, 0, 1],
+            [1, 1, 0],
+        ],
+        dtype=np.float32,
+    )
+    npt.assert_array_equal(colors, expected_colors)
+
+    line_vertices = [
+        np.array([[0, 0, 0]], dtype=np.float32),
+        np.array([[1, 1, 1]], dtype=np.float32),
+    ]
+    color = np.array([1, 0, 0], dtype=np.float32)  # valid color now
+
+    geometry.line_buffer_separator(line_vertices, color=color, color_mode="auto")
+
+    line_vertices = [np.array([[0, 0, 0], [1, 1, 1]], dtype=np.float32)]
+    positions, colors = geometry.line_buffer_separator(line_vertices)
+    npt.assert_array_equal(positions, line_vertices[0])
+    assert colors is None
+
+    line_vertices = [np.array([[0, 0, 0], [1, 1, 1]], dtype=np.float32)]
+    color = np.array([[1, 0, 0]], dtype=np.float32)
+    positions, colors = geometry.line_buffer_separator(
+        line_vertices, color=color, color_mode="line"
+    )
+    expected_colors = np.array([[1, 0, 0], [1, 0, 0]], dtype=np.float32)
+    npt.assert_array_equal(colors, expected_colors)
+
+
 def test_create_point():
     vertices = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2]]).astype("float32")
     geo = geometry.buffer_to_geometry(vertices)

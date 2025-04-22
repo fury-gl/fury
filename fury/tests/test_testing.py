@@ -66,7 +66,7 @@ def test_callback():
     scene.add(simple_ui)
     event_counter = ft.EventCounter()
     event_counter.monitor(simple_ui)
-    events_name = ["{0} 0 0 0 0 0 0 0".format(name) for name in events_name]
+    events_name = [f"{name} 0 0 0 0 0 0 0" for name in events_name]
     events_str = "# StreamVersion 1\n" + "\n".join(events_name)
     show_manager.play_events(events_str)
     npt.assert_equal(len(event_counter.events_counts), len(events_name))

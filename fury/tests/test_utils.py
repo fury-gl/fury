@@ -33,14 +33,14 @@ def test_set_group_visibility_single_bool():
 def test_set_group_visibility_list(group_slicer):
     visibility = [True, False, True]
     set_group_visibility(group_slicer, visibility)
-    for actor, vis in zip(group_slicer.children, visibility):
+    for actor, vis in zip(group_slicer.children, visibility, strict=False):
         assert actor.visible == vis
 
 
 def test_set_group_visibility_tuple(group_slicer):
     visibility = (False, True, False)
     set_group_visibility(group_slicer, visibility)
-    for actor, vis in zip(group_slicer.children, visibility):
+    for actor, vis in zip(group_slicer.children, visibility, strict=False):
         assert actor.visible == vis
 
 

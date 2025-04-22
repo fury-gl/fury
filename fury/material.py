@@ -1,4 +1,11 @@
+"""Module for creating various materials used in 3D rendering."""
+
 from fury.lib import (
+    LineArrowMaterial,
+    LineMaterial,
+    LineSegmentMaterial,
+    LineThinMaterial,
+    LineThinSegmentMaterial,
     MeshBasicMaterial,
     MeshPhongMaterial,
     PointsGaussianBlobMaterial,
@@ -9,16 +16,54 @@ from fury.lib import (
 
 
 def validate_opacity(opacity):
-    """Ensure opacity is between 0 and 1."""
+    """Ensure opacity is between 0 and 1.
+
+    Parameters
+    ----------
+    opacity : float
+        Opacity value to validate.
+
+    Returns
+    -------
+    float
+        Validated opacity value.
+
+    Raises
+    ------
+    ValueError
+        If opacity is not between 0 and 1.
+    """
+    if opacity is None:
+        return 1.0
     if not (0 <= opacity <= 1):
         raise ValueError("Opacity must be between 0 and 1.")
     return opacity
 
 
 def validate_color(color, opacity, mode):
-    """Validate and modify color based on opacity and mode."""
+    """Validate and modify color based on opacity and mode.
+
+    Parameters
+    ----------
+    color : tuple or None
+        RGB or RGBA color tuple.
+    opacity : float
+        Opacity value between 0 and 1.
+    mode : str
+        Color mode, either 'auto' or 'vertex'.
+
+    Returns
+    -------
+    tuple or None
+        Modified color tuple with opacity applied.
+
+    Raises
+    ------
+    ValueError
+        If color is None when mode is 'auto' or if color has invalid length.
+    """
     if color is None and mode == "auto":
-        raise ValueError("Color must be specified when mode is 'auto'.")
+        return (1, 1, 1, opacity)
 
     if mode == "vertex":
         return (1, 1, 1)
@@ -42,8 +87,7 @@ def _create_mesh_material(
     mode="vertex",
     flat_shading=True,
 ):
-    """
-    Create a mesh material.
+    """Create a mesh material.
 
     Parameters
     ----------
@@ -53,12 +97,12 @@ def _create_mesh_material(
     enable_picking : bool, optional
         Whether the material should be pickable in a scene.
     color : tuple or None, optional
-        The color of the material, represented as an RGBA tuple. If None, the
-        default color is used.
+        The color of the material, represented as an RGB or RGBA tuple. If None,
+        the default color is used.
     opacity : float, optional
         The opacity of the material, from 0 (transparent) to 1 (opaque).
         If RGBA is provided, the final alpha will be:
-        final_alpha = alpha_in_RGBA * opacity
+        final_alpha = alpha_in_RGBA * opacity.
     mode : str, optional
         The color mode of the material. Options are 'auto' and 'vertex'.
     flat_shading : bool, optional
@@ -68,6 +112,11 @@ def _create_mesh_material(
     -------
     MeshMaterial
         A mesh material object of the specified type with the given properties.
+
+    Raises
+    ------
+    ValueError
+        If an unsupported material type is specified.
     """
     opacity = validate_opacity(opacity)
     color = validate_color(color, opacity, mode)
@@ -90,6 +139,85 @@ def _create_mesh_material(
         raise ValueError(f"Unsupported material type: {material}")
 
 
+def _create_line_material(
+    *,
+    material="basic",
+    enable_picking=True,
+    color=None,
+    opacity=1.0,
+    mode="auto",
+    thickness=2.0,
+    thickness_space="screen",
+    dash_pattern=(),
+    dash_offset=0.0,
+    anti_aliasing=True,
+):
+    """
+    Create a line material.
+
+    Parameters
+    ----------
+    material : str, optional
+        The type of line material to create. Options are 'line' (default),
+        'segment', 'arrow', 'thin', and 'thin_segment'.
+    enable_picking : bool, optional
+        Whether the material should be pickable in a scene.
+    color : tuple or None, optional
+        The color of the material, represented as an RGBA tuple. If None, the
+        default color is used.
+    opacity : float, optional
+        The opacity of the material, from 0 (transparent) to 1 (opaque).
+        If RGBA is provided, the final alpha will be:
+        final_alpha = alpha_in_RGBA * opacity.
+    mode : str, optional
+        The color mode of the material. Options are 'auto' and 'vertex'.
+    thickness : float, optional
+        The line thickness expressed in logical pixels.
+    thickness_space : str, optional
+        The coordinate space in which the thickness is
+        expressed ('screen', 'world', 'model').
+    dash_pattern : tuple, optional
+        The pattern of the dash, e.g., [2, 3].
+        meaning no dashing.
+    dash_offset : float, optional
+        The offset into the dash cycle to start drawing at.
+    anti_aliasing : bool, optional
+        Whether or not the line is anti-aliased in the shader.
+
+    Returns
+    -------
+    LineMaterial
+        A line material object of the specified type with the given properties.
+    """
+
+    opacity = validate_opacity(opacity)
+    color = validate_color(color, opacity, mode)
+
+    args = {
+        "pick_write": enable_picking,
+        "color_mode": mode,
+        "color": color,
+        "thickness": thickness,
+        "thickness_space": thickness_space,
+        "dash_pattern": dash_pattern,
+        "dash_offset": dash_offset,
+        "aa": anti_aliasing,
+    }
+
+    if material == "basic":
+        return LineMaterial(**args)
+    elif material == "segment":
+        return LineSegmentMaterial(**args)
+    elif material == "arrow":
+        return LineArrowMaterial(**args)
+    elif material == "thin":
+        return LineThinMaterial(**args)
+    elif material == "thin_segment":
+        return LineThinSegmentMaterial(**args)
+    else:
+        raise ValueError(f"Unsupported material type: {material}")
+
+
 def _create_points_material(
     *,
     material="basic",
@@ -104,36 +232,35 @@ def _create_points_material(
     opacity=1.0,
     enable_picking=True,
 ):
-    """
-    Create a points material.
+    """Create a points material.
 
     Parameters
     ----------
     material : str, optional
         The type of material to create. Options are 'basic' (default),
         'gaussian', and 'marker'.
-    colors : ndarray (N,3) or (N,4) or tuple (3,) or tuple (4,), optional
+    color : tuple, optional
         RGB or RGBA values in the range [0, 1].
     size : float, optional
         The size (diameter) of the points in logical pixels.
-    map : TextureMap | Texture
+    map : TextureMap or Texture, optional
         The texture map specifying the color for each texture coordinate.
     aa : bool, optional
         Whether or not the points are anti-aliased in the shader.
-    marker : str | MarkerShape
+    marker : str or MarkerShape, optional
         The shape of the marker.
         Options are "●": "circle", "+": "plus", "x": "cross", "♥": "heart",
         "✳": "asterix".
-    edge_color : str | tuple | Color
+    edge_color : str or tuple or Color, optional
         The color of line marking the edge of the markers.
-    edge_width : float
+    edge_width : float, optional
         The width of the edge of the markers.
     mode : str, optional
         The color mode of the material. Options are 'auto' and 'vertex'.
     opacity : float, optional
         The opacity of the material, from 0 (transparent) to 1 (opaque).
         If RGBA is provided, the final alpha will be:
-        final_alpha = alpha_in_RGBA * opacity
+        final_alpha = alpha_in_RGBA * opacity.
     enable_picking : bool, optional
         Whether the material should be pickable in a scene.
 
@@ -141,6 +268,11 @@ def _create_points_material(
     -------
     PointsMaterial
         A point material object of the specified type with the given properties.
+
+    Raises
+    ------
+    ValueError
+        If an unsupported material type is specified.
     """
     opacity = validate_opacity(opacity)
     color = validate_color(color, opacity, mode)
@@ -186,19 +318,18 @@ def _create_text_material(
     weight_offset=1.0,
     aliasing=True,
 ):
-    """
-    Create a text material.
+    """Create a text material.
 
     Parameters
     ----------
     color : tuple, optional
-        The color of the text.
+        The color of the text as RGB or RGBA tuple.
     opacity : float, optional
         The opacity of the material, from 0 (transparent) to 1 (opaque).
         If RGBA is provided, the final alpha will be:
-        final_alpha = alpha_in_RGBA * opacity
+        final_alpha = alpha_in_RGBA * opacity.
     outline_color : tuple, optional
-        The color of the outline of the text.
+        The color of the outline of the text as RGB or RGBA tuple.
     outline_thickness : float, optional
         A value indicating the relative width of the outline. Valid values are
         between 0.0 and 0.5.
@@ -210,11 +341,10 @@ def _create_text_material(
         If True, use anti-aliasing while rendering glyphs. Aliasing gives
         prettier results, but may affect performance for very large texts.
 
-
     Returns
     -------
     TextMaterial
-        A text material object of the specified type with the given properties.
+        A text material object with the specified properties.
     """
     opacity = validate_opacity(opacity)
 

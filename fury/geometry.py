@@ -1,5 +1,10 @@
+"""Geometry utilities for FURY."""
+
+import numpy as np
+
 from fury.lib import (
     Geometry,
+    Line,
     Mesh,
     MeshBasicMaterial,
     MeshPhongMaterial,
@@ -13,22 +18,25 @@ from fury.lib import (
 
 
 def buffer_to_geometry(positions, **kwargs):
-    """
-    Convert a buffer to a geometry object.
+    """Convert a buffer to a geometry object.
 
     Parameters
     ----------
     positions : array_like
         The positions buffer.
-    kwargs : dict
+    **kwargs : dict
         A dict of attributes to define on the geometry object. Keys can be
-        "colors", "normals", "texcoords",
-        "indices", ...
+        "colors", "normals", "texcoords", "indices", etc.
 
     Returns
     -------
-    geo : Geometry
+    Geometry
         The geometry object.
+
+    Raises
+    ------
+    ValueError
+        If positions array is empty or None.
     """
     if positions is None or positions.size == 0:
         raise ValueError("positions array cannot be empty or None.")
@@ -38,20 +46,25 @@ def buffer_to_geometry(positions, **kwargs):
 
 
 def create_mesh(geometry, material):
-    """
-    Create a mesh object.
+    """Create a mesh object.
 
     Parameters
     ----------
     geometry : Geometry
         The geometry object.
     material : Material
-        The material object.
+        The material object. Must be either MeshPhongMaterial or MeshBasicMaterial.
 
     Returns
     -------
-    mesh : Mesh
+    Mesh
         The mesh object.
+
+    Raises
+    ------
+    TypeError
+        If geometry is not an instance of Geometry or material is not an
+        instance of MeshPhongMaterial or MeshBasicMaterial.
     """
     if not isinstance(geometry, Geometry):
         raise TypeError("geometry must be an instance of Geometry.")
@@ -65,9 +78,9 @@ def create_mesh(geometry, material):
     return mesh
 
 
-def create_point(geometry, material):
+def create_line(geometry, material):
     """
-    Create a point object.
+    Create a line object.
 
     Parameters
     ----------
@@ -78,8 +91,119 @@ def create_point(geometry, material):
 
     Returns
     -------
-    points : Points
+    Line
+        The line object.
+    """
+    line = Line(geometry=geometry, material=material)
+    return line
+
+
+def line_buffer_separator(line_vertices, color=None, color_mode="auto"):
+    """
+    Create a line buffer with separators between segments.
+
+    Parameters
+    ----------
+    line_vertices : list of array_like
+        The line vertices as a list of segments (each segment is an array of points).
+    color : array_like, optional
+        The color of the line segments.
+    color_mode : str, optional
+        The color mode, can be 'auto', 'vertex', or 'line'.
+        - 'auto': Automatically determine based on color array shape
+        - 'vertex': One color per vertex (must match total vertex count)
+        - 'line': One color per line segment
+
+    Returns
+    -------
+    positions : array_like
+        The positions buffer with NaN separators.
+    colors : array_like, optional
+        The colors buffer with NaN separators (if color is provided).
+    """
+    # Calculate total size including separators
+    total_vertices = sum(len(segment) for segment in line_vertices)
+    total_size = total_vertices + len(line_vertices) - 1
+
+    positions_result = np.empty((total_size, 3), dtype=np.float32)
+    colors_result = None
+
+    if color is not None:
+        colors_result = np.empty((total_size, 3), dtype=np.float32)
+        if color_mode == "auto":
+            if len(color) == len(line_vertices) and (
+                len(color[0]) == 3 or len(color[0]) == 4
+            ):
+                color_mode = "line"
+            elif len(color) == total_vertices:
+                color_mode = "vertex_flattened"
+            elif len(color) == len(line_vertices):
+                color_mode = "vertex"
+            elif len(color) == 3 or len(color) == 4:
+                color = None
+            else:
+                raise ValueError(
+                    "Color array size doesn't match "
+                    "either vertex count or segment count"
+                )
+
+    idx = 0
+    color_idx = 0
+
+    for i, segment in enumerate(line_vertices):
+        segment_length = len(segment)
+
+        positions_result[idx : idx + segment_length] = segment
+
+        if color is not None:
+            if color_mode == "vertex":
+                colors_result[idx : idx + segment_length] = color[i]
+                color_idx += segment_length
+
+            elif color_mode == "line":
+                colors_result[idx : idx + segment_length] = np.tile(
+                    color[i], (segment_length, 1)
+                )
+            elif color_mode == "vertex_flattened":
+                colors_result[idx : idx + segment_length] = color[
+                    color_idx : color_idx + segment_length
+                ]
+                color_idx += segment_length
+            else:
+                raise ValueError("Invalid color mode")
+
+        idx += segment_length
+
+        if i < len(line_vertices) - 1:
+            positions_result[idx] = np.nan
+            if color is not None:
+                colors_result[idx] = np.nan
+            idx += 1
+
+    return positions_result, colors_result if color is not None else None
+
+
+def create_point(geometry, material):
+    """Create a point object.
+
+    Parameters
+    ----------
+    geometry : Geometry
+        The geometry object.
+    material : Material
+        The material object. Must be either PointsMaterial, PointsGaussianBlobMaterial,
+        or PointsMarkerMaterial.
+
+    Returns
+    -------
+    Points
         The point object.
+
+    Raises
+    ------
+    TypeError
+        If geometry is not an instance of Geometry or material is not an
+        instance of PointsMaterial, PointsGaussianBlobMaterial, or PointsMarkerMaterial.
     """
     if not isinstance(geometry, Geometry):
         raise TypeError("geometry must be an instance of Geometry.")
@@ -97,22 +221,26 @@ def create_point(geometry, material):
 
 
 def create_text(text, material, **kwargs):
-    """
-    Create a text object.
+    """Create a text object.
 
     Parameters
     ----------
     text : str
         The text content.
-    material : Material
+    material : TextMaterial
         The material object.
-    kwargs : dict
+    **kwargs : dict
         Additional properties like font_size, anchor, etc.
 
     Returns
     -------
-    text : Text
+    Text
         The text object.
+
+    Raises
+    ------
+    TypeError
+        If text is not a string or material is not an instance of TextMaterial.
     """
     if not isinstance(text, str):
         raise TypeError("text must be a string.")

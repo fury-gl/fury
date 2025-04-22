@@ -1,13 +1,18 @@
+"""Actor creation functions for various geometric primitives."""
+
 import numpy as np
 
 from fury.geometry import (
     buffer_to_geometry,
+    create_line,
     create_mesh,
     create_point,
     create_text,
+    line_buffer_separator,
 )
 from fury.lib import Geometry, Group, Texture, Volume, VolumeSliceMaterial
 from fury.material import (
+    _create_line_material,
     _create_mesh_material,
     _create_points_material,
     _create_text_material,
@@ -29,6 +34,7 @@ def actor_from_primitive(
     material="phong",
     smooth=False,
     enable_picking=True,
+    repeat_primitive=True,
 ):
     """Build an actor from a primitive.
 
@@ -39,41 +45,50 @@ def actor_from_primitive(
     faces : ndarray
         Faces of the primitive.
     centers : ndarray, shape (N, 3)
-        Box positions.
+        Primitive positions.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
-    scales : int or ndarray (N,3) or tuple (3,)
-        The size of the box in each dimension.  If a single value is provided,
-        the same size will be used for all boxes.
-    directions : ndarray, shape (N, 3), optional
-        The orientation vector of the box.
+    scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
+        The size of the primitive in each dimension. If a single value is provided,
+        the same size will be used for all primitives.
+    directions : ndarray, shape (N, 3) or tuple (3,), optional
+        The orientation vector of the primitive.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
-        final_alpha = alpha_in_RGBA * opacity
+        final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
-        The material type for the boxes. Options are 'phong' and 'basic'.
+        The material type for the primitive. Options are 'phong' and 'basic'.
     smooth : bool, optional
-        Whether to create a smooth sphere or a faceted sphere.
+        Whether to create a smooth primitive or a faceted primitive.
     enable_picking : bool, optional
-        Whether the boxes should be pickable in a 3D scene.
+        Whether the primitive should be pickable in a 3D scene.
+    repeat_primitive : bool, optional
+        Whether to repeat the primitive for each center. If False,
+        only one instance of the primitive is created at the first center.
 
     Returns
     -------
-    mesh_actor : Actor
-        A mesh actor containing the generated boxes, with the specified
-        material and properties
-
+    Actor
+        A mesh actor containing the generated primitive, with the specified
+        material and properties.
     """
-    res = fp.repeat_primitive(
-        vertices,
-        faces,
-        directions=directions,
-        centers=centers,
-        colors=colors,
-        scales=scales,
-    )
-    big_vertices, big_faces, big_colors, _ = res
+
+    if repeat_primitive:
+        res = fp.repeat_primitive(
+            vertices,
+            faces,
+            centers,
+            directions=directions,
+            colors=colors,
+            scales=scales,
+        )
+        big_vertices, big_faces, big_colors, _ = res
+
+    else:
+        big_vertices = vertices
+        big_faces = faces
+        big_colors = colors
 
     prim_count = len(centers)
 
@@ -101,6 +116,85 @@ def actor_from_primitive(
     return obj
 
 
+def line(
+    lines,
+    *,
+    colors=(1, 0, 0),
+    opacity=None,
+    material="basic",
+    enable_picking=True,
+):
+    """
+    Visualize one or many lines with different colors.
+
+    Parameters
+    ----------
+    lines : list of ndarray of shape (P, 3) or ndarray of shape (N, P, 3)
+        Lines points.
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
+    material : str, optional
+        The material type for the lines. Options are 'basic', 'segment', 'arrow',
+        'thin', and 'thin_segment'.
+    enable_picking : bool, optional
+        Whether the lines should be pickable in a 3D scene.
+
+    Returns
+    -------
+    Actor
+        A mesh actor containing the generated lines, with the specified
+        material and properties.
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> import numpy as np
+    >>> scene = window.Scene()
+    >>> lines = [np.random.rand(10, 3) for _ in range(5)]
+    >>> colors = np.random.rand(5, 3)
+    >>> line_actor = actor.line(lines=lines, colors=colors)
+    >>> scene.add(line_actor)
+    >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
+    >>> show_manager.start()
+    """
+
+    lines_positions, lines_colors = line_buffer_separator(
+        lines, color=colors, color_mode="auto"
+    )
+
+    geo = buffer_to_geometry(
+        positions=lines_positions.astype("float32"),
+        colors=lines_colors.astype("float32")
+        if lines_colors is not None
+        else np.empty_like(lines_positions),
+    )
+
+    if lines_colors is None:
+        material_mode = "auto"
+        material_colors = None
+    else:
+        material_mode = "vertex"
+        material_colors = lines_colors
+
+    mat = _create_line_material(
+        material=material,
+        enable_picking=enable_picking,
+        mode=material_mode,
+        opacity=opacity,
+        color=material_colors,
+    )
+
+    obj = create_line(geometry=geo, material=mat)
+
+    obj.local.position = lines_positions[0]
+
+    obj.prim_count = len(lines)
+
+    return obj
+
+
 def sphere(
     centers,
     *,
@@ -113,8 +207,7 @@ def sphere(
     enable_picking=True,
     smooth=True,
 ):
-    """
-    Visualize one or many spheres with different colors and radii.
+    """Create one or many spheres with different colors and radii.
 
     Parameters
     ----------
@@ -132,7 +225,7 @@ def sphere(
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
-        final_alpha = alpha_in_RGBA * opacity
+        final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
         The material type for the spheres. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
@@ -142,7 +235,7 @@ def sphere(
 
     Returns
     -------
-    mesh_actor : Actor
+    Actor
         A mesh actor containing the generated spheres, with the specified
         material and properties.
 
@@ -178,6 +271,138 @@ def sphere(
     )
 
 
+def ellipsoid(
+    centers,
+    *,
+    orientation_matrices=None,
+    lengths=(4, 2, 2),
+    colors=(1, 0, 0),
+    opacity=None,
+    phi=16,
+    theta=16,
+    material="phong",
+    enable_picking=True,
+    smooth=True,
+):
+    """
+    Create ellipsoid actor(s) with specified orientation and scaling.
+
+    Parameters
+    ----------
+    centers : ndarray (N, 3)
+        Centers of the ellipsoids.
+    orientation_matrices : ndarray, shape (N, 3, 3) or (3, 3), optional
+        Orthonormal rotation matrices defining the orientation of each ellipsoid.
+        Each 3×3 matrix represents a local coordinate frame, with columns
+        corresponding to the ellipsoid’s x-, y-, and z-axes in world coordinates.
+        Must be right-handed and orthonormal. If a single (3, 3) matrix is
+        provided, it is broadcast to all ellipsoids.
+    lengths : ndarray (N, 3) or (3,) or tuple (3,), optional
+        Scaling factors along each axis.
+    colors : array-like or tuple, optional
+        RGB/RGBA colors for each ellipsoid.
+    opacity : float, optional
+        Opacity of the ellipsoids. Takes values from 0 (fully transparent) to
+        1 (opaque). If both `opacity` and RGBA are provided, the final alpha
+        will be: final_alpha = alpha_in_RGBA * opacity.
+    phi : int, optional
+        The number of segments in the longitude direction.
+    theta : int, optional
+        The number of segments in the latitude direction.
+    material : str, optional
+        The material type for the ellipsoids. Options are 'phong' and 'basic'.
+    enable_picking : bool, optional
+        Allow picking of the ellipsoids in a 3D scene.
+    smooth : bool, optional
+        Whether to create a smooth ellipsoid or a faceted ellipsoid.
+
+    Returns
+    -------
+    Actor
+        A mesh actor containing the generated ellipsoids.
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> import numpy as np
+    >>> from fury import actor, window
+    >>> centers = np.array([[0, 0, 0]])
+    >>> lengths = np.array([[2, 1, 1]])
+    >>> colors = np.array([[1, 0, 0]])
+    >>> ellipsoid = actor.ellipsoid(centers=centers, lengths=lengths, colors=colors)
+    >>> window.show([ellipsoid])
+    """
+
+    centers = np.asarray(centers)
+
+    if orientation_matrices is None:
+        orientation_matrices = np.tile(np.eye(3), (centers.shape[0], 1, 1))
+
+    orientation_matrices = np.asarray(orientation_matrices)
+    lengths = np.asarray(lengths)
+    colors = np.asarray(colors)
+
+    if centers.ndim == 1:
+        centers = centers.reshape(1, 3)
+    if centers.ndim != 2 or centers.shape[1] != 3:
+        raise ValueError("Centers must be (N, 3) array")
+    if orientation_matrices.ndim == 2:
+        orientation_matrices = np.tile(orientation_matrices, (centers.shape[0], 1, 1))
+    if orientation_matrices.ndim != 3 or orientation_matrices.shape[1:] != (3, 3):
+        raise ValueError("Axes must be (N, 3, 3) array")
+    if lengths.ndim == 1:
+        lengths = lengths.reshape(1, 3)
+    if lengths.ndim != 2 or lengths.shape[1] != 3:
+        raise ValueError("Lengths must be (N, 3) array")
+    if lengths.size == 3:
+        lengths = np.tile(lengths.reshape(1, -1), (centers.shape[0], 1))
+    if lengths.shape != centers.shape:
+        raise ValueError("Lengths must match centers shape")
+    if colors.size == 3 or colors.size == 4:
+        colors = np.tile(colors.reshape(1, -1), (centers.shape[0], 1))
+
+    base_verts, base_faces = fp.prim_sphere(phi=phi, theta=theta)
+
+    base_verts = np.asarray(base_verts)
+    base_faces = np.asarray(base_faces)
+
+    if base_verts.ndim != 2 or base_verts.shape[1] != 3:
+        raise ValueError(f"base_verts has unexpected shape {base_verts.shape}")
+
+    if isinstance(colors, (list, tuple)):
+        colors = np.asarray(colors)
+        if colors.ndim == 1:
+            colors = np.tile(colors, (centers.shape[0], 1))
+
+    n_ellipsoids = centers.shape[0]
+    n_verts = base_verts.shape[0]
+
+    scaled_transforms = orientation_matrices * lengths[:, np.newaxis, :]
+
+    transformed = (
+        np.einsum("nij,mj->nmi", scaled_transforms, base_verts)
+        + centers[:, np.newaxis, :]
+    )
+    all_vertices = transformed.reshape(-1, 3)
+    all_faces = np.tile(base_faces, (n_ellipsoids, 1)) + (
+        np.arange(n_ellipsoids)[:, None, None] * n_verts
+    )
+    all_faces = all_faces.reshape(-1, 3)
+    all_colors = np.repeat(colors, n_verts, axis=0)
+
+    return actor_from_primitive(
+        centers=centers,
+        vertices=all_vertices,
+        faces=all_faces,
+        colors=all_colors,
+        opacity=opacity,
+        material=material,
+        smooth=smooth,
+        enable_picking=enable_picking,
+        repeat_primitive=False,
+    )
+
+
 def box(
     centers,
     *,
@@ -189,23 +414,23 @@ def box(
     enable_picking=True,
     detailed=True,
 ):
-    """Visualize one or many boxes with different features.
+    """Create one or many boxes with different features.
 
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
         Box positions.
-    directions : ndarray, shape (N, 3), optional
+    directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the box.
-    colors : ndarray, shape (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
-    scales : int or ndarray (N,3) or tuple (3,), optional
-        The size of the box in each dimension.  If a single value is provided,
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+    scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
+        The size of the box in each dimension. If a single value is provided,
         the same size will be used for all boxes.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
-        final_alpha = alpha_in_RGBA * opacity
+        final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
         The material type for the boxes. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
@@ -216,7 +441,7 @@ def box(
 
     Returns
     -------
-    mesh_actor : Actor
+    Actor
         A mesh actor containing the generated boxes, with the specified
         material and properties.
 
@@ -260,33 +485,34 @@ def cylinder(
     material="phong",
     enable_picking=True,
 ):
-    """Visualize one or many cylinders with different features.
+    """Create one or many cylinders with different features.
 
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        cylinder positions.
-    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
-    height: float, optional
+        Cylinder positions.
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+    height : float, optional
         The height of the cylinder.
-    sectors: int, optional
-        The number of divisions around the cylinder's circumference .
+    sectors : int, optional
+        The number of divisions around the cylinder's circumference.
         Higher values produce smoother cylinders.
-    radii : float or ndarray (N,) or tuple, optional
-        The radius of the base of the cylinders, single value applies to all cylinders,
+    radii : float or ndarray, shape (N,) or tuple, optional
+        The radius of the base of the cylinders. A single value applies to all
+        cylinders,
         while an array specifies a radius for each cylinder individually.
-    scales : int or ndarray (N,3) or tuple (3,), optional
-        The size of the square in each dimension.  If a single value is provided,
+    scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
+        The size of the cylinder in each dimension. If a single value is provided,
         the same size will be used for all cylinders.
-    directions : ndarray, shape (N, 3), optional
+    directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the cylinder.
     capped : bool, optional
         Whether to add caps (circular ends) to the cylinders.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
-        final_alpha = alpha_in_RGBA * opacity
+        final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
         The material type for the cylinders. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
@@ -294,7 +520,7 @@ def cylinder(
 
     Returns
     -------
-    mesh_actor : Actor
+    Actor
         A mesh actor containing the generated cylinders, with the specified
         material and properties.
 
@@ -337,23 +563,23 @@ def square(
     material="phong",
     enable_picking=True,
 ):
-    """Visualize one or many squares with different features.
+    """Create one or many squares with different features.
 
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        square positions.
-    directions : ndarray, shape (N, 3), optional
+        Square positions.
+    directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the square.
-    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
-    scales : int or ndarray (N,3) or tuple (3,), optional
-        The size of the square in each dimension.  If a single value is provided,
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+    scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
+        The size of the square in each dimension. If a single value is provided,
         the same size will be used for all squares.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
-        final_alpha = alpha_in_RGBA * opacity
+        final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
         The material type for the squares. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
@@ -361,7 +587,7 @@ def square(
 
     Returns
     -------
-    mesh_actor : Actor
+    Actor
         A mesh actor containing the generated squares, with the specified
         material and properties.
 
@@ -401,23 +627,23 @@ def frustum(
     material="phong",
     enable_picking=True,
 ):
-    """Visualize one or many frustums with different features.
+    """Create one or many frustums with different features.
 
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        frustum positions.
-    directions : ndarray, shape (N, 3), optional
+        Frustum positions.
+    directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the frustum.
-    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
-    scales : int or ndarray (N,3) or tuple (3,), optional
-        The size of the frustum in each dimension.  If a single value is provided,
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+    scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
+        The size of the frustum in each dimension. If a single value is provided,
         the same size will be used for all frustums.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
-        final_alpha = alpha_in_RGBA * opacity
+        final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
         The material type for the frustums. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
@@ -425,7 +651,7 @@ def frustum(
 
     Returns
     -------
-    mesh_actor : Actor
+    Actor
         A mesh actor containing the generated frustums, with the specified
         material and properties.
 
@@ -465,23 +691,23 @@ def tetrahedron(
     material="phong",
     enable_picking=True,
 ):
-    """Visualize one or many tetrahedrons with different features.
+    """Create one or many tetrahedrons with different features.
 
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        tetrahedron positions.
-    directions : ndarray, shape (N, 3), optional
+        Tetrahedron positions.
+    directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the tetrahedron.
-    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
-    scales : int or ndarray (N,3) or tuple (3,), optional
-        The size of the tetrahedron in each dimension.  If a single value is provided,
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+    scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
+        The size of the tetrahedron in each dimension. If a single value is provided,
         the same size will be used for all tetrahedrons.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
-        final_alpha = alpha_in_RGBA * opacity
+        final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
         The material type for the tetrahedrons. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
@@ -489,7 +715,7 @@ def tetrahedron(
 
     Returns
     -------
-    mesh_actor : Actor
+    Actor
         A mesh actor containing the generated tetrahedrons, with the specified
         material and properties.
 
@@ -529,23 +755,23 @@ def icosahedron(
     material="phong",
     enable_picking=True,
 ):
-    """Visualize one or many icosahedrons with different features.
+    """Create one or many icosahedrons with different features.
 
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        icosahedron positions.
-    directions : ndarray, shape (N, 3), optional
+        Icosahedron positions.
+    directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the icosahedron.
-    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
-    scales : int or ndarray (N,3) or tuple (3,), optional
-        The size of the icosahedron in each dimension.  If a single value is provided,
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+    scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
+        The size of the icosahedron in each dimension. If a single value is provided,
         the same size will be used for all icosahedrons.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
-        final_alpha = alpha_in_RGBA * opacity
+        final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
         The material type for the icosahedrons. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
@@ -553,7 +779,7 @@ def icosahedron(
 
     Returns
     -------
-    mesh_actor : Actor
+    Actor
         A mesh actor containing the generated icosahedrons, with the specified
         material and properties.
 
@@ -593,23 +819,23 @@ def rhombicuboctahedron(
     material="phong",
     enable_picking=True,
 ):
-    """Visualize one or many rhombicuboctahedrons with different features.
+    """Create one or many rhombicuboctahedrons with different features.
 
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        rhombicuboctahedron positions.
-    directions : ndarray, shape (N, 3), optional
+        Rhombicuboctahedron positions.
+    directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the rhombicuboctahedron.
-    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
-    scales : int or ndarray (N,3) or tuple (3,), optional
-        The size of the rhombicuboctahedro in each dimension. If a single value is
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+    scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
+        The size of the rhombicuboctahedron in each dimension. If a single value is
         provided, the same size will be used for all rhombicuboctahedrons.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
-        final_alpha = alpha_in_RGBA * opacity
+        final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
         The material type for the rhombicuboctahedrons. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
@@ -617,7 +843,7 @@ def rhombicuboctahedron(
 
     Returns
     -------
-    mesh_actor : Actor
+    Actor
         A mesh actor containing the generated rhombicuboctahedrons, with the specified
         material and properties.
 
@@ -659,23 +885,23 @@ def triangularprism(
     material="phong",
     enable_picking=True,
 ):
-    """Visualize one or many triangular prism with different features.
+    """Create one or many triangular prisms with different features.
 
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        triangular prism positions.
-    directions : ndarray, shape (N, 3), optional
+        Triangular prism positions.
+    directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the triangular prism.
-    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
-    scales : int or ndarray (N,3) or tuple (3,), optional
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+    scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
         The size of the triangular prism in each dimension. If a single value is
         provided, the same size will be used for all triangular prisms.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
-        final_alpha = alpha_in_RGBA * opacity
+        final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
         The material type for the triangular prisms. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
@@ -683,7 +909,7 @@ def triangularprism(
 
     Returns
     -------
-    mesh_actor : Actor
+    Actor
         A mesh actor containing the generated triangular prisms, with the specified
         material and properties.
 
@@ -724,23 +950,23 @@ def pentagonalprism(
     material="phong",
     enable_picking=True,
 ):
-    """Visualize one or many pentagonal prism with different features.
+    """Create one or many pentagonal prisms with different features.
 
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        pentagonal prism positions.
-    directions : ndarray, shape (N, 3), optional
+        Pentagonal prism positions.
+    directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the pentagonal prism.
-    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
-    scales : int or ndarray (N,3) or tuple (3,), optional
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+    scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
         The size of the pentagonal prism in each dimension. If a single value is
         provided, the same size will be used for all pentagonal prisms.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
-        final_alpha = alpha_in_RGBA * opacity
+        final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
         The material type for the pentagonal prisms. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
@@ -748,8 +974,8 @@ def pentagonalprism(
 
     Returns
     -------
-    mesh_actor : Actor
-        A mesh actor containing the generated pentagonal prism, with the specified
+    Actor
+        A mesh actor containing the generated pentagonal prisms, with the specified
         material and properties.
 
     Examples
@@ -789,23 +1015,23 @@ def octagonalprism(
     material="phong",
     enable_picking=True,
 ):
-    """Visualize one or many octagonal prism with different features.
+    """Create one or many octagonal prisms with different features.
 
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        octagonal prism positions.
-    directions : ndarray, shape (N, 3), optional
+        Octagonal prism positions.
+    directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the octagonal prism.
-    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
-    scales : int or ndarray (N,3) or tuple (3,), optional
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+    scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
         The size of the octagonal prism in each dimension. If a single value is
         provided, the same size will be used for all octagonal prisms.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
-        final_alpha = alpha_in_RGBA * opacity
+        final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
         The material type for the octagonal prisms. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
@@ -813,7 +1039,7 @@ def octagonalprism(
 
     Returns
     -------
-    mesh_actor : Actor
+    Actor
         A mesh actor containing the generated octagonal prisms, with the specified
         material and properties.
 
@@ -859,16 +1085,16 @@ def arrow(
     material="phong",
     enable_picking=True,
 ):
-    """Visualize one or many arrows with different features.
+    """Create one or many arrows with different features.
 
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        arrow positions.
-    directions : ndarray, shape (N, 3), optional
+        Arrow positions.
+    directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the arrow.
-    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
     height : float, optional
         The total height of the arrow, including the shaft and tip.
     resolution : int, optional
@@ -880,13 +1106,13 @@ def arrow(
         The radius of the arrowhead tip.
     shaft_radius : float, optional
         The radius of the arrow shaft.
-    scales : int or ndarray (N,3) or tuple (3,), optional
+    scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
         The size of the arrow in each dimension. If a single value is
         provided, the same size will be used for all arrows.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
-        final_alpha = alpha_in_RGBA * opacity
+        final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
         The material type for the arrows. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
@@ -894,7 +1120,7 @@ def arrow(
 
     Returns
     -------
-    mesh_actor : Actor
+    Actor
         A mesh actor containing the generated arrows, with the specified
         material and properties.
 
@@ -942,25 +1168,25 @@ def superquadric(
     material="phong",
     enable_picking=True,
 ):
-    """Visualize one or many superquadric with different features.
+    """Create one or many superquadrics with different features.
 
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        superquadric positions.
-    directions : ndarray, shape (N, 3), optional
+        Superquadric positions.
+    directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the superquadric.
     roundness : tuple, optional
-        parameters (Phi and Theta) that control the shape of the superquadric.
-    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
-    scales : int or ndarray (N,3) or tuple (3,), optional
+        Parameters (Phi and Theta) that control the shape of the superquadric.
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+    scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
         The size of the superquadric in each dimension. If a single value is
         provided, the same size will be used for all superquadrics.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
-        final_alpha = alpha_in_RGBA * opacity
+        final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
         The material type for the superquadrics. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
@@ -968,7 +1194,7 @@ def superquadric(
 
     Returns
     -------
-    mesh_actor : Actor
+    Actor
         A mesh actor containing the generated superquadrics, with the specified
         material and properties.
 
@@ -1011,31 +1237,31 @@ def cone(
     material="phong",
     enable_picking=True,
 ):
-    """Visualize one or many cones with different features.
+    """Create one or many cones with different features.
 
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        cone positions.
-    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
-    height: float, optional
+        Cone positions.
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+    height : float, optional
         The height of the cone.
-    sectors: int, optional
-        The number of divisions around the cones's circumference .
+    sectors : int, optional
+        The number of divisions around the cone's circumference.
         Higher values produce smoother cones.
-    radii : float or ndarray (N,) or tuple, optional
-        The radius of the base of the cones, single value applies to all cones,
+    radii : float or ndarray, shape (N,) or tuple, optional
+        The radius of the base of the cones. A single value applies to all cones,
         while an array specifies a radius for each cone individually.
-    scales : int or ndarray (N,3) or tuple (3,), optional
-        The size of the square in each dimension.  If a single value is provided,
+    scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
+        The size of the cone in each dimension. If a single value is provided,
         the same size will be used for all cones.
-    directions : ndarray, shape (N, 3), optional
+    directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the cone.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
-        final_alpha = alpha_in_RGBA * opacity
+        final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
         The material type for the cones. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
@@ -1043,7 +1269,7 @@ def cone(
 
     Returns
     -------
-    mesh_actor : Actor
+    Actor
         A mesh actor containing the generated cones, with the specified
         material and properties.
 
@@ -1085,25 +1311,25 @@ def star(
     material="phong",
     enable_picking=True,
 ):
-    """Visualize one or many star with different features.
+    """Create one or many stars with different features.
 
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        star positions.
-    dim : int, optional.
+        Star positions.
+    dim : int, optional
         The dimensionality of the star (2D or 3D).
-    directions : ndarray, shape (N, 3), optional
+    directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the star.
-    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
-    scales : int or ndarray (N,3) or tuple (3,), optional
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+    scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
         The size of the star in each dimension. If a single value is
         provided, the same size will be used for all stars.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
-        final_alpha = alpha_in_RGBA * opacity
+        final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
         The material type for the stars. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
@@ -1111,7 +1337,7 @@ def star(
 
     Returns
     -------
-    mesh_actor : Actor
+    Actor
         A mesh actor containing the generated stars, with the specified
         material and properties.
 
@@ -1152,20 +1378,20 @@ def point(
     opacity=1.0,
     enable_picking=True,
 ):
-    """Visualize one or many points with different features.
+    """Create one or many points with different features.
 
     Parameters
     ----------
-    centers : ndarray, shape (N, 3).
+    centers : ndarray, shape (N, 3)
         The positions of the points.
-    size : float
+    size : float, optional
         The size (diameter) of the points in logical pixels.
-    colors : ndarray (N,3) or (N,4) or tuple (3,) or tuple (4,), optional
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA values in the range [0, 1].
     material : str, optional
         The material type for the points.
         Options are 'basic', 'gaussian'.
-    map : TextureMap | Texture
+    map : TextureMap or Texture, optional
         The texture map specifying the color for each texture coordinate.
     aa : bool, optional
         Whether or not the points are anti-aliased in the shader.
@@ -1176,8 +1402,8 @@ def point(
 
     Returns
     -------
-    point_actor : Actor
-        An point actor containing the generated points with the specified material
+    Actor
+        A point actor containing the generated points with the specified material
         and properties.
 
     Examples
@@ -1221,21 +1447,21 @@ def marker(
     opacity=1.0,
     enable_picking=True,
 ):
-    """Visualize one or many marker with different features.
+    """Create one or many markers with different features.
 
     Parameters
     ----------
-    centers : ndarray, shape (N, 3).
+    centers : ndarray, shape (N, 3)
         The positions of the markers.
-    size : float
+    size : float, optional
         The size (diameter) of the points in logical pixels.
-    colors : ndarray (N,3) or (N,4) or tuple (3,) or tuple (4,), optional
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA values in the range [0, 1].
-    marker : str | MarkerShape
+    marker : str or MarkerShape, optional
         The shape of the marker.
         Options are "●": "circle", "+": "plus", "x": "cross", "♥": "heart",
         "✳": "asterix".
-    edge_color : str | tuple | Color
+    edge_color : str or tuple or Color, optional
         The color of line marking the edge of the markers.
     edge_width : float, optional
         The width of the edge of the markers.
@@ -1246,8 +1472,8 @@ def marker(
 
     Returns
     -------
-    marker_actor : Actor
-        An marker actor containing the generated points with the specified material
+    Actor
+        A marker actor containing the generated markers with the specified material
         and properties.
 
     Examples
@@ -1295,15 +1521,15 @@ def text(
     outline_thickness=0.0,
     opacity=1.0,
 ):
-    """Visualize text with different features.
+    """Create text with different features.
 
     Parameters
     ----------
-    text : str | list[str]
-        The plain text to render (optional).
+    text : str or list[str]
+        The plain text to render.
         The text is split in one TextBlock per line,
-        unless a list is given, in which case each (str) item become a TextBlock.
-    colors : ndarray (N,3) or (N,4) or tuple (3,) or tuple (4,), optional
+        unless a list is given, in which case each (str) item becomes a TextBlock.
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA values in the range [0, 1].
     font_size : float, optional
         The size of the font, in object coordinates or pixel screen coordinates.
@@ -1332,8 +1558,8 @@ def text(
 
     Returns
     -------
-    text_actor : Actor
-        An text actor containing the generated text with the specified material
+    Actor
+        A text actor containing the generated text with the specified material
         and properties.
 
     Examples
@@ -1373,7 +1599,7 @@ def axes(
     color_z=(0.0, 0.0, 1.0),
     opacity=1.0,
 ):
-    """Visualize coordinate system axes using colored arrow.
+    """Create coordinate system axes using colored arrows.
 
     The axes are represented as arrows with different colors:
     red = X-axis, green = Y-axis, blue = Z-axis.
@@ -1381,7 +1607,7 @@ def axes(
     Parameters
     ----------
     scale : tuple (3,), optional
-         The size (length) of each axis in the x, y, and z directions.
+        The size (length) of each axis in the x, y, and z directions.
     color_x : tuple (3,), optional
         Color for the X-axis.
     color_y : tuple (3,), optional
@@ -1393,7 +1619,7 @@ def axes(
 
     Returns
     -------
-    axes_actor: Actor
+    Actor
         An axes actor representing the coordinate axes with the specified
         material and properties.
 
@@ -1405,7 +1631,6 @@ def axes(
     >>> scene.add(axes_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
-
     """
     centers = np.zeros((3, 3))
     directions = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
@@ -1449,7 +1674,7 @@ def slicer(
 
     Returns
     -------
-    slicer_actor : Group
+    Group
         An actor containing the generated slice with the specified properties.
     """
 

@@ -3,6 +3,11 @@ import numpy as np
 from fury import material, window
 from fury.geometry import buffer_to_geometry, create_mesh
 from fury.lib import (
+    LineArrowMaterial,
+    LineMaterial,
+    LineSegmentMaterial,
+    LineThinMaterial,
+    LineThinSegmentMaterial,
     PointsGaussianBlobMaterial,
     PointsMarkerMaterial,
     PointsMaterial,
@@ -144,3 +149,45 @@ def test_create_text_material():
     assert mat.outline_thickness == 0.0
     assert mat.weight_offset == 1.0
     assert mat.aa is True
+
+
+def test_create_line_material():
+    color = (1, 0, 0)
+    mat = material._create_line_material(
+        material="basic", color=color, opacity=0.5, mode="auto"
+    )
+    assert isinstance(mat, LineMaterial)
+    assert mat.color == color + (0.5,)
+    assert mat.color_mode == "auto"
+
+    color = (1, 0, 0)
+    mat = material._create_line_material(
+        material="arrow", color=color, opacity=0.5, mode="auto"
+    )
+    assert isinstance(mat, LineArrowMaterial)
+    assert mat.color == color + (0.5,)
+    assert mat.color_mode == "auto"
+
+    color = (1, 0, 0)
+    mat = material._create_line_material(
+        material="thin", color=color, opacity=0.5, mode="auto"
+    )
+    assert isinstance(mat, LineThinMaterial)
+    assert mat.color == color + (0.5,)
+    assert mat.color_mode == "auto"
+
+    color = (1, 0, 0)
+    mat = material._create_line_material(
+        material="thin_segment", color=color, opacity=0.5, mode="auto"
+    )
+    assert isinstance(mat, LineThinSegmentMaterial)
+    assert mat.color == color + (0.5,)
+    assert mat.color_mode == "auto"
+
+    color = (1, 0, 0)
+    mat = material._create_line_material(
+        material="segment", color=color, opacity=0.5, mode="auto"
+    )
+    assert isinstance(mat, LineSegmentMaterial)
+    assert mat.color == color + (0.5,)
+    assert mat.color_mode == "auto"
