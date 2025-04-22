@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 
 from fury.geometry import (
@@ -1506,7 +1508,6 @@ def peaks(
     mask=None,
     affine=None,
     colors=None,
-    line_width=1.0,
     symmetric=True,
 ):
     """Visualize peak directions as given from ``peaks_from_model`` function.
@@ -1524,9 +1525,6 @@ def peaks(
     colors : tuple or None, optional
         Default None. If None then every peak gets an orientation color
         in similarity to a DEC map.
-    lookup_colormap : vtkLookupTable, optional
-        Add a default lookup table to the colormap. Look at
-        :func:`fury.actor.colormap_lookup_table` for more information.
     line_width : float, optional
         Line thickness. Default is 1.
     symmetric : bool, optional
@@ -1568,34 +1566,33 @@ def peaks(
                 "Invalid peak values. The shape of the values "
                 "must coincide with the shape of the directions."
             )
+    else:
+        peaks_values = np.ones(dirs_shape[:4], dtype=peaks_dirs.dtype)
 
     valid_mask = np.abs(peaks_dirs).max(axis=(-2, -1)) > 0
-    # if mask is not None:
-    #     if mask.ndim != 3:
-    #         warnings.warn(
-    #             "Invalid mask. The mask must be a 3D array. The "
-    #             f"passed mask has {mask.ndim} dimensions. Ignoring passed "
-    #             "mask.",
-    #             UserWarning,
-    #             stacklevel=2,
-    #         )
-    #     elif mask.shape != dirs_shape[:3]:
-    #         warnings.warn(
-    #             "Invalid mask. The shape of the mask must coincide "
-    #             "with the shape of the directions. Ignoring passed "
-    #             "mask.",
-    #             UserWarning,
-    #             stacklevel=2,
-    #         )
-    #     else:
-    #         valid_mask = np.logical_and(valid_mask, mask)
+    if mask is not None:
+        if mask.ndim != 3:
+            logging.warning(
+                "Invalid mask. The mask must be a 3D array. The "
+                f"passed mask has {mask.ndim} dimensions. Ignoring passed "
+                "mask.",
+                stacklevel=2,
+            )
+        elif mask.shape != dirs_shape[:3]:
+            logging.warning(
+                "Invalid mask. The shape of the mask must coincide "
+                "with the shape of the directions. Ignoring passed "
+                "mask.",
+                stacklevel=2,
+            )
+        else:
+            valid_mask = np.logical_and(valid_mask, mask)
     indices = np.where(valid_mask)
 
     return PeaksActor(
         peaks_dirs,
         indices,
-        values=peaks_values,
+        peaks_values,
         colors=colors,
-        line_width=line_width,
         symmetric=symmetric,
     )
