@@ -328,3 +328,37 @@ def test_axes():
     assert 0 < mean_b < 255
 
     scene.remove(axes_actor)
+
+
+def test_ellipsoid():
+    centers = np.array([[0, 0, 0]])
+    lengths = np.array([[2, 1, 1]])
+    axes = np.array([np.eye(3)])
+    colors = np.array([1, 0, 0])
+
+    validate_actors(
+        centers=centers,
+        lengths=lengths,
+        orientation_matrices=axes,
+        colors=colors,
+        actor_type="ellipsoid",
+    )
+
+    _ = actor.ellipsoid(
+        centers=centers,
+        lengths=lengths,
+        orientation_matrices=axes,
+        colors=colors,
+    )
+
+    _ = actor.ellipsoid(
+        np.array([[0, 0, 0], [1, 1, 1]]),
+        lengths=np.array([[2, 1, 1]]),
+        colors=np.array([[1, 0, 0]]),
+    )
+
+    _ = actor.ellipsoid(
+        np.array([[0, 0, 0], [1, 1, 1]]), lengths=(2, 1, 1), colors=(1, 0, 0)
+    )
+
+    _ = actor.ellipsoid(centers)

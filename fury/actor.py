@@ -31,6 +31,7 @@ def actor_from_primitive(
     material="phong",
     smooth=False,
     enable_picking=True,
+    repeat_primitive=True,
 ):
     """Build an actor from a primitive.
 
@@ -59,6 +60,9 @@ def actor_from_primitive(
         Whether to create a smooth primitive or a faceted primitive.
     enable_picking : bool, optional
         Whether the primitive should be pickable in a 3D scene.
+    repeat_primitive : bool, optional
+        Whether to repeat the primitive for each center. If False,
+        only one instance of the primitive is created at the first center.
 
     Returns
     -------
@@ -66,15 +70,22 @@ def actor_from_primitive(
         A mesh actor containing the generated primitive, with the specified
         material and properties.
     """
-    res = fp.repeat_primitive(
-        vertices,
-        faces,
-        directions=directions,
-        centers=centers,
-        colors=colors,
-        scales=scales,
-    )
-    big_vertices, big_faces, big_colors, _ = res
+
+    if repeat_primitive:
+        res = fp.repeat_primitive(
+            vertices,
+            faces,
+            centers,
+            directions=directions,
+            colors=colors,
+            scales=scales,
+        )
+        big_vertices, big_faces, big_colors, _ = res
+
+    else:
+        big_vertices = vertices
+        big_faces = faces
+        big_colors = colors
 
     prim_count = len(centers)
 
@@ -254,6 +265,138 @@ def sphere(
         material=material,
         smooth=smooth,
         enable_picking=enable_picking,
+    )
+
+
+def ellipsoid(
+    centers,
+    *,
+    orientation_matrices=None,
+    lengths=(4, 2, 2),
+    colors=(1, 0, 0),
+    opacity=None,
+    phi=16,
+    theta=16,
+    material="phong",
+    enable_picking=True,
+    smooth=True,
+):
+    """
+    Create ellipsoid actor(s) with specified orientation and scaling.
+
+    Parameters
+    ----------
+    centers : ndarray (N, 3)
+        Centers of the ellipsoids.
+    orientation_matrices : ndarray, shape (N, 3, 3) or (3, 3), optional
+        Orthonormal rotation matrices defining the orientation of each ellipsoid.
+        Each 3×3 matrix represents a local coordinate frame, with columns
+        corresponding to the ellipsoid’s x-, y-, and z-axes in world coordinates.
+        Must be right-handed and orthonormal. If a single (3, 3) matrix is
+        provided, it is broadcast to all ellipsoids.
+    lengths : ndarray (N, 3) or (3,) or tuple (3,), optional
+        Scaling factors along each axis.
+    colors : array-like or tuple, optional
+        RGB/RGBA colors for each ellipsoid.
+    opacity : float, optional
+        Opacity of the ellipsoids. Takes values from 0 (fully transparent) to
+        1 (opaque). If both `opacity` and RGBA are provided, the final alpha
+        will be: final_alpha = alpha_in_RGBA * opacity.
+    phi : int, optional
+        The number of segments in the longitude direction.
+    theta : int, optional
+        The number of segments in the latitude direction.
+    material : str, optional
+        The material type for the ellipsoids. Options are 'phong' and 'basic'.
+    enable_picking : bool, optional
+        Allow picking of the ellipsoids in a 3D scene.
+    smooth : bool, optional
+        Whether to create a smooth ellipsoid or a faceted ellipsoid.
+
+    Returns
+    -------
+    Actor
+        A mesh actor containing the generated ellipsoids.
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> import numpy as np
+    >>> from fury import actor, window
+    >>> centers = np.array([[0, 0, 0]])
+    >>> lengths = np.array([[2, 1, 1]])
+    >>> colors = np.array([[1, 0, 0]])
+    >>> ellipsoid = actor.ellipsoid(centers=centers, lengths=lengths, colors=colors)
+    >>> window.show([ellipsoid])
+    """
+
+    centers = np.asarray(centers)
+
+    if orientation_matrices is None:
+        orientation_matrices = np.tile(np.eye(3), (centers.shape[0], 1, 1))
+
+    orientation_matrices = np.asarray(orientation_matrices)
+    lengths = np.asarray(lengths)
+    colors = np.asarray(colors)
+
+    if centers.ndim == 1:
+        centers = centers.reshape(1, 3)
+    if centers.ndim != 2 or centers.shape[1] != 3:
+        raise ValueError("Centers must be (N, 3) array")
+    if orientation_matrices.ndim == 2:
+        orientation_matrices = np.tile(orientation_matrices, (centers.shape[0], 1, 1))
+    if orientation_matrices.ndim != 3 or orientation_matrices.shape[1:] != (3, 3):
+        raise ValueError("Axes must be (N, 3, 3) array")
+    if lengths.ndim == 1:
+        lengths = lengths.reshape(1, 3)
+    if lengths.ndim != 2 or lengths.shape[1] != 3:
+        raise ValueError("Lengths must be (N, 3) array")
+    if lengths.size == 3:
+        lengths = np.tile(lengths.reshape(1, -1), (centers.shape[0], 1))
+    if lengths.shape != centers.shape:
+        raise ValueError("Lengths must match centers shape")
+    if colors.size == 3 or colors.size == 4:
+        colors = np.tile(colors.reshape(1, -1), (centers.shape[0], 1))
+
+    base_verts, base_faces = fp.prim_sphere(phi=phi, theta=theta)
+
+    base_verts = np.asarray(base_verts)
+    base_faces = np.asarray(base_faces)
+
+    if base_verts.ndim != 2 or base_verts.shape[1] != 3:
+        raise ValueError(f"base_verts has unexpected shape {base_verts.shape}")
+
+    if isinstance(colors, (list, tuple)):
+        colors = np.asarray(colors)
+        if colors.ndim == 1:
+            colors = np.tile(colors, (centers.shape[0], 1))
+
+    n_ellipsoids = centers.shape[0]
+    n_verts = base_verts.shape[0]
+
+    scaled_transforms = orientation_matrices * lengths[:, np.newaxis, :]
+
+    transformed = (
+        np.einsum("nij,mj->nmi", scaled_transforms, base_verts)
+        + centers[:, np.newaxis, :]
+    )
+    all_vertices = transformed.reshape(-1, 3)
+    all_faces = np.tile(base_faces, (n_ellipsoids, 1)) + (
+        np.arange(n_ellipsoids)[:, None, None] * n_verts
+    )
+    all_faces = all_faces.reshape(-1, 3)
+    all_colors = np.repeat(colors, n_verts, axis=0)
+
+    return actor_from_primitive(
+        centers=centers,
+        vertices=all_vertices,
+        faces=all_faces,
+        colors=all_colors,
+        opacity=opacity,
+        material=material,
+        smooth=smooth,
+        enable_picking=enable_picking,
+        repeat_primitive=False,
     )
 
 
