@@ -1364,6 +1364,79 @@ def star(
     )
 
 
+def disk(
+    centers,
+    *,
+    colors=(1.0, 1.0, 1.0),
+    radii=0.5,
+    sectors=36,
+    scales=(1.0, 1.0, 1.0),
+    directions=(0.0, 0.0, 0.0),
+    opacity=None,
+    material="phong",
+    enable_picking=True,
+):
+    """Visualize one or many disks with different features.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+        Disk positions.
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
+    radii : float or ndarray (N,) or tuple, optional
+        The radius of the disks, single value applies to all disks,
+        while an array specifies a radius for each disk individually.
+    sectors : int, optional
+        The number of divisions around the disk's circumference .
+        Higher values produce smoother disk.
+    scales : int or ndarray (N,3) or tuple (3,), optional
+        The size of the disks in each dimension. If a single value is provided,
+        the same size will be used for all disks.
+    directions : ndarray, shape (N, 3), optional
+        The orientation vector of the disk.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
+        If both `opacity` and RGBA are provided, the final alpha will be:
+        final_alpha = alpha_in_RGBA * opacity.
+    material : str, optional
+        The material type for the disk. Options are 'phong' and 'basic'.
+    enable_picking : bool, optional
+        Whether the disk should be pickable in a 3D scene.
+
+    Returns
+    -------
+    Actor
+        A mesh actor containing the generated disks, with the specified
+        material and properties.
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> import numpy as np
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(5, 3) * 10
+    >>> colors = np.random.rand(5, 3)
+    >>> disk_actor = actor.disk(centers=centers, colors=colors)
+    >>> scene.add(disk_actor)
+    >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
+    >>> show_manager.start()
+    """
+
+    vertices, faces = fp.prim_disk(radius=radii, sectors=sectors)
+    return actor_from_primitive(
+        vertices,
+        faces,
+        centers=centers,
+        colors=colors,
+        scales=scales,
+        directions=directions,
+        opacity=opacity,
+        material=material,
+        enable_picking=enable_picking,
+    )
+
+
 def point(
     centers,
     *,

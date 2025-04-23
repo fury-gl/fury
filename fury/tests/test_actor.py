@@ -174,6 +174,13 @@ def test_star():
     validate_actors(centers=centers, colors=colors, actor_type="star")
 
 
+def test_flat_disk():
+    centers = np.array([[0, 0, 0]])
+    colors = np.array([[1, 0, 0]])
+    validate_actors(centers=centers, colors=colors, actor_type="disk")
+    validate_actors(centers=centers, colors=colors, actor_type="disk", sectors=8)
+
+
 def test_point():
     centers = np.array([[0, 0, 0]])
     colors = np.array([[1, 0, 0]])

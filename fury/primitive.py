@@ -1299,3 +1299,51 @@ def prim_cone(*, radius=0.5, height=1, sectors=10):
     triangles = np.array(triangles).reshape(-1, 3)
 
     return vertices, triangles
+
+
+def prim_disk(*, radius=0.5, sectors=36):
+    """Return vertices and triangles for a disk.
+
+    Parameters
+    ----------
+    radius : float, optional
+        Radius of the disk.
+    sectors : int, optional
+        Number of triangle sectors forming the disk.
+
+    Returns
+    -------
+    vertices : ndarray
+        Vertices coordinates that compose the disk.
+    triangles : ndarray
+        Triangles that compose the disk.
+
+    Raises
+    ------
+    TypeError
+        If sectors is not an integer.
+    ValueError
+        If sectors is not greater than 7.
+    """
+    if not isinstance(sectors, int):
+        raise TypeError("Only integers are allowed for sectors parameter")
+    if sectors <= 7:
+        raise ValueError("Sectors parameter should be greater than 7")
+
+    sector_step = 2 * math.pi / sectors
+    vertices = [(0.0, 0.0, 0.0)]
+
+    # outer circle vertices
+    for i in range(sectors):
+        angle = i * sector_step
+        x = math.sin(angle) * radius
+        y = math.cos(angle) * radius
+        z = 0.0
+        vertices.append((x, y, z))
+
+    triangles = []
+    for i in range(1, sectors):
+        triangles.append((0, i, i + 1))
+    triangles.append((0, sectors, 1))
+
+    return np.array(vertices, dtype=np.float32), np.array(triangles, dtype=np.int32)
