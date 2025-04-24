@@ -407,7 +407,7 @@ def set_group_opacity(group, opacity):
         child.material.opacity = opacity
 
 
-def _valid_slices(group):
+def validate_slices_group(group):
     """Validate the slices in a group.
 
     Parameters
@@ -451,7 +451,7 @@ def get_slices(group):
     ndarray
         An array containing the current positions of the slices.
     """
-    _valid_slices(group)
+    validate_slices_group(group)
     return np.asarray([child.material.plane[-1] for child in group.children])
 
 
@@ -465,7 +465,7 @@ def show_slices(group, position):
     position : tuple
         A tuple containing the positions of the slices in the 3D space.
     """
-    _valid_slices(group)
+    validate_slices_group(group)
 
     for i, child in enumerate(group.children):
         a, b, c, _ = child.material.plane
