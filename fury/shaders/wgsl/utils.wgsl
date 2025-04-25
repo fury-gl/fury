@@ -22,3 +22,40 @@ fn visible_range(center: vec3<i32>, low_range: vec3<i32>, high_range: vec3<i32>)
 
     return xVal && yVal && zVal;
 }
+
+fn get_voxel_id(id: i32, data_shape: vec3<i32>, visible: vec3<i32>) -> vec3<i32> {
+    var slice_id = id;
+
+    let z_slice = data_shape.x * data_shape.y;
+    let x_slice = data_shape.y * data_shape.z;
+    let y_slice = data_shape.x * data_shape.z;
+
+    // Calculate if the voxel_id is within Z slice
+    if (slice_id < z_slice) {
+        let x = slice_id / data_shape.y;
+        let y = slice_id % data_shape.y;
+        return vec3<i32>(x, y, visible.z);
+    }
+
+    // Calculate if the voxel_id is within Y slice
+    slice_id = slice_id - z_slice;
+    if (slice_id < y_slice) {
+        let x = slice_id / data_shape.z;
+        let z = slice_id % data_shape.z;
+        return vec3<i32>(x, visible.y, z);
+    }
+
+    // Calculate if the voxel_id is within X slice
+    slice_id = slice_id - y_slice;
+    let y = slice_id / data_shape.z;
+    let z = slice_id % data_shape.z;
+    return vec3<i32>(visible.x, y, z);
+
+}
+
+fn get_flatten_id(voxel_id: vec3<i32>, data_shape: vec3<i32>, num_pts: i32) -> i32 {
+    let z = voxel_id.z * data_shape.y * data_shape.x;
+    let y = voxel_id.y * data_shape.x;
+    let x = voxel_id.x;
+    return (x + y + z) * num_pts;
+}

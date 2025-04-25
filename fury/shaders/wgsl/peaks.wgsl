@@ -18,17 +18,17 @@ fn vs_main(in: VertexInput) -> Varyings {
     varyings.position = vec4<f32>(npos);
     varyings.world_pos = vec3<f32>(ndc_to_world_pos(npos));
 
-    let diff = load_s_diffs(i0);
+    // let diff = load_s_diffs(i0);
     let center = load_s_centers(i0);
     let color = load_s_colors(i0);
 
-    if all(color == vec3<f32>(0.0)) {
-        varyings.color = vec4<f32>(orient2rgb(diff), 1.0);
-    } else {
+    // if all(color == vec3<f32>(0.0)) {
+    //     varyings.color = vec4<f32>(orient2rgb(diff), 1.0);
+    // } else {
         varyings.color = vec4<f32>(color, 1.0);
-    }
+    // }
 
-    varyings.color = vec4<f32>(orient2rgb(diff), 1.0);
+    // varyings.color = vec4<f32>(orient2rgb(diff), 1.0);
     varyings.center = vec3<i32>(center);
 
     return varyings;
@@ -38,21 +38,10 @@ fn vs_main(in: VertexInput) -> Varyings {
 fn fs_main(varyings: Varyings) -> FragmentOutput {
     {$ include 'pygfx.clipping_planes.wgsl' $}
 
-    $$ if is_ranges
-        let low_range = vec3<i32>{{ low_range }};
-        let high_range = vec3<i32>{{ high_range }};
-        if !visible_range(varyings.center, low_range, high_range) {
-            discard;
-        }
-    $$ endif
-
-    $$ if is_cross_section
-        let cross_section = vec3<i32>{{ cross_section }};
-        if !visible_cross_section(varyings.center, cross_section) {
-            discard;
-        }
-    $$ endif
-
+    // let cross_section = vec3<i32>{{ cross_section }};
+    // if !visible_cross_section(varyings.center, cross_section) {
+    //     discard;
+    // }
 
     let color = varyings.color;
     let physical_color = srgb2physical(color.rgb);
