@@ -59,3 +59,10 @@ fn get_flatten_id(voxel_id: vec3<i32>, data_shape: vec3<i32>, num_pts: i32) -> i
     let x = voxel_id.x;
     return (x + y + z) * num_pts;
 }
+
+fn flatten_to_3d(index: i32, data_shape: vec3<i32>) -> vec3<i32> {
+    let z = index % data_shape.z;
+    let y = (index / data_shape.z) % data_shape.y;
+    let x = index / (data_shape.y * data_shape.z);
+    return vec3<i32>(x, y, z);
+}

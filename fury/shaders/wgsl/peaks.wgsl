@@ -5,6 +5,9 @@ struct VertexInput {
     @builtin(vertex_index) index : u32,
 };
 
+const DATA_SHAPE = vec3<i32>{{ data_shape }};
+const NUM_VECTORS = i32({{ num_vectors }});
+
 @vertex
 fn vs_main(in: VertexInput) -> Varyings {
 
@@ -19,7 +22,8 @@ fn vs_main(in: VertexInput) -> Varyings {
     varyings.world_pos = vec3<f32>(ndc_to_world_pos(npos));
 
     // let diff = load_s_diffs(i0);
-    let center = load_s_centers(i0);
+
+    let center = flatten_to_3d(i0 / (NUM_VECTORS * 2), DATA_SHAPE);
     let color = load_s_colors(i0);
 
     // if all(color == vec3<f32>(0.0)) {
@@ -38,10 +42,10 @@ fn vs_main(in: VertexInput) -> Varyings {
 fn fs_main(varyings: Varyings) -> FragmentOutput {
     {$ include 'pygfx.clipping_planes.wgsl' $}
 
-    // let cross_section = vec3<i32>{{ cross_section }};
-    // if !visible_cross_section(varyings.center, cross_section) {
-    //     discard;
-    // }
+    let cross_section = vec3<i32>{{ cross_section }};
+    if !visible_cross_section(varyings.center, cross_section) {
+        discard;
+    }
 
     let color = varyings.color;
     let physical_color = srgb2physical(color.rgb);

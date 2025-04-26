@@ -21,8 +21,8 @@ class PeaksActor(WorldObject):
         symmetric=True,
     ):
         total_vectors = np.prod(directions.shape[:4])
-        self.total_vectors = total_vectors
         self.directions = directions.reshape(total_vectors, 3).astype(np.float32)
+        print(self.directions)
         pnts_per_line = 2
         self.data_shape = directions.shape[:3]
         self.num_vectors = directions.shape[3]
@@ -37,7 +37,7 @@ class PeaksActor(WorldObject):
         # line_count = 0
 
         if colors is None:
-            colors = np.asarray((0, 0, 0), dtype=np.float32)
+            colors = np.asarray((1, 0, 0), dtype=np.float32)
         colors = np.tile(colors, (total_vectors * pnts_per_line, 1))
         geometry = buffer_to_geometry(positions=points, colors=colors)
         material = _create_line_material(material="thin", mode="vertex")
@@ -50,7 +50,7 @@ class PeaksActor(WorldObject):
 
         # self.low_range = (0, 0, 0)
         # self.high_range = data_shape
-
+        print("points_shape", points.shape)
         super().__init__(geometry=geometry, material=material)
 
 

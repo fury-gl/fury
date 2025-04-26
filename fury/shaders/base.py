@@ -1,4 +1,4 @@
-from numpy import ceil
+from numpy import ceil, prod
 
 from fury.lib import (
     BaseShader,
@@ -6,7 +6,7 @@ from fury.lib import (
     Buffer,
     CullMode,
     PrimitiveTopology,
-    ThinLineShader,
+    ThinLineSegmentShader,
     load_wgsl,
 )
 
@@ -24,13 +24,15 @@ class PeaksComputeShader(BaseShader):
         #     + wobject.data_shape[1] * wobject.data_shape[2]
         #     + wobject.data_shape[0] * wobject.data_shape[2]
         # )
-        self["total_vectors"] = wobject.total_vectors
+        # self["total_vectors"] = wobject.total_vectors
         self["num_vectors"] = wobject.num_vectors
         self["data_shape"] = wobject.data_shape
         self["workgroup_size"] = 128
 
     def get_render_info(self, _wobject, _shared):
-        n = int(ceil(self["total_vectors"] / self["workgroup_size"]))
+        # n = int(ceil(self["total_vectors"] / self["workgroup_size"]))
+        n = int(ceil(prod(self["data_shape"]) / self["workgroup_size"]))
+        print("n", n)
         return {
             "indices": (n, 1, 1),
         }
@@ -62,19 +64,14 @@ class PeaksComputeShader(BaseShader):
         return load_wgsl("peaks_compute.wgsl", package_name="fury.shaders.wgsl")
 
 
-class PeaksShader(ThinLineShader):
+class PeaksShader(ThinLineSegmentShader):
     """Shader for PeaksActor."""
 
     def __init__(self, wobject):
         super().__init__(wobject)
         self["cross_section"] = wobject.cross_section
-        # self["data_shape"] = wobject.data_shape
-
-    def get_pipeline_info(self, _wobject, _shared):
-        return {
-            "primitive_topology": PrimitiveTopology.line_list,
-            "cull_mode": CullMode.none,
-        }
+        self["num_vectors"] = wobject.num_vectors
+        self["data_shape"] = wobject.data_shape
 
     def get_bindings(self, wobject, shared):
         rbuffer = "buffer/read_only_storage"
