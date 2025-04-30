@@ -103,4 +103,4 @@ else:
     QtWidgets = PySide6
     get_app = PySide6
 
-loader.mapping["fury"] = jinja2.PackageLoader("fury.shaders.wgsl", ".")
+loader.mapping["fury"] = jinja2.PackageLoader("fury.wgsl", ".")

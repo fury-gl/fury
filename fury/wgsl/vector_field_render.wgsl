@@ -34,6 +34,7 @@ fn vs_main(in: VertexInput) -> Varyings {
 
     // varyings.color = vec4<f32>(orient2rgb(diff), 1.0);
     varyings.center = vec3<i32>(center);
+    varyings.cross_section = vec3<i32>(u_material.cross_section.xyz);
 
     return varyings;
 }
@@ -42,8 +43,8 @@ fn vs_main(in: VertexInput) -> Varyings {
 fn fs_main(varyings: Varyings) -> FragmentOutput {
     {$ include 'pygfx.clipping_planes.wgsl' $}
 
-    let cross_section = vec3<i32>{{ cross_section }};
-    if !visible_cross_section(varyings.center, cross_section) {
+    let cross_section = varyings.cross_section;
+    if !all(cross_section == vec3<i32>(-1)) && !visible_cross_section(varyings.center, cross_section) {
         discard;
     }
 

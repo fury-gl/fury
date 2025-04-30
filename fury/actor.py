@@ -1,5 +1,3 @@
-import logging
-
 import numpy as np
 
 from fury.geometry import (
@@ -10,14 +8,16 @@ from fury.geometry import (
     create_text,
     line_buffer_separator,
 )
+from fury.lib import WorldObject, register_wgpu_render_function
 from fury.material import (
+    VectorFieldMaterial,
     _create_line_material,
     _create_mesh_material,
     _create_points_material,
     _create_text_material,
 )
-from fury.medical.peaks import PeaksActor
 import fury.primitive as fp
+from fury.shader import VectorFieldComputeShader, VectorFieldShader
 
 
 def actor_from_primitive(
@@ -1501,98 +1501,141 @@ def axes(
     return obj
 
 
-def peaks(
-    peaks_dirs,
-    *,
-    peaks_values=None,
-    mask=None,
-    affine=None,
-    colors=None,
-    symmetric=True,
-):
-    """Visualize peak directions as given from ``peaks_from_model`` function.
+class VectorField(WorldObject):
+    def __init__(
+        self, field, *, cross_section=None, colors=None, scales=1.0, opacity=1.0
+    ):
+        """Initialize a vector field.
+
+        Parameters
+        ----------
+        field : ndarray, shape (X, Y, Z, N, 3) or (X, Y, Z, 3)
+            The vector field data, where X, Y, Z represent the position in 3D,
+            N is the number of vectors per voxel, and 3 represents the vector
+        colors : tuple, optional
+            Color for the vectors. If None, the color will used from the orientation.
+        scales: float or ndarray, shape(X, Y, Z, N) or (X, Y, Z) optional
+            Scale factor for the vectors. If ndarray, it should match the shape of the
+            field.
+        opacity : float, optional
+            Takes values from 0 (fully transparent) to 1 (opaque).
+        """
+
+        if not (field.ndim == 5 or field.ndim == 4):
+            raise ValueError(
+                "Field must be 5D or 4D, "
+                f"but got {field.ndim}D with shape {field.shape}"
+            )
+
+        total_vectors = np.prod(field.shape[:-1])
+        if field.shape[-1] != 3:
+            raise ValueError(
+                f"Field must have last dimension as 3, but got {field.shape[-1]}"
+            )
+
+        self.vectors = field.reshape(total_vectors, 3).astype(np.float32)
+        self.field_shape = field.shape[:3]
+        if field.ndim == 4:
+            self.vectors_per_voxel = 1
+        else:
+            self.vectors_per_voxel = field.shape[3]
+
+        if isinstance(scales, (int, float)):
+            self.scales = np.full((total_vectors, 1), scales, dtype=np.float32)
+        elif scales.shape != field.shape[:-1]:
+            raise ValueError(
+                "Scales must match the shape of the field (X, Y, Z, N) or (X, Y, Z),"
+                f" but got {scales.shape}"
+            )
+        else:
+            self.scales = scales.reshape(total_vectors, 1).astype(np.float32)
+
+        if cross_section is None:
+            cross_section = np.asarray([-1, -1, -1], dtype=np.int32)
+
+        pnts_per_vector = 2
+        pts = np.zeros((total_vectors * pnts_per_vector, 3), dtype=np.float32)
+        pts[0] = self.field_shape
+
+        if colors is None:
+            colors = np.asarray((0, 0, 0), dtype=np.float32)
+        else:
+            colors = np.asarray(colors, dtype=np.float32)
+
+        colors = np.tile(colors, (total_vectors * pnts_per_vector, 1))
+        geometry = buffer_to_geometry(positions=pts, colors=colors)
+        material = VectorFieldMaterial(cross_section, opacity=opacity)
+
+        super().__init__(geometry=geometry, material=material)
+
+
+def vector_field(field, *, colors=None, scales=1.0, opacity=1.0):
+    """Visualize a vector field with different features.
 
     Parameters
     ----------
-    peaks_dirs : ndarray
-        Peak directions. The shape of the array should be (X, Y, Z, D, 3).
-    peaks_values : ndarray, optional
-        Peak values. The shape of the array should be (X, Y, Z, D).
-    affine : array, optional
-        4x4 transformation array from native coordinates to world coordinates.
-    mask : ndarray, optional
-        3D mask
-    colors : tuple or None, optional
-        Default None. If None then every peak gets an orientation color
-        in similarity to a DEC map.
-    line_width : float, optional
-        Line thickness. Default is 1.
-    symmetric : bool, optional
-        If True, peaks are drawn for both peaks_dirs and -peaks_dirs. Else,
-        peaks are only drawn for directions given by peaks_dirs. Default is
-        True.
+    field : ndarray, shape (X, Y, Z, N, 3) or (X, Y, Z, 3)
+        The vector field data, where X, Y, Z represent the position in 3D,
+        N is the number of vectors per voxel, and 3 represents the vector
+    colors : tuple, optional
+        Color for the vectors. If None, the color will used from the orientation.
+    scales: float or ndarray, shape(X, Y, Z, N) or (X, Y, Z) optional
+            Scale factor for the vectors. If ndarray, it should match the shape of the
+            field.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
 
     Returns
     -------
-    peak_actor : PeakActor
-        Actor or LODActor representing the peaks directions and/or
-        magnitudes.
-
+    VectorField
+        A vector field object.
     """
-    if peaks_dirs.ndim != 5:
-        raise ValueError(
-            "Invalid peak directions. The shape of the structure "
-            f"must be (XxYxZxDx3). Your data has {peaks_dirs.ndim} dimensions."
-            ""
-        )
-    if peaks_dirs.shape[4] != 3:
-        raise ValueError(
-            "Invalid peak directions. The shape of the last "
-            "dimension must be 3. Your data has a last dimension "
-            f"of {peaks_dirs.shape[4]}."
-        )
 
-    dirs_shape = peaks_dirs.shape
+    obj = VectorField(field, colors=colors, scales=scales, opacity=opacity)
+    return obj
 
-    if peaks_values is not None:
-        if peaks_values.ndim != 4:
-            raise ValueError(
-                "Invalid peak values. The shape of the structure "
-                f"must be (XxYxZxD). Your data has {peaks_values.ndim} dimensions."
-            )
-        vals_shape = peaks_values.shape
-        if vals_shape != dirs_shape[:4]:
-            raise ValueError(
-                "Invalid peak values. The shape of the values "
-                "must coincide with the shape of the directions."
-            )
-    else:
-        peaks_values = np.ones(dirs_shape[:4], dtype=peaks_dirs.dtype)
 
-    valid_mask = np.abs(peaks_dirs).max(axis=(-2, -1)) > 0
-    if mask is not None:
-        if mask.ndim != 3:
-            logging.warning(
-                "Invalid mask. The mask must be a 3D array. The "
-                f"passed mask has {mask.ndim} dimensions. Ignoring passed "
-                "mask.",
-                stacklevel=2,
-            )
-        elif mask.shape != dirs_shape[:3]:
-            logging.warning(
-                "Invalid mask. The shape of the mask must coincide "
-                "with the shape of the directions. Ignoring passed "
-                "mask.",
-                stacklevel=2,
-            )
-        else:
-            valid_mask = np.logical_and(valid_mask, mask)
-    indices = np.where(valid_mask)
+def vector_field_slicer(
+    field, *, cross_section=None, colors=None, scales=1.0, opacity=1.0
+):
+    """Visualize a vector field with different features.
 
-    return PeaksActor(
-        peaks_dirs,
-        indices,
-        peaks_values,
+    Parameters
+    ----------
+    field : ndarray, shape (X, Y, Z, N, 3) or (X, Y, Z, 3)
+        The vector field data, where X, Y, Z represent the position in 3D,
+        N is the number of vectors per voxel, and 3 represents the vector
+    cross_section : list or tuple, shape (3,)
+        A list or tuple representing the cross section dimensions.
+        If None, the cross section will be set to the center of the field.
+    colors : tuple, optional
+        Color for the vectors. If None, the color will used from the orientation.
+    scales: float or ndarray, shape(X, Y, Z, N) or (X, Y, Z) optional
+            Scale factor for the vectors. If ndarray, it should match the shape of the
+            field.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
+
+    Returns
+    -------
+    VectorField
+        A vector field object.
+    """
+
+    if cross_section is None:
+        cross_section = np.asarray(field.shape[:3], dtype=np.int32) // 2
+
+    obj = VectorField(
+        field,
+        cross_section=cross_section,
         colors=colors,
-        symmetric=symmetric,
+        scales=scales,
+        opacity=opacity,
     )
+    return obj
+
+
+@register_wgpu_render_function(VectorField, VectorFieldMaterial)
+def register_peaks_shaders(wobject):
+    """Register PeaksActor shaders."""
+    return VectorFieldComputeShader(wobject), VectorFieldShader(wobject)

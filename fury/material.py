@@ -1,3 +1,5 @@
+import numpy as np
+
 from fury.lib import (
     LineArrowMaterial,
     LineMaterial,
@@ -320,3 +322,42 @@ def _create_text_material(
         weight_offset=weight_offset,
         aa=aliasing,
     )
+
+
+class VectorFieldMaterial(LineThinSegmentMaterial):
+    """Material for VectorFieldActor."""
+
+    uniform_type = dict(
+        LineThinSegmentMaterial.uniform_type,
+        cross_section="4xi4",  # vec3<i32>
+    )
+
+    def __init__(self, cross_section, **kwargs):
+        super().__init__(color_mode="vertex", **kwargs)
+        self.cross_section = cross_section
+
+    @property
+    def cross_section(self):
+        """Get the cross section of the vector field."""
+        return self.uniform_buffer.data["cross_section"][:3]
+
+    @cross_section.setter
+    def cross_section(self, cross_section):
+        """Set the cross section of the vector field.
+
+        Parameters
+        ----------
+        cross_section : list or tuple
+            A list or tuple representing the cross section dimensions.
+        """
+        if len(cross_section) != 3:
+            raise ValueError("cross_section must have exactly 3 dimensions.")
+        if not all(
+            isinstance(i, int) or isinstance(i.item(), int) for i in cross_section
+        ):
+            raise ValueError("cross_section must contain only integers.")
+
+        self.uniform_buffer.data["cross_section"] = np.asarray(
+            [*cross_section, 0], dtype=np.int32
+        )
+        self.uniform_buffer.update_full()
