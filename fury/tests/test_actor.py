@@ -181,6 +181,12 @@ def test_flat_disk():
     validate_actors(centers=centers, colors=colors, actor_type="disk", sectors=8)
 
 
+def test_triangle():
+    centers = np.array([[0, 0, 0]])
+    colors = np.array([[1, 0, 0]])
+    validate_actors(centers=centers, colors=colors, actor_type="triangle")
+
+
 def test_point():
     centers = np.array([[0, 0, 0]])
     colors = np.array([[1, 0, 0]])

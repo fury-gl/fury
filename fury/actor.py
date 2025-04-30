@@ -1437,6 +1437,70 @@ def disk(
     )
 
 
+def triangle(
+    centers,
+    *,
+    directions=(0, 0, 0),
+    colors=(1, 1, 1),
+    scales=(1, 1, 1),
+    opacity=None,
+    material="phong",
+    enable_picking=True,
+):
+    """Create one or many triangles with different features.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+        Triangle positions.
+    directions : ndarray, shape (N, 3) or tuple (3,), optional
+        The orientation vector of the triangle.
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+    scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
+        The size of the triangle in each dimension. If a single value is provided,
+        the same size will be used for all triangles.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
+        If both `opacity` and RGBA are provided, the final alpha will be:
+        final_alpha = alpha_in_RGBA * opacity.
+    material : str, optional
+        The material type for the triangles. Options are 'phong' and 'basic'.
+    enable_picking : bool, optional
+        Whether the triangles should be pickable in a 3D scene.
+
+    Returns
+    -------
+    Actor
+        A mesh actor containing the generated triangles, with the specified
+        material and properties.
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> import numpy as np
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(5, 3) * 10
+    >>> colors = np.random.rand(5, 3)
+    >>> triangle_actor = actor.triangle(centers=centers, colors=colors)
+    >>> scene.add(triangle_actor)
+    >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
+    >>> show_manager.start()
+    """
+    vertices, faces = fp.prim_triangle()
+    return actor_from_primitive(
+        vertices,
+        faces,
+        centers=centers,
+        colors=colors,
+        scales=scales,
+        directions=directions,
+        opacity=opacity,
+        material=material,
+        enable_picking=enable_picking,
+    )
+
+
 def point(
     centers,
     *,

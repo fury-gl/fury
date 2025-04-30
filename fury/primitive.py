@@ -1347,3 +1347,18 @@ def prim_disk(*, radius=0.5, sectors=36):
     triangles.append((0, sectors, 1))
 
     return np.array(vertices, dtype=np.float32), np.array(triangles, dtype=np.int32)
+
+
+def prim_triangle():
+    """Return vertices and triangles for a triangle geometry.
+
+    Returns
+    -------
+    vertices: ndarray, shape (3, 3)
+        Coordinates of the 3 vertices that compose the triangle.
+    triangles: ndarray, shape (1, 3)
+        Indices of the 1 triangle that composes the geometry.
+    """
+    vertices = np.array([[-0.5, -0.5, 0.0], [0.5, -0.5, 0.0], [0.0, 0.5, 0.0]])
+    triangles = np.array([[0, 1, 2]], dtype="i8")
+    return vertices, triangles
