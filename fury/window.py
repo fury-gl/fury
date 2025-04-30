@@ -6,6 +6,7 @@ for handling scenes, cameras, controllers, and rendering
 multiple screens.
 """
 
+import asyncio
 from dataclasses import dataclass
 from functools import reduce
 import os
@@ -476,6 +477,9 @@ class ShowManager:
         self.renderer.pixel_ratio = pixel_ratio
         self.renderer.blend_mode = blend_mode
         self.renderer.add_event_handler(self._resize, "resize")
+        self.renderer.add_event_handler(
+            self._set_key_long_press_event, "key_down", "key_up"
+        )
 
         self._total_screens = 0
         self._screen_config = screen_config
@@ -488,6 +492,7 @@ class ShowManager:
         )
 
         self.enable_events = enable_events
+        self._key_long_press = None
 
     def _screen_setup(self, scene, camera, controller, camera_light):
         """Prepare scene, camera, controller, and light lists for screen creation.
@@ -603,6 +608,34 @@ class ShowManager:
             calculate_screen_sizes(self._screen_config, self.renderer.logical_size),
         )
         self.render()
+
+    async def _handle_key_long_press(self, event):
+        """Handle long press events for key inputs.
+
+        Parameters
+        ----------
+        event : KeyEvent
+            The PyGfx key event object."""
+
+        if self._key_long_press is not None:
+            await asyncio.sleep(0.05)
+            self.renderer.dispatch_event(event)
+
+    def _set_key_long_press_event(self, event):
+        """Handle long press events for key inputs.
+
+        Parameters
+        ----------
+        event : KeyEvent
+            The PyGfx key event object."""
+
+        if event.type == "key_down":
+            self._key_long_press = asyncio.create_task(
+                self._handle_key_long_press(event)
+            )
+        else:
+            self._key_long_press.cancel()
+            self._key_long_press = None
 
     @property
     def app(self):

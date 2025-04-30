@@ -10,13 +10,16 @@ from fury.geometry import (
     create_text,
     line_buffer_separator,
 )
+from fury.lib import Geometry, Group, Texture, Volume, VolumeSliceMaterial
 from fury.material import (
     _create_line_material,
     _create_mesh_material,
     _create_points_material,
     _create_text_material,
+    validate_opacity,
 )
 import fury.primitive as fp
+from fury.utils import set_group_opacity, set_group_visibility, show_slices
 
 
 def actor_from_primitive(
@@ -1774,4 +1777,92 @@ def axes(
     scales = np.asarray(scale)
 
     obj = arrow(centers=centers, directions=directions, colors=colors, scales=scales)
+    return obj
+
+
+def slicer(
+    data,
+    *,
+    value_range=None,
+    opacity=1.0,
+    interpolation="linear",
+    visibility=(True, True, True),
+    initial_slices=None,
+):
+    """Visualize a 3D volume data as a slice.
+
+    Parameters
+    ----------
+    data : ndarray, shape (X, Y, Z) or (X, Y, Z, 3)
+        The 3D volume data to be sliced.
+    value_range : tuple, optional
+        The minimum and maximum values for the color mapping.
+        If None, the range is determined from the data.
+    opacity : float, optional
+        The opacity of the slice. Takes values from 0 (fully transparent) to 1 (opaque).
+    interpolation : str, optional
+        The interpolation method for the slice. Options are 'linear' and 'nearest'.
+    visibility : tuple, optional
+        A tuple of three boolean values indicating the visibility of the slices
+        in the x, y, and z dimensions, respectively.
+    initial_slices : tuple, optional
+        A tuple of three initial slice positions in the x, y, and z dimensions,
+        respectively. If None, the slices are initialized to the middle of the volume.
+
+    Returns
+    -------
+    Group
+        An actor containing the generated slice with the specified properties.
+    """
+
+    if value_range is None:
+        value_range = (np.min(data), np.max(data))
+
+    if visibility is None:
+        visibility = (True, True, True)
+
+    if data.ndim < 3 or data.ndim > 4:
+        raise ValueError(
+            "Input data must be 3-dimensional or "
+            "4-dimensional with last dimension of size 3."
+        )
+    elif data.ndim == 4 and data.shape[-1] != 3:
+        raise ValueError("Last dimension must be of size 3.")
+
+    opacity = validate_opacity(opacity)
+    data = data.astype(np.float32)
+
+    data = np.swapaxes(data, 0, 2)
+
+    data_shape = data.shape
+    if initial_slices is None:
+        initial_slices = (
+            data_shape[2] // 2,
+            data_shape[1] // 2,
+            data_shape[0] // 2,
+        )
+
+    texture = Texture(data, dim=3)
+
+    slices = []
+    for dim in [0, 1, 2]:  # XYZ
+        abcd = [0, 0, 0, 0]
+        abcd[dim] = -1
+        abcd[-1] = data_shape[2 - dim] // 2
+        mat = VolumeSliceMaterial(
+            abcd,
+            clim=value_range,
+            interpolation=interpolation,
+            pick_write=True,
+        )
+        geo = Geometry(grid=texture)
+        plane = Volume(geo, mat)
+        slices.append(plane)
+
+    obj = Group(name="Slicer")
+    obj.add(*slices)
+    set_group_visibility(obj, visibility)
+    show_slices(obj, initial_slices)
+    set_group_opacity(obj, opacity)
+
     return obj
