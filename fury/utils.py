@@ -10,6 +10,9 @@ structures, such as meshes and point clouds.
 import numpy as np
 from scipy.ndimage import map_coordinates
 
+from fury.lib import Group
+from fury.material import validate_opacity
+
 
 def map_coordinates_3d_4d(input_array, indices):
     """Evaluate input_array at the given indices using trilinear interpolation.
@@ -359,3 +362,111 @@ def fix_winding_order(vertices, triangles, *, clockwise=False):
         if desired_order != current_order:
             corrected_triangles[nb] = change_vertices_order(face)
     return corrected_triangles
+
+
+def set_group_visibility(group, visibility):
+    """Set the visibility of a group of actors.
+
+    Parameters
+    ----------
+    group : Group
+        The group of actors to set visibility for.
+    visibility : tuple or list of bool
+        If a single boolean value is provided, it sets the visibility for all
+        actors in the group. If a tuple or list is provided, it sets the
+        visibility for each actor in the group individually.
+    """
+    if not isinstance(group, Group):
+        raise TypeError("group must be an instance of Group.")
+
+    if not isinstance(visibility, (tuple, list)):
+        group.visible = visibility
+        return
+
+    for idx, actor in enumerate(group.children):
+        actor.visible = visibility[idx]
+
+
+def set_group_opacity(group, opacity):
+    """Set the opacity of the group of actors.
+
+    Parameters
+    ----------
+    group : Group
+        The group of actors to set opacity for.
+    opacity : float
+        The opacity value to set for the group of actors,
+        ranging from 0 (fully transparent) to 1 (opaque).
+    """
+    if not isinstance(group, Group):
+        raise TypeError("group must be an instance of Group.")
+
+    opacity = validate_opacity(opacity)
+
+    for child in group.children:
+        child.material.opacity = opacity
+
+
+def validate_slices_group(group):
+    """Validate the slices in a group.
+
+    Parameters
+    ----------
+    group : Group
+        The group of actors to validate.
+
+    Raises
+    ------
+    TypeError
+        If the group is not an instance of Group.
+    ValueError
+        If the group does not contain exactly 3 children.
+    AttributeError
+        If the children do not have the required material plane attribute.
+    """
+    if not isinstance(group, Group):
+        raise TypeError("group must be an instance of Group.")
+
+    if len(group.children) != 3:
+        raise ValueError(
+            f"Group must contain exactly 3 children. {len(group.children)}"
+        )
+
+    if not hasattr(group.children[0].material, "plane"):
+        raise AttributeError(
+            "Children do not have the required material plane attribute for slices."
+        )
+
+
+def get_slices(group):
+    """Get the current positions of the slices.
+
+    Parameters
+    ----------
+    group : Group
+        The group of actors to get the slices from.
+
+    Returns
+    -------
+    ndarray
+        An array containing the current positions of the slices.
+    """
+    validate_slices_group(group)
+    return np.asarray([child.material.plane[-1] for child in group.children])
+
+
+def show_slices(group, position):
+    """Show the slices at the specified position.
+
+    Parameters
+    ----------
+    group : Group
+        The group of actors to get the slices from.
+    position : tuple
+        A tuple containing the positions of the slices in the 3D space.
+    """
+    validate_slices_group(group)
+
+    for i, child in enumerate(group.children):
+        a, b, c, _ = child.material.plane
+        child.material.plane = (a, b, c, position[i])

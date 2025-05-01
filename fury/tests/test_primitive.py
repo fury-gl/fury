@@ -10,6 +10,7 @@ def test_vertices_primitives():
     # Tests the default vertices of all the built in primitive shapes.
     l_primitives = [
         (fp.prim_square, (4, 3), -0.5, 0.5, 0, {}),
+        (fp.prim_triangle, (3, 3), -0.5, 0.5, -0.0555555555, {}),
         (fp.prim_box, (24, 3), -0.5, 0.5, 0, {"detailed": True}),
         (fp.prim_box, (8, 3), -0.5, 0.5, 0, {"detailed": False}),
         (fp.prim_tetrahedron, (4, 3), -0.5, 0.5, 0, {}),
@@ -85,6 +86,7 @@ def test_vertices_primitives_triangularprism():
 def test_triangles_primitives():
     l_primitives = [
         (fp.prim_square, (2, 3)),
+        (fp.prim_triangle, (1, 3)),
         (fp.prim_box, (12, 3)),
         (fp.prim_tetrahedron, (4, 3)),
         (fp.prim_icosahedron, (20, 3)),
