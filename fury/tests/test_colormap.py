@@ -20,7 +20,7 @@ def test_boys2rgb():
     v1 = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
     v2 = np.array([1, 0, 0, 0, 1, 0])
 
-    for v, e in zip([v1, v2], [expected, expected[0]]):
+    for v, e in zip([v1, v2], [expected, expected[0]], strict=False):
         c = colormap.boys2rgb(v)
         npt.assert_array_almost_equal(c, e)
 

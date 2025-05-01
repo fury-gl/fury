@@ -1,8 +1,11 @@
 from PIL import Image
 import numpy as np
 import numpy.testing as npt
+import pytest
 
 from fury import actor, window
+from fury.lib import Group
+from fury.utils import get_slices, set_group_visibility, show_slices
 
 
 def validate_actors(actor_type="actor_name", prim_count=1, **kwargs):
@@ -174,6 +177,19 @@ def test_star():
     validate_actors(centers=centers, colors=colors, actor_type="star")
 
 
+def test_flat_disk():
+    centers = np.array([[0, 0, 0]])
+    colors = np.array([[1, 0, 0]])
+    validate_actors(centers=centers, colors=colors, actor_type="disk")
+    validate_actors(centers=centers, colors=colors, actor_type="disk", sectors=8)
+
+
+def test_triangle():
+    centers = np.array([[0, 0, 0]])
+    colors = np.array([[1, 0, 0]])
+    validate_actors(centers=centers, colors=colors, actor_type="triangle")
+
+
 def test_point():
     centers = np.array([[0, 0, 0]])
     colors = np.array([[1, 0, 0]])
@@ -328,3 +344,101 @@ def test_axes():
     assert 0 < mean_b < 255
 
     scene.remove(axes_actor)
+
+
+def test_ellipsoid():
+    centers = np.array([[0, 0, 0]])
+    lengths = np.array([[2, 1, 1]])
+    axes = np.array([np.eye(3)])
+    colors = np.array([1, 0, 0])
+
+    validate_actors(
+        centers=centers,
+        lengths=lengths,
+        orientation_matrices=axes,
+        colors=colors,
+        actor_type="ellipsoid",
+    )
+
+    _ = actor.ellipsoid(
+        centers=centers,
+        lengths=lengths,
+        orientation_matrices=axes,
+        colors=colors,
+    )
+
+    _ = actor.ellipsoid(
+        np.array([[0, 0, 0], [1, 1, 1]]),
+        lengths=np.array([[2, 1, 1]]),
+        colors=np.array([[1, 0, 0]]),
+    )
+
+    _ = actor.ellipsoid(
+        np.array([[0, 0, 0], [1, 1, 1]]), lengths=(2, 1, 1), colors=(1, 0, 0)
+    )
+
+    _ = actor.ellipsoid(centers)
+
+
+def test_valid_3d_data():
+    """Test valid 3D input with default parameters (Test Case 1)."""
+    data = np.random.rand(10, 20, 30)
+    slicer_obj = actor.slicer(data)
+
+    # Verify object type and visibility
+    assert isinstance(slicer_obj, Group)
+    assert slicer_obj.visible
+    assert len(slicer_obj.children) == 3
+    assert all(child.visible for child in slicer_obj.children)
+
+
+def test_invalid_4d_data():
+    """Test invalid 4D data shape (Test Case 4)."""
+    data = np.random.rand(10, 20, 30, 4)  # Last dim ≠ 3
+    with pytest.raises(ValueError) as excinfo:
+        actor.slicer(data)
+    assert "Last dimension must be of size 3" in str(excinfo.value)
+
+
+def test_opacity_validation():
+    """Test opacity validation raises errors for out-of-bounds values"""
+    data = np.random.rand(10, 20, 30)
+
+    # Test valid values
+    for valid_opacity in [0, 0.5, 1]:
+        slicer_obj = actor.slicer(data, opacity=valid_opacity)
+        for child in slicer_obj.children:
+            assert child.material.opacity == valid_opacity
+
+    # Test invalid values
+    for invalid_opacity in [-0.1, 1.1, 2.0]:
+        with pytest.raises(ValueError) as excinfo:
+            actor.slicer(data, opacity=invalid_opacity)
+        assert "Opacity must be between 0 and 1" in str(excinfo.value)
+
+
+def test_custom_initial_slices():
+    """Test custom initial slice positions (Test Case 10)."""
+    data = np.random.rand(10, 20, 30)
+    slicer_obj = actor.slicer(data, initial_slices=(5, 10, 15))
+
+    # Verify slice positions match input
+    assert np.array_equal(get_slices(slicer_obj), [5, 10, 15])
+
+    # Verify positions update correctly
+    show_slices(slicer_obj, (2, 4, 6))
+    assert np.array_equal(get_slices(slicer_obj), [2, 4, 6])
+
+
+def test_visibility_control():
+    """Test visibility settings through methods (Test Case 13)."""
+    data = np.random.rand(10, 20, 30)
+    slicer_obj = actor.slicer(data, visibility=(True, True, True))
+
+    # Verify initial visibility
+    assert all(child.visible for child in slicer_obj.children)
+
+    # Update and verify new visibility
+    set_group_visibility(slicer_obj, (False, True, False))
+    visibilities = [child.visible for child in slicer_obj.children]
+    assert visibilities == [False, True, False]

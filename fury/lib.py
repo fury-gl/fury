@@ -1,3 +1,5 @@
+"""Interface to pygfx and wgpu."""
+
 from typing import TypeAlias
 
 import jinja2
@@ -42,6 +44,9 @@ if have_py_qt5:
     from PyQt5 import QtWidgets
 
 Texture = gfx.Texture
+VolumeSliceMaterial = gfx.VolumeSliceMaterial
+Group = gfx.Group
+Volume = gfx.Volume
 AmbientLight = gfx.AmbientLight
 Background = gfx.Background
 BackgroundSkyboxMaterial = gfx.BackgroundSkyboxMaterial

@@ -98,12 +98,12 @@ if __name__ == "__main__":
     if len(sys.argv) == 2:
         tag = sys.argv[1]
 
-    intro_msg = """
+    intro_msg = f"""
 ##############################################
-#  Documentation version {}
+#  Documentation version {mod.__version__}
 #
-#  using tag '{}'
-##############################################""".format(mod.__version__, tag)
+#  using tag '{tag}'
+##############################################"""
 
     print(intro_msg)
 
@@ -116,7 +116,7 @@ if __name__ == "__main__":
 
     if not os.path.exists(pages_dir):
         # clone the gh-pages repo if we haven't already.
-        sh("git clone {0} {1}".format(pages_repo, pages_dir))
+        sh(f"git clone {pages_repo} {pages_dir}")
 
     # ensure up-to-date before operating
     cd(pages_dir)
@@ -159,11 +159,11 @@ if __name__ == "__main__":
             Path(".nojekyll").touch()
             sh("git add .nojekyll")
 
-        sh("git add --all {}".format(tag))
+        sh(f"git add --all {tag}")
 
         status = sh2("LANG=en_US git status | tail -1")
         if not re.match(b"nothing to commit", status):
-            sh2('git commit -m "Updated doc release: {}"'.format(tag))
+            sh2(f'git commit -m "Updated doc release: {tag}"')
         else:
             print("\n! Note: no changes to commit\n")
 

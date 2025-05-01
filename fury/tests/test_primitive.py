@@ -10,6 +10,7 @@ def test_vertices_primitives():
     # Tests the default vertices of all the built in primitive shapes.
     l_primitives = [
         (fp.prim_square, (4, 3), -0.5, 0.5, 0, {}),
+        (fp.prim_triangle, (3, 3), -0.5, 0.5, -0.0555555555, {}),
         (fp.prim_box, (24, 3), -0.5, 0.5, 0, {"detailed": True}),
         (fp.prim_box, (8, 3), -0.5, 0.5, 0, {"detailed": False}),
         (fp.prim_tetrahedron, (4, 3), -0.5, 0.5, 0, {}),
@@ -46,7 +47,7 @@ def test_vertices_primitives_octagonalprism():
     # Testing the default vertices of the primitive octagonal prism.
     vertices, _ = fp.prim_octagonalprism()
     shape = (16, 3)
-    two = (1 + float("{:.7f}".format(math.sqrt(2)))) / 4
+    two = (1 + float(f"{math.sqrt(2):.7f}")) / 4
 
     npt.assert_equal(vertices.shape, shape)
     npt.assert_equal(np.mean(vertices), 0)
@@ -75,7 +76,7 @@ def test_vertices_primitives_triangularprism():
     # Testing the default vertices of the primitive triangular prism.
     vertices, _ = fp.prim_triangularprism()
     shape = (6, 3)
-    three = float("{:.7f}".format(math.sqrt(3)))
+    three = float(f"{math.sqrt(3):.7f}")
     npt.assert_equal(vertices.shape, shape)
     npt.assert_equal(np.mean(vertices), 0)
     npt.assert_equal(vertices.min(), -1 / three)
@@ -85,6 +86,7 @@ def test_vertices_primitives_triangularprism():
 def test_triangles_primitives():
     l_primitives = [
         (fp.prim_square, (2, 3)),
+        (fp.prim_triangle, (1, 3)),
         (fp.prim_box, (12, 3)),
         (fp.prim_tetrahedron, (4, 3)),
         (fp.prim_icosahedron, (20, 3)),
@@ -282,3 +284,40 @@ def test_repeat_primitive_function():
     # big_verts, big_faces, big_colors, big_centers = res
 
     # npt.assert_equal(big_verts.shape[0],  verts.shape[0] * centers.shape[0])
+
+
+def test_disk_primitive():
+    verts, faces = fp.prim_disk()
+    npt.assert_equal(verts.shape, (37, 3))
+    npt.assert_equal(faces.shape, (36, 3))
+    npt.assert_almost_equal(np.mean(verts), 0, decimal=2)
+
+    npt.assert_array_equal(verts[0], [0, 0, 0])
+
+    # Check outer points are at radius distance from center
+    outer_verts = verts[1:]
+    distances = np.sqrt(outer_verts[:, 0] ** 2 + outer_verts[:, 1] ** 2)
+    npt.assert_almost_equal(distances, 0.5, decimal=6)
+
+    # Check all z-coordinates are 0 (flat disk)
+    npt.assert_array_equal(verts[:, 2], np.zeros(len(verts)))
+
+    # Check with custom parameters
+    radius = 1.5
+    sectors = 20
+    verts, faces = fp.prim_disk(radius=radius, sectors=sectors)
+    npt.assert_equal(verts.shape, (sectors + 1, 3))
+    npt.assert_equal(faces.shape, (sectors, 3))
+
+    # Check outer points are at custom radius
+    outer_verts = verts[1:]
+    distances = np.sqrt(outer_verts[:, 0] ** 2 + outer_verts[:, 1] ** 2)
+    npt.assert_almost_equal(distances, radius, decimal=6)
+
+    # Test triangle indices reference all vertices
+    npt.assert_equal(
+        np.unique(np.concatenate(faces, axis=None)).tolist(), list(range(len(verts)))
+    )
+
+    npt.assert_raises(TypeError, fp.prim_disk, radius=1.0, sectors=10.5)
+    npt.assert_raises(ValueError, fp.prim_disk, radius=1.0, sectors=7)

@@ -1,21 +1,45 @@
+"""Utility functions for 3D graphics and visualization.
+
+This module contains various utility functions for 3D graphics and
+visualization, including trilinear interpolation, affine transformations,
+normal calculations, and grid generation. These functions are designed
+to work with numpy arrays and are useful for manipulating 3D data
+structures, such as meshes and point clouds.
+"""
+
 import numpy as np
 from scipy.ndimage import map_coordinates
+
+from fury.lib import Group
+from fury.material import validate_opacity
 
 
 def map_coordinates_3d_4d(input_array, indices):
     """Evaluate input_array at the given indices using trilinear interpolation.
 
+    Uses trilinear interpolation to sample values from a 3D or 4D array at
+    specified coordinates.
+
     Parameters
     ----------
-    input_array : ndarray,
-        3D or 4D array
+    input_array : ndarray
+        3D or 4D array to be sampled.
     indices : ndarray
+        Coordinates at which to evaluate `input_array`. Should have shape
+        (N, D) where N is the number of points and D is the dimensionality
+        of the input array.
 
     Returns
     -------
-    output : ndarray
-        1D or 2D array
+    ndarray
+        1D or 2D array of values evaluated at `indices`. Shape will be
+        (N,) for 3D input or (N, M) for 4D input, where M is the size of
+        the last dimension of `input_array`.
 
+    Raises
+    ------
+    ValueError
+        If input_array is not 3D or 4D.
     """
     if input_array.ndim <= 2 or input_array.ndim >= 5:
         raise ValueError("Input array can only be 3d or 4d")
@@ -34,35 +58,32 @@ def map_coordinates_3d_4d(input_array, indices):
 def apply_affine(aff, pts):
     """Apply affine matrix `aff` to points `pts`.
 
-    Returns result of application of `aff` to the *right* of `pts`.  The
+    Returns result of application of `aff` to the *right* of `pts`. The
     coordinate dimension of `pts` should be the last.
-    For the 3D case, `aff` will be shape (4,4) and `pts` will have final axis
-    length 3 - maybe it will just be N by 3. The return value is the
-    transformed points, in this case::
-    res = np.dot(aff[:3,:3], pts.T) + aff[:3,3:4]
-    transformed_pts = res.T
-    This routine is more general than 3D, in that `aff` can have any shape
-    (N,N), and `pts` can have any shape, as long as the last dimension is for
-    the coordinates, and is therefore length N-1.
 
     Parameters
     ----------
-    aff : (N, N) array-like
-
-        Homogeneous affine, for 3D points, will be 4 by 4. Contrary to first
-        appearance, the affine will be applied on the left of `pts`.
-    pts : (..., N-1) array-like
-        Points, where the last dimension contains the coordinates of each
-        point.  For 3D, the last dimension will be length 3.
+    aff : ndarray, shape (N, N)
+        Homogeneous affine matrix. For 3D points, will be 4 by 4. The affine
+        will be applied on the left of `pts`.
+    pts : ndarray, shape (..., N-1)
+        Points to transform, where the last dimension contains the coordinates
+        of each point. For 3D, the last dimension will be length 3.
 
     Returns
     -------
-    transformed_pts : (..., N-1) array
-        transformed points
+    ndarray, shape (..., N-1)
+        Transformed points with same shape as input `pts`.
 
     Notes
     -----
     Copied from nibabel to remove dependency.
+
+    For the 3D case, `aff` will be shape (4,4) and `pts` will have final axis
+    length 3. The transformation is computed as::
+
+        res = np.dot(aff[:3,:3], pts.T) + aff[:3,3:4]
+        transformed_pts = res.T
 
     Examples
     --------
@@ -87,7 +108,6 @@ def apply_affine(aff, pts):
     <BLANKLINE>
            [[20, 23, 36],
             [24, 29, 44]]]...)
-
     """
     aff = np.asarray(aff)
     pts = np.asarray(pts)
@@ -101,6 +121,18 @@ def apply_affine(aff, pts):
 
 
 def asbytes(s):
+    """Convert string to bytes using latin1 encoding.
+
+    Parameters
+    ----------
+    s : str or bytes
+        Input string or bytes object.
+
+    Returns
+    -------
+    bytes
+        Input encoded as bytes using latin1 encoding.
+    """
     if isinstance(s, bytes):
         return s
     return s.encode("latin1")
@@ -109,30 +141,34 @@ def asbytes(s):
 def get_grid_cells_position(shapes, *, aspect_ratio=16 / 9.0, dim=None):
     """Construct a XY-grid based on the cells content shape.
 
-    This function generates the coordinates of every grid cell. The width and
-    height of every cell correspond to the largest width and the largest height
-    respectively. The grid dimensions will automatically be adjusted to respect
-    the given aspect ratio unless they are explicitly specified.
-
-    The grid follows a row-major order with the top left corner being at
-    coordinates (0,0,0) and the bottom right corner being at coordinates
-    (nb_cols*cell_width, -nb_rows*cell_height, 0). Note that the X increases
-    while the Y decreases.
+    Generate coordinates for a grid of cells with specified content shapes.
+    The grid follows a row-major order with the top left corner at (0,0,0).
 
     Parameters
     ----------
     shapes : list of tuple of int
         The shape (width, height) of every cell content.
-    aspect_ratio : float (optional)
-        Aspect ratio of the grid (width/height). Default: 16:9.
-    dim : tuple of int (optional)
-        Dimension (nb_rows, nb_cols) of the grid, if provided.
+    aspect_ratio : float, optional
+        Aspect ratio of the grid (width/height). Default is 16/9.
+    dim : tuple of int, optional
+        Dimension (nb_rows, nb_cols) of the grid. If None, dimensions are
+        calculated automatically to match the aspect_ratio.
 
     Returns
     -------
-    ndarray
-        3D coordinates of every grid cell.
+    ndarray, shape (N, 3)
+        3D coordinates of every grid cell center, where N is the number of cells.
 
+    Raises
+    ------
+    ValueError
+        If the provided `dim` is too small to contain all elements.
+
+    Notes
+    -----
+    The grid width and height are determined by the largest width and height
+    among all cell contents. X coordinates increase from left to right while
+    Y coordinates decrease from top to bottom.
     """
     cell_shape = np.r_[np.max(shapes, axis=0), 0]
     cell_aspect_ratio = cell_shape[0] / cell_shape[1]
@@ -156,17 +192,22 @@ def get_grid_cells_position(shapes, *, aspect_ratio=16 / 9.0, dim=None):
 
 
 def normalize_v3(arr):
-    """Normalize a numpy array of 3 component vectors shape=(N, 3).
+    """Normalize a numpy array of 3 component vectors in-place.
 
     Parameters
     ----------
-    array : ndarray
-        Shape (N, 3)
+    arr : ndarray, shape (N, 3)
+        Array of vectors to normalize.
 
     Returns
     -------
-    norm_array
+    ndarray, shape (N, 3)
+        The input array, normalized in-place.
 
+    Notes
+    -----
+    Vectors are normalized by dividing each component by the vector length.
+    Zero-length vectors will cause division by zero.
     """
     lens = np.sqrt(arr[:, 0] ** 2 + arr[:, 1] ** 2 + arr[:, 2] ** 2)
     arr[:, 0] /= lens
@@ -176,18 +217,26 @@ def normalize_v3(arr):
 
 
 def normals_from_v_f(vertices, faces):
-    """Calculate normals from vertices and faces.
+    """Calculate vertex normals from vertices and faces.
+
+    Compute surface normals for each vertex based on the faces that include it.
 
     Parameters
     ----------
-    verices : ndarray
-    faces : ndarray
+    vertices : ndarray, shape (N, 3)
+        Array of vertex coordinates.
+    faces : ndarray, shape (M, 3)
+        Array of triangle indices, where each element is an index into vertices.
 
     Returns
     -------
-    normals : ndarray
-        Shape same as vertices
+    ndarray, shape (N, 3)
+        Array of calculated normals, one per vertex.
 
+    Notes
+    -----
+    The normal for each face is calculated and then accumulated for each
+    vertex. The final normals are normalized to unit length.
     """
     norm = np.zeros(vertices.shape, dtype=vertices.dtype)
     tris = vertices[faces]
@@ -201,45 +250,54 @@ def normals_from_v_f(vertices, faces):
 
 
 def tangents_from_direction_of_anisotropy(normals, direction):
-    """Calculate tangents from normals and a 3D vector representing the
-       direction of anisotropy.
+    """Calculate tangents from normals and a direction of anisotropy.
 
     Parameters
     ----------
-    normals : normals, represented as 2D ndarrays (Nx3) (one per vertex)
-    direction : tuple (3,) or array (3,)
+    normals : ndarray, shape (N, 3)
+        Array of surface normals per vertex.
+    direction : array_like, shape (3,)
+        Vector representing the direction of anisotropy.
 
     Returns
     -------
-    output : array (N, 3)
-        Tangents, represented as 2D ndarrays (Nx3).
+    ndarray, shape (N, 3)
+        Array of calculated tangents, one per vertex.
 
+    Notes
+    -----
+    The tangent vectors are calculated by first finding the binormal
+    (cross product of normal and tangent direction), then taking the
+    cross product of the normal and binormal.
     """
     tangents = np.cross(normals, direction)
     binormals = normalize_v3(np.cross(normals, tangents))
     return normalize_v3(np.cross(normals, binormals))
 
 
-def triangle_order(vertices, faces):
-    """Determine the winding order of a given set of vertices and a triangle.
+def triangle_order(vertices, face):
+    """Determine the winding order of a given triangle face.
 
     Parameters
     ----------
-    vertices : ndarray
-        array of vertices making up a shape
-    faces : ndarray
-        array of triangles
+    vertices : ndarray, shape (N, 3)
+        Array of vertices making up a shape.
+    face : ndarray, shape (3,)
+        Array of 3 indices representing a single triangle face.
 
     Returns
     -------
-    order : int
-        If the order is counter clockwise (CCW), returns True.
-        Otherwise, returns False.
+    bool
+        True if the order is counter-clockwise (CCW), False otherwise.
 
+    Notes
+    -----
+    The winding order is determined using the sign of the determinant
+    of a 4x4 matrix containing the triangle vertices.
     """
-    v1 = vertices[faces[0]]
-    v2 = vertices[faces[1]]
-    v3 = vertices[faces[2]]
+    v1 = vertices[face[0]]
+    v2 = vertices[face[1]]
+    v3 = vertices[face[2]]
 
     # https://stackoverflow.com/questions/40454789/computing-face-normals-and-winding
     m_orient = np.ones((4, 4))
@@ -258,41 +316,44 @@ def change_vertices_order(triangle):
 
     Parameters
     ----------
-    triangle : ndarray, shape(1, 3)
-        array of 3 vertices making up a triangle
+    triangle : ndarray, shape (3,)
+        Array of 3 vertex indices making up a triangle.
 
     Returns
     -------
-    new_triangle : ndarray, shape(1, 3)
-        new array of vertices making up a triangle in the opposite winding
-        order of the given parameter
+    ndarray, shape (3,)
+        New array of vertex indices in the opposite winding order.
 
+    Notes
+    -----
+    Reverses the winding order by swapping the first and last vertices.
     """
     return np.array([triangle[2], triangle[1], triangle[0]])
 
 
 def fix_winding_order(vertices, triangles, *, clockwise=False):
-    """Return corrected triangles.
-
-    Given an ordering of the triangle's three vertices, a triangle can appear
-    to have a clockwise winding or counter-clockwise winding.
-    Clockwise means that the three vertices, in order, rotate clockwise around
-    the triangle's center.
+    """Return triangles with a fixed winding order.
 
     Parameters
     ----------
-    vertices : ndarray
-        array of vertices corresponding to a shape
-    triangles : ndarray
-        array of triangles corresponding to a shape
-    clockwise : bool
-        triangle order type: clockwise (default) or counter-clockwise.
+    vertices : ndarray, shape (N, 3)
+        Array of vertices corresponding to a shape.
+    triangles : ndarray, shape (M, 3)
+        Array of triangles corresponding to a shape.
+    clockwise : bool, optional
+        Desired triangle order type: True for clockwise, False for
+        counter-clockwise (default).
 
     Returns
     -------
-    corrected_triangles : ndarray
-        The corrected order of the vert parameter
+    ndarray, shape (M, 3)
+        The triangles with corrected winding order.
 
+    Notes
+    -----
+    Clockwise means that the three vertices, in order, rotate clockwise around
+    the triangle's center. This function ensures all triangles have the
+    specified winding order by checking each triangle and correcting as needed.
     """
     corrected_triangles = triangles.copy()
     desired_order = clockwise
@@ -301,3 +362,111 @@ def fix_winding_order(vertices, triangles, *, clockwise=False):
         if desired_order != current_order:
             corrected_triangles[nb] = change_vertices_order(face)
     return corrected_triangles
+
+
+def set_group_visibility(group, visibility):
+    """Set the visibility of a group of actors.
+
+    Parameters
+    ----------
+    group : Group
+        The group of actors to set visibility for.
+    visibility : tuple or list of bool
+        If a single boolean value is provided, it sets the visibility for all
+        actors in the group. If a tuple or list is provided, it sets the
+        visibility for each actor in the group individually.
+    """
+    if not isinstance(group, Group):
+        raise TypeError("group must be an instance of Group.")
+
+    if not isinstance(visibility, (tuple, list)):
+        group.visible = visibility
+        return
+
+    for idx, actor in enumerate(group.children):
+        actor.visible = visibility[idx]
+
+
+def set_group_opacity(group, opacity):
+    """Set the opacity of the group of actors.
+
+    Parameters
+    ----------
+    group : Group
+        The group of actors to set opacity for.
+    opacity : float
+        The opacity value to set for the group of actors,
+        ranging from 0 (fully transparent) to 1 (opaque).
+    """
+    if not isinstance(group, Group):
+        raise TypeError("group must be an instance of Group.")
+
+    opacity = validate_opacity(opacity)
+
+    for child in group.children:
+        child.material.opacity = opacity
+
+
+def validate_slices_group(group):
+    """Validate the slices in a group.
+
+    Parameters
+    ----------
+    group : Group
+        The group of actors to validate.
+
+    Raises
+    ------
+    TypeError
+        If the group is not an instance of Group.
+    ValueError
+        If the group does not contain exactly 3 children.
+    AttributeError
+        If the children do not have the required material plane attribute.
+    """
+    if not isinstance(group, Group):
+        raise TypeError("group must be an instance of Group.")
+
+    if len(group.children) != 3:
+        raise ValueError(
+            f"Group must contain exactly 3 children. {len(group.children)}"
+        )
+
+    if not hasattr(group.children[0].material, "plane"):
+        raise AttributeError(
+            "Children do not have the required material plane attribute for slices."
+        )
+
+
+def get_slices(group):
+    """Get the current positions of the slices.
+
+    Parameters
+    ----------
+    group : Group
+        The group of actors to get the slices from.
+
+    Returns
+    -------
+    ndarray
+        An array containing the current positions of the slices.
+    """
+    validate_slices_group(group)
+    return np.asarray([child.material.plane[-1] for child in group.children])
+
+
+def show_slices(group, position):
+    """Show the slices at the specified position.
+
+    Parameters
+    ----------
+    group : Group
+        The group of actors to get the slices from.
+    position : tuple
+        A tuple containing the positions of the slices in the 3D space.
+    """
+    validate_slices_group(group)
+
+    for i, child in enumerate(group.children):
+        a, b, c, _ = child.material.plane
+        child.material.plane = (a, b, c, position[i])

@@ -24,7 +24,7 @@ __all__ = [
     #     "pick",
     "pkg_info",
     "primitive",
-    "shaders",
+    "shader",
     #     "stream",
     "testing",
     "transform",
@@ -53,7 +53,7 @@ from . import (
     optpkg,
     pkg_info,
     primitive,
-    shaders,
+    shader,
     #     stream,
     testing,
     transform,
@@ -313,7 +313,6 @@ from .primitive import (
     repeat_primitive as repeat_primitive,
     repeat_primitive_function as repeat_primitive_function,
 )
-from .shaders import wgsl as wgsl
 
 # from .stream import (
 #     ArrayCircularQueue as ArrayCircularQueue,

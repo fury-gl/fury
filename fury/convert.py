@@ -1,13 +1,13 @@
+"""Convert between different formats."""
+
 import os
 from tempfile import TemporaryDirectory
 
 import numpy as np
 
-from fury.decorators import warn_on_args_to_kwargs
 from fury.io import load_image
 
 
-@warn_on_args_to_kwargs()
 def matplotlib_figure_to_numpy(
     fig, *, dpi=100, fname=None, flip_up_down=True, transparent=False
 ):
@@ -16,9 +16,9 @@ def matplotlib_figure_to_numpy(
     Parameters
     ----------
     fig : obj
-        A matplotlib figure object
+        A matplotlib figure object.
     dpi : int, optional
-        Dots per inch
+        Dots per inch.
     fname : str, optional
         If ``fname`` is given then the array will be saved as a png to this
         position.
@@ -30,8 +30,8 @@ def matplotlib_figure_to_numpy(
 
     Returns
     -------
-    arr : ndarray
-        a numpy 3D array of RGBA values
+    ndarray
+        A numpy 3D array of RGBA values.
 
     Notes
     -----
@@ -41,7 +41,6 @@ def matplotlib_figure_to_numpy(
     you can actually use fig.canvas.tostring_argb() to get the values directly
     without saving to the disk. However, this was not stable across different
     machines and needed more investigation from what time permitted.
-
     """
     if fname is None:
         with TemporaryDirectory() as tmpdir:
