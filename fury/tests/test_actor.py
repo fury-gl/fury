@@ -177,7 +177,7 @@ def test_star():
     validate_actors(centers=centers, colors=colors, actor_type="star")
 
 
-def test_flat_disk():
+def test_disk():
     centers = np.array([[0, 0, 0]])
     colors = np.array([[1, 0, 0]])
     validate_actors(centers=centers, colors=colors, actor_type="disk")
@@ -278,13 +278,14 @@ def test_marker():
 
 def test_text():
     text = "FURY"
-    position = np.array([0, 0, 0])
+    position1 = np.array([1.0, 0.0, 0.0])
+    position2 = np.array([1.0, 2.0, 1.0])
     scene = window.Scene()
 
-    text_actor = actor.text(text=text, anchor="middle-center")
+    text_actor = actor.text(text=text, anchor="middle-center", position=position1)
     scene.add(text_actor)
 
-    npt.assert_array_equal(text_actor.local.position, position)
+    npt.assert_array_equal(text_actor.local.position, position1)
 
     fname = "text_test.png"
     window.snapshot(scene=scene, fname=fname)
@@ -304,9 +305,9 @@ def test_text():
     scene.remove(text_actor)
 
     text1 = "HELLO"
-    text_actor_1 = actor.text(text=text1, anchor="middle-center")
-    text_actor_1.local.position = position
+    text_actor_1 = actor.text(text=text1, anchor="middle-center", position=position2)
     scene.add(text_actor_1)
+    npt.assert_array_equal(text_actor_1.local.position, position2)
     fname_1 = "text_test_1.png"
     window.snapshot(scene=scene, fname=fname_1)
     img = Image.open(fname_1)
