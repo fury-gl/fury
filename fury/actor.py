@@ -1,5 +1,7 @@
 """Actor creation functions for various geometric primitives."""
 
+from dipy.data import get_sphere
+from dipy.reconst.shm import sh_to_sf_matrix
 import numpy as np
 
 from fury.geometry import (
@@ -13,6 +15,8 @@ from fury.geometry import (
 from fury.lib import (
     Geometry,
     Group,
+    Mesh,
+    MeshPhongShader,
     Texture,
     Volume,
     VolumeSliceMaterial,
@@ -20,6 +24,7 @@ from fury.lib import (
     register_wgpu_render_function,
 )
 from fury.material import (
+    SphGlyphMaterial,
     VectorFieldMaterial,
     _create_line_material,
     _create_mesh_material,
@@ -28,8 +33,17 @@ from fury.material import (
     validate_opacity,
 )
 import fury.primitive as fp
-from fury.shader import VectorFieldComputeShader, VectorFieldShader
-from fury.utils import set_group_opacity, set_group_visibility, show_slices
+from fury.shader import (
+    SphGlyphComputeShader,
+    VectorFieldComputeShader,
+    VectorFieldShader,
+)
+from fury.utils import (
+    get_lmax_from_N,
+    set_group_opacity,
+    set_group_visibility,
+    show_slices,
+)
 
 
 def actor_from_primitive(
@@ -2050,4 +2064,128 @@ def register_peaks_shaders(wobject):
     """
     compute_shader = VectorFieldComputeShader(wobject)
     render_shader = VectorFieldShader(wobject)
+    return compute_shader, render_shader
+
+
+class SphGlyph(Mesh):
+    def __init__(self, coeffs, sphere="symmetric362"):
+        self.n_coeff = coeffs.shape[-1]
+        print("N coeffs", self.n_coeff)
+        self.data_shape = coeffs.shape[:3]
+        print("Data shape", self.data_shape)
+        sh_order = get_lmax_from_N(self.n_coeff)
+        self.l_max = sh_order
+
+        print("Lmax", sh_order)
+        # sphere_obj = unit_icosahedron.subdivide(n=2)
+
+        sphere_obj = get_sphere(sphere)
+        # xyz = fibonacci_sphere(181, hemisphere=True, randomize=False)
+        # sphere_obj = Sphere(xyz=np.vstack((xyz, -xyz)))
+        # print(sphere_obj.vertices.shape)
+
+        # positions, indices = fp.repeat_primitive(
+        #     positions=sphere_obj.vertices, faces=sphere_obj.faces
+        # )
+
+        positions = np.tile(sphere_obj.vertices, (np.prod(self.data_shape), 1)).astype(
+            np.float32
+        )
+        positions[0] = np.asarray(self.data_shape)
+        self.scaled_vertices = np.zeros_like(positions, dtype=np.float32)
+
+        self.vertices_per_glyph = sphere_obj.vertices.shape[0]
+        self.faces_per_glyph = sphere_obj.faces.shape[0]
+
+        self.indices = sphere_obj.faces.reshape(-1).astype(np.int32)
+        # positions[100:] += 1
+
+        indices = np.tile(sphere_obj.faces, (np.prod(self.data_shape), 1)).astype(
+            np.int32
+        )
+
+        self.radii = np.zeros((self.vertices_per_glyph,), dtype=np.float32)
+
+        for i in range(0, indices.shape[0] // sphere_obj.faces.shape[0]):
+            start = sphere_obj.faces.shape[0] * i
+            end = start + sphere_obj.faces.shape[0]
+            indices[start:end] += i * self.vertices_per_glyph
+
+        print(indices.shape[0] // sphere_obj.faces.shape[0])
+
+        print("Positions :", positions.shape)
+
+        geo = buffer_to_geometry(
+            positions=positions.astype("float32"),
+            indices=indices.astype("int32"),
+            colors=np.ones_like(positions, dtype="float32"),
+            normals=np.zeros_like(positions).astype("float32"),
+        )
+
+        # mat = _create_mesh_material(
+        #     mode="vertex", flat_shading=False, enable_picking=False
+        # )
+
+        mat = SphGlyphMaterial(
+            color_mode="vertex",
+            flat_shading=False,
+            shininess=100,
+            specular="#494949",
+            side="front",
+        )
+
+        # mat = MeshStandardMaterial(color_mode="vertex", flat_shading=False)
+
+        B_mat = sh_to_sf_matrix(
+            sphere_obj, sh_order=sh_order, legacy=False, return_inv=False
+        ).T
+
+        print("B_mat", B_mat.shape)
+        print("coeffs", coeffs.shape)
+
+        self.sh_coeff = coeffs.reshape(-1).astype("float32")
+        print("sh_coeff", self.sh_coeff.shape)
+        print("Vertices per glyph", self.vertices_per_glyph)
+        self.sf_func = B_mat.reshape(-1).astype("float32")
+        self.sphere = sphere_obj.vertices.astype("float32")
+        # print(sphere_obj.vertices)
+
+        super().__init__(geometry=geo, material=mat)
+
+
+def sph_glyph(coeffs, *, sphere="symmetric362"):
+    """Visualize a spherical glyph with different features.
+
+    Parameters
+    ----------
+    coeffs : ndarray, shape (X, Y, Z, N, 3)
+        The spherical harmonics coefficients.
+    sphere : str, optional
+        The name of the sphere to use for the glyph.
+
+    Returns
+    -------
+    SphGlyph
+        A spherical glyph object.
+    """
+    obj = SphGlyph(coeffs=coeffs, sphere=sphere)
+    return obj
+
+
+@register_wgpu_render_function(SphGlyph, SphGlyphMaterial)
+def register_glyph_shaders(wobject):
+    """Register Glyph shaders.
+
+    Parameters
+    ----------
+    wobject : VectorField
+        The vector field object to register shaders for.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the compute shader and the render shader.
+    """
+    compute_shader = SphGlyphComputeShader(wobject)
+    render_shader = MeshPhongShader(wobject)
     return compute_shader, render_shader

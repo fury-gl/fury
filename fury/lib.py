@@ -65,6 +65,7 @@ Line = gfx.Line
 
 MeshBasicMaterial = gfx.MeshBasicMaterial
 MeshPhongMaterial = gfx.MeshPhongMaterial
+MeshStandardMaterial = gfx.MeshStandardMaterial
 PointsMaterial = gfx.PointsMaterial
 PointsGaussianBlobMaterial = gfx.PointsGaussianBlobMaterial
 PointsMarkerMaterial = gfx.PointsMarkerMaterial
@@ -86,6 +87,9 @@ run = run
 Canvas = WgpuCanvas
 OffscreenCanvas = OffscreenWgpuCanvas
 BaseShader = gfx.renderers.wgpu.BaseShader
+MeshPhongShader = gfx.renderers.wgpu.shaders.meshshader.MeshPhongShader
+MeshStandardShader = gfx.renderers.wgpu.shaders.meshshader.MeshStandardShader
+MeshShader = gfx.renderers.wgpu.shaders.meshshader.MeshShader
 LineShader = gfx.renderers.wgpu.shaders.lineshader.LineShader
 ThinLineSegmentShader = gfx.renderers.wgpu.shaders.lineshader.ThinLineSegmentShader
 PrimitiveTopology = wgpu.PrimitiveTopology

@@ -7,6 +7,10 @@ fn orient2rgb(v: vec3<f32>) -> vec3<f32> {
     return vec3<f32>(1.0);
 }
 
+fn scaled_color(v: vec3<f32>) -> vec3<f32> {
+    return abs(normalize(v));
+}
+
 fn visible_cross_section(center: vec3<i32>, cross_section: vec3<i32>) -> bool {
     let xVal = center.x == cross_section.x;
     let yVal = center.y == cross_section.y;
@@ -53,11 +57,8 @@ fn get_voxel_id(id: i32, data_shape: vec3<i32>, visible: vec3<i32>) -> vec3<i32>
 
 }
 
-fn get_flatten_id(voxel_id: vec3<i32>, data_shape: vec3<i32>, num_pts: i32) -> i32 {
-    let z = voxel_id.z * data_shape.y * data_shape.x;
-    let y = voxel_id.y * data_shape.x;
-    let x = voxel_id.x;
-    return (x + y + z) * num_pts;
+fn flatten_from_3d(coord: vec3<i32>, data_shape: vec3<i32>) -> i32 {
+    return coord.x * data_shape.y * data_shape.z + coord.y * data_shape.z + coord.z;
 }
 
 fn flatten_to_3d(index: i32, data_shape: vec3<i32>) -> vec3<i32> {

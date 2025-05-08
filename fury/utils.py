@@ -470,3 +470,9 @@ def show_slices(group, position):
     for i, child in enumerate(group.children):
         a, b, c, _ = child.material.plane
         child.material.plane = (a, b, c, position[i])
+
+
+def get_lmax_from_N(N):
+    sqrt_val = np.sqrt(8 * N + 1)
+    lmax = int((sqrt_val - 1) // 2) - 1
+    return lmax

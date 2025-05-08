@@ -428,3 +428,74 @@ class VectorFieldMaterial(LineThinSegmentMaterial):
             [*cross_section, 0], dtype=np.int32
         )
         self.uniform_buffer.update_full()
+
+
+class SphGlyphMaterial(MeshPhongMaterial):
+    uniform_type = dict(
+        MeshPhongMaterial.uniform_type,
+        l_max="i4",
+        scale="f4",
+    )
+
+    def __init__(
+        self,
+        l_max=4,
+        scale=2,
+        shininess=30,
+        emissive="#000",
+        specular="#494949",
+        **kwargs,
+    ):
+        super().__init__(shininess, emissive, specular, **kwargs)
+        self.l_max = l_max
+        self.scale = scale
+
+    @property
+    def l_max(self):
+        """Get the maximum spherical harmonic degree.
+
+        Returns
+        -------
+        int
+            The maximum spherical harmonic degree.
+        """
+        return self.uniform_buffer.data["l_max"]
+
+    @l_max.setter
+    def l_max(self, value):
+        """Set the maximum spherical harmonic degree.
+
+        Parameters
+        ----------
+        value : int
+            The maximum spherical harmonic degree.
+        """
+        if not isinstance(value, int) or value % 2 != 0:
+            raise ValueError("l_max must be an even integer.")
+        self.uniform_buffer.data["l_max"] = value
+        self.uniform_buffer.update_full()
+
+    @property
+    def scale(self):
+        """Get the scale factor.
+
+        Returns
+        -------
+        float
+            The scale factor.
+        """
+        return self.uniform_buffer.data["scale"]
+
+    @scale.setter
+    def scale(self, value):
+        """Set the scale factor.
+
+        Parameters
+        ----------
+        value : float
+            The scale factor.
+        """
+        if not isinstance(value, (int, float)):
+            raise ValueError("scale must be a number.")
+        self.uniform_buffer.data["scale"] = value
+        self.uniform_buffer.update_full()
