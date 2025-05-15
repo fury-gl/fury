@@ -33,7 +33,7 @@ class VectorFieldComputeShader(BaseShader):
         super().__init__(wobject)
         self["num_vectors"] = wobject.vectors_per_voxel
         self["data_shape"] = wobject.field_shape
-        self["workgroup_size"] = 1024
+        self["workgroup_size"] = 64
 
     def get_render_info(self, wobject, _shared):
         """Get render information for the vector field compute shader.

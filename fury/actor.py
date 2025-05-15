@@ -1908,7 +1908,7 @@ class VectorField(WorldObject):
         field : ndarray, shape {(X, Y, Z, N, 3), (X, Y, Z, 3)}
             The vector field data, where X, Y, Z represent the position in 3D,
             N is the number of vectors per voxel, and 3 represents the vector
-        cross_section : list or tuple, shape (3,)
+        cross_section : list or tuple, shape (3,), optional
             A list or tuple representing the cross section dimensions.
             If None, the cross section will be ignored and complete field will be shown.
         colors : tuple, optional
@@ -1967,6 +1967,38 @@ class VectorField(WorldObject):
 
         super().__init__(geometry=geometry, material=material)
 
+    @property
+    def cross_section(self):
+        """Get the cross section of the vector field.
+
+        Returns
+        -------
+        ndarray
+            The cross section of the vector field.
+        """
+        return self.material.cross_section
+
+    @cross_section.setter
+    def cross_section(self, value):
+        """Set the cross section of the vector field.
+
+        Parameters
+        ----------
+        value : {list, tuple, ndarray}
+            The cross section dimensions to set.
+        """
+        if not isinstance(value, (list, tuple, np.ndarray)):
+            raise ValueError(
+                "Cross section must be a list, tuple, or ndarray, "
+                f"but got {type(value)}"
+            )
+        if len(value) != 3:
+            raise ValueError(f"Cross section must have length 3, but got {len(value)}")
+        value = np.asarray(value, dtype=np.int32)
+        value = np.minimum(self.field_shape, value)
+        value = np.maximum(value, np.zeros((3,), dtype=np.int32))
+        self.material.cross_section = value
+
 
 def vector_field(field, *, colors=None, scales=1.0, opacity=1.0):
     """Visualize a vector field with different features.
@@ -2004,7 +2036,7 @@ def vector_field_slicer(
     field : ndarray, shape {(X, Y, Z, N, 3), (X, Y, Z, 3)}
         The vector field data, where X, Y, Z represent the position in 3D,
         N is the number of vectors per voxel, and 3 represents the vector
-    cross_section : list or tuple, shape (3,)
+    cross_section : list or tuple, shape (3,), optional
         A list or tuple representing the cross section dimensions.
         If None, the cross section will be ignored and complete field will be shown.
     colors : tuple, optional

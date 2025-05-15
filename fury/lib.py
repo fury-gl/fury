@@ -95,7 +95,7 @@ RenderMask = gfx.renderers.wgpu.RenderMask
 Buffer = gfx.Buffer
 register_wgpu_render_function = gfx.renderers.wgpu.register_wgpu_render_function
 load_wgsl = gfx.renderers.wgpu.load_wgsl
-loader = gfx.renderers.wgpu.shader.templating.loader
+register_wgsl_loader = gfx.renderers.wgpu.shader.register_wgsl_loader
 WorldObject = gfx.WorldObject
 if have_jupyter_rfb:
     JupyterCanvas = JupyterWgpuCanvas
@@ -108,4 +108,4 @@ else:
     QtWidgets = PySide6
     get_app = PySide6
 
-loader.mapping["fury"] = jinja2.PackageLoader("fury.wgsl", ".")
+register_wgsl_loader("fury", jinja2.PackageLoader("fury.wgsl", "."))

@@ -21,18 +21,11 @@ fn vs_main(in: VertexInput) -> Varyings {
     varyings.position = vec4<f32>(npos);
     varyings.world_pos = vec3<f32>(ndc_to_world_pos(npos));
 
-    // let diff = load_s_diffs(i0);
-
     let center = flatten_to_3d(i0 / (NUM_VECTORS * 2), DATA_SHAPE);
     let color = load_s_colors(i0);
 
-    // if all(color == vec3<f32>(0.0)) {
-    //     varyings.color = vec4<f32>(orient2rgb(diff), 1.0);
-    // } else {
-        varyings.color = vec4<f32>(color, 1.0);
-    // }
+    varyings.color = vec4<f32>(color, 1.0);
 
-    // varyings.color = vec4<f32>(orient2rgb(diff), 1.0);
     varyings.center = vec3<i32>(center);
     varyings.cross_section = vec3<i32>(u_material.cross_section.xyz);
 
@@ -53,5 +46,8 @@ fn fs_main(varyings: Varyings) -> FragmentOutput {
     let opacity = color.a * u_material.opacity;
     let out_color = vec4<f32>(physical_color, opacity);
 
-    return get_fragment_output(varyings.position, out_color);
+    var out: FragmentOutput;
+    out.color = out_color;
+
+    return out;
 }
