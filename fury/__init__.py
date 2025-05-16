@@ -21,14 +21,13 @@ def get_info(verbose=False):
 
     Parameters
     ----------
-    pkg_path : str
-       path containing __init__.py for package
+    verbose : bool, optional
+        If `True`, print the information to stdout.
 
     Returns
     -------
-    context : dict
-       with named parameters of interest
-
+    dict
+       With named parameters of interest.
     """
     from os.path import dirname
     import sys
@@ -62,7 +61,7 @@ def get_info(verbose=False):
     info.update(d_dipy)
 
     if verbose:
-        print("\n".join(["{0}: {1}".format(k, v) for k, v in info.items()]))
+        print("\n".join([f"{k}: {v}" for k, v in info.items()]))
 
     return info
 
@@ -73,8 +72,7 @@ def enable_warnings(warnings_origin=None):
     Parameters
     ----------
     warnings_origin : list
-        list origin ['all', 'fury', 'vtk', 'matplotlib', ...]
-
+        List origin ['all', 'fury', 'vtk', 'matplotlib', ...].
     """
     warnings_origin = warnings_origin or ("all",)
 
@@ -90,8 +88,7 @@ def disable_warnings(warnings_origin=None):
     Parameters
     ----------
     warnings_origin : list
-        list origin ['all', 'fury', 'vtk', 'matplotlib', ...]
-
+        List origin ['all', 'fury', 'vtk', 'matplotlib', ...].
     """
     warnings_origin = warnings_origin or ("all",)
 

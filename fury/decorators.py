@@ -1,4 +1,8 @@
-"""Decorators for FURY tests."""
+"""Decorators for FURY tests and functions.
+
+This module provides decorators to handle doctests, parameter validation, and
+keyword-only arguments enforcement.
+"""
 
 from functools import wraps
 from inspect import signature
@@ -19,8 +23,20 @@ SKIP_RE = re.compile(r"(\s*>>>.*?)(\s*)#\s*skip\s+if\s+(.*)$")
 
 
 def doctest_skip_parser(func):
-    """Decorator replaces custom skip test markup in doctests.
+    """Replace custom skip test markup in doctests.
 
+    Parameters
+    ----------
+    func : callable
+        Function whose docstring will be modified.
+
+    Returns
+    -------
+    callable
+        Function with modified docstring.
+
+    Notes
+    -----
     Say a function has a docstring::
 
         something # skip if not HAVE_AMODULE
@@ -38,7 +54,6 @@ def doctest_skip_parser(func):
         something # doctest: +SKIP
         something + else
         something
-
     """
     lines = func.__doc__.split("\n")
     new_lines = []
@@ -59,22 +74,18 @@ def warn_on_args_to_kwargs(
     from_version="0.11.0",
     until_version="0.14.0",
 ):
-    """Decorator to enforce keyword-only arguments.
-
-    This decorator enforces that all arguments after the first one are
-    keyword-only arguments. It also checks that all keyword arguments are
-    expected by the function.
+    """Enforce keyword-only arguments.
 
     Parameters
     ----------
-    from_version: str, optional
-        The version of fury from which the function was supported.
-    until_version: str, optional
-        The version of fury until which the function was supported.
+    from_version : str, optional
+        The version of FURY from which the function was supported.
+    until_version : str, optional
+        The version of FURY until which the function was supported.
 
     Returns
     -------
-    decorator: Callable
+    callable
         Decorator function.
 
     Examples
@@ -101,23 +112,41 @@ def warn_on_args_to_kwargs(
     """  # noqa: E501
 
     def decorator(func):
-        """Decorator function. This function enforces that all arguments after
-        the first one are keyword-only arguments. It also checks that all
-        keyword arguments are expected by the function.
+        """Enforce keyword-only arguments in a function.
 
         Parameters
         ----------
-        func: function
+        func : callable
             Function to be decorated.
 
         Returns
         -------
-        wrapper: Callable
+        callable
             Decorated function.
         """
 
         @wraps(func)
         def wrapper(*args, **kwargs):
+            """Handle function arguments and enforce keyword-only arguments.
+
+            Parameters
+            ----------
+            *args : tuple
+                Positional arguments to be passed to the function.
+            **kwargs : dict
+                Keyword arguments to be passed to the function.
+
+            Returns
+            -------
+            any
+                Result of the function call.
+
+            Raises
+            ------
+            TypeError
+                If required keyword-only arguments are missing and FURY version
+                is greater than until_version.
+            """
             sig = signature(func)
             params = sig.parameters
             #
@@ -172,7 +201,7 @@ def warn_on_args_to_kwargs(
                     positional_args_len = len(POSITIONAL_ARGS)
                     args_k = list(args[positional_args_len:])
                     args = list(args[:positional_args_len])
-                    kwargs.update(dict(zip(missing_kwargs, args_k)))
+                    kwargs.update(dict(zip(missing_kwargs, args_k, strict=False)))
                     result = func(*args, **kwargs)
 
                     # if from_version is less or equal to fury.__version__ and,

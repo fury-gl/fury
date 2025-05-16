@@ -205,7 +205,7 @@ def test_show_manager_update_viewports():
     show_m = ShowManager(screen_config=[2], window_type="offscreen")  # Two screens
     new_bbs = [(0, 0, 400, 800), (400, 0, 400, 800)]  # Split window vertically
     update_viewports(show_m.screens, new_bbs)
-    for screen, bb in zip(show_m.screens, new_bbs):
+    for screen, bb in zip(show_m.screens, new_bbs, strict=False):
         assert screen.bounding_box == bb
 
 
