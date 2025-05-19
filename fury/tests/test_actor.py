@@ -454,3 +454,5 @@ def test_image():
 
     npt.assert_array_equal(image_actor.local.position, position)
     assert image_actor.visible
+
+    scene.remove(image_actor)
