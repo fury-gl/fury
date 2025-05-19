@@ -1934,7 +1934,9 @@ def image(
     obj = create_image(
         image_input=image,
         material=mat,
-        position=position,
         visible=visible,
     )
+
+    obj.local.position = position
+
     return obj

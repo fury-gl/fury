@@ -443,3 +443,14 @@ def test_visibility_control():
     set_group_visibility(slicer_obj, (False, True, False))
     visibilities = [child.visible for child in slicer_obj.children]
     assert visibilities == [False, True, False]
+
+
+def test_image():
+    scene = window.Scene()
+    image = np.random.rand(100, 100)
+    position = np.array([10, 10, 10])
+    image_actor = actor.image(image=image, position=position)
+    scene.add(image_actor)
+
+    npt.assert_array_equal(image_actor.local.position, position)
+    assert image_actor.visible
