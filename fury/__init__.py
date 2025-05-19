@@ -1,10 +1,13 @@
 """Init file for visualization package."""
 
 import warnings
+import sys
+from os.path import dirname
 
 import lazy_loader as lazy
 
 from fury.pkg_info import __version__, pkg_commit_hash
+from fury.optpkg import optional_package
 
 __getattr__, __dir__, __all__ = lazy.attach_stub(__name__, __file__)
 
@@ -27,15 +30,11 @@ def get_info(verbose=False):
     Returns
     -------
     dict
-       With named parameters of interest.
+        With named parameters of interest.
     """
-    from os.path import dirname
-    import sys
-
     import numpy
     import scipy
-
-    from fury.optpkg import optional_package
+    
 
     mpl, have_mpl, _ = optional_package("matplotlib")
     dipy, have_dipy, _ = optional_package("dipy")
@@ -51,14 +50,13 @@ def get_info(verbose=False):
         "sys_platform": sys.platform,
         "numpy_version": numpy.__version__,
         "scipy_version": scipy.__version__,
-        # TODO: add pygfx version
+        # TODO: Add pygfx version if applicable
     }
 
-    d_mpl = {"matplotlib_version": mpl.__version__} if have_mpl else {}
-    d_dipy = {"dipy_version": dipy.__version__} if have_dipy else {}
-
-    info.update(d_mpl)
-    info.update(d_dipy)
+    if have_mpl:
+        info["matplotlib_version"] = mpl.__version__
+    if have_dipy:
+        info["dipy_version"] = dipy.__version__
 
     if verbose:
         print("\n".join([f"{k}: {v}" for k, v in info.items()]))
@@ -72,14 +70,12 @@ def enable_warnings(warnings_origin=None):
     Parameters
     ----------
     warnings_origin : list
-        List origin ['all', 'fury', 'vtk', 'matplotlib', ...].
+        List origin ['all', 'fury', 'matplotlib', ...].
     """
     warnings_origin = warnings_origin or ("all",)
 
-    if "all" in warnings_origin or "vtk" in warnings_origin:
-        import vtkmodules.vtkCommonCore as ccvtk
-
-        ccvtk.vtkObject.GlobalWarningDisplayOn()
+    if "all" in warnings_origin:
+        warnings.filterwarnings("default")
 
 
 def disable_warnings(warnings_origin=None):
@@ -88,29 +84,24 @@ def disable_warnings(warnings_origin=None):
     Parameters
     ----------
     warnings_origin : list
-        List origin ['all', 'fury', 'vtk', 'matplotlib', ...].
+        List origin ['all', 'fury', 'matplotlib', ...].
     """
     warnings_origin = warnings_origin or ("all",)
 
-    if "all" in warnings_origin or "vtk" in warnings_origin:
-        import vtkmodules.vtkCommonCore as ccvtk
-
-        ccvtk.vtkObject.GlobalWarningDisplayOff()
+    if "all" in warnings_origin:
+        warnings.filterwarnings("ignore")
 
 
-# We switch off the warning display during the release
+# Disable warnings in release mode
 if "post" not in __version__ and "dev" not in __version__:
     disable_warnings()
 
-# Ignore this specific warning below from vtk < 8.2.
-# FutureWarning: Conversion of the second argument of issubdtype from
-# `complex` to `np.complexfloating` is deprecated. In future, it will be
-# treated as `np.complex128 == np.dtype(complex).type`.
-# assert not numpy.issubdtype(z.dtype, complex), \
+# Suppress known NumPy future warning
 warnings.filterwarnings(
     "ignore",
-    message="Conversion of the second argument of"
-    " issubdtype from `complex` to"
-    " `np.complexfloating` is deprecated.*",
+    message=(
+        "Conversion of the second argument of issubdtype from `complex` to"
+        " `np.complexfloating` is deprecated.*"
+    ),
     category=FutureWarning,
 )
