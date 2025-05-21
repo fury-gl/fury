@@ -20,15 +20,23 @@ from fury.lib import (
     register_wgpu_render_function,
 )
 from fury.material import (
-    VectorFieldMaterial,
+    VectorFieldArrowMaterial,
+    VectorFieldLineMaterial,
+    VectorFieldThinLineMaterial,
     _create_line_material,
     _create_mesh_material,
     _create_points_material,
     _create_text_material,
+    _create_vector_field_material,
     validate_opacity,
 )
 import fury.primitive as fp
-from fury.shader import VectorFieldComputeShader, VectorFieldShader
+from fury.shader import (
+    VectorFieldArrowShader,
+    VectorFieldComputeShader,
+    VectorFieldShader,
+    VectorFieldThinShader,
+)
 from fury.utils import set_group_opacity, set_group_visibility, show_slices
 
 
@@ -1886,7 +1894,10 @@ class VectorField(WorldObject):
     field : ndarray, shape {(X, Y, Z, N, 3), (X, Y, Z, 3)}
         The vector field data, where X, Y, Z represent the position in 3D,
         N is the number of vectors per voxel, and 3 represents the vector
-    cross_section : list or tuple, shape (3,)
+    actor_type : str, optional
+        The type of vector field visualization. Options are "thin_line",
+        "line", and "arrow".
+    cross_section : list or tuple, shape (3,), optional
         A list or tuple representing the cross section dimensions.
         If None, the cross section will be ignored and complete field will be shown.
     colors : tuple, optional
@@ -1896,10 +1907,25 @@ class VectorField(WorldObject):
         field.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
+    thickness : float, optional
+        The thickness of the lines in the vector field visualization.
+        Only applicable for "line" and "arrow" types.
+    visibility : tuple, optional
+        A tuple of three boolean values indicating the visibility of the slices
+        in the x, y, and z dimensions, respectively.
     """
 
     def __init__(
-        self, field, *, cross_section=None, colors=None, scales=1.0, opacity=1.0
+        self,
+        field,
+        *,
+        actor_type="thin_line",
+        cross_section=None,
+        colors=None,
+        scales=1.0,
+        opacity=1.0,
+        thickness=1.0,
+        visibility=None,
     ):
         """Initialize a vector field.
 
@@ -1908,6 +1934,9 @@ class VectorField(WorldObject):
         field : ndarray, shape {(X, Y, Z, N, 3), (X, Y, Z, 3)}
             The vector field data, where X, Y, Z represent the position in 3D,
             N is the number of vectors per voxel, and 3 represents the vector
+        actor_type : str, optional
+            The type of vector field visualization. Options are "thin_line",
+            "line", and "arrow".
         cross_section : list or tuple, shape (3,), optional
             A list or tuple representing the cross section dimensions.
             If None, the cross section will be ignored and complete field will be shown.
@@ -1918,6 +1947,12 @@ class VectorField(WorldObject):
             field.
         opacity : float, optional
             Takes values from 0 (fully transparent) to 1 (opaque).
+        thickness : float, optional
+            The thickness of the lines in the vector field visualization.
+            Only applicable for "line" and "arrow" types.
+        visibility : tuple, optional
+            A tuple of three boolean values indicating the visibility of the slices
+            in the x, y, and z dimensions, respectively.
         """
 
         if not (field.ndim == 5 or field.ndim == 4):
@@ -1934,6 +1969,7 @@ class VectorField(WorldObject):
 
         self.vectors = field.reshape(total_vectors, 3).astype(np.float32)
         self.field_shape = field.shape[:3]
+        self.visibility = visibility
         if field.ndim == 4:
             self.vectors_per_voxel = 1
         else:
@@ -1949,9 +1985,6 @@ class VectorField(WorldObject):
         else:
             self.scales = scales.reshape(total_vectors, 1).astype(np.float32)
 
-        if cross_section is None:
-            cross_section = np.asarray([-1, -1, -1], dtype=np.int32)
-
         pnts_per_vector = 2
         pts = np.zeros((total_vectors * pnts_per_vector, 3), dtype=np.float32)
         pts[0] = self.field_shape
@@ -1963,9 +1996,18 @@ class VectorField(WorldObject):
 
         colors = np.tile(colors, (total_vectors * pnts_per_vector, 1))
         geometry = buffer_to_geometry(positions=pts, colors=colors)
-        material = VectorFieldMaterial(cross_section, opacity=opacity)
+        material = _create_vector_field_material(
+            (0, 0, 0),
+            material=actor_type,
+            thickness=thickness,
+            opacity=opacity,
+        )
 
         super().__init__(geometry=geometry, material=material)
+        if cross_section is None:
+            self.cross_section = np.asarray([-2, -2, -2], dtype=np.int32)
+        else:
+            self.cross_section = cross_section
 
     @property
     def cross_section(self):
@@ -1994,13 +2036,25 @@ class VectorField(WorldObject):
             )
         if len(value) != 3:
             raise ValueError(f"Cross section must have length 3, but got {len(value)}")
+        if self.visibility is None:
+            self.material.cross_section = np.asarray([-2, -2, -2], dtype=np.int32)
+            return
         value = np.asarray(value, dtype=np.int32)
-        value = np.minimum(self.field_shape, value)
+        value = np.minimum(np.asarray(self.field_shape) - 1, value)
         value = np.maximum(value, np.zeros((3,), dtype=np.int32))
+        value = np.where(self.visibility, value, -1)
         self.material.cross_section = value
 
 
-def vector_field(field, *, colors=None, scales=1.0, opacity=1.0):
+def vector_field(
+    field,
+    *,
+    actor_type="thin_line",
+    colors=None,
+    scales=1.0,
+    opacity=1.0,
+    thickness=1.0,
+):
     """Visualize a vector field with different features.
 
     Parameters
@@ -2008,6 +2062,9 @@ def vector_field(field, *, colors=None, scales=1.0, opacity=1.0):
     field : ndarray, shape {(X, Y, Z, N, 3), (X, Y, Z, 3)}
         The vector field data, where X, Y, Z represent the position in 3D,
         N is the number of vectors per voxel, and 3 represents the vector
+    actor_type : str, optional
+        The type of vector field visualization. Options are "thin_line",
+        "line", and "arrow".
     colors : tuple, optional
         Color for the vectors. If None, the color will used from the orientation.
     scales : {float, ndarray}, shape {(X, Y, Z, N) or (X, Y, Z)}, optional
@@ -2015,6 +2072,9 @@ def vector_field(field, *, colors=None, scales=1.0, opacity=1.0):
         field.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
+    thickness : float, optional
+        The thickness of the lines in the vector field visualization.
+        Only applicable for "line" and "arrow" types.
 
     Returns
     -------
@@ -2022,12 +2082,27 @@ def vector_field(field, *, colors=None, scales=1.0, opacity=1.0):
         A vector field object.
     """
 
-    obj = VectorField(field, colors=colors, scales=scales, opacity=opacity)
+    obj = VectorField(
+        field,
+        actor_type=actor_type,
+        colors=colors,
+        scales=scales,
+        opacity=opacity,
+        thickness=thickness,
+    )
     return obj
 
 
 def vector_field_slicer(
-    field, *, cross_section=None, colors=None, scales=1.0, opacity=1.0
+    field,
+    *,
+    actor_type="thin_line",
+    cross_section=None,
+    colors=None,
+    scales=1.0,
+    opacity=1.0,
+    thickness=1.0,
+    visibility=(True, True, True),
 ):
     """Visualize a vector field with different features.
 
@@ -2036,6 +2111,9 @@ def vector_field_slicer(
     field : ndarray, shape {(X, Y, Z, N, 3), (X, Y, Z, 3)}
         The vector field data, where X, Y, Z represent the position in 3D,
         N is the number of vectors per voxel, and 3 represents the vector
+    actor_type : str, optional
+        The type of vector field visualization. Options are "thin_line",
+        "line", and "arrow".
     cross_section : list or tuple, shape (3,), optional
         A list or tuple representing the cross section dimensions.
         If None, the cross section will be ignored and complete field will be shown.
@@ -2046,6 +2124,12 @@ def vector_field_slicer(
         field.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
+    thickness : float, optional
+        The thickness of the lines in the vector field visualization.
+        Only applicable for "line" and "arrow" types.
+    visibility : tuple, optional
+        A tuple of three boolean values indicating the visibility of the slices
+        in the x, y, and z dimensions, respectively.
 
     Returns
     -------
@@ -2058,16 +2142,38 @@ def vector_field_slicer(
 
     obj = VectorField(
         field,
+        actor_type=actor_type,
         cross_section=cross_section,
         colors=colors,
         scales=scales,
         opacity=opacity,
+        thickness=thickness,
+        visibility=visibility,
     )
     return obj
 
 
-@register_wgpu_render_function(VectorField, VectorFieldMaterial)
-def register_peaks_shaders(wobject):
+@register_wgpu_render_function(VectorField, VectorFieldThinLineMaterial)
+def register_vector_field_thin_shaders(wobject):
+    """Register PeaksActor shaders.
+
+    Parameters
+    ----------
+    wobject : VectorField
+        The vector field object to register shaders for.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the compute shader and the render shader.
+    """
+    compute_shader = VectorFieldComputeShader(wobject)
+    render_shader = VectorFieldThinShader(wobject)
+    return compute_shader, render_shader
+
+
+@register_wgpu_render_function(VectorField, VectorFieldLineMaterial)
+def register_vector_field_shaders(wobject):
     """Register PeaksActor shaders.
 
     Parameters
@@ -2082,4 +2188,23 @@ def register_peaks_shaders(wobject):
     """
     compute_shader = VectorFieldComputeShader(wobject)
     render_shader = VectorFieldShader(wobject)
+    return compute_shader, render_shader
+
+
+@register_wgpu_render_function(VectorField, VectorFieldArrowMaterial)
+def register_vector_field_arrow_shaders(wobject):
+    """Register PeaksActor shaders.
+
+    Parameters
+    ----------
+    wobject : VectorField
+        The vector field object to register shaders for.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the compute shader and the render shader.
+    """
+    compute_shader = VectorFieldComputeShader(wobject)
+    render_shader = VectorFieldArrowShader(wobject)
     return compute_shader, render_shader

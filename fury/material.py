@@ -220,6 +220,67 @@ def _create_line_material(
         raise ValueError(f"Unsupported material type: {material}")
 
 
+def _create_vector_field_material(
+    cross_section,
+    *,
+    material="thin_line",
+    enable_picking=True,
+    opacity=1.0,
+    thickness=1.0,
+    thickness_space="screen",
+    anti_aliasing=True,
+):
+    """
+    Create a line material.
+
+    Parameters
+    ----------
+    cross_section : list or tuple, shape (3,), optional
+        A list or tuple representing the cross section dimensions.
+        If None, the cross section will be ignored and complete field will be shown.
+    material : str, optional
+        The type of vector field material to create. Options are 'thin_line' (default),
+        'line', 'arrow'.
+    enable_picking : bool, optional
+        Whether the material should be pickable in a scene.
+    opacity : float, optional
+        The opacity of the material, from 0 (transparent) to 1 (opaque).
+        If RGBA is provided, the final alpha will be:
+        final_alpha = alpha_in_RGBA * opacity.
+    thickness : float, optional
+        The line thickness expressed in logical pixels.
+    thickness_space : str, optional
+        The coordinate space in which the thickness is
+        expressed ('screen', 'world', 'model').
+    anti_aliasing : bool, optional
+        Whether or not the line is anti-aliased in the shader.
+
+    Returns
+    -------
+    LineMaterial
+        A line material object of the specified type with the given properties.
+    """
+
+    opacity = validate_opacity(opacity)
+
+    args = {
+        "pick_write": enable_picking,
+        "opacity": opacity,
+        "thickness": thickness,
+        "thickness_space": thickness_space,
+        "aa": anti_aliasing,
+    }
+
+    if material == "thin_line":
+        return VectorFieldThinLineMaterial(cross_section, **args)
+    elif material == "line":
+        return VectorFieldLineMaterial(cross_section, **args)
+    elif material == "arrow":
+        return VectorFieldArrowMaterial(cross_section, **args)
+    else:
+        raise ValueError(f"Unsupported material type: {material}")
+
+
 def _create_points_material(
     *,
     material="basic",
@@ -368,7 +429,7 @@ def _create_text_material(
     )
 
 
-class VectorFieldMaterial(LineThinSegmentMaterial):
+class VectorFieldThinLineMaterial(LineMaterial):
     """Material for VectorFieldActor.
 
     Parameters
@@ -428,3 +489,19 @@ class VectorFieldMaterial(LineThinSegmentMaterial):
             [*cross_section, 0], dtype=np.int32
         )
         self.uniform_buffer.update_full()
+
+
+class VectorFieldLineMaterial(VectorFieldThinLineMaterial):
+    """Material for VectorFieldActor.
+
+    This class provides a way to distinguish the usage of right shader for
+    creating a vector field.
+    """
+
+
+class VectorFieldArrowMaterial(VectorFieldThinLineMaterial):
+    """Material for VectorFieldActor.
+
+    This class provides a way to distinguish the usage of right shader for
+    creating a vector field.
+    """

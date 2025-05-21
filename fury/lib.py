@@ -87,6 +87,7 @@ Canvas = WgpuCanvas
 OffscreenCanvas = OffscreenWgpuCanvas
 BaseShader = gfx.renderers.wgpu.BaseShader
 LineShader = gfx.renderers.wgpu.shaders.lineshader.LineShader
+LineArrowShader = gfx.renderers.wgpu.shaders.lineshader.LineArrowShader
 ThinLineSegmentShader = gfx.renderers.wgpu.shaders.lineshader.ThinLineSegmentShader
 PrimitiveTopology = wgpu.PrimitiveTopology
 CullMode = wgpu.CullMode
