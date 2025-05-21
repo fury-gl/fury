@@ -9,6 +9,7 @@ from fury.geometry import (
     create_point,
     create_text,
     line_buffer_separator,
+    rotate_vector,
 )
 from fury.lib import (
     Geometry,
@@ -2214,3 +2215,234 @@ def register_vector_field_arrow_shaders(wobject):
     compute_shader = VectorFieldComputeShader(wobject)
     render_shader = VectorFieldArrowShader(wobject)
     return compute_shader, render_shader
+def streamtube(
+    lines,
+    *,
+    opacity=1.0,
+    colors=(1, 1, 1),
+    radius=0.2,
+    segments=8,
+    end_caps=True,
+    flat_shading=False,
+    material="phong",
+    enable_picking=True,
+    colinear_threshold=1e-4,
+):
+    """
+    Create a streamtube from a set of lines.
+
+    Parameters
+    ----------
+    lines : list of ndarray, shape (N, 3)
+        List of lines, each line is a set of points in 3D space.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
+        If both `opacity` and RGBA are provided, the final alpha will be:
+        final_alpha = alpha_in_RGBA * opacity.
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+    radius : float, optional
+        The radius of the streamtube.
+    segments : int, optional
+        The number of segments around the tube's circumference.
+        Higher values produce smoother tubes.
+    end_caps : bool, optional
+        Whether to add end caps to the streamtube.
+    flat_shading : bool, optional
+            Whether to use flat shading for the streamtube.
+    material : str, optional
+            The material type for the streamtube. Options are 'phong' and 'basic'.
+    enable_picking : bool, optional
+            Whether the streamtube should be pickable in a 3D scene.
+    colinear_threshold : float, optional
+        Threshold for determining if points are collinear.
+        Points with a direction vector difference below this threshold are
+        considered collinear.
+
+    Returns
+    -------
+    Actor
+        A mesh actor containing the generated streamtube, with the specified
+        material and properties.
+    """
+
+    def prune_colinear(arr):
+        """Prune colinear points from the array.
+
+        Parameters
+        ----------
+        arr : ndarray, shape (N, 3)
+            The input array of points.
+
+        Returns
+        -------
+        ndarray, shape (3,)
+            The pruned array with colinear points removed.
+        """
+        keep = [arr[0]]
+        for i in range(1, len(arr) - 1):
+            v1 = arr[i] - keep[-1]
+            v2 = arr[i + 1] - arr[i]
+            if np.linalg.norm(v1) < 1e-6 or np.linalg.norm(v2) < 1e-6:
+                continue
+            if (
+                np.linalg.norm(v1 / np.linalg.norm(v1) - v2 / np.linalg.norm(v2))
+                >= colinear_threshold
+            ):
+                keep.append(arr[i])
+        keep.append(arr[-1])
+        return np.stack(keep)
+
+    def axes_for_dir(d, prev_x=None):
+        """Compute the axes for a given direction vector.
+
+        Parameters
+        ----------
+        d : ndarray, shape (3,)
+            The direction vector.
+        prev_x : ndarray, shape (3,), optional
+            The previous x-axis vector.
+
+        Returns
+        -------
+        x : ndarray, shape (3,)
+            The x-axis vector.
+        y : ndarray, shape (3,)
+            The y-axis vector.
+        """
+        d /= np.linalg.norm(d)
+        if prev_x is None:
+            up = np.array([0, 0, 1], dtype=np.float32)
+            if abs(np.dot(d, up)) > 0.9:
+                up = np.array([0, 1, 0], dtype=np.float32)
+            x = np.cross(up, d)
+        else:
+            x = prev_x - d * np.dot(prev_x, d)
+        x /= np.linalg.norm(x)
+        y = np.cross(d, x)
+        return x, y
+
+    vertices, triangles = [], []
+    prev_dir = None
+    prev_x = None
+    prev_y = None
+
+    elbow_radius = radius * 0.5
+
+    for i, points in enumerate(lines):
+        pts = np.asarray(points, dtype=np.float32)
+        if pts.shape[0] < 2:
+            raise ValueError("Need at least two points to build a tube.")
+
+        if pts.shape[0] >= 3:
+            pts = prune_colinear(pts)
+
+        # straight segments correctly oriented
+        # TODO: do it another way.
+        for i in range(len(pts) - 1):
+            p0, p1 = pts[i], pts[i + 1]
+            dir01 = p1 - p0
+            length = np.linalg.norm(dir01)
+            if length < 1e-6:
+                continue
+            dir01_normalized = dir01 / length
+
+            if prev_dir is None:
+                x, y = axes_for_dir(dir01_normalized, prev_x=prev_x)
+            else:
+                current_dir = dir01_normalized
+                rotation_axis = np.cross(prev_dir, current_dir)
+                rotation_axis_norm = np.linalg.norm(rotation_axis)
+                if rotation_axis_norm < 1e-6:
+                    # no rotation needed here
+                    x, y = prev_x, prev_y
+                else:
+                    rotation_axis /= rotation_axis_norm
+                    angle = np.arccos(np.clip(np.dot(prev_dir, current_dir), -1.0, 1.0))
+                    # Rotate previous axes to current
+                    x = rotate_vector(prev_x, rotation_axis, angle)
+                    y = rotate_vector(prev_y, rotation_axis, angle)
+
+            prev_dir = dir01_normalized
+            prev_x, prev_y = x, y
+
+            start = p0 + (i > 0) * dir01_normalized * elbow_radius
+            end = p1 - (i < len(pts) - 2) * dir01_normalized * elbow_radius
+
+            base = len(vertices)
+            for C in [start, end]:
+                for j in range(segments):
+                    theta = 2 * np.pi * j / segments
+                    off = x * np.cos(theta) * radius + y * np.sin(theta) * radius
+                    vertices.append(C + off)
+                    # normals.append(off / np.linalg.norm(off))
+
+            # Connect quads
+            for j in range(segments):
+                next_j = (j + 1) % segments
+                a = base + j
+                b = base + next_j
+                c = base + j + segments
+                d = base + next_j + segments
+                triangles.extend([[a, c, b], [b, c, d]])
+
+        if len(pts) >= 3:
+            for i in range(len(pts) - 2):
+                ring0 = i * segments * 2 + segments
+                ring1 = (i + 1) * segments * 2
+                for j in range(segments):
+                    next_j = (j + 1) % segments
+                    a = ring0 + j
+                    b = ring0 + next_j
+                    c = ring1 + j
+                    d = ring1 + next_j
+                    triangles.extend([[a, c, b], [b, c, d]])
+
+        if end_caps:
+            dir0 = (pts[1] - pts[0]) / np.linalg.norm(pts[1] - pts[0])
+            x0, y0 = axes_for_dir(-dir0)
+            cap0 = pts[0]
+            b0 = len(vertices)
+            vertices.append(cap0)
+            # normals.append(-dir0)
+            for j in range(segments):
+                theta = 2 * np.pi * j / segments
+                off = x0 * np.cos(theta) * radius + y0 * np.sin(theta) * radius
+                vertices.append(cap0 + off)
+                # normals.append(-dir0)
+            for j in range(segments):
+                next_j = (j + 1) % segments
+                triangles.append([b0, b0 + 1 + j, b0 + 1 + next_j])
+
+            dir1 = (pts[-1] - pts[-2]) / np.linalg.norm(pts[-1] - pts[-2])
+            x1, y1 = axes_for_dir(dir1)
+            cap1 = pts[-1]
+            b1 = len(vertices)
+            vertices.append(cap1)
+            # normals.append(dir1)
+            for j in range(segments):
+                theta = 2 * np.pi * j / segments
+                off = x1 * np.cos(theta) * radius + y1 * np.sin(theta) * radius
+                vertices.append(cap1 + off)
+                # normals.append(dir1)
+
+            for j in range(segments):
+                next_j = (j + 1) % segments
+                triangles.append([b1 + 1 + j, b1, b1 + 1 + next_j])
+
+    verts = np.array(vertices, dtype=np.float32)
+    faces = np.array(triangles, dtype=np.uint32)
+    # norms = np.array(normals, dtype=np.float32)
+
+    actor = actor_from_primitive(
+        centers=np.zeros((1, 3)),
+        vertices=verts,
+        faces=faces,
+        colors=colors,
+        scales=(1, 1, 1),
+        opacity=opacity,
+        material=material,
+        enable_picking=enable_picking,
+        smooth=not flat_shading,
+    )
+    return actor

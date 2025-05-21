@@ -250,3 +250,30 @@ def create_text(text, material, **kwargs):
 
     text = Text(text=text, material=material, **kwargs)
     return text
+
+
+def rotate_vector(v, axis, angle):
+    """Rotate a vector `v` around an axis `axis` by an angle `angle`.
+
+    Parameters
+    ----------
+    v : array_like
+        The vector to be rotated.
+    axis : array_like
+        The axis of rotation.
+    angle : float
+        The angle of rotation in radians.
+
+    returns
+    -------
+    array_like
+        The rotated vector.
+    """
+    axis = axis / np.linalg.norm(axis)
+    cos_theta = np.cos(angle)
+    sin_theta = np.sin(angle)
+    return (
+        v * cos_theta
+        + np.cross(axis, v) * sin_theta
+        + axis * np.dot(axis, v) * (1 - cos_theta)
+    )

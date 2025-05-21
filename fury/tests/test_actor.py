@@ -443,3 +443,29 @@ def test_visibility_control():
     set_group_visibility(slicer_obj, (False, True, False))
     visibilities = [child.visible for child in slicer_obj.children]
     assert visibilities == [False, True, False]
+
+
+def test_streamtube():
+    lines = [np.array([[0, 0, 0], [1, 1, 1]])]
+    colors = np.array([[1, 0, 0]])
+    scene = window.Scene()
+
+    tube_actor = actor.streamtube(lines=lines, colors=colors)
+    scene.add(tube_actor)
+
+    fname = "streamtube_test.png"
+    window.snapshot(scene=scene, fname=fname)
+    img = Image.open(fname)
+    img_array = np.array(img)
+
+    mean_r, mean_g, mean_b, _ = np.mean(
+        img_array.reshape(-1, img_array.shape[2]), axis=0
+    )
+
+    assert mean_r > mean_g and mean_r > mean_b
+
+    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
+    r, g, b, a = middle_pixel
+    assert r > g and r > b
+
+    scene.remove(tube_actor)
