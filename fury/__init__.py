@@ -1,13 +1,13 @@
 """Init file for visualization package."""
 
-import warnings
-import sys
 from os.path import dirname
+import sys
+import warnings
 
 import lazy_loader as lazy
 
-from fury.pkg_info import __version__, pkg_commit_hash
 from fury.optpkg import optional_package
+from fury.pkg_info import __version__, pkg_commit_hash
 
 __getattr__, __dir__, __all__ = lazy.attach_stub(__name__, __file__)
 
@@ -34,7 +34,6 @@ def get_info(verbose=False):
     """
     import numpy
     import scipy
-    
 
     mpl, have_mpl, _ = optional_package("matplotlib")
     dipy, have_dipy, _ = optional_package("dipy")
