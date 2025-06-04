@@ -10,7 +10,7 @@ structures, such as meshes and point clouds.
 import numpy as np
 from scipy.ndimage import map_coordinates
 
-from fury.lib import Group
+from fury.lib import AffineTransform, Group, RecursiveTransform, WorldObject
 from fury.material import validate_opacity
 
 
@@ -470,3 +470,47 @@ def show_slices(group, position):
     for i, child in enumerate(group.children):
         a, b, c, _ = child.material.plane
         child.material.plane = (a, b, c, position[i])
+
+
+def apply_affine_to_group(group, affine):
+    """Apply a transformation to all actors in a group.
+
+    Parameters
+    ----------
+    group : Group
+        The group of actors to apply the transformation to.
+    affine : ndarray, shape (4, 4)
+        The transformation to apply to the actors in the group.
+    """
+    if not isinstance(group, Group):
+        raise TypeError("group must be an instance of Group.")
+
+    if not isinstance(affine, np.ndarray) or affine.shape != (4, 4):
+        raise ValueError("affine must be a 4x4 numpy array.")
+
+    for child in group.children:
+        apply_affine_to_actor(child, affine)
+
+
+def apply_affine_to_actor(actor, affine):
+    """Apply a transformation to an actor.
+
+    Parameters
+    ----------
+    actor : WorldObject
+        The actor to apply the transformation to.
+    affine : ndarray, shape (4, 4)
+        The transformation to apply to the actor.
+    """
+    if not isinstance(actor, WorldObject):
+        raise TypeError("actor must be an instance of WorldObject.")
+
+    if not isinstance(affine, np.ndarray) or affine.shape != (4, 4):
+        raise ValueError("affine must be a 4x4 numpy array.")
+
+    affine_transform = AffineTransform(
+        state_basis="matrix", matrix=affine, is_camera_space=True
+    )
+    recursive_transform = RecursiveTransform(affine_transform)
+    actor.local = affine_transform
+    actor.world = recursive_transform
