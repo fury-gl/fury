@@ -1666,6 +1666,7 @@ def text(
     text,
     *,
     colors=(1.0, 1.0, 1.0),
+    position=(0.0, 0.0, 0.0),
     font_size=1.0,
     family="Arial",
     anchor="middle-center",
@@ -1686,6 +1687,8 @@ def text(
         unless a list is given, in which case each (str) item becomes a TextBlock.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA values in the range [0, 1].
+    position : tuple, optional
+        The (x, y, z) coordinates to place the text in 3D space.
     font_size : float, optional
         The size of the font, in object coordinates or pixel screen coordinates.
     family : str, optional
@@ -1743,6 +1746,9 @@ def text(
         line_height=line_height,
         text_align=text_align,
     )
+
+    obj.local.position = position
+
     return obj
 
 
