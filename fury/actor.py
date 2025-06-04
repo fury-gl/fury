@@ -10,8 +10,17 @@ from fury.geometry import (
     create_text,
     line_buffer_separator,
 )
-from fury.lib import Geometry, Group, Texture, Volume, VolumeSliceMaterial
+from fury.lib import (
+    Geometry,
+    Group,
+    Texture,
+    Volume,
+    VolumeSliceMaterial,
+    WorldObject,
+    register_wgpu_render_function,
+)
 from fury.material import (
+    VectorFieldMaterial,
     _create_line_material,
     _create_mesh_material,
     _create_points_material,
@@ -19,6 +28,7 @@ from fury.material import (
     validate_opacity,
 )
 import fury.primitive as fp
+from fury.shader import VectorFieldComputeShader, VectorFieldShader
 from fury.utils import set_group_opacity, set_group_visibility, show_slices
 
 
@@ -1872,3 +1882,210 @@ def slicer(
     set_group_opacity(obj, opacity)
 
     return obj
+
+
+class VectorField(WorldObject):
+    """Class to visualize a vector field.
+
+    Parameters
+    ----------
+    field : ndarray, shape {(X, Y, Z, N, 3), (X, Y, Z, 3)}
+        The vector field data, where X, Y, Z represent the position in 3D,
+        N is the number of vectors per voxel, and 3 represents the vector
+    cross_section : list or tuple, shape (3,)
+        A list or tuple representing the cross section dimensions.
+        If None, the cross section will be ignored and complete field will be shown.
+    colors : tuple, optional
+        Color for the vectors. If None, the color will used from the orientation.
+    scales : {float, ndarray}, shape {(X, Y, Z, N) or (X, Y, Z)}, optional
+        Scale factor for the vectors. If ndarray, it should match the shape of the
+        field.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
+    """
+
+    def __init__(
+        self, field, *, cross_section=None, colors=None, scales=1.0, opacity=1.0
+    ):
+        """Initialize a vector field.
+
+        Parameters
+        ----------
+        field : ndarray, shape {(X, Y, Z, N, 3), (X, Y, Z, 3)}
+            The vector field data, where X, Y, Z represent the position in 3D,
+            N is the number of vectors per voxel, and 3 represents the vector
+        cross_section : list or tuple, shape (3,), optional
+            A list or tuple representing the cross section dimensions.
+            If None, the cross section will be ignored and complete field will be shown.
+        colors : tuple, optional
+            Color for the vectors. If None, the color will used from the orientation.
+        scales : {float, ndarray}, shape {(X, Y, Z, N) or (X, Y, Z)}, optional
+            Scale factor for the vectors. If ndarray, it should match the shape of the
+            field.
+        opacity : float, optional
+            Takes values from 0 (fully transparent) to 1 (opaque).
+        """
+
+        if not (field.ndim == 5 or field.ndim == 4):
+            raise ValueError(
+                "Field must be 5D or 4D, "
+                f"but got {field.ndim}D with shape {field.shape}"
+            )
+
+        total_vectors = np.prod(field.shape[:-1])
+        if field.shape[-1] != 3:
+            raise ValueError(
+                f"Field must have last dimension as 3, but got {field.shape[-1]}"
+            )
+
+        self.vectors = field.reshape(total_vectors, 3).astype(np.float32)
+        self.field_shape = field.shape[:3]
+        if field.ndim == 4:
+            self.vectors_per_voxel = 1
+        else:
+            self.vectors_per_voxel = field.shape[3]
+
+        if isinstance(scales, (int, float)):
+            self.scales = np.full((total_vectors, 1), scales, dtype=np.float32)
+        elif scales.shape != field.shape[:-1]:
+            raise ValueError(
+                "Scales must match the shape of the field (X, Y, Z, N) or (X, Y, Z),"
+                f" but got {scales.shape}"
+            )
+        else:
+            self.scales = scales.reshape(total_vectors, 1).astype(np.float32)
+
+        if cross_section is None:
+            cross_section = np.asarray([-1, -1, -1], dtype=np.int32)
+
+        pnts_per_vector = 2
+        pts = np.zeros((total_vectors * pnts_per_vector, 3), dtype=np.float32)
+        pts[0] = self.field_shape
+
+        if colors is None:
+            colors = np.asarray((0, 0, 0), dtype=np.float32)
+        else:
+            colors = np.asarray(colors, dtype=np.float32)
+
+        colors = np.tile(colors, (total_vectors * pnts_per_vector, 1))
+        geometry = buffer_to_geometry(positions=pts, colors=colors)
+        material = VectorFieldMaterial(cross_section, opacity=opacity)
+
+        super().__init__(geometry=geometry, material=material)
+
+    @property
+    def cross_section(self):
+        """Get the cross section of the vector field.
+
+        Returns
+        -------
+        ndarray
+            The cross section of the vector field.
+        """
+        return self.material.cross_section
+
+    @cross_section.setter
+    def cross_section(self, value):
+        """Set the cross section of the vector field.
+
+        Parameters
+        ----------
+        value : {list, tuple, ndarray}
+            The cross section dimensions to set.
+        """
+        if not isinstance(value, (list, tuple, np.ndarray)):
+            raise ValueError(
+                "Cross section must be a list, tuple, or ndarray, "
+                f"but got {type(value)}"
+            )
+        if len(value) != 3:
+            raise ValueError(f"Cross section must have length 3, but got {len(value)}")
+        value = np.asarray(value, dtype=np.int32)
+        value = np.minimum(self.field_shape, value)
+        value = np.maximum(value, np.zeros((3,), dtype=np.int32))
+        self.material.cross_section = value
+
+
+def vector_field(field, *, colors=None, scales=1.0, opacity=1.0):
+    """Visualize a vector field with different features.
+
+    Parameters
+    ----------
+    field : ndarray, shape {(X, Y, Z, N, 3), (X, Y, Z, 3)}
+        The vector field data, where X, Y, Z represent the position in 3D,
+        N is the number of vectors per voxel, and 3 represents the vector
+    colors : tuple, optional
+        Color for the vectors. If None, the color will used from the orientation.
+    scales : {float, ndarray}, shape {(X, Y, Z, N) or (X, Y, Z)}, optional
+        Scale factor for the vectors. If ndarray, it should match the shape of the
+        field.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
+
+    Returns
+    -------
+    VectorField
+        A vector field object.
+    """
+
+    obj = VectorField(field, colors=colors, scales=scales, opacity=opacity)
+    return obj
+
+
+def vector_field_slicer(
+    field, *, cross_section=None, colors=None, scales=1.0, opacity=1.0
+):
+    """Visualize a vector field with different features.
+
+    Parameters
+        ----------
+    field : ndarray, shape {(X, Y, Z, N, 3), (X, Y, Z, 3)}
+        The vector field data, where X, Y, Z represent the position in 3D,
+        N is the number of vectors per voxel, and 3 represents the vector
+    cross_section : list or tuple, shape (3,), optional
+        A list or tuple representing the cross section dimensions.
+        If None, the cross section will be ignored and complete field will be shown.
+    colors : tuple, optional
+        Color for the vectors. If None, the color will used from the orientation.
+    scales : {float, ndarray}, shape {(X, Y, Z, N) or (X, Y, Z)}, optional
+        Scale factor for the vectors. If ndarray, it should match the shape of the
+        field.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
+
+    Returns
+    -------
+    VectorField
+        A vector field object.
+    """
+
+    if cross_section is None:
+        cross_section = np.asarray(field.shape[:3], dtype=np.int32) // 2
+
+    obj = VectorField(
+        field,
+        cross_section=cross_section,
+        colors=colors,
+        scales=scales,
+        opacity=opacity,
+    )
+    return obj
+
+
+@register_wgpu_render_function(VectorField, VectorFieldMaterial)
+def register_peaks_shaders(wobject):
+    """Register PeaksActor shaders.
+
+    Parameters
+    ----------
+    wobject : VectorField
+        The vector field object to register shaders for.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the compute shader and the render shader.
+    """
+    compute_shader = VectorFieldComputeShader(wobject)
+    render_shader = VectorFieldShader(wobject)
+    return compute_shader, render_shader

@@ -2,7 +2,9 @@
 
 from typing import TypeAlias
 
+import jinja2
 import pygfx as gfx
+import wgpu
 from wgpu.gui.auto import WgpuCanvas, run
 from wgpu.gui.offscreen import WgpuCanvas as OffscreenWgpuCanvas
 
@@ -56,6 +58,7 @@ Scene: TypeAlias = gfx.Scene
 Viewport: TypeAlias = gfx.Viewport
 
 Geometry = gfx.Geometry
+Material = gfx.Material
 Mesh = gfx.Mesh
 Points = gfx.Points
 Line = gfx.Line
@@ -82,6 +85,18 @@ Renderer = gfx.WgpuRenderer
 run = run
 Canvas = WgpuCanvas
 OffscreenCanvas = OffscreenWgpuCanvas
+BaseShader = gfx.renderers.wgpu.BaseShader
+LineShader = gfx.renderers.wgpu.shaders.lineshader.LineShader
+ThinLineSegmentShader = gfx.renderers.wgpu.shaders.lineshader.ThinLineSegmentShader
+PrimitiveTopology = wgpu.PrimitiveTopology
+CullMode = wgpu.CullMode
+Binding = gfx.renderers.wgpu.Binding
+RenderMask = gfx.renderers.wgpu.RenderMask
+Buffer = gfx.Buffer
+register_wgpu_render_function = gfx.renderers.wgpu.register_wgpu_render_function
+load_wgsl = gfx.renderers.wgpu.load_wgsl
+register_wgsl_loader = gfx.renderers.wgpu.shader.register_wgsl_loader
+WorldObject = gfx.WorldObject
 if have_jupyter_rfb:
     JupyterCanvas = JupyterWgpuCanvas
 else:
@@ -92,3 +107,5 @@ else:
     QtCanvas = PySide6
     QtWidgets = PySide6
     get_app = PySide6
+
+register_wgsl_loader("fury", jinja2.PackageLoader("fury.wgsl", "."))
