@@ -16,12 +16,8 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
         let vector_id = voxel_id * NUM_VECTORS + i;
 
         let scale = load_s_scales(vector_id);
-        let vector = load_s_vectors(vector_id) * vec3<f32>(scale);
-
-        if all(vector == vec3<f32>(0.0)) {
-            continue;
-        }
-
+        let raw_vector = load_s_vectors(vector_id);
+        let vector = raw_vector * vec3<f32>(scale);
 
         let point_i = vector + vec3<f32>(center);
         let point_e = vec3<f32>(-1.0) * vector + vec3<f32>(center);

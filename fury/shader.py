@@ -6,6 +6,7 @@ from fury.lib import (
     BaseShader,
     Binding,
     Buffer,
+    LineShader,
     ThinLineSegmentShader,
     load_wgsl,
 )
@@ -116,7 +117,39 @@ class VectorFieldComputeShader(BaseShader):
         return load_wgsl("vector_field_compute.wgsl", package_name="fury.wgsl")
 
 
-class VectorFieldShader(ThinLineSegmentShader):
+class VectorFieldThinShader(ThinLineSegmentShader):
+    """Shader for VectorFieldActor.
+
+    Parameters
+    ----------
+    wobject : VectorField
+        The vector field object to be rendered.
+    """
+
+    def __init__(self, wobject):
+        """Initialize the VectorFieldThinLineShader with the given vector field object.
+
+        Parameters
+        ----------
+        wobject : VectorField
+            The vector field object to be rendered.
+        """
+        super().__init__(wobject)
+        self["num_vectors"] = wobject.vectors_per_voxel
+        self["data_shape"] = wobject.field_shape
+
+    def get_code(self):
+        """Get the WGSL code for the vector field render shader.
+
+        Returns
+        -------
+        str
+            The WGSL code as a string.
+        """
+        return load_wgsl("vector_field_thin_render.wgsl", package_name="fury.wgsl")
+
+
+class VectorFieldShader(LineShader):
     """Shader for VectorFieldActor.
 
     Parameters
@@ -136,6 +169,7 @@ class VectorFieldShader(ThinLineSegmentShader):
         super().__init__(wobject)
         self["num_vectors"] = wobject.vectors_per_voxel
         self["data_shape"] = wobject.field_shape
+        self["line_type"] = "segment"
 
     def get_code(self):
         """Get the WGSL code for the vector field render shader.
@@ -146,3 +180,24 @@ class VectorFieldShader(ThinLineSegmentShader):
             The WGSL code as a string.
         """
         return load_wgsl("vector_field_render.wgsl", package_name="fury.wgsl")
+
+
+class VectorFieldArrowShader(VectorFieldShader):
+    """Shader for VectorFieldArrowActor.
+
+    Parameters
+    ----------
+    wobject : VectorField
+        The vector field object to be rendered.
+    """
+
+    def __init__(self, wobject):
+        """Initialize the VectorFieldArrowShader with the given vector field object.
+
+        Parameters
+        ----------
+        wobject : VectorField
+            The vector field object to be rendered.
+        """
+        super().__init__(wobject)
+        self["line_type"] = "arrow"
