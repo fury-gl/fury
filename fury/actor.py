@@ -2215,6 +2215,8 @@ def register_vector_field_arrow_shaders(wobject):
     compute_shader = VectorFieldComputeShader(wobject)
     render_shader = VectorFieldArrowShader(wobject)
     return compute_shader, render_shader
+
+
 def streamtube(
     lines,
     *,
@@ -2241,6 +2243,9 @@ def streamtube(
         final_alpha = alpha_in_RGBA * opacity.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        - If a single tuple (3 or 4 values), all vertices use this color.
+        - If an array with `len(lines)` colors, each line uses one color for all
+        its vertices.
     radius : float, optional
         The radius of the streamtube.
     segments : int, optional
@@ -2323,22 +2328,25 @@ def streamtube(
         return x, y
 
     vertices, triangles = [], []
+
     prev_dir = None
     prev_x = None
     prev_y = None
+    line_ranges = []
 
     elbow_radius = radius * 0.5
 
-    for i, points in enumerate(lines):
+    for _, points in enumerate(lines):
         pts = np.asarray(points, dtype=np.float32)
         if pts.shape[0] < 2:
-            raise ValueError("Need at least two points to build a tube.")
+            raise ValueError("Need at least 2 points to build a tube.")
 
         if pts.shape[0] >= 3:
             pts = prune_colinear(pts)
 
+        start_idx = len(vertices)
+
         # straight segments correctly oriented
-        # TODO: do it another way.
         for i in range(len(pts) - 1):
             p0, p1 = pts[i], pts[i + 1]
             dir01 = p1 - p0
@@ -2354,12 +2362,10 @@ def streamtube(
                 rotation_axis = np.cross(prev_dir, current_dir)
                 rotation_axis_norm = np.linalg.norm(rotation_axis)
                 if rotation_axis_norm < 1e-6:
-                    # no rotation needed here
                     x, y = prev_x, prev_y
                 else:
                     rotation_axis /= rotation_axis_norm
                     angle = np.arccos(np.clip(np.dot(prev_dir, current_dir), -1.0, 1.0))
-                    # Rotate previous axes to current
                     x = rotate_vector(prev_x, rotation_axis, angle)
                     y = rotate_vector(prev_y, rotation_axis, angle)
 
@@ -2375,9 +2381,7 @@ def streamtube(
                     theta = 2 * np.pi * j / segments
                     off = x * np.cos(theta) * radius + y * np.sin(theta) * radius
                     vertices.append(C + off)
-                    # normals.append(off / np.linalg.norm(off))
 
-            # Connect quads
             for j in range(segments):
                 next_j = (j + 1) % segments
                 a = base + j
@@ -2388,8 +2392,8 @@ def streamtube(
 
         if len(pts) >= 3:
             for i in range(len(pts) - 2):
-                ring0 = i * segments * 2 + segments
-                ring1 = (i + 1) * segments * 2
+                ring0 = start_idx + i * segments * 2 + segments
+                ring1 = start_idx + (i + 1) * segments * 2
                 for j in range(segments):
                     next_j = (j + 1) % segments
                     a = ring0 + j
@@ -2404,12 +2408,10 @@ def streamtube(
             cap0 = pts[0]
             b0 = len(vertices)
             vertices.append(cap0)
-            # normals.append(-dir0)
             for j in range(segments):
                 theta = 2 * np.pi * j / segments
                 off = x0 * np.cos(theta) * radius + y0 * np.sin(theta) * radius
                 vertices.append(cap0 + off)
-                # normals.append(-dir0)
             for j in range(segments):
                 next_j = (j + 1) % segments
                 triangles.append([b0, b0 + 1 + j, b0 + 1 + next_j])
@@ -2419,30 +2421,45 @@ def streamtube(
             cap1 = pts[-1]
             b1 = len(vertices)
             vertices.append(cap1)
-            # normals.append(dir1)
             for j in range(segments):
                 theta = 2 * np.pi * j / segments
                 off = x1 * np.cos(theta) * radius + y1 * np.sin(theta) * radius
                 vertices.append(cap1 + off)
-                # normals.append(dir1)
-
             for j in range(segments):
                 next_j = (j + 1) % segments
                 triangles.append([b1 + 1 + j, b1, b1 + 1 + next_j])
 
+        end_idx = len(vertices)
+        line_ranges.append((start_idx, end_idx))
+
     verts = np.array(vertices, dtype=np.float32)
     faces = np.array(triangles, dtype=np.uint32)
-    # norms = np.array(normals, dtype=np.float32)
+
+    input_colors = np.asarray(colors)
+    n_vertices = len(verts)
+
+    if input_colors.shape == (3,) or input_colors.shape == (4,):
+        vertex_colors = np.tile(input_colors, (n_vertices, 1))
+    elif input_colors.shape[0] == len(lines) and input_colors.shape[1] in [3, 4]:
+        vertex_colors = np.zeros((n_vertices, input_colors.shape[1]), dtype=np.float32)
+        for i, (start, end) in enumerate(line_ranges):
+            vertex_colors[start:end] = input_colors[i]
+    else:
+        raise ValueError(
+            "Colors must be a single tuple (3, or 4), an array of shape "
+            "(n_lines, 3) or (n_lines, 4)."
+        )
 
     actor = actor_from_primitive(
-        centers=np.zeros((1, 3)),
+        centers=np.zeros((len(lines), 3)),
         vertices=verts,
         faces=faces,
-        colors=colors,
+        colors=vertex_colors,
         scales=(1, 1, 1),
         opacity=opacity,
         material=material,
         enable_picking=enable_picking,
         smooth=not flat_shading,
+        repeat_primitive=False,
     )
     return actor
