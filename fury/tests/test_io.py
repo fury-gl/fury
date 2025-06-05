@@ -73,6 +73,9 @@ def test_save_and_load_options():
         {
             "binary": True,
         },
+        {
+            "legacy_vtk_format": True,
+        },
     ]
     fname = "temp-io"
 
@@ -99,6 +102,9 @@ def test_save_and_load_options():
         {},
         {
             "binary": False,
+        },
+        {
+            "legacy_vtk_format": False,
         },
     ]
     for ext, option in zip(l_ext, l_options):
