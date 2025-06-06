@@ -1,5 +1,5 @@
 __all__ = [
-    #     "Panel2D",
+    "Panel2D",
     #     "TabPanel2D",
     #     "TabUI",
     #     "ImageContainer2D",
@@ -40,8 +40,10 @@ __all__ = [
 #     helpers as helpers,
 # )
 # from .containers import GridUI, ImageContainer2D, Panel2D, TabPanel2D, TabUI
+from .containers import Panel2D
+
 # from .core import UI, Button2D, Disk2D, Rectangle2D, TextBlock2D
-from .core import UI, Rectangle2D, Disk2D
+from .core import UI, Disk2D, Rectangle2D
 # from .elements import (
 #     Card2D,
 #     Checkbox,

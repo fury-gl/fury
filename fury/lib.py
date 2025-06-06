@@ -106,7 +106,6 @@ PointerEvent = gfx.PointerEvent
 WheelEvent = gfx.WheelEvent
 KeyboardEvent = gfx.KeyboardEvent
 
-
 plane_geometry = gfx.plane_geometry
 
 if have_jupyter_rfb:

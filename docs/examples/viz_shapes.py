@@ -11,7 +11,7 @@ some geometric shapes from FURY UI elements.
 ##############################################################################
 # First, a bunch of imports
 
-from fury.ui import Rectangle2D, Disk2D
+from fury.ui import Rectangle2D, Disk2D, Panel2D
 from fury.window import (
     Scene,
     ShowManager,
@@ -33,9 +33,16 @@ rect = Rectangle2D(size=(100, 100), position=(400, 400), color=(1, 0, 1))
 disk = Disk2D(outer_radius=50, center=(400, 200), color=(1, 1, 0))
 
 ###############################################################################
+# Then we can draw a solid circle, or disk.
+
+panel = Panel2D(size=(250, 250), position=(200, 300), color=(0, 1, 1))
+
+###############################################################################
 # Now that all the elements have been initialised, we add them to the scene.
+
 scene.add(rect)
 scene.add(disk)
+scene.add(panel)
 
 if __name__ == "__main__":
     current_size = (800, 800)
