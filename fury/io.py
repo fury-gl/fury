@@ -65,7 +65,7 @@ def load_cube_map_texture(fnames, *, size=None, generate_mipmaps=True):
     if size is None:
         min_side = min(*images[0].shape[:2])
         for image in images:
-            min_side = min(*image.shape[:2])
+            min_side = min(*image.shape[:2], min_side)
         size = (min_side, min_side, 6)
 
     data = np.stack(images, axis=0)
@@ -73,45 +73,29 @@ def load_cube_map_texture(fnames, *, size=None, generate_mipmaps=True):
     return Texture(data, dim=2, size=size, generate_mipmaps=generate_mipmaps)
 
 
-# @warn_on_args_to_kwargs()
-# def load_cubemap_texture(fnames, *, interpolate_on=True, mipmap_on=True):
-#     """Load a cube map texture from a list of 6 images.
+def load_image_texture(fname, *, size=None, generate_mipmaps=True):
+    """Load an image texture from a file or URL.
 
-#     Parameters
-#     ----------
-#     fnames : list of strings
-#         List of 6 filenames with bmp, jpg, jpeg, png, tif or tiff extensions.
-#     interpolate_on : bool, optional
-#     mipmap_on : bool, optional
+    Parameters
+    ----------
+    fname : str
+        Path to image file or URL. Should be png, bmp, jpeg or jpg files.
+    size : tuple, optional
+        The display extent (width, height) of the texture.
+    generate_mipmaps : bool, optional
+        Whether to automatically generate mipmaps when transferring data to the GPU.
 
-#     Returns
-#     -------
-#     output : vtkTexture
-#         Cube map texture.
+    Returns
+    -------
+    Texture
+        PyGfx Texture object.
+    """
+    image = load_image(fname)
 
-#     """
-#     if len(fnames) != 6:
-#         raise IOError("Expected 6 filenames, got {}".format(len(fnames)))
-#     texture = Texture()
-#     texture.CubeMapOn()
-#     for idx, fn in enumerate(fnames):
-#         if not os.path.isfile(fn):
-#             raise FileNotFoundError(fn)
-#         else:
-#             # Read the images
-#             vtk_img = load_image(fn, as_vtktype=True)
-#             # Flip the image horizontally
-#             img_flip = ImageFlip()
-#             img_flip.SetInputData(vtk_img)
-#             img_flip.SetFilteredAxis(1)  # flip y axis
-#             img_flip.Update()
-#             # Add the image to the cube map
-#             texture.SetInputDataObject(idx, img_flip.GetOutput())
-#     if interpolate_on:
-#         texture.InterpolateOn()
-#     if mipmap_on:
-#         texture.MipmapOn()
-#     return texture
+    if size is None:
+        size = image.shape[:2]
+
+    return Texture(image, dim=2, size=size, generate_mipmaps=generate_mipmaps)
 
 
 def load_image(filename):

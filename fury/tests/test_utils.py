@@ -3,7 +3,13 @@ import pytest
 
 from fury.actor import slicer
 from fury.lib import Group, Mesh
-from fury.utils import get_slices, set_group_opacity, set_group_visibility, show_slices
+from fury.utils import (
+    generate_planar_uvs,
+    get_slices,
+    set_group_opacity,
+    set_group_visibility,
+    show_slices,
+)
 
 
 @pytest.fixture
@@ -105,3 +111,88 @@ def test_show_slices_with_list(group_slicer):
     show_slices(group_slicer, position)
     for i, child in enumerate(group_slicer.children):
         assert child.material.plane[-1] == position[i]
+
+
+def test_generate_planar_uvs_basic_projections():
+    """Test generate_planar_uvs with all three projection axes using simple geometry"""
+    vertices = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])
+
+    # XY projection
+    xy_expected = np.array([[0.0, 0.0], [0.5, 0.5], [1.0, 1.0]])
+    assert np.allclose(generate_planar_uvs(vertices, axis="xy"), xy_expected)
+
+    # XZ projection
+    xz_expected = np.array([[0.0, 0.0], [0.5, 0.5], [1.0, 1.0]])
+    assert np.allclose(generate_planar_uvs(vertices, axis="xz"), xz_expected)
+
+    # YZ projection
+    yz_expected = np.array([[0.0, 0.0], [0.5, 0.5], [1.0, 1.0]])
+    assert np.allclose(generate_planar_uvs(vertices, axis="yz"), yz_expected)
+
+
+def test_generate_planar_uvs_edge_cases():
+    """Test generate_planar_uvs with various edge cases"""
+    # All vertices same position
+    with pytest.raises(ValueError):
+        same_verts = np.array([[1.0, 1.0, 1.0]] * 3)
+        generate_planar_uvs(same_verts)
+
+    # Flat plane (zero range in one dimension)
+    with pytest.raises(
+        ValueError, match="Cannot generate UVs for flat geometry in the XY plane."
+    ):
+        flat_xy = np.array([[1.0, 2.0, 0.0], [2.0, 2.0, 0.0], [3.0, 2.0, 0.0]])
+        generate_planar_uvs(flat_xy, axis="xy")
+
+    with pytest.raises(
+        ValueError, match="Cannot generate UVs for flat geometry in the XZ plane."
+    ):
+        flat_xz = np.array([[1.0, 0.0, 2.0], [2.0, 0.0, 2.0], [3.0, 0.0, 2.0]])
+        generate_planar_uvs(flat_xz, axis="xz")
+
+    with pytest.raises(
+        ValueError, match="Cannot generate UVs for flat geometry in the YZ plane."
+    ):
+        flat_yz = np.array([[0.0, 1.0, 2.0], [0.0, 2.0, 2.0], [0.0, 3.0, 2.0]])
+        generate_planar_uvs(flat_yz, axis="yz")
+
+
+def test_generate_planar_uvs_input_validation():
+    """Test generate_planar_uvs input validation and error cases"""
+    # Invalid axis
+    with pytest.raises(ValueError, match="axis must be one of 'xy', 'xz', or 'yz'."):
+        generate_planar_uvs(np.array([[1, 2, 3]]), axis="invalid")
+
+    # Wrong array dimensions
+    with pytest.raises(ValueError):
+        generate_planar_uvs(np.array([1, 2, 3]))  # 1D array
+
+    with pytest.raises(ValueError):
+        generate_planar_uvs(np.array([[1, 2]]))  # Wrong shape
+
+    with pytest.raises(ValueError):
+        generate_planar_uvs(np.array([[1, 2, 3]]))  # Single vertex
+
+    # Empty array
+    with pytest.raises(ValueError):
+        generate_planar_uvs(np.empty((0, 3)))
+
+
+def test_generate_planar_uvs_numerical_stability():
+    """Test generate_planar_uvs with numerical edge cases"""
+    # Very small range
+    small_range = np.array([[1.0, 2.0, 3.0], [1.0 + 1e-10, 2.0 + 1e-10, 3.0 + 1e-10]])
+    result = generate_planar_uvs(small_range, axis="xy")
+    assert not np.any(np.isnan(result))
+    assert np.allclose(result, np.array([[0.0, 0.0], [1.0, 1.0]]))
+
+    # Very large coordinates
+    large_coords = np.array([[1e20, 2e20, 3e20], [2e20, 3e20, 4e20]])
+    result = generate_planar_uvs(large_coords, axis="yz")
+    assert not np.any(np.isnan(result))
+    assert np.allclose(result, np.array([[0.0, 0.0], [1.0, 1.0]]))
+
+    # Mixed positive and negative coordinates
+    mixed_coords = np.array([[-1.0, -2.0, -3.0], [1.0, 2.0, 3.0]])
+    result = generate_planar_uvs(mixed_coords, axis="xz")
+    assert np.allclose(result, np.array([[0.0, 0.0], [1.0, 1.0]]))
