@@ -1880,6 +1880,7 @@ def image(
     *,
     image,
     position=(0.0, 0.0, 0.0),
+    directions=(0.0, 0.0, 1.0),
     visible=True,
     clim=None,
     map=None,
@@ -1895,6 +1896,8 @@ def image(
         The image input. Can be a file path (string) or a NumPy array.
     position : tuple, optional
         The position of the image in 3D space.
+    directions : ndarray, shape (3,) or tuple (3,), optional
+        The orientation vector of the image.
     visible : bool, optional
         Whether the image should be visible.
     clim : tuple, optional
@@ -1939,4 +1942,20 @@ def image(
 
     obj.local.position = position
 
+
+    default_normal = np.array([0, 0, 1])
+    target_normal = np.asarray(directions)
+    target_normal = target_normal / np.linalg.norm(target_normal)
+
+    rotation_axis = np.cross(default_normal, target_normal)
+    dot_product = np.dot(default_normal, target_normal)
+    rotation_angle = np.arccos(np.clip(dot_product, -1.0, 1.0))
+
+    if np.linalg.norm(rotation_axis) > 1e-6:
+        rotation_axis = rotation_axis / np.linalg.norm(rotation_axis)
+        rot = R.from_rotvec(rotation_angle * rotation_axis)
+    else:
+        rot = R.identity()
+
+    obj.local.rotation = rot.as_quat()
     return obj
