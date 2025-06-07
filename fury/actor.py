@@ -1960,7 +1960,7 @@ class VectorField(WorldObject):
             A tuple of three boolean values indicating the visibility of the slices
             in the x, y, and z dimensions, respectively.
         """
-
+        super().__init__()
         if not (field.ndim == 5 or field.ndim == 4):
             raise ValueError(
                 "Field must be 5D or 4D, "
@@ -2001,15 +2001,14 @@ class VectorField(WorldObject):
             colors = np.asarray(colors, dtype=np.float32)
 
         colors = np.tile(colors, (total_vectors * pnts_per_vector, 1))
-        geometry = buffer_to_geometry(positions=pts, colors=colors)
-        material = _create_vector_field_material(
+        self.geometry = buffer_to_geometry(positions=pts, colors=colors)
+        self.material = _create_vector_field_material(
             (0, 0, 0),
             material=actor_type,
             thickness=thickness,
             opacity=opacity,
         )
 
-        super().__init__(geometry=geometry, material=material)
         if cross_section is None:
             self.cross_section = np.asarray([-2, -2, -2], dtype=np.int32)
         else:
