@@ -1,5 +1,7 @@
 """Module for creating various materials used in 3D rendering."""
 
+import numpy as np
+
 from fury.lib import (
     ImageBasicMaterial,
     LineArrowMaterial,
@@ -219,6 +221,67 @@ def _create_line_material(
         raise ValueError(f"Unsupported material type: {material}")
 
 
+def _create_vector_field_material(
+    cross_section,
+    *,
+    material="thin_line",
+    enable_picking=True,
+    opacity=1.0,
+    thickness=1.0,
+    thickness_space="screen",
+    anti_aliasing=True,
+):
+    """
+    Create a line material.
+
+    Parameters
+    ----------
+    cross_section : list or tuple, shape (3,), optional
+        A list or tuple representing the cross section dimensions.
+        If None, the cross section will be ignored and complete field will be shown.
+    material : str, optional
+        The type of vector field material to create. Options are 'thin_line' (default),
+        'line', 'arrow'.
+    enable_picking : bool, optional
+        Whether the material should be pickable in a scene.
+    opacity : float, optional
+        The opacity of the material, from 0 (transparent) to 1 (opaque).
+        If RGBA is provided, the final alpha will be:
+        final_alpha = alpha_in_RGBA * opacity.
+    thickness : float, optional
+        The line thickness expressed in logical pixels.
+    thickness_space : str, optional
+        The coordinate space in which the thickness is
+        expressed ('screen', 'world', 'model').
+    anti_aliasing : bool, optional
+        Whether or not the line is anti-aliased in the shader.
+
+    Returns
+    -------
+    LineMaterial
+        A line material object of the specified type with the given properties.
+    """
+
+    opacity = validate_opacity(opacity)
+
+    args = {
+        "pick_write": enable_picking,
+        "opacity": opacity,
+        "thickness": thickness,
+        "thickness_space": thickness_space,
+        "aa": anti_aliasing,
+    }
+
+    if material == "thin_line":
+        return VectorFieldThinLineMaterial(cross_section, **args)
+    elif material == "line":
+        return VectorFieldLineMaterial(cross_section, **args)
+    elif material == "arrow":
+        return VectorFieldArrowMaterial(cross_section, **args)
+    else:
+        raise ValueError(f"Unsupported material type: {material}")
+
+
 def _create_points_material(
     *,
     material="basic",
@@ -401,3 +464,81 @@ def _create_image_material(
         gamma=gamma,
         interpolation=interpolation,
     )
+
+
+class VectorFieldThinLineMaterial(LineMaterial):
+    """Material for VectorFieldActor.
+
+    Parameters
+    ----------
+    cross_section : {list, tuple, ndarray}
+        A list or tuple  or ndarray representing the cross section dimensions.
+    **kwargs : dict
+            Additional keyword arguments for the material.
+    """
+
+    uniform_type = dict(
+        LineThinSegmentMaterial.uniform_type,
+        cross_section="4xi4",  # vec3<i32>
+    )
+
+    def __init__(self, cross_section, **kwargs):
+        """Initialize the VectorFieldMaterial.
+
+        Parameters
+        ----------
+        cross_section : {list, tuple, ndarray}
+            A list or tuple  or ndarray representing the cross section dimensions.
+        **kwargs : dict
+            Additional keyword arguments for the material.
+        """
+        super().__init__(color_mode="vertex", **kwargs)
+        self.cross_section = cross_section
+
+    @property
+    def cross_section(self):
+        """Get the cross section of the vector field.
+
+        Returns
+        -------
+        list
+            A list representing the cross section dimensions.
+        """
+        return self.uniform_buffer.data["cross_section"][:3]
+
+    @cross_section.setter
+    def cross_section(self, cross_section):
+        """Set the cross section of the vector field.
+
+        Parameters
+        ----------
+        cross_section : list or tuple
+            A list or tuple representing the cross section dimensions.
+        """
+        if len(cross_section) != 3:
+            raise ValueError("cross_section must have exactly 3 dimensions.")
+        if not all(
+            isinstance(i, int) or isinstance(i.item(), int) for i in cross_section
+        ):
+            raise ValueError("cross_section must contain only integers.")
+
+        self.uniform_buffer.data["cross_section"] = np.asarray(
+            [*cross_section, 0], dtype=np.int32
+        )
+        self.uniform_buffer.update_full()
+
+
+class VectorFieldLineMaterial(VectorFieldThinLineMaterial):
+    """Material for VectorFieldActor.
+
+    This class provides a way to distinguish the usage of right shader for
+    creating a vector field.
+    """
+
+
+class VectorFieldArrowMaterial(VectorFieldThinLineMaterial):
+    """Material for VectorFieldActor.
+
+    This class provides a way to distinguish the usage of right shader for
+    creating a vector field.
+    """
