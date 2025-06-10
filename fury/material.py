@@ -481,7 +481,8 @@ class VectorFieldThinLineMaterial(LineMaterial):
         if len(cross_section) != 3:
             raise ValueError("cross_section must have exactly 3 dimensions.")
         if not all(
-            isinstance(i, int) or isinstance(i.item(), int) for i in cross_section
+            isinstance(i, int) or (hasattr(i, "item") and isinstance(i.item(), int))
+            for i in cross_section
         ):
             raise ValueError("cross_section must contain only integers.")
 

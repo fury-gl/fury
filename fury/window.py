@@ -752,6 +752,7 @@ class ShowManager:
         ]:
             self.window.draw_frame()
             self.snapshot(f"{self._title}.png")
+            self.window.close()
             return
 
         if self._is_qt:
