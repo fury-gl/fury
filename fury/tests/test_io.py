@@ -12,6 +12,7 @@ from fury.data import fetch_viz_cubemaps, read_viz_cubemap
 from fury.io import (
     load_cube_map_texture,
     load_image,
+    load_image_texture,
     # load_polydata,
     # load_sprite_sheet,
     # load_text,
@@ -27,6 +28,14 @@ def test_load_cube_map_texture():
     fetch_viz_cubemaps()
     texture_files = read_viz_cubemap("skybox")
     texture = load_cube_map_texture(texture_files)
+
+    npt.assert_equal(type(texture), Texture)
+
+
+def test_load_image_texture():
+    fetch_viz_cubemaps()
+    texture_files = read_viz_cubemap("skybox")
+    texture = load_image_texture(texture_files[0])
 
     npt.assert_equal(type(texture), Texture)
 
