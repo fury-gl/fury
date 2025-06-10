@@ -2113,7 +2113,7 @@ def vector_field_slicer(
     """Visualize a vector field with different features.
 
     Parameters
-        ----------
+    ----------
     field : ndarray, shape {(X, Y, Z, N, 3), (X, Y, Z, 3)}
         The vector field data, where X, Y, Z represent the position in 3D,
         N is the number of vectors per voxel, and 3 represents the vector

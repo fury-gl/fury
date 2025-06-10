@@ -1,3 +1,13 @@
+"""
+===================
+Quick Visualization
+===================
+
+This example demonstrates how to use the visualization function to quickly display
+3D actors in a window.
+
+"""
+
 import numpy as np
 
 from fury.window import show
