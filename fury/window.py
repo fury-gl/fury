@@ -727,7 +727,8 @@ class ShowManager:
         Returns
         -------
         ndarray
-            A NumPy array representing the captured image data (RGBA)."""
+            A NumPy array representing the captured image data (RGBA).
+        """
         arr = np.asarray(self.renderer.snapshot())
         img = image_from_array(arr)
         img.save(fname)
