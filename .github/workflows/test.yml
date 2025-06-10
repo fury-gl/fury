@@ -111,11 +111,20 @@ jobs:
       run: ci/setup_headless.sh
     - name: Run the tests!
       run: |
+        ulimit -c unlimited
         if [ "${{ matrix.use-pre }}" == "true" ]; then
-          ci/run_tests.sh || echo "::warning::Experimental Job so failure ignored!"
+        ci/run_tests.sh || echo "::warning::Experimental Job so failure ignored!"
         else
-          ci/run_tests.sh
+        ci/run_tests.sh
         fi
+        find . -name 'core.*' -exec mv {} ../ \;
+
+    - name: Upload core dump
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: core-dump
+        path: ./core.*
     # - name: Upload coverage to Codecov
     #   uses: codecov/codecov-action@v4
     #   iff: {{ matrix.coverage }}
