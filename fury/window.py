@@ -633,7 +633,7 @@ class ShowManager:
             self._key_long_press = asyncio.create_task(
                 self._handle_key_long_press(event)
             )
-        else:
+        elif self._key_long_press is not None:
             self._key_long_press.cancel()
             self._key_long_press = None
 
@@ -727,7 +727,8 @@ class ShowManager:
         Returns
         -------
         ndarray
-            A NumPy array representing the captured image data (RGBA)."""
+            A NumPy array representing the captured image data (RGBA).
+        """
         arr = np.asarray(self.renderer.snapshot())
         img = image_from_array(arr)
         img.save(fname)

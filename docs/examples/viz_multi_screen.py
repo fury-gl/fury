@@ -1,3 +1,13 @@
+"""
+====================
+Multi Screen Example
+====================
+
+This example demonstrates how to create a multi-screen setup using FURY's `ShowManager`
+and `Scene` classes.
+
+"""
+
 import numpy as np
 
 from fury.window import ShowManager, Scene
