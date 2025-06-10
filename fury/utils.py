@@ -514,3 +514,56 @@ def apply_affine_to_actor(actor, affine):
     recursive_transform = RecursiveTransform(affine_transform)
     actor.local = affine_transform
     actor.world = recursive_transform
+
+
+def generate_planar_uvs(vertices, *, axis="xy"):
+    """Generate UVs by projecting vertices onto a plane.
+
+    Parameters
+    ----------
+    vertices : ndarray, shape (N, 3)
+        Array of vertex coordinates in 3D space.
+    axis : str, optional
+        The plane onto which to project the vertices. Options are 'xy', 'xz', or 'yz'.
+
+    Returns
+    -------
+    ndarray
+        Array of UV coordinates, shape (N, 2), where N is the number of vertices.
+    """
+
+    if axis not in ("xy", "xz", "yz"):
+        raise ValueError("axis must be one of 'xy', 'xz', or 'yz'.")
+
+    if vertices.ndim != 2 or vertices.shape[1] != 3 or vertices.shape[0] < 2:
+        raise ValueError("vertices must be a 2D array with shape (N, 3) with N > 2.")
+
+    min_coords = np.min(vertices, axis=0)
+    max_coords = np.max(vertices, axis=0)
+    range_coords = max_coords - min_coords
+
+    if (range_coords[0] == 0 or range_coords[1] == 0) and axis == "xy":
+        raise ValueError("Cannot generate UVs for flat geometry in the XY plane.")
+    if (range_coords[0] == 0 or range_coords[2] == 0) and axis == "xz":
+        raise ValueError("Cannot generate UVs for flat geometry in the XZ plane.")
+    if (range_coords[1] == 0 or range_coords[2] == 0) and axis == "yz":
+        raise ValueError("Cannot generate UVs for flat geometry in the YZ plane.")
+
+    uvs = np.zeros((len(vertices), 2))
+    for i, v in enumerate(vertices):
+        if axis == "xy":
+            uvs[i] = [
+                (v[0] - min_coords[0]) / range_coords[0],
+                (v[1] - min_coords[1]) / range_coords[1],
+            ]
+        elif axis == "xz":
+            uvs[i] = [
+                (v[0] - min_coords[0]) / range_coords[0],
+                (v[2] - min_coords[2]) / range_coords[2],
+            ]
+        elif axis == "yz":
+            uvs[i] = [
+                (v[1] - min_coords[1]) / range_coords[1],
+                (v[2] - min_coords[2]) / range_coords[2],
+            ]
+    return uvs
