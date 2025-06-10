@@ -5,7 +5,8 @@
 # # with better autocompletion and documentation in code editors.
 
 __all__ = [
-    #     "actor",
+    "actor",
+    "bio",
     #     "actors",
     "animation",
     "colormap",
@@ -38,8 +39,9 @@ __all__ = [
 # #  the explicit definition of `__all__` will enable type inference for engines.
 
 from . import (
-    #     actors,
+    actor,
     animation,
+    bio,
     colormap,
     #     convert,
     data,
@@ -49,7 +51,6 @@ from . import (
     #     interactor,
     io,
     lib,
-    #     layout,
     optpkg,
     pkg_info,
     primitive,
