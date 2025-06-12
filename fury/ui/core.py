@@ -96,7 +96,6 @@ class UI(object, metaclass=abc.ABCMeta):
 
     """
 
-    @warn_on_args_to_kwargs()
     def __init__(self, *, position=(0, 0)):
         """Init scene.
 

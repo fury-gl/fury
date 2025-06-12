@@ -30,6 +30,7 @@ from fury.lib import (
     QtCanvas,
     Renderer,
     Scene as GfxScene,  # type: ignore
+    Group as GfxGroup,  # type: ignore
     Viewport,
     get_app,
     run,
@@ -38,7 +39,7 @@ from fury.lib import (
 from fury.ui import UI
 
 
-class Scene(GfxScene):
+class Scene(GfxGroup):
     """Scene class to hold the actors in the scene.
 
     Data Structure to arrange the logical and spatial representation of the
@@ -171,11 +172,11 @@ class Scene(GfxScene):
         self.add(*self.lights)
 
     def add(self, *objects):
-        for object in objects:
-            if isinstance(object, UI):
-                object.add_to_scene(self.ui_scene)
+        for obj in objects:
+            if isinstance(obj, UI):
+                obj.add_to_scene(self.ui_scene)
             else:
-                self.main_scene.add(object)
+                self.main_scene.add(obj)
 
 
 @dataclass
