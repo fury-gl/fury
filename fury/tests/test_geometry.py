@@ -181,3 +181,42 @@ def test_create_text():
     text_obj = geometry.create_text(text=text, material=mat)
     assert text_obj.material == mat
     assert isinstance(text_obj, Text)
+
+
+def _is_orthonormal(d, x, y, atol=1e-6):
+    return (
+        np.isclose(np.linalg.norm(d), 1.0, atol=atol)
+        and np.isclose(np.linalg.norm(x), 1.0, atol=atol)
+        and np.isclose(np.linalg.norm(y), 1.0, atol=atol)
+        and np.isclose(np.dot(d, x), 0.0, atol=atol)
+        and np.isclose(np.dot(d, y), 0.0, atol=atol)
+        and np.isclose(np.dot(x, y), 0.0, atol=atol)
+        and np.allclose(np.cross(d, x), y, atol=atol)
+    )
+
+
+def test_prune_colinear():
+    arr = np.array([[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, 0, 0]], dtype=float)
+    pruned = geometry.prune_colinear(arr, colinear_threshold=0.9999)
+    expected = np.array([[0, 0, 0], [3, 0, 0]], dtype=float)
+    npt.assert_array_equal(pruned, expected)
+
+
+def test_axes_for_dir():
+    d = np.array([1, 1, 1], dtype=float) / np.sqrt(3)
+    x, y = geometry.axes_for_dir(d.copy())
+    assert _is_orthonormal(d, x, y)
+
+
+def test_rotate_vector():
+    v = np.array([1.0, 0.0, 0.0])
+    axis = np.array([0.0, 0.0, 1.0])
+    angle = np.pi / 2
+    expected = np.array([0.0, 1.0, 0.0])
+    rotated = geometry.rotate_vector(v, axis, angle)
+    npt.assert_allclose(rotated, expected, atol=1e-6)
+
+    rotated_self = geometry.rotate_vector(v, v, np.pi / 3)
+    npt.assert_allclose(
+        rotated_self / np.linalg.norm(rotated_self), v / np.linalg.norm(v), atol=1e-6
+    )
