@@ -1,6 +1,7 @@
 """Actor creation functions for various geometric primitives."""
 
 import numpy as np
+from scipy.spatial.transform import Rotation as R
 
 from fury.geometry import (
     buffer_to_geometry,
@@ -21,10 +22,10 @@ from fury.lib import (
     register_wgpu_render_function,
 )
 from fury.material import (
-    _create_image_material,
     VectorFieldArrowMaterial,
     VectorFieldLineMaterial,
     VectorFieldThinLineMaterial,
+    _create_image_material,
     _create_line_material,
     _create_mesh_material,
     _create_points_material,
@@ -1973,7 +1974,7 @@ def image(
         rotation_axis = rotation_axis / np.linalg.norm(rotation_axis)
         rot = R.from_rotvec(rotation_angle * rotation_axis)
     else:
-        rot = R.identity()
+        rot = R.from_quat([0, 0, 0, 1])
 
     obj.local.rotation = rot.as_quat()
     return obj
