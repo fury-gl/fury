@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from fury import material, window
 from fury.geometry import buffer_to_geometry, create_mesh
@@ -13,7 +14,13 @@ from fury.lib import (
     PointsMaterial,
     TextMaterial,
 )
-from fury.material import _create_mesh_material
+from fury.material import (
+    VectorFieldArrowMaterial,
+    VectorFieldLineMaterial,
+    VectorFieldThinLineMaterial,
+    _create_mesh_material,
+    _create_vector_field_material,
+)
 from fury.primitive import prim_sphere
 
 
@@ -191,3 +198,226 @@ def test_create_line_material():
     assert isinstance(mat, LineSegmentMaterial)
     assert mat.color == color + (0.5,)
     assert mat.color_mode == "auto"
+
+
+def test_VectorFieldThinLineMaterial_initialization():
+    """Test VectorFieldThinLineMaterial initialization with valid cross_section."""
+    cross_section = [1, 2, 3]
+    material = VectorFieldThinLineMaterial(cross_section)
+    assert np.array_equal(material.cross_section, cross_section)
+    assert material.color_mode == "vertex"
+
+
+def test_VectorFieldThinLineMaterial_cross_section_property():
+    """Test VectorFieldThinLineMaterial cross_section property getter and setter."""
+    cross_section = [1, 2, 3]
+    material = VectorFieldThinLineMaterial(cross_section)
+
+    # Test getter
+    assert np.array_equal(material.cross_section, cross_section)
+
+    # Test setter with valid input
+    new_cross_section = [4, 5, 6]
+    material.cross_section = new_cross_section
+    assert np.array_equal(material.cross_section, new_cross_section)
+
+    # Test setter with numpy array
+    np_cross_section = np.array([7, 8, 9], dtype=np.int32)
+    material.cross_section = np_cross_section
+    assert np.array_equal(material.cross_section, np_cross_section)
+
+
+def test_VectorFieldThinLineMaterial_invalid_cross_section():
+    """Test VectorFieldThinLineMaterial with invalid cross_section inputs."""
+    material = VectorFieldThinLineMaterial([0, 0, 0])
+
+    # Test wrong length
+    with pytest.raises(
+        ValueError, match="cross_section must have exactly 3 dimensions"
+    ):
+        material.cross_section = [1, 2]
+
+    # Test non-integer values
+    with pytest.raises(ValueError, match="cross_section must contain only integers"):
+        material.cross_section = [1.5, 2.0, 3.0]
+
+    # Test invalid types
+    with pytest.raises(ValueError):
+        material.cross_section = "invalid"
+
+
+def test_VectorFieldThinLineMaterial_uniform_buffer_update():
+    """Test VectorFieldThinLineMaterial updates uniform buffer correctly."""
+    cross_section = [1, 2, 3]
+    material = VectorFieldThinLineMaterial(cross_section)
+
+    # Check uniform buffer contains correct data
+    uniform_data = material.uniform_buffer.data["cross_section"]
+    assert np.array_equal(uniform_data[:3], cross_section)
+    assert uniform_data[3] == 0  # padding value
+
+    # Update and verify
+    new_cross_section = [4, 5, 6]
+    material.cross_section = new_cross_section
+    updated_data = material.uniform_buffer.data["cross_section"]
+    assert np.array_equal(updated_data[:3], new_cross_section)
+
+
+def test_VectorFieldLineMaterial_inheritance():
+    """Test VectorFieldLineMaterial inherits properly from
+    VectorFieldThinLineMaterial.
+    """
+    cross_section = [1, 2, 3]
+    material = VectorFieldLineMaterial(cross_section)
+
+    # Verify inheritance
+    assert isinstance(material, VectorFieldThinLineMaterial)
+    assert np.array_equal(material.cross_section, cross_section)
+    assert material.color_mode == "vertex"
+
+
+def test_VectorFieldArrowMaterial_inheritance():
+    """Test VectorFieldArrowMaterial inherits properly from
+    VectorFieldThinLineMaterial.
+    """
+    cross_section = [1, 2, 3]
+    material = VectorFieldArrowMaterial(cross_section)
+
+    # Verify inheritance
+    assert isinstance(material, VectorFieldThinLineMaterial)
+    assert np.array_equal(material.cross_section, cross_section)
+    assert material.color_mode == "vertex"
+
+
+def test_VectorFieldThinLineMaterial_with_numpy_inputs():
+    """Test VectorFieldThinLineMaterial works with numpy array inputs."""
+    # Test initialization with numpy array
+    np_cross_section = np.array([1, 2, 3], dtype=np.int32)
+    material = VectorFieldThinLineMaterial(np_cross_section)
+    assert np.array_equal(material.cross_section, np_cross_section)
+
+    # Test setting with numpy array
+    new_np_cross_section = np.array([4, 5, 6], dtype=np.int64)
+    material.cross_section = new_np_cross_section
+    assert np.array_equal(material.cross_section, new_np_cross_section)
+
+
+def test_VectorFieldThinLineMaterial_edge_cases():
+    """Test VectorFieldThinLineMaterial with edge case inputs."""
+    # Test with zeros
+    material = VectorFieldThinLineMaterial([0, 0, 0])
+    assert np.array_equal(material.cross_section, [0, 0, 0])
+
+    # Test with negative values
+    material.cross_section = [-1, -2, -3]
+    assert np.array_equal(material.cross_section, [-1, -2, -3])
+
+    # Test with large values
+    large_values = [999999, 999999, 999999]
+    material.cross_section = large_values
+    assert np.array_equal(material.cross_section, large_values)
+
+
+def test_create_vector_field_material_thin_line():
+    """Test creating a thin line material with default parameters."""
+    cross_section = [1, 2, 3]
+    material = _create_vector_field_material(cross_section, material="thin_line")
+
+    assert isinstance(material, VectorFieldThinLineMaterial)
+    assert material.pick_write is True
+    assert material.opacity == 1.0
+    assert material.thickness == 1.0
+    assert material.thickness_space == "screen"
+    assert material.aa is True
+    assert np.array_equal(material.cross_section, cross_section)
+
+
+def test_create_vector_field_material_line():
+    """Test creating a line material with custom parameters."""
+    cross_section = [4, 5, 6]
+    material = _create_vector_field_material(
+        cross_section,
+        material="line",
+        enable_picking=False,
+        opacity=0.5,
+        thickness=2.0,
+        thickness_space="world",
+        anti_aliasing=False,
+    )
+
+    assert isinstance(material, VectorFieldLineMaterial)
+    assert material.pick_write is False
+    assert material.opacity == 0.5
+    assert material.thickness == 2.0
+    assert material.thickness_space == "world"
+    assert material.aa is False
+    assert np.array_equal(material.cross_section, cross_section)
+
+
+def test_create_vector_field_material_arrow():
+    """Test creating an arrow material with custom parameters."""
+    cross_section = [7, 8, 9]
+    material = _create_vector_field_material(
+        cross_section,
+        material="arrow",
+        opacity=0.8,
+        thickness=1.5,
+    )
+
+    assert isinstance(material, VectorFieldArrowMaterial)
+    assert material.pick_write is True  # default
+    assert np.allclose(material.opacity, 0.8, rtol=1e-2)
+    assert material.thickness == 1.5
+    assert material.thickness_space == "screen"  # default
+    assert material.aa is True  # default
+    assert np.array_equal(material.cross_section, cross_section)
+
+
+def test_create_vector_field_material_invalid_type():
+    """Test creating a material with invalid type raises error."""
+    cross_section = [1, 1, 1]
+    with pytest.raises(ValueError, match="Unsupported material type: invalid"):
+        _create_vector_field_material(cross_section, material="invalid")
+
+
+def test_create_vector_field_material_edge_cases():
+    """Test edge cases for material creation."""
+    # Test with zero opacity
+    material = _create_vector_field_material([1, 1, 1], opacity=0.0)
+    assert material.opacity == 0.0
+
+    # Test with zero thickness
+    material = _create_vector_field_material([1, 1, 1], thickness=0.0)
+    assert material.thickness == 0.0
+
+    # Test with negative thickness (should not work)
+    material = _create_vector_field_material([1, 1, 1], thickness=-1.0)
+    assert material.thickness == 0.0
+
+
+def test_create_vector_field_material_thickness_spaces():
+    """Test different thickness space options."""
+    for space in ["screen", "world", "model"]:
+        material = _create_vector_field_material(
+            [1, 1, 1],
+            thickness_space=space,
+        )
+        assert material.thickness_space == space
+
+
+def test_create_vector_field_material_anti_aliasing():
+    """Test anti-aliasing parameter."""
+    material = _create_vector_field_material([1, 1, 1], anti_aliasing=False)
+    assert material.aa is False
+
+    material = _create_vector_field_material([1, 1, 1], anti_aliasing=True)
+    assert material.aa is True
+
+
+def test_create_vector_field_material_picking():
+    """Test enable_picking parameter."""
+    material = _create_vector_field_material([1, 1, 1], enable_picking=False)
+    assert material.pick_write is False
+
+    material = _create_vector_field_material([1, 1, 1], enable_picking=True)
+    assert material.pick_write is True

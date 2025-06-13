@@ -1,5 +1,8 @@
 """Actor creation functions for various geometric primitives."""
 
+import logging
+import os
+
 import numpy as np
 
 from fury.geometry import (
@@ -13,9 +16,11 @@ from fury.geometry import (
     prune_colinear,
     rotate_vector,
 )
+from fury.io import load_image_texture
 from fury.lib import (
     Geometry,
     Group,
+    MeshBasicMaterial,
     Texture,
     Volume,
     VolumeSliceMaterial,
@@ -40,7 +45,12 @@ from fury.shader import (
     VectorFieldShader,
     VectorFieldThinShader,
 )
-from fury.utils import set_group_opacity, set_group_visibility, show_slices
+from fury.utils import (
+    generate_planar_uvs,
+    set_group_opacity,
+    set_group_visibility,
+    show_slices,
+)
 
 
 def actor_from_primitive(
@@ -1963,7 +1973,7 @@ class VectorField(WorldObject):
             A tuple of three boolean values indicating the visibility of the slices
             in the x, y, and z dimensions, respectively.
         """
-
+        super().__init__()
         if not (field.ndim == 5 or field.ndim == 4):
             raise ValueError(
                 "Field must be 5D or 4D, "
@@ -2004,15 +2014,14 @@ class VectorField(WorldObject):
             colors = np.asarray(colors, dtype=np.float32)
 
         colors = np.tile(colors, (total_vectors * pnts_per_vector, 1))
-        geometry = buffer_to_geometry(positions=pts, colors=colors)
-        material = _create_vector_field_material(
+        self.geometry = buffer_to_geometry(positions=pts, colors=colors)
+        self.material = _create_vector_field_material(
             (0, 0, 0),
             material=actor_type,
             thickness=thickness,
             opacity=opacity,
         )
 
-        super().__init__(geometry=geometry, material=material)
         if cross_section is None:
             self.cross_section = np.asarray([-2, -2, -2], dtype=np.int32)
         else:
@@ -2116,7 +2125,7 @@ def vector_field_slicer(
     """Visualize a vector field with different features.
 
     Parameters
-        ----------
+    ----------
     field : ndarray, shape {(X, Y, Z, N, 3), (X, Y, Z, 3)}
         The vector field data, where X, Y, Z represent the position in 3D,
         N is the number of vectors per voxel, and 3 represents the vector
@@ -2412,3 +2421,95 @@ def streamtube(
         repeat_primitive=False,
     )
     return actor
+
+
+def surface(
+    vertices,
+    faces,
+    *,
+    material="phong",
+    colors=None,
+    texture=None,
+    texture_axis="xy",
+    opacity=1.0,
+):
+    """Create a surface mesh actor from vertices and faces.
+
+    Parameters
+    ----------
+    vertices : ndarray, shape (N, 3)
+        The vertex positions of the surface mesh.
+    faces : ndarray, shape (M, 3)
+        The indices of the vertices that form each triangular face.
+    material : str, optional
+        The material type for the surface mesh. Options are 'phong' and 'basic'. This
+        option only works with colors is passed.
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA values in the range [0, 1].
+    texture : str, optional
+        Path to the texture image file.
+    texture_axis : str, optional
+        The axis to generate UV coordinates for the texture. Options are 'xy', 'yz',
+        and 'xz'. This option only works with texture is passed.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
+
+    Returns
+    -------
+    Mesh
+        A mesh actor containing the generated surface with the specified properties.
+    """
+    geo = None
+    mat = None
+
+    opacity = validate_opacity(opacity)
+
+    if colors is not None:
+        if texture is not None:
+            logging.warning("Texture will be ignored when colors are provided.")
+
+        if isinstance(colors, np.ndarray) and colors.shape[0] == vertices.shape[0]:
+            geo = buffer_to_geometry(
+                positions=vertices.astype("float32"),
+                indices=faces.astype("int32"),
+                colors=colors,
+            )
+            mat = _create_mesh_material(
+                material=material, mode="vertex", opacity=opacity
+            )
+        elif isinstance(colors, (tuple, list)) and len(colors) == 3:
+            geo = buffer_to_geometry(
+                positions=vertices.astype("float32"),
+                indices=faces.astype("int32"),
+            )
+            mat = _create_mesh_material(color=colors, opacity=opacity)
+        else:
+            raise ValueError(
+                "Colors must be either an ndarray with shape (N, 3) or (N, 4), "
+                "or a tuple/list of length 3 for RGB colors."
+            )
+    elif texture is not None:
+        if not os.path.exists(texture):
+            raise FileNotFoundError(f"Texture file '{texture}' not found.")
+
+        logging.warning(
+            "texture option currently only supports planar projection,"
+            " the plane can be provided by texture_axis parameter."
+        )
+
+        tex = load_image_texture(texture)
+        texcoords = generate_planar_uvs(vertices, axis=texture_axis)
+        geo = buffer_to_geometry(
+            positions=vertices.astype("float32"),
+            indices=faces.astype("int32"),
+            texcoords=texcoords.astype("float32"),
+        )
+        mat = MeshBasicMaterial(map=tex, opacity=opacity)
+    else:
+        geo = buffer_to_geometry(
+            positions=vertices.astype("float32"), indices=faces.astype("int32")
+        )
+        mat = _create_mesh_material(material=material, opacity=opacity)
+
+    obj = create_mesh(geo, mat)
+    return obj

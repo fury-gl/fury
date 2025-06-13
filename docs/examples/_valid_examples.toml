@@ -1,0 +1,50 @@
+[main]
+readme = """
+.. _ref_examples:
+
+Tutorials
+=========
+
+How to use widgets, ui, actor and windows module. Below some examples and apps to go in details.
+"""
+position = 0   # it should always be 0
+enable = true  # it should always be true
+files = []
+
+[introductory]
+readme = "file: _introductory.rst"
+position = 1
+enable = true
+files = [
+    "viz_basic_qt.py",
+    "viz_integrate_with_qt.py",
+    "viz_multi_screen.py",
+    "viz_show.py",
+
+]
+
+[demos]
+readme = "file: _demos.rst"
+position = 4
+enable = true
+files = [
+    "viz_slicer.py",
+    "viz_skybox.py",
+
+]
+
+[ui]
+readme = "file: _ui.rst"
+position = 7
+enable = false
+files = [
+
+]
+
+[animation]
+readme = "file: _animation.rst"
+position = 10
+enable = false
+files = [
+    # "viz_interpolators.py",
+]
