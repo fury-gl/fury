@@ -1971,7 +1971,6 @@ def image(
 
     obj.local.position = position
 
-
     default_normal = np.array([0, 0, 1])
     target_normal = np.asarray(directions)
     target_normal = target_normal / np.linalg.norm(target_normal)
