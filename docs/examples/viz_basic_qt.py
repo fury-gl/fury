@@ -1,3 +1,12 @@
+"""
+=======================
+Using FURY with Qt (v1)
+=======================
+
+This example demonstrates how to use FURY with a Qt application to create a simple GUI.
+It integrates FURY's rendering capabilities with Qt's event handling and widget system.
+"""
+
 import numpy as np
 
 from fury.window import show

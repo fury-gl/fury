@@ -44,9 +44,13 @@ if have_py_qt5:
     from PyQt5 import QtWidgets
 
 Texture = gfx.Texture
+TextureMap = gfx.TextureMap
 VolumeSliceMaterial = gfx.VolumeSliceMaterial
 Group = gfx.Group
+AffineTransform = gfx.objects._base.AffineTransform
+RecursiveTransform = gfx.objects._base.RecursiveTransform
 Volume = gfx.Volume
+WorldObject = gfx.WorldObject
 AmbientLight = gfx.AmbientLight
 Background = gfx.Background
 BackgroundSkyboxMaterial = gfx.BackgroundSkyboxMaterial

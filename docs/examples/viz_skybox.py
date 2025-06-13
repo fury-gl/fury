@@ -1,3 +1,12 @@
+"""
+===============
+Adding a Skybox
+===============
+
+This example demonstrates how to use the add a skybox to a scene in FURY.
+
+"""
+
 import numpy as np
 
 from fury.window import ShowManager, Scene
