@@ -183,7 +183,7 @@ def test_create_text():
     assert isinstance(text_obj, Text)
 
 
-def _is_orthonormal(d, x, y, atol):
+def _is_orthonormal(d, x, y, atol=1e-6):
     return (
         np.isclose(np.linalg.norm(d), 1.0, atol=atol)
         and np.isclose(np.linalg.norm(x), 1.0, atol=atol)
