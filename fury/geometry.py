@@ -277,3 +277,64 @@ def rotate_vector(v, axis, angle):
         + np.cross(axis, v) * sin_theta
         + axis * np.dot(axis, v) * (1 - cos_theta)
     )
+
+
+def prune_colinear(arr, colinear_threshold=0.9999):
+    """Prune colinear points from the array.
+
+    Parameters
+    ----------
+    arr : ndarray, shape (N, 3)
+        The input array of points.
+    colinear_threshold : float, optional
+        The threshold for colinearity. Points are considered colinear if the
+        cosine of the angle between them is greater than or equal to this value.
+
+    Returns
+    -------
+    ndarray, shape (3,)
+        The pruned array with colinear points removed.
+    """
+    keep = [arr[0]]
+    for i in range(1, len(arr) - 1):
+        v1 = arr[i] - keep[-1]
+        v2 = arr[i + 1] - arr[i]
+        if np.linalg.norm(v1) < 1e-6 or np.linalg.norm(v2) < 1e-6:
+            continue
+        if (
+            np.linalg.norm(v1 / np.linalg.norm(v1) - v2 / np.linalg.norm(v2))
+            >= colinear_threshold
+        ):
+            keep.append(arr[i])
+    keep.append(arr[-1])
+    return np.stack(keep)
+
+
+def axes_for_dir(d, prev_x=None):
+    """Compute the axes for a given direction vector.
+
+    Parameters
+    ----------
+    d : ndarray, shape (3,)
+        The direction vector.
+    prev_x : ndarray, shape (3,), optional
+        The previous x-axis vector.
+
+    Returns
+    -------
+    x : ndarray, shape (3,)
+        The x-axis vector.
+    y : ndarray, shape (3,)
+        The y-axis vector.
+    """
+    d /= np.linalg.norm(d)
+    if prev_x is None:
+        up = np.array([0, 0, 1], dtype=np.float32)
+        if abs(np.dot(d, up)) > 0.9:
+            up = np.array([0, 1, 0], dtype=np.float32)
+        x = np.cross(up, d)
+    else:
+        x = prev_x - d * np.dot(prev_x, d)
+    x /= np.linalg.norm(x)
+    y = np.cross(d, x)
+    return x, y
