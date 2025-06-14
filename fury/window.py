@@ -23,6 +23,7 @@ from fury.lib import (
     Canvas,
     Controller,
     DirectionalLight,
+    Group as GfxGroup,  # type: ignore
     JupyterCanvas,
     OffscreenCanvas,
     OrbitController,
@@ -30,11 +31,10 @@ from fury.lib import (
     QtCanvas,
     Renderer,
     Scene as GfxScene,  # type: ignore
-    Group as GfxGroup,  # type: ignore
+    ScreenCoordsCamera,
     Viewport,
     get_app,
     run,
-    ScreenCoordsCamera,
 )
 from fury.ui import UI
 
@@ -174,7 +174,7 @@ class Scene(GfxGroup):
     def add(self, *objects):
         for obj in objects:
             if isinstance(obj, UI):
-                obj.add_to_scene(self.ui_scene)
+                add_ui_to_scene(self.ui_scene, obj)
             else:
                 self.main_scene.add(obj)
 
@@ -230,6 +230,14 @@ class Screen:
         value : tuple
             The desired position and size (x, y, w, h) for the viewport."""
         self.viewport.rect = value
+
+
+def add_ui_to_scene(ui_scene: GfxScene, ui_obj: UI):
+    if ui_obj.actors:
+        ui_scene.add(*ui_obj.actors)
+
+    for child in ui_obj.childrens:
+        add_ui_to_scene(ui_scene, child)
 
 
 def create_screen(

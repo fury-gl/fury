@@ -109,6 +109,8 @@ class UI(object, metaclass=abc.ABCMeta):
         self._scene = object()
         self._position = np.array([0, 0])
         self._callbacks = []
+        self._childrens = []
+        self._actors = []
 
         self._setup()  # Setup needed actors and sub UI components.
         self.position = position
@@ -145,57 +147,15 @@ class UI(object, metaclass=abc.ABCMeta):
         msg = "Subclasses of UI must implement `_setup(self)`."
         raise NotImplementedError(msg)
 
-    @abc.abstractmethod
-    def _get_actors(self):
-        """Get the actors composing this UI component."""
-        msg = "Subclasses of UI must implement `_get_actors(self)`."
-        raise NotImplementedError(msg)
-
     @property
     def actors(self):
         """Actors composing this UI component."""
-        return self._get_actors()
+        return self._actors
 
-    @abc.abstractmethod
-    def _add_to_scene(self, _scene: Scene):
-        """Add all subcomponents or VTK props that compose this UI component.
-
-        Parameters
-        ----------
-        _scene : Scene
-
-        """
-        msg = "Subclasses of UI must implement `_add_to_scene(self, scene)`."
-        raise NotImplementedError(msg)
-
-    def add_to_scene(self, scene: Scene):
-        """Allow UI objects to add their own props to the scene.
-
-        Parameters
-        ----------
-        scene : scene
-
-        """
-        self._add_to_scene(scene)
-
-        # Get a hold on the current interactor style.
-        # iren = scene.GetRenderWindow().GetInteractor().GetInteractorStyle()
-
-        # for callback in self._callbacks:
-        #     if not isinstance(iren, CustomInteractorStyle):
-        #         msg = (
-        #             "The ShowManager requires `CustomInteractorStyle` in"
-        #             " order to use callbacks."
-        #         )
-        #         raise TypeError(msg)
-
-        #     if callback[0] == self._scene:
-        #         iren.add_callback(iren, callback[1], callback[2], args=[self])
-        #     else:
-        #         # iren.add_callback(*callback, args=[self])
-        #         if len(callback) > 3:
-        #             iren.add_callback(
-        #                       *callback[:3], priority=callback[3], args=[self])
+    @property
+    def childrens(self):
+        """Childrens composing this UI component."""
+        return self._childrens
 
     # @warn_on_args_to_kwargs()
     # def add_callback(self, prop, event_type, callback, *, priority=0):
@@ -457,23 +417,10 @@ class Rectangle2D(UI):
         mat = _create_mesh_material(
             material="basic", enable_picking=True, flat_shading=True
         )
-
         self.actor = create_mesh(geometry=geo, material=mat)
+
+        self._actors.append(self.actor)
         self.handle_events(self.actor)
-
-    def _get_actors(self):
-        """Get the actors composing this UI component."""
-        return [self.actor]
-
-    def _add_to_scene(self, scene):
-        """Add all subcomponents or VTK props that compose this UI component.
-
-        Parameters
-        ----------
-        scene : scene
-
-        """
-        scene.add(self.actor)
 
     def _get_size(self):
         # # Get 2D coordinates of two opposed corners of the rectangle.
@@ -640,21 +587,8 @@ class Disk2D(UI):
             centers=np.zeros((1, 3)), radii=self.outer_radius, material="basic"
         )
 
+        self._actors.append(self.actor)
         self.handle_events(self.actor)
-
-    def _get_actors(self):
-        """Get the actors composing this UI component."""
-        return [self.actor]
-
-    def _add_to_scene(self, scene):
-        """Add all subcomponents or VTK props that compose this UI component.
-
-        Parameters
-        ----------
-        scene : scene
-
-        """
-        scene.add(self.actor)
 
     def _get_size(self):
         diameter = 2 * self.outer_radius
