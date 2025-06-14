@@ -106,9 +106,7 @@ class UI(object, metaclass=abc.ABCMeta):
             UI component.
 
         """
-        self._scene = object()
         self._position = np.array([0, 0])
-        self._callbacks = []
         self._childrens = []
         self._actors = []
 
@@ -156,26 +154,6 @@ class UI(object, metaclass=abc.ABCMeta):
     def childrens(self):
         """Childrens composing this UI component."""
         return self._childrens
-
-    # @warn_on_args_to_kwargs()
-    # def add_callback(self, prop, event_type, callback, *, priority=0):
-    #     """Add a callback to a specific event for this UI component.
-
-    #     Parameters
-    #     ----------
-    #     prop : vtkProp
-    #         The prop on which is callback is to be added.
-    #     event_type : string
-    #         The event code.
-    #     callback : function
-    #         The callback function.
-    #     priority : int
-    #         Higher number is higher priority.
-
-    #     """
-    #     # Actually since we need an interactor style we will add the callback
-    #     # only when this UI component is added to the scene.
-    #     self._callbacks.append((prop, event_type, callback, priority))
 
     @property
     def position(self):
