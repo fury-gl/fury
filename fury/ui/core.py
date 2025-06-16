@@ -13,7 +13,6 @@ from fury.lib import (
     KeyboardEvent,
     Mesh,
     PointerEvent,
-    Scene,
     plane_geometry,
 )
 from fury.material import (
@@ -96,14 +95,21 @@ class UI(object, metaclass=abc.ABCMeta):
 
     """
 
-    def __init__(self, *, position=(0, 0)):
+    def __init__(self, *, position=(0, 0), x_anchor="LEFT", y_anchor="BOTTOM"):
         """Init scene.
 
         Parameters
         ----------
         position : (float, float)
-            Absolute coordinates (x, y) of the lower-left corner of this
+            Absolute pixel coordinates `(x, y)` which, in combination with
+            `x_anchor` and `y_anchor`, define the initial placement of this
             UI component.
+        x_anchor : str, optional
+            Defines the horizontal anchor point for `position`. Can be "LEFT",
+            "CENTER", or "RIGHT". Defaults to "LEFT".
+        y_anchor : str, optional
+            Defines the vertical anchor point for `position`. Can be "BOTTOM",
+            "CENTER", or "TOP". Defaults to "BOTTOM".
 
         """
         self._position = np.array([0, 0])
@@ -111,7 +117,9 @@ class UI(object, metaclass=abc.ABCMeta):
         self._actors = []
 
         self._setup()  # Setup needed actors and sub UI components.
-        self.position = position
+        self.x_anchor = x_anchor
+        self.y_anchor = y_anchor
+        self.set_position(position, self.x_anchor, self.y_anchor)
 
         self.left_button_state = "released"
         self.right_button_state = "released"
@@ -155,27 +163,94 @@ class UI(object, metaclass=abc.ABCMeta):
         """Childrens composing this UI component."""
         return self._childrens
 
-    @property
-    def position(self):
-        return self._position
+    # TODO: Not sure should the external user have access to this or not as he can use the set/get position
+    # @property
+    # def position(self):
+    #     """Top Left Position of this UI component."""
+    #     return self._position
 
-    @position.setter
-    def position(self, coords):
-        coords = np.asarray(coords)
-        self._set_position(coords)
-        self._position = coords
-
-    @abc.abstractmethod
-    def _set_position(self, _coords):
-        """Position the lower-left corner of this UI component.
+    def set_position(self, coords, x_anchor: str = "LEFT", y_anchor: str = "BOTTOM"):
+        """Position this UI component according to the specified anchor.
 
         Parameters
         ----------
-        _coords: (float, float)
-            Absolute pixel coordinates (x, y).
+        coords : (float, float)
+            Absolute pixel coordinates (x, y). These coordinates
+            are interpreted based on `x_anchor` and `y_anchor`.
+        x_anchor : str, optional
+            Defines the horizontal anchor point for `coords`. Can be "LEFT",
+            "CENTER", or "RIGHT". Case-insensitive. Defaults to "LEFT".
+        y_anchor : str, optional
+            Defines the vertical anchor point for `coords`. Can be "BOTTOM",
+            "CENTER", or "TOP". Case-insensitive. Defaults to "BOTTOM".
 
         """
-        msg = "Subclasses of UI must implement `_set_position(self, coords)`."
+
+        if not hasattr(self, "size"):
+            msg = "Subclasses of UI must implement property `size`."
+            raise NotImplementedError(msg)
+
+        anchor_to_multipler = {
+            "LEFT": 0.0,
+            "RIGHT": 1.0,
+            "TOP": 0.0,
+            "BOTTOM": 1.0,
+            "CENTER": 0.5,
+        }
+
+        self._position = np.array(
+            [
+                coords[0] - self.size[0] * anchor_to_multipler[x_anchor.upper()],
+                coords[1] - self.size[1] * anchor_to_multipler[y_anchor.upper()],
+            ]
+        )
+        self._update_actors_position()
+
+    def get_position(self, x_anchor: str = "LEFT", y_anchor: str = "BOTTOM"):
+        """Get the position of this UI component according to the specified anchor.
+
+        Parameters
+        ----------
+        x_anchor : str, optional
+            Defines the horizontal anchor point for the returned coordinates.
+            Can be "LEFT", "CENTER", or "RIGHT".
+            Defaults to "LEFT".
+        y_anchor : str, optional
+            Defines the vertical anchor point for the returned coordinates.
+            Can be "BOTTOM", "CENTER", or "TOP".
+            Defaults to "BOTTOM".
+
+        Returns
+        -------
+        (float, float)
+            The (x, y) pixel coordinates of the specified anchor point.
+
+        """
+        if not hasattr(self, "size"):
+            msg = "Subclasses of UI must implement the `size` property."
+            raise NotImplementedError(msg)
+
+        anchor_to_multipler = {
+            "LEFT": 0.0,
+            "RIGHT": 1.0,
+            "TOP": 0.0,
+            "BOTTOM": 1.0,
+            "CENTER": 0.5,
+        }
+
+        return np.array(
+            [
+                self._position[0]
+                + self.size[0] * anchor_to_multipler[x_anchor.upper()],
+                self._position[1]
+                + self.size[1] * anchor_to_multipler[y_anchor.upper()],
+            ]
+        )
+
+    @abc.abstractmethod
+    def _update_actors_position(self):
+        """Update the position of the internal actors."""
+        msg = "Subclasses of UI must implement `_set_actors_position(self, coords)`."
         raise NotImplementedError(msg)
 
     @property
@@ -186,29 +261,6 @@ class UI(object, metaclass=abc.ABCMeta):
     def _get_size(self):
         msg = "Subclasses of UI must implement property `size`."
         raise NotImplementedError(msg)
-
-    @property
-    def center(self):
-        return self.position + self.size / 2.0
-
-    @center.setter
-    def center(self, coords):
-        """Position the center of this UI component.
-
-        Parameters
-        ----------
-        coords: (float, float)
-            Absolute pixel coordinates (x, y).
-
-        """
-        if not hasattr(self, "size"):
-            msg = "Subclasses of UI must implement the `size` property."
-            raise NotImplementedError(msg)
-
-        new_center = np.array(coords)
-        size = np.array(self.size)
-        new_lower_left_corner = new_center - size / 2.0
-        self.position = new_lower_left_corner
 
     def set_visibility(self, visibility: bool):
         """Set visibility of this UI component."""
@@ -446,18 +498,16 @@ class Rectangle2D(UI):
 
         # self.actor.SetMapper(mapper)
         self.actor.geometry = plane_geometry(width=size[0], height=size[1])
+        self._update_actors_position()
 
-    def _set_position(self, coords):
-        """Set the lower-left corner position of this UI component.
-
-        Parameters
-        ----------
-        coords: (float, float)
-            Absolute pixel coordinates (x, y).
-
-        """
-        # self.actor.SetPosition(*coords)
-        self.actor.local.position = np.array([*coords, 0])
+    def _update_actors_position(self):
+        """Set the position of the internal actor."""
+        self.actor.local.position = np.array(
+            [
+                *self.get_position(x_anchor="CENTER", y_anchor="CENTER"),
+                self.actor.local.z,
+            ]
+        )
 
     @property
     def color(self):
@@ -532,11 +582,12 @@ class Disk2D(UI):
         self.outer_radius = outer_radius
         self.inner_radius = inner_radius
 
-        super(Disk2D, self).__init__()
+        super(Disk2D, self).__init__(
+            position=center, x_anchor="CENTER", y_anchor="CENTER"
+        )
 
         self.color = color
         self.opacity = opacity
-        self.center = center
 
     def _setup(self):
         """Setup this UI component.
@@ -573,18 +624,14 @@ class Disk2D(UI):
         size = (diameter, diameter)
         return size
 
-    def _set_position(self, coords):
-        """Set the lower-left corner position of this UI bounding box.
-
-        Parameters
-        ----------
-        coords: (float, float)
-            Absolute pixel coordinates (x, y).
-
-        """
-        # Disk actor are positioned with respect to their center.
-        # self.actor.SetPosition(*coords + self.outer_radius)
-        self.actor.local.position = np.array([*coords + self.outer_radius, 0])
+    def _update_actors_position(self):
+        """Set the position of the internal actor."""
+        self.actor.local.position = np.array(
+            [
+                *self.get_position(x_anchor="CENTER", y_anchor="CENTER"),
+                self.actor.local.z,
+            ]
+        )
 
     @property
     def color(self):
