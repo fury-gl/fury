@@ -146,7 +146,7 @@ class EventCounter:
             ]
 
         # Events to count
-        self.events_counts = {name: 0 for name in events_names}
+        self.events_counts = dict.fromkeys(events_names, 0)
 
     def count(self, i_ren, _obj, _element):
         """Count events occurrences.

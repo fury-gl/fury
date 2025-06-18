@@ -630,7 +630,7 @@ if __name__ == "__main__":
         dest="save",
         action="store_true",
         default=False,
-        help=("Save in the release folder" "and add rst header"),
+        help=("Save in the release folder and add rst header"),
     )
 
     args = parser.parse_args()
