@@ -66,17 +66,17 @@ def euler_matrix(ai, aj, ak, *, axes="sxyz"):
     Examples
     --------
     >>> import numpy
-    >>> R = euler_matrix(1, 2, 3, 'syxz')
+    >>> R = euler_matrix(1, 2, 3, axes='syxz')
     >>> numpy.allclose(numpy.sum(R[0]), -1.34786452)
     True
-    >>> R = euler_matrix(1, 2, 3, (0, 1, 0, 1))
+    >>> R = euler_matrix(1, 2, 3, axes=(0, 1, 0, 1))
     >>> numpy.allclose(numpy.sum(R[0]), -0.383436184)
     True
     >>> ai, aj, ak = (4.0*math.pi) * (numpy.random.random(3) - 0.5)
     >>> for axes in _AXES2TUPLE.keys():
-    ...    _ = euler_matrix(ai, aj, ak, axes)
+    ...    _ = euler_matrix(ai, aj, ak, axes=axes)
     >>> for axes in _TUPLE2AXES.keys():
-    ...    _ = euler_matrix(ai, aj, ak, axes)
+    ...    _ = euler_matrix(ai, aj, ak, axes=axes)
     """
     try:
         firstaxis, parity, repetition, frame = _AXES2TUPLE[axes]

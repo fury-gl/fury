@@ -183,7 +183,7 @@ def line(
     >>> lines = [np.random.rand(10, 3) for _ in range(5)]
     >>> colors = np.random.rand(5, 3)
     >>> line_actor = actor.line(lines=lines, colors=colors)
-    >>> scene.add(line_actor)
+    >>> _ = scene.add(line_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -276,7 +276,7 @@ def sphere(
     >>> colors = np.random.rand(5, 3)
     >>> radii = np.random.rand(5)
     >>> sphere_actor = actor.sphere(centers=centers, colors=colors, radii=radii)
-    >>> scene.add(sphere_actor)
+    >>> _ = scene.add(sphere_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -481,7 +481,7 @@ def box(
     >>> centers = np.random.rand(5, 3) * 10
     >>> scales = np.random.rand(5, 3)
     >>> box_actor = actor.box(centers=centers, scales=scales)
-    >>> scene.add(box_actor)
+    >>> _ = scene.add(box_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -560,7 +560,7 @@ def cylinder(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> cylinder_actor = actor.cylinder(centers=centers, colors=colors)
-    >>> scene.add(cylinder_actor)
+    >>> _ = scene.add(cylinder_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -627,7 +627,7 @@ def square(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> square_actor = actor.square(centers=centers, colors=colors)
-    >>> scene.add(square_actor)
+    >>> _ = scene.add(square_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -691,7 +691,7 @@ def frustum(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> frustum_actor = actor.frustum(centers=centers, colors=colors)
-    >>> scene.add(frustum_actor)
+    >>> _ = scene.add(frustum_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -755,7 +755,7 @@ def tetrahedron(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> tetrahedron_actor = actor.tetrahedron(centers=centers, colors=colors)
-    >>> scene.add(tetrahedron_actor)
+    >>> _ = scene.add(tetrahedron_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -819,7 +819,7 @@ def icosahedron(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> icosahedron_actor = actor.icosahedron(centers=centers, colors=colors)
-    >>> scene.add(icosahedron_actor)
+    >>> _ = scene.add(icosahedron_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -883,9 +883,8 @@ def rhombicuboctahedron(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> rhombicuboctahedron_actor = actor.rhombicuboctahedron(
-    centers=centers, colors=colors
-    )
-    >>> scene.add(rhombicuboctahedron_actor)
+    ...    centers=centers, colors=colors)
+    >>> _ = scene.add(rhombicuboctahedron_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -948,9 +947,8 @@ def triangularprism(
     >>> scene = window.Scene()
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
-    >>> triangularprism_actor = actor.triangularprism(
-    centers=centers, colors=colors)
-    >>> scene.add(triangularprism_actor)
+    >>> triangularprism_actor = actor.triangularprism(centers=centers, colors=colors)
+    >>> _ = scene.add(triangularprism_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1013,9 +1011,8 @@ def pentagonalprism(
     >>> scene = window.Scene()
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
-    >>> pentagonalprism_actor = actor.pentagonalprism(
-    centers=centers, colors=colors)
-    >>> scene.add(pentagonalprism_actor)
+    >>> pentagonalprism_actor = actor.pentagonalprism(centers=centers, colors=colors)
+    >>> _ = scene.add(pentagonalprism_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1078,9 +1075,8 @@ def octagonalprism(
     >>> scene = window.Scene()
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
-    >>> octagonalprism_actor = actor.octagonalprism(
-    centers=centers, colors=colors)
-    >>> scene.add(octagonalprism_actor)
+    >>> octagonalprism_actor = actor.octagonalprism(centers=centers, colors=colors)
+    >>> _ = scene.add(octagonalprism_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1160,7 +1156,7 @@ def arrow(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> arrow_actor = actor.arrow(centers=centers, colors=colors)
-    >>> scene.add(arrow_actor)
+    >>> _ = scene.add(arrow_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1234,7 +1230,7 @@ def superquadric(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> superquadric_actor = actor.superquadric(centers=centers, colors=colors)
-    >>> scene.add(superquadric_actor)
+    >>> _ = scene.add(superquadric_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1309,7 +1305,7 @@ def cone(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> cone_actor = actor.cone(centers=centers, colors=colors)
-    >>> scene.add(cone_actor)
+    >>> _ = scene.add(cone_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1377,7 +1373,7 @@ def star(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> star_actor = actor.star(centers=centers, colors=colors)
-    >>> scene.add(star_actor)
+    >>> _ = scene.add(star_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1449,7 +1445,7 @@ def disk(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> disk_actor = actor.disk(centers=centers, colors=colors)
-    >>> scene.add(disk_actor)
+    >>> _ = scene.add(disk_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1514,7 +1510,7 @@ def triangle(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> triangle_actor = actor.triangle(centers=centers, colors=colors)
-    >>> scene.add(triangle_actor)
+    >>> _ = scene.add(triangle_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1579,7 +1575,7 @@ def point(
     >>> centers = np.random.rand(1000, 3) * 10
     >>> colors = np.random.rand(1000, 3)
     >>> point_actor = actor.point(centers=centers, colors=colors)
-    >>> scene.add(point_actor)
+    >>> _ = scene.add(point_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1649,7 +1645,7 @@ def marker(
     >>> centers = np.random.rand(1000, 3) * 10
     >>> colors = np.random.rand(1000, 3)
     >>> marker_actor = actor.marker(centers=centers, colors=colors)
-    >>> scene.add(marker_actor)
+    >>> _ = scene.add(marker_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1735,7 +1731,7 @@ def text(
     >>> from fury import window, actor
     >>> scene = window.Scene()
     >>> text_actor = actor.text(text='FURY')
-    >>> scene.add(text_actor)
+    >>> _ = scene.add(text_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1799,7 +1795,7 @@ def axes(
     >>> from fury import window, actor
     >>> scene = window.Scene()
     >>> axes_actor = actor.axes()
-    >>> scene.add(axes_actor)
+    >>> _ = scene.add(axes_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
