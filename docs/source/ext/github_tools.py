@@ -499,9 +499,11 @@ def github_stats(**kwargs):
         print()
         print(
             "==============================\n"
-            f" Release notes v{version}\n  ()"
+            f" Release notes v{version}\n"
             "=============================="
         )
+        print("\nQuick Overview\n--------------\n\n")
+        print("\nDetails\n--------\n\n")
 
     # By default, search one month back
     tag = kwargs.get("tag", None)
