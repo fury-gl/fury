@@ -44,9 +44,13 @@ if have_py_qt5:
     from PyQt5 import QtWidgets
 
 Texture = gfx.Texture
+TextureMap = gfx.TextureMap
 VolumeSliceMaterial = gfx.VolumeSliceMaterial
 Group = gfx.Group
+AffineTransform = gfx.objects._base.AffineTransform
+RecursiveTransform = gfx.objects._base.RecursiveTransform
 Volume = gfx.Volume
+WorldObject = gfx.WorldObject
 AmbientLight = gfx.AmbientLight
 Background = gfx.Background
 BackgroundSkyboxMaterial = gfx.BackgroundSkyboxMaterial
@@ -91,6 +95,7 @@ MeshPhongShader = gfx.renderers.wgpu.shaders.meshshader.MeshPhongShader
 MeshStandardShader = gfx.renderers.wgpu.shaders.meshshader.MeshStandardShader
 MeshShader = gfx.renderers.wgpu.shaders.meshshader.MeshShader
 LineShader = gfx.renderers.wgpu.shaders.lineshader.LineShader
+LineArrowShader = gfx.renderers.wgpu.shaders.lineshader.LineArrowShader
 ThinLineSegmentShader = gfx.renderers.wgpu.shaders.lineshader.ThinLineSegmentShader
 PrimitiveTopology = wgpu.PrimitiveTopology
 CullMode = wgpu.CullMode
@@ -99,7 +104,7 @@ RenderMask = gfx.renderers.wgpu.RenderMask
 Buffer = gfx.Buffer
 register_wgpu_render_function = gfx.renderers.wgpu.register_wgpu_render_function
 load_wgsl = gfx.renderers.wgpu.load_wgsl
-loader = gfx.renderers.wgpu.shader.templating.loader
+register_wgsl_loader = gfx.renderers.wgpu.shader.register_wgsl_loader
 WorldObject = gfx.WorldObject
 if have_jupyter_rfb:
     JupyterCanvas = JupyterWgpuCanvas
@@ -112,4 +117,4 @@ else:
     QtWidgets = PySide6
     get_app = PySide6
 
-loader.mapping["fury"] = jinja2.PackageLoader("fury.wgsl", ".")
+register_wgsl_loader("fury", jinja2.PackageLoader("fury.wgsl", "."))

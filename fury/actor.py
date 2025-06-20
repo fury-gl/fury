@@ -1,5 +1,8 @@
 """Actor creation functions for various geometric primitives."""
 
+import logging
+import os
+
 from dipy.data import get_sphere
 from dipy.reconst.shm import sh_to_sf_matrix
 import numpy as np
@@ -12,10 +15,12 @@ from fury.geometry import (
     create_text,
     line_buffer_separator,
 )
+from fury.io import load_image_texture
 from fury.lib import (
     Geometry,
     Group,
     Mesh,
+    MeshBasicMaterial,
     MeshPhongShader,
     Texture,
     Volume,
@@ -25,20 +30,26 @@ from fury.lib import (
 )
 from fury.material import (
     SphGlyphMaterial,
-    VectorFieldMaterial,
+    VectorFieldArrowMaterial,
+    VectorFieldLineMaterial,
+    VectorFieldThinLineMaterial,
     _create_line_material,
     _create_mesh_material,
     _create_points_material,
     _create_text_material,
+    _create_vector_field_material,
     validate_opacity,
 )
 import fury.primitive as fp
 from fury.shader import (
     SphGlyphComputeShader,
+    VectorFieldArrowShader,
     VectorFieldComputeShader,
     VectorFieldShader,
+    VectorFieldThinShader,
 )
 from fury.utils import (
+    generate_planar_uvs,
     get_lmax_from_N,
     set_group_opacity,
     set_group_visibility,
@@ -179,7 +190,7 @@ def line(
     >>> lines = [np.random.rand(10, 3) for _ in range(5)]
     >>> colors = np.random.rand(5, 3)
     >>> line_actor = actor.line(lines=lines, colors=colors)
-    >>> scene.add(line_actor)
+    >>> _ = scene.add(line_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -272,7 +283,7 @@ def sphere(
     >>> colors = np.random.rand(5, 3)
     >>> radii = np.random.rand(5)
     >>> sphere_actor = actor.sphere(centers=centers, colors=colors, radii=radii)
-    >>> scene.add(sphere_actor)
+    >>> _ = scene.add(sphere_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -477,7 +488,7 @@ def box(
     >>> centers = np.random.rand(5, 3) * 10
     >>> scales = np.random.rand(5, 3)
     >>> box_actor = actor.box(centers=centers, scales=scales)
-    >>> scene.add(box_actor)
+    >>> _ = scene.add(box_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -556,7 +567,7 @@ def cylinder(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> cylinder_actor = actor.cylinder(centers=centers, colors=colors)
-    >>> scene.add(cylinder_actor)
+    >>> _ = scene.add(cylinder_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -623,7 +634,7 @@ def square(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> square_actor = actor.square(centers=centers, colors=colors)
-    >>> scene.add(square_actor)
+    >>> _ = scene.add(square_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -687,7 +698,7 @@ def frustum(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> frustum_actor = actor.frustum(centers=centers, colors=colors)
-    >>> scene.add(frustum_actor)
+    >>> _ = scene.add(frustum_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -751,7 +762,7 @@ def tetrahedron(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> tetrahedron_actor = actor.tetrahedron(centers=centers, colors=colors)
-    >>> scene.add(tetrahedron_actor)
+    >>> _ = scene.add(tetrahedron_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -815,7 +826,7 @@ def icosahedron(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> icosahedron_actor = actor.icosahedron(centers=centers, colors=colors)
-    >>> scene.add(icosahedron_actor)
+    >>> _ = scene.add(icosahedron_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -879,9 +890,8 @@ def rhombicuboctahedron(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> rhombicuboctahedron_actor = actor.rhombicuboctahedron(
-    centers=centers, colors=colors
-    )
-    >>> scene.add(rhombicuboctahedron_actor)
+    ...    centers=centers, colors=colors)
+    >>> _ = scene.add(rhombicuboctahedron_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -944,9 +954,8 @@ def triangularprism(
     >>> scene = window.Scene()
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
-    >>> triangularprism_actor = actor.triangularprism(
-    centers=centers, colors=colors)
-    >>> scene.add(triangularprism_actor)
+    >>> triangularprism_actor = actor.triangularprism(centers=centers, colors=colors)
+    >>> _ = scene.add(triangularprism_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1009,9 +1018,8 @@ def pentagonalprism(
     >>> scene = window.Scene()
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
-    >>> pentagonalprism_actor = actor.pentagonalprism(
-    centers=centers, colors=colors)
-    >>> scene.add(pentagonalprism_actor)
+    >>> pentagonalprism_actor = actor.pentagonalprism(centers=centers, colors=colors)
+    >>> _ = scene.add(pentagonalprism_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1074,9 +1082,8 @@ def octagonalprism(
     >>> scene = window.Scene()
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
-    >>> octagonalprism_actor = actor.octagonalprism(
-    centers=centers, colors=colors)
-    >>> scene.add(octagonalprism_actor)
+    >>> octagonalprism_actor = actor.octagonalprism(centers=centers, colors=colors)
+    >>> _ = scene.add(octagonalprism_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1156,7 +1163,7 @@ def arrow(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> arrow_actor = actor.arrow(centers=centers, colors=colors)
-    >>> scene.add(arrow_actor)
+    >>> _ = scene.add(arrow_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1230,7 +1237,7 @@ def superquadric(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> superquadric_actor = actor.superquadric(centers=centers, colors=colors)
-    >>> scene.add(superquadric_actor)
+    >>> _ = scene.add(superquadric_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1305,7 +1312,7 @@ def cone(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> cone_actor = actor.cone(centers=centers, colors=colors)
-    >>> scene.add(cone_actor)
+    >>> _ = scene.add(cone_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1373,7 +1380,7 @@ def star(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> star_actor = actor.star(centers=centers, colors=colors)
-    >>> scene.add(star_actor)
+    >>> _ = scene.add(star_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1445,7 +1452,7 @@ def disk(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> disk_actor = actor.disk(centers=centers, colors=colors)
-    >>> scene.add(disk_actor)
+    >>> _ = scene.add(disk_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1510,7 +1517,7 @@ def triangle(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> triangle_actor = actor.triangle(centers=centers, colors=colors)
-    >>> scene.add(triangle_actor)
+    >>> _ = scene.add(triangle_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1575,7 +1582,7 @@ def point(
     >>> centers = np.random.rand(1000, 3) * 10
     >>> colors = np.random.rand(1000, 3)
     >>> point_actor = actor.point(centers=centers, colors=colors)
-    >>> scene.add(point_actor)
+    >>> _ = scene.add(point_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1645,7 +1652,7 @@ def marker(
     >>> centers = np.random.rand(1000, 3) * 10
     >>> colors = np.random.rand(1000, 3)
     >>> marker_actor = actor.marker(centers=centers, colors=colors)
-    >>> scene.add(marker_actor)
+    >>> _ = scene.add(marker_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1672,6 +1679,7 @@ def text(
     text,
     *,
     colors=(1.0, 1.0, 1.0),
+    position=(0.0, 0.0, 0.0),
     font_size=1.0,
     family="Arial",
     anchor="middle-center",
@@ -1692,6 +1700,8 @@ def text(
         unless a list is given, in which case each (str) item becomes a TextBlock.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA values in the range [0, 1].
+    position : tuple, optional
+        The (x, y, z) coordinates to place the text in 3D space.
     font_size : float, optional
         The size of the font, in object coordinates or pixel screen coordinates.
     family : str, optional
@@ -1728,7 +1738,7 @@ def text(
     >>> from fury import window, actor
     >>> scene = window.Scene()
     >>> text_actor = actor.text(text='FURY')
-    >>> scene.add(text_actor)
+    >>> _ = scene.add(text_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1749,6 +1759,9 @@ def text(
         line_height=line_height,
         text_align=text_align,
     )
+
+    obj.local.position = position
+
     return obj
 
 
@@ -1789,7 +1802,7 @@ def axes(
     >>> from fury import window, actor
     >>> scene = window.Scene()
     >>> axes_actor = actor.axes()
-    >>> scene.add(axes_actor)
+    >>> _ = scene.add(axes_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1900,7 +1913,10 @@ class VectorField(WorldObject):
     field : ndarray, shape {(X, Y, Z, N, 3), (X, Y, Z, 3)}
         The vector field data, where X, Y, Z represent the position in 3D,
         N is the number of vectors per voxel, and 3 represents the vector
-    cross_section : list or tuple, shape (3,)
+    actor_type : str, optional
+        The type of vector field visualization. Options are "thin_line",
+        "line", and "arrow".
+    cross_section : list or tuple, shape (3,), optional
         A list or tuple representing the cross section dimensions.
         If None, the cross section will be ignored and complete field will be shown.
     colors : tuple, optional
@@ -1910,10 +1926,25 @@ class VectorField(WorldObject):
         field.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
+    thickness : float, optional
+        The thickness of the lines in the vector field visualization.
+        Only applicable for "line" and "arrow" types.
+    visibility : tuple, optional
+        A tuple of three boolean values indicating the visibility of the slices
+        in the x, y, and z dimensions, respectively.
     """
 
     def __init__(
-        self, field, *, cross_section=None, colors=None, scales=1.0, opacity=1.0
+        self,
+        field,
+        *,
+        actor_type="thin_line",
+        cross_section=None,
+        colors=None,
+        scales=1.0,
+        opacity=1.0,
+        thickness=1.0,
+        visibility=None,
     ):
         """Initialize a vector field.
 
@@ -1922,7 +1953,10 @@ class VectorField(WorldObject):
         field : ndarray, shape {(X, Y, Z, N, 3), (X, Y, Z, 3)}
             The vector field data, where X, Y, Z represent the position in 3D,
             N is the number of vectors per voxel, and 3 represents the vector
-        cross_section : list or tuple, shape (3,)
+        actor_type : str, optional
+            The type of vector field visualization. Options are "thin_line",
+            "line", and "arrow".
+        cross_section : list or tuple, shape (3,), optional
             A list or tuple representing the cross section dimensions.
             If None, the cross section will be ignored and complete field will be shown.
         colors : tuple, optional
@@ -1932,8 +1966,14 @@ class VectorField(WorldObject):
             field.
         opacity : float, optional
             Takes values from 0 (fully transparent) to 1 (opaque).
+        thickness : float, optional
+            The thickness of the lines in the vector field visualization.
+            Only applicable for "line" and "arrow" types.
+        visibility : tuple, optional
+            A tuple of three boolean values indicating the visibility of the slices
+            in the x, y, and z dimensions, respectively.
         """
-
+        super().__init__()
         if not (field.ndim == 5 or field.ndim == 4):
             raise ValueError(
                 "Field must be 5D or 4D, "
@@ -1948,6 +1988,7 @@ class VectorField(WorldObject):
 
         self.vectors = field.reshape(total_vectors, 3).astype(np.float32)
         self.field_shape = field.shape[:3]
+        self.visibility = visibility
         if field.ndim == 4:
             self.vectors_per_voxel = 1
         else:
@@ -1963,9 +2004,6 @@ class VectorField(WorldObject):
         else:
             self.scales = scales.reshape(total_vectors, 1).astype(np.float32)
 
-        if cross_section is None:
-            cross_section = np.asarray([-1, -1, -1], dtype=np.int32)
-
         pnts_per_vector = 2
         pts = np.zeros((total_vectors * pnts_per_vector, 3), dtype=np.float32)
         pts[0] = self.field_shape
@@ -1976,13 +2014,65 @@ class VectorField(WorldObject):
             colors = np.asarray(colors, dtype=np.float32)
 
         colors = np.tile(colors, (total_vectors * pnts_per_vector, 1))
-        geometry = buffer_to_geometry(positions=pts, colors=colors)
-        material = VectorFieldMaterial(cross_section, opacity=opacity)
+        self.geometry = buffer_to_geometry(positions=pts, colors=colors)
+        self.material = _create_vector_field_material(
+            (0, 0, 0),
+            material=actor_type,
+            thickness=thickness,
+            opacity=opacity,
+        )
 
-        super().__init__(geometry=geometry, material=material)
+        if cross_section is None:
+            self.cross_section = np.asarray([-2, -2, -2], dtype=np.int32)
+        else:
+            self.cross_section = cross_section
+
+    @property
+    def cross_section(self):
+        """Get the cross section of the vector field.
+
+        Returns
+        -------
+        ndarray
+            The cross section of the vector field.
+        """
+        return self.material.cross_section
+
+    @cross_section.setter
+    def cross_section(self, value):
+        """Set the cross section of the vector field.
+
+        Parameters
+        ----------
+        value : {list, tuple, ndarray}
+            The cross section dimensions to set.
+        """
+        if not isinstance(value, (list, tuple, np.ndarray)):
+            raise ValueError(
+                "Cross section must be a list, tuple, or ndarray, "
+                f"but got {type(value)}"
+            )
+        if len(value) != 3:
+            raise ValueError(f"Cross section must have length 3, but got {len(value)}")
+        if self.visibility is None:
+            self.material.cross_section = np.asarray([-2, -2, -2], dtype=np.int32)
+            return
+        value = np.asarray(value, dtype=np.int32)
+        value = np.minimum(np.asarray(self.field_shape) - 1, value)
+        value = np.maximum(value, np.zeros((3,), dtype=np.int32))
+        value = np.where(self.visibility, value, -1)
+        self.material.cross_section = value
 
 
-def vector_field(field, *, colors=None, scales=1.0, opacity=1.0):
+def vector_field(
+    field,
+    *,
+    actor_type="thin_line",
+    colors=None,
+    scales=1.0,
+    opacity=1.0,
+    thickness=1.0,
+):
     """Visualize a vector field with different features.
 
     Parameters
@@ -1990,6 +2080,9 @@ def vector_field(field, *, colors=None, scales=1.0, opacity=1.0):
     field : ndarray, shape {(X, Y, Z, N, 3), (X, Y, Z, 3)}
         The vector field data, where X, Y, Z represent the position in 3D,
         N is the number of vectors per voxel, and 3 represents the vector
+    actor_type : str, optional
+        The type of vector field visualization. Options are "thin_line",
+        "line", and "arrow".
     colors : tuple, optional
         Color for the vectors. If None, the color will used from the orientation.
     scales : {float, ndarray}, shape {(X, Y, Z, N) or (X, Y, Z)}, optional
@@ -1997,6 +2090,9 @@ def vector_field(field, *, colors=None, scales=1.0, opacity=1.0):
         field.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
+    thickness : float, optional
+        The thickness of the lines in the vector field visualization.
+        Only applicable for "line" and "arrow" types.
 
     Returns
     -------
@@ -2004,21 +2100,39 @@ def vector_field(field, *, colors=None, scales=1.0, opacity=1.0):
         A vector field object.
     """
 
-    obj = VectorField(field, colors=colors, scales=scales, opacity=opacity)
+    obj = VectorField(
+        field,
+        actor_type=actor_type,
+        colors=colors,
+        scales=scales,
+        opacity=opacity,
+        thickness=thickness,
+    )
     return obj
 
 
 def vector_field_slicer(
-    field, *, cross_section=None, colors=None, scales=1.0, opacity=1.0
+    field,
+    *,
+    actor_type="thin_line",
+    cross_section=None,
+    colors=None,
+    scales=1.0,
+    opacity=1.0,
+    thickness=1.0,
+    visibility=(True, True, True),
 ):
     """Visualize a vector field with different features.
 
     Parameters
-        ----------
+    ----------
     field : ndarray, shape {(X, Y, Z, N, 3), (X, Y, Z, 3)}
         The vector field data, where X, Y, Z represent the position in 3D,
         N is the number of vectors per voxel, and 3 represents the vector
-    cross_section : list or tuple, shape (3,)
+    actor_type : str, optional
+        The type of vector field visualization. Options are "thin_line",
+        "line", and "arrow".
+    cross_section : list or tuple, shape (3,), optional
         A list or tuple representing the cross section dimensions.
         If None, the cross section will be ignored and complete field will be shown.
     colors : tuple, optional
@@ -2028,6 +2142,12 @@ def vector_field_slicer(
         field.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
+    thickness : float, optional
+        The thickness of the lines in the vector field visualization.
+        Only applicable for "line" and "arrow" types.
+    visibility : tuple, optional
+        A tuple of three boolean values indicating the visibility of the slices
+        in the x, y, and z dimensions, respectively.
 
     Returns
     -------
@@ -2040,16 +2160,38 @@ def vector_field_slicer(
 
     obj = VectorField(
         field,
+        actor_type=actor_type,
         cross_section=cross_section,
         colors=colors,
         scales=scales,
         opacity=opacity,
+        thickness=thickness,
+        visibility=visibility,
     )
     return obj
 
 
-@register_wgpu_render_function(VectorField, VectorFieldMaterial)
-def register_peaks_shaders(wobject):
+@register_wgpu_render_function(VectorField, VectorFieldThinLineMaterial)
+def register_vector_field_thin_shaders(wobject):
+    """Register PeaksActor shaders.
+
+    Parameters
+    ----------
+    wobject : VectorField
+        The vector field object to register shaders for.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the compute shader and the render shader.
+    """
+    compute_shader = VectorFieldComputeShader(wobject)
+    render_shader = VectorFieldThinShader(wobject)
+    return compute_shader, render_shader
+
+
+@register_wgpu_render_function(VectorField, VectorFieldLineMaterial)
+def register_vector_field_shaders(wobject):
     """Register PeaksActor shaders.
 
     Parameters
@@ -2065,6 +2207,117 @@ def register_peaks_shaders(wobject):
     compute_shader = VectorFieldComputeShader(wobject)
     render_shader = VectorFieldShader(wobject)
     return compute_shader, render_shader
+
+
+@register_wgpu_render_function(VectorField, VectorFieldArrowMaterial)
+def register_vector_field_arrow_shaders(wobject):
+    """Register PeaksActor shaders.
+
+    Parameters
+    ----------
+    wobject : VectorField
+        The vector field object to register shaders for.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the compute shader and the render shader.
+    """
+    compute_shader = VectorFieldComputeShader(wobject)
+    render_shader = VectorFieldArrowShader(wobject)
+    return compute_shader, render_shader
+
+
+def surface(
+    vertices,
+    faces,
+    *,
+    material="phong",
+    colors=None,
+    texture=None,
+    texture_axis="xy",
+    opacity=1.0,
+):
+    """Create a surface mesh actor from vertices and faces.
+
+    Parameters
+    ----------
+    vertices : ndarray, shape (N, 3)
+        The vertex positions of the surface mesh.
+    faces : ndarray, shape (M, 3)
+        The indices of the vertices that form each triangular face.
+    material : str, optional
+        The material type for the surface mesh. Options are 'phong' and 'basic'. This
+        option only works with colors is passed.
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA values in the range [0, 1].
+    texture : str, optional
+        Path to the texture image file.
+    texture_axis : str, optional
+        The axis to generate UV coordinates for the texture. Options are 'xy', 'yz',
+        and 'xz'. This option only works with texture is passed.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
+
+    Returns
+    -------
+    Mesh
+        A mesh actor containing the generated surface with the specified properties.
+    """
+    geo = None
+    mat = None
+
+    opacity = validate_opacity(opacity)
+
+    if colors is not None:
+        if texture is not None:
+            logging.warning("Texture will be ignored when colors are provided.")
+
+        if isinstance(colors, np.ndarray) and colors.shape[0] == vertices.shape[0]:
+            geo = buffer_to_geometry(
+                positions=vertices.astype("float32"),
+                indices=faces.astype("int32"),
+                colors=colors,
+            )
+            mat = _create_mesh_material(
+                material=material, mode="vertex", opacity=opacity
+            )
+        elif isinstance(colors, (tuple, list)) and len(colors) == 3:
+            geo = buffer_to_geometry(
+                positions=vertices.astype("float32"),
+                indices=faces.astype("int32"),
+            )
+            mat = _create_mesh_material(color=colors, opacity=opacity)
+        else:
+            raise ValueError(
+                "Colors must be either an ndarray with shape (N, 3) or (N, 4), "
+                "or a tuple/list of length 3 for RGB colors."
+            )
+    elif texture is not None:
+        if not os.path.exists(texture):
+            raise FileNotFoundError(f"Texture file '{texture}' not found.")
+
+        logging.warning(
+            "texture option currently only supports planar projection,"
+            " the plane can be provided by texture_axis parameter."
+        )
+
+        tex = load_image_texture(texture)
+        texcoords = generate_planar_uvs(vertices, axis=texture_axis)
+        geo = buffer_to_geometry(
+            positions=vertices.astype("float32"),
+            indices=faces.astype("int32"),
+            texcoords=texcoords.astype("float32"),
+        )
+        mat = MeshBasicMaterial(map=tex, opacity=opacity)
+    else:
+        geo = buffer_to_geometry(
+            positions=vertices.astype("float32"), indices=faces.astype("int32")
+        )
+        mat = _create_mesh_material(material=material, opacity=opacity)
+
+    obj = create_mesh(geo, mat)
+    return obj
 
 
 class SphGlyph(Mesh):

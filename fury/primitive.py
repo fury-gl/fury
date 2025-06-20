@@ -410,7 +410,7 @@ def prim_sphere(*, name="symmetric362", gen_faces=False, phi=None, theta=None):
     --------
     >>> import numpy as np
     >>> from fury.primitive import prim_sphere
-    >>> verts, faces = prim_sphere('symmetric362')
+    >>> verts, faces = prim_sphere(name='symmetric362')
     >>> verts.shape == (362, 3)
     True
     >>> faces.shape == (720, 3)

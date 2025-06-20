@@ -16,25 +16,40 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
         let vector_id = voxel_id * NUM_VECTORS + i;
 
         let scale = load_s_scales(vector_id);
-        let vector = load_s_vectors(vector_id) * vec3<f32>(scale);
-
-        if all(vector == vec3<f32>(0.0)) {
-            continue;
-        }
-
+        let raw_vector = load_s_vectors(vector_id);
+        let vector = raw_vector * vec3<f32>(scale);
 
         let point_i = vector + vec3<f32>(center);
         let point_e = vec3<f32>(-1.0) * vector + vec3<f32>(center);
         let position_idx = vector_id * 6;
 
+        // Removes vectors that are too small.
+        if all(abs(point_i - point_e) < vec3<f32>(1e-6)) {
+            s_positions[position_idx] = f32(center.x);
+            s_positions[position_idx + 1] = f32(center.y);
+            s_positions[position_idx + 2] = f32(center.z);
+            s_positions[position_idx + 3] = f32(center.x);
+            s_positions[position_idx + 4] = f32(center.y);
+            s_positions[position_idx + 5] = f32(center.z);
+            continue;
+        }
 
-        // Set the positions in the output buffer
-        s_positions[position_idx] = point_i.x;
-        s_positions[position_idx + 1] = point_i.y;
-        s_positions[position_idx + 2] = point_i.z;
-        s_positions[position_idx + 3] = point_e.x;
-        s_positions[position_idx + 4] = point_e.y;
-        s_positions[position_idx + 5] = point_e.z;
+        // Adjust the direction of the vector based on the z-component
+        if vector.z < 0.0 {
+            s_positions[position_idx] = point_e.x;
+            s_positions[position_idx + 1] = point_e.y;
+            s_positions[position_idx + 2] = point_e.z;
+            s_positions[position_idx + 3] = point_i.x;
+            s_positions[position_idx + 4] = point_i.y;
+            s_positions[position_idx + 5] = point_i.z;
+        } else {
+            s_positions[position_idx] = point_i.x;
+            s_positions[position_idx + 1] = point_i.y;
+            s_positions[position_idx + 2] = point_i.z;
+            s_positions[position_idx + 3] = point_e.x;
+            s_positions[position_idx + 4] = point_e.y;
+            s_positions[position_idx + 5] = point_e.z;
+        }
 
         // Set the colors in the output buffer
         if all(load_s_colors(vector_id * 2) == vec3<f32>(0.0)) {

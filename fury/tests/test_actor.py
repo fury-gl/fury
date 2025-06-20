@@ -1,11 +1,52 @@
+import re
+
 from PIL import Image
 import numpy as np
 import numpy.testing as npt
 import pytest
 
 from fury import actor, window
-from fury.lib import Group
-from fury.utils import get_slices, set_group_visibility, show_slices
+from fury.io import load_image_texture
+from fury.lib import Group, MeshBasicMaterial, MeshPhongMaterial, TextureMap
+from fury.material import (
+    VectorFieldArrowMaterial,
+    VectorFieldLineMaterial,
+    VectorFieldThinLineMaterial,
+)
+from fury.utils import (
+    generate_planar_uvs,
+    get_slices,
+    set_group_visibility,
+    show_slices,
+)
+
+
+def random_png(width, height):
+    """Generates a random RGB PNG image.
+
+    Parameters
+    ----------
+    width : int
+        Width of the image in pixels.
+    height : int
+        Height of the image in pixels.
+
+    Returns
+    -------
+    Image
+        The generated image.
+    """
+    image = Image.new("RGB", (width, height))
+    pixels = image.load()
+
+    for x in range(width):
+        for y in range(height):
+            r = np.random.randint(0, 255)
+            g = np.random.randint(0, 255)
+            b = np.random.randint(0, 255)
+            pixels[x, y] = (r, g, b)
+
+    return image
 
 
 def validate_actors(actor_type="actor_name", prim_count=1, **kwargs):
@@ -177,7 +218,7 @@ def test_star():
     validate_actors(centers=centers, colors=colors, actor_type="star")
 
 
-def test_flat_disk():
+def test_disk():
     centers = np.array([[0, 0, 0]])
     colors = np.array([[1, 0, 0]])
     validate_actors(centers=centers, colors=colors, actor_type="disk")
@@ -278,13 +319,14 @@ def test_marker():
 
 def test_text():
     text = "FURY"
-    position = np.array([0, 0, 0])
+    position1 = np.array([1.0, 0.0, 0.0])
+    position2 = np.array([1.0, 2.0, 1.0])
     scene = window.Scene()
 
-    text_actor = actor.text(text=text, anchor="middle-center")
+    text_actor = actor.text(text=text, anchor="middle-center", position=position1)
     scene.add(text_actor)
 
-    npt.assert_array_equal(text_actor.local.position, position)
+    npt.assert_array_equal(text_actor.local.position, position1)
 
     fname = "text_test.png"
     window.snapshot(scene=scene, fname=fname)
@@ -304,9 +346,9 @@ def test_text():
     scene.remove(text_actor)
 
     text1 = "HELLO"
-    text_actor_1 = actor.text(text=text1, anchor="middle-center")
-    text_actor_1.local.position = position
+    text_actor_1 = actor.text(text=text1, anchor="middle-center", position=position2)
     scene.add(text_actor_1)
+    npt.assert_array_equal(text_actor_1.local.position, position2)
     fname_1 = "text_test_1.png"
     window.snapshot(scene=scene, fname=fname_1)
     img = Image.open(fname_1)
@@ -442,3 +484,246 @@ def test_visibility_control():
     set_group_visibility(slicer_obj, (False, True, False))
     visibilities = [child.visible for child in slicer_obj.children]
     assert visibilities == [False, True, False]
+
+
+def test_surface_basic_vertices_and_faces():
+    """Test surface creation with basic vertices and faces."""
+    vertices = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]], dtype=np.float32)
+    faces = np.array([[0, 1, 2]], dtype=np.int32)
+
+    surface_actor = actor.surface(vertices, faces)
+
+    assert np.array_equal(surface_actor.geometry.positions.data, vertices)
+    assert np.array_equal(surface_actor.geometry.indices.data, faces)
+    assert not hasattr(surface_actor.geometry, "texcoords")
+    assert not hasattr(surface_actor.geometry, "colors")
+    assert isinstance(surface_actor.material, MeshPhongMaterial)
+    assert surface_actor.material.opacity == 1.0
+
+
+def test_surface_with_vertex_colors():
+    """Test surface creation with vertex colors."""
+    vertices = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]], dtype=np.float32)
+    faces = np.array([[0, 1, 2]], dtype=np.int32)
+    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=np.float32)
+
+    surface_actor = actor.surface(vertices, faces, colors=colors)
+
+    assert np.array_equal(surface_actor.geometry.positions.data, vertices)
+    assert np.array_equal(surface_actor.geometry.indices.data, faces)
+    assert np.array_equal(surface_actor.geometry.colors.data, colors)
+
+    assert isinstance(surface_actor.material, MeshPhongMaterial)
+    assert surface_actor.material.opacity == 1.0
+
+
+def test_surface_with_texture(tmpdir):
+    """Test surface creation with texture."""
+    vertices = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]], dtype=np.float32)
+    faces = np.array([[0, 1, 2]], dtype=np.int32)
+
+    # Create a dummy texture file
+    texture_file = tmpdir.join("texture.png")
+    image = random_png(10, 10)
+    image.save(str(texture_file), "PNG")
+
+    surface_actor = actor.surface(
+        vertices, faces, texture=str(texture_file), texture_axis="xy"
+    )
+
+    tex = load_image_texture(str(texture_file))
+    assert isinstance(surface_actor.material.map, TextureMap)
+    assert np.array_equal(surface_actor.material.map.texture.data, tex.data)
+    assert isinstance(surface_actor.material, MeshBasicMaterial)
+    assert surface_actor.material.opacity == 1.0
+
+    texcoords = generate_planar_uvs(vertices, axis="xy")
+    assert np.array_equal(surface_actor.geometry.texcoords.data, texcoords)
+    assert np.array_equal(surface_actor.geometry.positions.data, vertices)
+    assert np.array_equal(surface_actor.geometry.indices.data, faces)
+
+
+def test_surface_error_conditions():
+    """Test error conditions for invalid inputs."""
+    vertices = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]], dtype=np.float32)
+    faces = np.array([[0, 1, 2]], dtype=np.int32)
+
+    # Test invalid colors format
+    with pytest.raises(ValueError):
+        actor.surface(vertices, faces, colors=[1, 0, 0, 1, 0])  # Invalid length
+
+    # Test non-existent texture file
+    with pytest.raises(FileNotFoundError):
+        actor.surface(vertices, faces, texture="nonexistent.png")
+
+    # Test invalid opacity
+    with pytest.raises(ValueError):
+        actor.surface(
+            vertices, faces, opacity=1.5
+        )  # Assuming validate_opacity raises for >1
+
+
+def test_vector_field_initialization_with_4d_field():
+    """Test VectorField initialization with 4D field (X,Y,Z,3)."""
+    field = np.random.rand(5, 5, 5, 3)
+    vf = actor.VectorField(field)
+    assert vf.vectors.shape == (125, 3)  # 5*5*5=125 vectors
+    assert vf.vectors_per_voxel == 1
+    assert vf.field_shape == (5, 5, 5)
+
+
+def test_vector_field_initialization_with_5d_field():
+    """Test VectorField initialization with 5D field (X,Y,Z,N,3)."""
+    field = np.random.rand(5, 5, 5, 2, 3)  # 2 vectors per voxel
+    vf = actor.VectorField(field)
+    assert vf.vectors.shape == (250, 3)  # 5*5*5*2=250 vectors
+    assert vf.vectors_per_voxel == 2
+    assert vf.field_shape == (5, 5, 5)
+
+
+def test_vector_field_invalid_dimensions():
+    """Test VectorField with invalid field dimensions."""
+    # 3D field (not enough dimensions)
+    field = np.random.rand(5, 5, 5)
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            f"Field must be 5D or 4D, but got {field.ndim}D with shape {field.shape}"
+        ),
+    ):
+        actor.VectorField(field)
+
+    # 6D field (too many dimensions)
+    with pytest.raises(ValueError):
+        field = np.random.rand(5, 5, 5, 2, 3, 1)
+        actor.VectorField(field)
+
+    # Last dimension not 3
+    with pytest.raises(ValueError):
+        field = np.random.rand(5, 5, 5, 2)
+        actor.VectorField(field)
+
+
+def test_vector_field_scales():
+    """Test VectorField with different scale configurations."""
+    field = np.random.rand(5, 5, 5, 3)
+
+    # Test with float scale
+    vf = actor.VectorField(field, scales=2.0)
+    assert np.all(vf.scales == 2.0)
+
+    # Test with matching array scale (4D)
+    scales = np.random.rand(5, 5, 5)
+    vf = actor.VectorField(field, scales=scales)
+    assert vf.scales.shape == (125, 1)
+
+    # Test with matching array scale (5D)
+    field = np.random.rand(5, 5, 5, 2, 3)
+    scales = np.random.rand(5, 5, 5, 2)
+    vf = actor.VectorField(field, scales=scales)
+    assert vf.scales.shape == (250, 1)
+
+
+def test_vector_field_cross_section():
+    """Test VectorField cross section property."""
+    field = np.random.rand(5, 5, 5, 3)
+
+    # Test default cross section
+    vf = actor.VectorField(field)
+    assert np.all(vf.cross_section == np.array([-2, -2, -2]))
+
+    # Test setting cross section
+    # cross section will not work without providing visibility.
+    new_cross = [1, 2, 3]
+    vf.cross_section = new_cross
+    assert np.all(vf.cross_section == np.array([-2, -2, -2]))
+
+    # Test invalid cross section types
+    with pytest.raises(ValueError):
+        vf.cross_section = "invalid"
+
+    # Test invalid cross section length
+    with pytest.raises(ValueError):
+        vf.cross_section = [1, 2]
+
+
+def test_vector_field_visibility():
+    """Test VectorField visibility with cross section."""
+    field = np.random.rand(5, 5, 5, 3)
+
+    # Test with visibility
+    vf = actor.VectorField(field, visibility=(True, False, True))
+    assert vf.visibility == (True, False, True)
+
+    # Set cross section with visibility
+    vf.cross_section = [1, 2, 3]
+    # The y dimension should be -1 because visibility[1] is False
+    assert np.all(vf.cross_section == np.array([1, -1, 3]))
+
+
+def test_vector_field_actor_types():
+    """Test VectorField with different actor types."""
+    field = np.random.rand(5, 5, 5, 3)
+
+    for actor_type, material_type in zip(
+        ["thin_line", "line", "arrow"],
+        [
+            VectorFieldThinLineMaterial,
+            VectorFieldLineMaterial,
+            VectorFieldArrowMaterial,
+        ],
+        strict=False,
+    ):
+        vf = actor.VectorField(field, actor_type=actor_type)
+        assert isinstance(vf.material, material_type)
+
+
+def test_vector_field_colors():
+    """Test VectorField with different color configurations."""
+    field = np.random.rand(5, 5, 5, 3)
+
+    # Test with default color (None)
+    vf = actor.VectorField(field)
+    assert np.all(vf.geometry.colors.data[0] == np.array([0, 0, 0]))
+
+    # Test with custom color
+    color = (1.0, 0.5, 0.0)
+    vf = actor.VectorField(field, colors=color)
+    assert np.all(vf.geometry.colors.data[0] == np.array(color))
+
+
+def test_vector_field_helper_functions():
+    """Test the vector_field and vector_field_slicer helper functions."""
+    field = np.random.rand(5, 5, 5, 3)
+
+    # Test vector_field
+    vf = actor.vector_field(field, actor_type="arrow", opacity=0.5, thickness=2.0)
+    assert isinstance(vf.material, VectorFieldArrowMaterial)
+    assert vf.material.opacity == 0.5
+    assert vf.material.thickness == 2.0
+
+    # Test vector_field_slicer
+    vf = actor.vector_field_slicer(
+        field,
+        actor_type="line",
+        cross_section=[2, 2, 2],
+        visibility=(True, False, True),
+    )
+    assert isinstance(vf.material, VectorFieldLineMaterial)
+    assert np.all(vf.cross_section == np.array([2, -1, 2]))
+
+
+def test_vector_field_edge_cases():
+    """Test VectorField with edge cases."""
+    # Test with minimal field size
+    field = np.random.rand(1, 1, 1, 3)
+    vf = actor.VectorField(field)
+    assert vf.vectors.shape == (1, 3)
+
+    # Test with zero opacity
+    vf = actor.VectorField(field, opacity=0.0)
+    assert vf.material.opacity == 0.0
+
+    # Test with zero thickness (should still work)
+    vf = actor.VectorField(field, thickness=0.0)
+    assert vf.material.thickness == 0.0
