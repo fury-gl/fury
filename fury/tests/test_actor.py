@@ -726,4 +726,155 @@ def test_vector_field_edge_cases():
 
     # Test with zero thickness (should still work)
     vf = actor.VectorField(field, thickness=0.0)
-    assert vf.material.thickness == 0.0
+    assert vf.material.thickness == 0.0  # Replace with your module
+
+
+def test_sph_glyph_input_validation():
+    """sph_glyph: Test invalid inputs raise appropriate errors."""
+    # Invalid coeffs type/dimensions
+    with pytest.raises(TypeError):
+        actor.sph_glyph([1, 2, 3])  # Not a numpy array
+    with pytest.raises(ValueError):
+        actor.sph_glyph(np.random.rand(3, 3))  # Not 4D
+
+    # Invalid sphere specification
+    with pytest.raises(TypeError):
+        actor.sph_glyph(np.random.rand(2, 2, 2, 5), sphere=1.5)
+    with pytest.raises(TypeError):
+        actor.sph_glyph(np.random.rand(2, 2, 2, 5), sphere=("a", "b"))
+
+
+def test_sph_glyph_default_behavior():
+    """sph_glyph: Test function with minimal valid inputs."""
+    coeffs = np.random.rand(2, 2, 2, 9)
+    glyph = actor.sph_glyph(coeffs)
+
+    assert glyph is not None
+    assert isinstance(glyph, actor.SphGlyph)
+    assert glyph.sphere.shape[0] == 362  # Default sphere has 362 vertices
+    assert glyph.color_type == 0  # Converted for shader compatibility
+
+
+def test_sph_glyph_custom_sphere():
+    """sph_glyph: Test custom sphere specifications."""
+    coeffs = np.random.rand(2, 2, 2, 9)
+
+    # Named sphere
+    glyph = actor.sph_glyph(coeffs, sphere="symmetric724")
+    assert glyph.sphere.shape[0] == 724
+
+    # Custom sphere
+    glyph = actor.sph_glyph(coeffs, sphere=(36, 72))
+    assert hasattr(glyph, "indices")
+
+
+def test_sph_glyph_parameter_combinations():
+    """sph_glyph: Test all valid basis_type and color_type combinations."""
+    coeffs = np.random.rand(2, 2, 2, 16)
+
+    for basis in ["standard", "descoteaux07"]:
+        for idx, color in enumerate(["sign", "orientation"]):
+            glyph = actor.sph_glyph(coeffs, basis_type=basis, color_type=color)
+            assert glyph.color_type == idx
+
+
+def test_sph_glyph_shininess_values():
+    """sph_glyph: Test valid shininess values."""
+    coeffs = np.random.rand(2, 2, 2, 4)
+
+    for shininess in [0, 50, 100, 150.5]:
+        glyph = actor.sph_glyph(coeffs, shininess=shininess)
+        assert glyph.material.shininess == shininess
+
+
+def test_SphGlyph_input_validation_coeffs():
+    """SphGlyph: Test invalid coeffs inputs raise appropriate errors."""
+    valid_sphere = (np.random.rand(100, 3), np.random.randint(0, 100, (50, 3)))
+
+    # Not a numpy array
+    with pytest.raises(TypeError):
+        actor.SphGlyph([1, 2, 3], sphere=valid_sphere)
+
+    # Not 4D
+    with pytest.raises(ValueError):
+        actor.SphGlyph(np.random.rand(3, 3), sphere=valid_sphere)
+
+    # Empty last dimension
+    with pytest.raises(ValueError):
+        actor.SphGlyph(np.random.rand(2, 2, 2, 0), sphere=valid_sphere)
+
+
+def test_SphGlyph_input_validation_sphere():
+    """SphGlyph: Test invalid sphere inputs raise appropriate errors."""
+    valid_coeffs = np.random.rand(2, 2, 2, 9)
+
+    # Not a tuple
+    with pytest.raises(TypeError):
+        actor.SphGlyph(valid_coeffs, sphere=[1, 2, 3])
+
+    # Wrong tuple length
+    with pytest.raises(TypeError):
+        actor.SphGlyph(valid_coeffs, sphere=(np.random.rand(100, 3),))
+
+    # Invalid contents
+    with pytest.raises(TypeError):
+        actor.SphGlyph(valid_coeffs, sphere=([1, 2, 3], [4, 5, 6]))
+
+
+def test_SphGlyph_initialization_defaults():
+    """SphGlyph: Test initialization with default parameters."""
+    coeffs = np.random.rand(2, 2, 2, 9)
+    sphere = (np.random.rand(100, 3), np.random.randint(0, 100, (50, 3)))
+    glyph = actor.SphGlyph(coeffs, sphere=sphere)
+
+    assert glyph.n_coeff == 9
+    assert glyph.data_shape == (2, 2, 2)
+    assert glyph.color_type == 0  # Default 'sign'
+    assert glyph.vertices_per_glyph == 100
+    assert glyph.faces_per_glyph == 50
+
+
+def test_SphGlyph_parameter_combinations():
+    """SphGlyph: Test different basis_type and color_type combinations."""
+    coeffs = np.random.rand(2, 2, 2, 16)
+    sphere = (np.random.rand(100, 3), np.random.randint(0, 100, (50, 3)))
+
+    # Test basis types
+    for basis in ["standard", "descoteaux07"]:
+        glyph = actor.SphGlyph(coeffs, sphere=sphere, basis_type=basis)
+        assert hasattr(glyph.material, "l_max")
+
+    # Test color types
+    glyph_sign = actor.SphGlyph(coeffs, sphere=sphere, color_type="sign")
+    assert glyph_sign.color_type == 0
+
+    glyph_orient = actor.SphGlyph(coeffs, sphere=sphere, color_type="orientation")
+    assert glyph_orient.color_type == 1
+
+
+def test_SphGlyph_shininess_values():
+    """SphGlyph: Test different shininess values."""
+    coeffs = np.random.rand(2, 2, 2, 4)
+    sphere = (np.random.rand(100, 3), np.random.randint(0, 100, (50, 3)))
+
+    for shininess in [0, 50, 100, 150.5]:
+        glyph = actor.SphGlyph(coeffs, sphere=sphere, shininess=shininess)
+        assert glyph.material.shininess == shininess
+
+
+def test_SphGlyph_geometry_properties():
+    """SphGlyph: Test geometry properties are correctly set."""
+    coeffs = np.random.rand(3, 3, 3, 9)
+    vertices = np.random.rand(200, 3)
+    faces = np.random.randint(0, 200, (100, 3))
+    sphere = (vertices, faces)
+
+    glyph = actor.SphGlyph(coeffs, sphere=sphere)
+
+    # Check positions scaling
+    assert glyph.geometry.positions.data.shape[0] == 3 * 3 * 3 * 200
+    assert glyph.geometry.indices.data.shape[0] == 3 * 3 * 3 * 100
+
+    # Check SH coefficients
+    assert glyph.sh_coeff.shape[0] == 3 * 3 * 3 * 9
+    assert glyph.sf_func.shape[0] == 200 * ((glyph.material.l_max + 1) ** 2)

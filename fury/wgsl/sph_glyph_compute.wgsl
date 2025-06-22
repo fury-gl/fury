@@ -1,21 +1,17 @@
 {{ bindings_code }}
 {$ include 'fury.utils.wgsl' $}
 
-// @group(1) @binding(0)
-// var<storage, read_write> s_scaled_vertice: array<f32>;
-
 const DATA_SHAPE = vec3<i32>{{ data_shape }};
 const NUM_COEFFS = i32({{ n_coeffs }});
 const VERTICES_PER_GLYPH = i32({{ vertices_per_glyph }});
 const FACES_PER_GLYPH = i32({{ faces_per_glyph }});
+const COLOR_TYPE = i32({{ color_type }});
 
 fn calculate_deformation(first_coeff_id: i32, sphere_vertex_id: i32) -> f32 {
     var radii: f32 = 0.0;
     for (var i: i32 = 0; i < NUM_COEFFS; i++) {
         radii += s_coeffs[first_coeff_id + i] * s_sf_func[sphere_vertex_id + i];
     }
-    radii = max(radii, 0.0);
-    radii = min(radii, 1.0);
     return radii;
 }
 
@@ -78,25 +74,35 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
 
     let voxel_id = flatten_from_3d(vec3<i32>(global_id), vec3<i32>{{ workgroup_size }});
 
-    if (voxel_id >= DATA_SHAPE.x * DATA_SHAPE.y * DATA_SHAPE.z) {
-        return;
-    }
-
-    let valid_voxel: bool = s_coeffs[voxel_id * NUM_COEFFS] > 1e-4;
-
     let center = flatten_to_3d(voxel_id, DATA_SHAPE);
     let first_vertex_id = voxel_id * VERTICES_PER_GLYPH;
 
     for (var i: i32 = 0; i < VERTICES_PER_GLYPH; i++) {
         var radii: f32 = 0.0;
 
-        if valid_voxel {
-            radii = calculate_deformation(voxel_id * NUM_COEFFS, i * NUM_COEFFS);
+        radii = calculate_deformation(voxel_id * NUM_COEFFS, i * NUM_COEFFS);
+        let current_vertex = (first_vertex_id + i) * 3;
+
+        if COLOR_TYPE == 0 {
+            if (radii < 0.0) {
+                s_colors[current_vertex] = 0.0;
+                s_colors[current_vertex + 1] = 0.0;
+                s_colors[current_vertex + 2] = 1.0;
+            } else {
+                s_colors[current_vertex] = 1.0;
+                s_colors[current_vertex + 1] = 0.0;
+                s_colors[current_vertex + 2] = 0.0;
+            }
+        } else {
+            let color = scaled_color(load_s_sphere(i));
+            s_colors[current_vertex] = color.x;
+            s_colors[current_vertex + 1] = color.y;
+            s_colors[current_vertex + 2] = color.z;
         }
 
-
-        let current_vertex = (first_vertex_id + i) * 3;
-        let position = calculate_position_from_deformation(i, radii, 3, center);
+        radii = abs(radii);
+        radii = min(radii, 1.0);
+        let position = calculate_position_from_deformation(i, radii, 1.0, center);
 
         s_positions[current_vertex] = position.x;
         s_positions[current_vertex + 1] = position.y;
@@ -107,15 +113,8 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
         s_scaled_vertice[current_vertex + 1] = scaled_vertice.y;
         s_scaled_vertice[current_vertex + 2] = scaled_vertice.z;
 
-
-        let color = scaled_color(scaled_vertice);
-        s_colors[current_vertex] = color.x;
-        s_colors[current_vertex + 1] = color.y;
-        s_colors[current_vertex + 2] = color.z;
     }
 
-    if (valid_voxel) {
-        update_normals(first_vertex_id, center);
-    }
+    update_normals(first_vertex_id, center);
 
 }

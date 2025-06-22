@@ -509,6 +509,24 @@ class VectorFieldArrowMaterial(VectorFieldThinLineMaterial):
 
 
 class SphGlyphMaterial(MeshPhongMaterial):
+    """Initialize the Spherical Glyph Material.
+
+    Parameters
+    ----------
+    l_max : int, optional
+        The maximum spherical harmonic degree.
+    scale : int, optional
+        The scale factor.
+    shininess : int, optional
+        The shininess factor.
+    emissive : str, optional
+        The emissive color.
+    specular : str, optional
+        The specular color.
+    **kwargs : dict
+            Additional keyword arguments for the material.
+    """
+
     uniform_type = dict(
         MeshPhongMaterial.uniform_type,
         l_max="i4",
@@ -524,6 +542,23 @@ class SphGlyphMaterial(MeshPhongMaterial):
         specular="#494949",
         **kwargs,
     ):
+        """Initialize the Spherical Glyph Material.
+
+        Parameters
+        ----------
+        l_max : int, optional
+            The maximum spherical harmonic degree.
+        scale : int, optional
+            The scale factor.
+        shininess : int, optional
+            The shininess factor.
+        emissive : str, optional
+            The emissive color.
+        specular : str, optional
+            The specular color.
+        **kwargs : dict
+            Additional keyword arguments for the material.
+        """
         super().__init__(shininess, emissive, specular, **kwargs)
         self.l_max = l_max
         self.scale = scale
@@ -548,8 +583,8 @@ class SphGlyphMaterial(MeshPhongMaterial):
         value : int
             The maximum spherical harmonic degree.
         """
-        if not isinstance(value, int) or value % 2 != 0:
-            raise ValueError("l_max must be an even integer.")
+        if not isinstance(value, int):
+            raise ValueError("l_max must be an integer.")
         self.uniform_buffer.data["l_max"] = value
         self.uniform_buffer.update_full()
 

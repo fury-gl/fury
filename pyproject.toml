@@ -14,6 +14,7 @@ keywords = ["Scientific Visualization", "shaders", "animation", "simulation",
 authors = [
     {name = "Eleftherios Garyfallidis", email = "fury@python.org"},
     {name = "Serge Koudoro", email = "fury@python.org"},
+    {name = "Maharshi Gor", email = "fury@python.org"},
     {name = "Javier Guaje", email = "fury@python.org"},
     {name = "Marc-Alexandre Côté", email = "fury@python.org"},
     {name = "Soham Biswas", email = "fury@python.org"},

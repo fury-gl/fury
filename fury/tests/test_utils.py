@@ -6,7 +6,9 @@ from fury.lib import AffineTransform, Group, Mesh, RecursiveTransform, WorldObje
 from fury.utils import (
     apply_affine_to_actor,
     apply_affine_to_group,
+    create_sh_basis_matrix,
     generate_planar_uvs,
+    get_lmax,
     get_slices,
     set_group_opacity,
     set_group_visibility,
@@ -295,3 +297,72 @@ def test_generate_planar_uvs_numerical_stability():
     mixed_coords = np.array([[-1.0, -2.0, -3.0], [1.0, 2.0, 3.0]])
     result = generate_planar_uvs(mixed_coords, axis="xz")
     assert np.allclose(result, np.array([[0.0, 0.0], [1.0, 1.0]]))
+
+
+def test_get_lmax_standard_basis():
+    """Test the standard basis type (default)."""
+    assert get_lmax(3) == 1
+    assert get_lmax(16) == 3
+    assert get_lmax(24, basis_type="standard") == 4
+
+
+def test_get_lmax_descoteaux07_basis():
+    """Test the descoteaux07 basis type."""
+    assert get_lmax(6, basis_type="descoteaux07") == 2
+    assert get_lmax(28, basis_type="descoteaux07") == 6
+
+
+def test_get_lmax_invalid_inputs():
+    """Test invalid inputs raise ValueError."""
+    with pytest.raises(ValueError):
+        get_lmax(0)  # n_coeffs < 1
+    with pytest.raises(ValueError):
+        get_lmax(1.5)  # non-integer n_coeffs
+    with pytest.raises(ValueError):
+        get_lmax(10, basis_type="invalid")  # invalid basis_type
+
+
+def test_create_sh_basis_matrix_input_validation():
+    """Test invalid inputs raise ValueError."""
+    # Invalid vertices (not a 2D array with shape (N, 3))
+    with pytest.raises(ValueError):
+        create_sh_basis_matrix(np.array([1, 2, 3]), 1)  # 1D array
+    with pytest.raises(ValueError):
+        create_sh_basis_matrix(np.array([[1, 2]]), 1)  # Shape (N, 2)
+
+    # Invalid l_max (non-integer or negative)
+    with pytest.raises(ValueError):
+        create_sh_basis_matrix(np.array([[0, 0, 1]]), -1)
+    with pytest.raises(ValueError):
+        create_sh_basis_matrix(np.array([[0, 0, 1]]), 1.5)
+
+
+def test_create_sh_basis_matrix_l_max_zero():
+    """Test l_max=0 (only the constant SH term)."""
+    vertices = np.array([[0, 0, 1], [1, 0, 0]])
+    B = create_sh_basis_matrix(vertices, l_max=0)
+    assert B.shape == (2, 1)  # (N_vertices, 1 coefficient)
+    assert np.allclose(B, 1 / (2 * np.sqrt(np.pi)))  # Y_0^0 = 1/(2√π)
+
+
+def test_create_sh_basis_matrix_basic_output_shape():
+    """Verify output shape matches (N, (l_max+1)^2)."""
+    vertices = np.random.randn(10, 3)  # 10 random vertices
+    for l_max in [1, 2, 3]:
+        B = create_sh_basis_matrix(vertices, l_max)
+        assert B.shape == (10, (l_max + 1) ** 2)
+
+
+def test_create_sh_basis_matrix_known_values():
+    """Test against known SH values at specific points."""
+    # North pole (theta=0, phi=undefined)
+    vertices = np.array([[0, 0, 1]])
+    B = create_sh_basis_matrix(vertices, l_max=1)
+
+    # Expected values for l_max=1:
+    # Y_0^0 = 1/(2√π)
+    # Y_1^{-1} = 0 (due to sin(phi) term, but phi is undefined at pole)
+    # Y_1^0 = √(3/4π)*cos(0) = √(3/4π)
+    # Y_1^1 = 0 (due to cos(phi) term)
+    expected = np.array([[1 / (2 * np.sqrt(np.pi)), 0, np.sqrt(3 / (4 * np.pi)), 0]])
+    assert np.allclose(B, expected, atol=1e-6)
