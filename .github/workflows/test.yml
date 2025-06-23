@@ -31,7 +31,7 @@ jobs:
         install-type: [pip, ]  # conda]
         depends: [DEFAULT_DEPS, OPTIONAL_DEPS]
         coverage: [false]
-        use-pre: [false]
+        use-pre: [true]
         include:
           - os: macos-latest # ubuntu-latest
             python-version: 3.11
