@@ -1,6 +1,7 @@
 """UI core module that describe UI abstract class."""
 
 import abc
+from enum import Enum
 
 import numpy as np
 
@@ -19,6 +20,7 @@ from fury.material import (
     _create_mesh_material,
 )
 from fury.primitive import prim_disk
+from fury.ui import UIContext
 
 # from fury.interactor import CustomInteractorStyle
 # from fury.io import load_image
@@ -37,6 +39,23 @@ from fury.primitive import prim_disk
 #     TexturedActor2D,
 # )
 # from fury.utils import set_input
+
+
+class Anchor(str, Enum):
+    LEFT = "LEFT"
+    RIGHT = "RIGHT"
+    TOP = "TOP"
+    BOTTOM = "BOTTOM"
+    CENTER = "CENTER"
+
+
+ANCHOR_TO_MULTIPLIER = {
+    Anchor.LEFT: 0.0,
+    Anchor.RIGHT: 1.0,
+    Anchor.TOP: 0.0,
+    Anchor.BOTTOM: 1.0,
+    Anchor.CENTER: 0.5,
+}
 
 
 class UI(object, metaclass=abc.ABCMeta):
@@ -95,7 +114,7 @@ class UI(object, metaclass=abc.ABCMeta):
 
     """
 
-    def __init__(self, *, position=(0, 0), x_anchor="LEFT", y_anchor="BOTTOM"):
+    def __init__(self, *, position=(0, 0), x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP):
         """Init scene.
 
         Parameters
@@ -117,9 +136,7 @@ class UI(object, metaclass=abc.ABCMeta):
         self._actors = []
 
         self._setup()  # Setup needed actors and sub UI components.
-        self.x_anchor = x_anchor
-        self.y_anchor = y_anchor
-        self.set_position(position, self.x_anchor, self.y_anchor)
+        self.set_position(position, x_anchor, y_anchor)
 
         self.left_button_state = "released"
         self.right_button_state = "released"
@@ -163,13 +180,24 @@ class UI(object, metaclass=abc.ABCMeta):
         """Childrens composing this UI component."""
         return self._childrens
 
-    # TODO: Not sure should the external user have access to this or not as he can use the set/get position
-    # @property
-    # def position(self):
-    #     """Top Left Position of this UI component."""
-    #     return self._position
+    def perform_position_validation(self, x_anchor, y_anchor):
+        if not hasattr(self, "size"):
+            msg = "Subclasses of UI must implement property `size`."
+            raise NotImplementedError(msg)
 
-    def set_position(self, coords, x_anchor: str = "LEFT", y_anchor: str = "BOTTOM"):
+        if x_anchor not in [Anchor.LEFT, Anchor.CENTER, Anchor.RIGHT]:
+            raise ValueError(
+                f"x_anchor should be one of these {', '.join([Anchor.LEFT, Anchor.CENTER, Anchor.RIGHT])} but received {x_anchor}"
+            )
+
+        if y_anchor not in [Anchor.TOP, Anchor.CENTER, Anchor.BOTTOM]:
+            raise ValueError(
+                f"y_anchor should be one of these {', '.join([Anchor.TOP, Anchor.CENTER, Anchor.BOTTOM])} but received {y_anchor}"
+            )
+
+    def set_position(
+        self, coords, x_anchor: str = Anchor.LEFT, y_anchor: str = Anchor.BOTTOM
+    ):
         """Position this UI component according to the specified anchor.
 
         Parameters
@@ -185,28 +213,13 @@ class UI(object, metaclass=abc.ABCMeta):
             "CENTER", or "TOP". Case-insensitive. Defaults to "BOTTOM".
 
         """
+        self.perform_position_validation(x_anchor=x_anchor, y_anchor=y_anchor)
 
-        if not hasattr(self, "size"):
-            msg = "Subclasses of UI must implement property `size`."
-            raise NotImplementedError(msg)
-
-        anchor_to_multipler = {
-            "LEFT": 0.0,
-            "RIGHT": 1.0,
-            "TOP": 0.0,
-            "BOTTOM": 1.0,
-            "CENTER": 0.5,
-        }
-
-        self._position = np.array(
-            [
-                coords[0] - self.size[0] * anchor_to_multipler[x_anchor.upper()],
-                coords[1] - self.size[1] * anchor_to_multipler[y_anchor.upper()],
-            ]
-        )
+        self._position = np.array(coords)
+        self._anchors = [x_anchor.upper(), y_anchor.upper()]
         self._update_actors_position()
 
-    def get_position(self, x_anchor: str = "LEFT", y_anchor: str = "BOTTOM"):
+    def get_position(self, x_anchor: str = Anchor.LEFT, y_anchor: str = Anchor.TOP):
         """Get the position of this UI component according to the specified anchor.
 
         Parameters
@@ -226,24 +239,22 @@ class UI(object, metaclass=abc.ABCMeta):
             The (x, y) pixel coordinates of the specified anchor point.
 
         """
-        if not hasattr(self, "size"):
-            msg = "Subclasses of UI must implement the `size` property."
-            raise NotImplementedError(msg)
-
-        anchor_to_multipler = {
-            "LEFT": 0.0,
-            "RIGHT": 1.0,
-            "TOP": 0.0,
-            "BOTTOM": 1.0,
-            "CENTER": 0.5,
-        }
+        self.perform_position_validation(x_anchor=x_anchor, y_anchor=y_anchor)
 
         return np.array(
             [
                 self._position[0]
-                + self.size[0] * anchor_to_multipler[x_anchor.upper()],
+                + self.size[0]
+                * (
+                    ANCHOR_TO_MULTIPLIER[x_anchor.upper()]
+                    - ANCHOR_TO_MULTIPLIER[self._anchors[0].upper()]
+                ),
                 self._position[1]
-                + self.size[1] * anchor_to_multipler[y_anchor.upper()],
+                + self.size[0]
+                * (
+                    ANCHOR_TO_MULTIPLIER[x_anchor.upper()]
+                    - ANCHOR_TO_MULTIPLIER[self._anchors[1].upper()]
+                ),
             ]
         )
 
@@ -502,12 +513,11 @@ class Rectangle2D(UI):
 
     def _update_actors_position(self):
         """Set the position of the internal actor."""
-        self.actor.local.position = np.array(
-            [
-                *self.get_position(x_anchor="CENTER", y_anchor="CENTER"),
-                self.actor.local.z,
-            ]
-        )
+        position = self.get_position(x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
+        canvas_size = UIContext.get_canvas_size()
+
+        self.actor.local.x = position[0]
+        self.actor.local.y = canvas_size[1] - position[1]
 
     @property
     def color(self):
@@ -583,7 +593,7 @@ class Disk2D(UI):
         self.inner_radius = inner_radius
 
         super(Disk2D, self).__init__(
-            position=center, x_anchor="CENTER", y_anchor="CENTER"
+            position=center, x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER
         )
 
         self.color = color
@@ -626,12 +636,11 @@ class Disk2D(UI):
 
     def _update_actors_position(self):
         """Set the position of the internal actor."""
-        self.actor.local.position = np.array(
-            [
-                *self.get_position(x_anchor="CENTER", y_anchor="CENTER"),
-                self.actor.local.z,
-            ]
-        )
+        position = self.get_position(x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
+        canvas_size = UIContext.get_canvas_size()
+
+        self.actor.local.x = position[0]
+        self.actor.local.y = canvas_size[1] - position[1]
 
     @property
     def color(self):
