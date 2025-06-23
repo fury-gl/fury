@@ -6,12 +6,15 @@ import os
 import numpy as np
 
 from fury.geometry import (
+    axes_for_dir,
     buffer_to_geometry,
     create_line,
     create_mesh,
     create_point,
     create_text,
     line_buffer_separator,
+    prune_colinear,
+    rotate_vector,
 )
 from fury.io import load_image_texture
 from fury.lib import (
@@ -2219,6 +2222,201 @@ def register_vector_field_arrow_shaders(wobject):
     compute_shader = VectorFieldComputeShader(wobject)
     render_shader = VectorFieldArrowShader(wobject)
     return compute_shader, render_shader
+
+
+def streamtube(
+    lines,
+    *,
+    opacity=1.0,
+    colors=(1, 1, 1),
+    radius=0.2,
+    segments=8,
+    end_caps=True,
+    flat_shading=False,
+    material="phong",
+    enable_picking=True,
+    colinear_threshold=1e-4,
+):
+    """
+    Create a streamtube from a set of lines.
+
+    Parameters
+    ----------
+    lines : list of ndarray, shape (N, 3)
+        List of lines, each line is a set of points in 3D space.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
+        If both `opacity` and RGBA are provided, the final alpha will be:
+        final_alpha = alpha_in_RGBA * opacity.
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        - If a single tuple (3 or 4 values), all vertices use this color.
+        - If an array with `len(lines)` colors, each line uses one color for all
+        its vertices.
+    radius : float, optional
+        The radius of the streamtube.
+    segments : int, optional
+        The number of segments around the tube's circumference.
+        Higher values produce smoother tubes.
+    end_caps : bool, optional
+        Whether to add end caps to the streamtube.
+    flat_shading : bool, optional
+            Whether to use flat shading for the streamtube.
+    material : str, optional
+            The material type for the streamtube. Options are 'phong' and 'basic'.
+    enable_picking : bool, optional
+            Whether the streamtube should be pickable in a 3D scene.
+    colinear_threshold : float, optional
+        Threshold for determining if points are collinear.
+        Points with a direction vector difference below this threshold are
+        considered collinear.
+
+    Returns
+    -------
+    Actor
+        A mesh actor containing the generated streamtube, with the specified
+        material and properties.
+    """
+
+    vertices, triangles = [], []
+
+    prev_dir = None
+    prev_x = None
+    prev_y = None
+    line_ranges = []
+
+    elbow_radius = radius * 0.5
+
+    for _, points in enumerate(lines):
+        pts = np.asarray(points, dtype=np.float32)
+        if pts.shape[0] < 2:
+            raise ValueError("Need at least 2 points to build a tube.")
+
+        if pts.shape[1] != 3:
+            raise ValueError("Points must be 3D coordinates (shape (N, 3)).")
+
+        if pts.shape[0] >= 3:
+            pts = prune_colinear(pts, colinear_threshold=colinear_threshold)
+
+        start_idx = len(vertices)
+
+        # straight segments correctly oriented
+        for i in range(len(pts) - 1):
+            p0, p1 = pts[i], pts[i + 1]
+            dir01 = p1 - p0
+            length = np.linalg.norm(dir01)
+            if length < 1e-6:
+                continue
+            dir01_normalized = dir01 / length
+
+            if prev_dir is None:
+                x, y = axes_for_dir(dir01_normalized, prev_x=prev_x)
+            else:
+                current_dir = dir01_normalized
+                rotation_axis = np.cross(prev_dir, current_dir)
+                rotation_axis_norm = np.linalg.norm(rotation_axis)
+                if rotation_axis_norm < 1e-6:
+                    x, y = prev_x, prev_y
+                else:
+                    rotation_axis /= rotation_axis_norm
+                    angle = np.arccos(np.clip(np.dot(prev_dir, current_dir), -1.0, 1.0))
+                    x = rotate_vector(prev_x, rotation_axis, angle)
+                    y = rotate_vector(prev_y, rotation_axis, angle)
+
+            prev_dir = dir01_normalized
+            prev_x, prev_y = x, y
+
+            start = p0 + (i > 0) * dir01_normalized * elbow_radius
+            end = p1 - (i < len(pts) - 2) * dir01_normalized * elbow_radius
+
+            base = len(vertices)
+            for C in [start, end]:
+                for j in range(segments):
+                    theta = 2 * np.pi * j / segments
+                    off = x * np.cos(theta) * radius + y * np.sin(theta) * radius
+                    vertices.append(C + off)
+
+            for j in range(segments):
+                next_j = (j + 1) % segments
+                a = base + j
+                b = base + next_j
+                c = base + j + segments
+                d = base + next_j + segments
+                triangles.extend([[a, c, b], [b, c, d]])
+
+        if len(pts) >= 3:
+            for i in range(len(pts) - 2):
+                ring0 = start_idx + i * segments * 2 + segments
+                ring1 = start_idx + (i + 1) * segments * 2
+                for j in range(segments):
+                    next_j = (j + 1) % segments
+                    a = ring0 + j
+                    b = ring0 + next_j
+                    c = ring1 + j
+                    d = ring1 + next_j
+                    triangles.extend([[a, c, b], [b, c, d]])
+
+        if end_caps:
+            dir0 = (pts[1] - pts[0]) / np.linalg.norm(pts[1] - pts[0])
+            x0, y0 = axes_for_dir(-dir0)
+            cap0 = pts[0]
+            b0 = len(vertices)
+            vertices.append(cap0)
+            for j in range(segments):
+                theta = 2 * np.pi * j / segments
+                off = x0 * np.cos(theta) * radius + y0 * np.sin(theta) * radius
+                vertices.append(cap0 + off)
+            for j in range(segments):
+                next_j = (j + 1) % segments
+                triangles.append([b0, b0 + 1 + j, b0 + 1 + next_j])
+
+            dir1 = (pts[-1] - pts[-2]) / np.linalg.norm(pts[-1] - pts[-2])
+            x1, y1 = axes_for_dir(dir1)
+            cap1 = pts[-1]
+            b1 = len(vertices)
+            vertices.append(cap1)
+            for j in range(segments):
+                theta = 2 * np.pi * j / segments
+                off = x1 * np.cos(theta) * radius + y1 * np.sin(theta) * radius
+                vertices.append(cap1 + off)
+            for j in range(segments):
+                next_j = (j + 1) % segments
+                triangles.append([b1 + 1 + j, b1, b1 + 1 + next_j])
+
+        end_idx = len(vertices)
+        line_ranges.append((start_idx, end_idx))
+
+    verts = np.asarray(vertices, dtype=np.float32)
+    faces = np.asarray(triangles, dtype=np.uint32)
+
+    input_colors = np.asarray(colors)
+    n_vertices = len(verts)
+
+    if input_colors.shape == (3,) or input_colors.shape == (4,):
+        vertex_colors = np.tile(input_colors, (n_vertices, 1))
+    elif input_colors.shape[0] == len(lines) and input_colors.shape[1] in [3, 4]:
+        vertex_colors = np.zeros((n_vertices, input_colors.shape[1]), dtype=np.float32)
+        for i, (start, end) in enumerate(line_ranges):
+            vertex_colors[start:end] = input_colors[i]
+    else:
+        raise ValueError(
+            "Colors must be a single tuple (3, or 4), an array of shape "
+            "(n_lines, 3) or (n_lines, 4)."
+        )
+
+    actor = actor_from_primitive(
+        centers=np.zeros((len(lines), 3)),
+        vertices=verts,
+        faces=faces,
+        colors=vertex_colors,
+        scales=(1, 1, 1),
+        opacity=opacity,
+        material=material,
+        enable_picking=enable_picking,
+        smooth=not flat_shading,
+        repeat_primitive=False,
+    )
+    return actor
 
 
 def surface(
