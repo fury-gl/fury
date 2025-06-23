@@ -30,6 +30,8 @@ enable = true
 files = [
     "viz_slicer.py",
     "viz_skybox.py",
+    "viz_vector_field.py",
+    "viz_spherical_harmonics.py",
 
 ]
 

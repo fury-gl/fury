@@ -2342,8 +2342,8 @@ class SphGlyph(Mesh):
     def __init__(
         self,
         coeffs,
-        *,
         sphere,
+        *,
         basis_type="standard",
         color_type="sign",
         shininess=50,

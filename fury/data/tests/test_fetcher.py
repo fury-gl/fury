@@ -31,8 +31,8 @@ def tests_fetch_gltf():
     results = [model in list_gltf for model in models_list]
 
     npt.assert_equal(results, [True, True])
-    npt.assert_raises(ValueError, fetch_gltf, ["duck"])
-    npt.assert_raises(ValueError, fetch_gltf, ["Duck"], "GLTF")
+    npt.assert_raises(ValueError, fetch_gltf, name=["duck"])
+    npt.assert_raises(ValueError, fetch_gltf, name=["Duck"], mode="GLTF")
 
     fetch_gltf()
     list_gltf = os.listdir(folder)
@@ -67,7 +67,7 @@ def test_read_viz_gltf():
     filename = read_viz_gltf("Box", mode="glTF-Binary")
     npt.assert_equal(filename, pjoin(path, filenames[0]))
 
-    npt.assert_raises(ValueError, read_viz_gltf, "FURY", "glTF")
+    npt.assert_raises(ValueError, read_viz_gltf, "FURY", mode="glTF")
 
     box_gltf = pjoin(gltf_dir, "Box")
     for path in os.listdir(box_gltf):
