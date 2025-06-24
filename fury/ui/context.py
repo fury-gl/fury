@@ -13,6 +13,7 @@ class UIContextClass:
     def __init__(self):
         if self._initialized:
             return
+        self._use_v2 = False
         self._hot_ui = None
         self._active_ui = None
         self._canvas_size = np.zeros(2)
@@ -37,6 +38,12 @@ class UIContextClass:
 
     def get_canvas_size(self):
         return self._canvas_size
+
+    def get_is_v2_ui(self):
+        return self._use_v2
+
+    def set_is_v2_ui(self, use_v2_ui):
+        self._use_v2 = use_v2_ui
 
 
 UIContext = UIContextClass()
