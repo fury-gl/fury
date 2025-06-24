@@ -1,9 +1,12 @@
 """Geometry utilities for FURY."""
 
+from PIL import Image as PILImage
 import numpy as np
 
 from fury.lib import (
     Geometry,
+    Image,
+    ImageBasicMaterial,
     Line,
     Mesh,
     MeshBasicMaterial,
@@ -14,6 +17,7 @@ from fury.lib import (
     PointsMaterial,
     Text,
     TextMaterial,
+    Texture,
 )
 
 
@@ -250,3 +254,48 @@ def create_text(text, material, **kwargs):
 
     text = Text(text=text, material=material, **kwargs)
     return text
+
+
+def create_image(image_input, material, **kwargs):
+    """Create an image object.
+
+    Parameters
+    ----------
+    image_input : str or np.ndarray, optional
+        The image content.
+    material : Material
+        The material object.
+    **kwargs : dict, optional
+        Additional properties like position, visible, etc.
+
+    Returns
+    -------
+    Image
+        The image object.
+    """
+    if isinstance(image_input, str):
+        image = np.flipud(np.array(PILImage.open(image_input)).astype(np.float32))
+    elif isinstance(image_input, np.ndarray):
+        if image_input.ndim not in (2, 3):
+            raise ValueError("image_input must be a 2D or 3D NumPy array.")
+        if image_input.ndim == 3 and image_input.shape[2] not in (1, 3, 4):
+            raise ValueError("image_input must have 1, 3, or 4 channels.")
+        image = image_input
+    else:
+        raise TypeError("image_input must be a file path (str) or a NumPy array.")
+
+    if image.ndim != 2:
+        raise ValueError("Only 2D grayscale images are supported.")
+
+    if image.max() > 1.0 or image.min() < 0.0:
+        if image.max() == image.min():
+            raise ValueError("Cannot normalize an image with constant pixel values.")
+        image = (image - image.min()) / (image.max() - image.min())
+
+    if not isinstance(material, ImageBasicMaterial):
+        raise TypeError("material must be an instance of ImageBasicMaterial.")
+
+    image = Image(
+        Geometry(grid=Texture(image.astype(np.float32), dim=2)), material=material
+    )
+    return image

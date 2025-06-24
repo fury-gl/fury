@@ -4,9 +4,11 @@ import logging
 import os
 
 import numpy as np
+from scipy.spatial.transform import Rotation as R
 
 from fury.geometry import (
     buffer_to_geometry,
+    create_image,
     create_line,
     create_mesh,
     create_point,
@@ -31,6 +33,7 @@ from fury.material import (
     VectorFieldArrowMaterial,
     VectorFieldLineMaterial,
     VectorFieldThinLineMaterial,
+    _create_image_material,
     _create_line_material,
     _create_mesh_material,
     _create_points_material,
@@ -1901,6 +1904,108 @@ def slicer(
     show_slices(obj, initial_slices)
     set_group_opacity(obj, opacity)
 
+    return obj
+
+
+def image(
+    image,
+    *,
+    position=(0.0, 0.0, 0.0),
+    directions=(0.0, 0.0, 1.0),
+    visible=True,
+    clim=None,
+    map=None,
+    gamma=1.0,
+    interpolation="nearest",
+):
+    """
+    Visualize a 2D image from a NumPy array or image file.
+
+    Parameters
+    ----------
+    image : str or ndarray
+        The image input. Can be a file path (string) or a NumPy array.
+    position : tuple, optional
+        The position of the image in 3D space.
+    directions : ndarray, shape (3,) or tuple (3,), optional
+        The orientation vector of the image.
+    visible : bool, optional
+        Whether the image should be visible.
+    clim : tuple, optional
+        Contrast limits for image scaling.
+    map : TextureMap or Texture, optional
+        The texture map used to convert image values into color.
+    gamma : float, optional
+        Gamma correction to apply to the image.
+        Must be greater than 0.
+    interpolation : str, optional
+        Interpolation method for rendering the image.
+        Either 'nearest' or 'linear'.
+
+    Returns
+    -------
+    ImageActor
+        An image actor containing the rendered 2D image.
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> import numpy as np
+    >>> scene = window.Scene()
+    >>> image_data = np.random.rand(256, 256)
+    >>> image_actor = actor.image(image=image_data)
+    >>> _ = scene.add(image_actor)
+    >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
+    >>> show_manager.start()
+    """
+    mat = _create_image_material(
+        clim=clim,
+        map=map,
+        gamma=gamma,
+        interpolation=interpolation,
+    )
+
+    obj = create_image(
+        image_input=image,
+        material=mat,
+        visible=visible,
+    )
+
+    if interpolation not in ["nearest", "linear"]:
+        raise ValueError(
+            f"Interpolation must be 'nearest' or 'linear', but got {interpolation}."
+        )
+    if position is None:
+        position = (0.0, 0.0, 0.0)
+
+    if isinstance(position, (list, tuple, np.ndarray)) and len(position) == 3:
+        position = np.asarray(position, dtype=np.float32)
+
+    else:
+        raise ValueError(f"Position must have a length  of 3. Got {position}.")
+
+    if isinstance(directions, (list, tuple, np.ndarray)) and len(directions) == 3:
+        directions = np.asarray(directions, dtype=np.float32)
+    else:
+        raise ValueError(f"Directions must have a length of 3. Got {directions}.")
+
+    obj.local.position = position
+
+    default_normal = np.array([0, 0, 1])
+    target_normal = np.asarray(directions)
+    target_normal = target_normal / np.linalg.norm(target_normal)
+
+    rotation_axis = np.cross(default_normal, target_normal)
+    dot_product = np.dot(default_normal, target_normal)
+    rotation_angle = np.arccos(np.clip(dot_product, -1.0, 1.0))
+
+    if np.linalg.norm(rotation_axis) > 1e-6:
+        rotation_axis = rotation_axis / np.linalg.norm(rotation_axis)
+        rot = R.from_rotvec(rotation_angle * rotation_axis)
+    else:
+        rot = R.from_quat([0, 0, 0, 1])
+
+    obj.local.rotation = rot.as_quat()
     return obj
 
 
