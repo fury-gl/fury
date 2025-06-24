@@ -233,9 +233,9 @@ class UI(object, metaclass=abc.ABCMeta):
                     - ANCHOR_TO_MULTIPLIER[self._anchors[0].upper()]
                 ),
                 self._position[1]
-                + self.size[0]
+                + self.size[1]
                 * (
-                    ANCHOR_TO_MULTIPLIER[x_anchor.upper()]
+                    ANCHOR_TO_MULTIPLIER[y_anchor.upper()]
                     - ANCHOR_TO_MULTIPLIER[self._anchors[1].upper()]
                 ),
             ]
