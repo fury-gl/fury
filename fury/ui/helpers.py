@@ -1,6 +1,25 @@
 """Helper variable or function for UI Elements."""
 
+from enum import Enum
+
 import numpy as np
+
+
+class Anchor(str, Enum):
+    LEFT = "LEFT"
+    RIGHT = "RIGHT"
+    TOP = "TOP"
+    BOTTOM = "BOTTOM"
+    CENTER = "CENTER"
+
+
+ANCHOR_TO_MULTIPLIER = {
+    Anchor.LEFT: 0.0,
+    Anchor.RIGHT: 1.0,
+    Anchor.TOP: 0.0,
+    Anchor.BOTTOM: 1.0,
+    Anchor.CENTER: 0.5,
+}
 
 TWO_PI = 2 * np.pi
 
