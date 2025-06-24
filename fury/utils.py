@@ -9,9 +9,11 @@ structures, such as meshes and point clouds.
 
 import numpy as np
 from scipy.ndimage import map_coordinates
+from scipy.special import factorial, lpmv
 
-from fury.lib import Group
+from fury.lib import AffineTransform, Group, RecursiveTransform, WorldObject
 from fury.material import validate_opacity
+from fury.transform import cart2sphere
 
 
 def map_coordinates_3d_4d(input_array, indices):
@@ -470,3 +472,185 @@ def show_slices(group, position):
     for i, child in enumerate(group.children):
         a, b, c, _ = child.material.plane
         child.material.plane = (a, b, c, position[i])
+
+
+def apply_affine_to_group(group, affine):
+    """Apply a transformation to all actors in a group.
+
+    Parameters
+    ----------
+    group : Group
+        The group of actors to apply the transformation to.
+    affine : ndarray, shape (4, 4)
+        The transformation to apply to the actors in the group.
+    """
+    if not isinstance(group, Group):
+        raise TypeError("group must be an instance of Group.")
+
+    if not isinstance(affine, np.ndarray) or affine.shape != (4, 4):
+        raise ValueError("affine must be a 4x4 numpy array.")
+
+    for child in group.children:
+        apply_affine_to_actor(child, affine)
+
+
+def apply_affine_to_actor(actor, affine):
+    """Apply a transformation to an actor.
+
+    Parameters
+    ----------
+    actor : WorldObject
+        The actor to apply the transformation to.
+    affine : ndarray, shape (4, 4)
+        The transformation to apply to the actor.
+    """
+    if not isinstance(actor, WorldObject):
+        raise TypeError("actor must be an instance of WorldObject.")
+
+    if not isinstance(affine, np.ndarray) or affine.shape != (4, 4):
+        raise ValueError("affine must be a 4x4 numpy array.")
+
+    affine_transform = AffineTransform(
+        state_basis="matrix", matrix=affine, is_camera_space=True
+    )
+    recursive_transform = RecursiveTransform(affine_transform)
+    actor.local = affine_transform
+    actor.world = recursive_transform
+
+
+def generate_planar_uvs(vertices, *, axis="xy"):
+    """Generate UVs by projecting vertices onto a plane.
+
+    Parameters
+    ----------
+    vertices : ndarray, shape (N, 3)
+        Array of vertex coordinates in 3D space.
+    axis : str, optional
+        The plane onto which to project the vertices. Options are 'xy', 'xz', or 'yz'.
+
+    Returns
+    -------
+    ndarray
+        Array of UV coordinates, shape (N, 2), where N is the number of vertices.
+    """
+
+    if axis not in ("xy", "xz", "yz"):
+        raise ValueError("axis must be one of 'xy', 'xz', or 'yz'.")
+
+    if vertices.ndim != 2 or vertices.shape[1] != 3 or vertices.shape[0] < 2:
+        raise ValueError("vertices must be a 2D array with shape (N, 3) with N > 2.")
+
+    min_coords = np.min(vertices, axis=0)
+    max_coords = np.max(vertices, axis=0)
+    range_coords = max_coords - min_coords
+
+    if (range_coords[0] == 0 or range_coords[1] == 0) and axis == "xy":
+        raise ValueError("Cannot generate UVs for flat geometry in the XY plane.")
+    if (range_coords[0] == 0 or range_coords[2] == 0) and axis == "xz":
+        raise ValueError("Cannot generate UVs for flat geometry in the XZ plane.")
+    if (range_coords[1] == 0 or range_coords[2] == 0) and axis == "yz":
+        raise ValueError("Cannot generate UVs for flat geometry in the YZ plane.")
+
+    uvs = np.zeros((len(vertices), 2))
+    for i, v in enumerate(vertices):
+        if axis == "xy":
+            uvs[i] = [
+                (v[0] - min_coords[0]) / range_coords[0],
+                (v[1] - min_coords[1]) / range_coords[1],
+            ]
+        elif axis == "xz":
+            uvs[i] = [
+                (v[0] - min_coords[0]) / range_coords[0],
+                (v[2] - min_coords[2]) / range_coords[2],
+            ]
+        elif axis == "yz":
+            uvs[i] = [
+                (v[1] - min_coords[1]) / range_coords[1],
+                (v[2] - min_coords[2]) / range_coords[2],
+            ]
+    return uvs
+
+
+def create_sh_basis_matrix(vertices, l_max):
+    """Create a SH basis matrix for real spherical harmonics.
+
+    Parameters
+    ----------
+    vertices : ndarray, shape (N, 3)
+        Array of vertex coordinates in 3D space, where N is the number of vertices.
+    l_max : int
+        Maximum spherical harmonic degree.
+
+    Returns
+    -------
+    ndarray, shape (N, (l_max + 1) ** 2)
+        Matrix of spherical harmonic basis functions evaluated at the vertices.
+    """
+
+    if (
+        not isinstance(vertices, np.ndarray)
+        or vertices.ndim != 2
+        or vertices.shape[1] != 3
+    ):
+        raise ValueError("vertices must be a 2D array with shape (N, 3).")
+    if not isinstance(l_max, int) or l_max < 0:
+        raise ValueError("l_max must be a non-negative integer.")
+
+    _, theta, phi = cart2sphere(vertices[:, 0], vertices[:, 1], vertices[:, 2])
+    phi[phi < 0] += 2 * np.pi
+    n_vertices = vertices.shape[0]
+    cos_theta = np.cos(theta)
+    n_coeffs = (l_max + 1) ** 2
+    B = np.zeros((n_vertices, n_coeffs), dtype=np.float32)
+
+    col_idx = 0
+
+    for order in range(l_max + 1):
+        for m in range(-order, order + 1):
+            norm = np.sqrt(
+                ((2 * order + 1) / (4 * np.pi))
+                * (factorial(order - abs(m)) / factorial(order + abs(m)))
+            )
+
+            legendre_poly = lpmv(abs(m), order, cos_theta)
+
+            if m > 0:
+                sh_values = np.sqrt(2) * norm * legendre_poly * np.cos(m * phi)
+            elif m < 0:
+                sh_values = np.sqrt(2) * norm * legendre_poly * np.sin(abs(m) * phi)
+            else:  # m == 0
+                sh_values = norm * legendre_poly
+
+            B[:, col_idx] = sh_values
+            col_idx += 1
+
+    return B
+
+
+def get_lmax(n_coeffs, *, basis_type="standard"):
+    """Get the maximum degree (l_max) from the number of coefficients.
+
+    Parameters
+    ----------
+    n_coeffs : int
+        The number of spherical harmonic coefficients.
+    basis_type : str, optional
+        The type of spherical harmonic basis.
+        Can be "standard" or "descoteaux07". If None, defaults to "standard".
+
+    Returns
+    -------
+    int
+        The maximum spherical harmonic degree (l_max).
+    """
+
+    if not isinstance(n_coeffs, int) or n_coeffs < 1:
+        raise ValueError("n_coeffs must be a non-zero, positive integer.")
+
+    if basis_type not in ("standard", "descoteaux07"):
+        raise ValueError("basis_type must be one of 'standard' or 'descoteaux07'.")
+
+    if basis_type == "standard":
+        return int(np.rint(np.sqrt(n_coeffs + 1) - 1))
+    elif basis_type == "descoteaux07":
+        return int(np.rint(np.sqrt(2 * n_coeffs - 0.5) - 1.5))

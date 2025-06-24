@@ -499,9 +499,11 @@ def github_stats(**kwargs):
         print()
         print(
             "==============================\n"
-            f" Release notes v{version}\n  ()"
+            f" Release notes v{version}\n"
             "=============================="
         )
+        print("\nQuick Overview\n--------------\n\n")
+        print("\nDetails\n--------\n\n")
 
     # By default, search one month back
     tag = kwargs.get("tag", None)
@@ -630,7 +632,7 @@ if __name__ == "__main__":
         dest="save",
         action="store_true",
         default=False,
-        help=("Save in the release folder" "and add rst header"),
+        help=("Save in the release folder and add rst header"),
     )
 
     args = parser.parse_args()

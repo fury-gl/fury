@@ -18,7 +18,7 @@ from subprocess import PIPE, CalledProcessError, Popen, check_call
 import sys
 
 if sys.version_info < (3, 4):
-    raise RuntimeError("Python 3.4 and above is required" " for running this script")
+    raise RuntimeError("Python 3.4 and above is required for running this script")
 else:
     from pathlib import Path
 
@@ -87,7 +87,7 @@ if __name__ == "__main__":
         print(pjoin(pkg_path, pkg_name))
         print(mod.__file__)
         raise RuntimeError(
-            "You should work with the source and not the " "installed package"
+            "You should work with the source and not the installed package"
         )
 
     # find the version number
@@ -136,7 +136,7 @@ if __name__ == "__main__":
                 sh("git push origin gh-pages")
                 break
             elif choice == "n":
-                print("Please manually create a new gh-pages branch" " and try again.")
+                print("Please manually create a new gh-pages branch and try again.")
                 sys.exit(0)
             else:
                 print("Please enter valid choice ..")

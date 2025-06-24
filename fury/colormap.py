@@ -268,7 +268,7 @@ def orient2rgb(v):
         orient = np.abs(np.divide(v, orientn, where=orientn != 0))
     else:
         raise OSError(
-            "Wrong vector dimension, It should be an array" " with a shape (N, 3)"
+            "Wrong vector dimension, It should be an array with a shape (N, 3)"
         )
 
     return orient
@@ -1055,8 +1055,7 @@ def get_xyz_coords(illuminant, observer):
         return np.asarray(illuminants[illuminant][observer], dtype=float)
     except KeyError as err:
         raise ValueError(
-            f"Unknown illuminant/observer combination "
-            f"(`{illuminant}`, `{observer}`)"
+            f"Unknown illuminant/observer combination (`{illuminant}`, `{observer}`)"
         ) from err
 
 

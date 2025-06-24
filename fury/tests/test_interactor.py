@@ -22,7 +22,7 @@ pytest.skip(allow_module_level=True)
 
 
 @pytest.mark.skipif(
-    skip_win, reason="This test does not work on Windows." " Need to be introspected"
+    skip_win, reason="This test does not work on Windows. Need to be introspected"
 )
 def test_custom_interactor_style_events(recording=False):
     print(f"Using VTK {VTK_VERSION}")

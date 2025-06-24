@@ -37,7 +37,7 @@ def test_wrong_interactor_style():
 
 @pytest.mark.skipif(
     skip_linux or skip_win,
-    reason="This test does not work on Windows." " Need to be introspected",
+    reason="This test does not work on Windows. Need to be introspected",
 )
 def test_grid_ui1(interactive=False):
     vol1 = np.zeros((100, 100, 100))

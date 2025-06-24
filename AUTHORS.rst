@@ -15,93 +15,93 @@ Core Development Team
 Contributors
 ------------
 
-* Serge Koudoro
-* Eleftherios Garyfallidis
-* Mohamed Agour
-* Praneeth Shetty
-* Javier Guaje
-* Anand Shivam
-* Bruno Messias
-* Soham Biswas
-* Sajag Swami
-* Antriksh Misri
-* Tania Castillo
-* Ranveer Aggarwal
-* Lenix Lobo
-* Joao Victor Dell Agli
-* Marc-Alexandre Côté
-* Melina Raglin
-* Ariel Rokem
-* Karan
-* maharshigor
-* Filipi Nascimento Silva
-* David Reagan
-* Nasim Anousheh
-* Prashil
-* Vivek Choudhary
-* Saransh Jain
-* Shreyas Bhujbal
-* Tushar
-* Wachiou BOURAÏMA
-* Zhiwen Shi
-* Charles Poirier
-* Ishan Kamboj
-* Matthew Brett
-* Frank Cerasoli
-* Sreekar Chigurupati
-* Francois Rheault
-* Naman Bansal
-* Robin Roy
-* Etienne St-Onge
-* Kesshi Jordan
-* Amit Chaudhari
-* Bago Amirbekian
-* Jon Haitz Legarreta Gorroño
-* Omar Ocegueda
-* ibrahimAnis
-* Kevin Sitek
-* Meha Bhalodiya
-* Sanjay Marreddi
-* sparshg
-* ChenCheng0630
-* Gregory R. Lee
-* Enes Albay
-* Liam Donohue
-* Rohit Kharsan
-* Shahnawaz Ahmed
-* Stefan van der Walt
-* Tingyi Wanyan
-* Dwij Raj Hari
-* Guillaume Favelier
-* Johny Daras
-* PrayasJ
-* Samuel St-Jean
-* Bishakh Ghosh
-* Gottipati Gautam
-* Hariharan Ayappane
-* Maharshi Gor
-* theaverageguy
+* Adam Rybinski
 * Aju100
 * Alexandre Gauvin
+* Aman Soni
+* Amit Chaudhari
+* Anand Shivam
+* Antriksh Misri
+* Ariel Rokem
+* Bago Amirbekian
+* Bishakh Ghosh
+* Bruno Messias
+* Charles Poirier
+* ChenCheng0630
 * Christopher Nguyen
+* Daniel S. Katz
+* David Reagan
+* Devanshu Modi
+* Dwij Raj Hari
+* Eleftherios Garyfallidis
+* Enes Albay
+* Etienne St-Onge
+* Filipi Nascimento Silva
+* Francois Rheault
+* Frank Cerasoli
+* Gauvin Alexandre
+* Gottipati Gautam
+* Gregory R. Lee
+* Guillaume Favelier
+* Gurdit Siyan
+* Hariharan Ayappane
+* Ian Nimmo-Smith
+* Ishan Kamboj
+* Jacob Wasserth
+* Javier Guaje
 * Jhalak Gupta
 * Jiri Borovec
-* Marssis
-* Sara Hamza
-* Scott Trinkle
-* Siddharth Gautam
-* dependabot[bot]
-* Adam Rybinski
-* Aman Soni
-* Daniel S. Katz
-* Devanshu Modi
-* Gauvin Alexandre
-* Gurdit Siyan
-* Ian Nimmo-Smith
-* Jacob Wasserth
+* Joao Victor Dell Agli
+* Johny Daras
+* Jon Haitz Legarreta Gorroño
+* Karan
 * Kaustav Deka
+* Kesshi Jordan
+* Kevin Sitek
+* Lenix Lobo
+* Liam Donohue
 * LoopThrough-i-j
 * MIHIR
+* Maharshi Gor
+* Manish Reddy Rakasi
+* Marc-Alexandre Côté
+* Marssis
+* Matthew Brett
+* Meha Bhalodiya
+* Melina Raglin
+* Mohamed Agour
+* Naman Bansal
+* Nasim Anousheh
+* Omar Ocegueda
 * Pietro Astolfi
+* Praneeth Shetty
+* Prashil
+* PrayasJ
+* Ranveer Aggarwal
+* Robin Roy
+* Rohit Kharsan
+* Sajag Swami
+* Samuel St-Jean
+* Sanjay Marreddi
+* Sara Hamza
+* Saransh Jain
+* Scott Trinkle
+* Serge Koudoro
+* Shahnawaz Ahmed
+* Shreyas Bhujbal
+* Siddharth Gautam
+* Soham Biswas
+* Sreekar Chigurupati
+* Stefan van der Walt
+* Tania Castillo
+* Tingyi Wanyan
+* Tushar
+* Vivek Choudhary
+* Wachiou BOURAÏMA
 * Yaroslav Halchenko
+* Zhiwen Shi
+* dependabot[bot]
+* ibrahimAnis
 * sailesh
+* sparshg
+* theaverageguy

@@ -1,18 +1,27 @@
 """Actor creation functions for various geometric primitives."""
 
+import logging
+import os
+
 import numpy as np
+from scipy.spatial.transform import Rotation as R
 
 from fury.geometry import (
     buffer_to_geometry,
+    create_image,
     create_line,
     create_mesh,
     create_point,
     create_text,
     line_buffer_separator,
 )
+from fury.io import load_image_texture
 from fury.lib import (
     Geometry,
     Group,
+    Mesh,
+    MeshBasicMaterial,
+    MeshPhongShader,
     Texture,
     Volume,
     VolumeSliceMaterial,
@@ -20,9 +29,11 @@ from fury.lib import (
     register_wgpu_render_function,
 )
 from fury.material import (
+    SphGlyphMaterial,
     VectorFieldArrowMaterial,
     VectorFieldLineMaterial,
     VectorFieldThinLineMaterial,
+    _create_image_material,
     _create_line_material,
     _create_mesh_material,
     _create_points_material,
@@ -32,12 +43,20 @@ from fury.material import (
 )
 import fury.primitive as fp
 from fury.shader import (
+    SphGlyphComputeShader,
     VectorFieldArrowShader,
     VectorFieldComputeShader,
     VectorFieldShader,
     VectorFieldThinShader,
 )
-from fury.utils import set_group_opacity, set_group_visibility, show_slices
+from fury.utils import (
+    create_sh_basis_matrix,
+    generate_planar_uvs,
+    get_lmax,
+    set_group_opacity,
+    set_group_visibility,
+    show_slices,
+)
 
 
 def actor_from_primitive(
@@ -173,7 +192,7 @@ def line(
     >>> lines = [np.random.rand(10, 3) for _ in range(5)]
     >>> colors = np.random.rand(5, 3)
     >>> line_actor = actor.line(lines=lines, colors=colors)
-    >>> scene.add(line_actor)
+    >>> _ = scene.add(line_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -266,7 +285,7 @@ def sphere(
     >>> colors = np.random.rand(5, 3)
     >>> radii = np.random.rand(5)
     >>> sphere_actor = actor.sphere(centers=centers, colors=colors, radii=radii)
-    >>> scene.add(sphere_actor)
+    >>> _ = scene.add(sphere_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -471,7 +490,7 @@ def box(
     >>> centers = np.random.rand(5, 3) * 10
     >>> scales = np.random.rand(5, 3)
     >>> box_actor = actor.box(centers=centers, scales=scales)
-    >>> scene.add(box_actor)
+    >>> _ = scene.add(box_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -550,7 +569,7 @@ def cylinder(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> cylinder_actor = actor.cylinder(centers=centers, colors=colors)
-    >>> scene.add(cylinder_actor)
+    >>> _ = scene.add(cylinder_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -617,7 +636,7 @@ def square(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> square_actor = actor.square(centers=centers, colors=colors)
-    >>> scene.add(square_actor)
+    >>> _ = scene.add(square_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -681,7 +700,7 @@ def frustum(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> frustum_actor = actor.frustum(centers=centers, colors=colors)
-    >>> scene.add(frustum_actor)
+    >>> _ = scene.add(frustum_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -745,7 +764,7 @@ def tetrahedron(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> tetrahedron_actor = actor.tetrahedron(centers=centers, colors=colors)
-    >>> scene.add(tetrahedron_actor)
+    >>> _ = scene.add(tetrahedron_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -809,7 +828,7 @@ def icosahedron(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> icosahedron_actor = actor.icosahedron(centers=centers, colors=colors)
-    >>> scene.add(icosahedron_actor)
+    >>> _ = scene.add(icosahedron_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -873,9 +892,8 @@ def rhombicuboctahedron(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> rhombicuboctahedron_actor = actor.rhombicuboctahedron(
-    centers=centers, colors=colors
-    )
-    >>> scene.add(rhombicuboctahedron_actor)
+    ...    centers=centers, colors=colors)
+    >>> _ = scene.add(rhombicuboctahedron_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -938,9 +956,8 @@ def triangularprism(
     >>> scene = window.Scene()
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
-    >>> triangularprism_actor = actor.triangularprism(
-    centers=centers, colors=colors)
-    >>> scene.add(triangularprism_actor)
+    >>> triangularprism_actor = actor.triangularprism(centers=centers, colors=colors)
+    >>> _ = scene.add(triangularprism_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1003,9 +1020,8 @@ def pentagonalprism(
     >>> scene = window.Scene()
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
-    >>> pentagonalprism_actor = actor.pentagonalprism(
-    centers=centers, colors=colors)
-    >>> scene.add(pentagonalprism_actor)
+    >>> pentagonalprism_actor = actor.pentagonalprism(centers=centers, colors=colors)
+    >>> _ = scene.add(pentagonalprism_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1068,9 +1084,8 @@ def octagonalprism(
     >>> scene = window.Scene()
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
-    >>> octagonalprism_actor = actor.octagonalprism(
-    centers=centers, colors=colors)
-    >>> scene.add(octagonalprism_actor)
+    >>> octagonalprism_actor = actor.octagonalprism(centers=centers, colors=colors)
+    >>> _ = scene.add(octagonalprism_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1150,7 +1165,7 @@ def arrow(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> arrow_actor = actor.arrow(centers=centers, colors=colors)
-    >>> scene.add(arrow_actor)
+    >>> _ = scene.add(arrow_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1224,7 +1239,7 @@ def superquadric(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> superquadric_actor = actor.superquadric(centers=centers, colors=colors)
-    >>> scene.add(superquadric_actor)
+    >>> _ = scene.add(superquadric_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1299,7 +1314,7 @@ def cone(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> cone_actor = actor.cone(centers=centers, colors=colors)
-    >>> scene.add(cone_actor)
+    >>> _ = scene.add(cone_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1367,7 +1382,7 @@ def star(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> star_actor = actor.star(centers=centers, colors=colors)
-    >>> scene.add(star_actor)
+    >>> _ = scene.add(star_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1439,7 +1454,7 @@ def disk(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> disk_actor = actor.disk(centers=centers, colors=colors)
-    >>> scene.add(disk_actor)
+    >>> _ = scene.add(disk_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1504,7 +1519,7 @@ def triangle(
     >>> centers = np.random.rand(5, 3) * 10
     >>> colors = np.random.rand(5, 3)
     >>> triangle_actor = actor.triangle(centers=centers, colors=colors)
-    >>> scene.add(triangle_actor)
+    >>> _ = scene.add(triangle_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1569,7 +1584,7 @@ def point(
     >>> centers = np.random.rand(1000, 3) * 10
     >>> colors = np.random.rand(1000, 3)
     >>> point_actor = actor.point(centers=centers, colors=colors)
-    >>> scene.add(point_actor)
+    >>> _ = scene.add(point_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1639,7 +1654,7 @@ def marker(
     >>> centers = np.random.rand(1000, 3) * 10
     >>> colors = np.random.rand(1000, 3)
     >>> marker_actor = actor.marker(centers=centers, colors=colors)
-    >>> scene.add(marker_actor)
+    >>> _ = scene.add(marker_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1725,7 +1740,7 @@ def text(
     >>> from fury import window, actor
     >>> scene = window.Scene()
     >>> text_actor = actor.text(text='FURY')
-    >>> scene.add(text_actor)
+    >>> _ = scene.add(text_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1789,7 +1804,7 @@ def axes(
     >>> from fury import window, actor
     >>> scene = window.Scene()
     >>> axes_actor = actor.axes()
-    >>> scene.add(axes_actor)
+    >>> _ = scene.add(axes_actor)
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
@@ -1892,6 +1907,108 @@ def slicer(
     return obj
 
 
+def image(
+    image,
+    *,
+    position=(0.0, 0.0, 0.0),
+    directions=(0.0, 0.0, 1.0),
+    visible=True,
+    clim=None,
+    map=None,
+    gamma=1.0,
+    interpolation="nearest",
+):
+    """
+    Visualize a 2D image from a NumPy array or image file.
+
+    Parameters
+    ----------
+    image : str or ndarray
+        The image input. Can be a file path (string) or a NumPy array.
+    position : tuple, optional
+        The position of the image in 3D space.
+    directions : ndarray, shape (3,) or tuple (3,), optional
+        The orientation vector of the image.
+    visible : bool, optional
+        Whether the image should be visible.
+    clim : tuple, optional
+        Contrast limits for image scaling.
+    map : TextureMap or Texture, optional
+        The texture map used to convert image values into color.
+    gamma : float, optional
+        Gamma correction to apply to the image.
+        Must be greater than 0.
+    interpolation : str, optional
+        Interpolation method for rendering the image.
+        Either 'nearest' or 'linear'.
+
+    Returns
+    -------
+    ImageActor
+        An image actor containing the rendered 2D image.
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> import numpy as np
+    >>> scene = window.Scene()
+    >>> image_data = np.random.rand(256, 256)
+    >>> image_actor = actor.image(image=image_data)
+    >>> _ = scene.add(image_actor)
+    >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
+    >>> show_manager.start()
+    """
+    mat = _create_image_material(
+        clim=clim,
+        map=map,
+        gamma=gamma,
+        interpolation=interpolation,
+    )
+
+    obj = create_image(
+        image_input=image,
+        material=mat,
+        visible=visible,
+    )
+
+    if interpolation not in ["nearest", "linear"]:
+        raise ValueError(
+            f"Interpolation must be 'nearest' or 'linear', but got {interpolation}."
+        )
+    if position is None:
+        position = (0.0, 0.0, 0.0)
+
+    if isinstance(position, (list, tuple, np.ndarray)) and len(position) == 3:
+        position = np.asarray(position, dtype=np.float32)
+
+    else:
+        raise ValueError(f"Position must have a length  of 3. Got {position}.")
+
+    if isinstance(directions, (list, tuple, np.ndarray)) and len(directions) == 3:
+        directions = np.asarray(directions, dtype=np.float32)
+    else:
+        raise ValueError(f"Directions must have a length of 3. Got {directions}.")
+
+    obj.local.position = position
+
+    default_normal = np.array([0, 0, 1])
+    target_normal = np.asarray(directions)
+    target_normal = target_normal / np.linalg.norm(target_normal)
+
+    rotation_axis = np.cross(default_normal, target_normal)
+    dot_product = np.dot(default_normal, target_normal)
+    rotation_angle = np.arccos(np.clip(dot_product, -1.0, 1.0))
+
+    if np.linalg.norm(rotation_axis) > 1e-6:
+        rotation_axis = rotation_axis / np.linalg.norm(rotation_axis)
+        rot = R.from_rotvec(rotation_angle * rotation_axis)
+    else:
+        rot = R.from_quat([0, 0, 0, 1])
+
+    obj.local.rotation = rot.as_quat()
+    return obj
+
+
 class VectorField(WorldObject):
     """Class to visualize a vector field.
 
@@ -1960,7 +2077,7 @@ class VectorField(WorldObject):
             A tuple of three boolean values indicating the visibility of the slices
             in the x, y, and z dimensions, respectively.
         """
-
+        super().__init__()
         if not (field.ndim == 5 or field.ndim == 4):
             raise ValueError(
                 "Field must be 5D or 4D, "
@@ -2001,15 +2118,14 @@ class VectorField(WorldObject):
             colors = np.asarray(colors, dtype=np.float32)
 
         colors = np.tile(colors, (total_vectors * pnts_per_vector, 1))
-        geometry = buffer_to_geometry(positions=pts, colors=colors)
-        material = _create_vector_field_material(
+        self.geometry = buffer_to_geometry(positions=pts, colors=colors)
+        self.material = _create_vector_field_material(
             (0, 0, 0),
             material=actor_type,
             thickness=thickness,
             opacity=opacity,
         )
 
-        super().__init__(geometry=geometry, material=material)
         if cross_section is None:
             self.cross_section = np.asarray([-2, -2, -2], dtype=np.int32)
         else:
@@ -2113,7 +2229,7 @@ def vector_field_slicer(
     """Visualize a vector field with different features.
 
     Parameters
-        ----------
+    ----------
     field : ndarray, shape {(X, Y, Z, N, 3), (X, Y, Z, 3)}
         The vector field data, where X, Y, Z represent the position in 3D,
         N is the number of vectors per voxel, and 3 represents the vector
@@ -2213,4 +2329,323 @@ def register_vector_field_arrow_shaders(wobject):
     """
     compute_shader = VectorFieldComputeShader(wobject)
     render_shader = VectorFieldArrowShader(wobject)
+    return compute_shader, render_shader
+
+
+def surface(
+    vertices,
+    faces,
+    *,
+    material="phong",
+    colors=None,
+    texture=None,
+    texture_axis="xy",
+    opacity=1.0,
+):
+    """Create a surface mesh actor from vertices and faces.
+
+    Parameters
+    ----------
+    vertices : ndarray, shape (N, 3)
+        The vertex positions of the surface mesh.
+    faces : ndarray, shape (M, 3)
+        The indices of the vertices that form each triangular face.
+    material : str, optional
+        The material type for the surface mesh. Options are 'phong' and 'basic'. This
+        option only works with colors is passed.
+    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA values in the range [0, 1].
+    texture : str, optional
+        Path to the texture image file.
+    texture_axis : str, optional
+        The axis to generate UV coordinates for the texture. Options are 'xy', 'yz',
+        and 'xz'. This option only works with texture is passed.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
+
+    Returns
+    -------
+    Mesh
+        A mesh actor containing the generated surface with the specified properties.
+    """
+    geo = None
+    mat = None
+
+    opacity = validate_opacity(opacity)
+
+    if colors is not None:
+        if texture is not None:
+            logging.warning("Texture will be ignored when colors are provided.")
+
+        if isinstance(colors, np.ndarray) and colors.shape[0] == vertices.shape[0]:
+            geo = buffer_to_geometry(
+                positions=vertices.astype("float32"),
+                indices=faces.astype("int32"),
+                colors=colors,
+            )
+            mat = _create_mesh_material(
+                material=material, mode="vertex", opacity=opacity
+            )
+        elif isinstance(colors, (tuple, list)) and len(colors) == 3:
+            geo = buffer_to_geometry(
+                positions=vertices.astype("float32"),
+                indices=faces.astype("int32"),
+            )
+            mat = _create_mesh_material(color=colors, opacity=opacity)
+        else:
+            raise ValueError(
+                "Colors must be either an ndarray with shape (N, 3) or (N, 4), "
+                "or a tuple/list of length 3 for RGB colors."
+            )
+    elif texture is not None:
+        if not os.path.exists(texture):
+            raise FileNotFoundError(f"Texture file '{texture}' not found.")
+
+        logging.warning(
+            "texture option currently only supports planar projection,"
+            " the plane can be provided by texture_axis parameter."
+        )
+
+        tex = load_image_texture(texture)
+        texcoords = generate_planar_uvs(vertices, axis=texture_axis)
+        geo = buffer_to_geometry(
+            positions=vertices.astype("float32"),
+            indices=faces.astype("int32"),
+            texcoords=texcoords.astype("float32"),
+        )
+        mat = MeshBasicMaterial(map=tex, opacity=opacity)
+    else:
+        geo = buffer_to_geometry(
+            positions=vertices.astype("float32"), indices=faces.astype("int32")
+        )
+        mat = _create_mesh_material(material=material, opacity=opacity)
+
+    obj = create_mesh(geo, mat)
+    return obj
+
+
+class SphGlyph(Mesh):
+    """Visualize a spherical harmonic glyph with different features.
+
+    Parameters
+    ----------
+    coeffs : ndarray, shape (X, Y, Z, N)
+        The spherical harmonics coefficients. X, Y, Z denotes the position and N
+        represents the number of coefficients.
+    sphere : tuple
+            Vertices and faces of the sphere to use for the glyph.
+    basis_type : str, optional
+        The type of basis to use for the spherical harmonics.
+        Options are 'standard', 'descoteaux07'.
+    color_type : str, optional
+        The type of color mapping to use for the spherical glyph.
+        Options are 'sign' and 'orientation'.
+    shininess : float, optional
+        The shininess of the material for the spherical glyph.
+    """
+
+    def __init__(
+        self,
+        coeffs,
+        sphere,
+        *,
+        basis_type="standard",
+        color_type="sign",
+        shininess=50,
+    ):
+        """Visualize a spherical harmonic glyph with different features.
+
+        Parameters
+        ----------
+        coeffs : ndarray, shape (X, Y, Z, N)
+            The spherical harmonics coefficients. X, Y, Z denotes the position and N
+            represents the number of coefficients.
+        sphere : tuple
+            Vertices and faces of the sphere to use for the glyph.
+        basis_type : str, optional
+            The type of basis to use for the spherical harmonics.
+            Options are 'standard', 'descoteaux07'.
+        color_type : str, optional
+            The type of color mapping to use for the spherical glyph.
+            Options are 'sign' and 'orientation'.
+        shininess : float, optional
+            The shininess of the material for the spherical glyph.
+        """
+
+        if not isinstance(coeffs, np.ndarray):
+            raise TypeError("The attribute 'coeffs' must be a numpy ndarray.")
+        elif coeffs.ndim != 4:
+            raise ValueError(
+                (
+                    "The attribute 'coeffs' must be a 4D numpy ndarray "
+                    "with shape (X, Y, Z, N)."
+                )
+            )
+        elif coeffs.shape[-1] < 1:
+            raise ValueError(
+                "The last dimension of 'coeffs' must be greater than 0, "
+                f"but got {coeffs.shape[-1]}"
+            )
+
+        if not isinstance(sphere, tuple):
+            raise TypeError(
+                "The attribute 'sphere' must be a tuple containing vertices and faces."
+            )
+        elif (
+            len(sphere) != 2
+            or not isinstance(sphere[0], np.ndarray)
+            or not isinstance(sphere[1], np.ndarray)
+        ):
+            raise TypeError(
+                "The attribute 'sphere' must be a tuple containing two numpy ndarrays "
+                "(vertices, faces)."
+            )
+
+        self.n_coeff = coeffs.shape[-1]
+        self.data_shape = coeffs.shape[:3]
+        l_max = get_lmax(self.n_coeff, basis_type=basis_type)
+        self.color_type = 0 if color_type == "sign" else 1
+
+        vertices, faces = sphere[0], sphere[1]
+        positions = np.tile(vertices, (np.prod(self.data_shape), 1)).astype(np.float32)
+        positions[0] = np.asarray(self.data_shape)
+        self.scaled_vertices = np.zeros_like(positions, dtype=np.float32)
+
+        self.vertices_per_glyph = vertices.shape[0]
+        self.faces_per_glyph = faces.shape[0]
+
+        self.indices = faces.reshape(-1).astype(np.int32)
+        indices = np.tile(faces, (np.prod(self.data_shape), 1)).astype(np.int32)
+
+        self.radii = np.zeros((self.vertices_per_glyph,), dtype=np.float32)
+
+        for i in range(0, indices.shape[0], faces.shape[0]):
+            start = i
+            end = start + faces.shape[0]
+            indices[start:end] += (i // faces.shape[0]) * self.vertices_per_glyph
+
+        geo = buffer_to_geometry(
+            positions=positions.astype("float32"),
+            indices=indices.astype("int32"),
+            colors=np.ones_like(positions, dtype="float32"),
+            normals=np.zeros_like(positions).astype("float32"),
+        )
+
+        mat = SphGlyphMaterial(
+            l_max=l_max,
+            color_mode="vertex",
+            flat_shading=False,
+            shininess=shininess,
+            specular="#494949",
+            side="front",
+        )
+
+        B_mat = create_sh_basis_matrix(vertices, l_max)
+        self.sh_coeff = coeffs.reshape(-1).astype("float32")
+        self.sf_func = B_mat.reshape(-1).astype("float32")
+        self.sphere = vertices.astype("float32")
+
+        super().__init__(geometry=geo, material=mat)
+
+
+def sph_glyph(
+    coeffs, *, sphere=None, basis_type="standard", color_type="sign", shininess=50
+):
+    """Visualize a spherical harmonic glyph with different features.
+
+    Parameters
+    ----------
+    coeffs : ndarray, shape (X, Y, Z, N)
+        The spherical harmonics coefficients. X, Y, Z denotes the position and N
+        represents the number of coefficients.
+    sphere : {str, tuple}, optional
+        The name of the sphere to use or a tuple containing the phi and theta
+        segments for a custom sphere.
+        Available options for the named spheres:
+        * 'symmetric362'
+        * 'symmetric642'
+        * 'symmetric724'
+        * 'repulsion724'
+        * 'repulsion100'
+        * 'repulsion200'
+    basis_type : str, optional
+        The type of basis to use for the spherical harmonics.
+        Options are 'standard', 'descoteaux07'.
+    color_type : str, optional
+        The type of color mapping to use for the spherical glyph.
+        Options are 'sign' and 'orientation'.
+    shininess : float, optional
+        The shininess of the material for the spherical glyph.
+
+    Returns
+    -------
+    SphGlyph
+        A spherical glyph object.
+    """
+    if not isinstance(coeffs, np.ndarray):
+        raise TypeError("The attribute 'coeffs' must be a numpy ndarray.")
+    elif coeffs.ndim != 4:
+        raise ValueError(
+            "The attribute 'coeffs' must be a 4D numpy ndarray with shape (X, Y, Z, N)."
+        )
+
+    if sphere is None:
+        sphere = "symmetric362"
+
+    if isinstance(sphere, str):
+        sphere = fp.prim_sphere(name=sphere)
+    elif (
+        isinstance(sphere, tuple)
+        and isinstance(sphere[0], int)
+        and isinstance(sphere[1], int)
+    ):
+        sphere = fp.prim_sphere(gen_faces=True, phi=sphere[0], theta=sphere[1])
+    else:
+        raise TypeError(
+            "The attribute 'sphere' must be a string or tuple containing two integers."
+        )
+
+    if not isinstance(basis_type, str):
+        raise TypeError("The attribute 'basis_type' must be a string.")
+    elif basis_type not in ["standard", "descoteaux07"]:
+        raise ValueError(
+            "The attribute 'basis_type' must be either 'standard' or 'descoteaux07'."
+        )
+
+    if not isinstance(color_type, str):
+        raise TypeError("The attribute 'color_type' must be a string.")
+    if color_type not in ["sign", "orientation"]:
+        raise ValueError(
+            "The attribute 'color_type' must be either 'sign' or 'orientation'."
+        )
+
+    if not isinstance(shininess, (int, float)):
+        raise TypeError("The attribute 'shininess' must be an integer or float.")
+
+    obj = SphGlyph(
+        coeffs=coeffs,
+        sphere=sphere,
+        basis_type=basis_type,
+        color_type=color_type,
+        shininess=shininess,
+    )
+    return obj
+
+
+@register_wgpu_render_function(SphGlyph, SphGlyphMaterial)
+def register_glyph_shaders(wobject):
+    """Register Glyph shaders.
+
+    Parameters
+    ----------
+    wobject : VectorField
+        The vector field object to register shaders for.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the compute shader and the render shader.
+    """
+    compute_shader = SphGlyphComputeShader(wobject)
+    render_shader = MeshPhongShader(wobject)
     return compute_shader, render_shader

@@ -398,7 +398,7 @@ class Timeline:
                 import cv2
             except ImportError as err:
                 raise ImportError(
-                    "OpenCV must be installed in order to " "save as MP4 video."
+                    "OpenCV must be installed in order to save as MP4 video."
                 ) from err
             fourcc = cv2.VideoWriter.fourcc(*"mp4v")
             out = cv2.VideoWriter(fname, fourcc, fps, size)

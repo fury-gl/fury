@@ -846,7 +846,7 @@ def test_multiple_radio_button_pre_selected():
 
 
 @pytest.mark.skipif(
-    True, reason="Need investigation. Incorrect " "number of event for each vtk version"
+    True, reason="Need investigation. Incorrect number of event for each vtk version"
 )
 def test_ui_listbox_2d(interactive=False):
     filename = "test_ui_listbox_2d"
