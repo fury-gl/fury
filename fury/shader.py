@@ -201,3 +201,124 @@ class VectorFieldArrowShader(VectorFieldShader):
         """
         super().__init__(wobject)
         self["line_type"] = "arrow"
+
+
+class SphGlyphComputeShader(BaseShader):
+    """Compute shader for spherical harmonics glyph rendering.
+
+    Parameters
+    ----------
+    wobject : SphGlyph
+        The spherical glyph object to be rendered.
+    """
+
+    type = "compute"
+
+    def __init__(self, wobject):
+        """Initialize the SphGlyphComputeShader with the given spherical glyph object.
+
+        Parameters
+        ----------
+        wobject : SphGlyph
+            The spherical glyph object to be rendered.
+        """
+        super().__init__(wobject)
+        self["n_coeffs"] = wobject.n_coeff
+        self["vertices_per_glyph"] = wobject.vertices_per_glyph
+        self["faces_per_glyph"] = wobject.faces_per_glyph
+        self["data_shape"] = wobject.data_shape
+        self["workgroup_size"] = (64, 1, 1)
+        self["n_vertices"] = prod(wobject.data_shape) * wobject.vertices_per_glyph
+        self["color_type"] = wobject.color_type
+
+    def get_render_info(self, wobject, _shared):
+        """Get the render information for the spherical glyph.
+
+        Parameters
+        ----------
+        wobject : SphGlyph
+            The spherical glyph object to be rendered.
+        _shared : dict
+            Shared information for the shader.
+
+        Returns
+        -------
+        dict
+            A dictionary containing the render information.
+        """
+        n = int(ceil(prod(wobject.data_shape) / prod(self["workgroup_size"])))
+        return {
+            "indices": (n, 1, 1),
+        }
+
+    def get_pipeline_info(self, _wobject, _shared):
+        """Get pipeline information for the spherical harmonic glyph compute shader.
+
+        Parameters
+        ----------
+        _wobject : SphGlyph
+            The spherical glyph object to be rendered.
+        _shared : dict
+            Shared information for the shader.
+
+        Returns
+        -------
+        dict
+            A dictionary containing pipeline information.
+        """
+        return {}
+
+    def get_bindings(self, wobject, _shared):
+        """Get the bindings for the spherical harmonic glyph compute shader.
+
+        Parameters
+        ----------
+        wobject : SphGlyph
+            The spherical glyph object to be rendered.
+        _shared : dict
+            Shared information for the shader.
+
+        Returns
+        -------
+        dict
+            A dictionary containing the bindings for the shader.
+        """
+        # To share the bindings across compute and render shaders, we need to
+        # define the bindings exactly the same way in both shaders.
+        geometry = wobject.geometry
+
+        bindings = {
+            0: Binding(
+                "s_coeffs", "buffer/storage", Buffer(wobject.sh_coeff), "COMPUTE"
+            ),
+            1: Binding(
+                "s_sf_func", "buffer/storage", Buffer(wobject.sf_func), "COMPUTE"
+            ),
+            2: Binding("s_sphere", "buffer/storage", Buffer(wobject.sphere), "COMPUTE"),
+            3: Binding(
+                "s_indices", "buffer/storage", Buffer(wobject.indices), "COMPUTE"
+            ),
+            4: Binding("s_positions", "buffer/storage", geometry.positions, "COMPUTE"),
+            5: Binding("s_normals", "buffer/storage", geometry.normals, "COMPUTE"),
+            6: Binding("s_colors", "buffer/storage", geometry.colors, "COMPUTE"),
+            7: Binding(
+                "s_scaled_vertice",
+                "buffer/storage",
+                Buffer(wobject.scaled_vertices),
+                "COMPUTE",
+            ),
+        }
+        self.define_bindings(0, bindings)
+        return {
+            0: bindings,
+        }
+
+    def get_code(self):
+        """Get the WGSL code for the spherical harmonic glyph compute shader.
+
+        Returns
+        -------
+        str
+            The WGSL code as a string.
+        """
+        return load_wgsl("sph_glyph_compute.wgsl", package_name="fury.wgsl")

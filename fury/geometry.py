@@ -38,7 +38,7 @@ def buffer_to_geometry(positions, **kwargs):
     ValueError
         If positions array is empty or None.
     """
-    if positions is None or positions.size == 0:
+    if positions is None:
         raise ValueError("positions array cannot be empty or None.")
 
     geo = Geometry(positions=positions, **kwargs)

@@ -506,3 +506,109 @@ class VectorFieldArrowMaterial(VectorFieldThinLineMaterial):
     This class provides a way to distinguish the usage of right shader for
     creating a vector field.
     """
+
+
+class SphGlyphMaterial(MeshPhongMaterial):
+    """Initialize the Spherical Glyph Material.
+
+    Parameters
+    ----------
+    l_max : int, optional
+        The maximum spherical harmonic degree.
+    scale : int, optional
+        The scale factor.
+    shininess : int, optional
+        The shininess factor.
+    emissive : str, optional
+        The emissive color.
+    specular : str, optional
+        The specular color.
+    **kwargs : dict
+            Additional keyword arguments for the material.
+    """
+
+    uniform_type = dict(
+        MeshPhongMaterial.uniform_type,
+        l_max="i4",
+        scale="f4",
+    )
+
+    def __init__(
+        self,
+        l_max=4,
+        scale=2,
+        shininess=30,
+        emissive="#000",
+        specular="#494949",
+        **kwargs,
+    ):
+        """Initialize the Spherical Glyph Material.
+
+        Parameters
+        ----------
+        l_max : int, optional
+            The maximum spherical harmonic degree.
+        scale : int, optional
+            The scale factor.
+        shininess : int, optional
+            The shininess factor.
+        emissive : str, optional
+            The emissive color.
+        specular : str, optional
+            The specular color.
+        **kwargs : dict
+            Additional keyword arguments for the material.
+        """
+        super().__init__(shininess, emissive, specular, **kwargs)
+        self.l_max = l_max
+        self.scale = scale
+
+    @property
+    def l_max(self):
+        """Get the maximum spherical harmonic degree.
+
+        Returns
+        -------
+        int
+            The maximum spherical harmonic degree.
+        """
+        return self.uniform_buffer.data["l_max"]
+
+    @l_max.setter
+    def l_max(self, value):
+        """Set the maximum spherical harmonic degree.
+
+        Parameters
+        ----------
+        value : int
+            The maximum spherical harmonic degree.
+        """
+        if not isinstance(value, int):
+            raise ValueError("l_max must be an integer.")
+        self.uniform_buffer.data["l_max"] = value
+        self.uniform_buffer.update_full()
+
+    @property
+    def scale(self):
+        """Get the scale factor.
+
+        Returns
+        -------
+        float
+            The scale factor.
+        """
+        return self.uniform_buffer.data["scale"]
+
+    @scale.setter
+    def scale(self, value):
+        """Set the scale factor.
+
+        Parameters
+        ----------
+        value : float
+            The scale factor.
+        """
+        if not isinstance(value, (int, float)):
+            raise ValueError("scale must be a number.")
+        self.uniform_buffer.data["scale"] = value
+        self.uniform_buffer.update_full()

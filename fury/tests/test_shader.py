@@ -1,8 +1,10 @@
 import numpy as np
 
-from fury.actor import VectorField
+from fury.actor import SphGlyph, VectorField
 from fury.lib import load_wgsl
+from fury.primitive import prim_sphere
 from fury.shader import (
+    SphGlyphComputeShader,
     VectorFieldArrowShader,
     VectorFieldComputeShader,
     VectorFieldShader,
@@ -146,3 +148,49 @@ def test_shaders_with_multiple_vectors_per_voxel():
     # Test arrow shader
     arrow_shader = VectorFieldArrowShader(wobject)
     assert arrow_shader["num_vectors"] == vectors_per_voxel
+
+
+def test_SphGlyphComputeShader_initialization():
+    """Test SphGlyphComputeShader initialization."""
+    coefficients = np.random.rand(5, 5, 5, 15)
+    n_coeffs = coefficients.shape[-1]  # Exclude the last dimension (vector components)
+    wobject = SphGlyph(coefficients, sphere=prim_sphere(name="repulsion100"))
+    shader = SphGlyphComputeShader(wobject)
+
+    assert shader["n_coeffs"] == n_coeffs
+    assert shader["data_shape"] == (5, 5, 5)
+    assert shader["workgroup_size"] == (64, 1, 1)
+    assert shader.type == "compute"
+
+
+def test_SphGlyphComputeShader_get_render_info():
+    """Test SphGlyphComputeShader.get_render_info()."""
+    coefficients = np.random.rand(5, 5, 5, 15)
+    wobject = SphGlyph(coefficients, sphere=prim_sphere(name="repulsion100"))
+    shader = SphGlyphComputeShader(wobject)
+
+    render_info = shader.get_render_info(wobject, {})
+    assert isinstance(render_info, dict)
+    assert "indices" in render_info
+    assert render_info["indices"][0] > 0  # Should have at least one workgroup
+
+
+def test_SphGlyphComputeShader_get_pipeline_info():
+    """Test SphGlyphComputeShader.get_pipeline_info()."""
+    coefficients = np.random.rand(5, 5, 5, 15)
+    wobject = SphGlyph(coefficients, sphere=prim_sphere(name="repulsion100"))
+    shader = SphGlyphComputeShader(wobject)
+
+    pipeline_info = shader.get_pipeline_info(wobject, {})
+    assert isinstance(pipeline_info, dict)
+    assert pipeline_info == {}
+
+
+def test_SphGlyphComputeShader_get_code():
+    """Test SphGlyphComputeShader.get_code()."""
+    coefficients = np.random.rand(5, 5, 5, 15)
+    wobject = SphGlyph(coefficients, sphere=prim_sphere(name="repulsion100"))
+    shader = SphGlyphComputeShader(wobject)
+    code = shader.get_code()
+    assert isinstance(code, str)
+    assert load_wgsl("sph_glyph_compute.wgsl", package_name="fury.wgsl") == code

@@ -17,7 +17,9 @@ from fury.io import load_image_texture
 from fury.lib import (
     Geometry,
     Group,
+    Mesh,
     MeshBasicMaterial,
+    MeshPhongShader,
     Texture,
     Volume,
     VolumeSliceMaterial,
@@ -25,6 +27,7 @@ from fury.lib import (
     register_wgpu_render_function,
 )
 from fury.material import (
+    SphGlyphMaterial,
     VectorFieldArrowMaterial,
     VectorFieldLineMaterial,
     VectorFieldThinLineMaterial,
@@ -37,13 +40,16 @@ from fury.material import (
 )
 import fury.primitive as fp
 from fury.shader import (
+    SphGlyphComputeShader,
     VectorFieldArrowShader,
     VectorFieldComputeShader,
     VectorFieldShader,
     VectorFieldThinShader,
 )
 from fury.utils import (
+    create_sh_basis_matrix,
     generate_planar_uvs,
+    get_lmax,
     set_group_opacity,
     set_group_visibility,
     show_slices,
@@ -2311,3 +2317,230 @@ def surface(
 
     obj = create_mesh(geo, mat)
     return obj
+
+
+class SphGlyph(Mesh):
+    """Visualize a spherical harmonic glyph with different features.
+
+    Parameters
+    ----------
+    coeffs : ndarray, shape (X, Y, Z, N)
+        The spherical harmonics coefficients. X, Y, Z denotes the position and N
+        represents the number of coefficients.
+    sphere : tuple
+            Vertices and faces of the sphere to use for the glyph.
+    basis_type : str, optional
+        The type of basis to use for the spherical harmonics.
+        Options are 'standard', 'descoteaux07'.
+    color_type : str, optional
+        The type of color mapping to use for the spherical glyph.
+        Options are 'sign' and 'orientation'.
+    shininess : float, optional
+        The shininess of the material for the spherical glyph.
+    """
+
+    def __init__(
+        self,
+        coeffs,
+        sphere,
+        *,
+        basis_type="standard",
+        color_type="sign",
+        shininess=50,
+    ):
+        """Visualize a spherical harmonic glyph with different features.
+
+        Parameters
+        ----------
+        coeffs : ndarray, shape (X, Y, Z, N)
+            The spherical harmonics coefficients. X, Y, Z denotes the position and N
+            represents the number of coefficients.
+        sphere : tuple
+            Vertices and faces of the sphere to use for the glyph.
+        basis_type : str, optional
+            The type of basis to use for the spherical harmonics.
+            Options are 'standard', 'descoteaux07'.
+        color_type : str, optional
+            The type of color mapping to use for the spherical glyph.
+            Options are 'sign' and 'orientation'.
+        shininess : float, optional
+            The shininess of the material for the spherical glyph.
+        """
+
+        if not isinstance(coeffs, np.ndarray):
+            raise TypeError("The attribute 'coeffs' must be a numpy ndarray.")
+        elif coeffs.ndim != 4:
+            raise ValueError(
+                (
+                    "The attribute 'coeffs' must be a 4D numpy ndarray "
+                    "with shape (X, Y, Z, N)."
+                )
+            )
+        elif coeffs.shape[-1] < 1:
+            raise ValueError(
+                "The last dimension of 'coeffs' must be greater than 0, "
+                f"but got {coeffs.shape[-1]}"
+            )
+
+        if not isinstance(sphere, tuple):
+            raise TypeError(
+                "The attribute 'sphere' must be a tuple containing vertices and faces."
+            )
+        elif (
+            len(sphere) != 2
+            or not isinstance(sphere[0], np.ndarray)
+            or not isinstance(sphere[1], np.ndarray)
+        ):
+            raise TypeError(
+                "The attribute 'sphere' must be a tuple containing two numpy ndarrays "
+                "(vertices, faces)."
+            )
+
+        self.n_coeff = coeffs.shape[-1]
+        self.data_shape = coeffs.shape[:3]
+        l_max = get_lmax(self.n_coeff, basis_type=basis_type)
+        self.color_type = 0 if color_type == "sign" else 1
+
+        vertices, faces = sphere[0], sphere[1]
+        positions = np.tile(vertices, (np.prod(self.data_shape), 1)).astype(np.float32)
+        positions[0] = np.asarray(self.data_shape)
+        self.scaled_vertices = np.zeros_like(positions, dtype=np.float32)
+
+        self.vertices_per_glyph = vertices.shape[0]
+        self.faces_per_glyph = faces.shape[0]
+
+        self.indices = faces.reshape(-1).astype(np.int32)
+        indices = np.tile(faces, (np.prod(self.data_shape), 1)).astype(np.int32)
+
+        self.radii = np.zeros((self.vertices_per_glyph,), dtype=np.float32)
+
+        for i in range(0, indices.shape[0], faces.shape[0]):
+            start = i
+            end = start + faces.shape[0]
+            indices[start:end] += (i // faces.shape[0]) * self.vertices_per_glyph
+
+        geo = buffer_to_geometry(
+            positions=positions.astype("float32"),
+            indices=indices.astype("int32"),
+            colors=np.ones_like(positions, dtype="float32"),
+            normals=np.zeros_like(positions).astype("float32"),
+        )
+
+        mat = SphGlyphMaterial(
+            l_max=l_max,
+            color_mode="vertex",
+            flat_shading=False,
+            shininess=shininess,
+            specular="#494949",
+            side="front",
+        )
+
+        B_mat = create_sh_basis_matrix(vertices, l_max)
+        self.sh_coeff = coeffs.reshape(-1).astype("float32")
+        self.sf_func = B_mat.reshape(-1).astype("float32")
+        self.sphere = vertices.astype("float32")
+
+        super().__init__(geometry=geo, material=mat)
+
+
+def sph_glyph(
+    coeffs, *, sphere=None, basis_type="standard", color_type="sign", shininess=50
+):
+    """Visualize a spherical harmonic glyph with different features.
+
+    Parameters
+    ----------
+    coeffs : ndarray, shape (X, Y, Z, N)
+        The spherical harmonics coefficients. X, Y, Z denotes the position and N
+        represents the number of coefficients.
+    sphere : {str, tuple}, optional
+        The name of the sphere to use or a tuple containing the phi and theta
+        segments for a custom sphere.
+        Available options for the named spheres:
+        * 'symmetric362'
+        * 'symmetric642'
+        * 'symmetric724'
+        * 'repulsion724'
+        * 'repulsion100'
+        * 'repulsion200'
+    basis_type : str, optional
+        The type of basis to use for the spherical harmonics.
+        Options are 'standard', 'descoteaux07'.
+    color_type : str, optional
+        The type of color mapping to use for the spherical glyph.
+        Options are 'sign' and 'orientation'.
+    shininess : float, optional
+        The shininess of the material for the spherical glyph.
+
+    Returns
+    -------
+    SphGlyph
+        A spherical glyph object.
+    """
+    if not isinstance(coeffs, np.ndarray):
+        raise TypeError("The attribute 'coeffs' must be a numpy ndarray.")
+    elif coeffs.ndim != 4:
+        raise ValueError(
+            "The attribute 'coeffs' must be a 4D numpy ndarray with shape (X, Y, Z, N)."
+        )
+
+    if sphere is None:
+        sphere = "symmetric362"
+
+    if isinstance(sphere, str):
+        sphere = fp.prim_sphere(name=sphere)
+    elif (
+        isinstance(sphere, tuple)
+        and isinstance(sphere[0], int)
+        and isinstance(sphere[1], int)
+    ):
+        sphere = fp.prim_sphere(gen_faces=True, phi=sphere[0], theta=sphere[1])
+    else:
+        raise TypeError(
+            "The attribute 'sphere' must be a string or tuple containing two integers."
+        )
+
+    if not isinstance(basis_type, str):
+        raise TypeError("The attribute 'basis_type' must be a string.")
+    elif basis_type not in ["standard", "descoteaux07"]:
+        raise ValueError(
+            "The attribute 'basis_type' must be either 'standard' or 'descoteaux07'."
+        )
+
+    if not isinstance(color_type, str):
+        raise TypeError("The attribute 'color_type' must be a string.")
+    if color_type not in ["sign", "orientation"]:
+        raise ValueError(
+            "The attribute 'color_type' must be either 'sign' or 'orientation'."
+        )
+
+    if not isinstance(shininess, (int, float)):
+        raise TypeError("The attribute 'shininess' must be an integer or float.")
+
+    obj = SphGlyph(
+        coeffs=coeffs,
+        sphere=sphere,
+        basis_type=basis_type,
+        color_type=color_type,
+        shininess=shininess,
+    )
+    return obj
+
+
+@register_wgpu_render_function(SphGlyph, SphGlyphMaterial)
+def register_glyph_shaders(wobject):
+    """Register Glyph shaders.
+
+    Parameters
+    ----------
+    wobject : VectorField
+        The vector field object to register shaders for.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the compute shader and the render shader.
+    """
+    compute_shader = SphGlyphComputeShader(wobject)
+    render_shader = MeshPhongShader(wobject)
+    return compute_shader, render_shader
