@@ -425,7 +425,7 @@ def test_ellipsoid():
 def test_valid_3d_data():
     """Test valid 3D input with default parameters (Test Case 1)."""
     data = np.random.rand(10, 20, 30)
-    slicer_obj = actor.slicer(data)
+    slicer_obj = actor.data_slicer(data)
 
     # Verify object type and visibility
     assert isinstance(slicer_obj, Group)
@@ -438,7 +438,7 @@ def test_invalid_4d_data():
     """Test invalid 4D data shape (Test Case 4)."""
     data = np.random.rand(10, 20, 30, 4)  # Last dim ≠ 3
     with pytest.raises(ValueError) as excinfo:
-        actor.slicer(data)
+        actor.data_slicer(data)
     assert "Last dimension must be of size 3" in str(excinfo.value)
 
 
@@ -448,21 +448,21 @@ def test_opacity_validation():
 
     # Test valid values
     for valid_opacity in [0, 0.5, 1]:
-        slicer_obj = actor.slicer(data, opacity=valid_opacity)
+        slicer_obj = actor.data_slicer(data, opacity=valid_opacity)
         for child in slicer_obj.children:
             assert child.material.opacity == valid_opacity
 
     # Test invalid values
     for invalid_opacity in [-0.1, 1.1, 2.0]:
         with pytest.raises(ValueError) as excinfo:
-            actor.slicer(data, opacity=invalid_opacity)
+            actor.data_slicer(data, opacity=invalid_opacity)
         assert "Opacity must be between 0 and 1" in str(excinfo.value)
 
 
 def test_custom_initial_slices():
     """Test custom initial slice positions (Test Case 10)."""
     data = np.random.rand(10, 20, 30)
-    slicer_obj = actor.slicer(data, initial_slices=(5, 10, 15))
+    slicer_obj = actor.data_slicer(data, initial_slices=(5, 10, 15))
 
     # Verify slice positions match input
     assert np.array_equal(get_slices(slicer_obj), [5, 10, 15])
@@ -475,7 +475,7 @@ def test_custom_initial_slices():
 def test_visibility_control():
     """Test visibility settings through methods (Test Case 13)."""
     data = np.random.rand(10, 20, 30)
-    slicer_obj = actor.slicer(data, visibility=(True, True, True))
+    slicer_obj = actor.data_slicer(data, visibility=(True, True, True))
 
     # Verify initial visibility
     assert all(child.visible for child in slicer_obj.children)

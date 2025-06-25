@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from fury.actor import slicer
+from fury.actor import data_slicer
 from fury.lib import AffineTransform, Group, Mesh, RecursiveTransform, WorldObject
 from fury.utils import (
     apply_affine_to_actor,
@@ -24,7 +24,7 @@ def actor():
 @pytest.fixture
 def group_slicer():
     data = np.random.rand(10, 20, 30)
-    return slicer(data)
+    return data_slicer(data)
 
 
 # Test cases for set_group_visibility
