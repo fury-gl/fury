@@ -773,11 +773,15 @@ class ShowManager:
         img.save(fname)
         return arr
 
+    def _draw_function(self):
+        render_screens(self.renderer, self.screens)
+        self.window.request_draw()
+
     def render(self):
         """Request a redraw of all screens in the window."""
         if self._is_qt and self._qt_parent is not None:
             self._qt_parent.show()
-        self.window.request_draw(lambda: render_screens(self.renderer, self.screens))
+        self.window.request_draw(self._draw_function)
 
     def start(self):
         """Start the rendering event loop and display the window.
