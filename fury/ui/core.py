@@ -164,6 +164,16 @@ class UI(object, metaclass=abc.ABCMeta):
         return self._childrens
 
     def perform_position_validation(self, x_anchor, y_anchor):
+        """Performs validation checks for anchor strings and the 'size' property.
+
+        Parameters
+        ----------
+        x_anchor : str
+            The horizontal anchor string to validate (e.g., "LEFT", "CENTER", "RIGHT").
+        y_anchor : str
+            The vertical anchor string to validate (e.g., "TOP", "CENTER", "BOTTOM").
+
+        """
         if not hasattr(self, "size"):
             msg = "Subclasses of UI must implement property `size`."
             raise NotImplementedError(msg)
@@ -252,7 +262,7 @@ class UI(object, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def _update_actors_position(self):
         """Update the position of the internal actors."""
-        msg = "Subclasses of UI must implement `_set_actors_position(self, coords)`."
+        msg = "Subclasses of UI must implement `_set_actors_position(self)`."
         raise NotImplementedError(msg)
 
     @property
