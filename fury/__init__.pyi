@@ -6,7 +6,6 @@
 
 __all__ = [
     "actor",
-    "bio",
     #     "actors",
     "animation",
     "colormap",
@@ -41,7 +40,6 @@ __all__ = [
 from . import (
     actor,
     animation,
-    bio,
     colormap,
     #     convert,
     data,

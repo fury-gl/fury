@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from fury.bio import volume_slicer
+from fury.actor import volume_slicer
 from fury.lib import AffineTransform, Group
 
 
