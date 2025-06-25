@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from fury.actor import slicer
+from fury.actor.slicer import slicer
 from fury.utils import apply_affine_to_group, show_slices
 
 
