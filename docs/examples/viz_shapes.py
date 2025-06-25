@@ -18,9 +18,9 @@ from fury.window import (
 )
 
 ##############################################################################
-# Using UI v2 Version
+# Using UI v2
 
-UIContext.set_is_v2_ui(False)
+UIContext.set_is_v2_ui(True)
 
 ##############################################################################
 # Creating a Scene
