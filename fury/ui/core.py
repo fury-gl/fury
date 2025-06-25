@@ -20,7 +20,7 @@ from fury.material import (
 )
 from fury.primitive import prim_disk
 from fury.ui import UIContext
-from fury.ui.helpers import ANCHOR_TO_MULTIPLIER, Anchor
+from fury.ui.helpers import Anchor
 
 # from fury.interactor import CustomInteractorStyle
 # from fury.io import load_image
@@ -222,6 +222,14 @@ class UI(object, metaclass=abc.ABCMeta):
             The (x, y) pixel coordinates of the specified anchor point.
 
         """
+        ANCHOR_TO_MULTIPLIER = {
+            Anchor.LEFT: 0.0,
+            Anchor.RIGHT: 1.0,
+            Anchor.TOP: 0.0 if UIContext.get_is_v2_ui() else 1.0,
+            Anchor.BOTTOM: 1.0 if UIContext.get_is_v2_ui() else 0.0,
+            Anchor.CENTER: 0.5,
+        }
+
         self.perform_position_validation(x_anchor=x_anchor, y_anchor=y_anchor)
 
         return np.array(
@@ -392,7 +400,11 @@ class Rectangle2D(UI):
             Must take values in [0, 1].
 
         """
-        super(Rectangle2D, self).__init__(position=position)
+        super(Rectangle2D, self).__init__(
+            position=position,
+            x_anchor=Anchor.LEFT,
+            y_anchor=Anchor.TOP if UIContext.get_is_v2_ui() else Anchor.BOTTOM,
+        )
         self.color = color
         self.opacity = opacity
         self.resize(size)
@@ -500,7 +512,9 @@ class Rectangle2D(UI):
         canvas_size = UIContext.get_canvas_size()
 
         self.actor.local.x = position[0]
-        self.actor.local.y = canvas_size[1] - position[1]
+        self.actor.local.y = (
+            canvas_size[1] - position[1] if UIContext.get_is_v2_ui() else position[1]
+        )
 
     @property
     def color(self):
@@ -623,7 +637,9 @@ class Disk2D(UI):
         canvas_size = UIContext.get_canvas_size()
 
         self.actor.local.x = position[0]
-        self.actor.local.y = canvas_size[1] - position[1]
+        self.actor.local.y = (
+            canvas_size[1] - position[1] if UIContext.get_is_v2_ui() else position[1]
+        )
 
     @property
     def color(self):

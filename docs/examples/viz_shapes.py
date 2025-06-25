@@ -20,7 +20,7 @@ from fury.window import (
 ##############################################################################
 # Using UI v2 Version
 
-UIContext.set_is_v2_ui(True)
+UIContext.set_is_v2_ui(False)
 
 ##############################################################################
 # Creating a Scene
