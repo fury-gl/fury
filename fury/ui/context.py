@@ -1,17 +1,28 @@
+"""UI context module."""
+
 import numpy as np
 
 
 class UIContextClass:
+    """Manage global UI context."""
+
     _instance = None
 
     def __new__(cls):
+        """Handle instance creation for the UI context singleton.
+
+        Returns
+        -------
+        UIContextClass
+            The single, shared instance of `UIContextClass`.
+        """
         if cls._instance is None:
             cls._instance = super(UIContextClass, cls).__new__(cls)
             cls._instance._initialized = False
         return cls._instance
 
     def __init__(self):
-        """Initializes the UIContext singleton."""
+        """Initialize the UIContext singleton."""
         if self._initialized:
             return
         self._use_v2 = False
@@ -21,47 +32,47 @@ class UIContextClass:
         self._initialized = True
 
     def set_hot_ui(self, element):
-        """Sets the currently 'hot' UI element.
+        """Set the currently 'hot' UI element.
 
         Parameters
         ----------
         element : UI or None
-            The UI element that is currently 'hot', or `None` if no element is hot.
+            UI element that is currently 'hot', or `None` if no element is hot.
         """
         self._hot_ui = element
 
     def get_hot_ui(self):
-        """Gets the currently 'hot' UI element.
+        """Get the currently 'hot' UI element.
 
         Returns
         -------
         UI or None
-            The UI element that is currently 'hot', or `None` if no element is hot.
+            UI element that is currently 'hot', or `None` if no element is hot.
         """
         return self._hot_ui
 
     def set_active_ui(self, element):
-        """Sets the currently 'active' UI element.
+        """Set the currently 'active' UI element.
 
         Parameters
         ----------
         element : UI or None
-            The UI element that is currently 'active', or `None` if no element is active.
+            UI element that is currently `active`, or `None` if no element is active.
         """
         self._active_ui = element
 
     def get_active_ui(self):
-        """Gets the currently 'active' UI element.
+        """Get the currently 'active' UI element.
 
         Returns
         -------
         UI or None
-            The UI element that is currently 'active', or `None` if no element is active.
+            UI element that is currently 'active', or `None` if no element is active.
         """
         return self._active_ui
 
     def set_canvas_size(self, size):
-        """Sets the current size of the rendering canvas in pixels.
+        """Set the current size of the rendering canvas in pixels.
 
         Parameters
         ----------
@@ -73,7 +84,7 @@ class UIContextClass:
             self._canvas_size = size
 
     def get_canvas_size(self):
-        """Gets the current size of the rendering canvas in pixels.
+        """Get the current size of the rendering canvas in pixels.
 
         Returns
         -------
@@ -83,7 +94,7 @@ class UIContextClass:
         return self._canvas_size
 
     def get_is_v2_ui(self):
-        """Checks if the UI v2 mode is currently active.
+        """Get the currently active UI mode.
 
         Returns
         -------
@@ -93,7 +104,7 @@ class UIContextClass:
         return self._use_v2
 
     def set_is_v2_ui(self, use_v2_ui):
-        """Sets the UI mode to V1 or V2.
+        """Set the UI mode to V1 or V2.
 
         Parameters
         ----------

@@ -173,6 +173,13 @@ class Scene(GfxGroup):
         self.add(*self.lights)
 
     def add(self, *objects):
+        """Add actors or UI elements to the scene.
+
+        Parameters
+        ----------
+        *objects : list of Mesh or UI
+            A list objects to be added to the scene.
+        """
         for obj in objects:
             if isinstance(obj, UI):
                 self.ui_elements.append(obj)
@@ -235,6 +242,15 @@ class Screen:
 
 
 def add_ui_to_scene(ui_scene: GfxScene, ui_obj: UI):
+    """Recursively traverse and add UI hierarchy to the UI scene.
+
+    Parameters
+    ----------
+    ui_scene : GfxScene
+        Scene dedicated to UI elements.
+    ui_obj : UI
+        UI element to add into scene.
+    """
     if ui_obj.actors:
         ui_scene.add(*ui_obj.actors)
 
@@ -344,6 +360,14 @@ def render_screens(renderer, screens: List[Screen]):
 
 
 def reposition_ui(screens: List[Screen]):
+    """Update the positions of all UI elements across multiple screens.
+
+    Parameters
+    ----------
+    screens : list of Screen
+        The list of Screen objects containing UI elements to reposition.
+    """
+
     for screen in screens:
         scene_root = screen.scene
         for child in scene_root.ui_elements:
@@ -638,8 +662,8 @@ class ShowManager:
 
         Parameters
         ----------
-        _event : Event
-            The PyGfx resize event object (unused in current implementation)."""
+        event : Event
+            The PyGfx resize event object."""
         UIContext.set_canvas_size((event.width, event.height))
         update_viewports(
             self.screens,
@@ -774,6 +798,7 @@ class ShowManager:
         return arr
 
     def _draw_function(self):
+        """Draw all screens and request a window redraw."""
         render_screens(self.renderer, self.screens)
         self.window.request_draw()
 
