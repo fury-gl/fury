@@ -749,8 +749,6 @@ class Disk2D(UI):
     ----------
     outer_radius : int
         Outer radius of the disk.
-    inner_radius : int, optional
-        Inner radius of the disk. A value > 0, makes a ring.
     center : (float, float), optional
         Coordinates (x, y) of the center of the disk.
     color : (float, float, float), optional
@@ -764,7 +762,6 @@ class Disk2D(UI):
         self,
         outer_radius,
         *,
-        inner_radius=0,
         center=(0, 0),
         color=(1, 1, 1),
         opacity=1.0,
@@ -775,8 +772,6 @@ class Disk2D(UI):
         ----------
         outer_radius : int
             Outer radius of the disk.
-        inner_radius : int, optional
-            Inner radius of the disk. A value > 0, makes a ring.
         center : (float, float), optional
             Coordinates (x, y) of the center of the disk.
         color : (float, float, float), optional
@@ -786,7 +781,6 @@ class Disk2D(UI):
         """
         self.actor = None
         self.outer_radius = outer_radius
-        self.inner_radius = inner_radius
 
         super(Disk2D, self).__init__(
             position=center, x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER
@@ -894,31 +888,6 @@ class Disk2D(UI):
         """
         # self.actor.GetProperty().SetOpacity(opacity)
         self.actor.material.opacity = opacity
-
-    @property
-    def inner_radius(self):
-        """Get the inner radius of the disk.
-
-        Returns
-        -------
-        int
-            Inner radius in pixels.
-        """
-        # return self._disk.GetInnerRadius()
-        pass
-
-    @inner_radius.setter
-    def inner_radius(self, radius):
-        """Set the inner radius of the disk.
-
-        Parameters
-        ----------
-        radius : int
-            New inner radius.
-        """
-        # self._disk.SetInnerRadius(radius)
-        # self._disk.Update()
-        pass
 
     @property
     def outer_radius(self):
