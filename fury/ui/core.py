@@ -95,6 +95,18 @@ class UI(object, metaclass=abc.ABCMeta):
     on_key_press: function
         Callback function for when a keyboard key is pressed.
 
+    Parameters
+    ----------
+    position : (float, float)
+        Absolute pixel coordinates `(x, y)` which, in combination with
+        `x_anchor` and `y_anchor`, define the initial placement of this
+        UI component.
+    x_anchor : str, optional
+        Define the horizontal anchor point for `position`. Can be "LEFT",
+        "CENTER", or "RIGHT". Defaults to "LEFT".
+    y_anchor : str, optional
+        Define the vertical anchor point for `position`. Can be "BOTTOM",
+        "CENTER", or "TOP". Defaults to "BOTTOM".
     """
 
     def __init__(self, *, position=(0, 0), x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP):
@@ -107,12 +119,11 @@ class UI(object, metaclass=abc.ABCMeta):
             `x_anchor` and `y_anchor`, define the initial placement of this
             UI component.
         x_anchor : str, optional
-            Defines the horizontal anchor point for `position`. Can be "LEFT",
+            Define the horizontal anchor point for `position`. Can be "LEFT",
             "CENTER", or "RIGHT". Defaults to "LEFT".
         y_anchor : str, optional
-            Defines the vertical anchor point for `position`. Can be "BOTTOM",
+            Define the vertical anchor point for `position`. Can be "BOTTOM",
             "CENTER", or "TOP". Defaults to "BOTTOM".
-
         """
         self._position = np.array([0, 0])
         self._childrens = []
@@ -148,31 +159,41 @@ class UI(object, metaclass=abc.ABCMeta):
 
         This is where you should create all your needed actors and sub UI
         components.
-
         """
         msg = "Subclasses of UI must implement `_setup(self)`."
         raise NotImplementedError(msg)
 
     @property
     def actors(self):
-        """Actors composing this UI component."""
+        """Get actors composing this UI component.
+
+        Returns
+        -------
+        list
+            List of actors composing this UI component.
+        """
         return self._actors
 
     @property
     def childrens(self):
-        """Childrens composing this UI component."""
+        """Get children composing this UI component.
+
+        Returns
+        -------
+        list
+            A list of child UI components.
+        """
         return self._childrens
 
     def perform_position_validation(self, x_anchor, y_anchor):
-        """Performs validation checks for anchor strings and the 'size' property.
+        """Perform validation checks for anchor string and the 'size' property.
 
         Parameters
         ----------
         x_anchor : str
-            The horizontal anchor string to validate (e.g., "LEFT", "CENTER", "RIGHT").
+            Horizontal anchor string to validate (e.g., "LEFT", "CENTER", "RIGHT").
         y_anchor : str
-            The vertical anchor string to validate (e.g., "TOP", "CENTER", "BOTTOM").
-
+            Vertical anchor string to validate (e.g., "TOP", "CENTER", "BOTTOM").
         """
         if not hasattr(self, "size"):
             msg = "Subclasses of UI must implement property `size`."
@@ -180,12 +201,12 @@ class UI(object, metaclass=abc.ABCMeta):
 
         if x_anchor not in [Anchor.LEFT, Anchor.CENTER, Anchor.RIGHT]:
             raise ValueError(
-                f"x_anchor should be one of these {', '.join([Anchor.LEFT, Anchor.CENTER, Anchor.RIGHT])} but received {x_anchor}"
+                f"x_anchor should be one of these {', '.join([Anchor.LEFT, Anchor.CENTER, Anchor.RIGHT])} but received {x_anchor}"  # noqa: E501
             )
 
         if y_anchor not in [Anchor.TOP, Anchor.CENTER, Anchor.BOTTOM]:
             raise ValueError(
-                f"y_anchor should be one of these {', '.join([Anchor.TOP, Anchor.CENTER, Anchor.BOTTOM])} but received {y_anchor}"
+                f"y_anchor should be one of these {', '.join([Anchor.TOP, Anchor.CENTER, Anchor.BOTTOM])} but received {y_anchor}"  # noqa: E501
             )
 
     def set_position(
@@ -199,12 +220,11 @@ class UI(object, metaclass=abc.ABCMeta):
             Absolute pixel coordinates (x, y). These coordinates
             are interpreted based on `x_anchor` and `y_anchor`.
         x_anchor : str, optional
-            Defines the horizontal anchor point for `coords`. Can be "LEFT",
+            Define the horizontal anchor point for `coords`. Can be "LEFT",
             "CENTER", or "RIGHT". Case-insensitive. Defaults to "LEFT".
         y_anchor : str, optional
-            Defines the vertical anchor point for `coords`. Can be "BOTTOM",
+            Define the vertical anchor point for `coords`. Can be "BOTTOM",
             "CENTER", or "TOP". Case-insensitive. Defaults to "BOTTOM".
-
         """
         self.perform_position_validation(x_anchor=x_anchor, y_anchor=y_anchor)
 
@@ -218,26 +238,25 @@ class UI(object, metaclass=abc.ABCMeta):
         Parameters
         ----------
         x_anchor : str, optional
-            Defines the horizontal anchor point for the returned coordinates.
+            Define the horizontal anchor point for the returned coordinates.
             Can be "LEFT", "CENTER", or "RIGHT".
             Defaults to "LEFT".
         y_anchor : str, optional
-            Defines the vertical anchor point for the returned coordinates.
+            Define the vertical anchor point for the returned coordinates.
             Can be "BOTTOM", "CENTER", or "TOP".
-            Defaults to "BOTTOM".
+            Defaults to "TOP".
 
         Returns
         -------
         (float, float)
             The (x, y) pixel coordinates of the specified anchor point.
-
         """
         ANCHOR_TO_MULTIPLIER = {
-            Anchor.LEFT: 0.0,
-            Anchor.RIGHT: 1.0,
-            Anchor.TOP: 0.0 if UIContext.get_is_v2_ui() else 1.0,
-            Anchor.BOTTOM: 1.0 if UIContext.get_is_v2_ui() else 0.0,
-            Anchor.CENTER: 0.5,
+            Anchor.LEFT.value: 0.0,
+            Anchor.RIGHT.value: 1.0,
+            Anchor.TOP.value: 0.0 if UIContext.get_is_v2_ui() else 1.0,
+            Anchor.BOTTOM.value: 1.0 if UIContext.get_is_v2_ui() else 0.0,
+            Anchor.CENTER.value: 0.5,
         }
 
         self.perform_position_validation(x_anchor=x_anchor, y_anchor=y_anchor)
@@ -267,20 +286,47 @@ class UI(object, metaclass=abc.ABCMeta):
 
     @property
     def size(self):
+        """Get width and height of this UI component.
+
+        Returns
+        -------
+        (int, int)
+            Width and Height of UI component in pixels.
+        """
         return np.asarray(self._get_size(), dtype=int)
 
     @abc.abstractmethod
     def _get_size(self):
+        """Get the actual size of the UI component.
+
+        Returns
+        -------
+        (int, int)
+            Width and height of the UI component in pixels.
+        """
         msg = "Subclasses of UI must implement property `size`."
         raise NotImplementedError(msg)
 
     def set_visibility(self, visibility: bool):
-        """Set visibility of this UI component."""
+        """Set visibility of this UI component.
+
+        Parameters
+        ----------
+        visibility : bool
+            If `True`, the UI component will be visible. If `False`, it will be hidden.
+        """
         for actor in self.actors:
             # actor.SetVisibility(visibility)
             actor.visible = visibility
 
     def handle_events(self, actor: Mesh):
+        """Attach event handlers to the UI object.
+
+        Parameters
+        ----------
+        actor : Mesh
+            The PyGfx mesh to which event handlers should be attached.
+        """
         actor.add_event_handler(self.mouse_button_down_callback, "pointer_down")
         actor.add_event_handler(self.mouse_button_up_callback, "pointer_up")
         actor.add_event_handler(self.mouse_move_callback, "pointer_move")
@@ -315,6 +361,13 @@ class UI(object, metaclass=abc.ABCMeta):
         # self.add_callback(actor, "KeyPressEvent", self.key_press_callback)
 
     def mouse_button_down_callback(self, event: PointerEvent):
+        """Handle mouse button press event.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
         if event.button == 1:
             self.left_button_click_callback(event)
         elif event.button == 2:
@@ -324,6 +377,13 @@ class UI(object, metaclass=abc.ABCMeta):
         event.cancel()
 
     def mouse_button_up_callback(self, event: PointerEvent):
+        """Handle mouse button release event.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
         if event.button == 1:
             self.left_button_release_callback(event)
         elif event.button == 2:
@@ -333,36 +393,85 @@ class UI(object, metaclass=abc.ABCMeta):
         event.cancel()
 
     def left_button_click_callback(self, event: PointerEvent):
+        """Handle left mouse button press event.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
         self.left_button_state = "pressing"
         self.on_left_mouse_button_pressed(event)
 
     def left_button_release_callback(self, event: PointerEvent):
+        """Handle left mouse button release event.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
         if self.left_button_state == "pressing":
             self.on_left_mouse_button_clicked(event)
         self.left_button_state = "released"
         self.on_left_mouse_button_released(event)
 
     def right_button_click_callback(self, event: PointerEvent):
+        """Handle right mouse button press event.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
         self.right_button_state = "pressing"
         self.on_right_mouse_button_pressed(event)
 
     def right_button_release_callback(self, event: PointerEvent):
+        """Handle right mouse button release event.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
         if self.right_button_state == "pressing":
             self.on_right_mouse_button_clicked(event)
         self.right_button_state = "released"
         self.on_right_mouse_button_released(event)
 
     def middle_button_click_callback(self, event: PointerEvent):
+        """Handle middle mouse button press event.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
         self.middle_button_state = "pressing"
         self.on_middle_mouse_button_pressed(event)
 
     def middle_button_release_callback(self, event: PointerEvent):
+        """Handle middle mouse button release event.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
         if self.middle_button_state == "pressing":
             self.on_middle_mouse_button_clicked(event)
         self.middle_button_state = "released"
         self.on_middle_mouse_button_released(event)
 
     def mouse_move_callback(self, event: PointerEvent):
+        """Handle mouse move event.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
         left_pressing_or_dragging = (
             self.left_button_state == "pressing" or self.left_button_state == "dragging"
         )
@@ -388,11 +497,35 @@ class UI(object, metaclass=abc.ABCMeta):
             self.on_middle_mouse_button_dragged(event)
 
     def key_press_callback(self, event: KeyboardEvent):
+        """Handle key press event.
+
+        Parameters
+        ----------
+        event : KeyboardEvent
+            The PyGfx keyboard event object.
+        """
         self.on_key_press(event)
 
 
 class Rectangle2D(UI):
-    """A 2D rectangle sub-classed from UI."""
+    """A 2D rectangle sub-classed from UI.
+
+    Parameters
+    ----------
+    size : (int, int), optional
+        Initial `(width, height)` of the rectangle in pixels.
+        Defaults to `(0, 0)`.
+    position : (float, float), optional
+        Coordinates `(x, y)` of the rectangle. The interpretation of `(x,y)`
+        (e.g., top-left, bottom-left) depends on the current UI version.
+        Defaults to `(0, 0)`.
+    color : (float, float, float), optional
+        RGB color tuple, with values in the range `[0, 1]`.
+        Defaults to `(1, 1, 1)` (white).
+    opacity : float, optional
+        Degree of transparency, with values in the range `[0, 1]`.
+        `0` is fully transparent, `1` is fully opaque. Defaults to `1.0`.
+    """
 
     @warn_on_args_to_kwargs()
     def __init__(self, *, size=(0, 0), position=(0, 0), color=(1, 1, 1), opacity=1.0):
@@ -408,7 +541,6 @@ class Rectangle2D(UI):
             Must take values in [0, 1].
         opacity : float
             Must take values in [0, 1].
-
         """
         super(Rectangle2D, self).__init__(
             position=position,
@@ -422,7 +554,7 @@ class Rectangle2D(UI):
     def _setup(self):
         """Set up this UI component.
 
-        Creating the polygon actor used internally.
+        Create the polygon actor used internally.
         """
         # # Setup four points
         # size = (1, 1)
@@ -469,6 +601,13 @@ class Rectangle2D(UI):
         self.handle_events(self.actor)
 
     def _get_size(self):
+        """Get the current size of the rectangle actor.
+
+        Returns
+        -------
+        (float, float)
+            The current `(width, height)` of the rectangle in pixels.
+        """
         # # Get 2D coordinates of two opposed corners of the rectangle.
         # lower_left_corner = np.array(self._points.GetPoint(0)[:2])
         # upper_right_corner = np.array(self._points.GetPoint(2)[:2])
@@ -481,28 +620,55 @@ class Rectangle2D(UI):
 
     @property
     def width(self):
+        """Get the current width of the rectangle.
+
+        Returns
+        -------
+        float
+            The width of the rectangle in pixels.
+        """
         return self._get_size()[0]
 
     @width.setter
     def width(self, width):
+        """Set the width of the rectangle.
+
+        Parameters
+        ----------
+        width : float
+            New width of the rectangle.
+        """
         self.resize((width, self.height))
 
     @property
     def height(self):
+        """Get the current height of the rectangle.
+
+        Returns
+        -------
+        float
+            The height of the rectangle in pixels.
+        """
         return self._get_size()[1]
 
     @height.setter
     def height(self, height):
+        """Set the height of the rectangle.
+
+        Parameters
+        ----------
+        height : float
+            New height of the rectangle.
+        """
         self.resize((self.width, height))
 
     def resize(self, size):
-        """Set the button size.
+        """Set the rectangle size.
 
         Parameters
         ----------
         size : (float, float)
-            Button size (width, height) in pixels.
-
+            Rectangle size (width, height) in pixels.
         """
         # self._points.SetPoint(0, 0, 0, 0.0)
         # self._points.SetPoint(1, size[0], 0, 0.0)
@@ -528,46 +694,70 @@ class Rectangle2D(UI):
 
     @property
     def color(self):
-        """Get the rectangle's color."""
+        """Get the rectangle color.
+
+        Returns
+        -------
+        (float, float, float)
+            RGB color.
+        """
         # color = self.actor.GetProperty().GetColor()
         # return np.asarray(color)
         return self.actor.material.color
 
     @color.setter
     def color(self, color):
-        """Set the rectangle's color.
+        """Set the rectangle color.
 
         Parameters
         ----------
         color : (float, float, float)
             RGB. Must take values in [0, 1].
-
         """
         # self.actor.GetProperty().SetColor(*color)
         self.actor.material.color = np.array([*color, 1.0])
 
     @property
     def opacity(self):
-        """Get the rectangle's opacity."""
+        """Get the rectangle opacity.
+
+        Returns
+        -------
+        float
+            Opacity value.
+        """
         # return self.actor.GetProperty().GetOpacity()
         return self.actor.material.opacity
 
     @opacity.setter
     def opacity(self, opacity):
-        """Set the rectangle's opacity.
+        """Set the rectangle opacity.
 
         Parameters
         ----------
         opacity : float
             Degree of transparency. Must be between [0, 1].
-
         """
         # self.actor.GetProperty().SetOpacity(opacity)
         self.actor.material.opacity = opacity
 
 
 class Disk2D(UI):
-    """A 2D disk UI component."""
+    """A 2D disk UI component.
+
+    Parameters
+    ----------
+    outer_radius : int
+        Outer radius of the disk.
+    inner_radius : int, optional
+        Inner radius of the disk. A value > 0, makes a ring.
+    center : (float, float), optional
+        Coordinates (x, y) of the center of the disk.
+    color : (float, float, float), optional
+        Must take values in [0, 1].
+    opacity : float, optional
+        Must take values in [0, 1].
+    """
 
     @warn_on_args_to_kwargs()
     def __init__(
@@ -593,7 +783,6 @@ class Disk2D(UI):
             Must take values in [0, 1].
         opacity : float, optional
             Must take values in [0, 1].
-
         """
         self.actor = None
         self.outer_radius = outer_radius
@@ -607,10 +796,9 @@ class Disk2D(UI):
         self.opacity = opacity
 
     def _setup(self):
-        """Setup this UI component.
+        """Set up this UI component.
 
-        Creating the disk actor used internally.
-
+        Create the disk actor used internally.
         """
         # # Setting up disk actor.
         # self._disk = DiskSource()
@@ -637,6 +825,13 @@ class Disk2D(UI):
         self.handle_events(self.actor)
 
     def _get_size(self):
+        """Get the current size of the disk.
+
+        Returns
+        -------
+        (float, float)
+            The current `(diameter, diameter)` of the disk in pixels.
+        """
         diameter = 2 * self.outer_radius
         size = (diameter, diameter)
         return size
@@ -653,7 +848,13 @@ class Disk2D(UI):
 
     @property
     def color(self):
-        """Get the color of this UI component."""
+        """Get the color of this UI component.
+
+        Returns
+        -------
+        (float, float, float)
+            RGB color.
+        """
         # color = self.actor.GetProperty().GetColor()
         # return np.asarray(color)
         return self.actor.material.color
@@ -666,14 +867,19 @@ class Disk2D(UI):
         ----------
         color : (float, float, float)
             RGB. Must take values in [0, 1].
-
         """
         # self.actor.GetProperty().SetColor(*color)
         self.actor.material.color = np.array([*color, 1.0])
 
     @property
     def opacity(self):
-        """Get the opacity of this UI component."""
+        """Get the opacity of this UI component.
+
+        Returns
+        -------
+        float
+            Opacity value.
+        """
         # return self.actor.GetProperty().GetOpacity()
         return self.actor.material.opacity
 
@@ -685,29 +891,56 @@ class Disk2D(UI):
         ----------
         opacity : float
             Degree of transparency. Must be between [0, 1].
-
         """
         # self.actor.GetProperty().SetOpacity(opacity)
         self.actor.material.opacity = opacity
 
     @property
     def inner_radius(self):
+        """Get the inner radius of the disk.
+
+        Returns
+        -------
+        int
+            Inner radius in pixels.
+        """
         # return self._disk.GetInnerRadius()
         pass
 
     @inner_radius.setter
     def inner_radius(self, radius):
+        """Set the inner radius of the disk.
+
+        Parameters
+        ----------
+        radius : int
+            New inner radius.
+        """
         # self._disk.SetInnerRadius(radius)
         # self._disk.Update()
         pass
 
     @property
     def outer_radius(self):
+        """Get the outer radius of the disk.
+
+        Returns
+        -------
+        int
+            Outer radius in pixels.
+        """
         # return self._disk.GetOuterRadius()
         return self._outer_radius
 
     @outer_radius.setter
     def outer_radius(self, radius):
+        """Set the outer radius of the disk.
+
+        Parameters
+        ----------
+        radius : int
+            New outer radius.
+        """
         # self._disk.SetOuterRadius(radius)
         # self._disk.Update()
         if self.actor:

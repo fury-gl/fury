@@ -6,6 +6,8 @@ import numpy as np
 
 
 class Anchor(str, Enum):
+    """Enum for Position Anchor Points."""
+
     LEFT = "LEFT"
     RIGHT = "RIGHT"
     TOP = "TOP"
