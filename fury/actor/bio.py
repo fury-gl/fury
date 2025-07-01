@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from fury.actor import slicer
+from fury.actor import data_slicer
 from fury.utils import apply_affine_to_group, show_slices
 
 
@@ -44,7 +44,7 @@ def volume_slicer(
         An actor containing the generated slice with the specified properties.
     """
 
-    obj = slicer(
+    obj = data_slicer(
         data,
         value_range=value_range,
         opacity=opacity,

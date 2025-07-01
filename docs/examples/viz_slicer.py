@@ -20,7 +20,7 @@ intensity value and use arrow keys to navigate through the slices.
 """
 
 import numpy as np
-from fury import actor, window, bio
+from fury import actor, window
 from fury.utils import get_slices, show_slices
 from dipy.data import read_mni_template
 
@@ -48,7 +48,7 @@ cube[sphere_mask] = [1, 1, 1]
 
 ################################################################################
 # Create a slice actor for the cube and add it to the scene.
-slicer_actor = actor.slicer(cube)
+slicer_actor = actor.data_slicer(cube)
 scene = window.Scene()
 scene.add(slicer_actor)
 
@@ -103,7 +103,7 @@ print(affine)
 ###############################################################################
 # Create volume_slicer actor to visualize the 3D data as XY, YZ and XZ slices.
 
-slicer_actor = bio.volume_slicer(data, affine=affine)
+slicer_actor = actor.volume_slicer(data, affine=affine)
 
 ###############################################################################
 # Create a scene and add the slicer actor to it.
