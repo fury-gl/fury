@@ -10,6 +10,7 @@ import asyncio
 from dataclasses import dataclass
 from functools import reduce
 import os
+from typing import List
 
 from PIL.Image import fromarray as image_from_array
 import numpy as np
@@ -29,10 +30,12 @@ from fury.lib import (
     QtCanvas,
     Renderer,
     Scene as GfxScene,  # type: ignore
+    ScreenCoordsCamera,
     Viewport,
     get_app,
     run,
 )
+from fury.ui import UI
 
 
 class Scene(GfxScene):
@@ -80,6 +83,13 @@ class Scene(GfxScene):
             A list of PyGfx Light objects to illuminate the scene. If None,
             a default AmbientLight is added. Defaults to None."""
         super().__init__()
+
+        self.main_scene = GfxScene()
+
+        self.ui_scene = GfxScene()
+        self.ui_camera = ScreenCoordsCamera()
+        self.ui_scene.add(self.ui_camera)
+        self.add(self.ui_scene)
 
         self._bg_color = background
         self._bg_actor = None
@@ -159,6 +169,13 @@ class Scene(GfxScene):
         super().clear()
         self.add(self._bg_actor)
         self.add(*self.lights)
+
+    def add(self, *objects):
+        for object in objects:
+            if isinstance(object, UI):
+                object.add_to_scene(self.ui_scene)
+            else:
+                self.main_scene.add(object)
 
 
 @dataclass
@@ -298,7 +315,7 @@ def update_viewports(screens, screen_bbs):
         update_camera(screen.camera, screen.size, screen.scene)
 
 
-def render_screens(renderer, screens):
+def render_screens(renderer, screens: List[Screen]):
     """Render multiple screens within a single renderer update cycle.
 
     Parameters
@@ -308,7 +325,9 @@ def render_screens(renderer, screens):
     screens : list of Screen
         The list of Screen objects to render."""
     for screen in screens:
-        screen.viewport.render(screen.scene, screen.camera, flush=False)
+        scene_root = screen.scene
+        screen.viewport.render(scene_root.main_scene, screen.camera, flush=False)
+        screen.viewport.render(scene_root.ui_scene, scene_root.ui_camera, flush=False)
 
     renderer.flush()
 
@@ -734,11 +753,15 @@ class ShowManager:
         img.save(fname)
         return arr
 
+    def _draw_function(self):
+        render_screens(self.renderer, self.screens)
+        self.window.request_draw()
+
     def render(self):
         """Request a redraw of all screens in the window."""
         if self._is_qt and self._qt_parent is not None:
             self._qt_parent.show()
-        self.window.request_draw(lambda: render_screens(self.renderer, self.screens))
+        self.window.request_draw(self._draw_function)
 
     def start(self):
         """Start the rendering event loop and display the window.
