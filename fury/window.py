@@ -184,7 +184,7 @@ class Scene(GfxGroup):
             if isinstance(obj, UI):
                 self.ui_elements.append(obj)
                 add_ui_to_scene(self.ui_scene, obj)
-            elif isinstance(obj, GfxScene):
+            elif isinstance(obj, GfxScene):  # type: ignore [misc]
                 super().add(obj)
             else:
                 self.main_scene.add(obj)
@@ -201,7 +201,7 @@ class Scene(GfxGroup):
             if isinstance(obj, UI):
                 self.ui_elements.remove(obj)
                 remove_ui_from_scene(self.ui_scene, obj)
-            elif isinstance(obj, GfxScene):
+            elif isinstance(obj, GfxScene):  # type: ignore [misc]
                 super().remove(obj)
             else:
                 self.main_scene.remove(obj)
@@ -358,7 +358,7 @@ def update_camera(camera, size, target):
     if isinstance(target, Scene):
         target = target.main_scene
 
-    if (isinstance(target, GfxScene) and len(target.children) > 3) or not isinstance(
+    if (isinstance(target, GfxScene) and len(target.children) > 3) or not isinstance(  # type: ignore [misc]
         target, GfxScene
     ):
         camera.show_object(target)
