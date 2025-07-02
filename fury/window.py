@@ -189,6 +189,23 @@ class Scene(GfxGroup):
             else:
                 self.main_scene.add(obj)
 
+    def remove(self, *objects):
+        """Remove actors or UI elements from the scene.
+
+        Parameters
+        ----------
+        *objects : list of Mesh or UI
+            A list of objects to be removed from the scene.
+        """
+        for obj in objects:
+            if isinstance(obj, UI):
+                self.ui_elements.remove(obj)
+                remove_ui_from_scene(self.ui_scene, obj)
+            elif isinstance(obj, GfxScene):
+                super().remove(obj)
+            else:
+                self.main_scene.remove(obj)
+
 
 @dataclass
 class Screen:
@@ -260,6 +277,23 @@ def add_ui_to_scene(ui_scene: GfxScene, ui_obj: UI):
         add_ui_to_scene(ui_scene, child)
 
 
+def remove_ui_from_scene(ui_scene: GfxScene, ui_obj: UI):
+    """Recursively traverse and remove UI hierarchy from the UI scene.
+
+    Parameters
+    ----------
+    ui_scene : GfxScene
+        Scene dedicated to UI elements.
+    ui_obj : UI
+        UI element to be removed from the scene.
+    """
+    if ui_obj.actors:
+        ui_scene.remove(*ui_obj.actors)
+
+    for child in ui_obj.childrens:
+        remove_ui_from_scene(ui_scene, child)
+
+
 def create_screen(
     renderer, *, rect=None, scene=None, camera=None, controller=None, camera_light=True
 ):
@@ -321,8 +355,11 @@ def update_camera(camera, size, target):
         The size (width, height) of the viewport, used if the target is empty.
     target : Object or Scene
         The PyGfx object or scene the camera should focus on."""
-    if (isinstance(target, Scene) and len(target.children) > 3) or not isinstance(
-        target, Scene
+    if isinstance(target, Scene):
+        target = target.main_scene
+
+    if (isinstance(target, GfxScene) and len(target.children) > 3) or not isinstance(
+        target, GfxScene
     ):
         camera.show_object(target)
     else:

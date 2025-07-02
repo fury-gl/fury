@@ -78,9 +78,9 @@ def test_scene_clear(sample_actor):
     """Test clearing the scene. Should only remove the actors."""
     scene = Scene()
     scene.add(sample_actor)
-    assert len(scene.children) == 3  # Background + actor + AmbientLight
+    assert len(scene.main_scene.children) == 3  # Background + actor + AmbientLight
     scene.clear()
-    assert len(scene.children) == 2  # Background + AmbientLight
+    assert len(scene.main_scene.children) == 2  # Background + AmbientLight
 
 
 def test_screen_initialization_default():
@@ -92,7 +92,7 @@ def test_screen_initialization_default():
     assert isinstance(screen.camera, PerspectiveCamera)
     assert isinstance(screen.controller, OrbitController)
     # Background + AmbientLight + Camera
-    assert len(screen.scene.children) == 3
+    assert len(screen.scene.main_scene.children) == 3
     # Directional Light
     assert len(screen.camera.children) == 1
 
@@ -108,7 +108,7 @@ def test_screen_initialization_custom():
     assert screen.camera == camera
     assert screen.controller == controller
     # Background + AmbientLight
-    assert len(screen.scene.children) == 2
+    assert len(screen.scene.main_scene.children) == 2
 
 
 def test_screen_bounding_box():
@@ -298,7 +298,7 @@ def test_show_manager_empty_scene():
     """Test initialization with an empty scene."""
     show_m = ShowManager(scene=Scene(), window_type="offscreen")
     assert (
-        len(show_m.screens[0].scene.children) == 3
+        len(show_m.screens[0].scene.main_scene.children) == 3
     )  # Background + AmbientLight + Camera
 
 
