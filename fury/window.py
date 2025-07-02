@@ -90,7 +90,6 @@ class Scene(GfxGroup):
         self.ui_scene = GfxScene()
         self.ui_camera = ScreenCoordsCamera()
         self.ui_scene.add(self.ui_camera)
-        self.add(self.ui_scene)
         self.ui_elements: List[UI] = []
 
         self._bg_color = background
@@ -168,9 +167,10 @@ class Scene(GfxGroup):
 
     def clear(self):
         """Remove all actors from the scene, keeping background and lights."""
-        super().clear()
-        self.add(self._bg_actor)
-        self.add(*self.lights)
+        self.main_scene.clear()
+        self.ui_scene.clear()
+        self.main_scene.add(self._bg_actor)
+        self.main_scene.add(*self.lights)
 
     def add(self, *objects):
         """Add actors or UI elements to the scene.
@@ -184,6 +184,8 @@ class Scene(GfxGroup):
             if isinstance(obj, UI):
                 self.ui_elements.append(obj)
                 add_ui_to_scene(self.ui_scene, obj)
+            elif isinstance(obj, GfxScene):
+                super().add(obj)
             else:
                 self.main_scene.add(obj)
 
