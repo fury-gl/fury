@@ -168,10 +168,12 @@ class Scene(GfxGroup):
     def clear(self):
         """Remove all actors from the scene, keeping background and lights."""
         self.main_scene.clear()
-        self.ui_scene.clear()
-        self.ui_elements.clear()
         self.main_scene.add(self._bg_actor)
         self.main_scene.add(*self.lights)
+
+        self.ui_elements.clear()
+        self.ui_scene.clear()
+        self.ui_scene.add(self.ui_camera)
 
     def add(self, *objects):
         """Add actors or UI elements to the scene.
