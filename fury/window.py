@@ -273,7 +273,7 @@ def add_ui_to_scene(ui_scene: GfxScene, ui_obj: UI):
     if ui_obj.actors:
         ui_scene.add(*ui_obj.actors)
 
-    for child in ui_obj.childrens:
+    for child in ui_obj.children:
         add_ui_to_scene(ui_scene, child)
 
 
@@ -290,7 +290,7 @@ def remove_ui_from_scene(ui_scene: GfxScene, ui_obj: UI):
     if ui_obj.actors:
         ui_scene.remove(*ui_obj.actors)
 
-    for child in ui_obj.childrens:
+    for child in ui_obj.children:
         remove_ui_from_scene(ui_scene, child)
 
 

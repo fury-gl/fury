@@ -126,7 +126,7 @@ class UI(object, metaclass=abc.ABCMeta):
             "CENTER", or "TOP". Defaults to "BOTTOM".
         """
         self._position = np.array([0, 0])
-        self._childrens = []
+        self._children = []
         self._actors = []
 
         self._setup()  # Setup needed actors and sub UI components.
@@ -175,7 +175,7 @@ class UI(object, metaclass=abc.ABCMeta):
         return self._actors
 
     @property
-    def childrens(self):
+    def children(self):
         """Get children composing this UI component.
 
         Returns
@@ -183,7 +183,7 @@ class UI(object, metaclass=abc.ABCMeta):
         list
             A list of child UI components.
         """
-        return self._childrens
+        return self._children
 
     def perform_position_validation(self, x_anchor, y_anchor):
         """Perform validation checks for anchor string and the 'size' property.
