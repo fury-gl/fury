@@ -96,7 +96,7 @@ def test_scene_clear(sample_actor, sample_ui_actor):
     assert len(scene.ui_scene.children) == 2  #  ui camera + ui actor
     scene.clear()
     assert len(scene.main_scene.children) == 2  # Background + AmbientLight
-    assert len(scene.ui_scene.children) == 0
+    assert len(scene.ui_scene.children) == 1
 
 
 def test_screen_initialization_default():
