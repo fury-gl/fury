@@ -202,7 +202,8 @@ class Scene(GfxGroup):
         """
         for obj in objects:
             if isinstance(obj, UI):
-                self.ui_elements.remove(obj)
+                if obj in self.ui_elements:
+                    self.ui_elements.remove(obj)
                 remove_ui_from_scene(self.ui_scene, obj)
             elif isinstance(obj, GfxScene):  # type: ignore [misc]
                 super().remove(obj)
