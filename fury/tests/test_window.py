@@ -12,8 +12,11 @@ from fury.lib import (
     OrbitController,
     PerspectiveCamera,
     Renderer,
+    Scene as GfxScene,
+    ScreenCoordsCamera,
     Texture,
 )
+from fury.ui import Rectangle2D
 from fury.window import (
     Scene,
     ShowManager,
@@ -32,12 +35,22 @@ def sample_actor():
     return actor
 
 
+@pytest.fixture
+def sample_ui_actor():
+    "Fixture to provide a simple ui actor."
+    actor = Rectangle2D(size=(5, 5))
+    return actor
+
+
 def test_scene_initialization_default():
     """Test Scene initialization with default parameters."""
     scene = Scene()
     assert scene.background == (0, 0, 0, 1)
     assert len(scene.lights) == 1
     assert isinstance(scene.lights[0], AmbientLight)
+    assert isinstance(scene.main_scene, GfxScene)
+    assert isinstance(scene.ui_scene, GfxScene)
+    assert isinstance(scene.ui_camera, ScreenCoordsCamera)
 
 
 def test_scene_initialization_custom_background():
@@ -74,13 +87,16 @@ def test_scene_set_skybox():
     assert scene._bg_actor is not None
 
 
-def test_scene_clear(sample_actor):
+def test_scene_clear(sample_actor, sample_ui_actor):
     """Test clearing the scene. Should only remove the actors."""
     scene = Scene()
     scene.add(sample_actor)
+    scene.add(sample_ui_actor)
     assert len(scene.main_scene.children) == 3  # Background + actor + AmbientLight
+    assert len(scene.ui_scene.children) == 2  #  ui camera + ui actor
     scene.clear()
     assert len(scene.main_scene.children) == 2  # Background + AmbientLight
+    assert len(scene.ui_scene.children) == 0
 
 
 def test_screen_initialization_default():
@@ -91,8 +107,11 @@ def test_screen_initialization_default():
     assert screen.position == (0, 0)  # Default position of pygfx
     assert isinstance(screen.camera, PerspectiveCamera)
     assert isinstance(screen.controller, OrbitController)
-    # Background + AmbientLight + Camera
-    assert len(screen.scene.main_scene.children) == 3
+
+    assert (
+        len(screen.scene.main_scene.children) == 3
+    )  # Background + AmbientLight + Camera
+    assert len(screen.scene.ui_scene.children) == 1  # Camera
     # Directional Light
     assert len(screen.camera.children) == 1
 
@@ -107,8 +126,9 @@ def test_screen_initialization_custom():
     assert screen.scene == scene
     assert screen.camera == camera
     assert screen.controller == controller
-    # Background + AmbientLight
-    assert len(screen.scene.main_scene.children) == 2
+
+    assert len(screen.scene.main_scene.children) == 2  # Background + AmbientLight
+    assert len(screen.scene.ui_scene.children) == 1  # Camera
 
 
 def test_screen_bounding_box():
@@ -300,6 +320,7 @@ def test_show_manager_empty_scene():
     assert (
         len(show_m.screens[0].scene.main_scene.children) == 3
     )  # Background + AmbientLight + Camera
+    assert len(show_m.screens[0].scene.ui_scene.children) == 1  # UI Camera
 
 
 def test_show_manager_with_empty_config():
