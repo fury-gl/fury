@@ -423,7 +423,7 @@ def test_add_remove_ui_to_from_scene(sample_actor):
     assert len(scene.ui_elements) == 1
     assert len(scene.ui_scene.children) == 1 + len(should_remain_actors)
 
-    # Remove NonExistant Child
+    # Remove Non Existent Child
     scene.remove(subchild_31)
 
     assert parent in scene.ui_elements
