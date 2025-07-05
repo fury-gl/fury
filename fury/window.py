@@ -169,6 +169,7 @@ class Scene(GfxGroup):
         """Remove all actors from the scene, keeping background and lights."""
         self.main_scene.clear()
         self.ui_scene.clear()
+        self.ui_elements.clear()
         self.main_scene.add(self._bg_actor)
         self.main_scene.add(*self.lights)
 
