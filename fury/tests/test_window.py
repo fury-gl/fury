@@ -339,7 +339,7 @@ def test_display_default(sample_actor):
 
 
 def test_add_remove_ui_to_from_scene(sample_actor):
-    """Test add/remove ui hierarchy to/from scene."""
+    """Test add/remove UI hierarchy to/from scene."""
 
     parent = Rectangle2D()
     child_1, child_2, child_3 = (
@@ -438,7 +438,7 @@ def test_add_remove_ui_to_from_scene(sample_actor):
 
 
 def test_add_to_scene(sample_actor, sample_ui_actor):
-    """Test add/remove ui hierarchy to/from scene."""
+    """Test add/remove elements to/from scene."""
 
     scene = Scene()
 
