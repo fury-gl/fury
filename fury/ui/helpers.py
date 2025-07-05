@@ -1,6 +1,19 @@
 """Helper variable or function for UI Elements."""
 
+from enum import Enum
+
 import numpy as np
+
+
+class Anchor(str, Enum):
+    """Enum for Position Anchor Points."""
+
+    LEFT = "LEFT"
+    RIGHT = "RIGHT"
+    TOP = "TOP"
+    BOTTOM = "BOTTOM"
+    CENTER = "CENTER"
+
 
 TWO_PI = 2 * np.pi
 
