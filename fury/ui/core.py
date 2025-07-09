@@ -18,7 +18,6 @@ from fury.lib import (
 from fury.material import (
     _create_mesh_material,
 )
-from fury.primitive import prim_disk
 from fury.ui import UIContext
 from fury.ui.helpers import Anchor
 

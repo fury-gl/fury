@@ -299,7 +299,8 @@ def test_rectangle2d_visual_snapshot(mock_ui_context_v1):
 #     npt.assert_almost_equal(mean_b, 0, decimal=0)
 #     assert 0 < mean_g <= 255
 
-#     # Creating new scene because if we reuse previous scene a new camera is again added
+#     # Creating new scene because if we reuse previous scene
+#       a new camera is again added
 #     scene = window.Scene()
 #     scene.add(disk)
 
