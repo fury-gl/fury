@@ -1,473 +1,319 @@
 """Core module testing."""
 
-from os.path import join as pjoin
+from unittest.mock import patch
 
+from PIL import Image
 import numpy as np
 import numpy.testing as npt
 import pytest
 
 from fury import ui, window
-from fury.data import DATA_DIR, fetch_viz_icons, read_viz_icons
-from fury.testing import EventCounter
-
-##############################################################################
-# Temporary variable until we fix the tests and module import
-
-# skip all the test in this module
-pytest.skip(allow_module_level=True)
-##############################################################################
+from fury.lib import Mesh
+from fury.ui.helpers import Anchor
 
 
-def test_ui_button_panel(recording=False):
-    filename = "test_ui_button_panel"
-    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+@pytest.fixture
+def mock_ui_context_v1():
+    """Mock UIContext for V1 UI (y_anchor BOTTOM)."""
+    with (
+        patch("fury.ui.UIContext.get_is_v2_ui", return_value=False),
+        patch("fury.ui.UIContext.get_canvas_size", return_value=(800, 600)),
+    ):  # Consistent canvas size for positioning
+        yield ui.UIContext
 
-    # Rectangle
-    rectangle_test = ui.Rectangle2D(size=(10, 10))
-    another_rectangle_test = ui.Rectangle2D(size=(1, 1))
 
-    # Button
-    fetch_viz_icons()
+@pytest.fixture
+def mock_ui_context_v2():
+    """Mock UIContext for V2 UI (y_anchor TOP)."""
+    with (
+        patch("fury.ui.UIContext.get_is_v2_ui", return_value=True),
+        patch("fury.ui.UIContext.get_canvas_size", return_value=(800, 600)),
+    ):  # Consistent canvas size for positioning
+        yield ui.UIContext
 
-    icon_files = []
-    icon_files.append(("stop", read_viz_icons(fname="stop2.png")))
-    icon_files.append(("play", read_viz_icons(fname="play3.png")))
 
-    button_test = ui.Button2D(icon_fnames=icon_files)
-    button_test.center = (20, 20)
+def test_rectangle2d_initialization_default(mock_ui_context_v1):
+    """
+    Test Rectangle2D initialization with default parameters.
+    Checks default size, color, opacity, and position.
+    """
+    rect = ui.Rectangle2D()
+    npt.assert_equal(rect.size, (0, 0))  # Default size
+    npt.assert_array_equal(
+        rect.color, [1, 1, 1, 1]
+    )  # Default color (white, with alpha)
+    npt.assert_equal(rect.opacity, 1.0)
+    assert isinstance(rect.actor, Mesh)
+    assert rect.actor in rect.actors
+    # Default position (0,0) with LEFT, BOTTOM anchor for V1 UI
+    npt.assert_array_equal(rect.get_position(Anchor.LEFT, Anchor.BOTTOM), [0, 0])
 
-    def make_invisible(i_ren, _obj, button):
-        # i_ren: CustomInteractorStyle
-        # obj: vtkActor picked
-        # button: Button2D
-        button.set_visibility(False)
-        i_ren.force_render()
-        i_ren.event.abort()
 
-    def modify_button_callback(i_ren, _obj, button):
-        # i_ren: CustomInteractorStyle
-        # obj: vtkActor picked
-        # button: Button2D
-        button.next_icon()
-        i_ren.force_render()
+def test_rectangle2d_initialization_custom(mock_ui_context_v1):
+    """
+    Test Rectangle2D initialization with custom parameters.
+    Checks custom size, position, color, and opacity.
+    """
+    custom_size = (200, 100)
+    custom_position = (50, 80)
+    custom_color = (0.5, 0.2, 0.8)
+    custom_opacity = 0.7
 
-    button_test.on_right_mouse_button_pressed = make_invisible
-    button_test.on_left_mouse_button_pressed = modify_button_callback
-
-    button_test.scale((2, 2))
-    button_color = button_test.color
-    button_test.color = button_color
-
-    # TextBlock
-    text_block_test = ui.TextBlock2D()
-    text_block_test.message = "TextBlock"
-    text_block_test.color = (0, 0, 0)
-
-    # Panel
-    panel = ui.Panel2D(
-        size=(300, 150),
-        position=(290, 15),
-        color=(1, 1, 1),
-        align="right",
-        has_border=True,
+    rect = ui.Rectangle2D(
+        size=custom_size,
+        position=custom_position,
+        color=custom_color,
+        opacity=custom_opacity,
     )
 
-    non_bordered_panel = ui.Panel2D(size=(100, 100), has_border=False)
-
-    npt.assert_equal(hasattr(non_bordered_panel, "borders"), False)
-
-    panel.add_element(rectangle_test, (290, 135))
-    panel.add_element(button_test, (0.1, 0.1))
-    panel.add_element(text_block_test, (0.7, 0.7))
-    npt.assert_raises(
-        ValueError, panel.add_element, another_rectangle_test, (10.0, 0.5)
+    npt.assert_equal(rect.size, custom_size)
+    npt.assert_array_equal(
+        rect.get_position(Anchor.LEFT, Anchor.BOTTOM), custom_position
     )
-    npt.assert_raises(
-        ValueError, panel.add_element, another_rectangle_test, (-0.5, 0.5)
-    )
-
-    npt.assert_equal(
-        panel.border_width,
-        [
-            0.0,
-        ]
-        * 4,
-    )
-    npt.assert_equal(
-        panel.border_color,
-        [
-            np.asarray([1, 1, 1]),
-        ]
-        * 4,
-    )
-
-    panel.border_width = ["bottom", 10.0]
-    npt.assert_equal(panel.border_width[3], 10.0)
-    npt.assert_equal(panel.borders["bottom"].height, 10.0)
-
-    panel.border_width = ["right", 10.0]
-    npt.assert_equal(panel.border_width[1], 10.0)
-    npt.assert_equal(panel.borders["right"].width, 10.0)
-
-    with npt.assert_raises(ValueError):
-        panel.border_width = ["invalid_label", 10.0]
-
-    panel.border_color = ["bottom", (0.4, 0.5, 0.6)]
-    npt.assert_equal(panel.border_color[3], (0.4, 0.5, 0.6))
-
-    with npt.assert_raises(ValueError):
-        panel.border_color = ["invalid_label", (0.4, 0.5, 0.6)]
-
-    new_size = (400, 400)
-    panel.resize(new_size)
-    npt.assert_equal(panel.borders["bottom"].width, 400.0)
-    # Assign the counter callback to every possible event.
-    event_counter = EventCounter()
-    event_counter.monitor(button_test)
-    event_counter.monitor(panel.background)
-
-    current_size = (600, 600)
-    show_manager = window.ShowManager(size=current_size, title="FURY Button")
-
-    show_manager.scene.add(panel)
-    # from time import sleep
-    # for i in range(20):
-    #     arr = window.snapshot(show_manager.scene, offscreen=False)
-    #     print(i)
-    #     sleep(1)
-
-    # show_manager.start()
-
-    if recording:
-        show_manager.record_events_to_file(recording_filename)
-        print(list(event_counter.events_counts.items()))
-        event_counter.save(expected_events_counts_filename)
-
-    else:
-        print(recording_filename)
-        # rf = '/home/elef/Devel/fury/fury/data/files/checking.log.gz'
-        show_manager.play_events_from_file(recording_filename)
-        # recorder.iren.GetRenderWindow().Finalize()
-
-        expected = EventCounter.load(expected_events_counts_filename)
-        event_counter.check_counts(expected)
+    npt.assert_array_almost_equal(rect.color[:3], custom_color)  # Check RGB part
+    npt.assert_almost_equal(rect.opacity, custom_opacity)
+    assert isinstance(rect.actor, Mesh)
+    assert rect.actor in rect.actors
 
 
-def test_ui_rectangle_2d():
-    window_size = (700, 700)
-    show_manager = window.ShowManager(size=window_size)
-
+def test_rectangle2d_width_property(mock_ui_context_v1):
+    """Test width getter and setter for Rectangle2D."""
     rect = ui.Rectangle2D(size=(100, 50))
-    rect.position = (50, 80)
-    npt.assert_equal(rect.position, (50, 80))
+    npt.assert_equal(rect.width, 100)
+    rect.width = 120
+    npt.assert_equal(rect.width, 120)
+    npt.assert_equal(rect.height, 50)  # Height should remain unchanged
+    npt.assert_equal(rect.size, (120, 50))
 
-    rect.color = (1, 0.5, 0)
-    npt.assert_equal(rect.color, (1, 0.5, 0))
 
-    rect.opacity = 0.5
-    npt.assert_equal(rect.opacity, 0.5)
+def test_rectangle2d_height_property(mock_ui_context_v1):
+    """Test height getter and setter for Rectangle2D."""
+    rect = ui.Rectangle2D(size=(100, 50))
+    npt.assert_equal(rect.height, 50)
+    rect.height = 70
+    npt.assert_equal(rect.height, 70)
+    npt.assert_equal(rect.width, 100)  # Width should remain unchanged
+    npt.assert_equal(rect.size, (100, 70))
 
-    # Check the rectangle is drawn at right place.
-    show_manager.scene.add(rect)
-    # Uncomment this to start the visualisation
-    # show_manager.start()
 
-    colors = [rect.color]
-    arr = window.snapshot(show_manager.scene, size=window_size, offscreen=True)
-    report = window.analyze_snapshot(arr, colors=colors)
-    npt.assert_equal(report.objects, 1)
-    npt.assert_equal(report.colors_found, [False])
+def test_rectangle2d_color_property(mock_ui_context_v1):
+    """Test color getter and setter for Rectangle2D."""
+    rect = ui.Rectangle2D()
+    npt.assert_array_equal(rect.color, [1, 1, 1, 1])  # Default color
+    new_color = (0.1, 0.2, 0.3)
+    rect.color = new_color
+    npt.assert_array_almost_equal(rect.color[:3], new_color)
 
-    # Test visibility off.
+
+def test_rectangle2d_opacity_property(mock_ui_context_v1):
+    """Test opacity getter and setter for Rectangle2D."""
+    rect = ui.Rectangle2D()
+    npt.assert_equal(rect.opacity, 1.0)
+    new_opacity = 0.5
+    rect.opacity = new_opacity
+    npt.assert_equal(rect.opacity, new_opacity)
+
+
+def test_rectangle2d_resize(mock_ui_context_v1):
+    """Test resize method for Rectangle2D."""
+    rect = ui.Rectangle2D(size=(100, 50))
+    new_size = (250, 150)
+    rect.resize(new_size)
+    npt.assert_equal(rect.size, new_size)
+
+
+def test_rectangle2d_set_visibility(mock_ui_context_v1):
+    """Test set_visibility method for Rectangle2D."""
+    rect = ui.Rectangle2D(size=(10, 10))
     rect.set_visibility(False)
-    arr = window.snapshot(show_manager.scene, size=window_size, offscreen=True)
-    report = window.analyze_snapshot(arr)
-    npt.assert_equal(report.objects, 0)
+    assert rect.actor.visible is False
+    rect.set_visibility(True)
+    assert rect.actor.visible is True
 
 
-def test_ui_disk_2d():
-    window_size = (700, 700)
-    show_manager = window.ShowManager(size=window_size)
-
-    disk = ui.Disk2D(outer_radius=20, inner_radius=5)
-    disk.position = (50, 80)
-    npt.assert_equal(disk.position, (50, 80))
-
-    disk.color = (1, 0.5, 0)
-    npt.assert_equal(disk.color, (1, 0.5, 0))
-
-    disk.opacity = 0.5
-    npt.assert_equal(disk.opacity, 0.5)
-
-    # Check the rectangle is drawn at right place.
-    show_manager.scene.add(disk)
-    # Uncomment this to start the visualisation
-    # show_manager.start()
-
-    colors = [disk.color]
-    arr = window.snapshot(show_manager.scene, size=window_size, offscreen=True)
-    report = window.analyze_snapshot(arr, colors=colors)
-    npt.assert_equal(report.objects, 1)
-    # Should be False because of the offscreen
-    npt.assert_equal(report.colors_found, [False])
-
-    # Test visibility off.
-    disk.set_visibility(False)
-    arr = window.snapshot(show_manager.scene, size=window_size, offscreen=True)
-    report = window.analyze_snapshot(arr)
-    npt.assert_equal(report.objects, 0)
+def test_disk2d_initialization_default(mock_ui_context_v1):
+    """
+    Test Disk2D initialization with default parameters.
+    Checks default center, color, opacity, and required outer_radius.
+    """
+    disk_ui = ui.Disk2D(outer_radius=10)
+    npt.assert_equal(disk_ui.outer_radius, 10)
+    npt.assert_array_equal(
+        disk_ui.get_position(Anchor.CENTER, Anchor.CENTER), [0, 0]
+    )  # Default center
+    npt.assert_array_equal(
+        disk_ui.color, [1, 1, 1, 1]
+    )  # Default color (white, with alpha)
+    npt.assert_equal(disk_ui.opacity, 1.0)
+    assert isinstance(disk_ui.actor, Mesh)
+    assert disk_ui.actor in disk_ui.actors
+    npt.assert_equal(disk_ui.size, (20, 20))  # Diameter is 2 * radius
 
 
-def test_text_block_2d():
-    text_block = ui.TextBlock2D()
+def test_disk2d_initialization_custom(mock_ui_context_v1):
+    """
+    Test Disk2D initialization with custom parameters.
+    Checks custom outer_radius, center, color, and opacity.
+    """
+    custom_radius = 25
+    custom_center = (100, 150)
+    custom_color = (0.9, 0.1, 0.4)
+    custom_opacity = 0.6
 
-    def _check_property(obj, attr, values):
-        for value in values:
-            setattr(obj, attr, value)
-            npt.assert_equal(getattr(obj, attr), value)
-
-    _check_property(text_block, "bold", [True, False])
-    _check_property(text_block, "italic", [True, False])
-    _check_property(text_block, "shadow", [True, False])
-    _check_property(text_block, "auto_font_scale", [True, False])
-    _check_property(text_block, "font_size", range(100))
-    _check_property(text_block, "message", ["", "Hello World", "Line\nBreak"])
-    _check_property(text_block, "justification", ["left", "center", "right"])
-    _check_property(text_block, "position", [(350, 350), (0.5, 0.5)])
-    _check_property(text_block, "color", [(0.0, 0.5, 1.0)])
-    _check_property(text_block, "background_color", [(0.0, 0.5, 1.0), None])
-    _check_property(text_block, "vertical_justification", ["top", "middle", "bottom"])
-    _check_property(text_block, "font_family", ["Arial", "Courier"])
-
-    with npt.assert_raises(ValueError):
-        text_block.font_family = "Verdana"
-
-    with npt.assert_raises(ValueError):
-        text_block.justification = "bottom"
-
-    with npt.assert_raises(ValueError):
-        text_block.vertical_justification = "left"
-
-
-def test_text_block_2d_justification():
-    window_size = (700, 700)
-    show_manager = window.ShowManager(size=window_size)
-
-    # To help visualize the text positions.
-    grid_size = (500, 500)
-    bottom, middle, top = 50, 300, 550
-    left, center, right = 50, 300, 550
-    line_color = (1, 0, 0)
-
-    grid_top = (center, top), (grid_size[0], 1)
-    grid_bottom = (center, bottom), (grid_size[0], 1)
-    grid_left = (left, middle), (1, grid_size[1])
-    grid_right = (right, middle), (1, grid_size[1])
-    grid_middle = (center, middle), (grid_size[0], 1)
-    grid_center = (center, middle), (1, grid_size[1])
-    grid_specs = [
-        grid_top,
-        grid_bottom,
-        grid_left,
-        grid_right,
-        grid_middle,
-        grid_center,
-    ]
-    for spec in grid_specs:
-        line = ui.Rectangle2D(size=spec[1], color=line_color)
-        line.center = spec[0]
-        show_manager.scene.add(line)
-
-    font_size = 60
-    bg_color = (1, 1, 1)
-    texts = []
-    texts += [
-        ui.TextBlock2D(
-            text="HH",
-            position=(left, top),
-            font_size=font_size,
-            color=(1, 0, 0),
-            bg_color=bg_color,
-            justification="left",
-            vertical_justification="top",
-        )
-    ]
-    texts += [
-        ui.TextBlock2D(
-            text="HH",
-            position=(center, top),
-            font_size=font_size,
-            color=(0, 1, 0),
-            bg_color=bg_color,
-            justification="center",
-            vertical_justification="top",
-        )
-    ]
-    texts += [
-        ui.TextBlock2D(
-            text="HH",
-            position=(right, top),
-            font_size=font_size,
-            color=(0, 0, 1),
-            bg_color=bg_color,
-            justification="right",
-            vertical_justification="top",
-        )
-    ]
-
-    texts += [
-        ui.TextBlock2D(
-            text="HH",
-            position=(left, middle),
-            font_size=font_size,
-            color=(1, 1, 0),
-            bg_color=bg_color,
-            justification="left",
-            vertical_justification="middle",
-        )
-    ]
-    texts += [
-        ui.TextBlock2D(
-            text="HH",
-            position=(center, middle),
-            font_size=font_size,
-            color=(0, 1, 1),
-            bg_color=bg_color,
-            justification="center",
-            vertical_justification="middle",
-        )
-    ]
-    texts += [
-        ui.TextBlock2D(
-            text="HH",
-            position=(right, middle),
-            font_size=font_size,
-            color=(1, 0, 1),
-            bg_color=bg_color,
-            justification="right",
-            vertical_justification="middle",
-        )
-    ]
-
-    texts += [
-        ui.TextBlock2D(
-            text="HH",
-            position=(left, bottom),
-            font_size=font_size,
-            color=(0.5, 0, 1),
-            bg_color=bg_color,
-            justification="left",
-            vertical_justification="bottom",
-        )
-    ]
-    texts += [
-        ui.TextBlock2D(
-            text="HH",
-            position=(center, bottom),
-            font_size=font_size,
-            color=(1, 0.5, 0),
-            bg_color=bg_color,
-            justification="center",
-            vertical_justification="bottom",
-        )
-    ]
-    texts += [
-        ui.TextBlock2D(
-            text="HH",
-            position=(right, bottom),
-            font_size=font_size,
-            color=(0, 1, 0.5),
-            bg_color=bg_color,
-            justification="right",
-            vertical_justification="bottom",
-        )
-    ]
-
-    show_manager.scene.add(*texts)
-
-    # Uncomment this to start the visualisation
-    # show_manager.start()
-
-    window.snapshot(show_manager.scene, size=window_size, offscreen=True)
-
-
-def test_text_block_2d_size():
-    text_block_0 = ui.TextBlock2D()
-
-    npt.assert_equal(text_block_0.actor.GetTextScaleMode(), 0)
-    npt.assert_equal(text_block_0.size, (180, 18))
-
-    text_block_0.font_size = 50
-    npt.assert_equal(text_block_0.size, (500, 50))
-
-    text_block_0.resize((500, 200))
-    npt.assert_equal(text_block_0.actor.GetTextScaleMode(), 0)
-    npt.assert_equal(text_block_0.size, (500, 200))
-
-    text_block_1 = ui.TextBlock2D(dynamic_bbox=True)
-
-    npt.assert_equal(text_block_1.actor.GetTextScaleMode(), 0)
-    npt.assert_equal(
-        text_block_1.size,
-        ((len("Text Block") * text_block_1.font_size, text_block_1.font_size)),
+    disk_ui = ui.Disk2D(
+        outer_radius=custom_radius,
+        center=custom_center,
+        color=custom_color,
+        opacity=custom_opacity,
     )
 
-    text_block_1.font_size = 50
-    npt.assert_equal(
-        text_block_1.size,
-        (len("Text Block") * text_block_1.font_size, text_block_1.font_size),
+    npt.assert_equal(disk_ui.outer_radius, custom_radius)
+    npt.assert_array_equal(
+        disk_ui.get_position(Anchor.CENTER, Anchor.CENTER), custom_center
+    )
+    npt.assert_array_almost_equal(disk_ui.color[:3], custom_color)
+    npt.assert_almost_equal(disk_ui.opacity, custom_opacity)
+    assert isinstance(disk_ui.actor, Mesh)
+    assert disk_ui.actor in disk_ui.actors
+    npt.assert_equal(disk_ui.size, (50, 50))  # Diameter is 2 * radius
+
+
+def test_disk2d_outer_radius_property(mock_ui_context_v1):
+    """Test outer_radius getter and setter for Disk2D."""
+    disk_ui = ui.Disk2D(outer_radius=10)
+    npt.assert_equal(disk_ui.outer_radius, 10)
+    npt.assert_equal(disk_ui.size, (20, 20))  # Diameter
+
+    disk_ui.outer_radius = 15
+    npt.assert_equal(disk_ui.outer_radius, 15)
+    npt.assert_equal(disk_ui.size, (30, 30))  # New diameter
+
+
+def test_disk2d_color_property(mock_ui_context_v1):
+    """Test color getter and setter for Disk2D."""
+    disk_ui = ui.Disk2D(outer_radius=10)
+    npt.assert_array_almost_equal(disk_ui.color, [1, 1, 1, 1])
+    new_color = (0.6, 0.7, 0.8)
+    disk_ui.color = new_color
+    npt.assert_array_almost_equal(disk_ui.color[:3], new_color)
+
+
+def test_disk2d_opacity_property(mock_ui_context_v1):
+    """Test opacity getter and setter for Disk2D."""
+    disk_ui = ui.Disk2D(outer_radius=10)
+    npt.assert_almost_equal(disk_ui.opacity, 1.0)
+    new_opacity = 0.3
+    disk_ui.opacity = new_opacity
+    npt.assert_almost_equal(disk_ui.opacity, new_opacity)
+
+
+def test_disk2d_set_visibility(mock_ui_context_v1):
+    """Test set_visibility method for Disk2D."""
+    disk_ui = ui.Disk2D(outer_radius=10)
+    disk_ui.set_visibility(False)
+    assert disk_ui.actor.visible is False
+    disk_ui.set_visibility(True)
+    assert disk_ui.actor.visible is True
+
+
+def test_rectangle2d_visual_snapshot(mock_ui_context_v1):
+    """Visual test for Rectangle2D."""
+    rect_size = (50, 50)
+    rect_pos_ui = (75, 75)
+    rect_color = (1.0, 0.0, 0.0)
+
+    rect = ui.Rectangle2D(
+        size=rect_size,
+        position=rect_pos_ui,
+        color=rect_color,
+        opacity=1.0,
     )
 
-    text_block_1.resize((500, 200))
-    npt.assert_equal(text_block_1.actor.GetTextScaleMode(), 0)
-    npt.assert_equal(text_block_1.size, (500, 200))
+    scene = window.Scene()
+    scene.add(rect)
 
-    text_block_2 = ui.TextBlock2D(
-        text="Just Another Text Block", dynamic_bbox=True, auto_font_scale=True
+    fname = "rect_test_visible.png"
+    window.snapshot(scene=scene, fname=fname)
+
+    img = Image.open(fname)
+    img_array = np.array(img)
+
+    mean_r, mean_g, mean_b, _mean_a = np.mean(
+        img_array.reshape(-1, img_array.shape[2]), axis=0
     )
 
-    npt.assert_equal(text_block_2.actor.GetTextScaleMode(), 1)
-    npt.assert_equal(
-        text_block_2.size,
-        (
-            len("Just Another Text Block") * text_block_2.font_size,
-            text_block_2.font_size,
-        ),
+    assert mean_r > mean_b and mean_r > mean_g
+
+    npt.assert_almost_equal(mean_g, 0, decimal=0)
+    npt.assert_almost_equal(mean_b, 0, decimal=0)
+    assert 0 < mean_r <= 255
+
+    # Creating new scene because if we reuse previous scene a new camera is again added
+    scene = window.Scene()
+    scene.add(rect)
+
+    rect.set_visibility(False)
+    fname_hidden = "rect_test_hidden.png"
+    window.snapshot(scene=scene, fname=fname_hidden)
+
+    img_hidden = Image.open(fname_hidden)
+    img_array_hidden = np.array(img_hidden)
+
+    mean_r_hidden, mean_g_hidden, mean_b_hidden, _mean_a_hidden = np.mean(
+        img_array_hidden.reshape(-1, img_array_hidden.shape[2]), axis=0
     )
-
-    text_block_2.resize((500, 200))
-    npt.assert_equal(text_block_2.actor.GetTextScaleMode(), 1)
-    npt.assert_equal(text_block_2.size, (500, 200))
-
-    text_block_2.position = (100, 100)
-    npt.assert_equal(text_block_2.position, (100, 100))
-
-    text_block_3 = ui.TextBlock2D(size=(200, 200))
-
-    npt.assert_equal(text_block_3.actor.GetTextScaleMode(), 0)
-    npt.assert_equal(text_block_3.size, (200, 200))
-
-    text_block_3.resize((500, 200))
-    npt.assert_equal(text_block_3.actor.GetTextScaleMode(), 0)
-    npt.assert_equal(text_block_3.size, (500, 200))
-
-    text_block_3.message = "Hey Trying\nBig Text"
-    npt.assert_equal(text_block_3.size, (500, 200))
-    text_block_3.dynamic_bbox = True
-    npt.assert_equal(text_block_3.size, text_block_3.cal_size_from_message())
-    text_block_3.message = "Hello\nLine 1\nLine 2\nLine 3\nLine 4"
-    npt.assert_equal(text_block_3.size, text_block_3.cal_size_from_message())
-
-    bb_size = text_block_3.size
-    text_block_3.dynamic_bbox = False
-    text_block_3.message = "Hey Trying\nBig Text"
-    npt.assert_equal(text_block_3.size, bb_size)
-
-    text_block_3.auto_font_scale = True
-    npt.assert_equal(text_block_3.actor.GetTextScaleMode(), 1)
-    npt.assert_equal(text_block_3.justification, "left")
-    npt.assert_equal(text_block_3.size, bb_size)
+    npt.assert_almost_equal(mean_r_hidden, 0, decimal=0)
+    npt.assert_almost_equal(mean_g_hidden, 0, decimal=0)
+    npt.assert_almost_equal(mean_b_hidden, 0, decimal=0)
 
 
-# test_ui_button_panel(recording=True)
+# Unable to set color for disk
+# def test_disk2d_visual_snapshot(mock_ui_context_v1):
+#     """Visual test for Disk2D."""
+#     disk_radius = 25
+#     disk_center_ui = (100, 100)
+#     disk_color = (0.0, 1.0, 0.0)
+
+#     disk = ui.Disk2D(
+#         outer_radius=disk_radius,
+#         center=disk_center_ui,
+#         color=disk_color,
+#     )
+
+#     scene = window.Scene()
+#     scene.add(disk)
+
+#     fname = "disk_test_visible.png"
+#     window.snapshot(scene=scene, fname=fname)
+
+#     img = Image.open(fname)
+#     img_array = np.array(img)
+
+#     mean_r, mean_g, mean_b, _mean_a = np.mean(
+#         img_array.reshape(-1, img_array.shape[2]), axis=0
+#     )
+
+#     assert mean_g > mean_r and mean_g > mean_b
+
+#     npt.assert_almost_equal(mean_r, 0, decimal=0)
+#     npt.assert_almost_equal(mean_b, 0, decimal=0)
+#     assert 0 < mean_g <= 255
+
+#     # Creating new scene because if we reuse previous scene
+#       a new camera is again added
+#     scene = window.Scene()
+#     scene.add(disk)
+
+#     disk.set_visibility(False)
+#     fname_hidden = "disk_test_hidden.png"
+#     window.snapshot(scene=scene, fname=fname_hidden)
+
+#     img_hidden = Image.open(fname_hidden)
+#     img_array_hidden = np.array(img_hidden)
+
+#     mean_r_hidden, mean_g_hidden, mean_b_hidden, _mean_a_hidden = np.mean(
+#         img_array_hidden.reshape(-1, img_array_hidden.shape[2]), axis=0
+#     )
+#     npt.assert_almost_equal(mean_r_hidden, 0, decimal=0)
+#     npt.assert_almost_equal(mean_g_hidden, 0, decimal=0)
+#     npt.assert_almost_equal(mean_b_hidden, 0, decimal=0)

@@ -1,10 +1,26 @@
 """UI core module that describe UI abstract class."""
 
-# import abc
+import abc
 
-# import numpy as np
+import numpy as np
 
-# from fury.decorators import warn_on_args_to_kwargs
+from fury.actor import disk
+from fury.decorators import warn_on_args_to_kwargs
+from fury.geometry import (
+    create_mesh,
+)
+from fury.lib import (
+    KeyboardEvent,
+    Mesh,
+    PointerEvent,
+    plane_geometry,
+)
+from fury.material import (
+    _create_mesh_material,
+)
+from fury.ui import UIContext
+from fury.ui.helpers import Anchor
+
 # from fury.interactor import CustomInteractorStyle
 # from fury.io import load_image
 # from fury.lib import (
@@ -24,646 +40,880 @@
 # from fury.utils import set_input
 
 
-# class UI(object, metaclass=abc.ABCMeta):
-#     """An umbrella class for all UI elements.
-
-#     While adding UI elements to the scene, we go over all the sub-elements
-#     that come with it and add those to the scene automatically.
-
-#     Attributes
-#     ----------
-#     position : (float, float)
-#         Absolute coordinates (x, y) of the lower-left corner of this
-#         UI component.
-#     center : (float, float)
-#         Absolute coordinates (x, y) of the center of this UI component.
-#     size : (int, int)
-#         Width and height in pixels of this UI component.
-#     on_left_mouse_button_pressed: function
-#         Callback function for when the left mouse button is pressed.
-#     on_left_mouse_button_released: function
-#         Callback function for when the left mouse button is released.
-#     on_left_mouse_button_clicked: function
-#         Callback function for when clicked using the left mouse button
-#         (i.e. pressed -> released).
-#     on_left_mouse_double_clicked: function
-#         Callback function for when left mouse button is double clicked
-#         (i.e pressed -> released -> pressed -> released).
-#     on_left_mouse_button_dragged: function
-#         Callback function for when dragging using the left mouse button.
-#     on_right_mouse_button_pressed: function
-#         Callback function for when the right mouse button is pressed.
-#     on_right_mouse_button_released: function
-#         Callback function for when the right mouse button is released.
-#     on_right_mouse_button_clicked: function
-#         Callback function for when clicking using the right mouse button
-#         (i.e. pressed -> released).
-#     on_right_mouse_double_clicked: function
-#         Callback function for when right mouse button is double clicked
-#         (i.e pressed -> released -> pressed -> released).
-#     on_right_mouse_button_dragged: function
-#         Callback function for when dragging using the right mouse button.
-#     on_middle_mouse_button_pressed: function
-#         Callback function for when the middle mouse button is pressed.
-#     on_middle_mouse_button_released: function
-#         Callback function for when the middle mouse button is released.
-#     on_middle_mouse_button_clicked: function
-#         Callback function for when clicking using the middle mouse button
-#         (i.e. pressed -> released).
-#     on_middle_mouse_double_clicked: function
-#         Callback function for when middle mouse button is double clicked
-#         (i.e pressed -> released -> pressed -> released).
-#     on_middle_mouse_button_dragged: function
-#         Callback function for when dragging using the middle mouse button.
-#     on_key_press: function
-#         Callback function for when a keyboard key is pressed.
-
-#     """
-
-#     @warn_on_args_to_kwargs()
-#     def __init__(self, *, position=(0, 0)):
-#         """Init scene.
-
-#         Parameters
-#         ----------
-#         position : (float, float)
-#             Absolute coordinates (x, y) of the lower-left corner of this
-#             UI component.
-
-#         """
-#         self._scene = object()
-#         self._position = np.array([0, 0])
-#         self._callbacks = []
-
-#         self._setup()  # Setup needed actors and sub UI components.
-#         self.position = position
-
-#         self.left_button_state = "released"
-#         self.right_button_state = "released"
-#         self.middle_button_state = "released"
-
-#         self.on_left_mouse_button_pressed = lambda i_ren, obj, element: None
-#         self.on_left_mouse_button_dragged = lambda i_ren, obj, element: None
-#         self.on_left_mouse_button_released = lambda i_ren, obj, element: None
-#         self.on_left_mouse_button_clicked = lambda i_ren, obj, element: None
-#         self.on_left_mouse_double_clicked = lambda i_ren, obj, element: None
-#         self.on_right_mouse_button_pressed = lambda i_ren, obj, element: None
-#         self.on_right_mouse_button_released = lambda i_ren, obj, element: None
-#         self.on_right_mouse_button_clicked = lambda i_ren, obj, element: None
-#         self.on_right_mouse_double_clicked = lambda i_ren, obj, element: None
-#         self.on_right_mouse_button_dragged = lambda i_ren, obj, element: None
-#         self.on_middle_mouse_button_pressed = lambda i_ren, obj, element: None
-#         self.on_middle_mouse_button_released = lambda i_ren, obj, element: None
-#         self.on_middle_mouse_button_clicked = lambda i_ren, obj, element: None
-#         self.on_middle_mouse_double_clicked = lambda i_ren, obj, element: None
-#         self.on_middle_mouse_button_dragged = lambda i_ren, obj, element: None
-#         self.on_key_press = lambda i_ren, obj, element: None
-
-#     @abc.abstractmethod
-#     def _setup(self):
-#         """Set up this UI component.
-
-#         This is where you should create all your needed actors and sub UI
-#         components.
-
-#         """
-#         msg = "Subclasses of UI must implement `_setup(self)`."
-#         raise NotImplementedError(msg)
-
-#     @abc.abstractmethod
-#     def _get_actors(self):
-#         """Get the actors composing this UI component."""
-#         msg = "Subclasses of UI must implement `_get_actors(self)`."
-#         raise NotImplementedError(msg)
-
-#     @property
-#     def actors(self):
-#         """Actors composing this UI component."""
-#         return self._get_actors()
-
-#     @abc.abstractmethod
-#     def _add_to_scene(self, _scene):
-#         """Add all subcomponents or VTK props that compose this UI component.
-
-#         Parameters
-#         ----------
-#         _scene : Scene
-
-#         """
-#         msg = "Subclasses of UI must implement `_add_to_scene(self, scene)`."
-#         raise NotImplementedError(msg)
-
-#     def add_to_scene(self, scene):
-#         """Allow UI objects to add their own props to the scene.
-
-#         Parameters
-#         ----------
-#         scene : scene
-
-#         """
-#         self._add_to_scene(scene)
-
-#         # Get a hold on the current interactor style.
-#         iren = scene.GetRenderWindow().GetInteractor().GetInteractorStyle()
-
-#         for callback in self._callbacks:
-#             if not isinstance(iren, CustomInteractorStyle):
-#                 msg = (
-#                     "The ShowManager requires `CustomInteractorStyle` in"
-#                     " order to use callbacks."
-#                 )
-#                 raise TypeError(msg)
-
-#             if callback[0] == self._scene:
-#                 iren.add_callback(iren, callback[1], callback[2], args=[self])
-#             else:
-#                 # iren.add_callback(*callback, args=[self])
-#                 if len(callback) > 3:
-#                     iren.add_callback(
-#                               *callback[:3], priority=callback[3], args=[self])
-
-#     @warn_on_args_to_kwargs()
-#     def add_callback(self, prop, event_type, callback, *, priority=0):
-#         """Add a callback to a specific event for this UI component.
-
-#         Parameters
-#         ----------
-#         prop : vtkProp
-#             The prop on which is callback is to be added.
-#         event_type : string
-#             The event code.
-#         callback : function
-#             The callback function.
-#         priority : int
-#             Higher number is higher priority.
-
-#         """
-#         # Actually since we need an interactor style we will add the callback
-#         # only when this UI component is added to the scene.
-#         self._callbacks.append((prop, event_type, callback, priority))
-
-#     @property
-#     def position(self):
-#         return self._position
-
-#     @position.setter
-#     def position(self, coords):
-#         coords = np.asarray(coords)
-#         self._set_position(coords)
-#         self._position = coords
-
-#     @abc.abstractmethod
-#     def _set_position(self, _coords):
-#         """Position the lower-left corner of this UI component.
-
-#         Parameters
-#         ----------
-#         _coords: (float, float)
-#             Absolute pixel coordinates (x, y).
-
-#         """
-#         msg = "Subclasses of UI must implement `_set_position(self, coords)`."
-#         raise NotImplementedError(msg)
-
-#     @property
-#     def size(self):
-#         return np.asarray(self._get_size(), dtype=int)
-
-#     @abc.abstractmethod
-#     def _get_size(self):
-#         msg = "Subclasses of UI must implement property `size`."
-#         raise NotImplementedError(msg)
-
-#     @property
-#     def center(self):
-#         return self.position + self.size / 2.0
-
-#     @center.setter
-#     def center(self, coords):
-#         """Position the center of this UI component.
-
-#         Parameters
-#         ----------
-#         coords: (float, float)
-#             Absolute pixel coordinates (x, y).
-
-#         """
-#         if not hasattr(self, "size"):
-#             msg = "Subclasses of UI must implement the `size` property."
-#             raise NotImplementedError(msg)
-
-#         new_center = np.array(coords)
-#         size = np.array(self.size)
-#         new_lower_left_corner = new_center - size / 2.0
-#         self.position = new_lower_left_corner
-
-#     def set_visibility(self, visibility):
-#         """Set visibility of this UI component."""
-#         for actor in self.actors:
-#             actor.SetVisibility(visibility)
-
-#     def handle_events(self, actor):
-#         self.add_callback(
-#             actor, "LeftButtonPressEvent", self.left_button_click_callback
-#         )
-#         self.add_callback(
-#             actor, "LeftButtonReleaseEvent", self.left_button_release_callback
-#         )
-#         self.add_callback(
-#             actor, "RightButtonPressEvent", self.right_button_click_callback
-#         )
-#         self.add_callback(
-#             actor, "RightButtonReleaseEvent", self.right_button_release_callback
-#         )
-#         self.add_callback(
-#             actor, "MiddleButtonPressEvent", self.middle_button_click_callback
-#         )
-#         self.add_callback(
-#             actor, "MiddleButtonReleaseEvent", self.middle_button_release_callback
-#         )
-#         self.add_callback(actor, "MouseMoveEvent", self.mouse_move_callback)
-#         self.add_callback(actor, "KeyPressEvent", self.key_press_callback)
-
-#     @staticmethod
-#     def left_button_click_callback(i_ren, obj, self):
-#         self.left_button_state = "pressing"
-#         self.on_left_mouse_button_pressed(i_ren, obj, self)
-#         i_ren.event.abort()
-
-#     @staticmethod
-#     def left_button_release_callback(i_ren, obj, self):
-#         if self.left_button_state == "pressing":
-#             self.on_left_mouse_button_clicked(i_ren, obj, self)
-#         self.left_button_state = "released"
-#         self.on_left_mouse_button_released(i_ren, obj, self)
-
-#     @staticmethod
-#     def right_button_click_callback(i_ren, obj, self):
-#         self.right_button_state = "pressing"
-#         self.on_right_mouse_button_pressed(i_ren, obj, self)
-#         i_ren.event.abort()
-
-#     @staticmethod
-#     def right_button_release_callback(i_ren, obj, self):
-#         if self.right_button_state == "pressing":
-#             self.on_right_mouse_button_clicked(i_ren, obj, self)
-#         self.right_button_state = "released"
-#         self.on_right_mouse_button_released(i_ren, obj, self)
-
-#     @staticmethod
-#     def middle_button_click_callback(i_ren, obj, self):
-#         self.middle_button_state = "pressing"
-#         self.on_middle_mouse_button_pressed(i_ren, obj, self)
-#         i_ren.event.abort()
-
-#     @staticmethod
-#     def middle_button_release_callback(i_ren, obj, self):
-#         if self.middle_button_state == "pressing":
-#             self.on_middle_mouse_button_clicked(i_ren, obj, self)
-#         self.middle_button_state = "released"
-#         self.on_middle_mouse_button_released(i_ren, obj, self)
-
-#     @staticmethod
-#     def mouse_move_callback(i_ren, obj, self):
-#         left_pressing_or_dragging = (
-#             self.left_button_state == "pressing" or
-# self.left_button_state == "dragging"
-#         )
-
-#         right_pressing_or_dragging = (
-#             self.right_button_state == "pressing"
-#             or self.right_button_state == "dragging"
-#         )
-
-#         middle_pressing_or_dragging = (
-#             self.middle_button_state == "pressing"
-#             or self.middle_button_state == "dragging"
-#         )
-
-#         if left_pressing_or_dragging:
-#             self.left_button_state = "dragging"
-#             self.on_left_mouse_button_dragged(i_ren, obj, self)
-#         elif right_pressing_or_dragging:
-#             self.right_button_state = "dragging"
-#             self.on_right_mouse_button_dragged(i_ren, obj, self)
-#         elif middle_pressing_or_dragging:
-#             self.middle_button_state = "dragging"
-#             self.on_middle_mouse_button_dragged(i_ren, obj, self)
-
-#     @staticmethod
-#     def key_press_callback(i_ren, obj, self):
-#         self.on_key_press(i_ren, obj, self)
-
-
-# class Rectangle2D(UI):
-#     """A 2D rectangle sub-classed from UI."""
-
-#     @warn_on_args_to_kwargs()
-#     def __init__(self, *, size=(0, 0), position=(0, 0), color=(1, 1, 1), opacity=1.0):
-#         """Initialize a rectangle.
-
-#         Parameters
-#         ----------
-#         size : (int, int)
-#             The size of the rectangle (width, height) in pixels.
-#         position : (float, float)
-#             Coordinates (x, y) of the lower-left corner of the rectangle.
-#         color : (float, float, float)
-#             Must take values in [0, 1].
-#         opacity : float
-#             Must take values in [0, 1].
-
-#         """
-#         super(Rectangle2D, self).__init__(position=position)
-#         self.color = color
-#         self.opacity = opacity
-#         self.resize(size)
-
-#     def _setup(self):
-#         """Set up this UI component.
-
-#         Creating the polygon actor used internally.
-#         """
-#         # Setup four points
-#         size = (1, 1)
-#         self._points = Points()
-#         self._points.InsertNextPoint(0, 0, 0)
-#         self._points.InsertNextPoint(size[0], 0, 0)
-#         self._points.InsertNextPoint(size[0], size[1], 0)
-#         self._points.InsertNextPoint(0, size[1], 0)
-
-#         # Create the polygon
-#         polygon = Polygon()
-#         polygon.GetPointIds().SetNumberOfIds(4)  # make a quad
-#         polygon.GetPointIds().SetId(0, 0)
-#         polygon.GetPointIds().SetId(1, 1)
-#         polygon.GetPointIds().SetId(2, 2)
-#         polygon.GetPointIds().SetId(3, 3)
-
-#         # Add the polygon to a list of polygons
-#         polygons = CellArray()
-#         polygons.InsertNextCell(polygon)
-
-#         # Create a PolyData
-#         self._polygonPolyData = PolyData()
-#         self._polygonPolyData.SetPoints(self._points)
-#         self._polygonPolyData.SetPolys(polygons)
-
-#         # Create a mapper and actor
-#         mapper = PolyDataMapper2D()
-#         mapper = set_input(mapper, self._polygonPolyData)
-
-#         self.actor = Actor2D()
-#         self.actor.SetMapper(mapper)
-
-#         # Add default events listener to the VTK actor.
-#         self.handle_events(self.actor)
-
-#     def _get_actors(self):
-#         """Get the actors composing this UI component."""
-#         return [self.actor]
-
-#     def _add_to_scene(self, scene):
-#         """Add all subcomponents or VTK props that compose this UI component.
-
-#         Parameters
-#         ----------
-#         scene : scene
-
-#         """
-#         scene.add(self.actor)
-
-#     def _get_size(self):
-#         # Get 2D coordinates of two opposed corners of the rectangle.
-#         lower_left_corner = np.array(self._points.GetPoint(0)[:2])
-#         upper_right_corner = np.array(self._points.GetPoint(2)[:2])
-#         size = abs(upper_right_corner - lower_left_corner)
-#         return size
-
-#     @property
-#     def width(self):
-#         return self._points.GetPoint(2)[0]
-
-#     @width.setter
-#     def width(self, width):
-#         self.resize((width, self.height))
-
-#     @property
-#     def height(self):
-#         return self._points.GetPoint(2)[1]
-
-#     @height.setter
-#     def height(self, height):
-#         self.resize((self.width, height))
-
-#     def resize(self, size):
-#         """Set the button size.
-
-#         Parameters
-#         ----------
-#         size : (float, float)
-#             Button size (width, height) in pixels.
-
-#         """
-#         self._points.SetPoint(0, 0, 0, 0.0)
-#         self._points.SetPoint(1, size[0], 0, 0.0)
-#         self._points.SetPoint(2, size[0], size[1], 0.0)
-#         self._points.SetPoint(3, 0, size[1], 0.0)
-#         self._polygonPolyData.SetPoints(self._points)
-#         mapper = PolyDataMapper2D()
-#         mapper = set_input(mapper, self._polygonPolyData)
-
-#         self.actor.SetMapper(mapper)
-
-#     def _set_position(self, coords):
-#         """Set the lower-left corner position of this UI component.
-
-#         Parameters
-#         ----------
-#         coords: (float, float)
-#             Absolute pixel coordinates (x, y).
-
-#         """
-#         self.actor.SetPosition(*coords)
-
-#     @property
-#     def color(self):
-#         """Get the rectangle's color."""
-#         color = self.actor.GetProperty().GetColor()
-#         return np.asarray(color)
-
-#     @color.setter
-#     def color(self, color):
-#         """Set the rectangle's color.
-
-#         Parameters
-#         ----------
-#         color : (float, float, float)
-#             RGB. Must take values in [0, 1].
-
-#         """
-#         self.actor.GetProperty().SetColor(*color)
-
-#     @property
-#     def opacity(self):
-#         """Get the rectangle's opacity."""
-#         return self.actor.GetProperty().GetOpacity()
-
-#     @opacity.setter
-#     def opacity(self, opacity):
-#         """Set the rectangle's opacity.
-
-#         Parameters
-#         ----------
-#         opacity : float
-#             Degree of transparency. Must be between [0, 1].
-
-#         """
-#         self.actor.GetProperty().SetOpacity(opacity)
-
-
-# class Disk2D(UI):
-#     """A 2D disk UI component."""
-
-#     @warn_on_args_to_kwargs()
-#     def __init__(
-#         self,
-#         outer_radius,
-#         *,
-#         inner_radius=0,
-#         center=(0, 0),
-#         color=(1, 1, 1),
-#         opacity=1.0,
-#     ):
-#         """Initialize a 2D Disk.
-
-#         Parameters
-#         ----------
-#         outer_radius : int
-#             Outer radius of the disk.
-#         inner_radius : int, optional
-#             Inner radius of the disk. A value > 0, makes a ring.
-#         center : (float, float), optional
-#             Coordinates (x, y) of the center of the disk.
-#         color : (float, float, float), optional
-#             Must take values in [0, 1].
-#         opacity : float, optional
-#             Must take values in [0, 1].
-
-#         """
-#         super(Disk2D, self).__init__()
-#         self.outer_radius = outer_radius
-#         self.inner_radius = inner_radius
-#         self.color = color
-#         self.opacity = opacity
-#         self.center = center
-
-#     def _setup(self):
-#         """Setup this UI component.
-
-#         Creating the disk actor used internally.
-
-#         """
-#         # Setting up disk actor.
-#         self._disk = DiskSource()
-#         self._disk.SetRadialResolution(10)
-#         self._disk.SetCircumferentialResolution(50)
-#         self._disk.Update()
-
-#         # Mapper
-#         mapper = PolyDataMapper2D()
-#         mapper = set_input(mapper, self._disk.GetOutputPort())
-
-#         # Actor
-#         self.actor = Actor2D()
-#         self.actor.SetMapper(mapper)
-
-#         # Add default events listener to the VTK actor.
-#         self.handle_events(self.actor)
-
-#     def _get_actors(self):
-#         """Get the actors composing this UI component."""
-#         return [self.actor]
-
-#     def _add_to_scene(self, scene):
-#         """Add all subcomponents or VTK props that compose this UI component.
-
-#         Parameters
-#         ----------
-#         scene : scene
-
-#         """
-#         scene.add(self.actor)
-
-#     def _get_size(self):
-#         diameter = 2 * self.outer_radius
-#         size = (diameter, diameter)
-#         return size
-
-#     def _set_position(self, coords):
-#         """Set the lower-left corner position of this UI bounding box.
-
-#         Parameters
-#         ----------
-#         coords: (float, float)
-#             Absolute pixel coordinates (x, y).
-
-#         """
-#         # Disk actor are positioned with respect to their center.
-#         self.actor.SetPosition(*coords + self.outer_radius)
-
-#     @property
-#     def color(self):
-#         """Get the color of this UI component."""
-#         color = self.actor.GetProperty().GetColor()
-#         return np.asarray(color)
-
-#     @color.setter
-#     def color(self, color):
-#         """Set the color of this UI component.
-
-#         Parameters
-#         ----------
-#         color : (float, float, float)
-#             RGB. Must take values in [0, 1].
-
-#         """
-#         self.actor.GetProperty().SetColor(*color)
-
-#     @property
-#     def opacity(self):
-#         """Get the opacity of this UI component."""
-#         return self.actor.GetProperty().GetOpacity()
-
-#     @opacity.setter
-#     def opacity(self, opacity):
-#         """Set the opacity of this UI component.
-
-#         Parameters
-#         ----------
-#         opacity : float
-#             Degree of transparency. Must be between [0, 1].
-
-#         """
-#         self.actor.GetProperty().SetOpacity(opacity)
-
-#     @property
-#     def inner_radius(self):
-#         return self._disk.GetInnerRadius()
-
-#     @inner_radius.setter
-#     def inner_radius(self, radius):
-#         self._disk.SetInnerRadius(radius)
-#         self._disk.Update()
-
-#     @property
-#     def outer_radius(self):
-#         return self._disk.GetOuterRadius()
-
-#     @outer_radius.setter
-#     def outer_radius(self, radius):
-#         self._disk.SetOuterRadius(radius)
-#         self._disk.Update()
+class UI(object, metaclass=abc.ABCMeta):
+    """An umbrella class for all UI elements.
+
+    While adding UI elements to the scene, we go over all the sub-elements
+    that come with it and add those to the scene automatically.
+
+    Attributes
+    ----------
+    position : (float, float)
+        Absolute coordinates (x, y) of the lower-left corner of this
+        UI component.
+    center : (float, float)
+        Absolute coordinates (x, y) of the center of this UI component.
+    size : (int, int)
+        Width and height in pixels of this UI component.
+    on_left_mouse_button_pressed: function
+        Callback function for when the left mouse button is pressed.
+    on_left_mouse_button_released: function
+        Callback function for when the left mouse button is released.
+    on_left_mouse_button_clicked: function
+        Callback function for when clicked using the left mouse button
+        (i.e. pressed -> released).
+    on_left_mouse_double_clicked: function
+        Callback function for when left mouse button is double clicked
+        (i.e pressed -> released -> pressed -> released).
+    on_left_mouse_button_dragged: function
+        Callback function for when dragging using the left mouse button.
+    on_right_mouse_button_pressed: function
+        Callback function for when the right mouse button is pressed.
+    on_right_mouse_button_released: function
+        Callback function for when the right mouse button is released.
+    on_right_mouse_button_clicked: function
+        Callback function for when clicking using the right mouse button
+        (i.e. pressed -> released).
+    on_right_mouse_double_clicked: function
+        Callback function for when right mouse button is double clicked
+        (i.e pressed -> released -> pressed -> released).
+    on_right_mouse_button_dragged: function
+        Callback function for when dragging using the right mouse button.
+    on_middle_mouse_button_pressed: function
+        Callback function for when the middle mouse button is pressed.
+    on_middle_mouse_button_released: function
+        Callback function for when the middle mouse button is released.
+    on_middle_mouse_button_clicked: function
+        Callback function for when clicking using the middle mouse button
+        (i.e. pressed -> released).
+    on_middle_mouse_double_clicked: function
+        Callback function for when middle mouse button is double clicked
+        (i.e pressed -> released -> pressed -> released).
+    on_middle_mouse_button_dragged: function
+        Callback function for when dragging using the middle mouse button.
+    on_key_press: function
+        Callback function for when a keyboard key is pressed.
+
+    Parameters
+    ----------
+    position : (float, float)
+        Absolute pixel coordinates `(x, y)` which, in combination with
+        `x_anchor` and `y_anchor`, define the initial placement of this
+        UI component.
+    x_anchor : str, optional
+        Define the horizontal anchor point for `position`. Can be "LEFT",
+        "CENTER", or "RIGHT". Defaults to "LEFT".
+    y_anchor : str, optional
+        Define the vertical anchor point for `position`. Can be "BOTTOM",
+        "CENTER", or "TOP". Defaults to "BOTTOM".
+    """
+
+    def __init__(self, *, position=(0, 0), x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP):
+        """Init scene.
+
+        Parameters
+        ----------
+        position : (float, float)
+            Absolute pixel coordinates `(x, y)` which, in combination with
+            `x_anchor` and `y_anchor`, define the initial placement of this
+            UI component.
+        x_anchor : str, optional
+            Define the horizontal anchor point for `position`. Can be "LEFT",
+            "CENTER", or "RIGHT". Defaults to "LEFT".
+        y_anchor : str, optional
+            Define the vertical anchor point for `position`. Can be "BOTTOM",
+            "CENTER", or "TOP". Defaults to "BOTTOM".
+        """
+        self._position = np.array([0, 0])
+        self._children = []
+        self._actors = []
+
+        self._setup()  # Setup needed actors and sub UI components.
+        self.set_position(position, x_anchor, y_anchor)
+
+        self.left_button_state = "released"
+        self.right_button_state = "released"
+        self.middle_button_state = "released"
+
+        self.on_left_mouse_button_pressed = lambda event: None
+        self.on_left_mouse_button_dragged = lambda event: None
+        self.on_left_mouse_button_released = lambda event: None
+        self.on_left_mouse_button_clicked = lambda event: None
+        self.on_left_mouse_double_clicked = lambda event: None
+        self.on_right_mouse_button_pressed = lambda event: None
+        self.on_right_mouse_button_released = lambda event: None
+        self.on_right_mouse_button_clicked = lambda event: None
+        self.on_right_mouse_double_clicked = lambda event: None
+        self.on_right_mouse_button_dragged = lambda event: None
+        self.on_middle_mouse_button_pressed = lambda event: None
+        self.on_middle_mouse_button_released = lambda event: None
+        self.on_middle_mouse_button_clicked = lambda event: None
+        self.on_middle_mouse_double_clicked = lambda event: None
+        self.on_middle_mouse_button_dragged = lambda event: None
+        self.on_key_press = lambda event: None
+
+    @abc.abstractmethod
+    def _setup(self):
+        """Set up this UI component.
+
+        This is where you should create all your needed actors and sub UI
+        components.
+        """
+        msg = "Subclasses of UI must implement `_setup(self)`."
+        raise NotImplementedError(msg)
+
+    @property
+    def actors(self):
+        """Get actors composing this UI component.
+
+        Returns
+        -------
+        list
+            List of actors composing this UI component.
+        """
+        return self._actors
+
+    @property
+    def children(self):
+        """Get children composing this UI component.
+
+        Returns
+        -------
+        list
+            A list of child UI components.
+        """
+        return self._children
+
+    def perform_position_validation(self, x_anchor, y_anchor):
+        """Perform validation checks for anchor string and the 'size' property.
+
+        Parameters
+        ----------
+        x_anchor : str
+            Horizontal anchor string to validate (e.g., "LEFT", "CENTER", "RIGHT").
+        y_anchor : str
+            Vertical anchor string to validate (e.g., "TOP", "CENTER", "BOTTOM").
+        """
+        if not hasattr(self, "size"):
+            msg = "Subclasses of UI must implement property `size`."
+            raise NotImplementedError(msg)
+
+        if x_anchor not in [Anchor.LEFT, Anchor.CENTER, Anchor.RIGHT]:
+            raise ValueError(
+                f"x_anchor should be one of these {', '.join([Anchor.LEFT, Anchor.CENTER, Anchor.RIGHT])} but received {x_anchor}"  # noqa: E501
+            )
+
+        if y_anchor not in [Anchor.TOP, Anchor.CENTER, Anchor.BOTTOM]:
+            raise ValueError(
+                f"y_anchor should be one of these {', '.join([Anchor.TOP, Anchor.CENTER, Anchor.BOTTOM])} but received {y_anchor}"  # noqa: E501
+            )
+
+    def set_position(
+        self, coords, x_anchor: str = Anchor.LEFT, y_anchor: str = Anchor.BOTTOM
+    ):
+        """Position this UI component according to the specified anchor.
+
+        Parameters
+        ----------
+        coords : (float, float)
+            Absolute pixel coordinates (x, y). These coordinates
+            are interpreted based on `x_anchor` and `y_anchor`.
+        x_anchor : str, optional
+            Define the horizontal anchor point for `coords`. Can be "LEFT",
+            "CENTER", or "RIGHT". Case-insensitive. Defaults to "LEFT".
+        y_anchor : str, optional
+            Define the vertical anchor point for `coords`. Can be "BOTTOM",
+            "CENTER", or "TOP". Case-insensitive. Defaults to "BOTTOM".
+        """
+        self.perform_position_validation(x_anchor=x_anchor, y_anchor=y_anchor)
+
+        self._position = np.array(coords)
+        self._anchors = [x_anchor.upper(), y_anchor.upper()]
+        self._update_actors_position()
+
+    def get_position(self, x_anchor: str = Anchor.LEFT, y_anchor: str = Anchor.TOP):
+        """Get the position of this UI component according to the specified anchor.
+
+        Parameters
+        ----------
+        x_anchor : str, optional
+            Define the horizontal anchor point for the returned coordinates.
+            Can be "LEFT", "CENTER", or "RIGHT".
+            Defaults to "LEFT".
+        y_anchor : str, optional
+            Define the vertical anchor point for the returned coordinates.
+            Can be "BOTTOM", "CENTER", or "TOP".
+            Defaults to "TOP".
+
+        Returns
+        -------
+        (float, float)
+            The (x, y) pixel coordinates of the specified anchor point.
+        """
+        ANCHOR_TO_MULTIPLIER = {
+            Anchor.LEFT.value: 0.0,
+            Anchor.RIGHT.value: 1.0,
+            Anchor.TOP.value: 0.0 if UIContext.get_is_v2_ui() else 1.0,
+            Anchor.BOTTOM.value: 1.0 if UIContext.get_is_v2_ui() else 0.0,
+            Anchor.CENTER.value: 0.5,
+        }
+
+        self.perform_position_validation(x_anchor=x_anchor, y_anchor=y_anchor)
+
+        return np.array(
+            [
+                self._position[0]
+                + self.size[0]
+                * (
+                    ANCHOR_TO_MULTIPLIER[x_anchor.upper()]
+                    - ANCHOR_TO_MULTIPLIER[self._anchors[0].upper()]
+                ),
+                self._position[1]
+                + self.size[1]
+                * (
+                    ANCHOR_TO_MULTIPLIER[y_anchor.upper()]
+                    - ANCHOR_TO_MULTIPLIER[self._anchors[1].upper()]
+                ),
+            ]
+        )
+
+    @abc.abstractmethod
+    def _update_actors_position(self):
+        """Update the position of the internal actors."""
+        msg = "Subclasses of UI must implement `_set_actors_position(self)`."
+        raise NotImplementedError(msg)
+
+    @property
+    def size(self):
+        """Get width and height of this UI component.
+
+        Returns
+        -------
+        (int, int)
+            Width and Height of UI component in pixels.
+        """
+        return np.asarray(self._get_size(), dtype=int)
+
+    @abc.abstractmethod
+    def _get_size(self):
+        """Get the actual size of the UI component.
+
+        Returns
+        -------
+        (int, int)
+            Width and height of the UI component in pixels.
+        """
+        msg = "Subclasses of UI must implement property `size`."
+        raise NotImplementedError(msg)
+
+    def set_visibility(self, visibility: bool):
+        """Set visibility of this UI component.
+
+        Parameters
+        ----------
+        visibility : bool
+            If `True`, the UI component will be visible. If `False`, it will be hidden.
+        """
+        for actor in self.actors:
+            # actor.SetVisibility(visibility)
+            actor.visible = visibility
+
+    def handle_events(self, actor: Mesh):
+        """Attach event handlers to the UI object.
+
+        Parameters
+        ----------
+        actor : Mesh
+            The PyGfx mesh to which event handlers should be attached.
+        """
+        actor.add_event_handler(self.mouse_button_down_callback, "pointer_down")
+        actor.add_event_handler(self.mouse_button_up_callback, "pointer_up")
+        actor.add_event_handler(self.mouse_move_callback, "pointer_move")
+        # actor.add_event_handler(self.mouse_button_up_callback, "pointer_enter")
+        # actor.add_event_handler(self.mouse_button_down_callback, "pointer_leave")
+        # actor.add_event_handler(self.mouse_button_up_callback, "click")
+        # actor.add_event_handler(self.mouse_button_down_callback, "double_click")
+        # actor.add_event_handler(self.mouse_button_up_callback, "wheel")
+
+        # actor.add_event_handler(self.mouse_button_down_callback, "key_down")
+        actor.add_event_handler(self.key_press_callback, "key_up")
+
+        # self.add_callback(
+        #     actor, "LeftButtonPressEvent", self.left_button_click_callback
+        # )
+        # self.add_callback(
+        #     actor, "LeftButtonReleaseEvent", self.left_button_release_callback
+        # )
+        # self.add_callback(
+        #     actor, "RightButtonPressEvent", self.right_button_click_callback
+        # )
+        # self.add_callback(
+        #     actor, "RightButtonReleaseEvent", self.right_button_release_callback
+        # )
+        # self.add_callback(
+        #     actor, "MiddleButtonPressEvent", self.middle_button_click_callback
+        # )
+        # self.add_callback(
+        #     actor, "MiddleButtonReleaseEvent", self.middle_button_release_callback
+        # )
+        # self.add_callback(actor, "MouseMoveEvent", self.mouse_move_callback)
+        # self.add_callback(actor, "KeyPressEvent", self.key_press_callback)
+
+    def mouse_button_down_callback(self, event: PointerEvent):
+        """Handle mouse button press event.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
+        if event.button == 1:
+            self.left_button_click_callback(event)
+        elif event.button == 2:
+            self.right_button_click_callback(event)
+        elif event.button == 3:
+            self.middle_button_click_callback(event)
+        event.cancel()
+
+    def mouse_button_up_callback(self, event: PointerEvent):
+        """Handle mouse button release event.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
+        if event.button == 1:
+            self.left_button_release_callback(event)
+        elif event.button == 2:
+            self.right_button_release_callback(event)
+        elif event.button == 3:
+            self.middle_button_release_callback(event)
+        event.cancel()
+
+    def left_button_click_callback(self, event: PointerEvent):
+        """Handle left mouse button press event.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
+        self.left_button_state = "pressing"
+        self.on_left_mouse_button_pressed(event)
+
+    def left_button_release_callback(self, event: PointerEvent):
+        """Handle left mouse button release event.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
+        if self.left_button_state == "pressing":
+            self.on_left_mouse_button_clicked(event)
+        self.left_button_state = "released"
+        self.on_left_mouse_button_released(event)
+
+    def right_button_click_callback(self, event: PointerEvent):
+        """Handle right mouse button press event.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
+        self.right_button_state = "pressing"
+        self.on_right_mouse_button_pressed(event)
+
+    def right_button_release_callback(self, event: PointerEvent):
+        """Handle right mouse button release event.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
+        if self.right_button_state == "pressing":
+            self.on_right_mouse_button_clicked(event)
+        self.right_button_state = "released"
+        self.on_right_mouse_button_released(event)
+
+    def middle_button_click_callback(self, event: PointerEvent):
+        """Handle middle mouse button press event.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
+        self.middle_button_state = "pressing"
+        self.on_middle_mouse_button_pressed(event)
+
+    def middle_button_release_callback(self, event: PointerEvent):
+        """Handle middle mouse button release event.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
+        if self.middle_button_state == "pressing":
+            self.on_middle_mouse_button_clicked(event)
+        self.middle_button_state = "released"
+        self.on_middle_mouse_button_released(event)
+
+    def mouse_move_callback(self, event: PointerEvent):
+        """Handle mouse move event.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
+        left_pressing_or_dragging = (
+            self.left_button_state == "pressing" or self.left_button_state == "dragging"
+        )
+
+        right_pressing_or_dragging = (
+            self.right_button_state == "pressing"
+            or self.right_button_state == "dragging"
+        )
+
+        middle_pressing_or_dragging = (
+            self.middle_button_state == "pressing"
+            or self.middle_button_state == "dragging"
+        )
+
+        if left_pressing_or_dragging:
+            self.left_button_state = "dragging"
+            self.on_left_mouse_button_dragged(event)
+        elif right_pressing_or_dragging:
+            self.right_button_state = "dragging"
+            self.on_right_mouse_button_dragged(event)
+        elif middle_pressing_or_dragging:
+            self.middle_button_state = "dragging"
+            self.on_middle_mouse_button_dragged(event)
+
+    def key_press_callback(self, event: KeyboardEvent):
+        """Handle key press event.
+
+        Parameters
+        ----------
+        event : KeyboardEvent
+            The PyGfx keyboard event object.
+        """
+        self.on_key_press(event)
+
+
+class Rectangle2D(UI):
+    """A 2D rectangle sub-classed from UI.
+
+    Parameters
+    ----------
+    size : (int, int), optional
+        Initial `(width, height)` of the rectangle in pixels.
+        Defaults to `(0, 0)`.
+    position : (float, float), optional
+        Coordinates `(x, y)` of the rectangle. The interpretation of `(x,y)`
+        (e.g., top-left, bottom-left) depends on the current UI version.
+        Defaults to `(0, 0)`.
+    color : (float, float, float), optional
+        RGB color tuple, with values in the range `[0, 1]`.
+        Defaults to `(1, 1, 1)` (white).
+    opacity : float, optional
+        Degree of transparency, with values in the range `[0, 1]`.
+        `0` is fully transparent, `1` is fully opaque. Defaults to `1.0`.
+    """
+
+    @warn_on_args_to_kwargs()
+    def __init__(self, *, size=(0, 0), position=(0, 0), color=(1, 1, 1), opacity=1.0):
+        """Initialize a rectangle.
+
+        Parameters
+        ----------
+        size : (int, int)
+            The size of the rectangle (width, height) in pixels.
+        position : (float, float)
+            Coordinates (x, y) of the lower-left corner of the rectangle.
+        color : (float, float, float)
+            Must take values in [0, 1].
+        opacity : float
+            Must take values in [0, 1].
+        """
+        super(Rectangle2D, self).__init__(
+            position=position,
+            x_anchor=Anchor.LEFT,
+            y_anchor=Anchor.TOP if UIContext.get_is_v2_ui() else Anchor.BOTTOM,
+        )
+        self.color = color
+        self.opacity = opacity
+        self.resize(size)
+
+    def _setup(self):
+        """Set up this UI component.
+
+        Create the polygon actor used internally.
+        """
+        # # Setup four points
+        # size = (1, 1)
+        # self._points = Points()
+        # self._points.InsertNextPoint(0, 0, 0)
+        # self._points.InsertNextPoint(size[0], 0, 0)
+        # self._points.InsertNextPoint(size[0], size[1], 0)
+        # self._points.InsertNextPoint(0, size[1], 0)
+
+        # # Create the polygon
+        # polygon = Polygon()
+        # polygon.GetPointIds().SetNumberOfIds(4)  # make a quad
+        # polygon.GetPointIds().SetId(0, 0)
+        # polygon.GetPointIds().SetId(1, 1)
+        # polygon.GetPointIds().SetId(2, 2)
+        # polygon.GetPointIds().SetId(3, 3)
+
+        # # Add the polygon to a list of polygons
+        # polygons = CellArray()
+        # polygons.InsertNextCell(polygon)
+
+        # # Create a PolyData
+        # self._polygonPolyData = PolyData()
+        # self._polygonPolyData.SetPoints(self._points)
+        # self._polygonPolyData.SetPolys(polygons)
+
+        # # Create a mapper and actor
+        # mapper = PolyDataMapper2D()
+        # mapper = set_input(mapper, self._polygonPolyData)
+
+        # self.actor = Actor2D()
+        # self.actor.SetMapper(mapper)
+
+        # # Add default events listener to the VTK actor.
+        # self.handle_events(self.actor)
+
+        geo = plane_geometry(width=1, height=1)
+        mat = _create_mesh_material(
+            material="basic", enable_picking=True, flat_shading=True
+        )
+        self.actor = create_mesh(geometry=geo, material=mat)
+
+        self._actors.append(self.actor)
+        self.handle_events(self.actor)
+
+    def _get_size(self):
+        """Get the current size of the rectangle actor.
+
+        Returns
+        -------
+        (float, float)
+            The current `(width, height)` of the rectangle in pixels.
+        """
+        # # Get 2D coordinates of two opposed corners of the rectangle.
+        # lower_left_corner = np.array(self._points.GetPoint(0)[:2])
+        # upper_right_corner = np.array(self._points.GetPoint(2)[:2])
+        # size = abs(upper_right_corner - lower_left_corner)
+        # return size
+        bounds = self.actor.get_bounding_box()
+        minx, miny, minz = bounds[0]
+        maxx, maxy, maxz = bounds[1]
+        return [maxx - minx, maxy - miny]
+
+    @property
+    def width(self):
+        """Get the current width of the rectangle.
+
+        Returns
+        -------
+        float
+            The width of the rectangle in pixels.
+        """
+        return self._get_size()[0]
+
+    @width.setter
+    def width(self, width):
+        """Set the width of the rectangle.
+
+        Parameters
+        ----------
+        width : float
+            New width of the rectangle.
+        """
+        self.resize((width, self.height))
+
+    @property
+    def height(self):
+        """Get the current height of the rectangle.
+
+        Returns
+        -------
+        float
+            The height of the rectangle in pixels.
+        """
+        return self._get_size()[1]
+
+    @height.setter
+    def height(self, height):
+        """Set the height of the rectangle.
+
+        Parameters
+        ----------
+        height : float
+            New height of the rectangle.
+        """
+        self.resize((self.width, height))
+
+    def resize(self, size):
+        """Set the rectangle size.
+
+        Parameters
+        ----------
+        size : (float, float)
+            Rectangle size (width, height) in pixels.
+        """
+        # self._points.SetPoint(0, 0, 0, 0.0)
+        # self._points.SetPoint(1, size[0], 0, 0.0)
+        # self._points.SetPoint(2, size[0], size[1], 0.0)
+        # self._points.SetPoint(3, 0, size[1], 0.0)
+        # self._polygonPolyData.SetPoints(self._points)
+        # mapper = PolyDataMapper2D()
+        # mapper = set_input(mapper, self._polygonPolyData)
+
+        # self.actor.SetMapper(mapper)
+        self.actor.geometry = plane_geometry(width=size[0], height=size[1])
+        self._update_actors_position()
+
+    def _update_actors_position(self):
+        """Set the position of the internal actor."""
+        position = self.get_position(x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
+        canvas_size = UIContext.get_canvas_size()
+
+        self.actor.local.x = position[0]
+        self.actor.local.y = (
+            canvas_size[1] - position[1] if UIContext.get_is_v2_ui() else position[1]
+        )
+
+    @property
+    def color(self):
+        """Get the rectangle color.
+
+        Returns
+        -------
+        (float, float, float)
+            RGB color.
+        """
+        # color = self.actor.GetProperty().GetColor()
+        # return np.asarray(color)
+        return self.actor.material.color
+
+    @color.setter
+    def color(self, color):
+        """Set the rectangle color.
+
+        Parameters
+        ----------
+        color : (float, float, float)
+            RGB. Must take values in [0, 1].
+        """
+        # self.actor.GetProperty().SetColor(*color)
+        self.actor.material.color = np.array([*color, 1.0])
+
+    @property
+    def opacity(self):
+        """Get the rectangle opacity.
+
+        Returns
+        -------
+        float
+            Opacity value.
+        """
+        # return self.actor.GetProperty().GetOpacity()
+        return self.actor.material.opacity
+
+    @opacity.setter
+    def opacity(self, opacity):
+        """Set the rectangle opacity.
+
+        Parameters
+        ----------
+        opacity : float
+            Degree of transparency. Must be between [0, 1].
+        """
+        # self.actor.GetProperty().SetOpacity(opacity)
+        self.actor.material.opacity = opacity
+
+
+class Disk2D(UI):
+    """A 2D disk UI component.
+
+    Parameters
+    ----------
+    outer_radius : int
+        Outer radius of the disk.
+    center : (float, float), optional
+        Coordinates (x, y) of the center of the disk.
+    color : (float, float, float), optional
+        Must take values in [0, 1].
+    opacity : float, optional
+        Must take values in [0, 1].
+    """
+
+    @warn_on_args_to_kwargs()
+    def __init__(
+        self,
+        outer_radius,
+        *,
+        center=(0, 0),
+        color=(1, 1, 1),
+        opacity=1.0,
+    ):
+        """Initialize a 2D Disk.
+
+        Parameters
+        ----------
+        outer_radius : int
+            Outer radius of the disk.
+        center : (float, float), optional
+            Coordinates (x, y) of the center of the disk.
+        color : (float, float, float), optional
+            Must take values in [0, 1].
+        opacity : float, optional
+            Must take values in [0, 1].
+        """
+        self.actor = None
+        self.outer_radius = outer_radius
+
+        super(Disk2D, self).__init__(
+            position=center, x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER
+        )
+
+        self.color = color
+        self.opacity = opacity
+
+    def _setup(self):
+        """Set up this UI component.
+
+        Create the disk actor used internally.
+        """
+        # # Setting up disk actor.
+        # self._disk = DiskSource()
+        # self._disk.SetRadialResolution(10)
+        # self._disk.SetCircumferentialResolution(50)
+        # self._disk.Update()
+
+        # # Mapper
+        # mapper = PolyDataMapper2D()
+        # mapper = set_input(mapper, self._disk.GetOutputPort())
+
+        # # Actor
+        # self.actor = Actor2D()
+        # self.actor.SetMapper(mapper)
+
+        # # Add default events listener to the VTK actor.
+        # self.handle_events(self.actor)
+
+        self.actor = disk(
+            centers=np.zeros((1, 3)), radii=self.outer_radius, material="basic"
+        )
+
+        self._actors.append(self.actor)
+        self.handle_events(self.actor)
+
+    def _get_size(self):
+        """Get the current size of the disk.
+
+        Returns
+        -------
+        (float, float)
+            The current `(diameter, diameter)` of the disk in pixels.
+        """
+        diameter = 2 * self.outer_radius
+        size = (diameter, diameter)
+        return size
+
+    def _update_actors_position(self):
+        """Set the position of the internal actor."""
+        position = self.get_position(x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
+        canvas_size = UIContext.get_canvas_size()
+
+        self.actor.local.x = position[0]
+        self.actor.local.y = (
+            canvas_size[1] - position[1] if UIContext.get_is_v2_ui() else position[1]
+        )
+
+    @property
+    def color(self):
+        """Get the color of this UI component.
+
+        Returns
+        -------
+        (float, float, float)
+            RGB color.
+        """
+        # color = self.actor.GetProperty().GetColor()
+        # return np.asarray(color)
+        return self.actor.material.color
+
+    @color.setter
+    def color(self, color):
+        """Set the color of this UI component.
+
+        Parameters
+        ----------
+        color : (float, float, float)
+            RGB. Must take values in [0, 1].
+        """
+        # self.actor.GetProperty().SetColor(*color)
+        self.actor.material.color = np.array([*color, 1.0])
+
+    @property
+    def opacity(self):
+        """Get the opacity of this UI component.
+
+        Returns
+        -------
+        float
+            Opacity value.
+        """
+        # return self.actor.GetProperty().GetOpacity()
+        return self.actor.material.opacity
+
+    @opacity.setter
+    def opacity(self, opacity):
+        """Set the opacity of this UI component.
+
+        Parameters
+        ----------
+        opacity : float
+            Degree of transparency. Must be between [0, 1].
+        """
+        # self.actor.GetProperty().SetOpacity(opacity)
+        self.actor.material.opacity = opacity
+
+    @property
+    def outer_radius(self):
+        """Get the outer radius of the disk.
+
+        Returns
+        -------
+        int
+            Outer radius in pixels.
+        """
+        # return self._disk.GetOuterRadius()
+        return self._outer_radius
+
+    @outer_radius.setter
+    def outer_radius(self, radius):
+        """Set the outer radius of the disk.
+
+        Parameters
+        ----------
+        radius : int
+            New outer radius.
+        """
+        # self._disk.SetOuterRadius(radius)
+        # self._disk.Update()
+        if self.actor:
+            self.actor = disk(centers=np.zeros((1, 3)), radii=radius, material="basic")
+        self._outer_radius = radius
 
 
 # class TextBlock2D(UI):

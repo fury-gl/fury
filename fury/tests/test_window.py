@@ -12,8 +12,11 @@ from fury.lib import (
     OrbitController,
     PerspectiveCamera,
     Renderer,
+    Scene as GfxScene,
+    ScreenCoordsCamera,
     Texture,
 )
+from fury.ui import Rectangle2D
 from fury.window import (
     Scene,
     ShowManager,
@@ -32,12 +35,22 @@ def sample_actor():
     return actor
 
 
+@pytest.fixture
+def sample_ui_actor():
+    "Fixture to provide a simple ui actor."
+    actor = Rectangle2D(size=(5, 5))
+    return actor
+
+
 def test_scene_initialization_default():
     """Test Scene initialization with default parameters."""
     scene = Scene()
     assert scene.background == (0, 0, 0, 1)
     assert len(scene.lights) == 1
     assert isinstance(scene.lights[0], AmbientLight)
+    assert isinstance(scene.main_scene, GfxScene)
+    assert isinstance(scene.ui_scene, GfxScene)
+    assert isinstance(scene.ui_camera, ScreenCoordsCamera)
 
 
 def test_scene_initialization_custom_background():
@@ -74,13 +87,16 @@ def test_scene_set_skybox():
     assert scene._bg_actor is not None
 
 
-def test_scene_clear(sample_actor):
+def test_scene_clear(sample_actor, sample_ui_actor):
     """Test clearing the scene. Should only remove the actors."""
     scene = Scene()
     scene.add(sample_actor)
-    assert len(scene.children) == 3  # Background + actor + AmbientLight
+    scene.add(sample_ui_actor)
+    assert len(scene.main_scene.children) == 3  # Background + actor + AmbientLight
+    assert len(scene.ui_scene.children) == 2  #  ui camera + ui actor
     scene.clear()
-    assert len(scene.children) == 2  # Background + AmbientLight
+    assert len(scene.main_scene.children) == 2  # Background + AmbientLight
+    assert len(scene.ui_scene.children) == 1
 
 
 def test_screen_initialization_default():
@@ -91,8 +107,11 @@ def test_screen_initialization_default():
     assert screen.position == (0, 0)  # Default position of pygfx
     assert isinstance(screen.camera, PerspectiveCamera)
     assert isinstance(screen.controller, OrbitController)
-    # Background + AmbientLight + Camera
-    assert len(screen.scene.children) == 3
+
+    assert (
+        len(screen.scene.main_scene.children) == 3
+    )  # Background + AmbientLight + Camera
+    assert len(screen.scene.ui_scene.children) == 1  # Camera
     # Directional Light
     assert len(screen.camera.children) == 1
 
@@ -107,8 +126,9 @@ def test_screen_initialization_custom():
     assert screen.scene == scene
     assert screen.camera == camera
     assert screen.controller == controller
-    # Background + AmbientLight
-    assert len(screen.scene.children) == 2
+
+    assert len(screen.scene.main_scene.children) == 2  # Background + AmbientLight
+    assert len(screen.scene.ui_scene.children) == 1  # Camera
 
 
 def test_screen_bounding_box():
@@ -298,8 +318,9 @@ def test_show_manager_empty_scene():
     """Test initialization with an empty scene."""
     show_m = ShowManager(scene=Scene(), window_type="offscreen")
     assert (
-        len(show_m.screens[0].scene.children) == 3
+        len(show_m.screens[0].scene.main_scene.children) == 3
     )  # Background + AmbientLight + Camera
+    assert len(show_m.screens[0].scene.ui_scene.children) == 1  # UI Camera
 
 
 def test_show_manager_with_empty_config():
@@ -315,3 +336,126 @@ def test_display_default(sample_actor):
     with patch("fury.window.ShowManager") as mock_show_manager:
         show([sample_actor])
         mock_show_manager.assert_called_once()
+
+
+def test_add_remove_ui_to_from_scene(sample_actor):
+    """Test add/remove UI hierarchy to/from scene."""
+
+    parent = Rectangle2D()
+    child_1, child_2, child_3 = (
+        Rectangle2D(),
+        Rectangle2D(),
+        Rectangle2D(),
+    )
+    subchild_21 = Rectangle2D()
+    subchild_31, subchild_32 = Rectangle2D(), Rectangle2D()
+
+    parent.children.extend([child_1, child_2, child_3])
+    child_2.children.append(subchild_21)
+    child_3.children.extend([subchild_31, subchild_32])
+
+    all_ui_objects = [
+        parent,
+        child_1,
+        child_2,
+        child_3,
+        subchild_21,
+        subchild_31,
+        subchild_32,
+    ]
+    all_ui_actors = []
+    for ui_obj in all_ui_objects:
+        all_ui_actors.extend(ui_obj.actors)
+
+    scene = Scene()
+
+    # Test Add and Remove Parent
+    scene.add(parent)
+
+    assert len(scene.ui_scene.children) == 1 + len(all_ui_actors)
+    assert parent in scene.ui_elements
+    assert all(actor in scene.ui_scene.children for actor in all_ui_actors)
+
+    scene.remove(parent)
+
+    assert len(scene.ui_elements) == 0
+    assert len(scene.ui_scene.children) == 1  # UI Camera
+    assert all(actor not in scene.ui_scene.children for actor in all_ui_actors)
+
+    # Test Add and Clear Parent
+    scene.add(parent)
+
+    assert len(scene.ui_scene.children) == 1 + len(all_ui_actors)
+    assert len(scene.ui_elements) == 1
+
+    scene.clear()
+
+    assert len(scene.ui_scene.children) == 1  # UI camera
+    assert len(scene.ui_elements) == 0
+
+    # Add Parent, Remove Child
+    scene.add(parent)
+
+    to_be_removed_ui = [child_3, subchild_31, subchild_32]
+    to_be_removed_actors = []
+    for ui_obj in to_be_removed_ui:
+        to_be_removed_actors.extend(ui_obj.actors)
+
+    should_remain_ui = [parent, child_1, child_2, subchild_21]
+    should_remain_actors = []
+    for ui_obj in should_remain_ui:
+        should_remain_actors.extend(ui_obj.actors)
+
+    assert len(scene.ui_elements) == 1
+    assert len(scene.ui_scene.children) == 1 + len(
+        all_ui_actors
+    )  # UI Camera + UI actors
+
+    scene.remove(child_3)
+
+    assert parent in scene.ui_elements
+    for ui_obj in to_be_removed_ui:
+        assert all(actor not in scene.ui_scene.children for actor in ui_obj.actors)
+
+    for ui_obj in should_remain_ui:
+        assert all(actor in scene.ui_scene.children for actor in ui_obj.actors)
+
+    assert len(scene.ui_elements) == 1
+    assert len(scene.ui_scene.children) == 1 + len(should_remain_actors)
+
+    # Remove Non Existent Child
+    scene.remove(subchild_31)
+
+    assert parent in scene.ui_elements
+    for ui_obj in to_be_removed_ui:
+        assert all(actor not in scene.ui_scene.children for actor in ui_obj.actors)
+
+    for ui_obj in should_remain_ui:
+        assert all(actor in scene.ui_scene.children for actor in ui_obj.actors)
+
+    assert len(scene.ui_elements) == 1
+    assert len(scene.ui_scene.children) == 1 + len(should_remain_actors)
+
+
+def test_add_to_scene(sample_actor, sample_ui_actor):
+    """Test add/remove elements to/from scene."""
+
+    scene = Scene()
+
+    sample_gfx_scene = GfxScene()
+    sample_camera = PerspectiveCamera()
+    scene.add(sample_actor, sample_ui_actor, sample_gfx_scene, sample_camera)
+
+    assert sample_actor in scene.main_scene.children
+    assert sample_camera in scene.main_scene.children
+    assert sample_ui_actor in scene.ui_elements
+    assert sample_ui_actor.actors[0] in scene.ui_scene.children
+    assert sample_gfx_scene in scene.children
+
+    scene.remove(sample_actor, sample_ui_actor, sample_gfx_scene, sample_camera)
+
+    assert sample_actor not in scene.main_scene.children
+    assert sample_camera not in scene.main_scene.children
+    assert sample_ui_actor not in scene.ui_elements
+    assert sample_ui_actor.actors[0] not in scene.ui_scene.children
+    assert sample_gfx_scene not in scene.children
