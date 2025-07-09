@@ -913,7 +913,7 @@ class Disk2D(UI):
         # self._disk.SetOuterRadius(radius)
         # self._disk.Update()
         if self.actor:
-            self.actor.geometry = prim_disk(radius=radius)
+            self.actor = disk(centers=np.zeros((1, 3)), radii=radius, material="basic")
         self._outer_radius = radius
 
 
