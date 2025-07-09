@@ -2,10 +2,12 @@
 
 from unittest.mock import patch
 
+from PIL import Image
+import numpy as np
 import numpy.testing as npt
 import pytest
 
-from fury import ui
+from fury import ui, window
 from fury.lib import Mesh
 from fury.ui.helpers import Anchor
 
@@ -212,3 +214,105 @@ def test_disk2d_set_visibility(mock_ui_context_v1):
     assert disk_ui.actor.visible is False
     disk_ui.set_visibility(True)
     assert disk_ui.actor.visible is True
+
+
+def test_rectangle2d_visual_snapshot(mock_ui_context_v1):
+    """Visual test for Rectangle2D."""
+    rect_size = (50, 50)
+    rect_pos_ui = (75, 75)
+    rect_color = (1.0, 0.0, 0.0)
+
+    rect = ui.Rectangle2D(
+        size=rect_size,
+        position=rect_pos_ui,
+        color=rect_color,
+        opacity=1.0,
+    )
+
+    scene = window.Scene()
+    scene.add(rect)
+
+    fname = "rect_test_visible.png"
+    window.snapshot(scene=scene, fname=fname)
+
+    img = Image.open(fname)
+    img_array = np.array(img)
+
+    mean_r, mean_g, mean_b, _mean_a = np.mean(
+        img_array.reshape(-1, img_array.shape[2]), axis=0
+    )
+
+    assert mean_r > mean_b and mean_r > mean_g
+
+    npt.assert_almost_equal(mean_g, 0, decimal=0)
+    npt.assert_almost_equal(mean_b, 0, decimal=0)
+    assert 0 < mean_r <= 255
+
+    # Creating new scene because if we reuse previous scene a new camera is again added
+    scene = window.Scene()
+    scene.add(rect)
+
+    rect.set_visibility(False)
+    fname_hidden = "rect_test_hidden.png"
+    window.snapshot(scene=scene, fname=fname_hidden)
+
+    img_hidden = Image.open(fname_hidden)
+    img_array_hidden = np.array(img_hidden)
+
+    mean_r_hidden, mean_g_hidden, mean_b_hidden, _mean_a_hidden = np.mean(
+        img_array_hidden.reshape(-1, img_array_hidden.shape[2]), axis=0
+    )
+    npt.assert_almost_equal(mean_r_hidden, 0, decimal=0)
+    npt.assert_almost_equal(mean_g_hidden, 0, decimal=0)
+    npt.assert_almost_equal(mean_b_hidden, 0, decimal=0)
+
+
+# Unable to set color for disk
+# def test_disk2d_visual_snapshot(mock_ui_context_v1):
+#     """Visual test for Disk2D."""
+#     disk_radius = 25
+#     disk_center_ui = (100, 100)
+#     disk_color = (0.0, 1.0, 0.0)
+
+#     disk = ui.Disk2D(
+#         outer_radius=disk_radius,
+#         center=disk_center_ui,
+#         color=disk_color,
+#     )
+
+#     scene = window.Scene()
+#     scene.add(disk)
+
+#     fname = "disk_test_visible.png"
+#     window.snapshot(scene=scene, fname=fname)
+
+#     img = Image.open(fname)
+#     img_array = np.array(img)
+
+#     mean_r, mean_g, mean_b, _mean_a = np.mean(
+#         img_array.reshape(-1, img_array.shape[2]), axis=0
+#     )
+
+#     assert mean_g > mean_r and mean_g > mean_b
+
+#     npt.assert_almost_equal(mean_r, 0, decimal=0)
+#     npt.assert_almost_equal(mean_b, 0, decimal=0)
+#     assert 0 < mean_g <= 255
+
+#     # Creating new scene because if we reuse previous scene a new camera is again added
+#     scene = window.Scene()
+#     scene.add(disk)
+
+#     disk.set_visibility(False)
+#     fname_hidden = "disk_test_hidden.png"
+#     window.snapshot(scene=scene, fname=fname_hidden)
+
+#     img_hidden = Image.open(fname_hidden)
+#     img_array_hidden = np.array(img_hidden)
+
+#     mean_r_hidden, mean_g_hidden, mean_b_hidden, _mean_a_hidden = np.mean(
+#         img_array_hidden.reshape(-1, img_array_hidden.shape[2]), axis=0
+#     )
+#     npt.assert_almost_equal(mean_r_hidden, 0, decimal=0)
+#     npt.assert_almost_equal(mean_g_hidden, 0, decimal=0)
+#     npt.assert_almost_equal(mean_b_hidden, 0, decimal=0)
