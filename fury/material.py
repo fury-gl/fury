@@ -1162,3 +1162,11 @@ class _StreamtubeBakedMaterial(MeshPhongMaterial):
         self.segments = tube_segments
 
         self._max_line_length = max_line_length
+
+
+class BillboardSphereMaterial(MeshPhongMaterial):
+    """Phong-lit material for billboard-based impostor spheres."""
+
+    def __init__(self, **kwargs):
+        kwargs.setdefault("flat_shading", False)
+        super().__init__(**kwargs)

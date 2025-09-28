@@ -28,17 +28,14 @@ fn vs_main(in: VertexInput) -> Varyings {
     let raw_center = load_s_positions(billboard_index * 6);
     let world_center = u_wobject.world_transform * vec4<f32>(raw_center.xyz, 1.0);
 
-    // Transform center to camera space
-    let camera_center = u_stdinfo.cam_transform * world_center;
-
     // Get camera right and up vectors in world space
     // Extract right and up vectors from inverse camera transform
     let cam_right = vec3<f32>(u_stdinfo.cam_transform_inv[0].xyz);
     let cam_up = vec3<f32>(u_stdinfo.cam_transform_inv[1].xyz);
 
-    let normal_data = load_s_normals(billboard_index * 6);
-    let size = vec2<f32>(normal_data.x, normal_data.y);
-
+    // Fetch per-billboard sizes encoded in normals buffer (duplicated per vertex)
+    let raw_size = load_s_normals(billboard_index * 6);
+    let size = raw_size.xy;
     // Calculate billboard vertex position in world space
     let billboard_offset = local_pos.x * cam_right * size.x + local_pos.y * cam_up * size.y;
     let world_pos = world_center.xyz + billboard_offset;
@@ -64,6 +61,7 @@ fn vs_main(in: VertexInput) -> Varyings {
     // Load color if available - colors are duplicated 6x like positions
     let color = load_s_colors(billboard_index * 6);
     varyings.color = vec4<f32>(color, 1.0);
+    varyings.texcoord_vert = vec2<f32>(tex_coord);
 
     return varyings;
 }

@@ -12,6 +12,8 @@ import numpy as np
 import numpy.testing as npt
 
 from fury import actor, window
+from fury.material import BillboardSphereMaterial
+from fury.lib import MeshPhongMaterial
 
 
 def test_basic_billboard(interactive: bool = False):
@@ -27,11 +29,18 @@ def test_basic_billboard(interactive: bool = False):
     assert hasattr(bb, "billboard_count")
     npt.assert_equal(bb.billboard_count, 3)
 
+    # Check stored sizes metadata
+    assert hasattr(bb, "billboard_sizes")
+    npt.assert_array_equal(bb.billboard_sizes, np.asarray(sizes, dtype=np.float32))
+
     # Check geometry (6 vertices per billboard)
     geom = bb.geometry
     npt.assert_equal(len(geom.positions.data), 18)
     npt.assert_equal(len(geom.colors.data), 18)
-    npt.assert_equal(len(geom.normals.data), 18)  # Sizes stored in normals
+    assert geom.normals is not None
+    npt.assert_equal(len(geom.normals.data), 18)
+    normals = np.asarray(geom.normals.data).reshape(-1, 3)
+    npt.assert_allclose(normals[0, :2], sizes[0])
     npt.assert_equal(len(geom.indices.data), 18)
 
     # Check material opacity
@@ -41,7 +50,10 @@ def test_basic_billboard(interactive: bool = False):
     bb_scalar = actor.billboard(centers, colors=colors, sizes=0.4)
     geom_scalar = bb_scalar.geometry
     npt.assert_equal(len(geom_scalar.positions.data), 18)
-    npt.assert_equal(len(geom_scalar.normals.data), 18)  # Sizes stored in normals
+    assert geom_scalar.normals is not None
+    npt.assert_equal(len(geom_scalar.normals.data), 18)
+    normals_scalar = np.asarray(geom_scalar.normals.data).reshape(-1, 3)
+    npt.assert_allclose(normals_scalar[0, :2], [0.4, 0.4])
 
     # Test basic rendering
     scene = window.Scene()
@@ -126,6 +138,80 @@ def test_rectangular_billboards():
     npt.assert_allclose(normals[0, :2], [7.0, 1.0], rtol=1e-5)
     npt.assert_allclose(normals[6, :2], [1.0, 1.0], rtol=1e-5)
     npt.assert_allclose(normals[12, :2], [1.0, 3.0], rtol=1e-5)
+
+
+def test_billboard_sphere(interactive: bool = False):
+    """Test billboard sphere hybrid implementation and impostor mode."""
+
+    centers = np.array([[0, 0, 0], [1, 1, 1], [2, -1, 0.5]], dtype=np.float32)
+    colors = np.array(
+        [
+            [1.0, 0.2, 0.2],
+            [0.2, 1.0, 0.2],
+            [0.2, 0.2, 1.0],
+        ],
+        dtype=np.float32,
+    )
+    radii = np.array([0.25, 0.5, 0.75], dtype=np.float32)
+
+    mesh_spheres = actor.billboard_sphere(
+        centers,
+        colors=colors,
+        radii=radii,
+        opacity=0.6,
+    )
+
+    assert isinstance(mesh_spheres.material, MeshPhongMaterial)
+    assert not isinstance(mesh_spheres.material, BillboardSphereMaterial)
+    npt.assert_allclose(mesh_spheres.billboard_radii, radii)
+    assert getattr(mesh_spheres, "billboard_mode", None) == "mesh"
+
+    impostor_spheres = actor.billboard_sphere(
+        centers,
+        colors=colors,
+        radii=radii,
+        opacity=0.6,
+        impostor=True,
+    )
+
+    assert hasattr(impostor_spheres, "billboard_count")
+    npt.assert_equal(impostor_spheres.billboard_count, centers.shape[0])
+    assert hasattr(impostor_spheres, "billboard_radii")
+    npt.assert_allclose(impostor_spheres.billboard_radii, radii)
+    npt.assert_allclose(impostor_spheres.billboard_sizes[:, 0], radii * 2.0)
+    assert isinstance(impostor_spheres.material, BillboardSphereMaterial)
+    assert getattr(impostor_spheres, "billboard_mode", None) == "impostor"
+
+    scalar = actor.billboard_sphere(centers, radii=0.6, impostor=True)
+    npt.assert_allclose(scalar.billboard_radii, np.full(centers.shape[0], 0.6))
+
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+    render_actor = actor.billboard_sphere(
+        np.array([[0.0, 0.0, 0.0]], dtype=np.float32),
+        colors=np.array([[1.0, 0.0, 0.0]], dtype=np.float32),
+        radii=0.6,
+        impostor=True,
+    )
+    scene.add(render_actor)
+
+    if interactive:  # pragma: no cover
+        window.show(scene)
+
+    tmp_file = tempfile.mktemp(suffix="_bbs.png")
+    arr = window.snapshot(scene=scene, fname=tmp_file, return_array=True)
+    assert arr is not None
+    _assert_red_visible(arr)
+
+    data = np.asarray(arr)
+    red_channel = data[..., 0]
+    positive_red = red_channel[red_channel > 0]
+    assert positive_red.size > 0
+    assert positive_red.max() > positive_red.min()
+
+    scene.clear()
+    if tmp_file and os.path.exists(tmp_file):
+        os.remove(tmp_file)
 
 
 def _assert_red_visible(image):
