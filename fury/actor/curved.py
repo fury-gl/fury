@@ -6,6 +6,7 @@ import itertools
 import numpy as np
 
 from fury.actor import Group, Line, Mesh, actor_from_primitive, create_mesh, read_buffer
+from fury.actor.billboard import billboard_sphere
 from fury.geometry import buffer_to_geometry, line_buffer_separator
 from fury.lib import (
     Buffer,
@@ -55,6 +56,7 @@ def sphere(
     smooth=True,
     wireframe=False,
     wireframe_thickness=1.0,
+    impostor=False,
 ):
     """Create one or many spheres with different colors and radii.
 
@@ -85,6 +87,9 @@ def sphere(
         Whether to render the mesh as a wireframe.
     wireframe_thickness : float, optional
         The thickness of the wireframe lines.
+    impostor : bool, optional
+        Render spheres as billboard impostors instead of geometry when ``True``.
+        Defaults to ``False``.
 
     Returns
     -------
@@ -106,14 +111,40 @@ def sphere(
     >>> show_manager.start()
     """
 
+    centers_arr = np.asarray(centers, dtype=np.float32)
+    if centers_arr.ndim == 1:
+        centers_arr = centers_arr.reshape(1, 3)
+    count = len(centers_arr)
+
+    radii_arr = np.asarray(radii, dtype=np.float32)
+    if radii_arr.ndim == 0:
+        radii_arr = np.full((count,), float(radii_arr), dtype=np.float32)
+    else:
+        radii_arr = radii_arr.reshape(-1).astype(np.float32)
+        if radii_arr.size == 1 and count > 1:
+            radii_arr = np.full((count,), radii_arr.item(), dtype=np.float32)
+        elif radii_arr.size != count:
+            radii_arr = np.full((count,), radii_arr.flat[0], dtype=np.float32)
+
+    if impostor:
+        obj = billboard_sphere(
+            centers_arr,
+            colors=colors,
+            radii=radii_arr,
+            opacity=opacity,
+            enable_picking=enable_picking,
+        )
+        obj.billboard_radii = radii_arr.copy()
+        return obj
+
     scales = radii
     directions = (1, 0, 0)
 
     vertices, faces = fp.prim_sphere(phi=phi, theta=theta)
-    return actor_from_primitive(
+    obj = actor_from_primitive(
         vertices,
         faces,
-        centers=centers,
+        centers=centers_arr,
         colors=colors,
         scales=scales,
         directions=directions,
@@ -124,6 +155,9 @@ def sphere(
         wireframe=wireframe,
         wireframe_thickness=wireframe_thickness,
     )
+    obj.billboard_radii = radii_arr.copy()
+    obj.billboard_mode = "mesh"
+    return obj
 
 
 def ellipsoid(

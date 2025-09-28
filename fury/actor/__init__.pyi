@@ -29,7 +29,6 @@ __all__ = [
     "text",
     "triangle",
     "billboard",
-    "billboard_sphere",
     "sph_glyph",
     "vector_field",
     "vector_field_slicer",

@@ -147,7 +147,7 @@ def billboard(
     )
 
 
-def billboard_sphere(
+def create_billboard_sphere(
     centers,
     *,
     colors=(1, 1, 1),
@@ -155,21 +155,7 @@ def billboard_sphere(
     opacity=None,
     enable_picking=True,
 ):
-    """Create billboard-based impostor spheres.
-
-    Parameters
-    ----------
-    centers : (N,3) array_like
-        Sphere positions.
-    colors : (N,3|4) array_like or single color
-        Per-sphere RGB(A) colors.
-    radii : float or array_like
-        Sphere radius for each billboard impostor. Scalar broadcasts.
-    opacity : float, optional
-        Global opacity multiplier (0..1).
-    enable_picking : bool
-        Whether billboard sphere is pickable.
-    """
+    """Create a billboard impostor sphere world object."""
 
     sizes = np.asarray(radii, dtype=np.float32) * 2.0
     obj = _create_billboard_actor(
@@ -181,6 +167,7 @@ def billboard_sphere(
         material_cls=BillboardSphereMaterial,
     )
     obj.billboard_radii = obj.billboard_sizes[:, 0] * 0.5
+    obj.billboard_mode = "impostor"
     return obj
 
 

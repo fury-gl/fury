@@ -141,7 +141,7 @@ def test_rectangular_billboards():
 
 
 def test_billboard_sphere(interactive: bool = False):
-    """Test billboard sphere hybrid implementation and impostor mode."""
+    """Test sphere actor hybrid implementation with impostor mode."""
 
     centers = np.array([[0, 0, 0], [1, 1, 1], [2, -1, 0.5]], dtype=np.float32)
     colors = np.array(
@@ -154,7 +154,7 @@ def test_billboard_sphere(interactive: bool = False):
     )
     radii = np.array([0.25, 0.5, 0.75], dtype=np.float32)
 
-    mesh_spheres = actor.billboard_sphere(
+    mesh_spheres = actor.sphere(
         centers,
         colors=colors,
         radii=radii,
@@ -166,7 +166,7 @@ def test_billboard_sphere(interactive: bool = False):
     npt.assert_allclose(mesh_spheres.billboard_radii, radii)
     assert getattr(mesh_spheres, "billboard_mode", None) == "mesh"
 
-    impostor_spheres = actor.billboard_sphere(
+    impostor_spheres = actor.sphere(
         centers,
         colors=colors,
         radii=radii,
@@ -182,12 +182,12 @@ def test_billboard_sphere(interactive: bool = False):
     assert isinstance(impostor_spheres.material, BillboardSphereMaterial)
     assert getattr(impostor_spheres, "billboard_mode", None) == "impostor"
 
-    scalar = actor.billboard_sphere(centers, radii=0.6, impostor=True)
+    scalar = actor.sphere(centers, radii=0.6, impostor=True)
     npt.assert_allclose(scalar.billboard_radii, np.full(centers.shape[0], 0.6))
 
     scene = window.Scene()
     scene.background = (0, 0, 0)
-    render_actor = actor.billboard_sphere(
+    render_actor = actor.sphere(
         np.array([[0.0, 0.0, 0.0]], dtype=np.float32),
         colors=np.array([[1.0, 0.0, 0.0]], dtype=np.float32),
         radii=0.6,
