@@ -36,6 +36,7 @@ fn vs_main(in: VertexInput) -> Varyings {
     // Fetch per-billboard sizes encoded in normals buffer (duplicated per vertex)
     let raw_size = load_s_normals(billboard_index * 6);
     let size = raw_size.xy;
+
     // Calculate billboard vertex position in world space
     let billboard_offset = local_pos.x * cam_right * size.x + local_pos.y * cam_up * size.y;
     let world_pos = world_center.xyz + billboard_offset;

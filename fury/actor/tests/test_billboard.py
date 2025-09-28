@@ -12,8 +12,8 @@ import numpy as np
 import numpy.testing as npt
 
 from fury import actor, window
-from fury.material import BillboardSphereMaterial
 from fury.lib import MeshPhongMaterial
+from fury.material import BillboardSphereMaterial
 
 
 def test_basic_billboard(interactive: bool = False):

@@ -953,8 +953,9 @@ class BillboardMaterial(MeshBasicMaterial):
 
     Parameters
     ----------
-    **kwargs : dict
-        Additional keyword arguments to pass to the MeshBasicMaterial constructor.
+    **material_kwargs : dict
+        Additional keyword arguments forwarded to
+        :class:`~fury.material.MeshBasicMaterial`.
     """
 
     def __init__(self, **kwargs):
@@ -1165,8 +1166,24 @@ class _StreamtubeBakedMaterial(MeshPhongMaterial):
 
 
 class BillboardSphereMaterial(MeshPhongMaterial):
-    """Phong-lit material for billboard-based impostor spheres."""
+    """Phong-lit material for billboard-based impostor spheres.
 
-    def __init__(self, **kwargs):
-        kwargs.setdefault("flat_shading", False)
-        super().__init__(**kwargs)
+    Parameters
+    ----------
+    **material_kwargs : dict
+        Keyword arguments propagated to
+        :class:`~fury.material.MeshPhongMaterial`.
+    """
+
+    def __init__(self, **material_kwargs):
+        """Initialize the sphere impostor material.
+
+        Parameters
+        ----------
+        **material_kwargs : dict
+            Keyword arguments propagated to
+            :class:`~fury.material.MeshPhongMaterial`.
+        """
+
+        material_kwargs.setdefault("flat_shading", False)
+        super().__init__(**material_kwargs)

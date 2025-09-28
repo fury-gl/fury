@@ -938,12 +938,34 @@ class _StreamtubeRenderShader(MeshPhongShader):
 
 
 class BillboardSphereShader(MeshShader):
-    """Shader for billboard-based sphere impostors."""
+    """Shader for billboard-based sphere impostors.
+
+    Parameters
+    ----------
+    wobject : Mesh
+        Mesh-like world object containing impostor billboard data.
+    """
 
     def __init__(self, wobject):
+        """Initialize the shader with billboard impostor metadata.
+
+        Parameters
+        ----------
+        wobject : Mesh
+            World object whose geometry contains billboard impostor data.
+        """
+
         super().__init__(wobject)
         self["billboard_count"] = getattr(wobject, "billboard_count", 1)
         self["lighting"] = "phong"
 
     def get_code(self):
+        """Return the WGSL fragment/vertex code for the shader.
+
+        Returns
+        -------
+        str
+            WGSL source file as a string.
+        """
+
         return load_wgsl("billboard_sphere_render.wgsl", package_name="fury.wgsl")

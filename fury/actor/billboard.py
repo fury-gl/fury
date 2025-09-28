@@ -31,9 +31,31 @@ def _create_billboard_actor(
 ):
     """Build a ``Billboard`` instance from broadcasted inputs.
 
-    The helper normalizes the array inputs, generates the shared geometry and
-    instantiates the requested material. It keeps the original function small
-    and reusable for alternative billboard-based actors (e.g. spheres).
+    Parameters
+    ----------
+    centers : array_like
+        Position of each billboard specified as an ``(N, 3)`` array or
+        broadcastable equivalent.
+    colors : array_like
+        RGB or RGBA color per billboard. A single color is broadcast when
+        needed.
+    sizes : array_like
+        Width and height per billboard. Accepts scalar, ``(2,)`` pair,
+        ``(N,)`` radius (interpreted as square billboards), or ``(N, 2)`` data.
+    opacity : float or None
+        Global opacity multiplier. ``None`` keeps the material default.
+    enable_picking : bool
+        Whether the billboard should write picking information.
+    material_cls : type[BillboardMaterial]
+        Material class used to instantiate the billboard actor.
+    material_kwargs : dict, optional
+        Additional keyword arguments forwarded to ``material_cls``.
+
+    Returns
+    -------
+    Billboard
+        Configured billboard world object containing geometry, material and
+        metadata about the generated billboards.
     """
 
     centers = np.asarray(centers, dtype=np.float32)
@@ -155,7 +177,26 @@ def create_billboard_sphere(
     opacity=None,
     enable_picking=True,
 ):
-    """Create a billboard impostor sphere world object."""
+    """Create a billboard impostor sphere world object.
+
+    Parameters
+    ----------
+    centers : array_like
+        Sphere centers provided as an ``(N, 3)`` array or broadcastable input.
+    colors : array_like, optional
+        RGB or RGBA color per sphere. Single color inputs are broadcast.
+    radii : array_like, optional
+        Scalar radii or per-sphere radii array. Used to compute billboard size.
+    opacity : float, optional
+        Opacity multiplier applied to the material.
+    enable_picking : bool, optional
+        Whether the impostor spheres support picking.
+
+    Returns
+    -------
+    Billboard
+        Billboard actor configured to simulate spheres using impostor quads.
+    """
 
     sizes = np.asarray(radii, dtype=np.float32) * 2.0
     obj = _create_billboard_actor(
@@ -192,6 +233,19 @@ def register_billboard_render_function(wobject):
 
 @register_wgpu_render_function(Billboard, BillboardSphereMaterial)
 def register_billboard_sphere_render_function(wobject):
+    """Register the pipeline for billboard-based sphere impostors.
+
+    Parameters
+    ----------
+    wobject : Billboard
+        Billboard world object representing impostor spheres.
+
+    Returns
+    -------
+    tuple
+        Tuple containing the configured
+        :class:`~fury.shader.BillboardSphereShader`.
+    """
     from fury.shader import BillboardSphereShader
 
     return (BillboardSphereShader(wobject),)
