@@ -82,24 +82,51 @@ fn fs_main(varyings: Varyings, @builtin(front_facing) is_front: bool) -> Fragmen
     let mask = clamp(1.0 - smoothstep(1.0 - smooth_edge, 1.0 + smooth_edge, radius_sq), 0.0, 1.0);
 
     let radius = 0.5 * varyings.billboard_size.x;
-    let right = normalize(varyings.billboard_right);
-    let up = normalize(varyings.billboard_up);
-    let forward = normalize(cross(right, up));
+    let center = varyings.billboard_center;
+    let plane_pos = varyings.world_pos;
+    let cam_pos = u_stdinfo.cam_transform_inv[3].xyz;
+    let cam_forward = normalize((u_stdinfo.cam_transform_inv * vec4<f32>(0.0, 0.0, -1.0, 0.0)).xyz);
+    let ortho = is_orthographic();
 
-    let normal_component = sqrt(max(0.0, 1.0 - radius_sq));
-    let local_normal = vec3<f32>(coord, normal_component);
-    var world_normal = normalize(
-        local_normal.x * right +
-        local_normal.y * up +
-        local_normal.z * forward,
-    );
+    var ray_origin = cam_pos;
+    var ray_dir = plane_pos - cam_pos;
+    if (ortho) {
+        ray_origin = plane_pos;
+        ray_dir = -cam_forward;
+    } else {
+        let dir_len = length(ray_dir);
+        if (dir_len > 0.0) {
+            ray_dir = ray_dir / dir_len;
+        } else {
+            ray_dir = cam_forward;
+        }
+    }
+    ray_dir = normalize(ray_dir);
+
+    let oc = ray_origin - center;
+    let b = dot(ray_dir, oc);
+    let c = dot(oc, oc) - radius * radius;
+    let discriminant = b * b - c;
+    if (discriminant < 0.0) {
+        discard;
+    }
+    let sqrt_disc = sqrt(discriminant);
+    var t = -b - sqrt_disc;
+    if (t < 0.0) {
+        t = -b + sqrt_disc;
+    }
+    let world_pos = ray_origin + ray_dir * t;
+    var world_normal = normalize(world_pos - center);
     if (!is_front) {
         world_normal = -world_normal;
     }
 
-    let world_pos = varyings.billboard_center + world_normal * radius;
     let clip_pos = u_stdinfo.projection_transform * u_stdinfo.cam_transform * vec4<f32>(world_pos, 1.0);
-    let view_dir = normalize(u_stdinfo.cam_transform_inv[3].xyz - world_pos);
+    var view_dir = -ray_dir;
+    if (ortho) {
+        view_dir = ray_dir;
+    }
+    view_dir = normalize(view_dir);
 
     var diffuse_color = vec4<f32>(srgb2physical(varyings.color.rgb), varyings.color.a);
     diffuse_color.a *= u_material.opacity * mask;
