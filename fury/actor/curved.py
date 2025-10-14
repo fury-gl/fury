@@ -89,7 +89,6 @@ def sphere(
         The thickness of the wireframe lines.
     impostor : bool, optional
         Render spheres as billboard impostors instead of geometry when ``True``.
-        Defaults to ``False``.
 
     Returns
     -------
@@ -137,7 +136,7 @@ def sphere(
         obj.billboard_radii = radii_arr.copy()
         return obj
 
-    scales = radii
+    scales = radii_arr
     directions = (1, 0, 0)
 
     vertices, faces = fp.prim_sphere(phi=phi, theta=theta)
@@ -155,8 +154,6 @@ def sphere(
         wireframe=wireframe,
         wireframe_thickness=wireframe_thickness,
     )
-    obj.billboard_radii = radii_arr.copy()
-    obj.billboard_mode = "mesh"
     return obj
 
 
