@@ -7,6 +7,8 @@ factory function plus shader registration.
 
 from __future__ import annotations
 
+__all__ = ["billboard", "create_billboard_sphere", "Billboard"]
+
 import numpy as np
 
 from fury.actor import Mesh
