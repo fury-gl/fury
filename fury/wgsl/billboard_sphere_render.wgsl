@@ -106,14 +106,21 @@ fn fs_main(varyings: Varyings, @builtin(front_facing) is_front: bool) -> Fragmen
     let oc = ray_origin - center;
     let b = dot(ray_dir, oc);
     let c = dot(oc, oc) - radius * radius;
-    let discriminant = b * b - c;
+    var discriminant = b * b - c;
     if (discriminant < 0.0) {
-        discard;
+        if (discriminant > -1e-4) {
+            discriminant = 0.0;
+        } else {
+            discard;
+        }
     }
     let sqrt_disc = sqrt(discriminant);
     var t = -b - sqrt_disc;
     if (t < 0.0) {
         t = -b + sqrt_disc;
+    }
+    if (t < 0.0) {
+        discard;
     }
     let world_pos = ray_origin + ray_dir * t;
     var world_normal = normalize(world_pos - center);
@@ -132,7 +139,7 @@ fn fs_main(varyings: Varyings, @builtin(front_facing) is_front: bool) -> Fragmen
     diffuse_color.a *= u_material.opacity * mask;
     do_alpha_test(diffuse_color.a);
 
-    let physical_albeido = diffuse_color.rgb;
+    let physical_albedo = diffuse_color.rgb;
     let specular_strength = 1.0;
 
     var reflected_light: ReflectedLight = ReflectedLight(
@@ -148,7 +155,7 @@ fn fs_main(varyings: Varyings, @builtin(front_facing) is_front: bool) -> Fragmen
     geometry.view_dir = view_dir;
 
     var material: BlinnPhongMaterial;
-    material.diffuse_color = physical_albeido;
+    material.diffuse_color = physical_albedo;
     material.specular_color = srgb2physical(u_material.specular_color.rgb);
     material.specular_shininess = u_material.shininess;
     material.specular_strength = specular_strength;
@@ -170,7 +177,7 @@ fn fs_main(varyings: Varyings, @builtin(front_facing) is_front: bool) -> Fragmen
     if (all(physical_color == vec3<f32>(0.0))) {
         let fallback_light = normalize(vec3<f32>(0.3, 0.5, 0.8));
         let fallback_diffuse = max(dot(world_normal, fallback_light), 0.0);
-        physical_color = physical_albeido * clamp(0.3 + 0.7 * fallback_diffuse, 0.0, 1.0);
+        physical_color = physical_albedo * clamp(0.3 + 0.7 * fallback_diffuse, 0.0, 1.0);
     }
 
     var out: FragmentOutput;

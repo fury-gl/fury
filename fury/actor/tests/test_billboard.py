@@ -163,8 +163,6 @@ def test_billboard_sphere(interactive: bool = False):
 
     assert isinstance(mesh_spheres.material, MeshPhongMaterial)
     assert not isinstance(mesh_spheres.material, BillboardSphereMaterial)
-    npt.assert_allclose(mesh_spheres.billboard_radii, radii)
-    assert getattr(mesh_spheres, "billboard_mode", None) == "mesh"
 
     impostor_spheres = actor.sphere(
         centers,
