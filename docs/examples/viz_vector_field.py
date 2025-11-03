@@ -14,6 +14,7 @@ To demonstrate we will create a diverging radial field and visualize it with arr
 
 import numpy as np
 from fury import actor, window
+from fury.lib import EventType
 
 ###############################################################################
 # Create a diverging radial vector field. we will create a 4D array to
@@ -118,5 +119,5 @@ def handle_key_event(event):
 ###############################################################################
 # Add event handler for key events to the show manager.
 
-show_manager.renderer.add_event_handler(handle_key_event, "key_down")
+show_manager.renderer.add_event_handler(handle_key_event, EventType.KEY_DOWN)
 show_manager.start()

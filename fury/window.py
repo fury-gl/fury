@@ -578,7 +578,8 @@ class ShowManager:
         self.renderer = renderer
         self.renderer.pixel_ratio = pixel_ratio
         self.renderer.add_event_handler(
-            lambda event: self._resize(size=(event.width, event.height)), "resize"
+            lambda event: self._resize(size=(event.width, event.height)),
+            EventType.RESIZE,
         )
         self.renderer.add_event_handler(
             self._set_key_long_press_event, EventType.KEY_DOWN, EventType.KEY_UP
@@ -773,7 +774,7 @@ class ShowManager:
         event : KeyEvent
             The PyGfx key event object."""
 
-        if event.type == "key_down":
+        if event.type == EventType.KEY_DOWN:
             self._key_long_press = asyncio.create_task(
                 self._handle_key_long_press(event)
             )

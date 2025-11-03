@@ -22,6 +22,7 @@ intensity value and use arrow keys to navigate through the slices.
 import numpy as np
 from fury import actor, window
 from fury.utils import get_slices, show_slices
+from fury.lib import EventType
 from dipy.data import read_mni_template
 
 ###############################################################################
@@ -80,7 +81,7 @@ def handle_key_event(event):
 # Add event handlers to the slice actor for key events.
 
 show_m = window.ShowManager(scene=scene, title="FURY 2.0: Cube Slicer Example")
-show_m.renderer.add_event_handler(handle_key_event, "key_down")
+show_m.renderer.add_event_handler(handle_key_event, EventType.KEY_DOWN)
 
 
 ################################################################################
@@ -126,10 +127,10 @@ def handle_pick_event(event):
 ###############################################################################
 # Add event handlers to the slicer actor for picking and key events.
 
-slicer_actor.add_event_handler(handle_pick_event, "pointer_down")
+slicer_actor.add_event_handler(handle_pick_event, EventType.POINTER_DOWN)
 
 show_m = window.ShowManager(scene=scene, title="FURY 2.0: MNI Template Slicer Example")
-show_m.renderer.add_event_handler(handle_key_event, "key_down")
+show_m.renderer.add_event_handler(handle_key_event, EventType.KEY_DOWN)
 
 ################################################################################
 # Start the show manager to display the scene and allow interaction.
