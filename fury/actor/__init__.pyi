@@ -28,6 +28,7 @@ __all__ = [
     "star",
     "text",
     "triangle",
+    "billboard",
     "sph_glyph",
     "vector_field",
     "vector_field_slicer",
@@ -41,6 +42,7 @@ __all__ = [
     "line_projection",
 ]
 
+from .billboard import billboard
 from .bio import peaks_slicer, volume_slicer
 from .core import actor_from_primitive, arrow, axes, line
 from .curved import cone, cylinder, ellipsoid, sphere, streamlines, streamtube

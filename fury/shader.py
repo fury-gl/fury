@@ -7,6 +7,7 @@ from fury.lib import (
     Binding,
     Buffer,
     LineShader,
+    MeshShader,
     ThinLineSegmentShader,
     load_wgsl,
 )
@@ -458,3 +459,37 @@ class LineProjectionComputeShader(BaseShader):
             The WGSL code as a string.
         """
         return load_wgsl("line_projection_compute.wgsl", package_name="fury.wgsl")
+
+
+class BillboardShader(MeshShader):
+    """Shader for Billboard actor.
+
+    Parameters
+    ----------
+    wobject : Mesh
+        The mesh object containing billboard data.
+    """
+
+    def __init__(self, wobject):
+        """Initialize the BillboardShader with the given mesh object.
+
+        Parameters
+        ----------
+        wobject : Mesh
+            The mesh object containing billboard data.
+        """
+        super().__init__(wobject)
+        if hasattr(wobject, "billboard_count"):
+            self["billboard_count"] = wobject.billboard_count
+        else:
+            self["billboard_count"] = 1
+
+    def get_code(self):
+        """Get the WGSL code for the billboard render shader.
+
+        Returns
+        -------
+        str
+            The WGSL code as a string.
+        """
+        return load_wgsl("billboard_render.wgsl", package_name="fury.wgsl")
