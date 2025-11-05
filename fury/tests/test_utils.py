@@ -1,8 +1,10 @@
 import numpy as np
 import pytest
 
+from fury import actor as fury_actor, window
 from fury.actor import data_slicer, line_projection
 from fury.lib import AffineTransform, Group, Mesh, RecursiveTransform, WorldObject
+from fury.testing import analyze_snapshot
 from fury.utils import (
     apply_affine_to_actor,
     apply_affine_to_group,
@@ -603,3 +605,389 @@ def test_get_transformed_cube_bounds_degenerate_case():
 
     assert np.array_equal(result[0], expected[0])
     assert np.array_equal(result[1], expected[1])
+
+
+# ===== VISUAL SNAPSHOT TESTS FOR ACTOR PROPERTIES =====
+
+
+def test_actor_translation_visual():
+    """Test that actors translate correctly - relative positioning between actors.
+
+    BUG DETECTION: Text actors may not translate correctly relative to other actors.
+    This test creates a reference sphere and a translated sphere, ensuring the
+    translation is visually correct in the snapshot.
+    """
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Reference sphere at origin (red)
+    ref_sphere = fury_actor.sphere(
+        centers=np.array([[0, 0, 0]]), colors=np.array([[1, 0, 0]]), radii=0.5
+    )
+    scene.add(ref_sphere)
+
+    # Translated sphere (green) - should be at [3, 0, 0]
+    trans_sphere = fury_actor.sphere(
+        centers=np.array([[3, 0, 0]]), colors=np.array([[0, 1, 0]]), radii=0.5
+    )
+    scene.add(trans_sphere)
+
+    # Take snapshot
+    arr = window.snapshot(scene=scene, fname="test_translation.png", return_array=True)
+
+    # Analyze: Should have 2 distinct objects with red and green colors
+    report = analyze_snapshot(
+        arr,
+        colors=np.array([[255, 0, 0], [0, 255, 0]]),
+        find_objects=True,
+        color_tolerance=30,
+    )
+
+    assert report.objects >= 2, (
+        f"Expected 2 separate objects, found {report.objects}. "
+        "Translation may be broken!"
+    )
+    assert report.colors_found[0], "Red reference sphere not detected"
+    assert report.colors_found[1], "Green translated sphere not detected"
+
+    # Check spatial separation - red should be on left, green on right
+    red_pixels = np.where(
+        (arr[..., 0] > 100) & (arr[..., 1] < 100) & (arr[..., 2] < 100)
+    )
+    green_pixels = np.where(
+        (arr[..., 0] < 100) & (arr[..., 1] > 100) & (arr[..., 2] < 100)
+    )
+
+    if len(red_pixels[1]) > 0 and len(green_pixels[1]) > 0:
+        red_center_x = np.mean(red_pixels[1])
+        green_center_x = np.mean(green_pixels[1])
+        assert green_center_x > red_center_x, (
+            f"Green sphere should be to the right of red sphere. "
+            f"Red X: {red_center_x:.1f}, Green X: {green_center_x:.1f}"
+        )
+
+
+def test_text_actor_translation_bug():
+    """Test text actor translation relative to sphere - KNOWN BUG DETECTOR.
+
+    This test is designed to catch the bug where text actors don't translate
+    correctly relative to other actors in the scene.
+    """
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Reference sphere at origin (red)
+    ref_sphere = fury_actor.sphere(
+        centers=np.array([[0, 0, 0]]), colors=np.array([[1, 0, 0]]), radii=0.5
+    )
+    scene.add(ref_sphere)
+
+    # Text actor that should be positioned to the right
+    text_act = fury_actor.text(
+        "TEST", position=(3, 0, 0), color=(0, 1, 0), font_size=50
+    )
+    scene.add(text_act)
+
+    # Another sphere as reference point (blue)
+    right_sphere = fury_actor.sphere(
+        centers=np.array([[6, 0, 0]]), colors=np.array([[0, 0, 1]]), radii=0.5
+    )
+    scene.add(right_sphere)
+
+    # Take snapshot
+    arr = window.snapshot(
+        scene=scene, fname="test_text_translation.png", return_array=True
+    )
+
+    # Analyze colors and positions
+    analyze_snapshot(
+        arr,
+        colors=np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]]),
+        find_objects=True,
+        color_tolerance=30,
+    )
+
+    # Find pixel positions
+    red_pixels = np.where(
+        (arr[..., 0] > 100) & (arr[..., 1] < 100) & (arr[..., 2] < 100)
+    )
+    green_pixels = np.where(
+        (arr[..., 0] < 100) & (arr[..., 1] > 100) & (arr[..., 2] < 100)
+    )
+    blue_pixels = np.where(
+        (arr[..., 0] < 100) & (arr[..., 1] < 100) & (arr[..., 2] > 100)
+    )
+
+    if len(red_pixels[1]) > 0 and len(green_pixels[1]) > 0 and len(blue_pixels[1]) > 0:
+        red_x = np.mean(red_pixels[1])
+        green_x = np.mean(green_pixels[1])
+        blue_x = np.mean(blue_pixels[1])
+
+        # Text should be between red sphere (left) and blue sphere (right)
+        assert red_x < green_x < blue_x, (
+            f"Text translation FAILED! Expected order: Red < Green < Blue. "
+            f"Got Red: {red_x:.1f}, Green (text): {green_x:.1f}, Blue: {blue_x:.1f}. "
+            "Text actor is not translating correctly!"
+        )
+
+
+def test_actor_opacity_visual():
+    """Test that actor opacity is correctly rendered.
+
+    BUG DETECTION: Opacity values may not be applied correctly to actors.
+    """
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Opaque sphere (red)
+    opaque = fury_actor.sphere(
+        centers=np.array([[0, 0, 0]]), colors=np.array([[1, 0, 0]]), radii=1.0
+    )
+    scene.add(opaque)
+
+    arr_opaque = window.snapshot(
+        scene=scene, fname="test_opaque.png", return_array=True
+    )
+    scene.clear()
+
+    # Semi-transparent sphere (red with 0.3 opacity)
+    transparent = fury_actor.sphere(
+        centers=np.array([[0, 0, 0]]), colors=np.array([[1, 0, 0, 0.3]]), radii=1.0
+    )
+    scene.add(transparent)
+
+    arr_transparent = window.snapshot(
+        scene=scene, fname="test_transparent.png", return_array=True
+    )
+
+    # Analyze both snapshots
+    report_opaque = analyze_snapshot(arr_opaque, analyze_opacity=True)
+    report_transparent = analyze_snapshot(arr_transparent, analyze_opacity=True)
+
+    # Count red pixels
+    red_opaque = np.sum(
+        (arr_opaque[..., 0] > 100)
+        & (arr_opaque[..., 1] < 100)
+        & (arr_opaque[..., 2] < 100)
+    )
+    red_transparent = np.sum(
+        (arr_transparent[..., 0] > 50)
+        & (arr_transparent[..., 1] < 50)
+        & (arr_transparent[..., 2] < 50)
+    )
+
+    # Transparent should have fewer bright red pixels
+    assert red_opaque > 0, "Opaque sphere should have red pixels"
+    assert red_transparent > 0, "Transparent sphere should still be visible"
+
+    # Check brightness difference
+    opaque_brightness = report_opaque.brightness_mean
+    transparent_brightness = report_transparent.brightness_mean
+
+    assert transparent_brightness < opaque_brightness, (
+        f"Transparent sphere should be darker than opaque. "
+        f"Opaque: {opaque_brightness:.1f}, Transparent: {transparent_brightness:.1f}. "
+        "Opacity may not be working correctly!"
+    )
+
+
+def test_actor_size_scaling_visual():
+    """Test that actor size/scale is correctly applied.
+
+    BUG DETECTION: Actor sizes may not scale correctly.
+    """
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Small sphere (radius 0.3)
+    small = fury_actor.sphere(
+        centers=np.array([[-2, 0, 0]]), colors=np.array([[1, 0, 0]]), radii=0.3
+    )
+    scene.add(small)
+
+    # Medium sphere (radius 0.6)
+    medium = fury_actor.sphere(
+        centers=np.array([[0, 0, 0]]), colors=np.array([[0, 1, 0]]), radii=0.6
+    )
+    scene.add(medium)
+
+    # Large sphere (radius 1.2)
+    large = fury_actor.sphere(
+        centers=np.array([[2, 0, 0]]), colors=np.array([[0, 0, 1]]), radii=1.2
+    )
+    scene.add(large)
+
+    arr = window.snapshot(scene=scene, fname="test_sizes.png", return_array=True)
+
+    # Count pixels for each color
+    red_pixels = np.sum((arr[..., 0] > 100) & (arr[..., 1] < 100) & (arr[..., 2] < 100))
+    green_pixels = np.sum(
+        (arr[..., 0] < 100) & (arr[..., 1] > 100) & (arr[..., 2] < 100)
+    )
+    blue_pixels = np.sum(
+        (arr[..., 0] < 100) & (arr[..., 1] < 100) & (arr[..., 2] > 100)
+    )
+
+    # Larger spheres should have more pixels (area scales with r^2)
+    assert blue_pixels > green_pixels > red_pixels, (
+        f"Size scaling may be broken! Expected: blue > green > red pixels. "
+        f"Got red: {red_pixels}, green: {green_pixels}, blue: {blue_pixels}"
+    )
+
+    # Rough ratio check (accounting for projection and shading)
+    ratio_green_red = green_pixels / max(red_pixels, 1)
+    ratio_blue_green = blue_pixels / max(green_pixels, 1)
+
+    assert ratio_green_red > 1.5, (
+        f"Medium sphere should be significantly larger than small. "
+        f"Ratio: {ratio_green_red:.2f}"
+    )
+    assert ratio_blue_green > 1.5, (
+        f"Large sphere should be significantly larger than medium. "
+        f"Ratio: {ratio_blue_green:.2f}"
+    )
+
+
+def test_actor_color_accuracy():
+    """Test that specified colors are accurately rendered.
+
+    BUG DETECTION: Color values may be incorrectly applied or gamma-corrected.
+    """
+    test_colors = [
+        ([1, 0, 0], "Pure Red"),
+        ([0, 1, 0], "Pure Green"),
+        ([0, 0, 1], "Pure Blue"),
+        ([1, 1, 0], "Yellow"),
+        ([1, 0, 1], "Magenta"),
+        ([0, 1, 1], "Cyan"),
+        ([1, 1, 1], "White"),
+    ]
+
+    for color, name in test_colors:
+        scene = window.Scene()
+        scene.background = (0, 0, 0)
+
+        sphere = fury_actor.sphere(
+            centers=np.array([[0, 0, 0]]), colors=np.array([color]), radii=1.0
+        )
+        scene.add(sphere)
+
+        arr = window.snapshot(
+            scene=scene, fname=f"test_color_{name}.png", return_array=True
+        )
+
+        # Convert expected color to 0-255 range
+        expected_rgb = np.array(color) * 255
+
+        report = analyze_snapshot(
+            arr, colors=expected_rgb.reshape(1, 3), color_tolerance=30
+        )
+
+        assert report.colors_found[0], (
+            f"Color {name} {color} not detected correctly! "
+            f"Expected RGB: {expected_rgb}. "
+            "Color rendering may be broken or gamma-corrected incorrectly."
+        )
+
+        scene.clear()
+
+
+def test_multiple_actors_same_position():
+    """Test overlapping actors at same position.
+
+    BUG DETECTION: Z-fighting, rendering order, or depth buffer issues.
+    """
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Two spheres at exactly same position - should see top one
+    sphere1 = fury_actor.sphere(
+        centers=np.array([[0, 0, 0]]),
+        colors=np.array([[1, 0, 0]]),  # Red (bottom)
+        radii=0.5,
+    )
+    scene.add(sphere1)
+
+    sphere2 = fury_actor.sphere(
+        centers=np.array([[0, 0, 0]]),
+        colors=np.array([[0, 1, 0]]),  # Green (top)
+        radii=0.6,
+    )
+    scene.add(sphere2)
+
+    arr = window.snapshot(scene=scene, fname="test_overlap.png", return_array=True)
+
+    analyze_snapshot(
+        arr, colors=np.array([[255, 0, 0], [0, 255, 0]]), color_tolerance=30
+    )
+
+    # Green should be more dominant since it's larger and added second
+    green_pixels = np.sum(
+        (arr[..., 0] < 100) & (arr[..., 1] > 100) & (arr[..., 2] < 100)
+    )
+    red_pixels = np.sum((arr[..., 0] > 100) & (arr[..., 1] < 100) & (arr[..., 2] < 100))
+
+    assert green_pixels > red_pixels, (
+        f"Larger green sphere should be more visible than red. "
+        f"Green: {green_pixels}, Red: {red_pixels}. "
+        "Rendering order or depth testing may be broken!"
+    )
+
+
+def test_actor_affine_transform_visual():
+    """Test affine transformations are correctly applied to actors.
+
+    BUG DETECTION: apply_affine_to_actor may not correctly transform visual output.
+    """
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Original sphere at origin
+    original = fury_actor.sphere(
+        centers=np.array([[0, 0, 0]]), colors=np.array([[1, 0, 0]]), radii=0.5
+    )
+    scene.add(original)
+
+    # Create transform: translate by (3, 0, 0) and scale by 1.5
+    affine = np.eye(4)
+    affine[:3, :3] *= 1.5  # Scale
+    affine[0, 3] = 3  # Translate X
+
+    # Transformed sphere
+    transformed_sphere = fury_actor.sphere(
+        centers=np.array([[0, 0, 0]]), colors=np.array([[0, 1, 0]]), radii=0.5
+    )
+    apply_affine_to_actor(transformed_sphere, affine)
+    scene.add(transformed_sphere)
+
+    arr = window.snapshot(
+        scene=scene, fname="test_affine_transform.png", return_array=True
+    )
+
+    # Find positions
+    red_pixels = np.where(
+        (arr[..., 0] > 100) & (arr[..., 1] < 100) & (arr[..., 2] < 100)
+    )
+    green_pixels = np.where(
+        (arr[..., 0] < 100) & (arr[..., 1] > 100) & (arr[..., 2] < 100)
+    )
+
+    # Count pixels to verify scaling
+    red_count = len(red_pixels[0])
+    green_count = len(green_pixels[0])
+
+    assert green_count > red_count, (
+        f"Scaled green sphere should be larger than red. "
+        f"Red: {red_count}, Green: {green_count}. "
+        "Affine scaling may not be working!"
+    )
+
+    if len(red_pixels[1]) > 0 and len(green_pixels[1]) > 0:
+        red_x = np.mean(red_pixels[1])
+        green_x = np.mean(green_pixels[1])
+
+        assert green_x > red_x, (
+            f"Transformed sphere should be to the right. "
+            f"Red X: {red_x:.1f}, Green X: {green_x:.1f}. "
+            "Affine translation may not be working!"
+        )

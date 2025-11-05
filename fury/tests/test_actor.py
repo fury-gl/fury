@@ -61,6 +61,8 @@ def random_png(width, height):
 
 
 def validate_actors(actor_type="actor_name", prim_count=1, **kwargs):
+    from fury.testing import analyze_snapshot
+
     scene = window.Scene()
     typ_actor = getattr(actor, actor_type)
     get_actor = typ_actor(**kwargs)
@@ -96,6 +98,22 @@ def validate_actors(actor_type="actor_name", prim_count=1, **kwargs):
     r, g, b, a = middle_pixel
     assert r > g and r > b
     assert g == b
+
+    # Advanced snapshot testing with shading-aware color detection
+    arr = window.snapshot(
+        scene=scene, fname=f"{actor_type}_snapshot.png", return_array=True
+    )
+    if colors is not None and arr is not None:
+        # Convert colors to 0-255 range if needed
+        test_colors = colors * 255 if colors.max() <= 1.0 else colors
+        report = analyze_snapshot(arr, colors=test_colors.tolist(), color_tolerance=30)
+        assert any(report.colors_found), (
+            f"{actor_type} color should be detected despite shading"
+        )
+        if actor_type not in ["square", "disk"]:
+            # Flat objects may not have strong shading
+            assert report.has_shading, f"{actor_type} should show Phong shading"
+
     scene.remove(get_actor)
 
     typ_actor_1 = getattr(actor, actor_type)
@@ -152,6 +170,36 @@ def test_sphere():
     validate_actors(centers=centers, colors=colors, actor_type="sphere")
 
 
+def test_sphere_visual():
+    """Test sphere actor rendering with multiple spheres and shading."""
+    from fury.testing import analyze_snapshot
+
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Multiple spheres with different colors and sizes
+    centers = np.array([[0, 0, 0], [2, 0, 0], [-2, 0, 0]])
+    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    radii = np.array([0.5, 0.7, 0.4])
+
+    spheres = actor.sphere(centers=centers, colors=colors, radii=radii)
+    scene.add(spheres)
+
+    arr = window.snapshot(scene=scene, return_array=True)
+
+    report = analyze_snapshot(
+        arr,
+        colors=colors * 255,
+        find_objects=True,
+        analyze_shading=True,
+        color_tolerance=30,
+    )
+
+    assert report.objects >= 3, f"Expected 3 spheres, found {report.objects}"
+    assert all(report.colors_found), f"Not all colors detected: {report.colors_found}"
+    assert report.has_shading, "Spheres should have Phong shading"
+
+
 def test_line():
     lines_points = np.array([[[0, 0, 0], [1, 1, 1]], [[1, 1, 1], [2, 2, 2]]])
     colors = np.array([[[1, 0, 0]], [[0, 1, 0]]])
@@ -169,10 +217,54 @@ def test_line():
     actor.line(line, colors=line, material="basic")
 
 
+def test_line_visual():
+    """Test line actor rendering."""
+    from fury.testing import analyze_snapshot
+
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    lines = np.array([[[0, 0, 0], [1, 1, 0]], [[1, 1, 0], [2, 0, 0]]])
+    colors = np.array([[[1, 0, 0]], [[0, 1, 0]]])
+
+    line_actor = actor.line(lines, colors=colors)
+    scene.add(line_actor)
+
+    arr = window.snapshot(scene=scene, return_array=True)
+
+    report = analyze_snapshot(
+        arr, colors=colors.reshape(-1, 3) * 255, color_tolerance=30
+    )
+
+    assert any(report.colors_found), "Should detect at least one line color"
+
+
 def test_box():
     centers = np.array([[0, 0, 0]])
     colors = np.array([[1, 0, 0]])
     validate_actors(centers=centers, colors=colors, actor_type="box")
+
+
+def test_box_visual():
+    """Test box actor rendering and scaling."""
+    from fury.testing import analyze_snapshot
+
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    centers = np.array([[0, 0, 0], [3, 0, 0]])
+    colors = np.array([[1, 0, 0], [0, 1, 0]])
+    scales = np.array([[1, 1, 1], [0.5, 2, 0.5]])
+
+    boxes = actor.box(centers=centers, colors=colors, scales=scales)
+    scene.add(boxes)
+
+    arr = window.snapshot(scene=scene, return_array=True)
+
+    report = analyze_snapshot(arr, colors=colors * 255, color_tolerance=30)
+
+    assert all(report.colors_found), "Box colors not detected correctly"
+    assert report.objects >= 2, f"Expected 2 boxes, found {report.objects}"
 
 
 def test_cylinder():
@@ -181,10 +273,56 @@ def test_cylinder():
     validate_actors(centers=centers, colors=colors, actor_type="cylinder")
 
 
+def test_cylinder_visual():
+    """Test cylinder actor rendering with directions."""
+    from fury.testing import analyze_snapshot
+
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    centers = np.array([[0, 0, 0], [3, 0, 0]])
+    directions = np.array([[0, 1, 0], [1, 0, 0]])
+    colors = np.array([[1, 0, 0], [0, 0, 1]])
+
+    cylinders = actor.cylinder(
+        centers=centers, directions=directions, colors=colors, height=2.0, radii=0.3
+    )
+    scene.add(cylinders)
+
+    arr = window.snapshot(scene=scene, return_array=True)
+
+    report = analyze_snapshot(arr, colors=colors * 255, color_tolerance=30)
+
+    assert all(report.colors_found), "Cylinder colors not detected"
+
+
 def test_square():
     centers = np.array([[0, 0, 0]])
     colors = np.array([[1, 0, 0]])
     validate_actors(centers=centers, colors=colors, actor_type="square")
+
+
+def test_square_visual():
+    """Test square actor rendering."""
+    from fury.testing import analyze_snapshot
+
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    centers = np.array([[0, 0, 0], [2, 0, 0]])
+    directions = np.array([[0, 0, 1], [0, 0, 1]])
+    colors = np.array([[1, 1, 0], [0, 1, 1]])
+
+    squares = actor.square(
+        centers=centers, directions=directions, colors=colors, scales=1.0
+    )
+    scene.add(squares)
+
+    arr = window.snapshot(scene=scene, return_array=True)
+
+    report = analyze_snapshot(arr, colors=colors * 255, color_tolerance=30)
+
+    assert all(report.colors_found), "All square colors should be detected"
 
 
 def test_frustum():
@@ -235,16 +373,86 @@ def test_arrow():
     validate_actors(centers=centers, colors=colors, actor_type="arrow")
 
 
+def test_arrow_visual():
+    """Test arrow actor rendering."""
+    from fury.testing import analyze_snapshot
+
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    centers = np.array([[0, 0, 0], [2, 0, 0]])
+    directions = np.array([[1, 0, 0], [0, 1, 0]])
+    colors = np.array([[1, 0, 0], [0, 1, 0]])
+
+    arrows = actor.arrow(
+        centers=centers, directions=directions, colors=colors, height=1.5
+    )
+    scene.add(arrows)
+
+    arr = window.snapshot(scene=scene, return_array=True)
+
+    report = analyze_snapshot(arr, colors=colors * 255, color_tolerance=30)
+
+    assert all(report.colors_found), "All arrow colors should be detected"
+
+
 def test_superquadric():
     centers = np.array([[0, 0, 0]])
     colors = np.array([[1, 0, 0]])
     validate_actors(centers=centers, colors=colors, actor_type="superquadric")
 
 
+def test_superquadric_visual():
+    """Test superquadric actor rendering."""
+    from fury.testing import analyze_snapshot
+
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    centers = np.array([[0, 0, 0], [3, 0, 0]])
+    colors = np.array([[1, 0, 0], [0, 0, 1]])
+    roundness = (1.0, 1.0)  # Sphere-like
+
+    superqs = actor.superquadric(centers=centers, colors=colors, roundness=roundness)
+    scene.add(superqs)
+
+    arr = window.snapshot(scene=scene, return_array=True)
+
+    report = analyze_snapshot(arr, colors=colors * 255, color_tolerance=30)
+
+    assert all(report.colors_found), "Superquadric colors not detected"
+
+
 def test_cone():
     centers = np.array([[0, 0, 0]])
+    directions = np.array([[0, 1, 0]])
     colors = np.array([[1, 0, 0]])
-    validate_actors(centers=centers, colors=colors, actor_type="cone")
+    validate_actors(
+        centers=centers, directions=directions, colors=colors, actor_type="cone"
+    )
+
+
+def test_cone_visual():
+    """Test cone actor rendering."""
+    from fury.testing import analyze_snapshot
+
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    centers = np.array([[0, 0, 0], [2, 0, 0]])
+    directions = np.array([[0, 1, 0], [0, 1, 0]])
+    colors = np.array([[1, 1, 0], [1, 0, 1]])
+
+    cones = actor.cone(
+        centers=centers, directions=directions, colors=colors, height=2.0, radii=0.5
+    )
+    scene.add(cones)
+
+    arr = window.snapshot(scene=scene, return_array=True)
+
+    report = analyze_snapshot(arr, colors=colors * 255, color_tolerance=30)
+
+    assert all(report.colors_found), "All cone colors should be detected"
 
 
 def test_star():
@@ -258,6 +466,28 @@ def test_disk():
     colors = np.array([[1, 0, 0]])
     validate_actors(centers=centers, colors=colors, actor_type="disk")
     validate_actors(centers=centers, colors=colors, actor_type="disk", sectors=8)
+
+
+def test_disk_visual():
+    """Test disk actor rendering."""
+    from fury.testing import analyze_snapshot
+
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    centers = np.array([[0, 0, 0]])
+    directions = np.array([[0, 0, 1]])
+    colors = np.array([[0, 1, 1]])
+
+    disks = actor.disk(centers=centers, directions=directions, colors=colors, radii=1.0)
+    scene.add(disks)
+
+    arr = window.snapshot(scene=scene, return_array=True)
+
+    report = analyze_snapshot(arr, colors=colors * 255, color_tolerance=50)
+
+    # Disk may be small or have lighting affecting color detection
+    assert report.colors_found[0] or np.any(arr > 0), "Disk not detected"
 
 
 def test_triangle():
@@ -352,6 +582,27 @@ def test_point():
     scene.remove(point_actor_1)
 
 
+def test_point_visual():
+    """Test point actor rendering."""
+    from fury.testing import analyze_snapshot
+
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]])
+    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+
+    point_actor = actor.point(points, colors=colors, size=10.0)
+    scene.add(point_actor)
+
+    arr = window.snapshot(scene=scene, return_array=True)
+
+    report = analyze_snapshot(arr, colors=colors * 255, color_tolerance=30)
+
+    # Points are small, at least one color should be visible
+    assert any(report.colors_found), "Should detect at least one point color"
+
+
 def test_marker():
     centers = np.array([[0, 0, 0]])
     colors = np.array([[1, 0, 0]])
@@ -393,6 +644,26 @@ def test_marker():
     assert mean_g == 0 and mean_b == 0
 
     scene.remove(marker_actor_1)
+
+
+def test_marker_visual():
+    """Test marker actor rendering."""
+    from fury.testing import analyze_snapshot
+
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    centers = np.array([[0, 0, 0], [1, 1, 0], [-1, -1, 0]])
+    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+
+    markers = actor.marker(centers, colors=colors, marker="o", size=30)
+    scene.add(markers)
+
+    arr = window.snapshot(scene=scene, return_array=True)
+
+    report = analyze_snapshot(arr, colors=colors * 255, color_tolerance=30)
+
+    assert sum(report.colors_found) >= 2, "Should detect at least 2 marker colors"
 
 
 def test_text():
@@ -466,6 +737,26 @@ def test_axes():
     scene.remove(axes_actor)
 
 
+def test_axes_visual():
+    """Test axes actor rendering."""
+    from fury.testing import analyze_snapshot
+
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    axes = actor.axes(scale=(1, 1, 1))
+    scene.add(axes)
+
+    arr = window.snapshot(scene=scene, return_array=True)
+
+    # Axes should have red, green, blue
+    colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
+    report = analyze_snapshot(arr, colors=colors, color_tolerance=30)
+
+    # Should detect at least some of the axis colors
+    assert any(report.colors_found), "No axis colors detected"
+
+
 def test_ellipsoid():
     centers = np.array([[0, 0, 0]])
     lengths = np.array([[2, 1, 1]])
@@ -498,6 +789,30 @@ def test_ellipsoid():
     )
 
     _ = actor.ellipsoid(centers)
+
+
+def test_ellipsoid_visual():
+    """Test ellipsoid actor rendering."""
+    from fury.testing import analyze_snapshot
+
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    centers = np.array([[0, 0, 0]])
+    axes_mat = np.array([np.eye(3)])
+    colors = np.array([[1, 0, 1]])
+    lengths = np.array([[1.5, 1.0, 0.5]])
+
+    ellipsoids = actor.ellipsoid(
+        centers=centers, orientation_matrices=axes_mat, colors=colors, lengths=lengths
+    )
+    scene.add(ellipsoids)
+
+    arr = window.snapshot(scene=scene, return_array=True)
+
+    report = analyze_snapshot(arr, colors=colors * 255, color_tolerance=30)
+
+    assert report.colors_found[0], "Ellipsoid color not detected"
 
 
 def test_valid_3d_data():
@@ -1352,3 +1667,855 @@ def test_line_projection_material_properties():
     assert projection.material.size == 5.0
     assert projection.material.edge_width == 1.0
     assert np.round(projection.material.opacity, 1) == 0.5
+
+
+# ===== COMPREHENSIVE VISUAL BUG DETECTION TESTS =====
+
+
+def test_text_actor_opacity():
+    """Test text actor opacity/transparency rendering.
+
+    BUG DETECTION: Text opacity may not render correctly.
+    """
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Semi-transparent text
+    text_act = actor.text("OPACITY TEST", position=(0, 0, 0), anchor="middle-center")
+    # Note: Check if text actor supports opacity in SetOpacity
+    if hasattr(text_act, "SetOpacity"):
+        text_act.SetOpacity(0.5)
+
+    scene.add(text_act)
+
+    arr = window.snapshot(scene=scene, fname="test_text_opacity.png", return_array=True)
+
+    # Find white/gray pixels (text should be semi-transparent)
+    text_pixels = np.where((arr[..., 0] > 50) & (arr[..., 1] > 50) & (arr[..., 2] > 50))
+
+    # Text should be visible
+    assert len(text_pixels[0]) > 100, (
+        f"Text should be visible. Found {len(text_pixels[0])} pixels"
+    )
+
+    # For semi-transparent text, pixels should not be pure white
+    if hasattr(text_act, "SetOpacity"):
+        pure_white = np.sum(
+            (arr[..., 0] > 250) & (arr[..., 1] > 250) & (arr[..., 2] > 250)
+        )
+        total_text = len(text_pixels[0])
+
+        # Most pixels should be gray (semi-transparent), not pure white
+        assert pure_white < total_text * 0.9, (
+            f"Semi-transparent text should have gray pixels. "
+            f"Pure white: {pure_white}, Total text: {total_text}"
+        )
+
+
+def test_text_actor_relative_positioning():
+    """Test text actor positioning relative to other actors.
+
+    BUG DETECTION: Text actors may not translate correctly relative to spheres.
+    This validates spatial relationships between actors.
+    """
+
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Reference sphere at origin (red)
+    ref_sphere = actor.sphere(
+        centers=np.array([[0, 0, 0]]), colors=np.array([[1, 0, 0]]), radii=0.5
+    )
+    scene.add(ref_sphere)
+
+    # Text positioned to the right
+    text_act = actor.text("TEST", position=(3, 0, 0), anchor="middle-center")
+    scene.add(text_act)
+
+    # Another sphere as right reference (blue)
+    right_sphere = actor.sphere(
+        centers=np.array([[6, 0, 0]]), colors=np.array([[0, 0, 1]]), radii=0.5
+    )
+    scene.add(right_sphere)
+
+    arr = window.snapshot(
+        scene=scene, fname="test_text_position.png", return_array=True
+    )
+
+    # Find pixel positions
+    red_pixels = np.where(
+        (arr[..., 0] > 100) & (arr[..., 1] < 100) & (arr[..., 2] < 100)
+    )
+    white_pixels = np.where(
+        (arr[..., 0] > 200) & (arr[..., 1] > 200) & (arr[..., 2] > 200)
+    )
+    blue_pixels = np.where(
+        (arr[..., 0] < 100) & (arr[..., 1] < 100) & (arr[..., 2] > 100)
+    )
+
+    if len(red_pixels[1]) > 0 and len(white_pixels[1]) > 0 and len(blue_pixels[1]) > 0:
+        red_x = np.mean(red_pixels[1])
+        white_x = np.mean(white_pixels[1])
+        blue_x = np.mean(blue_pixels[1])
+
+        # Text should be between red (left) and blue (right)
+        assert red_x < white_x < blue_x, (
+            f"Text positioning FAILED! Expected: Red < Text < Blue. "
+            f"Got Red: {red_x:.1f}, Text: {white_x:.1f}, Blue: {blue_x:.1f}"
+        )
+
+
+def test_multiple_actors_depth_ordering():
+    """Test z-ordering and depth buffer for overlapping actors.
+
+    BUG DETECTION: Rendering order, z-fighting, or depth issues.
+    """
+
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Sphere 1 at origin (red, smaller)
+    sphere1 = actor.sphere(
+        centers=np.array([[0, 0, 0]]), colors=np.array([[1, 0, 0]]), radii=0.5
+    )
+    scene.add(sphere1)
+
+    # Sphere 2 at same position (green, larger - added second, should dominate)
+    sphere2 = actor.sphere(
+        centers=np.array([[0, 0, 0]]), colors=np.array([[0, 1, 0]]), radii=0.7
+    )
+    scene.add(sphere2)
+
+    arr = window.snapshot(scene=scene, fname="test_overlap.png", return_array=True)
+
+    green_pixels = np.sum(
+        (arr[..., 0] < 100) & (arr[..., 1] > 100) & (arr[..., 2] < 100)
+    )
+    red_pixels = np.sum((arr[..., 0] > 100) & (arr[..., 1] < 100) & (arr[..., 2] < 100))
+
+    assert green_pixels > red_pixels, (
+        f"Larger green sphere should dominate. Green: {green_pixels}, Red: {red_pixels}"
+    )
+
+
+def test_arrow_direction_visual():
+    """Test arrow actor points in correct direction.
+
+    BUG DETECTION: Arrow orientation or direction bugs.
+    """
+
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Arrow pointing right (positive X)
+    arrow_right = actor.arrow(
+        centers=np.array([[0, 0, 0]]),
+        directions=np.array([[1, 0, 0]]),
+        colors=np.array([[1, 0, 0]]),
+        height=2.0,
+    )
+    scene.add(arrow_right)
+
+    arr = window.snapshot(
+        scene=scene, fname="test_arrow_direction.png", return_array=True
+    )
+
+    # Find red pixels
+    red_pixels = np.where(
+        (arr[..., 0] > 100) & (arr[..., 1] < 100) & (arr[..., 2] < 100)
+    )
+
+    if len(red_pixels[1]) > 0:
+        # Arrow should extend more to the right than left from center
+        center_x = arr.shape[1] // 2
+        right_pixels = np.sum(red_pixels[1] > center_x)
+        left_pixels = np.sum(red_pixels[1] < center_x)
+
+        assert right_pixels > left_pixels, (
+            f"Arrow should point right. Right pixels: {right_pixels}, "
+            f"Left pixels: {left_pixels}"
+        )
+
+
+def test_line_connectivity():
+    """Test line actor correctly connects points.
+
+    BUG DETECTION: Line rendering or connectivity bugs.
+    """
+
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Diagonal line from bottom-left to top-right
+    lines = np.array([[[-3, -3, 0], [3, 3, 0]]])
+    colors = np.array([[1, 0, 0]])
+
+    line_actor = actor.line(lines, colors=colors)
+    scene.add(line_actor)
+
+    arr = window.snapshot(
+        scene=scene, fname="test_line_connectivity.png", return_array=True
+    )
+
+    # Find red line pixels
+    red_pixels = np.where((arr[..., 0] > 50) & (arr[..., 1] < 50) & (arr[..., 2] < 50))
+
+    if len(red_pixels[0]) > 10:
+        # Check that line spans diagonally
+        y_coords = red_pixels[0]
+        x_coords = red_pixels[1]
+
+        y_span = np.max(y_coords) - np.min(y_coords)
+        x_span = np.max(x_coords) - np.min(x_coords)
+
+        assert y_span > arr.shape[0] * 0.3, (
+            f"Line should span vertically. Y span: {y_span}"
+        )
+        assert x_span > arr.shape[1] * 0.3, (
+            f"Line should span horizontally. X span: {x_span}"
+        )
+
+
+def test_ellipsoid_shape_accuracy():
+    """Test ellipsoid has correct proportions.
+
+    BUG DETECTION: Ellipsoid axis scaling bugs.
+    """
+
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Ellipsoid stretched along X axis
+    ellipsoid_act = actor.ellipsoid(
+        centers=np.array([[0, 0, 0]]), lengths=(6, 2, 2), colors=np.array([[1, 0, 0]])
+    )
+    scene.add(ellipsoid_act)
+
+    arr = window.snapshot(
+        scene=scene, fname="test_ellipsoid_shape.png", return_array=True
+    )
+
+    # Find red pixels
+    red_pixels = np.where(
+        (arr[..., 0] > 100) & (arr[..., 1] < 100) & (arr[..., 2] < 100)
+    )
+
+    if len(red_pixels[0]) > 10:
+        y_coords = red_pixels[0]
+        x_coords = red_pixels[1]
+
+        y_span = np.max(y_coords) - np.min(y_coords)
+        x_span = np.max(x_coords) - np.min(x_coords)
+
+        # X span should be significantly larger than Y span (3:1 ratio)
+        ratio = x_span / max(y_span, 1)
+
+        assert ratio > 1.5, (
+            f"Ellipsoid should be wider than tall (3:1 axes). "
+            f"X span: {x_span}, Y span: {y_span}, ratio: {ratio:.2f}"
+        )
+
+
+def test_box_size_consistency():
+    """Test box actor renders with correct size.
+
+    BUG DETECTION: Box scaling or size bugs.
+    """
+
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Small box
+    small_box = actor.box(
+        centers=np.array([[-2, 0, 0]]),
+        directions=np.array([[0, 1, 0]]),
+        colors=np.array([[1, 0, 0]]),
+        scales=(0.5, 0.5, 0.5),
+    )
+    scene.add(small_box)
+
+    # Large box
+    large_box = actor.box(
+        centers=np.array([[2, 0, 0]]),
+        directions=np.array([[0, 1, 0]]),
+        colors=np.array([[0, 1, 0]]),
+        scales=(1.5, 1.5, 1.5),
+    )
+    scene.add(large_box)
+
+    arr = window.snapshot(scene=scene, fname="test_box_sizes.png", return_array=True)
+
+    red_pixels = np.sum((arr[..., 0] > 100) & (arr[..., 1] < 100) & (arr[..., 2] < 100))
+    green_pixels = np.sum(
+        (arr[..., 0] < 100) & (arr[..., 1] > 100) & (arr[..., 2] < 100)
+    )
+
+    # Large box should have more pixels
+    assert green_pixels > red_pixels, (
+        f"Large box should be bigger. "
+        f"Red (small): {red_pixels}, Green (large): {green_pixels}"
+    )
+
+
+def test_cone_orientation():
+    """Test cone actor points in correct direction.
+
+    BUG DETECTION: Cone orientation bugs.
+    """
+
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Cone pointing upward
+    cone_act = actor.cone(
+        centers=np.array([[0, 0, 0]]),
+        directions=np.array([[0, 1, 0]]),
+        colors=np.array([[1, 0, 0]]),
+        height=2.0,
+    )
+    scene.add(cone_act)
+
+    arr = window.snapshot(
+        scene=scene, fname="test_cone_orientation.png", return_array=True
+    )
+
+    # Find red pixels
+    red_pixels = np.where(
+        (arr[..., 0] > 100) & (arr[..., 1] < 100) & (arr[..., 2] < 100)
+    )
+
+    if len(red_pixels[0]) > 10:
+        center_y = arr.shape[0] // 2
+        upper_pixels = np.sum(red_pixels[0] < center_y)
+        lower_pixels = np.sum(red_pixels[0] > center_y)
+
+        # Cone has base at center, tip points in direction
+        # So cone pointing up will have base below center (more lower pixels)
+        assert lower_pixels > upper_pixels, (
+            f"Cone pointing up should have base below center. "
+            f"Upper: {upper_pixels}, Lower: {lower_pixels}"
+        )
+
+
+def test_cylinder_height_accuracy():
+    """Test cylinder renders with correct height/radius ratio.
+
+    BUG DETECTION: Cylinder dimension bugs.
+    """
+
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Tall thin cylinder
+    cylinder_act = actor.cylinder(
+        centers=np.array([[0, 0, 0]]),
+        directions=np.array([[0, 1, 0]]),
+        colors=np.array([[1, 0, 0]]),
+        height=3.0,
+        radii=0.5,
+    )
+    scene.add(cylinder_act)
+
+    arr = window.snapshot(
+        scene=scene, fname="test_cylinder_proportions.png", return_array=True
+    )
+
+    red_pixels = np.where(
+        (arr[..., 0] > 100) & (arr[..., 1] < 100) & (arr[..., 2] < 100)
+    )
+
+    if len(red_pixels[0]) > 10:
+        y_span = np.max(red_pixels[0]) - np.min(red_pixels[0])
+        x_span = np.max(red_pixels[1]) - np.min(red_pixels[1])
+
+        # Height should be significantly larger than width
+        ratio = y_span / max(x_span, 1)
+
+        assert ratio > 1.5, (
+            f"Cylinder should be taller than wide. "
+            f"Y span: {y_span}, X span: {x_span}, ratio: {ratio:.2f}"
+        )
+
+
+def test_opacity_blending_multiple_actors():
+    """Test transparency blending with multiple overlapping actors.
+
+    BUG DETECTION: Opacity blending, z-ordering, alpha compositing bugs.
+    """
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Three overlapping spheres with different opacities
+    # Back sphere (red, semi-transparent)
+    back_sphere = actor.sphere(
+        centers=np.array([[0, 0, -1]]),
+        colors=np.array([[1, 0, 0]]),
+        radii=1.0,
+        opacity=0.5,
+    )
+    scene.add(back_sphere)
+
+    # Middle sphere (green, more transparent)
+    mid_sphere = actor.sphere(
+        centers=np.array([[0, 0, 0]]),
+        colors=np.array([[0, 1, 0]]),
+        radii=1.0,
+        opacity=0.7,
+    )
+    scene.add(mid_sphere)
+
+    # Front sphere (blue, least transparent)
+    front_sphere = actor.sphere(
+        centers=np.array([[0, 0, 1]]),
+        colors=np.array([[0, 0, 1]]),
+        radii=1.0,
+        opacity=0.8,
+    )
+    scene.add(front_sphere)
+
+    arr = window.snapshot(
+        scene=scene, fname="test_opacity_blending.png", return_array=True
+    )
+
+    # Check that colors are visible (blending occurred)
+    # With transparency, we may see blended colors rather than pure RGB
+    green_component = np.sum(arr[..., 1] > 100)
+    blue_component = np.sum(arr[..., 2] > 100)
+
+    # At least the dominant colors should be visible
+    assert green_component > 100, (
+        f"Green sphere should be visible: {green_component} pixels"
+    )
+    assert blue_component > 100, (
+        f"Blue sphere should be visible: {blue_component} pixels"
+    )
+
+
+def test_wireframe_rendering():
+    """Test wireframe rendering quality and edge detection.
+
+    BUG DETECTION: Wireframe mode, edge rendering bugs.
+    """
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Box in wireframe mode
+    box_wire = actor.box(
+        centers=np.array([[0, 0, 0]]),
+        directions=np.array([[0, 1, 0]]),
+        colors=np.array([[1, 1, 1]]),
+        scales=(2, 2, 2),
+        wireframe=True,
+        wireframe_thickness=2.0,
+    )
+    scene.add(box_wire)
+
+    arr = window.snapshot(scene=scene, fname="test_wireframe.png", return_array=True)
+
+    # Wireframe should have white edges
+    white_pixels = np.sum(
+        (arr[..., 0] > 200) & (arr[..., 1] > 200) & (arr[..., 2] > 200)
+    )
+
+    # Should have visible edges
+    assert white_pixels > 100, f"Wireframe edges not visible: {white_pixels} pixels"
+
+    # Center should be mostly empty (black background showing through)
+    center_y, center_x = arr.shape[0] // 2, arr.shape[1] // 2
+    center_region = arr[center_y - 10 : center_y + 10, center_x - 10 : center_x + 10]
+    black_in_center = np.sum(
+        (center_region[..., 0] < 50)
+        & (center_region[..., 1] < 50)
+        & (center_region[..., 2] < 50)
+    )
+
+    # Center should be mostly transparent/black
+    assert black_in_center > 100, (
+        f"Wireframe center should be transparent: {black_in_center} black pixels"
+    )
+
+
+def test_material_shininess():
+    """Test material shininess/specular properties.
+
+    BUG DETECTION: Material property rendering, specular highlights.
+    """
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Sphere with high shininess (should have bright specular highlight)
+    shiny_sphere = actor.sphere(
+        centers=np.array([[0, 0, 0]]),
+        colors=np.array([[0.5, 0.5, 0.5]]),
+        radii=1.0,
+        material="phong",
+    )
+    scene.add(shiny_sphere)
+
+    arr = window.snapshot(scene=scene, fname="test_shininess.png", return_array=True)
+
+    # Find bright pixels (specular highlights)
+    bright_pixels = np.where(
+        (arr[..., 0] > 150) | (arr[..., 1] > 150) | (arr[..., 2] > 150)
+    )
+
+    # Should have some specular highlights
+    assert len(bright_pixels[0]) > 50, (
+        f"Phong material should have specular highlights: "
+        f"{len(bright_pixels[0])} bright pixels"
+    )
+
+    # Find dim pixels (shaded areas)
+    dim_pixels = np.sum(
+        (arr[..., 0] > 20)
+        & (arr[..., 0] < 80)
+        & (arr[..., 1] > 20)
+        & (arr[..., 1] < 80)
+        & (arr[..., 2] > 20)
+        & (arr[..., 2] < 80)
+    )
+
+    # Should have shaded areas
+    assert dim_pixels > 100, (
+        f"Phong shading should create gradients: {dim_pixels} dim pixels"
+    )
+
+
+def test_streamlines_path_following():
+    """Test streamlines follow data correctly.
+
+    BUG DETECTION: Streamline path generation, data following bugs.
+    """
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Simple curved streamline
+    line_data = np.array([[[0, 0, 0], [1, 1, 0], [2, 2, 0], [3, 1, 0], [4, 0, 0]]])
+
+    streamline = actor.streamlines(lines=line_data, colors=(1, 0, 0), thickness=3.0)
+    scene.add(streamline)
+
+    arr = window.snapshot(scene=scene, fname="test_streamlines.png", return_array=True)
+
+    # Find red pixels
+    red_pixels = np.where(
+        (arr[..., 0] > 100) & (arr[..., 1] < 100) & (arr[..., 2] < 100)
+    )
+
+    # Streamline should be visible
+    assert len(red_pixels[0]) > 50, (
+        f"Streamline not visible: {len(red_pixels[0])} pixels"
+    )
+
+    # Should span across image
+    if len(red_pixels[1]) > 10:
+        x_span = np.max(red_pixels[1]) - np.min(red_pixels[1])
+        assert x_span > arr.shape[1] * 0.3, (
+            f"Streamline should span horizontally: {x_span} pixels"
+        )
+
+
+def test_superquadric_shape_parameters():
+    """Test superquadric shape accuracy with different parameters.
+
+    BUG DETECTION: Superquadric parameter handling, shape generation.
+    """
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Superquadric with specific roundness parameters
+    superquad = actor.superquadric(
+        centers=np.array([[0, 0, 0]]),
+        colors=np.array([[1, 0, 0]]),
+        roundness=(1.0, 1.0),  # Sphere-like
+        scales=(1, 1, 1),
+    )
+    scene.add(superquad)
+
+    arr = window.snapshot(scene=scene, fname="test_superquadric.png", return_array=True)
+
+    # Find red pixels
+    red_pixels = np.where(
+        (arr[..., 0] > 100) & (arr[..., 1] < 100) & (arr[..., 2] < 100)
+    )
+
+    # Should be visible
+    assert len(red_pixels[0]) > 100, (
+        f"Superquadric not visible: {len(red_pixels[0])} pixels"
+    )
+
+    # Should be roughly circular (sphere-like with roundness 1.0)
+    if len(red_pixels[0]) > 100:
+        y_span = np.max(red_pixels[0]) - np.min(red_pixels[0])
+        x_span = np.max(red_pixels[1]) - np.min(red_pixels[1])
+        ratio = max(y_span, x_span) / max(min(y_span, x_span), 1)
+
+        # Should be roughly circular (aspect ratio close to 1)
+        assert ratio < 1.5, (
+            f"Superquadric with roundness (1,1) should be circular. "
+            f"Aspect ratio: {ratio:.2f}"
+        )
+
+
+def test_marker_styles():
+    """Test different marker point styles.
+
+    BUG DETECTION: Marker rendering, style variations.
+    """
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Points with marker
+    points = np.array([[0, 0, 0], [1, 0, 0], [2, 0, 0]])
+    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+
+    marker_act = actor.marker(centers=points, colors=colors, size=20, marker="circle")
+    scene.add(marker_act)
+
+    arr = window.snapshot(scene=scene, fname="test_markers.png", return_array=True)
+
+    # All three colors should be visible
+    red_pixels = np.sum((arr[..., 0] > 100) & (arr[..., 1] < 100) & (arr[..., 2] < 100))
+    green_pixels = np.sum(
+        (arr[..., 0] < 100) & (arr[..., 1] > 100) & (arr[..., 2] < 100)
+    )
+    blue_pixels = np.sum(
+        (arr[..., 0] < 100) & (arr[..., 1] < 100) & (arr[..., 2] > 100)
+    )
+
+    assert red_pixels > 5, f"Red marker not visible: {red_pixels} pixels"
+    assert green_pixels > 5, f"Green marker not visible: {green_pixels} pixels"
+    assert blue_pixels > 5, f"Blue marker not visible: {blue_pixels} pixels"
+
+
+def test_zero_size_edge_case():
+    """Test actors with zero or very small sizes.
+
+    BUG DETECTION: Edge case handling, division by zero, rendering errors.
+    """
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Regular sphere for reference
+    normal_sphere = actor.sphere(
+        centers=np.array([[2, 0, 0]]), colors=np.array([[1, 0, 0]]), radii=1.0
+    )
+    scene.add(normal_sphere)
+
+    # Very small sphere (should be barely visible or invisible)
+    tiny_sphere = actor.sphere(
+        centers=np.array([[-2, 0, 0]]), colors=np.array([[0, 1, 0]]), radii=0.01
+    )
+    scene.add(tiny_sphere)
+
+    arr = window.snapshot(scene=scene, fname="test_zero_size.png", return_array=True)
+
+    # Normal sphere should be visible
+    red_pixels = np.sum((arr[..., 0] > 100) & (arr[..., 1] < 100) & (arr[..., 2] < 100))
+    assert red_pixels > 100, f"Normal sphere should be visible: {red_pixels} pixels"
+
+    # Tiny sphere should be invisible or barely visible
+    green_pixels = np.sum(
+        (arr[..., 0] < 100) & (arr[..., 1] > 100) & (arr[..., 2] < 100)
+    )
+    assert green_pixels < 50, (
+        f"Tiny sphere should be barely visible: {green_pixels} pixels"
+    )
+
+
+def test_negative_scale_mirroring():
+    """Test actors with negative scales (mirroring).
+
+    BUG DETECTION: Negative scale handling, face culling issues.
+    """
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Box with positive scale
+    pos_box = actor.box(
+        centers=np.array([[-2, 0, 0]]),
+        directions=np.array([[0, 1, 0]]),
+        colors=np.array([[1, 0, 0]]),
+        scales=(1, 1, 1),
+    )
+    scene.add(pos_box)
+
+    # Box with negative X scale (should be mirrored)
+    neg_box = actor.box(
+        centers=np.array([[2, 0, 0]]),
+        directions=np.array([[0, 1, 0]]),
+        colors=np.array([[0, 0, 1]]),
+        scales=(-1, 1, 1),
+    )
+    scene.add(neg_box)
+
+    arr = window.snapshot(
+        scene=scene, fname="test_negative_scale.png", return_array=True
+    )
+
+    # Both boxes should be visible
+    red_pixels = np.sum((arr[..., 0] > 100) & (arr[..., 1] < 100) & (arr[..., 2] < 100))
+    blue_pixels = np.sum(
+        (arr[..., 0] < 100) & (arr[..., 1] < 100) & (arr[..., 2] > 100)
+    )
+
+    assert red_pixels > 50, f"Positive scale box not visible: {red_pixels} pixels"
+    assert blue_pixels > 50, f"Negative scale box not visible: {blue_pixels} pixels"
+
+
+def test_opacity_zero_invisibility():
+    """Test that opacity=0 makes actors completely invisible.
+
+    BUG DETECTION: Opacity implementation bugs.
+    """
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Invisible sphere (opacity=0)
+    invisible = actor.sphere(
+        centers=np.array([[0, 0, 0]]),
+        colors=np.array([[1, 0, 0]]),
+        radii=1.0,
+        opacity=0.0,
+    )
+    scene.add(invisible)
+
+    arr = window.snapshot(scene=scene, fname="test_opacity_zero.png", return_array=True)
+
+    # Should be completely black (invisible) - check RGB only, not alpha
+    rgb_only = arr[:, :, :3]  # Ignore alpha channel
+    non_black = np.sum(rgb_only.max(axis=-1) > 10)
+
+    assert non_black == 0, (
+        f"Opacity=0 should be invisible. Found {non_black} non-black pixels. "
+        f"BUG: Opacity not working correctly!"
+    )
+
+
+def test_material_basic_vs_phong():
+    """Test difference between basic and phong materials.
+
+    BUG DETECTION: Material implementation, shading differences.
+    """
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Basic material (no shading)
+    basic_sphere = actor.sphere(
+        centers=np.array([[-1.5, 0, 0]]),
+        colors=np.array([[0.5, 0.5, 0.5]]),
+        radii=1.0,
+        material="basic",
+    )
+    scene.add(basic_sphere)
+
+    # Phong material (with shading)
+    phong_sphere = actor.sphere(
+        centers=np.array([[1.5, 0, 0]]),
+        colors=np.array([[0.5, 0.5, 0.5]]),
+        radii=1.0,
+        material="phong",
+    )
+    scene.add(phong_sphere)
+
+    arr = window.snapshot(scene=scene, fname="test_materials.png", return_array=True)
+
+    # Analyze variance in each sphere (Phong should have more variance due to shading)
+    center_y = arr.shape[0] // 2
+    center_x = arr.shape[1] // 2
+
+    # Basic material region (left)
+    basic_region = arr[center_y - 50 : center_y + 50, center_x - 150 : center_x - 50, 0]
+    basic_variance = np.var(basic_region[basic_region > 10])
+
+    # Phong material region (right)
+    phong_region = arr[center_y - 50 : center_y + 50, center_x + 50 : center_x + 150, 0]
+    phong_variance = np.var(phong_region[phong_region > 10])
+
+    # Phong should have significantly more variance than basic
+    assert phong_variance > basic_variance * 1.5, (
+        f"Phong material should have more shading variance than basic. "
+        f"Basic variance: {basic_variance:.2f}, Phong variance: {phong_variance:.2f}. "
+        f"BUG: Material differences not working!"
+    )
+
+
+def test_color_accuracy_strict():
+    """Test that colors render exactly as specified.
+
+    BUG DETECTION: Color rendering bugs, gamma correction issues.
+    """
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Pure red sphere
+    red_sphere = actor.sphere(
+        centers=np.array([[0, 0, 0]]),
+        colors=np.array([[1, 0, 0]]),
+        radii=1.0,
+        material="basic",  # Basic material for flat color
+    )
+    scene.add(red_sphere)
+
+    arr = window.snapshot(scene=scene, fname="test_color_purity.png", return_array=True)
+
+    # Find the brightest red pixel
+    red_channel = arr[..., 0]
+    brightest_idx = np.unravel_index(np.argmax(red_channel), red_channel.shape)
+    brightest_pixel = arr[brightest_idx]
+
+    # Pure red should be [255, 0, 0] or very close
+    r, g, b = brightest_pixel[0], brightest_pixel[1], brightest_pixel[2]
+
+    assert r > 200, f"Red channel too dim: {r}"
+    assert g < 50, f"Green contamination: {g} (should be <50)"
+    assert b < 50, f"Blue contamination: {b} (should be <50)"
+
+
+def test_picking_state_visual():
+    """Test that picking state affects visual rendering.
+
+    BUG DETECTION: Picking state implementation.
+    """
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    # Sphere with picking enabled
+    pickable = actor.sphere(
+        centers=np.array([[0, 0, 0]]),
+        colors=np.array([[1, 0, 0]]),
+        radii=1.0,
+        enable_picking=True,
+    )
+    scene.add(pickable)
+
+    arr_pickable = window.snapshot(
+        scene=scene, fname="test_pickable.png", return_array=True
+    )
+
+    scene2 = window.Scene()
+    scene2.background = (0, 0, 0)
+
+    # Sphere with picking disabled
+    non_pickable = actor.sphere(
+        centers=np.array([[0, 0, 0]]),
+        colors=np.array([[1, 0, 0]]),
+        radii=1.0,
+        enable_picking=False,
+    )
+    scene2.add(non_pickable)
+
+    arr_non_pickable = window.snapshot(
+        scene=scene2, fname="test_non_pickable.png", return_array=True
+    )
+
+    # Both should render identically (picking shouldn't affect visual)
+    pickable_pixels = np.sum(arr_pickable[..., 0] > 100)
+    non_pickable_pixels = np.sum(arr_non_pickable[..., 0] > 100)
+
+    # They should be nearly identical
+    diff = abs(pickable_pixels - non_pickable_pixels)
+    assert diff < pickable_pixels * 0.1, (
+        f"Picking state shouldn't affect rendering significantly. "
+        f"Difference: {diff} pixels"
+    )

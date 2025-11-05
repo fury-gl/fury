@@ -16,6 +16,7 @@ from fury.lib import (
     ScreenCoordsCamera,
     Texture,
 )
+from fury.testing import analyze_snapshot
 from fury.ui import Rectangle2D
 from fury.window import (
     Scene,
@@ -297,6 +298,12 @@ def test_show_manager_snapshot(tmpdir):
     assert isinstance(arr, np.ndarray)
     assert arr.shape[2] == 4  # RGBA image
     np.testing.assert_equal(arr, saved_arr)
+
+    # Advanced snapshot validation
+    report = analyze_snapshot(arr, find_objects=True)
+    assert report is not None, "Snapshot analysis should return a report"
+    # Empty scene should have at least background
+    assert arr.size > 0, "Snapshot array should not be empty"
 
 
 def test_show_manager_snapshot_multiple_screens(tmpdir):
