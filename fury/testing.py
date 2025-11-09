@@ -2,7 +2,6 @@
 
 from contextlib import contextmanager
 from dataclasses import dataclass, field
-from distutils.version import LooseVersion
 from functools import partial
 import io
 import json
@@ -11,6 +10,7 @@ import sys
 from typing import List, Optional, Tuple, Union
 import warnings
 
+from packaging.version import Version
 from PIL import Image
 import numpy as np
 from numpy.testing import assert_array_equal
@@ -345,7 +345,7 @@ def setup_test():
     https://github.com/numpy/numpy/commit/734b907fc2f7af6e40ec989ca49ee6d87e21c495
     https://github.com/nipy/nibabel/pull/556
     """
-    if LooseVersion(np.__version__) >= LooseVersion("1.14"):
+    if Version(np.__version__) >= Version("1.14"):
         np.set_printoptions(legacy="1.13")
 
     # Temporary fix until scipy release in October 2018
@@ -353,8 +353,8 @@ def setup_test():
     # print the first occurrence of matching warnings for each location
     # (module + line number) where the warning is issued
     if (
-        LooseVersion(np.__version__) >= LooseVersion("1.15")
-        and LooseVersion(scipy.version.short_version) <= "1.1.0"
+        Version(np.__version__) >= Version("1.15")
+        and Version(scipy.version.short_version) <= Version("1.1.0")
     ):
         warnings.simplefilter("default")
 
