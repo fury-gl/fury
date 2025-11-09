@@ -483,7 +483,7 @@ def analyze_snapshot(
     Examples
     --------
     >>> import numpy as np
-    >>> from fury.testing.snapshot import analyze_snapshot
+    >>> from fury.testing import analyze_snapshot
     >>> # Create a simple test image
     >>> img = np.zeros((100, 100, 3), dtype=np.uint8)
     >>> img[25:75, 25:75] = [255, 0, 0]  # Red square

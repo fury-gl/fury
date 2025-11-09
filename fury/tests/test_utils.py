@@ -684,7 +684,7 @@ def test_text_actor_translation_bug():
 
     # Text actor that should be positioned to the right
     text_act = fury_actor.text(
-        "TEST", position=(3, 0, 0), color=(0, 1, 0), font_size=50
+        "TEST", position=(3, 0, 0), colors=(0, 1, 0), font_size=50
     )
     scene.add(text_act)
 

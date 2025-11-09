@@ -1005,11 +1005,14 @@ def snapshot(
 
     Examples
     --------
+    >>> import numpy as np
+    >>> from fury import actor
     >>> scene = Scene()
-    >>> # ... add actors to scene ...
+    >>> sphere = actor.sphere(centers=np.array([[0, 0, 0]]), radii=1.0)
+    >>> scene.add(sphere)
     >>> arr = snapshot(scene)  # Returns array by default
-    >>> arr = snapshot(scene, fname='output.png')  # Save and return array
-    >>> snapshot(scene, fname='output.png', return_array=False)  # Only save
+    >>> arr.shape[2] == 4  # RGBA array
+    True
     """
     if actors is not None:
         scene = Scene()
@@ -1040,7 +1043,7 @@ def analyze_snapshot(
     min_object_size=50,
     analyze_shading=False,
     analyze_opacity=False,
-    background_threshold=10,
+    bg_color=None,
 ):
     """Analyze a rendered snapshot for testing and validation.
 
@@ -1064,8 +1067,8 @@ def analyze_snapshot(
         Enable gradient-based shading detection. Default: False.
     analyze_opacity : bool, optional
         Analyze alpha channel transparency. Default: False.
-    background_threshold : int, optional
-        Grayscale threshold for background detection. Default: 10.
+    bg_color : tuple or list or ndarray, optional
+        Background color to exclude from analysis. Default: None.
 
     Returns
     -------
@@ -1112,7 +1115,7 @@ def analyze_snapshot(
         min_object_size=min_object_size,
         analyze_shading=analyze_shading,
         analyze_opacity=analyze_opacity,
-        background_threshold=background_threshold,
+        bg_color=bg_color,
     )
 
 
