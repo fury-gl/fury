@@ -90,6 +90,8 @@ def _create_mesh_material(
     mode="vertex",
     flat_shading=True,
     texture=None,
+    wireframe=False,
+    wireframe_thickness=-1.0,
 ):
     """Create a mesh material.
 
@@ -113,6 +115,10 @@ def _create_mesh_material(
         Whether to use flat shading (True) or smooth shading (False).
     texture : Texture or TextureMap, optional
         The texture map specifying the color for each texture coordinate.
+    wireframe : bool, optional
+        Whether to render the mesh as a wireframe.
+    wireframe_thickness : float, optional
+        The thickness of the wireframe lines.
 
     Returns
     -------
@@ -134,6 +140,8 @@ def _create_mesh_material(
         "opacity": opacity,
         "flat_shading": flat_shading,
         "map": texture,
+        "wireframe": wireframe,
+        "wireframe_thickness": wireframe_thickness,
     }
 
     if material == "phong":
@@ -815,3 +823,199 @@ class BillboardMaterial(MeshBasicMaterial):
             Additional keyword arguments forwarded to ``MeshBasicMaterial``.
         """
         super().__init__(**kwargs)
+
+
+class StreamtubeMaterial(MeshPhongMaterial):
+    """Material for GPU-generated streamtubes.
+
+    Parameters
+    ----------
+    **kwargs : dict, optional
+        Arguments forwarded to :class:`MeshPhongMaterial`.
+    """
+
+    def __init__(self, **kwargs):
+        """Initialise the material with MeshPhongMaterial keyword arguments.
+
+        Parameters
+        ----------
+        **kwargs : dict, optional
+            Arguments forwarded to :class:`MeshPhongMaterial`.
+        """
+        super().__init__(**kwargs)
+
+
+class _StreamtubeBakedMaterial(MeshPhongMaterial):
+    """Internal material for compute-shader-based streamtubes with auto-baking.
+
+    This material is used internally by the streamtube actor when GPU compute
+    shaders are available. Users should not instantiate this directly; instead
+    use the ``streamtube()`` function which will automatically select the
+    appropriate implementation.
+
+    Parameters
+    ----------
+    radius : float, optional
+        Tube radius used by the compute shader.
+    segments : int, optional
+        Number of radial segments forming the tube.
+    end_caps : bool, optional
+        Whether flat caps are generated for each tube.
+    auto_detach : bool, optional
+        If True, automatically switch to render-only material after baking.
+    **kwargs : dict, optional
+        Additional arguments forwarded to :class:`MeshPhongMaterial`.
+
+    Notes
+    -----
+    This is an internal class marked with a leading underscore. It should not
+    be used directly by end users.
+    """
+
+    uniform_type = dict(
+        MeshPhongMaterial.uniform_type,
+        tube_radius="f4",
+        tube_segments="u4",
+        tube_end_caps="i4",
+        line_count="u4",
+    )
+
+    def __init__(
+        self,
+        *,
+        radius=0.2,
+        segments=8,
+        end_caps=True,
+        auto_detach=True,
+        **kwargs,
+    ):
+        """Initialise uniforms controlling the compute-driven streamtube.
+
+        Parameters
+        ----------
+        radius : float, optional
+            Tube radius used by the compute shader.
+        segments : int, optional
+            Number of radial segments forming the tube.
+        end_caps : bool, optional
+            Whether flat caps are generated for each tube.
+        auto_detach : bool, optional
+            If True, automatically switch to render-only material after baking.
+        **kwargs : dict, optional
+            Additional arguments forwarded to :class:`MeshPhongMaterial`.
+        """
+        super().__init__(**kwargs)
+        self.radius = radius
+        self.segments = segments
+        self.end_caps = end_caps
+        self.line_count = 0
+        self.auto_detach = bool(auto_detach)
+
+    @property
+    def radius(self):
+        """Get the tube radius used by the compute shader.
+
+        Returns
+        -------
+        float
+            Current tube radius.
+        """
+        return float(self.uniform_buffer.data["tube_radius"])
+
+    @radius.setter
+    def radius(self, value):
+        """Set the tube radius used in the compute shader.
+
+        Parameters
+        ----------
+        value : float
+            New tube radius value.
+        """
+        self.uniform_buffer.data["tube_radius"] = float(value)
+        self.uniform_buffer.update_full()
+
+    @property
+    def segments(self):
+        """Get the number of radial segments per tube.
+
+        Returns
+        -------
+        int
+            Number of radial segments.
+        """
+        return int(self.uniform_buffer.data["tube_segments"])
+
+    @segments.setter
+    def segments(self, value):
+        """Set the number of radial segments per tube.
+
+        Parameters
+        ----------
+        value : int
+            New segment count.
+        """
+        self.uniform_buffer.data["tube_segments"] = int(value)
+        self.uniform_buffer.update_full()
+
+    @property
+    def end_caps(self):
+        """Check whether end caps are rendered.
+
+        Returns
+        -------
+        bool
+            ``True`` when end caps are enabled.
+        """
+        return bool(self.uniform_buffer.data["tube_end_caps"])
+
+    @end_caps.setter
+    def end_caps(self, value):
+        """Enable or disable end caps on the tubes.
+
+        Parameters
+        ----------
+        value : bool
+            Flag indicating whether to render end caps.
+        """
+        self.uniform_buffer.data["tube_end_caps"] = int(bool(value))
+        self.uniform_buffer.update_full()
+
+    @property
+    def line_count(self):
+        """Get the number of lines processed by the compute shader.
+
+        Returns
+        -------
+        int
+            Number of lines passed to the GPU compute stage.
+        """
+        return int(self.uniform_buffer.data["line_count"])
+
+    @line_count.setter
+    def line_count(self, value):
+        """Update the number of lines handled by the compute shader.
+
+        Parameters
+        ----------
+        value : int
+            Number of lines to process.
+        """
+        self.uniform_buffer.data["line_count"] = int(value)
+        self.uniform_buffer.update_full()
+
+    def _setup_compute_shader(self, line_count, max_line_length, tube_segments):
+        """Record metadata used by the GPU compute pass.
+
+        Parameters
+        ----------
+        line_count : int
+            Total number of lines to process.
+        max_line_length : int
+            Maximum length of any line in the batch.
+        tube_segments : int
+            Number of radial tube segments.
+        """
+        self.line_count = line_count
+        self.segments = tube_segments
+
+        self._max_line_length = max_line_length

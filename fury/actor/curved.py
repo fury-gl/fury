@@ -6,19 +6,32 @@ import numpy as np
 
 from fury.actor import actor_from_primitive
 from fury.geometry import buffer_to_geometry, create_mesh, line_buffer_separator
-from fury.lib import Line, register_wgpu_render_function
-from fury.material import StreamlinesMaterial, _create_mesh_material, validate_opacity
+from fury.lib import (
+    Buffer,
+    Line,
+    Mesh,
+    register_wgpu_render_function,
+)
+from fury.material import (
+    StreamlinesMaterial,
+    _StreamtubeBakedMaterial,
+    _create_mesh_material,
+    validate_opacity,
+)
 from fury.optpkg import optional_package
 import fury.primitive as fp
-from fury.shader import StreamlinesShader
+from fury.shader import (
+    StreamlinesShader,
+    _StreamtubeBakingShader,
+    _StreamtubeRenderShader,
+)
 
 numba, have_numba, _ = optional_package("numba")
 
-# Create a conditional numba decorator
 if have_numba:
     njit = numba.njit
 else:
-    # No-op decorator when numba is not available
+
     def njit(*args, **kwargs):
         def decorator(func):
             return func
@@ -37,6 +50,8 @@ def sphere(
     material="phong",
     enable_picking=True,
     smooth=True,
+    wireframe=False,
+    wireframe_thickness=1.0,
 ):
     """Create one or many spheres with different colors and radii.
 
@@ -63,6 +78,10 @@ def sphere(
         Whether the spheres should be pickable in a 3D scene.
     smooth : bool, optional
         Whether to create a smooth sphere or a faceted sphere.
+    wireframe : bool, optional
+        Whether to render the mesh as a wireframe.
+    wireframe_thickness : float, optional
+        The thickness of the wireframe lines.
 
     Returns
     -------
@@ -99,6 +118,8 @@ def sphere(
         material=material,
         smooth=smooth,
         enable_picking=enable_picking,
+        wireframe=wireframe,
+        wireframe_thickness=wireframe_thickness,
     )
 
 
@@ -114,6 +135,8 @@ def ellipsoid(
     material="phong",
     enable_picking=True,
     smooth=True,
+    wireframe=False,
+    wireframe_thickness=1.0,
 ):
     """
     Create ellipsoid actor(s) with specified orientation and scaling.
@@ -146,6 +169,10 @@ def ellipsoid(
         Allow picking of the ellipsoids in a 3D scene.
     smooth : bool, optional
         Whether to create a smooth ellipsoid or a faceted ellipsoid.
+    wireframe : bool, optional
+        Whether to render the mesh as a wireframe.
+    wireframe_thickness : float, optional
+        The thickness of the wireframe lines.
 
     Returns
     -------
@@ -231,6 +258,8 @@ def ellipsoid(
         smooth=smooth,
         enable_picking=enable_picking,
         repeat_primitive=False,
+        wireframe=wireframe,
+        wireframe_thickness=wireframe_thickness,
     )
 
 
@@ -247,6 +276,8 @@ def cylinder(
     opacity=None,
     material="phong",
     enable_picking=True,
+    wireframe=False,
+    wireframe_thickness=1.0,
 ):
     """Create one or many cylinders with different features.
 
@@ -280,6 +311,10 @@ def cylinder(
         The material type for the cylinders. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
         Whether the cylinders should be pickable in a 3D scene.
+    wireframe : bool, optional
+        Whether to render the mesh as a wireframe.
+    wireframe_thickness : float, optional
+        The thickness of the wireframe lines.
 
     Returns
     -------
@@ -313,6 +348,8 @@ def cylinder(
         opacity=opacity,
         material=material,
         enable_picking=enable_picking,
+        wireframe=wireframe,
+        wireframe_thickness=wireframe_thickness,
     )
 
 
@@ -328,6 +365,8 @@ def cone(
     opacity=None,
     material="phong",
     enable_picking=True,
+    wireframe=False,
+    wireframe_thickness=1.0,
 ):
     """Create one or many cones with different features.
 
@@ -358,6 +397,10 @@ def cone(
         The material type for the cones. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
         Whether the cones should be pickable in a 3D scene.
+    wireframe : bool, optional
+        Whether to render the mesh as a wireframe.
+    wireframe_thickness : float, optional
+        The thickness of the wireframe lines.
 
     Returns
     -------
@@ -389,6 +432,8 @@ def cone(
         opacity=opacity,
         material=material,
         enable_picking=enable_picking,
+        wireframe=wireframe,
+        wireframe_thickness=wireframe_thickness,
     )
 
 
@@ -444,19 +489,6 @@ class Streamlines(Line):
             The color of the outline.
         enable_picking : bool, optional
             Whether the streamline should be pickable in a 3D scene.
-
-        Raises
-        ------
-        ValueError
-            If lines is not a valid numpy array with shape (N, 3).
-        ValueError
-            If colors is not a valid color tuple or array.
-        ValueError
-            If thickness or outline_thickness is not a positive number.
-        ValueError
-            If opacity is not between 0 and 1.
-        TypeError
-            If enable_picking is not a boolean.
         """
         super().__init__()
 
@@ -579,11 +611,9 @@ def compute_tangents(points):
     if N < 2:
         return tangents
 
-    # Central difference for interior points
     for i in range(1, N - 1):
         tangents[i] = points[i + 1] - points[i - 1]
 
-    # Forward/backward difference for endpoints
     tangents[0] = points[1] - points[0]
     tangents[-1] = points[-1] - points[-2]
 
@@ -742,6 +772,206 @@ def generate_tube_geometry(points, number_of_sides, radius, end_caps):
     return vertices, indices
 
 
+def _create_streamtube_baked(
+    lines,
+    *,
+    colors=None,
+    opacity=1.0,
+    radius=0.1,
+    segments=6,
+    end_caps=True,
+    enable_picking=True,
+    flat_shading=False,
+    material="phong",
+):
+    """Internal: Create streamtube geometry on the GPU using compute shaders.
+
+    This function is used internally by streamtube() and should not be
+    called directly by users.
+
+    Parameters
+    ----------
+    lines : sequence of array_like, shape (N_i, 3)
+        Iterable of polylines representing streamline vertices.
+    colors : array_like or None, optional
+        Per-line colors. Accepts a single RGB/RGBA vector or an array of shape
+        (1, 3|4)/(n_lines, 3|4). Defaults to white per line when None.
+    opacity : float, optional
+        Opacity multiplier applied to the material. Valid range is [0, 1].
+    radius : float, optional
+        Tube radius in world units.
+    segments : int, optional
+        Number of radial segments making up the tube cross-section.
+    end_caps : bool, optional
+        If ``True`` flat caps are generated on both ends of each tube.
+    enable_picking : bool, optional
+        Whether the mesh writes to the picking buffer.
+    flat_shading : bool, optional
+        Controls whether flat or smooth shading is used by the Phong material.
+    material : {"phong"}, optional
+        Material type. GPU streamtubes currently only support ``"phong"``.
+
+    Returns
+    -------
+    Mesh
+        A pygfx mesh containing GPU-generated streamtube geometry and material.
+    """
+
+    if material != "phong":
+        raise ValueError("GPU streamtubes currently support material='phong' only.")
+
+    opacity = validate_opacity(opacity)
+
+    lines_arr = [
+        np.asarray(line, dtype=np.float32).reshape(-1, 3)
+        for line in np.asarray(lines, dtype=object)
+    ]
+    n_lines = len(lines_arr)
+
+    if n_lines == 0:
+        geometry = buffer_to_geometry(
+            positions=np.zeros((0, 3), dtype=np.float32),
+            normals=np.zeros((0, 3), dtype=np.float32),
+            colors=np.zeros((0, 3), dtype=np.float32),
+            indices=np.zeros((0, 3), dtype=np.uint32),
+        )
+        material_obj = _StreamtubeBakedMaterial(
+            opacity=opacity,
+            pick_write=enable_picking,
+            flat_shading=flat_shading,
+            color_mode="vertex",
+        )
+        material_obj.radius = radius
+        material_obj.segments = segments
+        material_obj.end_caps = end_caps
+        return create_mesh(geometry=geometry, material=material_obj)
+
+    line_lengths = np.array([line.shape[0] for line in lines_arr], dtype=np.uint32)
+    max_line_length = int(line_lengths.max(initial=0))
+
+    line_data = np.zeros((n_lines, max_line_length, 3), dtype=np.float32)
+    for idx, line in enumerate(lines_arr):
+        line_data[idx, : line.shape[0]] = line
+
+    if colors is None:
+        colors = np.array([1.0, 1.0, 1.0], dtype=np.float32)
+
+    colors = np.asarray(colors, dtype=np.float32)
+
+    if colors.ndim == 1:
+        if colors.size == 3:
+            line_colors = np.tile(colors, (n_lines, 1))
+        elif colors.size == 4:
+            line_colors = np.tile(colors[:3], (n_lines, 1))
+        else:
+            raise ValueError(
+                "Single color must have 3 (RGB) or 4 (RGBA) components, "
+                f"got {colors.size}"
+            )
+    elif colors.ndim == 2:
+        if colors.shape[0] == 1:
+            if colors.shape[1] in (3, 4):
+                line_colors = np.tile(colors[0, :3], (n_lines, 1))
+            else:
+                raise ValueError(
+                    "Color must have 3 (RGB) or 4 (RGBA) components, "
+                    f"got {colors.shape[1]}"
+                )
+        elif colors.shape[0] == n_lines:
+            if colors.shape[1] in (3, 4):
+                line_colors = colors[:, :3].astype(np.float32)
+            else:
+                raise ValueError(
+                    "Color must have 3 (RGB) or 4 (RGBA) components, "
+                    f"got {colors.shape[1]}"
+                )
+        else:
+            raise ValueError(
+                f"Color array first dimension must be 1 or {n_lines} "
+                f"(number of lines), got {colors.shape[0]}"
+            )
+    else:
+        raise ValueError(f"Colors must be 1D or 2D array, got {colors.ndim}D array")
+
+    line_colors = line_colors.astype(np.float32, copy=False)
+    color_components = line_colors.shape[1]
+
+    tube_sides = int(segments)
+    segments_per_line = np.maximum(line_lengths - 1, 0).astype(np.uint32)
+
+    ring_vertices_per_line = line_lengths * tube_sides
+    cap_vertex_count = 2 if end_caps else 0
+    vertices_per_line = ring_vertices_per_line + cap_vertex_count
+
+    ring_triangles_per_line = segments_per_line * tube_sides * 2
+    cap_triangles_per_line = (tube_sides * 2) if end_caps else 0
+    triangles_per_line = ring_triangles_per_line + cap_triangles_per_line
+
+    vertex_offsets = np.zeros(n_lines, dtype=np.uint32)
+    triangle_offsets = np.zeros(n_lines, dtype=np.uint32)
+    if n_lines > 1:
+        vertex_offsets[1:] = np.cumsum(vertices_per_line[:-1], dtype=np.uint64).astype(
+            np.uint32
+        )
+        triangle_offsets[1:] = np.cumsum(
+            triangles_per_line[:-1], dtype=np.uint64
+        ).astype(np.uint32)
+
+    total_vertices = int(vertices_per_line.astype(np.uint64).sum())
+    total_triangles = int(triangles_per_line.astype(np.uint64).sum())
+
+    positions_data = np.zeros((total_vertices, 3), dtype=np.float32)
+    normals_data = np.zeros((total_vertices, 3), dtype=np.float32)
+    colors_data = np.zeros((total_vertices, color_components), dtype=np.float32)
+    indices_data = np.zeros((total_triangles, 3), dtype=np.uint32)
+
+    geometry = buffer_to_geometry(
+        positions=positions_data,
+        normals=normals_data,
+        colors=colors_data,
+        indices=indices_data,
+    )
+
+    material_obj = _StreamtubeBakedMaterial(
+        opacity=opacity,
+        pick_write=enable_picking,
+        flat_shading=flat_shading,
+        color_mode="vertex",
+    )
+
+    material_obj.radius = radius
+    material_obj.segments = segments
+    material_obj.end_caps = end_caps
+
+    mesh_obj = create_mesh(geometry=geometry, material=material_obj)
+
+    mesh_obj.n_lines = n_lines
+    mesh_obj.max_line_length = max_line_length
+    mesh_obj.tube_sides = tube_sides
+    mesh_obj.radius = float(radius)
+    mesh_obj.line_lengths = line_lengths
+    mesh_obj.vertex_offsets = vertex_offsets
+    mesh_obj.triangle_offsets = triangle_offsets
+    mesh_obj.end_caps = end_caps
+    mesh_obj.lines = lines_arr
+    mesh_obj.line_colors = line_colors
+    mesh_obj.color_components = color_components
+    mesh_obj._needs_gpu_update = True
+    mesh_obj.line_buffer = Buffer(line_data.reshape(-1))
+    mesh_obj.length_buffer = Buffer(line_lengths)
+    mesh_obj.color_buffer = Buffer(line_colors)
+    mesh_obj.vertex_offset_buffer = Buffer(vertex_offsets)
+    mesh_obj.triangle_offset_buffer = Buffer(triangle_offsets)
+
+    material_obj._setup_compute_shader(
+        line_count=n_lines,
+        max_line_length=max_line_length,
+        tube_segments=tube_sides,
+    )
+
+    return mesh_obj
+
+
 def streamtube(
     lines,
     *,
@@ -753,6 +983,7 @@ def streamtube(
     flat_shading=False,
     material="phong",
     enable_picking=True,
+    backend="gpu",
 ):
     """
     Create a streamtube from a list of lines using parallel processing.
@@ -778,12 +1009,52 @@ def streamtube(
         Material model (e.g., 'phong', 'basic').
     enable_picking : bool, optional
         If True, the actor can be picked in a 3D scene.
+    backend : {"gpu", "cpu"}, optional
+        Backend selection for streamtube generation. Options:
+        - "gpu": Use GPU compute shaders for baked geometry generation.
+        - "cpu": Force CPU-based geometry generation.
 
     Returns
     -------
     Actor
         A mesh actor containing the generated streamtubes.
+
+    Notes
+    -----
+    This function performs streamtube geometry creation internally. By default,
+    it uses GPU compute shaders to bake the geometry once using a compute pass
+    and then renders with a standard material. The backend parameter defaults
+    to ``"gpu"`` for optimal performance. Set ``backend="cpu"`` to force CPU-based
+    geometry generation as a fallback option.
     """
+    if lines is None or not hasattr(lines, "__iter__"):
+        raise ValueError("lines must be an iterable of arrays")
+
+    lines_list = list(lines)
+    if len(lines_list) == 0:
+        raise ValueError("lines cannot be empty")
+
+    if radius <= 0:
+        raise ValueError(f"radius must be positive, got {radius}")
+
+    if segments < 3:
+        raise ValueError(f"segments must be at least 3, got {segments}")
+
+    if backend not in ("cpu", "gpu"):
+        raise ValueError(f"backend must be 'cpu' or 'gpu', got {backend!r}")
+
+    if backend == "gpu":
+        return _create_streamtube_baked(
+            lines,
+            colors=colors,
+            opacity=opacity,
+            radius=radius,
+            segments=segments,
+            end_caps=end_caps,
+            enable_picking=enable_picking,
+            flat_shading=flat_shading,
+            material=material,
+        )
 
     def task(points):
         """Task to generate tube geometry for a single line.
@@ -798,7 +1069,6 @@ def streamtube(
         tuple
             A tuple containing the vertices and indices for the tube geometry.
         """
-        # Ensure points are float32 for consistency with Numba functions
         points_arr = np.asarray(points, dtype=np.float32)
         return generate_tube_geometry(points_arr, segments, radius, end_caps)
 
@@ -864,3 +1134,25 @@ def streamtube(
     )
     obj = create_mesh(geometry=geo, material=mat)
     return obj
+
+
+@register_wgpu_render_function(Mesh, _StreamtubeBakedMaterial)
+def _register_streamtube_baking_shaders(wobject):
+    """Internal: Create compute and render shaders for GPU streamtubes.
+
+    This function is called automatically by the render system and should not
+    be invoked directly by users.
+
+    Parameters
+    ----------
+    wobject : Mesh
+        Mesh produced by the internal streamtube function.
+
+    Returns
+    -------
+    tuple of BaseShader
+        A ``(compute_shader, render_shader)`` pair ready for registration.
+    """
+    compute_shader = _StreamtubeBakingShader(wobject)
+    render_shader = _StreamtubeRenderShader(wobject)
+    return compute_shader, render_shader

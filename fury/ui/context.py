@@ -28,6 +28,8 @@ class UIContextClass:
         self._hot_ui = None
         self._active_ui = None
         self._canvas_size = np.array([800, 800])
+        self._z_max = 1
+        self._z_min = -1
         self._initialized = True
 
     @property
@@ -97,6 +99,29 @@ class UIContextClass:
         size = np.array(size)
         if not np.array_equal(self._canvas_size, size):
             self._canvas_size = size
+
+    @property
+    def z_order_bounds(self):
+        """Get the minimum and maximum Z-order values in the UI.
+
+        Returns
+        -------
+        numpy.ndarray
+            Z-order bounds `[z_min, z_max]`.
+        """
+        return np.array([self._z_min, self._z_max])
+
+    @z_order_bounds.setter
+    def z_order_bounds(self, z_order):
+        """Update the minimum or maximum active Z-order values in the UI.
+
+        Parameters
+        ----------
+        z_order : int
+            Z-order value of a UI.
+        """
+        self._z_min = min(self._z_min, z_order)
+        self._z_max = max(self._z_max, z_order)
 
 
 UIContext = UIContextClass()

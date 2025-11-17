@@ -26,6 +26,8 @@ def actor_from_primitive(
     smooth=False,
     enable_picking=True,
     repeat_primitive=True,
+    wireframe=False,
+    wireframe_thickness=1.0,
 ):
     """Build an actor from a primitive.
 
@@ -57,6 +59,10 @@ def actor_from_primitive(
     repeat_primitive : bool, optional
         Whether to repeat the primitive for each center. If False,
         only one instance of the primitive is created at the first center.
+    wireframe : bool, optional
+        Whether to render the mesh as a wireframe.
+    wireframe_thickness : float, optional
+        The thickness of the wireframe lines.
 
     Returns
     -------
@@ -99,7 +105,11 @@ def actor_from_primitive(
     )
 
     mat = _create_mesh_material(
-        material=material, enable_picking=enable_picking, flat_shading=not smooth
+        material=material,
+        enable_picking=enable_picking,
+        flat_shading=not smooth,
+        wireframe=wireframe,
+        wireframe_thickness=wireframe_thickness,
     )
     obj = create_mesh(geometry=geo, material=mat)
     obj.local.position = centers[0]

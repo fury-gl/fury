@@ -1,5 +1,5 @@
 __all__ = [
-    #     "Panel2D",
+    "Panel2D",
     #     "TabPanel2D",
     #     "TabUI",
     #     "ImageContainer2D",
@@ -44,6 +44,7 @@ __all__ = [
 # from .containers import GridUI, ImageContainer2D, Panel2D, TabPanel2D, TabUI
 # from .core import UI, Button2D, Disk2D, Rectangle2D, TextBlock2D
 
+from .containers import Panel2D
 from .context import UIContext
 from .core import UI, Anchor, Disk2D, Rectangle2D
 

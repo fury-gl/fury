@@ -9,6 +9,7 @@ multiple screens.
 import asyncio
 from dataclasses import dataclass
 from functools import reduce
+import logging
 import os
 
 from PIL.Image import fromarray as image_from_array
@@ -32,9 +33,12 @@ from fury.lib import (
     Renderer,
     Scene as GfxScene,  # type: ignore
     ScreenCoordsCamera,
+    Stats,
     TrackballController,
     Viewport,
+    call_later,
     get_app,
+    qcall_later,
     run,
 )
 from fury.ui import UI, UIContext
@@ -386,7 +390,7 @@ def update_viewports(screens, screen_bbs):
         update_camera(screen.camera, screen.size, screen.scene)
 
 
-def render_screens(renderer, screens):
+def render_screens(renderer, screens, stats=None):
     """Render multiple screens within a single renderer update cycle.
 
     Parameters
@@ -394,11 +398,20 @@ def render_screens(renderer, screens):
     renderer : Renderer
         The PyGfx Renderer object to draw into.
     screens : list of Screen
-        The list of Screen objects to render."""
+        The list of Screen objects to render.
+    stats : Stats, optional
+        Stats helper to display FPS overlay."""
+    if stats is not None:
+        stats.start()
+
     for screen in screens:
         scene_root = screen.scene
         screen.viewport.render(scene_root.main_scene, screen.camera, flush=False)
         screen.viewport.render(scene_root.ui_scene, scene_root.ui_camera, flush=False)
+
+    if stats is not None:
+        stats.stop()
+        stats.render(flush=False)
 
     renderer.flush()
 
@@ -497,6 +510,10 @@ class ShowManager:
         An existing QtWidgets QApplication instance (if `window_type` is 'qt').
     qt_parent : QWidget
         An existing QWidget to embed the QtCanvas within (if `window_type` is 'qt').
+    show_fps : bool
+        Whether to display FPS statistics using an on-screen overlay.
+    max_fps : int
+        Maximum frames per second for the canvas.
     """
 
     def __init__(
@@ -515,6 +532,8 @@ class ShowManager:
         enable_events=True,
         qt_app=None,
         qt_parent=None,
+        show_fps=False,
+        max_fps=60,
     ):
         """Manage the rendering window, scenes, and interactions.
 
@@ -562,6 +581,10 @@ class ShowManager:
         qt_parent : QWidget, optional
             An existing QWidget to embed the QtCanvas within (if `window_type`
             is 'qt').
+        show_fps : bool, optional
+            Whether to display FPS statistics in the renderer.
+        max_fps : int, optional
+            Maximum frames per second for the canvas.
         """
         self._size = size
         self._title = title
@@ -569,6 +592,8 @@ class ShowManager:
         self._qt_app = qt_app
         self._qt_parent = qt_parent
         self._is_initial_resize = None
+        self._show_fps = show_fps
+        self._max_fps = max_fps
         self._window_type = self._setup_window(window_type)
         self._is_dragging = False
         self._drag_target = None
@@ -600,6 +625,10 @@ class ShowManager:
             self.screens,
             calculate_screen_sizes(self._screen_config, self.renderer.logical_size),
         )
+        self._callbacks = {}
+
+        self._stats = None
+        self._stats_initialized = False
 
         self.enable_events = enable_events
         self._key_long_press = None
@@ -696,16 +725,25 @@ class ShowManager:
             )
 
         if window_type == "default" or window_type == "glfw":
-            self.window = Canvas(size=self._size, title=self._title)
+            self.window = Canvas(
+                size=self._size, title=self._title, max_fps=self._max_fps
+            )
         elif window_type == "qt":
             self.window = QtCanvas(
-                size=self._size, title=self._title, parent=self._qt_parent
+                size=self._size,
+                title=self._title,
+                parent=self._qt_parent,
+                max_fps=self._max_fps,
             )
             self._is_qt = True
         elif window_type == "jupyter":
-            self.window = JupyterCanvas(size=self._size, title=self._title)
+            self.window = JupyterCanvas(
+                size=self._size, title=self._title, max_fps=self._max_fps
+            )
         else:
-            self.window = OffscreenCanvas(size=self._size, title=self._title)
+            self.window = OffscreenCanvas(
+                size=self._size, title=self._title, max_fps=self._max_fps
+            )
 
         return window_type
 
@@ -782,6 +820,80 @@ class ShowManager:
             self._key_long_press.cancel()
             self._key_long_press = None
 
+    def _on_repeat_callback(self, func, time, name, *args):
+        """Internal method to handle the timing and execution of callbacks.
+
+        Parameters
+        ----------
+        func : callable
+            The function to be called.
+        time : float
+            The time interval in seconds after which the function is called.
+        name : str
+            A unique name for the callback.
+        *args : tuple
+            Additional arguments to pass to the function.
+        """
+        args = (func, time, name, *args)
+
+        if name not in self._callbacks:
+            return
+
+        if self._is_qt:
+            qcall_later(time, self._on_repeat_callback, *args)
+        else:
+            call_later(time, self._on_repeat_callback, *args)
+        func(*args[3:])
+
+    def register_callback(self, func, time, repeat, name, *args):
+        """Register a callback function to be called after a time interval.
+
+        Parameters
+        ----------
+        func : callable
+            The function to be called.
+        time : float
+            The time interval in seconds after which the function is called.
+        repeat : bool
+            If True, the function is called repeatedly every `time` seconds.
+            If False, it is called only once.
+        name : str
+            A unique name for the callback.
+        *args : tuple
+            Additional arguments to pass to the function.
+        """
+        if repeat:
+            if name in self._callbacks:
+                logging.warning(
+                    f"Callback with name '{name}' is already registered."
+                    "Please use a different name."
+                )
+                return
+
+            self._callbacks[name] = (func, time, repeat, args)
+
+            args = (func, time, name, *args)
+            if self._is_qt:
+                qcall_later(time, self._on_repeat_callback, *args)
+            else:
+                call_later(time, self._on_repeat_callback, *args)
+        else:
+            if self._is_qt:
+                qcall_later(time, func, *args)
+            else:
+                call_later(time, func, *args)
+
+    def cancel_callback(self, name):
+        """Cancel a registered callback by its name.
+
+        Parameters
+        ----------
+        name : str
+            The unique name of the callback to cancel.
+        """
+        if name in self._callbacks:
+            del self._callbacks[name]
+
     @property
     def app(self):
         """Get the associated QApplication instance, if any.
@@ -843,6 +955,18 @@ class ShowManager:
             The current (width, height) of the window in logical pixels."""
         return self._size
 
+    @property
+    def callbacks(self):
+        """Get the registered callbacks.
+
+        This only returns the callbacks that are set to repeat.
+
+        Returns
+        -------
+        dict
+            A dictionary of registered callbacks with their names as keys."""
+        return self._callbacks
+
     def set_enable_events(self, value):
         """Enable or disable mouse and keyboard interactions for all screens.
 
@@ -857,6 +981,18 @@ class ShowManager:
             self.renderer.disable_events()
         for s in self.screens:
             s.controller.enabled = value
+
+    def get_fps(self):
+        """Get the current FPS from the stats overlay if available.
+
+        Returns
+        -------
+        int or None
+            The current FPS value, or None if stats are not initialized or
+            FPS has not been computed yet."""
+        if self._stats is not None:
+            return getattr(self._stats, "_fps", None)
+        return None
 
     def snapshot(self, fname):
         """Save a snapshot of the current rendered content to a file.
@@ -881,7 +1017,11 @@ class ShowManager:
 
     def _draw_function(self):
         """Draw all screens and request a window redraw."""
-        render_screens(self.renderer, self.screens)
+        if self._show_fps and not self._stats_initialized:
+            self._stats = Stats(self.renderer)
+            self._stats_initialized = True
+
+        render_screens(self.renderer, self.screens, stats=self._stats)
         self.window.request_draw()
 
     def render(self):

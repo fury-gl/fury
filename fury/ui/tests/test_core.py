@@ -16,7 +16,7 @@ def test_rectangle2d_initialization_default():
     """
     rect = ui.Rectangle2D()
     npt.assert_equal(rect.size, (100, 100))
-    npt.assert_array_equal(rect.color, [1, 1, 1, 1])
+    npt.assert_array_equal(rect.color, [1, 1, 1])
     npt.assert_equal(rect.opacity, 1.0)
     assert isinstance(rect.actor, Mesh)
     assert rect.actor in rect.actors
@@ -43,7 +43,7 @@ def test_rectangle2d_initialization_custom():
 
     npt.assert_equal(rect.size, custom_size)
     npt.assert_array_equal(rect.get_position(Anchor.LEFT, Anchor.TOP), custom_position)
-    npt.assert_array_almost_equal(rect.color[:3], custom_color)
+    npt.assert_array_almost_equal(rect.color, custom_color)
     npt.assert_almost_equal(rect.opacity, custom_opacity)
     assert isinstance(rect.actor, Mesh)
     assert rect.actor in rect.actors
@@ -72,10 +72,10 @@ def test_rectangle2d_height_property():
 def test_rectangle2d_color_property():
     """Test color getter and setter for Rectangle2D."""
     rect = ui.Rectangle2D()
-    npt.assert_array_equal(rect.color, [1, 1, 1, 1])
+    npt.assert_array_equal(rect.color, [1, 1, 1])
     new_color = (0.1, 0.2, 0.3)
     rect.color = new_color
-    npt.assert_array_almost_equal(rect.color[:3], new_color)
+    npt.assert_array_almost_equal(rect.color, new_color)
 
 
 def test_rectangle2d_opacity_property():

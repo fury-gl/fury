@@ -41,7 +41,8 @@ readme = "file: _ui.rst"
 position = 7
 enable = false
 files = [
-
+    "viz_shapes.py",
+    "viz_panel.py",
 ]
 
 [animation]

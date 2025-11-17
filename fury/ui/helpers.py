@@ -16,6 +16,7 @@ class Anchor(str, Enum):
 
 
 TWO_PI = 2 * np.pi
+UI_Z_RANGE = np.array([0.9, 0.1])
 
 
 def clip_overflow(textblock, width, *, side="right"):

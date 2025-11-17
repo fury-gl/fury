@@ -146,6 +146,8 @@ def test_show_manager_initialization_default():
     assert show_m.size == (800, 800)
     assert show_m.pixel_ratio == 1
     assert show_m.enable_events is True
+    assert show_m._show_fps is False
+    assert show_m._max_fps == 60
 
 
 def test_show_manager_initialization_custom():
@@ -157,6 +159,8 @@ def test_show_manager_initialization_custom():
         enable_events=False,
         screen_config=[2],  # Two vertical sections
         window_type="offscreen",
+        show_fps=True,
+        max_fps=120,
     )
     assert show_m.title == "Custom Title"
     assert show_m.size == (1024, 768)
@@ -164,6 +168,8 @@ def test_show_manager_initialization_custom():
     assert show_m.enable_events is False
     assert show_m._total_screens == 2  # Two screens
     assert len(show_m.screens) == 2
+    assert show_m._show_fps is True
+    assert show_m._max_fps == 120
 
 
 def test_show_manager_initialization_multiple_screens():
@@ -463,3 +469,17 @@ def test_add_to_scene(sample_actor, sample_ui_actor):
     assert sample_ui_actor not in scene.ui_elements
     assert sample_ui_actor.actors[0] not in scene.ui_scene.children
     assert sample_gfx_scene not in scene.children
+
+
+def test_show_manager_fps_display():
+    """Test FPS display using Stats overlay."""
+    show_m = ShowManager(show_fps=True)
+
+    assert show_m._stats is None
+    assert show_m._stats_initialized is False
+    assert show_m.get_fps() is None
+
+    show_m_no_fps = ShowManager(show_fps=False)
+    assert show_m_no_fps._stats is None
+    assert show_m_no_fps._stats_initialized is False
+    assert show_m_no_fps.get_fps() is None

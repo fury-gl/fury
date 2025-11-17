@@ -32,10 +32,12 @@ PyQt6, have_py_qt6, _ = optional_package("PyQt6", trip_msg=qt_pckg_msg)
 PyQt5, have_py_qt5, _ = optional_package("PyQt5", trip_msg=qt_pckg_msg)
 
 if have_py_side6 or have_py_qt6 or have_py_qt5:
-    from rendercanvas.qt import RenderCanvas as QtRenderCanvas, loop as QtLoop
+    from rendercanvas.qt import RenderCanvas as QtRenderCanvas, loop as qloop
+
+    qcall_later = qloop.call_later
 
     def get_app():
-        return QtLoop._app
+        return qloop._app
 
 
 if have_py_side6:
@@ -125,7 +127,9 @@ PointerEvent = gfx.PointerEvent
 WheelEvent = gfx.WheelEvent
 KeyboardEvent = gfx.KeyboardEvent
 run = loop.run
-
+call_later = loop.call_later
+Clock = gfx.Clock
+Stats = gfx.Stats
 
 plane_geometry = gfx.plane_geometry
 
@@ -139,5 +143,6 @@ else:
     QtCanvas = PySide6
     QtWidgets = PySide6
     get_app = PySide6
+    qcall_later = PySide6
 
 register_wgsl_loader("fury", jinja2.PackageLoader("fury.wgsl", "."))

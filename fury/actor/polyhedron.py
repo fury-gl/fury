@@ -14,6 +14,8 @@ def box(
     material="phong",
     enable_picking=True,
     detailed=True,
+    wireframe=False,
+    wireframe_thickness=1.0,
 ):
     """Create one or many boxes with different features.
 
@@ -39,6 +41,10 @@ def box(
     detailed : bool, optional
         Whether to create a detailed box with 24 vertices or a simple box with
         8 vertices.
+    wireframe : bool, optional
+        Whether to render the mesh as a wireframe.
+    wireframe_thickness : float, optional
+        The thickness of the wireframe lines.
 
     Returns
     -------
@@ -69,6 +75,8 @@ def box(
         opacity=opacity,
         material=material,
         enable_picking=enable_picking,
+        wireframe=wireframe,
+        wireframe_thickness=wireframe_thickness,
     )
 
 
@@ -81,6 +89,8 @@ def frustum(
     opacity=None,
     material="phong",
     enable_picking=True,
+    wireframe=False,
+    wireframe_thickness=1.0,
 ):
     """Create one or many frustums with different features.
 
@@ -103,6 +113,10 @@ def frustum(
         The material type for the frustums. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
         Whether the frustums should be pickable in a 3D scene.
+    wireframe : bool, optional
+        Whether to render the mesh as a wireframe.
+    wireframe_thickness : float, optional
+        The thickness of the wireframe lines.
 
     Returns
     -------
@@ -133,6 +147,8 @@ def frustum(
         opacity=opacity,
         material=material,
         enable_picking=enable_picking,
+        wireframe=wireframe,
+        wireframe_thickness=wireframe_thickness,
     )
 
 
@@ -145,6 +161,8 @@ def tetrahedron(
     opacity=None,
     material="phong",
     enable_picking=True,
+    wireframe=False,
+    wireframe_thickness=1.0,
 ):
     """Create one or many tetrahedrons with different features.
 
@@ -167,6 +185,10 @@ def tetrahedron(
         The material type for the tetrahedrons. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
         Whether the tetrahedrons should be pickable in a 3D scene.
+    wireframe : bool, optional
+        Whether to render the mesh as a wireframe.
+    wireframe_thickness : float, optional
+        The thickness of the wireframe lines.
 
     Returns
     -------
@@ -197,6 +219,8 @@ def tetrahedron(
         opacity=opacity,
         material=material,
         enable_picking=enable_picking,
+        wireframe=wireframe,
+        wireframe_thickness=wireframe_thickness,
     )
 
 
@@ -209,6 +233,8 @@ def icosahedron(
     opacity=None,
     material="phong",
     enable_picking=True,
+    wireframe=False,
+    wireframe_thickness=1.0,
 ):
     """Create one or many icosahedrons with different features.
 
@@ -231,6 +257,10 @@ def icosahedron(
         The material type for the icosahedrons. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
         Whether the icosahedrons should be pickable in a 3D scene.
+    wireframe : bool, optional
+        Whether to render the mesh as a wireframe.
+    wireframe_thickness : float, optional
+        The thickness of the wireframe lines.
 
     Returns
     -------
@@ -261,6 +291,8 @@ def icosahedron(
         opacity=opacity,
         material=material,
         enable_picking=enable_picking,
+        wireframe=wireframe,
+        wireframe_thickness=wireframe_thickness,
     )
 
 
@@ -273,6 +305,8 @@ def rhombicuboctahedron(
     opacity=None,
     material="phong",
     enable_picking=True,
+    wireframe=False,
+    wireframe_thickness=1.0,
 ):
     """Create one or many rhombicuboctahedrons with different features.
 
@@ -295,6 +329,10 @@ def rhombicuboctahedron(
         The material type for the rhombicuboctahedrons. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
         Whether the rhombicuboctahedrons should be pickable in a 3D scene.
+    wireframe : bool, optional
+        Whether to render the mesh as a wireframe.
+    wireframe_thickness : float, optional
+        The thickness of the wireframe lines.
 
     Returns
     -------
@@ -326,6 +364,8 @@ def rhombicuboctahedron(
         opacity=opacity,
         material=material,
         enable_picking=enable_picking,
+        wireframe=wireframe,
+        wireframe_thickness=wireframe_thickness,
     )
 
 
@@ -338,6 +378,8 @@ def triangularprism(
     opacity=None,
     material="phong",
     enable_picking=True,
+    wireframe=False,
+    wireframe_thickness=1.0,
 ):
     """Create one or many triangular prisms with different features.
 
@@ -360,6 +402,10 @@ def triangularprism(
         The material type for the triangular prisms. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
         Whether the triangular prisms should be pickable in a 3D scene.
+    wireframe : bool, optional
+        Whether to render the mesh as a wireframe.
+    wireframe_thickness : float, optional
+        The thickness of the wireframe lines.
 
     Returns
     -------
@@ -390,6 +436,8 @@ def triangularprism(
         opacity=opacity,
         material=material,
         enable_picking=enable_picking,
+        wireframe=wireframe,
+        wireframe_thickness=wireframe_thickness,
     )
 
 
@@ -402,6 +450,8 @@ def pentagonalprism(
     opacity=None,
     material="phong",
     enable_picking=True,
+    wireframe=False,
+    wireframe_thickness=1.0,
 ):
     """Create one or many pentagonal prisms with different features.
 
@@ -424,6 +474,10 @@ def pentagonalprism(
         The material type for the pentagonal prisms. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
         Whether the pentagonal prisms should be pickable in a 3D scene.
+    wireframe : bool, optional
+        Whether to render the mesh as a wireframe.
+    wireframe_thickness : float, optional
+        The thickness of the wireframe lines.
 
     Returns
     -------
@@ -454,6 +508,8 @@ def pentagonalprism(
         opacity=opacity,
         material=material,
         enable_picking=enable_picking,
+        wireframe=wireframe,
+        wireframe_thickness=wireframe_thickness,
     )
 
 
@@ -466,6 +522,8 @@ def octagonalprism(
     opacity=None,
     material="phong",
     enable_picking=True,
+    wireframe=False,
+    wireframe_thickness=1.0,
 ):
     """Create one or many octagonal prisms with different features.
 
@@ -488,6 +546,10 @@ def octagonalprism(
         The material type for the octagonal prisms. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
         Whether the octagonal prisms should be pickable in a 3D scene.
+    wireframe : bool, optional
+        Whether to render the mesh as a wireframe.
+    wireframe_thickness : float, optional
+        The thickness of the wireframe lines.
 
     Returns
     -------
@@ -518,6 +580,8 @@ def octagonalprism(
         opacity=opacity,
         material=material,
         enable_picking=enable_picking,
+        wireframe=wireframe,
+        wireframe_thickness=wireframe_thickness,
     )
 
 
@@ -531,6 +595,8 @@ def superquadric(
     opacity=None,
     material="phong",
     enable_picking=True,
+    wireframe=False,
+    wireframe_thickness=1.0,
 ):
     """Create one or many superquadrics with different features.
 
@@ -555,6 +621,10 @@ def superquadric(
         The material type for the superquadrics. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
         Whether the superquadrics should be pickable in a 3D scene.
+    wireframe : bool, optional
+        Whether to render the mesh as a wireframe.
+    wireframe_thickness : float, optional
+        The thickness of the wireframe lines.
 
     Returns
     -------
@@ -585,4 +655,6 @@ def superquadric(
         opacity=opacity,
         material=material,
         enable_picking=enable_picking,
+        wireframe=wireframe,
+        wireframe_thickness=wireframe_thickness,
     )

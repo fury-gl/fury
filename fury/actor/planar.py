@@ -40,6 +40,8 @@ def square(
     opacity=None,
     material="phong",
     enable_picking=True,
+    wireframe=False,
+    wireframe_thickness=1.0,
 ):
     """Create one or many squares with different features.
 
@@ -62,6 +64,10 @@ def square(
         The material type for the squares. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
         Whether the squares should be pickable in a 3D scene.
+    wireframe : bool, optional
+        Whether to render the mesh as a wireframe.
+    wireframe_thickness : float, optional
+        The thickness of the wireframe lines.
 
     Returns
     -------
@@ -92,6 +98,8 @@ def square(
         opacity=opacity,
         material=material,
         enable_picking=enable_picking,
+        wireframe=wireframe,
+        wireframe_thickness=wireframe_thickness,
     )
 
 
@@ -105,6 +113,8 @@ def star(
     opacity=None,
     material="phong",
     enable_picking=True,
+    wireframe=False,
+    wireframe_thickness=1.0,
 ):
     """Create one or many stars with different features.
 
@@ -129,6 +139,10 @@ def star(
         The material type for the stars. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
         Whether the stars should be pickable in a 3D scene.
+    wireframe : bool, optional
+        Whether to render the mesh as a wireframe.
+    wireframe_thickness : float, optional
+        The thickness of the wireframe lines.
 
     Returns
     -------
@@ -159,6 +173,8 @@ def star(
         opacity=opacity,
         material=material,
         enable_picking=enable_picking,
+        wireframe=wireframe,
+        wireframe_thickness=wireframe_thickness,
     )
 
 
@@ -173,6 +189,8 @@ def disk(
     opacity=None,
     material="phong",
     enable_picking=True,
+    wireframe=False,
+    wireframe_thickness=1.0,
 ):
     """Visualize one or many disks with different features.
 
@@ -201,6 +219,10 @@ def disk(
         The material type for the disk. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
         Whether the disk should be pickable in a 3D scene.
+    wireframe : bool, optional
+        Whether to render the mesh as a wireframe.
+    wireframe_thickness : float, optional
+        The thickness of the wireframe lines.
 
     Returns
     -------
@@ -232,6 +254,8 @@ def disk(
         opacity=opacity,
         material=material,
         enable_picking=enable_picking,
+        wireframe=wireframe,
+        wireframe_thickness=wireframe_thickness,
     )
 
 
@@ -244,6 +268,8 @@ def triangle(
     opacity=None,
     material="phong",
     enable_picking=True,
+    wireframe=False,
+    wireframe_thickness=1.0,
 ):
     """Create one or many triangles with different features.
 
@@ -266,6 +292,10 @@ def triangle(
         The material type for the triangles. Options are 'phong' and 'basic'.
     enable_picking : bool, optional
         Whether the triangles should be pickable in a 3D scene.
+    wireframe : bool, optional
+        Whether to render the mesh as a wireframe.
+    wireframe_thickness : float, optional
+        The thickness of the wireframe lines.
 
     Returns
     -------
@@ -296,6 +326,8 @@ def triangle(
         opacity=opacity,
         material=material,
         enable_picking=enable_picking,
+        wireframe=wireframe,
+        wireframe_thickness=wireframe_thickness,
     )
 
 
