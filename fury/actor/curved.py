@@ -3,7 +3,8 @@
 from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
-
+from fury import primitive
+from fury.actor import surface
 from fury.actor import actor_from_primitive
 from fury.geometry import buffer_to_geometry, create_mesh, line_buffer_separator
 from fury.lib import (
@@ -102,6 +103,73 @@ def sphere(
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
+
+def texture_on_sphere(
+    texture: str,
+    *,
+    center=(0.0, 0.0, 0.0),
+    radius: float = 1.0,
+    phi: int = 48,
+    theta: int = 96,
+    opacity: float = 1.0,
+    material: str = "phong",
+):
+    """Create a textured sphere mesh from an equirectangular texture.
+
+    Parameters
+    ----------
+    texture : str
+        Path to the texture image file.
+    center : 3-tuple of float, optional
+        Center position of the sphere.
+    radius : float, optional
+        Radius of the sphere.
+    phi : int, optional
+        Number of divisions along longitude.
+    theta : int, optional
+        Number of divisions along latitude.
+    opacity : float, optional
+        0 = fully transparent, 1 = opaque.
+    material : str, optional
+        Rendering material type.
+
+    Returns
+    -------
+    Mesh
+        A textured sphere mesh.
+    """
+    # Generate unit sphere geometry
+    vertices, faces = primitive.prim_sphere(phi=phi, theta=theta)
+
+    # ---- Compute spherical UV coordinates ----
+    x = vertices[:, 0]
+    y = vertices[:, 1]
+    z = vertices[:, 2]
+
+    # Longitude [-pi, pi]
+    lon = np.arctan2(z, x)
+
+    # Latitude [-pi/2, pi/2]
+    lat = np.arcsin(np.clip(y, -1.0, 1.0))
+
+    # Normalized UV
+    u = (lon + np.pi) / (2.0 * np.pi)
+    v = (lat + (np.pi / 2.0)) / np.pi
+
+    texcoords = np.stack([u, v], axis=1).astype("float32")
+
+    # ---- Scale + translate geometry ----
+    vertices = vertices * float(radius) + np.asarray(center, dtype="float32")[None, :]
+
+    # ---- Build mesh using surface actor ----
+    return surface(
+        vertices,
+        faces,
+        texture=texture,
+        texture_coords=texcoords,
+        opacity=opacity,
+        material=material,
+    )
 
     scales = radii
     directions = (1, 0, 0)
