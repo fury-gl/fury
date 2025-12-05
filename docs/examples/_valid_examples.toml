@@ -20,6 +20,7 @@ files = [
     "viz_integrate_with_qt.py",
     "viz_multi_screen.py",
     "viz_show.py",
+    "viz_earth_animations.py",
 
 ]
 
