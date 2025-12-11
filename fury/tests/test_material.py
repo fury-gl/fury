@@ -28,6 +28,7 @@ from fury.material import (
     _create_vector_field_material,
 )
 from fury.primitive import prim_sphere
+from fury.testing import analyze_snapshot
 
 
 def test_create_mesh_material():
@@ -85,8 +86,19 @@ def test_create_mesh_material():
     obj = create_mesh(geometry=geo, material=mat)
 
     scene = window.Scene()
+    scene.background = (0, 0, 0)
 
     scene.add(obj)
+
+    # Take snapshot and validate rendering
+    arr = window.snapshot(scene=scene, fname="temp_material.png", return_array=True)
+
+    # Verify the mesh is visible with proper shading
+    report = analyze_snapshot(arr, find_objects=True, analyze_shading=True)
+    assert report.objects >= 1, "Mesh object should be visible in scene"
+    assert report.gradient_magnitude > 10, (
+        "Phong material should produce shading gradients"
+    )
 
 
 def test_create_point_material():

@@ -12,6 +12,7 @@ import numpy as np
 import numpy.testing as npt
 
 from fury import actor, window
+from fury.testing import analyze_snapshot
 
 
 def test_basic_billboard(interactive: bool = False):
@@ -68,6 +69,11 @@ def test_basic_billboard(interactive: bool = False):
     # Check that billboard is visible (has red pixels)
     _assert_red_visible(arr)
 
+    # Advanced snapshot validation
+    red_color = np.array([[255, 0, 0]])
+    report = analyze_snapshot(arr, colors=red_color, color_tolerance=30)
+    assert report.colors_found[0], "Red billboard color not detected in snapshot"
+
     scene.clear()
     if tmp_file and os.path.exists(tmp_file):
         os.remove(tmp_file)
@@ -102,6 +108,11 @@ def test_billboard_camera_facing():
     # Since we can't move camera easily, just test that billboard is rendered
     assert arr1 is not None
     assert green_pixels1 > 0, "Billboard should be visible with green pixels"
+
+    # Advanced snapshot validation
+    green_color = np.array([[0, 255, 0]])
+    report = analyze_snapshot(arr1, colors=green_color, color_tolerance=30)
+    assert report.colors_found[0], "Green billboard color not detected in snapshot"
 
     # Cleanup
     scene.clear()

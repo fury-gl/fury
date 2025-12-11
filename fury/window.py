@@ -42,6 +42,7 @@ from fury.lib import (
     qcall_later,
     run,
 )
+from fury.testing import analyze_snapshot as _analyze_snapshot
 from fury.ui import UI, UIContext
 
 
@@ -1113,17 +1114,18 @@ class ShowManager:
 
 
 def snapshot(
-    *,
     scene=None,
+    *,
     screen_config=None,
-    fname="output.png",
+    fname=None,
     actors=None,
-    return_array=False,
+    size=(300, 300),
+    return_array=True,
 ):
     """Take a snapshot using an offscreen window.
 
     Creates a temporary offscreen ShowManager, renders the scene(s),
-    saves the image, and optionally returns the image data.
+    saves the image if fname is provided, and returns the image data.
 
     Parameters
     ----------
@@ -1133,32 +1135,137 @@ def snapshot(
     screen_config : list, optional
         Screen layout configuration (see ShowManager). Defaults to None (single screen).
     fname : str, optional
-        The file path to save the snapshot image. Defaults to "output.png".
+        The file path to save the snapshot image. If None, no file is saved.
+        Defaults to None.
     actors : Object or list of Object, optional
         Convenience parameter. If provided, a new Scene is created containing
         these actors, and the `scene` parameter is ignored. Defaults to None.
+    size : tuple of int, optional
+        Width and height of the snapshot window. Defaults to (300, 300).
     return_array : bool, optional
-        If True, the function returns the image data as a NumPy array in addition
-        to saving the file. Defaults to False.
+        If True, the function returns the image data as a NumPy array.
+        Defaults to True.
 
     Returns
     -------
     ndarray or None
         If `return_array` is True, returns the RGBA image data as a NumPy array.
-        Otherwise, returns None."""
+        Otherwise, returns None.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from fury import actor
+    >>> scene = Scene()
+    >>> sphere = actor.sphere(centers=np.array([[0, 0, 0]]), radii=1.0)
+    >>> scene.add(sphere)
+    >>> arr = snapshot(scene)  # Returns array by default
+    >>> arr.shape[2] == 4  # RGBA array
+    True
+    """
     if actors is not None:
         scene = Scene()
         scene.add(*actors)
 
     show_m = ShowManager(
-        scene=scene, screen_config=screen_config, window_type="offscreen"
+        scene=scene, screen_config=screen_config, window_type="offscreen", size=size
     )
     show_m.render()
     show_m.window.draw()
-    arr = show_m.snapshot(fname)
+
+    if fname is not None:
+        arr = show_m.snapshot(fname)
+    else:
+        # Get array without saving - use renderer.snapshot()
+        arr = np.asarray(show_m.renderer.snapshot())
 
     if return_array:
         return arr
+
+
+def analyze_snapshot(
+    snapshot,
+    *,
+    colors=None,
+    color_tolerance=20,
+    find_objects=False,
+    min_object_size=50,
+    analyze_shading=False,
+    analyze_opacity=False,
+    bg_color=None,
+):
+    """Analyze a rendered snapshot for testing and validation.
+
+    Wrapper around fury.testing.snapshot.analyze_snapshot for convenient access
+    from window module. Provides color detection, object counting, shading
+    analysis, and opacity verification.
+
+    Parameters
+    ----------
+    snapshot : str or ndarray
+        Path to image file or numpy array (RGB or RGBA).
+    colors : list of list of int, optional
+        Colors to detect in RGB 0-255 format. Default: None.
+    color_tolerance : int, optional
+        Tolerance for color matching (Euclidean distance). Default: 20.
+    find_objects : bool, optional
+        Enable connected component object counting. Default: False.
+    min_object_size : int, optional
+        Minimum pixels for an object to count. Default: 50.
+    analyze_shading : bool, optional
+        Enable gradient-based shading detection. Default: False.
+    analyze_opacity : bool, optional
+        Analyze alpha channel transparency. Default: False.
+    bg_color : tuple or list or ndarray, optional
+        Background color to exclude from analysis. Default: None.
+
+    Returns
+    -------
+    SnapshotReport
+        Comprehensive analysis results including:
+        - objects: Number of detected objects
+        - colors_found: Boolean list indicating which colors were found
+        - colors_detected: List of unique colors in image
+        - color_coverage: Coverage percentage for each requested color
+        - brightness_mean: Average brightness (0-255)
+        - brightness_std: Brightness standard deviation
+        - contrast: Contrast metric
+        - has_shading: Whether shading is detected
+        - shading_quality: Quality score (0-1)
+        - gradient_magnitude: Average gradient magnitude
+        - opacity_detected: Whether opacity variation exists
+        - opacity_levels: Distinct opacity levels (0-1)
+        - edge_density: Proportion of edge pixels
+        - histogram: RGB histograms
+        - component_stats: Per-object statistics
+
+    Examples
+    --------
+    >>> scene = Scene()
+    >>> # ... add actors to scene ...
+    >>> arr = snapshot(scene, return_array=True)
+    >>> report = analyze_snapshot(arr, colors=[[255, 0, 0]], find_objects=True)
+    >>> print(f"Found {report.objects} objects")
+    >>> print(f"Red color present: {report.colors_found[0]}")
+
+    See Also
+    --------
+    fury.testing.snapshot.analyze_snapshot : Full documentation.
+    assert_colors_present : Assert specific colors exist.
+    assert_object_count : Assert expected object count.
+    assert_shading_present : Assert shading is present.
+    assert_opacity_correct : Assert opacity levels are correct.
+    """
+    return _analyze_snapshot(
+        snapshot,
+        colors=colors,
+        color_tolerance=color_tolerance,
+        find_objects=find_objects,
+        min_object_size=min_object_size,
+        analyze_shading=analyze_shading,
+        analyze_opacity=analyze_opacity,
+        bg_color=bg_color,
+    )
 
 
 def show(actors, *, window_type="default"):
