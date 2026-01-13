@@ -4,7 +4,11 @@ import pytest
 
 from fury import actor, window
 from fury.actor.tests._helpers import validate_actors
-from fury.material import _StreamtubeBakedMaterial
+from fury.material import (
+    StreamlinesMaterial,
+    _StreamlineBakedMaterial,
+    _StreamtubeBakedMaterial,
+)
 
 
 def test_sphere():
@@ -210,6 +214,77 @@ def test_streamtube_gpu_invalid_inputs():
             colors=np.array([1.0, 0.5], dtype=np.float32),
             backend="gpu",
         )
+
+
+def test_streamlines_roi_metadata_and_reset():
+    """Streamlines ROI mask toggles baked material and restores buffers."""
+    lines = [
+        np.array([[-1.0, 0.0, 0.0], [0.0, 0.0, 0.0]], dtype=np.float32),
+        np.array([[0.0, 1.0, 0.0], [1.0, 1.0, 0.0]], dtype=np.float32),
+    ]
+    roi_mask = np.ones((2, 3, 4), dtype=np.uint8)
+
+    wobj = actor.streamlines(lines, colors=(0.2, 0.2, 0.2), roi_mask=roi_mask)
+
+    assert np.array_equal(wobj._line_lengths, np.array([2, 2], dtype=np.uint32))
+    assert np.array_equal(wobj._line_offsets, np.array([0, 3], dtype=np.uint32))
+    assert isinstance(wobj.material, _StreamlineBakedMaterial)
+    assert wobj.material.roi_enabled is True
+    assert wobj.material.roi_dim == roi_mask.shape
+    assert np.allclose(wobj.roi_origin, (0.0, 0.0, 0.0))
+    assert not np.isfinite(wobj.geometry.positions.data).all()
+
+    wobj.roi_mask = None
+    assert isinstance(wobj.material, StreamlinesMaterial)
+    assert wobj.material.roi_enabled is False
+    assert wobj._needs_gpu_update is False
+    assert np.allclose(
+        wobj.geometry.positions.data,
+        wobj._input_positions_array.reshape(wobj.geometry.positions.data.shape),
+        equal_nan=True,
+    )
+
+
+def test_streamlines_roi_origin_updates_needs_update_flag():
+    """Changing ROI origin sets compute update when a mask is present."""
+    lines = [
+        np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]], dtype=np.float32),
+        np.array([[0.0, 2.0, 0.0], [1.0, 2.0, 0.0]], dtype=np.float32),
+    ]
+    roi_mask = np.ones((3, 3, 3), dtype=np.uint8)
+
+    wobj = actor.streamlines(
+        lines, colors=(0.1, 0.1, 0.1), roi_mask=roi_mask, roi_origin=(1.0, 2.0, 3.0)
+    )
+
+    assert np.allclose(wobj.roi_origin, (1.0, 2.0, 3.0))
+    wobj._needs_gpu_update = False
+    wobj.roi_origin = (2.5, -1.0, 0.5)
+    assert np.allclose(wobj.roi_origin, (2.5, -1.0, 0.5))
+    assert wobj._needs_gpu_update is True
+
+
+def test_streamlines_helper_populates_buffers_without_roi():
+    """Actor helper populates metadata buffers when no ROI is provided."""
+    lines = [
+        np.array([[0.0, 0.0, 0.0], [1.0, 1.0, 1.0]], dtype=np.float32),
+        np.array([[1.0, 0.0, 0.0], [2.0, 1.0, 1.0]], dtype=np.float32),
+    ]
+
+    wobj = actor.streamlines(lines, colors=(1.0, 0.0, 0.0))
+
+    assert isinstance(wobj.material, StreamlinesMaterial)
+    assert np.array_equal(
+        wobj._line_lengths_buffer.data, wobj._line_lengths.astype(np.uint32)
+    )
+    assert np.array_equal(
+        wobj._line_offsets_buffer.data, wobj._line_offsets.astype(np.uint32)
+    )
+    assert np.allclose(
+        wobj.geometry.positions.data,
+        wobj._input_positions_array.reshape(wobj.geometry.positions.data.shape),
+        equal_nan=True,
+    )
 
 
 def test_actor_from_primitive_wireframe():

@@ -618,7 +618,7 @@ class Streamlines(Line):
         else:
             colors_arr = np.asarray(colors, dtype=np.float32)
 
-        self._roi_origin = self._resolve_roi_origin()
+        self._roi_origin = self._resolve_roi_origin(roi_origin)
 
         self._input_positions_array = positions_arr
         self._input_colors_array = colors_arr
@@ -849,8 +849,8 @@ def streamlines(
 
     Returns
     -------
-        Streamline
-            The created streamline object.
+    Streamline
+        The created streamline object.
     """
     lines_list = (
         [np.asarray(seg) for seg in lines]

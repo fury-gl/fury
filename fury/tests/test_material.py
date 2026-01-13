@@ -24,6 +24,7 @@ from fury.material import (
     VectorFieldArrowMaterial,
     VectorFieldLineMaterial,
     VectorFieldThinLineMaterial,
+    _StreamlineBakedMaterial,
     _StreamtubeBakedMaterial,
     _create_mesh_material,
     _create_vector_field_material,
@@ -585,6 +586,8 @@ def test_StreamlinesMaterial_initialization_defaults():
 
     assert material.outline_thickness == 0.0
     assert np.array_equal(material.outline_color, (0, 0, 0))
+    assert material.roi_enabled is False
+    assert material.roi_dim == (0, 0, 0)
 
 
 def test_StreamlinesMaterial_custom_initialization():
@@ -605,6 +608,8 @@ def test_StreamlinesMaterial_custom_initialization():
     assert np.allclose(material.outline_color, outline_color)
     assert material.thickness == 3.0
     assert round(material.opacity, 2) == 0.7
+    assert material.roi_enabled is False
+    assert material.roi_dim == (0, 0, 0)
 
 
 def test_StreamlinesMaterial_inheritance():
@@ -644,6 +649,7 @@ def test_StreamlinesMaterial_with_kwargs():
     # Test inherited properties
     assert material.thickness == 2.0
     assert round(material.opacity, 1) == 0.8
+    assert material.roi_enabled is False
 
 
 def test_StreamlinesMaterial_outline_thickness_property():
@@ -700,12 +706,36 @@ def test_StreamlinesMaterial_outline_color_property():
     assert np.allclose(material.outline_color, np_color)
 
 
+def test_StreamlinesMaterial_roi_mask_properties():
+    """StreamlinesMaterial: ROI mask flags and dimensions can be set."""
+    material = StreamlinesMaterial()
+    assert material.roi_enabled is False
+    assert material.roi_dim == (0, 0, 0)
+
+    material.roi_dim = (16, 24, 32)
+    assert material.roi_dim == (16, 24, 32)
+
+    material.roi_enabled = True
+    assert material.roi_enabled is True
+
+    with pytest.raises(ValueError):
+        material.roi_dim = (1, 2)
+
+
 def test_StreamlinesMaterial_uniform_type():
     """StreamlinesMaterial: Test uniform_type contains expected fields."""
     assert "outline_thickness" in StreamlinesMaterial.uniform_type
     assert "outline_color" in StreamlinesMaterial.uniform_type
     assert StreamlinesMaterial.uniform_type["outline_thickness"] == "f4"
     assert StreamlinesMaterial.uniform_type["outline_color"] == "4xf4"
+    assert "roi_enabled" in StreamlinesMaterial.uniform_type
+    assert StreamlinesMaterial.uniform_type["roi_enabled"] == "i4"
+    assert "roi_dim" in StreamlinesMaterial.uniform_type
+    assert StreamlinesMaterial.uniform_type["roi_dim"] == "4xi4"
+    assert "roi_min" not in StreamlinesMaterial.uniform_type
+    assert "roi_max" not in StreamlinesMaterial.uniform_type
+    assert "roi_spacing" not in StreamlinesMaterial.uniform_type
+    assert "roi_origin" not in StreamlinesMaterial.uniform_type
 
     # Check inheritance from LineMaterial
     assert "thickness" in StreamlinesMaterial.uniform_type
@@ -730,17 +760,17 @@ def test_StreamlinesMaterial_edge_cases():
     expected_rgb = (1.5, -0.5, 2.0)
     assert np.allclose(material.outline_color, expected_rgb)
 
-    # Test empty tuple/list (should fail gracefully)
-    try:
-        material.outline_color = ()
-    except (ValueError, IndexError, TypeError):
-        pass  # Expected to fail
 
-    # Test single value (should fail gracefully)
-    try:
-        material.outline_color = 0.5
-    except (ValueError, IndexError, TypeError):
-        pass  # Expected to fail
+def test_StreamlineBakedMaterial_defaults_and_properties():
+    """_StreamlineBakedMaterial defaults and property wiring."""
+    mat = _StreamlineBakedMaterial()
+    assert isinstance(mat, StreamlinesMaterial)
+    assert mat.auto_detach is True
+    assert mat.roi_enabled is False
+    assert mat.roi_dim == (0, 0, 0)
+
+    mat.auto_detach = False
+    assert mat.auto_detach is False
 
 
 def test_StreamtubeBakedMaterial_defaults():
