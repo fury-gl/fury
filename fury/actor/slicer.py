@@ -304,7 +304,7 @@ class VectorField(WorldObject, Actor):
         if len(value) != 3:
             raise ValueError(f"Cross section must have length 3, but got {len(value)}")
         value = np.asarray(value, dtype=np.float32)
-        bounds = self.get_bounding_box()
+        bounds = self.bounds if hasattr(self, "bounds") else self.get_bounding_box()
         value = np.maximum(bounds[0], value)
         value = np.minimum(bounds[1], value)
         self.material.cross_section = value.astype(np.int32)
