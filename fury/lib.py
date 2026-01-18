@@ -157,6 +157,16 @@ ScalarBarActor = ravtk.vtkScalarBarActor
 OpenGLRenderer = roglvtk.vtkOpenGLRenderer
 #: class for Shader
 Shader = roglvtk.vtkShader
+#: class for RenderPassCollection
+RenderPassCollection = roglvtk.vtkRenderPassCollection
+#: class for DefaultRenderPass
+DefaultRenderPass = roglvtk.vtkDefaultPass
+#: class for SequencePass
+SequencePass = roglvtk.vtkSequencePass
+#: class for SSAAPass
+SSAAPass = roglvtk.vtkSSAAPass
+#: class for CameraPass
+CameraPass = roglvtk.vtkCameraPass
 
 ##############################################################
 #  vtkInteractionStyle Module
