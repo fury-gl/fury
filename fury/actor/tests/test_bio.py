@@ -71,6 +71,8 @@ def test_peaks_slicer_basic_functionality():
 
     assert result is not None
     assert hasattr(result, "get_bounding_box")
+    assert np.all(result.get_bounding_box() == np.array([[0, 0, 0], [4, 4, 4]]))
+    assert np.all(result.cross_section == np.array([2, 2, 2]))
     assert result.material.opacity == 1.0  # Default value
 
 
@@ -84,6 +86,11 @@ def test_peaks_slicer_with_affine_transform():
     assert result is not None
     # Verify bounding box was transformed
     assert hasattr(result, "get_bounding_box")
+    assert hasattr(result, "bounds")
+    assert np.allclose(result.get_bounding_box()[0], (0, 0, 0))
+    assert np.allclose(result.bounds[0], np.array([10, 20, 30]))
+    assert np.allclose(result.bounds[1], np.array([12, 22, 32]))
+    assert np.allclose(result.cross_section, np.array([11, 21, 31]))
 
 
 def test_peaks_slicer_invalid_peak_dirs_shape():

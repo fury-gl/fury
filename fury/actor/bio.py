@@ -134,11 +134,13 @@ def peaks_slicer(
 
     if affine is not None:
         apply_affine_to_actor(obj, affine)
-        bounds = get_transformed_cube_bounds(
-            affine, np.zeros((3,)), np.asarray(obj.field_shape)
+        bounds = obj.get_bounding_box()
+        obj.bounds = get_transformed_cube_bounds(
+            affine,
+            bounds[0],
+            bounds[1],
         )
-        obj.get_bounding_box = lambda: bounds
-        obj.cross_section = np.asarray(bounds).mean(axis=0)
+        obj.cross_section = np.asarray(obj.bounds).mean(axis=0)
 
     return obj
 
