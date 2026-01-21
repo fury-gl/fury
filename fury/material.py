@@ -766,6 +766,12 @@ class StreamlinesMaterial(LineMaterial):
         The thickness of the outline.
     outline_color : tuple, optional
         The color of the outline as an RGBA tuple.
+    roi_enabled : bool, optional
+        Whether ROI culling is active. This is typically driven by the presence
+        of an ROI mask on the actor.
+    roi_dim : tuple, optional
+        3D integer dimensions (nx, ny, nz) of a mask grid when a volumetric
+        ROI is used in the shader.
     **kwargs : dict
         Additional keyword arguments for the material.
     """
@@ -774,9 +780,18 @@ class StreamlinesMaterial(LineMaterial):
         LineMaterial.uniform_type,
         outline_thickness="f4",
         outline_color="4xf4",
+        roi_enabled="i4",
+        roi_dim="4xi4",
     )
 
-    def __init__(self, outline_thickness=0.0, outline_color=(0, 0, 0), **kwargs):
+    def __init__(
+        self,
+        outline_thickness=0.0,
+        outline_color=(0, 0, 0),
+        roi_enabled=None,
+        roi_dim=(0, 0, 0),
+        **kwargs,
+    ):
         """Initialize the Streamline Material.
 
         Parameters
@@ -785,12 +800,20 @@ class StreamlinesMaterial(LineMaterial):
             The thickness of the outline.
         outline_color : tuple, optional
             The color of the outline as an RGBA tuple.
+        roi_enabled : bool, optional
+            Whether ROI culling is active. If None, ROI culling defaults to
+            False until an ROI mask is attached by the actor.
+        roi_dim : tuple, optional
+            3D integer dimensions (nx, ny, nz) of a mask grid when a volumetric
+            ROI is used in the shader.
         **kwargs : dict
             Additional keyword arguments for the material.
         """
         super().__init__(**kwargs)
         self.outline_thickness = outline_thickness
         self.outline_color = outline_color
+        self.roi_dim = roi_dim
+        self.roi_enabled = roi_enabled
 
     @property
     def outline_thickness(self):
@@ -840,6 +863,85 @@ class StreamlinesMaterial(LineMaterial):
 
         self.uniform_buffer.data["outline_color"] = value
         self.uniform_buffer.update_full()
+
+    @property
+    def roi_enabled(self):
+        """Return True when ROI-based culling is active.
+
+        Returns
+        -------
+        bool
+            True if ROI-based culling is enabled, False otherwise.
+        """
+        return bool(self.uniform_buffer.data["roi_enabled"])
+
+    @roi_enabled.setter
+    def roi_enabled(self, value):
+        """Enable/disable ROI-based culling.
+
+        Parameters
+        ----------
+        value : bool
+            True to enable ROI-based culling, False to disable.
+        """
+        self.uniform_buffer.data["roi_enabled"] = int(bool(value))
+        self.uniform_buffer.update_full()
+
+    @property
+    def roi_dim(self):
+        """ROI grid dimensions as (nx, ny, nz).
+
+        Returns
+        -------
+        tuple
+            A tuple of three integers representing the ROI grid dimensions.
+        """
+        return tuple(int(x) for x in self.uniform_buffer.data["roi_dim"][:3])
+
+    @roi_dim.setter
+    def roi_dim(self, value):
+        """Set the ROI grid dimensions.
+
+        Parameters
+        ----------
+        value : tuple
+            A tuple of three integers representing the ROI grid dimensions.
+        """
+        dims = np.asarray(value, dtype=np.int32).reshape(-1)
+        if dims.size != 3:
+            raise ValueError("roi_dim must contain exactly three integers.")
+        self.uniform_buffer.data["roi_dim"] = (
+            int(dims[0]),
+            int(dims[1]),
+            int(dims[2]),
+            0,
+        )
+        self.uniform_buffer.update_full()
+
+
+class _StreamlineBakedMaterial(StreamlinesMaterial):
+    """Initialize the internal baked streamline material.
+
+    Parameters
+    ----------
+    auto_detach : bool, optional
+        If True, automatically switch to render-only material after baking.
+    **kwargs : dict
+        Additional keyword arguments for the material.
+    """
+
+    def __init__(self, *, auto_detach=True, **kwargs):
+        """Initialize the internal baked streamline material.
+
+        Parameters
+        ----------
+        auto_detach : bool, optional
+            If True, automatically switch to render-only material after baking.
+        **kwargs : dict
+            Additional keyword arguments for the material.
+        """
+        super().__init__(**kwargs)
+        self.auto_detach = bool(auto_detach)
 
 
 class BillboardMaterial(MeshBasicMaterial):

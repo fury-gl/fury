@@ -1,6 +1,7 @@
 import math
 
 import numpy as np
+import pytest
 
 from fury.actor import SphGlyph, VectorField
 from fury.actor.curved import (
@@ -21,6 +22,7 @@ from fury.shader import (
     VectorFieldComputeShader,
     VectorFieldShader,
     VectorFieldThinShader,
+    _StreamlineBakingShader,
     _StreamtubeBakingShader,
 )
 
@@ -322,6 +324,35 @@ def test_streamline_shader_get_code():
     code = shader.get_code()
     assert isinstance(code, str)
     assert load_wgsl("streamline_render.wgsl", package_name="fury.wgsl") == code
+
+
+def test_streamline_baking_shader_updates_and_origin():
+    """_StreamlineBakingShader dispatch respects needs_gpu_update and roi_origin."""
+    lines = [
+        np.array([[0, 0, 0], [1, 0, 0]], dtype=np.float32),
+        np.array([[0, 1, 0], [1, 1, 0]], dtype=np.float32),
+    ]
+    lines_positions, lines_colors = line_buffer_separator(lines, color=(1, 0, 0))
+    wobject = Streamlines(
+        lines_positions,
+        colors=lines_colors,
+        roi_mask=np.ones((3, 3, 3), dtype=np.uint8),
+        roi_origin=(1.0, 2.0, 3.0),
+    )
+    shader = _StreamlineBakingShader(wobject)
+
+    first = shader.get_render_info(wobject, {})["indices"]
+    assert first[0] > 0
+    assert shader["roi_origin_x"] == pytest.approx(1.0)
+    assert shader["roi_origin_y"] == pytest.approx(2.0)
+    assert shader["roi_origin_z"] == pytest.approx(3.0)
+
+    second = shader.get_render_info(wobject, {})["indices"]
+    assert second == (0, 1, 1)
+
+    wobject._needs_gpu_update = True
+    third = shader.get_render_info(wobject, {})["indices"]
+    assert third[0] > 0
 
 
 def test_LineProjectionComputeShader_initialization():

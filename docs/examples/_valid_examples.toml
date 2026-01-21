@@ -20,7 +20,8 @@ files = [
     "viz_integrate_with_qt.py",
     "viz_multi_screen.py",
     "viz_show.py",
-    "viz_imgui.py"
+    "viz_imgui.py",
+    "viz_shapes.py"
 
 ]
 
@@ -34,6 +35,7 @@ files = [
     "viz_vector_field.py",
     "viz_spherical_harmonics.py",
     "viz_line_projections.py",
+    "viz_streamlines_roi.py",
     "viz_contour.py",
 
 ]

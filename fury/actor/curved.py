@@ -12,6 +12,7 @@ from fury.lib import (
 )
 from fury.material import (
     StreamlinesMaterial,
+    _StreamlineBakedMaterial,
     _StreamtubeBakedMaterial,
     _create_mesh_material,
     validate_opacity,
@@ -20,6 +21,7 @@ from fury.optpkg import optional_package
 import fury.primitive as fp
 from fury.shader import (
     StreamlinesShader,
+    _StreamlineBakingShader,
     _StreamtubeBakingShader,
     _StreamtubeRenderShader,
 )
@@ -453,9 +455,92 @@ class Streamlines(Line):
         The thickness of the outline.
     outline_color : tuple, optional
         The color of the outline.
+    roi_mask : ndarray, optional
+        3D array where values > 0 define the ROI voxels. This enables
+        shader-side ROI testing using the volumetric mask, which is assumed
+        to be centered at the origin with unit voxel spacing.
+    roi_origin : array-like of shape (3,), optional
+        World-space coordinates of the ROI voxel (0, 0, 0). When not
+        provided, defaults to (0, 0, 0).
     enable_picking : bool, optional
-        Whether the streamline should be pickable in a 3D scene, by default True.
+        Whether the streamline should be pickable in a 3D scene.
+    line_lengths : ndarray, optional
+        Optional precomputed point counts for each line (used for ROI
+        baking). When omitted, lengths are inferred from NaN separators.
+    line_offsets : ndarray, optional
+        Optional precomputed offsets into the flattened buffer for each
+        line (used for ROI baking). When omitted, offsets are inferred from
+        NaN separators.
     """
+
+    @staticmethod
+    def _compute_line_metadata(positions, *, line_lengths=None, line_offsets=None):
+        """Infer per-line lengths and offsets from a flattened buffer with NaNs.
+
+        Parameters
+        ----------
+        positions : ndarray, shape (N, 3)
+            The flattened array of line positions, with NaNs separating lines.
+        line_lengths : ndarray, optional
+            Optional precomputed point counts for each line.
+        line_offsets : ndarray, optional
+            Optional precomputed offsets into the flattened buffer for each
+            line.
+
+        Returns
+        -------
+        tuple of ndarray
+            A tuple (line_lengths, line_offsets).
+        """
+        if line_lengths is not None and line_offsets is not None:
+            return (
+                np.asarray(line_lengths, dtype=np.uint32).reshape(-1),
+                np.asarray(line_offsets, dtype=np.uint32).reshape(-1),
+            )
+
+        positions = np.asarray(positions)
+        if positions.ndim != 2 or positions.shape[1] != 3:
+            raise ValueError("lines must be a 2D array of shape (N, 3)")
+
+        nan_mask = np.any(~np.isfinite(positions), axis=1)
+        split_indices = list(np.where(nan_mask)[0]) + [positions.shape[0]]
+
+        lengths = []
+        offsets = []
+        start = 0
+        for idx in split_indices:
+            if idx > start:
+                offsets.append(start)
+                lengths.append(idx - start)
+            start = idx + 1
+
+        return np.asarray(lengths, dtype=np.uint32), np.asarray(
+            offsets, dtype=np.uint32
+        )
+
+    @staticmethod
+    def _validate_roi_mask(mask):
+        """Validate and extract the mask.
+
+        Parameters
+        ----------
+        mask : ndarray
+            3D array where values > 0 define the ROI voxels.
+
+        Returns
+        -------
+        ndarray
+            The validated ROI mask as a binary array.
+
+        Raises
+        ------
+        ValueError
+            If the mask is not a 3D array.
+        """
+        mask = np.asarray(mask)
+        if mask.ndim != 3:
+            raise ValueError("roi_mask must be a 3D array.")
+        return (mask > 0).astype(np.uint8)
 
     def __init__(
         self,
@@ -466,7 +551,11 @@ class Streamlines(Line):
         opacity=1.0,
         outline_thickness=1.0,
         outline_color=(1, 0, 0),
+        roi_mask=None,
+        roi_origin=None,
         enable_picking=True,
+        line_lengths=None,
+        line_offsets=None,
     ):
         """
         Create a streamline representation.
@@ -485,8 +574,22 @@ class Streamlines(Line):
             The thickness of the outline.
         outline_color : tuple, optional
             The color of the outline.
+        roi_mask : ndarray, optional
+            3D array where values > 0 define the ROI voxels. This enables
+            shader-side ROI testing using the volumetric mask, which is assumed
+            to be centered at the origin with unit voxel spacing.
+        roi_origin : array-like of shape (3,), optional
+            World-space coordinates of the ROI voxel (0, 0, 0). When not
+            provided, defaults to (0, 0, 0).
         enable_picking : bool, optional
             Whether the streamline should be pickable in a 3D scene.
+        line_lengths : ndarray, optional
+            Optional precomputed point counts for each line (used for ROI
+            baking). When omitted, lengths are inferred from NaN separators.
+        line_offsets : ndarray, optional
+            Optional precomputed offsets into the flattened buffer for each
+            line (used for ROI baking). When omitted, offsets are inferred from
+            NaN separators.
         """
         super().__init__()
 
@@ -509,18 +612,200 @@ class Streamlines(Line):
         if not isinstance(enable_picking, bool):
             raise TypeError("enable_picking must be a boolean")
 
+        positions_arr = np.asarray(lines, dtype=np.float32)
+        if colors is None:
+            colors_arr = np.ones((positions_arr.shape[0], 4), dtype=np.float32)
+        else:
+            colors_arr = np.asarray(colors, dtype=np.float32)
+
+        self._roi_origin = self._resolve_roi_origin(roi_origin)
+
+        self._input_positions_array = positions_arr
+        self._input_colors_array = colors_arr
+        self._line_lengths, self._line_offsets = self._compute_line_metadata(
+            positions_arr, line_lengths=line_lengths, line_offsets=line_offsets
+        )
+        self.n_lines = int(self._line_lengths.size)
+        self._out_capacity = int(positions_arr.shape[0])
+        self._color_channels = int(colors_arr.shape[1]) if colors_arr.ndim == 2 else 3
+
+        if roi_mask is None:
+            positions_out = positions_arr
+            colors_out = colors_arr
+        else:
+            positions_out = np.full_like(positions_arr, np.nan, dtype=np.float32)
+            colors_out = np.full_like(colors_arr, np.nan, dtype=np.float32)
+
         self.geometry = buffer_to_geometry(
-            positions=lines.astype("float32"), colors=colors.astype("float32")
+            positions=positions_out.astype("float32"),
+            colors=colors_out.astype("float32"),
         )
 
-        self.material = StreamlinesMaterial(
-            outline_thickness=outline_thickness,
-            outline_color=outline_color,
-            pick_write=enable_picking,
-            opacity=opacity,
-            thickness=thickness,
-            color_mode="vertex",
+        material_kwargs = {
+            "outline_thickness": outline_thickness,
+            "outline_color": outline_color,
+            "pick_write": enable_picking,
+            "opacity": opacity,
+            "thickness": thickness,
+            "color_mode": "vertex",
+        }
+
+        if roi_mask is None:
+            self.material = StreamlinesMaterial(**material_kwargs)
+            self._needs_gpu_update = False
+        else:
+            self.material = _StreamlineBakedMaterial(**material_kwargs)
+            self._needs_gpu_update = True
+
+        self._line_lengths_buffer = Buffer(self._line_lengths.astype(np.uint32))
+        self._line_offsets_buffer = Buffer(self._line_offsets.astype(np.uint32))
+        self._line_positions_in = Buffer(positions_arr.astype(np.float32).ravel())
+        self._line_colors_in = Buffer(colors_arr.astype(np.float32).ravel())
+        self._roi_mask_buffer = None
+        self._roi_auto_detach = True
+        self.roi_mask = roi_mask
+
+    @property
+    def roi_mask(self):
+        """Get the ROI mask.
+
+        Returns
+        -------
+        ndarray or None
+            The ROI mask as a 3D array, or None if no mask is set.
+        """
+        if self._roi_mask_buffer is not None:
+            return self._roi_mask_buffer.data
+        return None
+
+    @roi_mask.setter
+    def roi_mask(self, mask):
+        """Set the ROI mask.
+
+        Parameters
+        ----------
+        mask : ndarray
+            3D array where values > 0 define the ROI voxels.
+        """
+        if mask is None:
+            self._roi_mask_buffer = None
+            self.material.roi_dim = (0, 0, 0)
+            self.material.roi_enabled = False
+            self._roi_origin = self._resolve_roi_origin(None)
+            self._needs_gpu_update = False
+            self._restore_full_geometry()
+            if isinstance(self.material, _StreamlineBakedMaterial):
+                self.material = StreamlinesMaterial(
+                    outline_thickness=self.material.outline_thickness,
+                    outline_color=self.material.outline_color,
+                    pick_write=self.material.pick_write,
+                    opacity=self.material.opacity,
+                    thickness=self.material.thickness,
+                    color_mode=self.material.color_mode,
+                )
+            return
+
+        mask_arr = self._validate_roi_mask(mask)
+        self._roi_mask_buffer = Buffer(mask_arr.astype(np.uint32).ravel())
+        self.material.roi_dim = mask_arr.shape
+        self.material.roi_enabled = True
+        self._reset_output_buffers()
+        self._ensure_baked_material()
+        self._needs_gpu_update = True
+
+    @property
+    def roi_origin(self):
+        """Get the ROI origin.
+
+        Returns
+        -------
+        ndarray or None
+            The ROI origin as a (3,) array, or None if no origin is set.
+        """
+        return self._roi_origin
+
+    @roi_origin.setter
+    def roi_origin(self, origin):
+        """Set the ROI origin (world-space position of voxel (0, 0, 0)).
+
+        Parameters
+        ----------
+        origin : array-like of shape (3,) or None
+            The ROI origin coordinates. If None, defaults to (0, 0, 0).
+        """
+        self._roi_origin = self._resolve_roi_origin(origin)
+        if self._roi_mask_buffer is not None:
+            self._ensure_baked_material()
+            self._needs_gpu_update = True
+
+    def _reset_output_buffers(self):
+        """Clear output buffers before compute baking."""
+        if self._out_capacity == 0:
+            return
+        nan_positions = np.full_like(
+            self._input_positions_array, np.nan, dtype=np.float32
         )
+        nan_colors = np.full_like(self._input_colors_array, np.nan, dtype=np.float32)
+        if hasattr(self.geometry.positions, "data"):
+            pos_data = self.geometry.positions.data
+            self.geometry.positions.data[...] = nan_positions.reshape(pos_data.shape)
+        else:
+            self.geometry.positions = Buffer(nan_positions.ravel())
+        if hasattr(self.geometry.colors, "data"):
+            col_data = self.geometry.colors.data
+            self.geometry.colors.data[...] = nan_colors.reshape(col_data.shape)
+        else:
+            self.geometry.colors = Buffer(nan_colors.ravel())
+
+    def _restore_full_geometry(self):
+        """Restore full, unfiltered streamline buffers."""
+        if hasattr(self.geometry.positions, "data"):
+            pos_data = self.geometry.positions.data
+            self.geometry.positions.data[...] = self._input_positions_array.reshape(
+                pos_data.shape
+            )
+        else:
+            self.geometry.positions = Buffer(self._input_positions_array.ravel())
+        if hasattr(self.geometry.colors, "data"):
+            col_data = self.geometry.colors.data
+            self.geometry.colors.data[...] = self._input_colors_array.reshape(
+                col_data.shape
+            )
+        else:
+            self.geometry.colors = Buffer(self._input_colors_array.ravel())
+
+    def _ensure_baked_material(self):
+        """Ensure baked material is active when ROI filtering is requested."""
+        if isinstance(self.material, _StreamlineBakedMaterial):
+            return
+        self.material = _StreamlineBakedMaterial(
+            outline_thickness=self.material.outline_thickness,
+            outline_color=self.material.outline_color,
+            pick_write=self.material.pick_write,
+            opacity=self.material.opacity,
+            thickness=self.material.thickness,
+            color_mode=self.material.color_mode,
+        )
+
+    def _resolve_roi_origin(self, origin):
+        """Validate and resolve ROI origin from user input.
+
+        Parameters
+        ----------
+        origin : array-like of shape (3,) or None
+            The ROI origin coordinates. If None, defaults to (0, 0, 0).
+
+        Returns
+        -------
+        ndarray
+            The resolved ROI origin as a (3,) array.
+        """
+        if origin is None:
+            return np.zeros((3,), dtype=np.float32)
+        origin = np.asarray(origin, dtype=np.float32).reshape(-1)
+        if origin.size != 3:
+            raise ValueError("roi_origin must have exactly three values.")
+        return origin
 
 
 def streamlines(
@@ -531,6 +816,8 @@ def streamlines(
     opacity=1.0,
     outline_thickness=1.0,
     outline_color=(0, 0, 0),
+    roi_mask=None,
+    roi_origin=None,
     enable_picking=True,
 ):
     """Create a streamline representation.
@@ -549,6 +836,14 @@ def streamlines(
         The thickness of the outline.
     outline_color : tuple, optional
         The color of the outline.
+    roi_mask : ndarray, optional
+        3D array where values > 0 define the ROI voxels. When provided,
+        streamlines are filtered in a compute baking pass using this volumetric
+        mask, which is assumed to be centered at the origin with unit voxel
+        spacing.
+    roi_origin : array-like of shape (3,), optional
+        Origin of the ROI voxel (0, 0, 0) in world-space coordinates. When not
+        provided, defaults to (0, 0, 0).
     enable_picking : bool, optional
         Whether the streamline should be pickable in a 3D scene.
 
@@ -557,7 +852,21 @@ def streamlines(
     Streamline
         The created streamline object.
     """
-    lines_positions, lines_colors = line_buffer_separator(lines, color=colors)
+    lines_list = (
+        [np.asarray(seg) for seg in lines]
+        if not isinstance(lines, np.ndarray) or lines.ndim != 3
+        else [np.asarray(seg) for seg in lines]
+    )
+    lengths = np.asarray([len(seg) for seg in lines_list], dtype=np.uint32)
+    offsets = np.zeros_like(lengths)
+    running = 0
+    for i, ln in enumerate(lengths):
+        offsets[i] = running
+        running += int(ln)
+        if i < len(lengths) - 1:
+            running += 1  # separator slot
+
+    lines_positions, lines_colors = line_buffer_separator(lines_list, color=colors)
 
     return Streamlines(
         lines_positions,
@@ -566,12 +875,16 @@ def streamlines(
         opacity=opacity,
         outline_thickness=outline_thickness,
         outline_color=outline_color,
+        roi_mask=roi_mask,
+        roi_origin=roi_origin,
         enable_picking=enable_picking,
+        line_lengths=lengths,
+        line_offsets=offsets,
     )
 
 
 @register_wgpu_render_function(Streamlines, StreamlinesMaterial)
-def register_render_streamline(wobject):
+def _register_render_streamline(wobject):
     """Register the streamline render function.
 
     Parameters
@@ -585,6 +898,25 @@ def register_render_streamline(wobject):
         The created streamline shader.
     """
     return StreamlinesShader(wobject)
+
+
+@register_wgpu_render_function(Streamlines, _StreamlineBakedMaterial)
+def _register_streamline_baking_shaders(wobject):
+    """Register the streamline baking shaders.
+
+    Parameters
+    ----------
+    wobject : Streamline
+        The streamline object to register.
+
+    Returns
+    -------
+    _StreamlineBakingShader, StreamlinesShader
+        The created streamline shader pipeline.
+    """
+    compute_shader = _StreamlineBakingShader(wobject)
+    render_shader = StreamlinesShader(wobject)
+    return compute_shader, render_shader
 
 
 @njit(cache=True)

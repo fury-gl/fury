@@ -12,6 +12,7 @@ from fury.lib import (
     ThinLineSegmentShader,
     load_wgsl,
 )
+from fury.material import StreamlinesMaterial, _StreamlineBakedMaterial
 
 
 class VectorFieldComputeShader(BaseShader):
@@ -185,6 +186,43 @@ class VectorFieldShader(LineShader):
 class StreamlinesShader(LineShader):
     """Shader for StreamlineActor."""
 
+    def get_render_info(self, wobject, shared):
+        """Get render information for the streamline shader.
+
+        Parameters
+        ----------
+        wobject : Streamlines
+            The streamline object to be rendered.
+        shared : dict
+            Shared information for the shader.
+
+        Returns
+        -------
+        dict
+            A dictionary containing the render information.
+        """
+        mat = getattr(wobject, "material", None)
+        needs_update = bool(getattr(wobject, "_needs_gpu_update", False))
+        auto_detach = bool(getattr(mat, "auto_detach", True))
+        if (
+            isinstance(mat, _StreamlineBakedMaterial)
+            and auto_detach
+            and not needs_update
+        ):
+            new_mat = StreamlinesMaterial(
+                outline_thickness=float(getattr(mat, "outline_thickness", 0.0)),
+                outline_color=tuple(getattr(mat, "outline_color", (0, 0, 0))),
+                pick_write=bool(getattr(mat, "pick_write", True)),
+                opacity=float(getattr(mat, "opacity", 1.0)),
+                thickness=float(getattr(mat, "thickness", 2.0)),
+                color_mode=str(getattr(mat, "color_mode", "vertex")),
+            )
+            new_mat.roi_enabled = False
+            new_mat.roi_dim = (0, 0, 0)
+            wobject.material = new_mat
+
+        return super().get_render_info(wobject, shared)
+
     def get_code(self):
         """Get the WGSL code for the streamline render shader.
 
@@ -194,6 +232,174 @@ class StreamlinesShader(LineShader):
             The WGSL code as a string.
         """
         return load_wgsl("streamline_render.wgsl", package_name="fury.wgsl")
+
+
+class _StreamlineBakingShader(BaseShader):
+    """Initialize the streamline baking compute shader.
+
+    Parameters
+    ----------
+    wobject : Streamlines
+        The streamline object to be rendered.
+    """
+
+    type = "compute"
+
+    def __init__(self, wobject):
+        """Initialize the streamline baking compute shader.
+
+        Parameters
+        ----------
+        wobject : Streamlines
+            The streamline object to be rendered.
+        """
+        super().__init__(wobject)
+        n_lines = int(getattr(wobject, "n_lines", 0))
+        self["n_lines"] = n_lines
+        self["workgroup_size"] = min(64, max(n_lines, 1))
+        self["out_capacity"] = int(getattr(wobject, "_out_capacity", 0))
+        self["color_channels"] = int(getattr(wobject, "_color_channels", 3))
+        roi_dim = getattr(getattr(wobject, "material", None), "roi_dim", (0, 0, 0))
+        self["roi_dim_x"], self["roi_dim_y"], self["roi_dim_z"] = (
+            int(roi_dim[0]),
+            int(roi_dim[1]),
+            int(roi_dim[2]),
+        )
+        self["roi_origin_x"], self["roi_origin_y"], self["roi_origin_z"] = (
+            wobject.roi_origin
+        )
+        self["roi_enabled"] = (
+            1
+            if getattr(getattr(wobject, "material", None), "roi_enabled", False)
+            else 0
+        )
+
+    def get_render_info(self, wobject, _shared):
+        """Get render information for the streamline baking compute shader.
+
+        Parameters
+        ----------
+        wobject : Streamlines
+            The streamline object to be rendered.
+        _shared : dict
+            Shared information for the shader.
+
+        Returns
+        -------
+        dict
+            A dictionary containing the render information.
+        """
+        needs_update = bool(getattr(wobject, "_needs_gpu_update", False))
+        n_lines = int(getattr(wobject, "n_lines", 0))
+        if not needs_update or n_lines == 0:
+            return {"indices": (0, 1, 1)}
+        workgroup_size = min(64, max(n_lines, 1))
+        groups = int(ceil(n_lines / workgroup_size))
+        wobject._needs_gpu_update = False
+        return {"indices": (groups, 1, 1)}
+
+    def get_pipeline_info(self, _wobject, _shared):
+        """Get pipeline information for the streamline baking compute shader.
+
+        Parameters
+        ----------
+        _wobject : Streamlines
+            The streamline object to be rendered.
+        _shared : dict
+            Shared information for the shader.
+
+        Returns
+        -------
+        dict
+            A dictionary containing the pipeline information.
+        """
+        return {}
+
+    def get_bindings(self, wobject, _shared):
+        """Get the bindings for the streamline baking compute shader.
+
+        Parameters
+        ----------
+        wobject : Streamlines
+            The streamline object to be rendered.
+        _shared : dict
+            Shared information for the shader.
+
+        Returns
+        -------
+        dict
+            A dictionary containing the bindings for the shader.
+        """
+        geometry = wobject.geometry
+
+        n_lines = int(getattr(wobject, "n_lines", 0))
+        self["n_lines"] = n_lines
+        self["workgroup_size"] = min(64, max(n_lines, 1))
+        self["out_capacity"] = int(getattr(wobject, "_out_capacity", 0))
+        self["color_channels"] = int(getattr(wobject, "_color_channels", 3))
+        roi_dim = getattr(getattr(wobject, "material", None), "roi_dim", (0, 0, 0))
+        self["roi_dim_x"], self["roi_dim_y"], self["roi_dim_z"] = (
+            int(roi_dim[0]),
+            int(roi_dim[1]),
+            int(roi_dim[2]),
+        )
+        self["roi_origin_x"], self["roi_origin_y"], self["roi_origin_z"] = (
+            wobject.roi_origin
+        )
+        self["roi_enabled"] = (
+            1
+            if getattr(getattr(wobject, "material", None), "roi_enabled", False)
+            else 0
+        )
+
+        bindings = {
+            0: Binding(
+                "s_line_positions",
+                "buffer/read_only_storage",
+                getattr(wobject, "_line_positions_in", None),
+                "COMPUTE",
+            ),
+            1: Binding(
+                "s_line_colors",
+                "buffer/read_only_storage",
+                getattr(wobject, "_line_colors_in", None),
+                "COMPUTE",
+            ),
+            2: Binding(
+                "s_line_lengths",
+                "buffer/storage",
+                getattr(wobject, "_line_lengths_buffer", None),
+                "COMPUTE",
+            ),
+            3: Binding(
+                "s_line_offsets",
+                "buffer/storage",
+                getattr(wobject, "_line_offsets_buffer", None),
+                "COMPUTE",
+            ),
+            4: Binding(
+                "s_roi_mask",
+                "buffer/read_only_storage",
+                getattr(wobject, "_roi_mask_buffer", None),
+                "COMPUTE",
+            ),
+            5: Binding(
+                "s_out_positions", "buffer/storage", geometry.positions, "COMPUTE"
+            ),
+            6: Binding("s_out_colors", "buffer/storage", geometry.colors, "COMPUTE"),
+        }
+        self.define_bindings(0, bindings)
+        return {0: bindings}
+
+    def get_code(self):
+        """Get the WGSL code for the streamline baking compute shader.
+
+        Returns
+        -------
+        str
+            The WGSL code as a string.
+        """
+        return load_wgsl("streamline_compute.wgsl", package_name="fury.wgsl")
 
 
 class VectorFieldArrowShader(VectorFieldShader):
