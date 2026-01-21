@@ -78,7 +78,7 @@ def test_frame_rate_and_anti_aliasing():
             msg = "FPS " + str(fps) + " " + str(cnt)
             tb.message = msg
             showm.render()
-        if cnt > 10:
+        if cnt > 100:
             showm.exit()
 
     # Run every 200 milliseconds
