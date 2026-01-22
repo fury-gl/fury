@@ -646,7 +646,7 @@ def extract_surface_voxels(volume, label_value, *, structuring_element=None):
     background_and_surface_mask = np.logical_not(volume_interior_mask)
     surface_mask = np.logical_and(object_mask, background_and_surface_mask)
 
-    z_coords, y_coords, x_coords = np.nonzero(surface_mask)
+    x_coords, y_coords, z_coords = np.nonzero(surface_mask)
 
     if x_coords.size == 0:
         logging.info(f"No surface found for label {label_value}.")
@@ -774,7 +774,7 @@ def voxel_mesh_by_object(
         if surface_coords.size == 0:
             continue
 
-        offset = np.array([slc[2].start, slc[1].start, slc[0].start])
+        offset = np.array([slc[0].start, slc[1].start, slc[2].start])
         global_surface = surface_coords + offset
 
         neighbors = surface_coords[:, None, :] + _FACE_DIRECTIONS
@@ -782,12 +782,12 @@ def voxel_mesh_by_object(
         ny = neighbors[..., 1]
         nz = neighbors[..., 2]
 
-        Z, Y, X = object_mask.shape
+        X, Y, Z = object_mask.shape
         valid = (nx >= 0) & (nx < X) & (ny >= 0) & (ny < Y) & (nz >= 0) & (nz < Z)
 
         occupied = np.zeros_like(valid, dtype=bool)
         valid_idx = np.where(valid)
-        occupied[valid_idx] = object_mask[nz[valid_idx], ny[valid_idx], nx[valid_idx]]
+        occupied[valid_idx] = object_mask[nx[valid_idx], ny[valid_idx], nz[valid_idx]]
         exposed = np.logical_not(occupied)
 
         if not np.any(exposed):

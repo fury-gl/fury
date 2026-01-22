@@ -10,6 +10,7 @@ from fury.utils import (
     get_lmax,
     get_n_coeffs,
     get_transformed_cube_bounds,
+    voxel_mesh_by_object,
 )
 
 
@@ -558,6 +559,25 @@ def test_voxel_mesh_by_object_spacing():
     assert np.max(verts[:, 1]) <= 2.0 * spacing[1]
     assert np.min(verts[:, 2]) >= 1.0 * spacing[2]
     assert np.max(verts[:, 2]) <= 2.0 * spacing[2]
+
+
+def test_voxel_mesh_by_object_axis_ordering():
+    """Ensure voxel coordinates are interpreted as (x, y, z) without swapping axes."""
+    volume = np.zeros((2, 3, 4), dtype=np.uint8)
+    volume[1, 2, 3] = 1  # voxel at x=1, y=2, z=3
+
+    spacing = (2.0, 3.0, 5.0)
+    result = voxel_mesh_by_object(volume, spacing=spacing)
+
+    verts = result[1]["verts"]
+    mins = np.min(verts, axis=0)
+    maxs = np.max(verts, axis=0)
+
+    expected_min = np.array([1, 2, 3], dtype=float) * np.array(spacing)
+    expected_max = np.array([2, 3, 4], dtype=float) * np.array(spacing)
+
+    assert np.allclose(mins, expected_min)
+    assert np.allclose(maxs, expected_max)
 
 
 def test_voxel_mesh_by_object_cube_block():
