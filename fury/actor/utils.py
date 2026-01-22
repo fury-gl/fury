@@ -130,11 +130,13 @@ def get_slices(group):
 def show_slices(group, position):
     """Show the slices at the specified position.
 
+    Added with a small offset to avoid boundary issues.
+
     Parameters
     ----------
     group : Group
         The group of actors to get the slices from.
-    position : tuple
+    position : tuple or list or ndarray
         A tuple containing the positions of the slices in the 3D space.
     """
     validate_slices_group(group)
@@ -142,10 +144,10 @@ def show_slices(group, position):
     for i, child in enumerate(group.children):
         if hasattr(child, "plane"):
             a, b, c, _ = child.plane
-            child.plane = (a, b, c, position[i])
+            child.plane = (a, b, c, position[i] + 1e-3)
         else:
             a, b, c, _ = child.material.plane
-            child.material.plane = (a, b, c, position[i])
+            child.material.plane = (a, b, c, position[i] + 1e-3)
 
 
 def apply_affine_to_group(group, affine):

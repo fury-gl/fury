@@ -36,8 +36,10 @@ def test_valid_4d_data(channels):
     assert len(slicer_obj.children) == 3
     assert all(child.visible for child in slicer_obj.children)
 
-    expected_slices = np.array([shape[0] // 2, shape[1] // 2, shape[2] // 2])
-    np.testing.assert_array_equal(get_slices(slicer_obj), expected_slices)
+    expected_slices = np.array([shape[0] // 2, shape[1] // 2, shape[2] // 2]) + 1e-3
+    np.testing.assert_array_equal(
+        get_slices(slicer_obj), expected_slices.astype(np.float32)
+    )
 
     swapped_shape = (shape[2], shape[1], shape[0], channels)
     expected_range = (float(data.min()), float(data.max()))
@@ -78,11 +80,13 @@ def test_custom_initial_slices():
     slicer_obj = actor.data_slicer(data, initial_slices=(5, 10, 15))
 
     # Verify slice positions match input
-    assert np.array_equal(get_slices(slicer_obj), [5, 10, 15])
+    slices = np.asarray([5, 10, 15]) + 1e-3
+    assert np.array_equal(get_slices(slicer_obj), slices.astype(np.float32))
 
     # Verify positions update correctly
     show_slices(slicer_obj, (2, 4, 6))
-    assert np.array_equal(get_slices(slicer_obj), [2, 4, 6])
+    slices = np.asarray([2, 4, 6]) + 1e-3
+    assert np.array_equal(get_slices(slicer_obj), slices.astype(np.float32))
 
 
 def test_visibility_control():
