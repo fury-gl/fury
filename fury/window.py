@@ -1049,6 +1049,26 @@ class ShowManager:
             A dictionary of registered callbacks with their names as keys."""
         return self._callbacks
 
+    @property
+    def imgui(self):
+        """Get the ImGui UI renderer if enabled.
+
+        Returns
+        -------
+        UIRenderer or None
+            The UIRenderer instance if ImGui is enabled, otherwise None."""
+        return self._imgui
+
+    @property
+    def device(self):
+        """Get the underlying GPU device from the renderer.
+
+        Returns
+        -------
+        wgpu.GPUDevice
+            The GPU device used by the renderer for rendering operations."""
+        return self.renderer.device
+
     def set_enable_events(self, value):
         """Enable or disable mouse and keyboard interactions for all screens.
 
