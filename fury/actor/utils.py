@@ -25,6 +25,11 @@ def set_group_visibility(group, visibility):
         group.visible = visibility
         return
 
+    if len(visibility) != len(group.children):
+        raise ValueError(
+            "Length of visibility must match the number of actors in the group."
+        )
+
     for idx, actor in enumerate(group.children):
         actor.visible = visibility[idx]
 

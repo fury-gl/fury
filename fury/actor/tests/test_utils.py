@@ -11,14 +11,21 @@ from fury.actor import (
     line_projection,
     set_group_opacity,
     set_group_visibility,
+    set_opacity,
     show_slices,
 )
-from fury.lib import AffineTransform, RecursiveTransform, WorldObject
+from fury.lib import (
+    AffineTransform,
+    Geometry,
+    Material,
+    RecursiveTransform,
+    WorldObject,
+)
 
 
 @pytest.fixture
 def actor():
-    return Mesh()
+    return Mesh(Geometry(), Material())
 
 
 @pytest.fixture
@@ -92,15 +99,48 @@ def test_set_group_visibility_tuple(group_slicer):
         assert actor.visible == vis
 
 
-def test_set_opacity_type_error():
+def test_set_group_visibility_gfx_group(group_slicer):
+    visibility = (True, False)
+    with pytest.raises(ValueError):
+        set_group_visibility(group_slicer, visibility)
+
+
+def test_set_group_opacity_type_error():
     with pytest.raises(TypeError):
         set_group_opacity("not a group", 0.5)
 
 
-def test_set_opacity_valid(group_slicer):
+def test_set_group_opacity_valid(group_slicer):
     set_group_opacity(group_slicer, 0.7)
     for child in group_slicer.children:
         assert round(child.material.opacity, 2) == 0.7
+
+
+def test_set_group_opacity_with_gfx_group(group_slicer):
+    set_group_opacity(group_slicer, 0.42)
+    for child in group_slicer.children:
+        assert round(child.material.opacity, 2) == 0.42
+
+
+def test_set_opacity_type_error_for_invalid_actor():
+    with pytest.raises(TypeError, match="actor must be an instance of WorldObject"):
+        set_opacity("not an actor", 0.5)
+
+
+def test_set_opacity_on_actor(actor):
+    set_opacity(actor, 0.4)
+    assert round(actor.opacity, 2) == 0.4
+
+
+def test_set_opacity_on_gfx_group(group_slicer):
+    set_opacity(group_slicer, 0.35)
+    for child in group_slicer.children:
+        assert round(child.material.opacity, 2) == 0.35
+
+
+def test_set_opacity_invalid_value(actor):
+    with pytest.raises(ValueError):
+        set_opacity(actor, 1.5)
 
 
 def test_get_slices_type_error():

@@ -90,8 +90,7 @@ def test_actor_transform_invalid_matrix_shape(sphere_actor, invalid_matrix):
     [0, 0.5, 1],
 )
 def test_actor_opacity_sets_material(sphere_actor, opacity):
-    sphere_actor.opacity(opacity)
-
+    sphere_actor.opacity = opacity
     assert sphere_actor.material.opacity == opacity
 
 
@@ -104,7 +103,7 @@ def test_actor_opacity_sets_material(sphere_actor, opacity):
 )
 def test_actor_opacity_invalid_values_raise(sphere_actor, invalid_opacity):
     with pytest.raises(ValueError, match="Opacity must be"):
-        sphere_actor.opacity(invalid_opacity)
+        sphere_actor.opacity = invalid_opacity
 
 
 def test_create_mesh():
