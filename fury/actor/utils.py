@@ -2,8 +2,7 @@
 
 import numpy as np
 
-from fury.actor import Group
-from fury.lib import AffineTransform, RecursiveTransform, WorldObject
+from fury.lib import AffineTransform, GfxGroup, RecursiveTransform, WorldObject
 from fury.material import validate_opacity
 
 
@@ -19,7 +18,7 @@ def set_group_visibility(group, visibility):
         actors in the group. If a tuple or list is provided, it sets the
         visibility for each actor in the group individually.
     """
-    if not isinstance(group, Group):
+    if not isinstance(group, GfxGroup):
         raise TypeError("group must be an instance of Group.")
 
     if not isinstance(visibility, (tuple, list)):
@@ -41,13 +40,35 @@ def set_group_opacity(group, opacity):
         The opacity value to set for the group of actors,
         ranging from 0 (fully transparent) to 1 (opaque).
     """
-    if not isinstance(group, Group):
+    if not isinstance(group, GfxGroup):
         raise TypeError("group must be an instance of Group.")
 
     opacity = validate_opacity(opacity)
 
     for child in group.children:
         child.material.opacity = opacity
+
+
+def set_opacity(actor, opacity):
+    """Set the opacity of an actor.
+
+    Parameters
+    ----------
+    actor : WorldObject
+        The actor to set opacity for.
+    opacity : float
+        The opacity value to set for the actor,
+        ranging from 0 (fully transparent) to 1 (opaque).
+    """
+    if not isinstance(actor, WorldObject):
+        raise TypeError("actor must be an instance of WorldObject.")
+
+    if isinstance(actor, GfxGroup):
+        set_group_opacity(actor, opacity)
+        return
+
+    opacity = validate_opacity(opacity)
+    actor.material.opacity = opacity
 
 
 def validate_slices_group(group):
@@ -67,7 +88,7 @@ def validate_slices_group(group):
     AttributeError
         If the children do not have the required material plane attribute.
     """
-    if not isinstance(group, Group):
+    if not isinstance(group, GfxGroup):
         raise TypeError("group must be an instance of Group.")
 
     if len(group.children) != 3:
@@ -132,7 +153,7 @@ def apply_affine_to_group(group, affine):
     affine : ndarray, shape (4, 4)
         The transformation to apply to the actors in the group.
     """
-    if not isinstance(group, Group):
+    if not isinstance(group, GfxGroup):
         raise TypeError("group must be an instance of Group.")
 
     if not isinstance(affine, np.ndarray) or affine.shape != (4, 4):

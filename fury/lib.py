@@ -67,7 +67,7 @@ if have_py_qt6:
 if have_py_qt5:
     from PyQt5 import QtWidgets
 
-
+GfxGroup = gfx.Group
 Texture = gfx.Texture
 TextureMap = gfx.TextureMap
 VolumeSliceMaterial = gfx.VolumeSliceMaterial

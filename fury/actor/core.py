@@ -5,6 +5,7 @@ from PIL import Image as PILImage
 import numpy as np
 from scipy.spatial.transform import Rotation as Rot
 
+from fury.actor import set_opacity
 from fury.geometry import (
     buffer_to_geometry,
     line_buffer_separator,
@@ -98,6 +99,22 @@ class Actor:
             raise ValueError("Transformation matrix must be of shape (4, 4).")
         self.local.matrix = matrix
 
+    @property
+    def opacity(self):
+        """Get the opacity of the actor.
+
+        Returns
+        -------
+        float
+            Opacity value between 0 (fully transparent) and 1 (fully opaque).
+        """
+        if isinstance(self, Group):
+            if len(self.children) == 0:
+                return 1.0
+            return self.children[0].material.opacity
+        return self.material.opacity
+
+    @opacity.setter
     def opacity(self, opacity):
         """Set the opacity of the actor.
 
@@ -106,11 +123,7 @@ class Actor:
         opacity : float
             Opacity value between 0 (fully transparent) and 1 (fully opaque).
         """
-        if isinstance(opacity, (int, float)) is False:
-            raise ValueError("Opacity must be a float value between 0 and 1.")
-        if not (0.0 <= opacity <= 1.0):
-            raise ValueError("Opacity must be between 0 and 1.")
-        self.material.opacity = opacity
+        set_opacity(self, opacity)
 
     @staticmethod
     def _euler_to_quaternion(rotation):

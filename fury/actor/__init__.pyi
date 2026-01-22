@@ -54,6 +54,7 @@ __all__ = [
     "Volume",
     "Actor",
     "set_group_opacity",
+    "set_opacity",
     "set_group_visibility",
     "apply_affine_to_group",
     "apply_affine_to_actor",
@@ -124,5 +125,6 @@ from .utils import (
     get_slices,
     set_group_opacity,
     set_group_visibility,
+    set_opacity,
     show_slices,
 )
