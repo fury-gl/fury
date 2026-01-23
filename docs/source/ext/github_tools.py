@@ -84,19 +84,28 @@ def get_json_from_url(url):
     return json.load(f) if f else {}
 
 
-def get_paged_request(url):
+def get_json_from_response(response, key=None):
+    """Fetch and read url."""
+    response_json = json.load(response) if response else {}
+    if key is None:
+        return response_json
+    return response_json.get(key, [])
+
+
+def get_paged_request(url, response_key=None):
     """Get a full list, handling APIv3's paging."""
     results = []
     counter = 0
     while url:
         f = fetch_url(url)
-        if not f:
+        if f.status != 200:
             # Avoid infinite loop
-            if counter == 200:
+            if counter == 5:
                 break
             counter += 1
             continue
-        results.extend(json.load(f))
+        response = get_json_from_response(f, key=response_key)
+        results.extend(response)
         links = parse_link_header(f.headers)
         url = links.get("next")
     return results
@@ -353,22 +362,22 @@ def issues_closed_since(period=LAST_RELEASE, project="fury-gl/fury", pulls=False
     latter case, it is used as a time before the present.
 
     """
-    which = "pulls" if pulls else "issues"
+    which = "pr" if pulls else "issue"
 
     if isinstance(period, timedelta):
         period = datetime.now() - period
     url = (
-        "https://api.github.com/repos/%s/%s?state=closed&sort=updated&"
-        "since=%s&per_page=%i"
-    ) % (project, which, period.strftime(ISO8601), PER_PAGE)
-    allclosed = get_paged_request(url)
+        f"https://api.github.com/search/issues?q=is:{which}%20is:closed%20repo:{project}%20closed:>{period.strftime(ISO8601)}"
+        f"&sort=updated&per_page={PER_PAGE}"
+    )
+    allclosed = get_paged_request(url, response_key="items")
     # allclosed = get_issues(project=project, state='closed', pulls=pulls,
     #                        since=period)
     filtered = [i for i in allclosed if _parse_datetime(i["closed_at"]) > period]
 
     # exclude rejected PRs
     if pulls:
-        filtered = [pr for pr in filtered if pr["merged_at"]]
+        filtered = [pr for pr in filtered if pr["pull_request"]["merged_at"]]
 
     return filtered
 

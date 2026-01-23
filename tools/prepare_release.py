@@ -62,6 +62,10 @@ def get_latest_tag_from_series(*, series=None):
 
         try:
             # Get the list of tags from the Git repository
+            subprocess.run(
+                ["git", "fetch", "https://github.com/fury-gl/fury.git", "--tags"],
+                check=True,
+            )
             tags = subprocess.check_output(["git", "tag"]).decode("utf-8").splitlines()
 
             # Filter tags that match the pattern

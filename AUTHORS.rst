@@ -6,11 +6,19 @@ Core Development Team
 ---------------------
 
 * Eleftherios Garyfallidis, Indiana University, IN, USA
+* Serge Koudoro, Indiana University, IN, USA
+* Maharshi Gor, Indiana University, IN, USA
+* Mohamed Agour, Indiana University, IN, USA
+* Praneeth Shetty, Pune, India
+
+Emeritus Members
+---------------------
+
 * Marc-Alexandre Côté, Microsoft Research, Montreal, QC, CA
 * David Reagan, Indiana University, IN, USA
 * Ranveer Aggarwal, Microsoft, Hyderabad, Telangana, India
-* Serge Koudoro, Indiana University, IN, USA
 * Karandeep Singh Juneja, India
+* Javier Guaje, Indiana University, IN, USA
 
 Contributors
 ------------
