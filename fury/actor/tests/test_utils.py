@@ -181,23 +181,27 @@ def test_show_slices_valid(group_slicer, group_line_projection):
     position = (10, 20, 30)
     show_slices(group_slicer, position)
     for i, child in enumerate(group_slicer.children):
-        expected_plane = (1, 2, 3, position[i])
-        np.testing.assert_equal(child.material.plane, expected_plane)
+        expected_plane = (1, 2, 3, position[i] + 1e-3)
+        np.testing.assert_equal(
+            child.material.plane, np.asarray(expected_plane, dtype=np.float32)
+        )
 
     for child in group_line_projection.children:
         child.plane = (1, 2, 3, 0)
     position = (10, 20, 30)
     show_slices(group_line_projection, position)
     for i, child in enumerate(group_line_projection.children):
-        expected_plane = (1, 2, 3, position[i])
-        np.testing.assert_equal(child.plane, expected_plane)
+        expected_plane = (1, 2, 3, position[i] + 1e-3)
+        np.testing.assert_equal(
+            child.plane, np.asarray(expected_plane, dtype=np.float32)
+        )
 
 
 def test_show_slices_with_list(group_slicer):
     position = [5, 6, 7]
     show_slices(group_slicer, position)
     for i, child in enumerate(group_slicer.children):
-        assert child.material.plane[-1] == position[i]
+        assert child.material.plane[-1] == position[i] + 1e-3
 
 
 def test_apply_affine_to_actor_valid_input():
