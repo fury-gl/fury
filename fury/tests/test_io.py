@@ -12,6 +12,7 @@ from fury.data import fetch_viz_cubemaps, read_viz_cubemap
 from fury.io import (
     load_cube_map_texture,
     load_image,
+    load_image_as_wgpu_texture_view,
     load_image_texture,
     # load_polydata,
     # load_sprite_sheet,
@@ -20,8 +21,9 @@ from fury.io import (
 )
 
 # save_polydata,
-from fury.lib import Texture
+from fury.lib import Texture, wgpu
 from fury.testing import assert_greater
+from fury.window import ShowManager
 
 
 def test_load_cube_map_texture():
@@ -38,6 +40,23 @@ def test_load_image_texture():
     texture = load_image_texture(texture_files[0])
 
     npt.assert_equal(type(texture), Texture)
+
+
+def test_load_image_as_wgpu_texture_view_uses_show_manager_device():
+    with InTemporaryDirectory() as tdir:
+        data = np.random.randint(0, 255, size=(8, 8, 3), dtype=np.uint8)
+        fname_path = pjoin(tdir, "temp.png")
+        save_image(data, fname_path, compression_quality=100)
+
+        show_m = ShowManager(window_type="offscreen")
+        try:
+            texture_view = load_image_as_wgpu_texture_view(fname_path, show_m.device)
+        finally:
+            show_m.close()
+
+    assert isinstance(texture_view, wgpu.GPUTextureView)
+    npt.assert_array_equal(texture_view.texture.size, (8, 8, 1))
+    assert texture_view.texture._device is show_m.device
 
 
 # def test_save_and_load_polydata():

@@ -10,32 +10,7 @@ from PIL import Image
 import numpy as np
 
 # from fury.decorators import warn_on_args_to_kwargs
-from fury.lib import (
-    #     BMPReader,
-    #     BMPWriter,
-    #     ImageData,
-    #     ImageFlip,
-    #     JPEGReader,
-    #     JPEGWriter,
-    #     MNIObjectReader,
-    #     MNIObjectWriter,
-    #     OBJReader,
-    #     PLYReader,
-    #     PLYWriter,
-    #     PNGReader,
-    #     PNGWriter,
-    #     PolyDataReader,
-    #     PolyDataWriter,
-    #     STLReader,
-    #     STLWriter,
-    #     TIFFReader,
-    #     TIFFWriter,
-    #     Texture,
-    #     XMLPolyDataReader,
-    #     XMLPolyDataWriter,
-    #     numpy_support,
-    Texture,
-)
+from fury.lib import Texture, wgpu
 
 # from fury.utils import set_input
 
@@ -145,6 +120,61 @@ def load_image(filename):
     if is_url:
         os.remove(filename)
     return image
+
+
+def load_image_as_wgpu_texture_view(filename, device):
+    """Load an image from a file or URL as a wgpu Texture view.
+
+    Parameters
+    ----------
+    filename : str
+        Path to image file or URL. Should be png, bmp, jpeg or jpg files.
+    device : wgpu.GPUDevice
+        The wgpu device to create the texture on.
+
+    Returns
+    -------
+    wgpu.GPUTextureView
+        Loaded image as wgpu Texture view.
+    """
+
+    image = np.asarray(load_image(filename), dtype=np.uint8)
+
+    if image.ndim == 2:
+        image = np.stack((image,) * 3, axis=-1)
+    if image.shape[-1] == 3:
+        alpha_channel = np.full(image.shape[:2] + (1,), 255, dtype=np.uint8)
+        image = np.concatenate((image, alpha_channel), axis=-1)
+    elif image.shape[-1] != 4:
+        raise ValueError("Images must have 1, 3, or 4 channels.")
+
+    image = np.ascontiguousarray(image)
+    height, width = image.shape[:2]
+
+    valid_devices = (wgpu.GPUDevice,)
+    if hasattr(wgpu, "WGPUDevice"):
+        valid_devices = (wgpu.GPUDevice, wgpu.WGPUDevice)
+
+    if device is None or not isinstance(device, valid_devices):
+        raise ValueError("A valid wgpu device must be provided.")
+
+    texture = device.create_texture(
+        size=(width, height, 1),
+        usage=wgpu.TextureUsage.COPY_DST | wgpu.TextureUsage.TEXTURE_BINDING,
+        dimension=wgpu.TextureDimension.d2,
+        format=wgpu.TextureFormat.rgba8unorm,
+        mip_level_count=1,
+        sample_count=1,
+    )
+
+    device.queue.write_texture(
+        {"texture": texture, "mip_level": 0, "origin": (0, 0, 0)},
+        image,
+        {"offset": 0, "bytes_per_row": 4 * width, "rows_per_image": height},
+        {"width": width, "height": height, "depth_or_array_layers": 1},
+    )
+
+    return texture.create_view()
 
 
 # def load_text(file):
