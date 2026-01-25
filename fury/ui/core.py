@@ -4,7 +4,7 @@ import abc
 
 import numpy as np
 
-from fury.actor import create_mesh
+from fury.actor import Text, create_mesh
 from fury.decorators import warn_on_args_to_kwargs
 from fury.geometry import buffer_to_geometry
 from fury.lib import (
@@ -109,7 +109,6 @@ class UI(object, metaclass=abc.ABCMeta):
         z_order : int, optional
             The initial Z-order of the UI component.
         """
-        self.use_y_down = True
         self._position = np.array([0, 0])
         self._children = []
         self._anchors = [x_anchor, y_anchor]
@@ -206,11 +205,7 @@ class UI(object, metaclass=abc.ABCMeta):
         canvas_size = UIContext.canvas_size
 
         actor.local.x = center_position[0]
-        actor.local.y = (
-            canvas_size[1] - center_position[1]
-            if self.use_y_down
-            else center_position[1]
-        )
+        actor.local.y = canvas_size[1] - center_position[1]
         actor.local.z = np.interp(z_order, UIContext.z_order_bounds, UI_Z_RANGE)
 
     def set_position(self, coords, x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP):
@@ -259,17 +254,18 @@ class UI(object, metaclass=abc.ABCMeta):
         ANCHOR_TO_MULTIPLIER = get_anchor_to_multiplier()
 
         self.perform_position_validation(x_anchor=x_anchor, y_anchor=y_anchor)
+        size = self.size
 
         return np.array(
             [
                 self._position[0]
-                + self.size[0]
+                + size[0]
                 * (
                     ANCHOR_TO_MULTIPLIER[x_anchor.upper()]
                     - ANCHOR_TO_MULTIPLIER[self._anchors[0].upper()]
                 ),
                 self._position[1]
-                + self.size[1]
+                + size[1]
                 * (
                     ANCHOR_TO_MULTIPLIER[y_anchor.upper()]
                     - ANCHOR_TO_MULTIPLIER[self._anchors[1].upper()]
@@ -793,7 +789,7 @@ class Disk2D(UI):
         (float, float, float)
             RGB color.
         """
-        return self.actor.material.color
+        return self.actor.material.color[:3]
 
     @color.setter
     def color(self, color):
@@ -887,570 +883,502 @@ class Disk2D(UI):
         self._inner_radius = radius
 
 
-# class TextBlock2D(UI):
-#     """Wrap over the default vtkTextActor and helps setting the text.
-
-#     Contains member functions for text formatting.
-
-#     Attributes
-#     ----------
-#     actor : :class:`vtkTextActor`
-#         The text actor.
-#     message : str
-#         The initial text while building the actor.
-#     position : (float, float)
-#         (x, y) in pixels.
-#     color : (float, float, float)
-#         RGB: Values must be between 0-1.
-#     bg_color : (float, float, float)
-#         RGB: Values must be between 0-1.
-#     font_size : int
-#         Size of the text font.
-#     font_family : str
-#         Currently only supports Arial.
-#     justification : str
-#         left, right or center.
-#     vertical_justification : str
-#         bottom, middle or top.
-#     bold : bool
-#         Makes text bold.
-#     italic : bool
-#         Makes text italicised.
-#     shadow : bool
-#         Adds text shadow.
-#     size : (int, int)
-#         Size (width, height) in pixels of the text bounding box.
-#     auto_font_scale : bool
-#         Automatically scale font according to the text bounding box.
-#     dynamic_bbox : bool
-#         Automatically resize the bounding box according to the content.
-
-#     """
-
-#     @warn_on_args_to_kwargs()
-#     def __init__(
-#         self,
-#         *,
-#         text="Text Block",
-#         font_size=18,
-#         font_family="Arial",
-#         justification="left",
-#         vertical_justification="bottom",
-#         bold=False,
-#         italic=False,
-#         shadow=False,
-#         size=None,
-#         color=(1, 1, 1),
-#         bg_color=None,
-#         position=(0, 0),
-#         auto_font_scale=False,
-#         dynamic_bbox=False,
-#     ):
-#         """Init class instance.
-
-#         Parameters
-#         ----------
-#         text : str
-#             The initial text while building the actor.
-#         position : (float, float)
-#             (x, y) in pixels.
-#         color : (float, float, float)
-#             RGB: Values must be between 0-1.
-#         bg_color : (float, float, float)
-#             RGB: Values must be between 0-1.
-#         font_size : int
-#             Size of the text font.
-#         font_family : str
-#             Currently only supports Arial.
-#         justification : str
-#             left, right or center.
-#         vertical_justification : str
-#             bottom, middle or top.
-#         bold : bool
-#             Makes text bold.
-#         italic : bool
-#             Makes text italicised.
-#         shadow : bool
-#             Adds text shadow.
-#         size : (int, int)
-#             Size (width, height) in pixels of the text bounding box.
-#         auto_font_scale : bool, optional
-#             Automatically scale font according to the text bounding box.
-#         dynamic_bbox : bool, optional
-#             Automatically resize the bounding box according to the content.
-
-#         """
-#         self.boundingbox = [0, 0, 0, 0]
-#         super(TextBlock2D, self).__init__(position=position)
-#         self.scene = None
-#         self.have_bg = bool(bg_color)
-#         self.color = color
-#         self.background_color = bg_color
-#         self.font_family = font_family
-#         self._justification = justification
-#         self.bold = bold
-#         self.italic = italic
-#         self.shadow = shadow
-#         self._vertical_justification = vertical_justification
-#         self._dynamic_bbox = dynamic_bbox
-#         self.auto_font_scale = auto_font_scale
-#         self.message = text
-#         self.font_size = font_size
-#         if size is not None:
-#             self.resize(size)
-#         elif not self.dynamic_bbox:
-#             # raise ValueError("TextBlock size is required as it is not dynamic.")
-#             self.resize((0, 0))
-
-#     def _setup(self):
-#         self.actor = TextActor()
-#         self.actor.GetPosition2Coordinate().SetCoordinateSystemToViewport()
-#         self.background = Rectangle2D()
-#         self.handle_events(self.actor)
-
-#     def resize(self, size):
-#         """Resize TextBlock2D.
-
-#         Parameters
-#         ----------
-#         size : (int, int)
-#             Text bounding box size(width, height) in pixels.
-
-#         """
-#         self.update_bounding_box(size=size)
-
-#     def _get_actors(self):
-#         """Get the actors composing this UI component."""
-#         return [self.actor] + self.background.actors
-
-#     def _add_to_scene(self, scene):
-#         """Add all subcomponents or VTK props that compose this UI component.
-
-#         Parameters
-#         ----------
-#         scene : scene
-
-#         """
-#         scene.add(self.background, self.actor)
-
-#     @property
-#     def message(self):
-#         """Get message from the text.
-
-#         Returns
-#         -------
-#         str
-#             The current text message.
-
-#         """
-#         return self.actor.GetInput()
-
-#     @message.setter
-#     def message(self, text):
-#         """Set the text message.
-
-#         Parameters
-#         ----------
-#         text : str
-#             The message to be set.
-
-#         """
-#         self.actor.SetInput(text)
-#         if self.dynamic_bbox:
-#             self.update_bounding_box()
-
-#     @property
-#     def font_size(self):
-#         """Get text font size.
-
-#         Returns
-#         -------
-#         int
-#             Text font size.
-
-#         """
-#         return self.actor.GetTextProperty().GetFontSize()
-
-#     @font_size.setter
-#     def font_size(self, size):
-#         """Set font size.
-
-#         Parameters
-#         ----------
-#         size : int
-#             Text font size.
-
-#         """
-#         if not self.auto_font_scale:
-#             self.actor.SetTextScaleModeToNone()
-#             self.actor.GetTextProperty().SetFontSize(size)
-
-#         if self.dynamic_bbox:
-#             self.update_bounding_box()
-
-#     @property
-#     def font_family(self):
-#         """Get font family.
-
-#         Returns
-#         -------
-#         str
-#             Text font family.
-
-#         """
-#         return self.actor.GetTextProperty().GetFontFamilyAsString()
-
-#     @font_family.setter
-#     def font_family(self, family="Arial"):
-#         """Set font family.
-
-#         Currently Arial and Courier are supported.
-
-#         Parameters
-#         ----------
-#         family : str
-#             The font family.
-
-#         """
-#         if family == "Arial":
-#             self.actor.GetTextProperty().SetFontFamilyToArial()
-#         elif family == "Courier":
-#             self.actor.GetTextProperty().SetFontFamilyToCourier()
-#         else:
-#             raise ValueError("Font not supported yet: {}.".format(family))
-
-#     @property
-#     def justification(self):
-#         """Get text justification.
-
-#         Returns
-#         -------
-#         str
-#             Text justification.
-
-#         """
-#         return self._justification
-
-#     @justification.setter
-#     def justification(self, justification):
-#         """Justify text.
-
-#         Parameters
-#         ----------
-#         justification : str
-#             Possible values are left, right, center.
-
-#         """
-#         self._justification = justification
-#         self.update_alignment()
-
-#     @property
-#     def vertical_justification(self):
-#         """Get text vertical justification.
-
-#         Returns
-#         -------
-#         str
-#             Text vertical justification.
-
-#         """
-#         return self._vertical_justification
-
-#     @vertical_justification.setter
-#     def vertical_justification(self, vertical_justification):
-#         """Justify text vertically.
-
-#         Parameters
-#         ----------
-#         vertical_justification : str
-#             Possible values are bottom, middle, top.
-
-#         """
-#         self._vertical_justification = vertical_justification
-#         self.update_alignment()
-
-#     @property
-#     def bold(self):
-#         """Return whether the text is bold.
-
-#         Returns
-#         -------
-#         bool
-#             Text is bold if True.
-
-#         """
-#         return self.actor.GetTextProperty().GetBold()
-
-#     @bold.setter
-#     def bold(self, flag):
-#         """Bold/un-bold text.
-
-#         Parameters
-#         ----------
-#         flag : bool
-#             Sets text bold if True.
-
-#         """
-#         self.actor.GetTextProperty().SetBold(flag)
-
-#     @property
-#     def italic(self):
-#         """Return whether the text is italicised.
-
-#         Returns
-#         -------
-#         bool
-#             Text is italicised if True.
-
-#         """
-#         return self.actor.GetTextProperty().GetItalic()
-
-#     @italic.setter
-#     def italic(self, flag):
-#         """Italicise/un-italicise text.
-
-#         Parameters
-#         ----------
-#         flag : bool
-#             Italicises text if True.
-
-#         """
-#         self.actor.GetTextProperty().SetItalic(flag)
-
-#     @property
-#     def shadow(self):
-#         """Return whether the text has shadow.
-
-#         Returns
-#         -------
-#         bool
-#             Text is shadowed if True.
-
-#         """
-#         return self.actor.GetTextProperty().GetShadow()
-
-#     @shadow.setter
-#     def shadow(self, flag):
-#         """Add/remove text shadow.
-
-#         Parameters
-#         ----------
-#         flag : bool
-#             Shadows text if True.
-
-#         """
-#         self.actor.GetTextProperty().SetShadow(flag)
-
-#     @property
-#     def color(self):
-#         """Get text color.
-
-#         Returns
-#         -------
-#         (float, float, float)
-#             Returns text color in RGB.
-
-#         """
-#         return self.actor.GetTextProperty().GetColor()
-
-#     @color.setter
-#     def color(self, color=(1, 0, 0)):
-#         """Set text color.
-
-#         Parameters
-#         ----------
-#         color : (float, float, float)
-#             RGB: Values must be between 0-1.
-
-#         """
-#         self.actor.GetTextProperty().SetColor(*color)
-
-#     @property
-#     def background_color(self):
-#         """Get background color.
-
-#         Returns
-#         -------
-#         (float, float, float) or None
-#             If None, there no background color.
-#             Otherwise, background color in RGB.
-
-#         """
-#         if not self.have_bg:
-#             return None
-
-#         return self.background.color
-
-#     @background_color.setter
-#     def background_color(self, color):
-#         """Set text color.
-
-#         Parameters
-#         ----------
-#         color : (float, float, float) or None
-#             If None, remove background.
-#             Otherwise, RGB values (must be between 0-1).
-
-#         """
-#         if color is None:
-#             # Remove background.
-#             self.have_bg = False
-#             self.background.set_visibility(False)
-
-#         else:
-#             self.have_bg = True
-#             self.background.set_visibility(True)
-#             self.background.color = color
-
-#     @property
-#     def auto_font_scale(self):
-#         """Return whether text font is automatically scaled.
-
-#         Returns
-#         -------
-#         bool
-#             Text is auto_font_scaled if True.
-
-#         """
-#         return self._auto_font_scale
-
-#     @auto_font_scale.setter
-#     def auto_font_scale(self, flag):
-#         """Add/remove text auto_font_scale.
-
-#         Parameters
-#         ----------
-#         flag : bool
-#             Automatically scales the text font if True.
-
-#         """
-#         self._auto_font_scale = flag
-#         if flag:
-#             self.actor.SetTextScaleModeToProp()
-#             self._justification = "left"
-#             self.update_bounding_box(size=self.size)
-#         else:
-#             self.actor.SetTextScaleModeToNone()
-
-#     @property
-#     def dynamic_bbox(self):
-#         """Automatically resize the bounding box according to the content.
-
-#         Returns
-#         -------
-#         bool
-#             Bounding box is dynamic if True.
-
-#         """
-#         return self._dynamic_bbox
-
-#     @dynamic_bbox.setter
-#     def dynamic_bbox(self, flag):
-#         """Add/remove dynamic_bbox.
-
-#         Parameters
-#         ----------
-#         flag : bool
-#             The text bounding box is dynamic if True.
-
-#         """
-#         self._dynamic_bbox = flag
-#         if flag:
-#             self.update_bounding_box()
-
-#     def update_alignment(self):
-#         """Update Text Alignment."""
-#         text_property = self.actor.GetTextProperty()
-#         updated_text_position = [0, 0]
-
-#         if self.justification.lower() == "left":
-#             text_property.SetJustificationToLeft()
-#             updated_text_position[0] = self.boundingbox[0]
-#         elif self.justification.lower() == "center":
-#             text_property.SetJustificationToCentered()
-#             updated_text_position[0] = (
-#                 self.boundingbox[0] + (self.boundingbox[2] - self.boundingbox[0]) // 2
-#             )
-#         elif self.justification.lower() == "right":
-#             text_property.SetJustificationToRight()
-#             updated_text_position[0] = self.boundingbox[2]
-#         else:
-#             msg = "Text can only be justified left, right and center."
-#             raise ValueError(msg)
-
-#         if self.vertical_justification.lower() == "bottom":
-#             text_property.SetVerticalJustificationToBottom()
-#             updated_text_position[1] = self.boundingbox[1]
-#         elif self.vertical_justification.lower() == "middle":
-#             text_property.SetVerticalJustificationToCentered()
-#             updated_text_position[1] = (
-#                 self.boundingbox[1] + (self.boundingbox[3] - self.boundingbox[1]) // 2
-#             )
-#         elif self.vertical_justification.lower() == "top":
-#             text_property.SetVerticalJustificationToTop()
-#             updated_text_position[1] = self.boundingbox[3]
-#         else:
-#             msg = "Vertical justification must be: bottom, middle or top."
-#             raise ValueError(msg)
-
-#         self.actor.SetPosition(updated_text_position)
-
-#     def cal_size_from_message(self):
-#         """Calculate size of background according to the message it contains."""
-#         lines = self.message.split("\n")
-#         max_length = max(len(line) for line in lines)
-#         return [max_length * self.font_size, len(lines) * self.font_size]
-
-#     @warn_on_args_to_kwargs()
-#     def update_bounding_box(self, *, size=None):
-#         """Update Text Bounding Box.
-
-#         Parameters
-#         ----------
-#         size : (int, int) or None
-#             If None, calculates bounding box.
-#             Otherwise, uses the given size.
-
-#         """
-#         if size is None:
-#             size = self.cal_size_from_message()
-
-#         self.boundingbox = [
-#             self.position[0],
-#             self.position[1],
-#             self.position[0] + size[0],
-#             self.position[1] + size[1],
-#         ]
-#         self.background.resize(size)
-
-#         if self.auto_font_scale:
-#             self.actor.SetPosition2(
-#                 self.boundingbox[2] - self.boundingbox[0],
-#                 self.boundingbox[3] - self.boundingbox[1],
-#             )
-#         else:
-#             self.update_alignment()
-
-#     def _set_position(self, position):
-#         """Set text actor position.
-
-#         Parameters
-#         ----------
-#         position : (float, float)
-#             The new position. (x, y) in pixels.
-
-#         """
-#         self.actor.SetPosition(*position)
-#         self.background.position = position
-
-#     def _get_size(self):
-#         bb_size = (
-#             self.boundingbox[2] - self.boundingbox[0],
-#             self.boundingbox[3] - self.boundingbox[1],
-#         )
-#         if self.dynamic_bbox or self.auto_font_scale or sum(bb_size):
-#             return bb_size
-#         return self.cal_size_from_message()
+class TextBlock2D(UI):
+    """A 2D text component with optional background.
+
+    Parameters
+    ----------
+    text : str, optional
+        The initial text message.
+    font_size : int, optional
+        Size of the text font.
+    font_family : str, optional
+        The font family name.
+    justification : str, optional
+        Horizontal alignment ("left", "center", "right").
+    vertical_justification : str, optional
+        Vertical alignment ("top", "middle", "bottom").
+    bold : bool, optional
+        If True, makes text bold.
+    italic : bool, optional
+        If True, makes text italicized.
+    size : (int, int), optional
+        The (width, height) in pixels for the text bounding box.
+    color : (float, float, float), optional
+        RGB color for the text (0-1).
+    bg_color : (float, float, float), optional
+        RGB color for the background (0-1). If None, no background is drawn.
+    position : (float, float), optional
+        Absolute coordinates (x, y) for placement.
+    dynamic_bbox : bool, optional
+        If True, resizes the bounding box to fit the content.
+    """
+
+    def __init__(
+        self,
+        *,
+        text="Text Block",
+        font_size=18,
+        font_family="Arial",
+        justification="left",
+        vertical_justification="bottom",
+        bold=False,
+        italic=False,
+        size=None,
+        color=(1, 1, 1),
+        bg_color=None,
+        position=(0, 0),
+        dynamic_bbox=False,
+    ):
+        """Initialize the text block instance.
+
+        Parameters
+        ----------
+        text : str, optional
+            The initial text message.
+        font_size : int, optional
+            Size of the text font.
+        font_family : str, optional
+            The font family name.
+        justification : str, optional
+            Horizontal alignment ("left", "center", "right").
+        vertical_justification : str, optional
+            Vertical alignment ("top", "middle", "bottom").
+        bold : bool, optional
+            If True, makes text bold.
+        italic : bool, optional
+            If True, makes text italicized.
+        size : (int, int), optional
+            The (width, height) in pixels for the text bounding box.
+        color : (float, float, float), optional
+            RGB color for the text (0-1).
+        bg_color : (float, float, float), optional
+            RGB color for the background (0-1). If None, no background is drawn.
+        position : (float, float), optional
+            Absolute coordinates (x, y) for placement.
+        dynamic_bbox : bool, optional
+            If True, resizes the bounding box to fit the content.
+        """
+        self.boundingbox = [0, 0, 0, 0]
+        self._message = text
+        self._dynamic_bbox = dynamic_bbox
+        self._bg_size = size
+
+        self._last_rendered_size = (0, 0)
+
+        if self._bg_size is None and not self.dynamic_bbox:
+            raise ValueError("TextBlock size is required as it is not dynamic.")
+
+        self._justification = justification
+        self._vertical_justification = vertical_justification
+        super(TextBlock2D, self).__init__(position=position)
+        self.have_bg = bool(bg_color)
+        self.color = color
+        self.background_color = bg_color
+        self.font_family = font_family
+        self.bold = bold
+        self.italic = italic
+        self.message = text
+        self.font_size = font_size
+
+        self.update_bounding_box()
+
+    def _setup(self):
+        """Set up this UI component."""
+        self.actor = Text(
+            markdown=self._message, screen_space=True, anchor="middle-center"
+        )
+        self.background = Rectangle2D()
+        self.handle_events(self.actor)
+
+    def resize(self, size):
+        """Resize the TextBlock2D bounding box.
+
+        Parameters
+        ----------
+        size : (int, int)
+            The new (width, height) in pixels.
+        """
+        self.actor.max_width = size[1]
+        self.update_bounding_box(size=size)
+
+    def update_layout(self):
+        """Update the component layout based on current text dimensions."""
+        current_w, current_h = self.get_text_actor_size()
+        last_w, last_h = self._last_rendered_size
+
+        if abs(current_w - last_w) > 0.1 or abs(current_h - last_h) > 0.1:
+            self._last_rendered_size = (current_w, current_h)
+
+            if self.dynamic_bbox:
+                self.update_bounding_box()
+            else:
+                self.update_alignment()
+
+    def _get_actors(self):
+        """Get the actors composing this UI component.
+
+        Returns
+        -------
+        list
+            List containing the text actor and background actors.
+        """
+        return [self.actor] + self.background.actors
+
+    def get_formatted_text(self, text):
+        """Format the given text with markdown syntax for bold/italic styles.
+
+        Parameters
+        ----------
+        text : str
+            The raw text to format.
+
+        Returns
+        -------
+        str
+            The formatted markdown string.
+        """
+        affix_char = ""
+        if self.bold:
+            affix_char = "**"
+        elif self.italic:
+            affix_char = "*"
+
+        lines = text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+        formatted_lines = [f"{affix_char}{line}{affix_char}" for line in lines]
+
+        return "\n".join(formatted_lines)
+
+    @property
+    def message(self):
+        """Get the current text message.
+
+        Returns
+        -------
+        str
+            The text message.
+        """
+        return self._message
+
+    @message.setter
+    def message(self, text):
+        """Set the text message.
+
+        Parameters
+        ----------
+        text : str
+            The message to display.
+        """
+        self._message = text
+        self.actor.set_markdown(self.get_formatted_text(text))
+        if self.dynamic_bbox:
+            self.update_bounding_box()
+
+    @property
+    def font_size(self):
+        """Get text font size.
+
+        Returns
+        -------
+        int
+            Text font size.
+        """
+        return self.actor.font_size
+
+    @font_size.setter
+    def font_size(self, size):
+        """Set text font size.
+
+        Parameters
+        ----------
+        size : int
+            Text font size.
+        """
+        self.actor.font_size = size
+        if self.dynamic_bbox:
+            self.update_bounding_box()
+
+    @property
+    def font_family(self):
+        """Get font family.
+
+        Returns
+        -------
+        str
+            Text font family.
+        """
+        return self.actor.family
+
+    @font_family.setter
+    def font_family(self, family="Arial"):
+        """Set font family.
+
+        Parameters
+        ----------
+        family : str
+            The font family.
+        """
+        self.actor.family = family
+        if self.dynamic_bbox:
+            self.update_bounding_box()
+
+    @property
+    def justification(self):
+        """Get text justification.
+
+        Returns
+        -------
+        str
+            Text justification.
+        """
+        return self._justification
+
+    @justification.setter
+    def justification(self, justification):
+        """Justify text.
+
+        Parameters
+        ----------
+        justification : str
+            Possible values are left, center, right.
+        """
+        self._justification = justification
+        self.update_alignment()
+
+    @property
+    def vertical_justification(self):
+        """Get text vertical justification.
+
+        Returns
+        -------
+        str
+            Text vertical justification.
+        """
+        return self._vertical_justification
+
+    @vertical_justification.setter
+    def vertical_justification(self, vertical_justification):
+        """Justify text vertically.
+
+        Parameters
+        ----------
+        vertical_justification : str
+            Possible values are top, middle, bottom.
+        """
+        self._vertical_justification = vertical_justification
+        self.update_alignment()
+
+    @property
+    def bold(self):
+        """Return whether the text is bold.
+
+        Returns
+        -------
+        bool
+            Text is bold if True.
+        """
+        return self._bold
+
+    @bold.setter
+    def bold(self, flag):
+        """Bold/un-bold text.
+
+        Parameters
+        ----------
+        flag : bool
+            Sets text bold if True.
+        """
+        self._bold = flag
+
+    @property
+    def italic(self):
+        """Return whether the text is italicised.
+
+        Returns
+        -------
+        bool
+            Text is italicised if True.
+        """
+        return self._italic
+
+    @italic.setter
+    def italic(self, flag):
+        """Italicise/un-italicise text.
+
+        Parameters
+        ----------
+        flag : bool
+            Italicises text if True.
+        """
+        self._italic = flag
+
+    @property
+    def color(self):
+        """Get text color.
+
+        Returns
+        -------
+        (float, float, float)
+            Returns text color in RGB.
+        """
+        return self.actor.material.color[:3]
+
+    @color.setter
+    def color(self, color):
+        """Set text color.
+
+        Parameters
+        ----------
+        color : (float, float, float)
+            RGB: Values must be between 0-1.
+        """
+        if color is None:
+            color = (1, 1, 1)
+        self.actor.material.color = np.array([*color, 1.0])
+
+    @property
+    def background_color(self):
+        """Get the background color.
+
+        Returns
+        -------
+        (float, float, float) or None
+            The RGB color of the background, or None if no background exists.
+        """
+        if not self.have_bg:
+            return None
+
+        return self.background.color
+
+    @background_color.setter
+    def background_color(self, color):
+        """Set the background color.
+
+        Parameters
+        ----------
+        color : (float, float, float) or None
+            RGB values (0-1). If None, the background is removed.
+        """
+        if color is None:
+            # Remove background.
+            self.have_bg = False
+            self.background.set_visibility(False)
+
+        else:
+            self.have_bg = True
+            self.background.set_visibility(True)
+            self.background.color = color
+
+    @property
+    def dynamic_bbox(self):
+        """Check if the bounding box is dynamic.
+
+        Returns
+        -------
+        bool
+            True if dynamic, False otherwise.
+        """
+        return self._dynamic_bbox
+
+    @dynamic_bbox.setter
+    def dynamic_bbox(self, flag):
+        """Set the dynamic bounding box state.
+
+        Parameters
+        ----------
+        flag : bool
+            If True, the bounding box resizes to content.
+        """
+        self._dynamic_bbox = flag
+        if flag:
+            self.update_bounding_box()
+
+    def update_alignment(self):
+        """Update the text actor alignment within the bounding box."""
+        updated_text_position = [0, 0]
+        text_actor_size = self.get_text_actor_size()
+
+        if self.justification.lower() == "left":
+            self.actor.text_align = "left"
+            updated_text_position[0] = self.boundingbox[0] + text_actor_size[0] // 2
+        elif self.justification.lower() == "center":
+            self.actor.text_align = "center"
+            updated_text_position[0] = (
+                self.boundingbox[0] + (self.boundingbox[2] - self.boundingbox[0]) // 2
+            )
+        elif self.justification.lower() == "right":
+            self.actor.text_align = "right"
+            updated_text_position[0] = self.boundingbox[2] - text_actor_size[0] // 2
+        else:
+            msg = "Text can only be justified left, center and right."
+            raise ValueError(msg)
+
+        if self.vertical_justification.lower() == "top":
+            updated_text_position[1] = self.boundingbox[1] + text_actor_size[1] // 2
+        elif self.vertical_justification.lower() == "middle":
+            updated_text_position[1] = (
+                self.boundingbox[1] + (self.boundingbox[3] - self.boundingbox[1]) // 2
+            )
+        elif self.vertical_justification.lower() == "bottom":
+            updated_text_position[1] = self.boundingbox[3] - text_actor_size[1] // 2
+        else:
+            msg = "Vertical justification must be: top, middle or bottom."
+            raise ValueError(msg)
+
+        self.set_actor_position(self.actor, updated_text_position, self.z_order)
+
+    def update_bounding_box(self, *, size=None):
+        """Update the text bounding box and background.
+
+        Parameters
+        ----------
+        size : (int, int), optional
+            If provided, uses this size. Otherwise, uses the current size.
+        """
+        if size is None:
+            size = self.size
+
+        pos = self.get_position()
+        self.boundingbox = [
+            pos[0],
+            pos[1],
+            pos[0] + size[0],
+            pos[1] + size[1],
+        ]
+        self.background.resize(size)
+        self.background.set_position(pos)
+
+        self.update_alignment()
+
+    def _update_actors_position(self):
+        """Update the position of the internal actors."""
+        self.update_bounding_box()
+
+    def get_text_actor_size(self):
+        """Get the rendered size of the text actor.
+
+        Returns
+        -------
+        (float, float)
+            The (width, height) of the rendered text.
+        """
+        return (
+            self.actor._aabb[1][0] - self.actor._aabb[0][0],
+            self.actor._aabb[1][1] - self.actor._aabb[0][1],
+        )
+
+    def _get_size(self):
+        """Get the size of the text block.
+
+        Returns
+        -------
+        (float, float)
+            The current size of the text block.
+        """
+        if self.dynamic_bbox:
+            return self.get_text_actor_size()
+        else:
+            return self._bg_size
 
 
 # class Button2D(UI):

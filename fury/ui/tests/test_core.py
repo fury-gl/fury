@@ -112,7 +112,7 @@ def test_disk2d_initialization_default():
     disk_ui = ui.Disk2D(outer_radius=10)
     npt.assert_equal(disk_ui.outer_radius, 10)
     npt.assert_array_equal(disk_ui.get_position(Anchor.CENTER, Anchor.CENTER), [0, 0])
-    npt.assert_array_equal(disk_ui.color, [1, 1, 1, 1])
+    npt.assert_array_equal(disk_ui.color, [1, 1, 1])
     npt.assert_equal(disk_ui.opacity, 1.0)
     assert isinstance(disk_ui.actor, Mesh)
     assert disk_ui.actor in disk_ui.actors
@@ -140,7 +140,7 @@ def test_disk2d_initialization_custom():
     npt.assert_array_equal(
         disk_ui.get_position(Anchor.CENTER, Anchor.CENTER), custom_center
     )
-    npt.assert_array_almost_equal(disk_ui.color[:3], custom_color)
+    npt.assert_array_almost_equal(disk_ui.color, custom_color)
     npt.assert_almost_equal(disk_ui.opacity, custom_opacity)
     assert isinstance(disk_ui.actor, Mesh)
     assert disk_ui.actor in disk_ui.actors
@@ -173,10 +173,10 @@ def test_disk2d_inner_radius_property():
 def test_disk2d_color_property():
     """Test color getter and setter for Disk2D."""
     disk_ui = ui.Disk2D(outer_radius=10)
-    npt.assert_array_almost_equal(disk_ui.color, [1, 1, 1, 1])
+    npt.assert_array_almost_equal(disk_ui.color, [1, 1, 1])
     new_color = (0.6, 0.7, 0.8)
     disk_ui.color = new_color
-    npt.assert_array_almost_equal(disk_ui.color[:3], new_color)
+    npt.assert_array_almost_equal(disk_ui.color, new_color)
 
 
 def test_disk2d_opacity_property():
@@ -294,3 +294,215 @@ def test_disk2d_visual_snapshot():
     npt.assert_almost_equal(mean_r_hidden, 0, decimal=0)
     npt.assert_almost_equal(mean_g_hidden, 0, decimal=0)
     npt.assert_almost_equal(mean_b_hidden, 0, decimal=0)
+
+
+def test_textblock2d_initialization_default():
+    """
+    Test TextBlock2D initialization with minimal valid parameters.
+    Checks default font, color, alignment, and flags.
+    """
+    tb = ui.TextBlock2D(size=(200, 100))
+
+    npt.assert_equal(tb.message, "Text Block")
+    npt.assert_equal(tb.font_size, 18)
+    npt.assert_equal(tb.font_family[0], "Arial")
+    npt.assert_array_equal(tb.color, [1, 1, 1])
+
+    assert tb.bold is False
+    assert tb.italic is False
+    assert tb.have_bg is False
+    assert tb.background_color is None
+
+    assert tb.justification == "left"
+    assert tb.vertical_justification == "bottom"
+
+
+def test_textblock2d_initialization_custom():
+    """Test TextBlock2D initialization with full custom parameters."""
+    custom_color = (1.0, 1.0, 0.0)
+    custom_bg = (0.0, 0.0, 1.0)
+
+    tb = ui.TextBlock2D(
+        text="Custom",
+        font_size=24,
+        font_family="Times New Roman",
+        justification="center",
+        vertical_justification="top",
+        bold=True,
+        italic=False,
+        size=(300, 150),
+        color=custom_color,
+        bg_color=custom_bg,
+        position=(10, 10),
+    )
+
+    npt.assert_equal(tb.message, "Custom")
+    npt.assert_equal(tb.font_size, 24)
+    npt.assert_equal(tb.font_family[0], "Times New Roman")
+    npt.assert_array_almost_equal(tb.color, custom_color)
+
+    assert tb.have_bg is True
+    npt.assert_array_almost_equal(tb.background_color, custom_bg)
+    assert isinstance(tb.background, ui.Rectangle2D)
+
+    assert "**Custom**" in tb.get_formatted_text("Custom")
+
+
+def test_textblock2d_message_property():
+    """Test message getter and setter."""
+    tb = ui.TextBlock2D(size=(100, 50))
+    npt.assert_equal(tb.message, "Text Block")
+
+    new_msg = "New Message"
+    tb.message = new_msg
+    npt.assert_equal(tb.message, new_msg)
+
+
+def test_textblock2d_font_properties():
+    """Test font_size and font_family properties."""
+    tb = ui.TextBlock2D(size=(100, 50))
+
+    tb.font_size = 30
+    npt.assert_equal(tb.font_size, 30)
+
+    tb.font_family = "Courier"
+    npt.assert_equal(tb.font_family[0], "Courier")
+
+
+def test_textblock2d_style_properties():
+    """Test bold and italic properties."""
+    tb = ui.TextBlock2D(text="Style", size=(100, 50))
+
+    assert tb.get_formatted_text("Style") == "Style"
+
+    tb.bold = True
+    assert tb.bold is True
+    assert tb.get_formatted_text("Style") == "**Style**"
+
+    tb.bold = False
+    tb.italic = True
+    assert tb.italic is True
+    assert tb.get_formatted_text("Style") == "*Style*"
+
+
+def test_textblock2d_alignment_valid():
+    """Test valid inputs for justification properties."""
+    tb = ui.TextBlock2D(size=(100, 100))
+
+    valid_h = ["left", "center", "right"]
+    valid_v = ["top", "middle", "bottom"]
+
+    for h in valid_h:
+        tb.justification = h
+        npt.assert_equal(tb.justification, h)
+
+    for v in valid_v:
+        tb.vertical_justification = v
+        npt.assert_equal(tb.vertical_justification, v)
+
+
+def test_textblock2d_alignment_invalid():
+    """Test invalid inputs for justification properties."""
+    tb = ui.TextBlock2D(size=(100, 100))
+
+    with npt.assert_raises(ValueError):
+        tb.justification = "diagonal"
+
+    with npt.assert_raises(ValueError):
+        tb.vertical_justification = "sideways"
+
+
+def test_textblock2d_color_property():
+    """Test text color getter and setter."""
+    tb = ui.TextBlock2D(size=(100, 50))
+    npt.assert_array_equal(tb.color, [1, 1, 1])
+
+    tb.color = (0.5, 0.5, 0.5)
+    npt.assert_array_almost_equal(tb.color, [0.5, 0.5, 0.5])
+
+
+def test_textblock2d_background_color_property():
+    """Test background color logic."""
+    tb = ui.TextBlock2D(size=(100, 50))
+
+    assert tb.background_color is None
+    assert tb.have_bg is False
+
+    tb.background_color = (1, 0, 0)
+    assert tb.have_bg is True
+    npt.assert_array_equal(tb.background_color, (1, 0, 0))
+    assert tb.background.actor.visible is True
+
+    tb.background_color = None
+    assert tb.have_bg is False
+    assert tb.background_color is None
+    assert tb.background.actor.visible is False
+
+
+def test_textblock2d_dynamic_bbox_property():
+    """Test dynamic_bbox property toggling."""
+    tb = ui.TextBlock2D(size=(100, 50))
+    assert tb.dynamic_bbox is False
+
+    tb.dynamic_bbox = True
+    assert tb.dynamic_bbox is True
+
+    size = tb._get_size()
+    assert len(size) == 2
+
+
+def test_textblock2d_resize():
+    """Test resize method."""
+    tb = ui.TextBlock2D(size=(100, 50))
+    new_size = (200, 150)
+
+    tb.resize(new_size)
+
+    npt.assert_equal(tb.background.size, new_size)
+
+    npt.assert_equal(tb.boundingbox[2] - tb.boundingbox[0], new_size[0])
+    npt.assert_equal(tb.boundingbox[3] - tb.boundingbox[1], new_size[1])
+
+
+def test_textblock2d_visual_snapshot():
+    """
+    Visual test for TextBlock2D.
+    Checks if background renders correctly when enabled.
+    """
+
+    tb = ui.TextBlock2D(
+        text="Visual Test",
+        size=(200, 100),
+        position=(50, 50),
+        bg_color=(1.0, 0.0, 0.0),
+        color=(1.0, 1.0, 1.0),
+    )
+
+    scene = window.Scene()
+    scene.add(tb)
+
+    fname = "textblock_visible.png"
+    window.snapshot(scene=scene, fname=fname)
+
+    img = Image.open(fname)
+    img_array = np.array(img)
+
+    mean_color = np.mean(img_array.reshape(-1, img_array.shape[2]), axis=0)
+
+    assert mean_color[0] > 0.5
+
+    assert mean_color[0] > mean_color[2]
+
+    scene = window.Scene()
+    scene.add(tb)
+
+    if hasattr(tb, "set_visibility"):
+        tb.set_visibility(False)
+        fname_hidden = "textblock_hidden.png"
+        window.snapshot(scene=scene, fname=fname_hidden)
+
+        img_hidden = Image.open(fname_hidden)
+        arr_hidden = np.array(img_hidden)
+
+        mean_hidden = np.mean(arr_hidden[:, :, :3])
+        npt.assert_almost_equal(mean_hidden, 0, decimal=0)
