@@ -13,12 +13,11 @@ import logging
 import os
 import sys
 
-from PIL.Image import fromarray as image_from_array
 import numpy as np
 from scipy import ndimage
 
 from fury.actor import Group as GfxGroup
-from fury.io import load_image
+from fury.io import load_image, save_image
 from fury.lib import (
     AmbientLight,
     Background,
@@ -110,7 +109,7 @@ class Scene(GfxGroup):
         else:
             self._bg_actor = Background.from_color(background)
 
-        self.add(self._bg_actor)
+        self.main_scene.add(self._bg_actor)
 
         self.lights = lights
         if self.lights is None:
@@ -159,7 +158,7 @@ class Scene(GfxGroup):
         self.remove(self._bg_actor)
         self._bg_color = value
         self._bg_actor = Background.from_color(value)
-        self.add(self._bg_actor)
+        self.main_scene.add(self._bg_actor)
 
     def set_skybox(self, cube_map):
         """Set a skybox as the scene background using a cubemap texture.
@@ -173,7 +172,7 @@ class Scene(GfxGroup):
             A PyGfx Texture object (cubemap) for the skybox."""
         self.remove(self._bg_actor)
         self._bg_actor = self._skybox(cube_map)
-        self.add(self._bg_actor)
+        self.main_scene.add(self._bg_actor)
 
     def clear(self):
         """Remove all actors from the scene, keeping background and lights."""
@@ -1122,8 +1121,7 @@ class ShowManager:
             A NumPy array representing the captured image data (RGBA).
         """
         arr = np.asarray(self.renderer.snapshot())
-        img = image_from_array(arr)
-        img.save(fname)
+        save_image(arr, fname)
         return arr
 
     def _draw_function(self):

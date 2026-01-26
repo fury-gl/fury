@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 from fury.actor import sphere
-from fury.io import load_image
+from fury.io import load_image, save_image
 from fury.lib import (
     AmbientLight,
     DirectionalLight,
@@ -537,6 +537,26 @@ def test_add_to_scene(sample_actor, sample_ui_actor):
     assert sample_gfx_scene not in scene.children
 
 
+def test_scene_background(tmpdir):
+    """Test Scene background property."""
+    scene = Scene()
+    assert scene.background == (0, 0, 0, 1)
+
+    new_background = (1, 0.5, 0.25, 1)
+    scene.background = new_background
+    assert scene.background == new_background
+
+    show_m = ShowManager(scene=scene, window_type="offscreen")
+    show_m.render()
+    show_m.window.draw()
+    path = str(tmpdir.join("background_test.png"))
+    show_m.snapshot(path)
+
+    # Analyze the background color with analyze_snapshot
+    report = analyze_snapshot(path, colors=[(255, 127, 64)], find_objects=False)
+    assert report.colors_found == [True]
+
+
 def test_show_manager_fps_display():
     """Test FPS display using Stats overlay."""
     show_m = ShowManager(show_fps=True)
@@ -636,7 +656,6 @@ def test_analyze_snapshot(tmpdir):
 
     # Test 4: Analyze from a saved file
     fname = tmpdir.join("test_snapshot.png")
-    from fury.io import save_image
 
     save_image(img, str(fname))
     report_from_file = analyze_snapshot(str(fname))
