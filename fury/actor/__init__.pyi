@@ -66,7 +66,7 @@ __all__ = [
     "read_buffer",
 ]
 
-from .billboard import billboard, billboard_sphere
+from .billboard import billboard, billboard_sphere  # noqa: F401
 from .bio import contour_from_label, contour_from_roi, peaks_slicer, volume_slicer
 from .core import (
     Actor,

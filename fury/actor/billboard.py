@@ -7,11 +7,11 @@ factory function plus shader registration.
 
 from __future__ import annotations
 
-__all__ = ["billboard", "create_billboard_sphere", "Billboard"]
+__all__ = ["billboard", "billboard_sphere", "Billboard"]
 
 import numpy as np
 
-from fury.actor import Mesh
+from fury.actor.core import Mesh
 from fury.geometry import buffer_to_geometry
 from fury.lib import register_wgpu_render_function
 from fury.material import (
@@ -171,7 +171,7 @@ def billboard(
     )
 
 
-def create_billboard_sphere(
+def billboard_sphere(
     centers,
     *,
     colors=(1, 1, 1),
