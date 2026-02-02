@@ -1,10 +1,11 @@
 """Curved primitives actors."""
 
 from concurrent.futures import ThreadPoolExecutor
+import itertools
 
 import numpy as np
 
-from fury.actor import Line, Mesh, actor_from_primitive, create_mesh
+from fury.actor import Group, Line, Mesh, actor_from_primitive, create_mesh
 from fury.geometry import buffer_to_geometry, line_buffer_separator
 from fury.lib import (
     Buffer,
@@ -1102,6 +1103,137 @@ def generate_tube_geometry(points, number_of_sides, radius, end_caps):
     return vertices, indices
 
 
+def _estimate_streamtube_buffer_size(
+    line_lengths, segments, end_caps, color_components
+):
+    """Estimate total buffer usage for streamtube geometry.
+
+    Parameters
+    ----------
+    line_lengths : ndarray, shape (N,)
+        Number of points in each line.
+    segments : int
+        Number of radial segments used to build the tube cross-section.
+    end_caps : bool
+        If ``True``, caps are generated on both ends of each tube.
+    color_components : int
+        Number of color channels stored per line or vertex (e.g., 3 or 4).
+
+    Returns
+    -------
+    int
+        Total bytes across all planned buffer allocations for the provided
+        lines.
+    """
+    lengths = np.asarray(line_lengths, dtype=np.uint32).reshape(-1)
+    if lengths.size == 0:
+        return 0
+
+    tube_sides = int(segments)
+    max_line_length = int(lengths.max(initial=0))
+    n_lines = int(lengths.size)
+
+    segments_per_line = np.maximum(lengths - 1, 0)
+
+    ring_vertices_per_line = lengths * tube_sides
+    cap_vertex_count = 2 if end_caps else 0
+    vertices_per_line = ring_vertices_per_line + cap_vertex_count
+
+    ring_triangles_per_line = segments_per_line * tube_sides * 2
+    cap_triangles_per_line = (tube_sides * 2) if end_caps else 0
+    triangles_per_line = ring_triangles_per_line + cap_triangles_per_line
+
+    total_vertices = int(vertices_per_line.astype(np.uint64).sum())
+    total_triangles = int(triangles_per_line.astype(np.uint64).sum())
+
+    line_data_bytes = int(n_lines * max_line_length * 3 * 4)
+    length_buffer_bytes = int(n_lines * 4)
+    color_buffer_bytes = int(n_lines * color_components * 4)
+    vertex_offset_bytes = int(n_lines * 4)
+    triangle_offset_bytes = int(n_lines * 4)
+
+    positions_bytes = int(total_vertices * 3 * 4)
+    normals_bytes = int(total_vertices * 3 * 4)
+    vertex_colors_bytes = int(total_vertices * color_components * 4)
+    indices_bytes = int(total_triangles * 3 * 4)
+
+    return (
+        line_data_bytes
+        + length_buffer_bytes
+        + color_buffer_bytes
+        + vertex_offset_bytes
+        + triangle_offset_bytes
+        + positions_bytes
+        + normals_bytes
+        + vertex_colors_bytes
+        + indices_bytes
+    )
+
+
+def _split_streamtube_lines(
+    lines, *, segments, end_caps, color_components, max_buffer_size
+):
+    """Split lines into batches derived from total/available buffer ratio.
+
+    Parameters
+    ----------
+    lines : list of ndarray
+        Streamtube centerlines to render.
+    segments : int
+        Number of radial segments used to build each tube.
+    end_caps : bool
+        Whether end caps are included.
+    color_components : int
+        Number of color channels stored per line or vertex.
+    max_buffer_size : int
+        Maximum allowed buffer size in bytes.
+
+    Returns
+    -------
+    list of list of ndarray
+        Ordered batches of lines. A single batch is returned when no split
+        is necessary.
+
+    Raises
+    ------
+    ValueError
+        If even a single line cannot fit within the maximum buffer size.
+    """
+    line_lengths = np.asarray([len(line) for line in lines], dtype=np.uint32)
+
+    longest = np.asarray([int(line_lengths.max(initial=0))], dtype=np.uint32)
+    longest_required = _estimate_streamtube_buffer_size(
+        longest,
+        segments=segments,
+        end_caps=end_caps,
+        color_components=color_components,
+    )
+    if longest_required > max_buffer_size:
+        raise ValueError(
+            "Streamtube data for a single line exceeds the available buffer "
+            "size; consider shortening the line or reducing the number of "
+            "segments."
+        )
+
+    full_required = _estimate_streamtube_buffer_size(
+        line_lengths,
+        segments=segments,
+        end_caps=end_caps,
+        color_components=color_components,
+    )
+    if full_required <= max_buffer_size:
+        return [lines]
+
+    import math
+
+    n_batches = max(1, int(math.ceil(full_required / max_buffer_size)))
+    batch_size = int(math.ceil(len(lines) / n_batches))
+
+    return [
+        lines[start : start + batch_size] for start in range(0, len(lines), batch_size)
+    ]
+
+
 def _create_streamtube_baked(
     lines,
     *,
@@ -1302,108 +1434,134 @@ def _create_streamtube_baked(
     return mesh_obj
 
 
-def streamtube(
-    lines,
-    *,
-    opacity=1.0,
-    colors=(1, 1, 1),
-    radius=0.2,
-    segments=8,
-    end_caps=True,
-    flat_shading=False,
-    material="phong",
-    enable_picking=True,
-    backend="gpu",
-):
-    """
-    Create a streamtube from a list of lines using parallel processing.
+def _streamtube_geometry_task(points, segments, radius, end_caps):
+    """Generate tube geometry for a single line on the CPU backend.
 
     Parameters
     ----------
-    lines : list of ndarray, shape (N, 3)
-        List of lines, where each line is a set of 3D points.
-    opacity : float, optional
-        Overall opacity of the actor, from 0.0 to 1.0.
-    colors : tuple or ndarray, optional
-        - A single color tuple (e.g., (1,0,0)) for all lines.
-        - An array of colors, one for each line (e.g., [[1,0,0], [0,1,0],...]).
-    radius : float, optional
-        The radius of the tubes.
-    segments : int, optional
-        Number of segments for the tube's cross-section.
-    end_caps : bool, optional
-        If True, adds flat caps to the ends of each tube.
-    flat_shading : bool, optional
-        If True, use flat shading; otherwise, smooth shading is used.
-    material : str, optional
-        Material model (e.g., 'phong', 'basic').
-    enable_picking : bool, optional
-        If True, the actor can be picked in a 3D scene.
-    backend : {"gpu", "cpu"}, optional
-        Backend selection for streamtube generation. Options:
-        - "gpu": Use GPU compute shaders for baked geometry generation.
-        - "cpu": Force CPU-based geometry generation.
+    points : ndarray, shape (M, 3)
+        Centerline points for one streamline.
+    segments : int
+        Number of radial segments used for the tube cross-section.
+    radius : float
+        Tube radius in world units.
+    end_caps : bool
+        If ``True``, flat caps are added to both ends.
 
     Returns
     -------
-    Actor
-        A mesh actor containing the generated streamtubes.
-
-    Notes
-    -----
-    This function performs streamtube geometry creation internally. By default,
-    it uses GPU compute shaders to bake the geometry once using a compute pass
-    and then renders with a standard material. The backend parameter defaults
-    to ``"gpu"`` for optimal performance. Set ``backend="cpu"`` to force CPU-based
-    geometry generation as a fallback option.
+    tuple
+        ``(vertices, indices)`` arrays suitable for mesh construction.
     """
-    if lines is None or not hasattr(lines, "__iter__"):
-        raise ValueError("lines must be an iterable of arrays")
+    points_arr = np.asarray(points, dtype=np.float32)
+    return generate_tube_geometry(points_arr, segments, radius, end_caps)
 
-    lines_list = list(lines)
-    if len(lines_list) == 0:
-        raise ValueError("lines cannot be empty")
 
-    if radius <= 0:
-        raise ValueError(f"radius must be positive, got {radius}")
+def _slice_colors_for_lines(colors, start_idx, end_idx):
+    """Slice per-line color arrays to match a subset of lines.
 
-    if segments < 3:
-        raise ValueError(f"segments must be at least 3, got {segments}")
+    Parameters
+    ----------
+    colors : array_like or None
+        Original colors passed to :func:`streamtube`.
+    start_idx : int
+        Inclusive start index of the line subset.
+    end_idx : int
+        Exclusive end index of the line subset.
 
-    if backend not in ("cpu", "gpu"):
-        raise ValueError(f"backend must be 'cpu' or 'gpu', got {backend!r}")
+    Returns
+    -------
+    array_like or None
+        Colors aligned with the requested slice, or ``None`` when colors are
+        not provided.
+    """
+    if colors is None:
+        return None
+    colors_arr = np.asarray(colors)
+    if colors_arr.ndim == 2 and colors_arr.shape[0] > 1:
+        return colors_arr[start_idx:end_idx]
+    return colors
 
+
+def _resolve_color_components_for_streamtube(colors, backend):
+    """Infer the color channel count used for streamtube buffers.
+
+    Parameters
+    ----------
+    colors : array_like or None
+        Color specification provided to :func:`streamtube`.
+    backend : {'cpu', 'gpu'}
+        Active rendering backend. GPU baking always stores RGB colors.
+
+    Returns
+    -------
+    int
+        Number of color channels (3 or 4) to allocate.
+    """
     if backend == "gpu":
-        return _create_streamtube_baked(
-            lines,
-            colors=colors,
-            opacity=opacity,
-            radius=radius,
-            segments=segments,
-            end_caps=end_caps,
-            enable_picking=enable_picking,
-            flat_shading=flat_shading,
-            material=material,
-        )
+        return 3
 
-    def task(points):
-        """Task to generate tube geometry for a single line.
+    if colors is None:
+        return 3
 
-        Parameters
-        ----------
-        points : ndarray, shape (N, 3)
-            The 3D points defining the line.
+    colors_arr = np.asarray(colors)
+    if colors_arr.ndim == 1:
+        return int(colors_arr.shape[0])
+    if colors_arr.ndim == 2:
+        return int(colors_arr.shape[1])
+    return 3
 
-        Returns
-        -------
-        tuple
-            A tuple containing the vertices and indices for the tube geometry.
-        """
-        points_arr = np.asarray(points, dtype=np.float32)
-        return generate_tube_geometry(points_arr, segments, radius, end_caps)
 
+def _create_streamtube_cpu(
+    lines,
+    *,
+    colors,
+    opacity,
+    radius,
+    segments,
+    end_caps,
+    flat_shading,
+    material,
+    enable_picking,
+):
+    """Create a streamtube actor using CPU-based geometry generation.
+
+    Parameters
+    ----------
+    lines : list of ndarray
+        Streamtube centerlines to render.
+    colors : array_like
+        Per-line or global colors matching ``streamtube`` API rules.
+    opacity : float
+        Opacity applied to the created material.
+    radius : float
+        Tube radius in world units.
+    segments : int
+        Number of radial segments per ring.
+    end_caps : bool
+        Whether flat end caps are generated.
+    flat_shading : bool
+        When ``True`` use flat shading; otherwise smooth shading.
+    material : str
+        Material name forwarded to :func:`_create_mesh_material`.
+    enable_picking : bool
+        Whether the actor writes to the picking buffer.
+
+    Returns
+    -------
+    Mesh
+        CPU-generated mesh actor containing the streamtube geometry.
+    """
     with ThreadPoolExecutor() as executor:
-        results = list(executor.map(task, lines))
+        results = list(
+            executor.map(
+                _streamtube_geometry_task,
+                lines,
+                itertools.repeat(segments),
+                itertools.repeat(radius),
+                itertools.repeat(end_caps),
+            )
+        )
 
     all_vertices = []
     all_triangles = []
@@ -1416,7 +1574,7 @@ def streamtube(
             colors=np.zeros((0, 4), dtype=np.float32),
         )
         mat = _create_mesh_material()
-        obj = create_mesh(geometry=geo, material=mat)
+        return create_mesh(geometry=geo, material=mat)
 
     for verts, tris in results:
         if verts.size > 0 and tris.size > 0:
@@ -1464,6 +1622,208 @@ def streamtube(
     )
     obj = create_mesh(geometry=geo, material=mat)
     return obj
+
+
+def _create_streamtube_actor(
+    lines,
+    *,
+    backend,
+    colors,
+    opacity,
+    radius,
+    segments,
+    end_caps,
+    flat_shading,
+    material,
+    enable_picking,
+):
+    """Create a single streamtube actor for the requested backend.
+
+    Parameters
+    ----------
+    lines : list of ndarray
+        Streamtube centerlines for this batch.
+    backend : {'cpu', 'gpu'}
+        Backend used to build the geometry.
+    colors : array_like or None
+        Per-line or global colors aligned with ``lines``.
+    opacity : float
+        Opacity applied to the created material.
+    radius : float
+        Tube radius in world units.
+    segments : int
+        Number of radial segments per ring.
+    end_caps : bool
+        Whether flat end caps are generated.
+    flat_shading : bool
+        When ``True`` use flat shading; otherwise smooth shading.
+    material : str
+        Material name forwarded to mesh/material constructors.
+    enable_picking : bool
+        Whether the actor writes to the picking buffer.
+
+    Returns
+    -------
+    Mesh
+        Streamtube actor constructed for the requested backend.
+    """
+    if backend == "gpu":
+        return _create_streamtube_baked(
+            lines,
+            colors=colors,
+            opacity=opacity,
+            radius=radius,
+            segments=segments,
+            end_caps=end_caps,
+            enable_picking=enable_picking,
+            flat_shading=flat_shading,
+            material=material,
+        )
+
+    return _create_streamtube_cpu(
+        lines,
+        colors=colors,
+        opacity=opacity,
+        radius=radius,
+        segments=segments,
+        end_caps=end_caps,
+        flat_shading=flat_shading,
+        material=material,
+        enable_picking=enable_picking,
+    )
+
+
+def streamtube(
+    lines,
+    *,
+    opacity=1.0,
+    colors=(1, 1, 1),
+    radius=0.2,
+    segments=8,
+    end_caps=True,
+    flat_shading=False,
+    material="phong",
+    enable_picking=True,
+    backend="gpu",
+    max_buffer_size=None,
+):
+    """
+    Create a streamtube from a list of lines using parallel processing.
+
+    Parameters
+    ----------
+    lines : list of ndarray, shape (N, 3)
+        List of lines, where each line is a set of 3D points.
+    opacity : float, optional
+        Overall opacity of the actor, from 0.0 to 1.0.
+    colors : tuple or ndarray, optional
+        - A single color tuple (e.g., (1,0,0)) for all lines.
+        - An array of colors, one for each line (e.g., [[1,0,0], [0,1,0],...]).
+    radius : float, optional
+        The radius of the tubes.
+    segments : int, optional
+        Number of segments for the tube's cross-section.
+    end_caps : bool, optional
+        If True, adds flat caps to the ends of each tube.
+    flat_shading : bool, optional
+        If True, use flat shading; otherwise, smooth shading is used.
+    material : str, optional
+        Material model (e.g., 'phong', 'basic').
+    enable_picking : bool, optional
+        If True, the actor can be picked in a 3D scene.
+    backend : {"gpu", "cpu"}, optional
+        Backend selection for streamtube generation. Options:
+        - "gpu": Use GPU compute shaders for baked geometry generation.
+        - "cpu": Force CPU-based geometry generation.
+    max_buffer_size : int, optional
+        Maximum available buffer size in MB for streamtube storage buffers.
+        When not provided, a default limit of 256 MB is assumed.
+
+    Returns
+    -------
+    Actor or Group
+        A mesh actor containing the generated streamtubes. When the input
+        data exceeds the available buffer size, multiple actors are created,
+        added to a ``Group``, and the group is returned.
+
+    Notes
+    -----
+    This function performs streamtube geometry creation internally. By default,
+    it uses GPU compute shaders to bake the geometry once using a compute pass
+    and then renders with a standard material. The backend parameter defaults
+    to ``"gpu"`` for optimal performance. Set ``backend="cpu"`` to force CPU-based
+    geometry generation as a fallback option. When buffers would exceed device
+    limits, the data is split into evenly sized batches based on the ratio of
+    estimated total size to available buffer size.
+    """
+    if lines is None or not hasattr(lines, "__iter__"):
+        raise ValueError("lines must be an iterable of arrays")
+
+    lines_list = list(lines)
+    if len(lines_list) == 0:
+        raise ValueError("lines cannot be empty")
+
+    for line_arr in lines_list:
+        if line_arr.ndim != 2 or line_arr.shape[1] != 3:
+            raise ValueError("Each line must be a 2D array of shape (N, 3)")
+
+    if radius <= 0:
+        raise ValueError(f"radius must be positive, got {radius}")
+
+    if segments < 3:
+        raise ValueError(f"segments must be at least 3, got {segments}")
+
+    if backend not in ("cpu", "gpu"):
+        raise ValueError(f"backend must be 'cpu' or 'gpu', got {backend!r}")
+
+    color_components = _resolve_color_components_for_streamtube(colors, backend)
+    max_buffer_size = (
+        (256 if max_buffer_size is None else max_buffer_size) * 1024 * 1024
+    )
+
+    batches = _split_streamtube_lines(
+        lines_list,
+        segments=segments,
+        end_caps=end_caps,
+        color_components=color_components,
+        max_buffer_size=max_buffer_size,
+    )
+
+    if len(batches) == 1:
+        return _create_streamtube_actor(
+            batches[0],
+            backend=backend,
+            colors=colors,
+            opacity=opacity,
+            radius=radius,
+            segments=segments,
+            end_caps=end_caps,
+            flat_shading=flat_shading,
+            material=material,
+            enable_picking=enable_picking,
+        )
+
+    group = Group()
+    color_start = 0
+    for batch in batches:
+        color_end = color_start + len(batch)
+        batch_colors = _slice_colors_for_lines(colors, color_start, color_end)
+        actor = _create_streamtube_actor(
+            batch,
+            backend=backend,
+            colors=batch_colors,
+            opacity=opacity,
+            radius=radius,
+            segments=segments,
+            end_caps=end_caps,
+            flat_shading=flat_shading,
+            material=material,
+            enable_picking=enable_picking,
+        )
+        group.add(actor)
+        color_start = color_end
+
+    return group
 
 
 @register_wgpu_render_function(Mesh, _StreamtubeBakedMaterial)
