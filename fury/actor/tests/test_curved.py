@@ -1,8 +1,15 @@
+import math
+
 from PIL import Image
 import numpy as np
 import pytest
 
 from fury import actor, window
+from fury.actor.core import Group
+from fury.actor.curved import (
+    _estimate_streamtube_buffer_size,
+    _split_streamtube_lines,
+)
 from fury.actor.tests._helpers import validate_actors
 from fury.material import (
     StreamlinesMaterial,
@@ -214,6 +221,100 @@ def test_streamtube_gpu_invalid_inputs():
             colors=np.array([1.0, 0.5], dtype=np.float32),
             backend="gpu",
         )
+
+
+def test_streamtube_buffer_helpers_and_split_ratio():
+    """Buffer estimation and ratio-based splitting with max_buffer_size MB input."""
+
+    def _make_lines(lengths):
+        return [np.zeros((ln, 3), dtype=np.float32) for ln in lengths]
+
+    # Buffer estimation sums all allocations
+    lengths = np.array([2, 3], dtype=np.uint32)
+    segments = 4
+    end_caps = True
+    color_components = 3
+
+    total_vertices = (lengths * segments + 2).sum()
+    total_triangles = ((lengths - 1) * segments * 2 + segments * 2).sum()
+    n_lines = len(lengths)
+    max_len = lengths.max()
+
+    expected_total = (
+        n_lines * max_len * 3 * 4
+        + n_lines * 4
+        + n_lines * color_components * 4
+        + n_lines * 4
+        + n_lines * 4
+        + total_vertices * 3 * 4
+        + total_vertices * 3 * 4
+        + total_vertices * color_components * 4
+        + total_triangles * 3 * 4
+    )
+    assert (
+        _estimate_streamtube_buffer_size(lengths, segments, end_caps, color_components)
+        == expected_total
+    )
+
+    # Ratio-based batch count
+    line_lengths = [5, 5, 5, 5, 5, 5]
+    lines = _make_lines(line_lengths)
+    total_needed = _estimate_streamtube_buffer_size(
+        np.array(line_lengths), segments=3, end_caps=True, color_components=3
+    )
+    max_buffer = total_needed // 3  # bytes, force ~3 batches
+    batches = _split_streamtube_lines(
+        lines,
+        segments=3,
+        end_caps=True,
+        color_components=3,
+        max_buffer_size=max_buffer,
+    )
+    expected_batches = math.ceil(total_needed / max_buffer)
+    assert len(batches) == expected_batches
+    assert sum(len(batch) for batch in batches) == len(lines)
+
+    with pytest.raises(
+        ValueError,
+        match="Streamtube data for a single line exceeds the available buffer",
+    ):
+        _split_streamtube_lines(
+            _make_lines([20]),
+            segments=8,
+            end_caps=True,
+            color_components=3,
+            max_buffer_size=1,  # deliberately tiny
+        )
+
+    # Integration: forcing a split via max_buffer_size (MB) returns
+    # a Group on CPU backend
+    colors = np.eye(len(line_lengths), 3, dtype=np.float32)
+    max_buffer_mb = max_buffer / (1024 * 1024)
+    actor_group = actor.streamtube(
+        lines,
+        colors=colors,
+        backend="cpu",
+        segments=3,
+        radius=0.1,
+        end_caps=True,
+        max_buffer_size=max_buffer_mb,
+    )
+    assert isinstance(actor_group, Group)
+    assert len(actor_group.children) == expected_batches
+
+    # Integration: forcing a split via max_buffer_size (MB) returns
+    # a Group on GPU backend
+    actor_group_gpu = actor.streamtube(
+        lines,
+        colors=colors,
+        backend="gpu",
+        segments=3,
+        radius=0.1,
+        end_caps=True,
+        max_buffer_size=max_buffer_mb,
+    )
+    assert isinstance(actor_group_gpu, Group)
+    assert len(actor_group_gpu.children) == expected_batches
 
 
 def test_streamlines_roi_metadata_and_reset():
