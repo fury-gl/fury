@@ -175,17 +175,20 @@ camera_anim.set_focal_interpolator(cubic_spline_interpolator)
 scene.add(plan)
 
 ###############################################################################
-# Adding the timeline to the ShowManager for interactive playback.
-showm.add_animation(timeline)
+# Add the timeline's actors to the scene first (needed for recording)
+timeline.add_to_scene(scene)
 
 ###############################################################################
-# Uncomment to record the animation to an MP4 video at Full HD resolution.
-# Requires OpenCV: pip install opencv-python
-# timeline.record(fname="fury_animation.mp4", fps=30, speed=1.0, size=(1920, 1080))
+# Record the animation to an MP4 video at Full HD resolution (1920x1080)
+# This captures frame by frame and saves to a video file.
+# Uncomment to record:
+# timeline.record(fname="fury_animation.mp4", fps=30, size=(1920, 1080))
+
+###############################################################################
+# Adding the timeline to the ShowManager for interactive playback.
+showm.add_animation(timeline)
 
 ###############################################################################
 # The ShowManager must go on!
 
 showm.start()
-
-fury.window.snapshot(scene=scene, fname="viz_keyframe_animation_camera.png")

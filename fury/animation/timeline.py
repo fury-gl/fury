@@ -383,6 +383,7 @@ class Timeline:
             fourcc = cv2.VideoWriter.fourcc(*"mp4v")
             out = cv2.VideoWriter(fname, fourcc, fps, size)
 
+        self.update_duration()
         duration = self.duration
         step = speed / fps
         frames = []
@@ -395,7 +396,11 @@ class Timeline:
         # Create offscreen ShowManager
         show_m = window.ShowManager(scene=scene, size=size, window_type="offscreen")
 
-        print("Recording...")
+        # Connect any CameraAnimations to the offscreen camera
+        self._setup_camera_animations_for_recording(show_m.screens[0].camera)
+
+        print(f"Recording... Duration: {duration}s, FPS: {fps}")
+        frame_count = 0
         while t < duration:
             self.seek(t)
             show_m.render()
@@ -411,9 +416,10 @@ class Timeline:
                 pillow_snap = Image.fromarray(arr)
                 frames.append(pillow_snap)
 
+            frame_count += 1
             t += step
 
-        print("Saving...")
+        print(f"Saving... {frame_count} frames captured")
 
         if fname is None:
             return frames
@@ -506,6 +512,24 @@ class Timeline:
         if self.has_playback_panel:
             self.playback_panel.add_to_scene(scene)
         [animation.add_to_scene(scene) for animation in self._animations]
+
+    def _setup_camera_animations_for_recording(self, camera):
+        """Connect CameraAnimations to the recording camera.
+
+        Parameters
+        ----------
+        camera : Camera
+            The camera to use for CameraAnimations during recording.
+        """
+        from fury.animation.animation import CameraAnimation
+
+        for anim in self._animations:
+            if isinstance(anim, CameraAnimation):
+                anim.camera = camera
+            if hasattr(anim, "_animations"):
+                for child in anim._animations:
+                    if isinstance(child, CameraAnimation):
+                        child.camera = camera
 
     def remove_from_scene(self, scene):
         """Remove Timeline and all of its Animations from the scene.
