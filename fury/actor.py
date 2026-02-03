@@ -1,4 +1,4 @@
-"""Module that provide actors to render."""
+"""Module that provides actors to render."""
 
 from functools import partial
 import os
