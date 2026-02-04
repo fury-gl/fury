@@ -54,12 +54,16 @@ class FetcherError(Exception):
     pass
 
 
+_last_line_length = 0
+
+
 def update_progressbar(progress, total_length):
     """Show progressbar.
 
     Takes a number between 0 and 1 to indicate progress from 0 to 100%.
     """
-    # Try to set the bar_length according to the console size
+    global _last_line_length
+
     try:
         if os.name == "nt":
             bar_length = 20
@@ -69,15 +73,29 @@ def update_progressbar(progress, total_length):
         if bar_length < 1:
             bar_length = 20
     except Exception:
-        # Default value if determination of console size fails
         bar_length = 20
+
     block = int(round(bar_length * progress))
     size_string = "{0:.2f} MB".format(float(total_length) / (1024 * 1024))
-    text = "\rDownload Progress: [{0}] {1:.2f}%  of {2}\n".format(
-        "#" * block + "-" * (bar_length - block), progress * 100, size_string
+
+    line = (
+        f"Download Progress: "
+        f"[{'#' * block}{'-' * (bar_length - block)}] "
+        f"{progress * 100:.2f}%  of {size_string}"
     )
-    sys.stdout.write(text)
+
+    # Clear previous line and rewrite
+    sys.stdout.write("\r" + " " * _last_line_length)
+    sys.stdout.write("\r" + line)
     sys.stdout.flush()
+
+    _last_line_length = len(line)
+
+    if progress >= 1.0:
+        sys.stdout.write("\n")
+        _last_line_length = 0
+
+
 
 
 @warn_on_args_to_kwargs()
