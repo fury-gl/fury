@@ -9,6 +9,7 @@ from fury.actor import Group, Line, Mesh, actor_from_primitive, create_mesh
 from fury.geometry import buffer_to_geometry, line_buffer_separator
 from fury.lib import (
     Buffer,
+    get_device_limits,
     register_wgpu_render_function,
 )
 from fury.material import (
@@ -1705,7 +1706,6 @@ def streamtube(
     material="phong",
     enable_picking=True,
     backend="gpu",
-    max_buffer_size=None,
 ):
     """
     Create a streamtube from a list of lines using parallel processing.
@@ -1735,9 +1735,6 @@ def streamtube(
         Backend selection for streamtube generation. Options:
         - "gpu": Use GPU compute shaders for baked geometry generation.
         - "cpu": Force CPU-based geometry generation.
-    max_buffer_size : int, optional
-        Maximum available buffer size in MB for streamtube storage buffers.
-        When not provided, a default limit of 256 MB is assumed.
 
     Returns
     -------
@@ -1777,8 +1774,8 @@ def streamtube(
         raise ValueError(f"backend must be 'cpu' or 'gpu', got {backend!r}")
 
     color_components = _resolve_color_components_for_streamtube(colors, backend)
-    max_buffer_size = (
-        (256 if max_buffer_size is None else max_buffer_size) * 1024 * 1024
+    max_buffer_size = get_device_limits().get(
+        "max-storage-buffer-binding-size", 256 * 1024 * 1024
     )
 
     batches = _split_streamtube_lines(

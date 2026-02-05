@@ -223,8 +223,8 @@ def test_streamtube_gpu_invalid_inputs():
         )
 
 
-def test_streamtube_buffer_helpers_and_split_ratio():
-    """Buffer estimation and ratio-based splitting with max_buffer_size MB input."""
+def test_streamtube_buffer_helpers_and_split_ratio(monkeypatch):
+    """Buffer estimation and ratio-based splitting with device buffer limits."""
 
     def _make_lines(lengths):
         return [np.zeros((ln, 3), dtype=np.float32) for ln in lengths]
@@ -286,10 +286,14 @@ def test_streamtube_buffer_helpers_and_split_ratio():
             max_buffer_size=1,  # deliberately tiny
         )
 
-    # Integration: forcing a split via max_buffer_size (MB) returns
+    # Integration: forcing a split via device limits returns
     # a Group on CPU backend
     colors = np.eye(len(line_lengths), 3, dtype=np.float32)
-    max_buffer_mb = max_buffer / (1024 * 1024)
+    buffer_limit = max_buffer
+    monkeypatch.setattr(
+        "fury.actor.curved.get_device_limits",
+        lambda: {"max-storage-buffer-binding-size": buffer_limit},
+    )
     actor_group = actor.streamtube(
         lines,
         colors=colors,
@@ -297,12 +301,11 @@ def test_streamtube_buffer_helpers_and_split_ratio():
         segments=3,
         radius=0.1,
         end_caps=True,
-        max_buffer_size=max_buffer_mb,
     )
     assert isinstance(actor_group, Group)
     assert len(actor_group.children) == expected_batches
 
-    # Integration: forcing a split via max_buffer_size (MB) returns
+    # Integration: forcing a split via device limits returns
     # a Group on GPU backend
     actor_group_gpu = actor.streamtube(
         lines,
@@ -311,7 +314,6 @@ def test_streamtube_buffer_helpers_and_split_ratio():
         segments=3,
         radius=0.1,
         end_caps=True,
-        max_buffer_size=max_buffer_mb,
     )
     assert isinstance(actor_group_gpu, Group)
     assert len(actor_group_gpu.children) == expected_batches
