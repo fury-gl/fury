@@ -736,6 +736,7 @@ class _StreamtubeBakingShader(BaseShader):
         self["workgroup_size"] = min(64, max(int(wobject.n_lines), 1))
         self["end_caps"] = 1 if getattr(wobject, "end_caps", False) else 0
         self["color_channels"] = getattr(wobject, "color_components", 3)
+        self["use_rgb_mode"] = 1 if getattr(wobject, "use_rgb_mode", False) else 0
 
     def get_render_info(self, wobject, _shared):
         """Return the dispatch dimensions for the compute shader.
@@ -804,6 +805,7 @@ class _StreamtubeBakingShader(BaseShader):
         self["workgroup_size"] = min(64, max(int(wobject.n_lines), 1))
         self["color_channels"] = getattr(wobject, "color_components", 3)
         self["end_caps"] = 1 if getattr(wobject, "end_caps", False) else 0
+        self["use_rgb_mode"] = 1 if getattr(wobject, "use_rgb_mode", False) else 0
 
         bindings = {
             0: Binding(

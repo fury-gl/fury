@@ -8,6 +8,7 @@ const COLOR_CHANNELS = u32({{ color_channels }});
 const PI = 3.14159265359;
 
 const USE_END_CAPS = {{ end_caps }}u;
+const USE_RGB_MODE = {{ use_rgb_mode }}u;
 
 fn safe_normalize(v: vec3<f32>) -> vec3<f32> {
     let len_v = length(v);
@@ -170,6 +171,11 @@ $$ endif
         let binormal = binormals_arr[i];
 
         var vertex_color = line_color;
+        if (USE_RGB_MODE == 1u) {
+            let abs_t = abs(tangent);
+            vertex_color = vec4<f32>(abs_t.x, abs_t.y, abs_t.z, 1.0);
+        }
+
         for (var j = 0u; j < TUBE_SIDES; j++) {
             let angle = 2.0 * PI * f32(j) / f32(TUBE_SIDES);
             let cos_a = cos(angle);
@@ -190,7 +196,6 @@ $$ endif
                 s_vertex_normals[pos_base] = vertex_normal.x;
                 s_vertex_normals[pos_base + 1u] = vertex_normal.y;
                 s_vertex_normals[pos_base + 2u] = vertex_normal.z;
-                write_vertex_color(vertex_idx, line_color, color_len);
                 write_vertex_color(vertex_idx, vertex_color, color_len);
             }
         }
