@@ -169,6 +169,7 @@ $$ endif
         let normal = normals_arr[i];
         let binormal = binormals_arr[i];
 
+        var vertex_color = line_color;
         for (var j = 0u; j < TUBE_SIDES; j++) {
             let angle = 2.0 * PI * f32(j) / f32(TUBE_SIDES);
             let cos_a = cos(angle);
@@ -190,6 +191,7 @@ $$ endif
                 s_vertex_normals[pos_base + 1u] = vertex_normal.y;
                 s_vertex_normals[pos_base + 2u] = vertex_normal.z;
                 write_vertex_color(vertex_idx, line_color, color_len);
+                write_vertex_color(vertex_idx, vertex_color, color_len);
             }
         }
 

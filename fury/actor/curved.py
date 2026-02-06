@@ -1321,40 +1321,44 @@ def _create_streamtube_baked(
 
     colors = np.asarray(colors, dtype=np.float32)
 
-    if colors.ndim == 1:
-        if colors.size == 3:
-            line_colors = np.tile(colors, (n_lines, 1))
-        elif colors.size == 4:
-            line_colors = np.tile(colors[:3], (n_lines, 1))
-        else:
-            raise ValueError(
-                "Single color must have 3 (RGB) or 4 (RGBA) components, "
-                f"got {colors.size}"
-            )
-    elif colors.ndim == 2:
-        if colors.shape[0] == 1:
-            if colors.shape[1] in (3, 4):
-                line_colors = np.tile(colors[0, :3], (n_lines, 1))
+        colors = np.asarray(colors, dtype=np.float32)
+
+        if colors.ndim == 1:
+            if colors.size == 3:
+                line_colors = np.tile(colors, (n_lines, 1))
+            elif colors.size == 4:
+                line_colors = np.tile(colors[:3], (n_lines, 1))
             else:
                 raise ValueError(
-                    "Color must have 3 (RGB) or 4 (RGBA) components, "
-                    f"got {colors.shape[1]}"
+                    "Single color must have 3 (RGB) or 4 (RGBA) components, "
+                    f"got {colors.size}"
                 )
-        elif colors.shape[0] == n_lines:
-            if colors.shape[1] in (3, 4):
-                line_colors = colors[:, :3].astype(np.float32)
+        elif colors.ndim == 2:
+            if colors.shape[0] == 1:
+                if colors.shape[1] in (3, 4):
+                    line_colors = np.tile(colors[0, :3], (n_lines, 1))
+                else:
+                    raise ValueError(
+                        "Color must have 3 (RGB) or 4 (RGBA) components, "
+                        f"got {colors.shape[1]}"
+                    )
+            elif colors.shape[0] == n_lines:
+                if colors.shape[1] in (3, 4):
+                    line_colors = colors[:, :3].astype(np.float32)
+                else:
+                    raise ValueError(
+                        "Color must have 3 (RGB) or 4 (RGBA) components, "
+                        f"got {colors.shape[1]}"
+                    )
             else:
                 raise ValueError(
-                    "Color must have 3 (RGB) or 4 (RGBA) components, "
-                    f"got {colors.shape[1]}"
+                    f"Color array first dimension must be 1 or {n_lines} "
+                    f"(number of lines), got {colors.shape[0]}"
                 )
         else:
             raise ValueError(
-                f"Color array first dimension must be 1 or {n_lines} "
-                f"(number of lines), got {colors.shape[0]}"
+                f"Colors must be 1D or 2D array, got {colors.ndim}D array"
             )
-    else:
-        raise ValueError(f"Colors must be 1D or 2D array, got {colors.ndim}D array")
 
     line_colors = line_colors.astype(np.float32, copy=False)
     color_components = line_colors.shape[1]
