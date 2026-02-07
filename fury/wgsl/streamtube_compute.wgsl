@@ -9,6 +9,25 @@ const PI = 3.14159265359;
 
 const USE_END_CAPS = {{ end_caps }}u;
 const USE_RGB_MODE = {{ use_rgb_mode }}u;
+const USE_PER_POINT_COLORS = {{ use_per_point_colors }}u;
+
+$$ if use_per_point_colors
+fn load_point_color(line_idx: u32, point_idx: u32) -> vec4<f32> {
+    let base = (line_idx * MAX_LINE_LENGTH + point_idx) * COLOR_CHANNELS;
+    let buf_len = arrayLength(&s_point_colors);
+    if (base >= buf_len) {
+        return vec4<f32>(1.0, 1.0, 1.0, 1.0);
+    }
+    var r = s_point_colors[base];
+    var g = 0.0;
+    var b = 0.0;
+    var a = 1.0;
+    if (COLOR_CHANNELS > 1u && base + 1u < buf_len) { g = s_point_colors[base + 1u]; }
+    if (COLOR_CHANNELS > 2u && base + 2u < buf_len) { b = s_point_colors[base + 2u]; }
+    if (COLOR_CHANNELS > 3u && base + 3u < buf_len) { a = s_point_colors[base + 3u]; }
+    return vec4<f32>(r, g, b, a);
+}
+$$ endif
 
 fn safe_normalize(v: vec3<f32>) -> vec3<f32> {
     let len_v = length(v);
@@ -175,6 +194,9 @@ $$ endif
             let abs_t = abs(tangent);
             vertex_color = vec4<f32>(abs_t.x, abs_t.y, abs_t.z, 1.0);
         }
+$$ if use_per_point_colors
+        vertex_color = load_point_color(line_idx, i);
+$$ endif
 
         for (var j = 0u; j < TUBE_SIDES; j++) {
             let angle = 2.0 * PI * f32(j) / f32(TUBE_SIDES);
@@ -242,7 +264,14 @@ $$ endif
             s_vertex_normals[base + 1u] = start_normal.y;
             s_vertex_normals[base + 2u] = start_normal.z;
         }
-        write_vertex_color(start_center_idx, line_color, color_len);
+$$ if use_per_point_colors
+        let start_cap_color = load_point_color(line_idx, 0u);
+        let end_cap_color = load_point_color(line_idx, line_length - 1u);
+$$ else
+        let start_cap_color = line_color;
+        let end_cap_color = line_color;
+$$ endif
+        write_vertex_color(start_center_idx, start_cap_color, color_len);
 
         if (end_center_idx * 3u + 2u < pos_len && end_center_idx * 3u + 2u < norm_len) {
             let base = end_center_idx * 3u;
@@ -253,7 +282,7 @@ $$ endif
             s_vertex_normals[base + 1u] = end_normal.y;
             s_vertex_normals[base + 2u] = end_normal.z;
         }
-        write_vertex_color(end_center_idx, line_color, color_len);
+        write_vertex_color(end_center_idx, end_cap_color, color_len);
 
         let side_triangles = (line_length - 1u) * TUBE_SIDES * 2u;
         var tri_idx = base_triangle_idx + side_triangles;
