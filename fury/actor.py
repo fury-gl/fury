@@ -1802,18 +1802,17 @@ def point(points, colors, *, point_radius=0.1, phi=8, theta=8, opacity=1.0):
 
     """
 if colors is not None:
-            colors = np.asarray(colors)    
-    
-        return sphere(
-        centers=points,
-        colors=colors,
-        radii=point_radius,
-        phi=phi,
-        theta=theta,
-        vertices=None,
-        faces=None,
-        opacity=opacity,
-    )
+    colors = np.asarray(colors)
+
+return sphere(
+    points,
+    colors=colors,
+    radii=point_radius,
+    phi=8,
+    theta=8,
+    opacity=opacity,
+)
+
 
 
 @warn_on_args_to_kwargs()
