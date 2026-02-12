@@ -1770,21 +1770,26 @@ def dot(points, *, colors=None, opacity=None, dot_size=5):
 
 @warn_on_args_to_kwargs()
 def point(points, colors, *, point_radius=0.1, phi=8, theta=8, opacity=1.0):
-    """Visualize points as sphere glyphs.
+    """Visualize one or many points.
 
     Parameters
     ----------
     points : ndarray, shape (N, 3)
-    colors : ndarray (N,3) or tuple (3,)
+        Points positions.
+    colors : ndarray (N, 3) or tuple (3,)
+        RGB values in the range [0, 1].
     point_radius : float
+        Point radius.
     phi : int
+        Number of points in the latitude direction.
     theta : int
+        Number of points in the longitude direction.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque). Default is 1.
 
     Returns
     -------
-    point_actor: Actor
+    point_actor : Actor
 
     See Also
     --------
@@ -1799,19 +1804,22 @@ def point(points, colors, *, point_radius=0.1, phi=8, theta=8, opacity=1.0):
     >>> point_actor = actor.point(pts, window.colors.coral)
     >>> scene.add(point_actor)
     >>> # window.show(scene)
-
     """
-if colors is not None:
-    colors = np.asarray(colors)
+    if colors is not None:
+        colors = np.asarray(colors)
 
-return sphere(
-    points,
-    colors=colors,
-    radii=point_radius,
-    phi=8,
-    theta=8,
-    opacity=opacity,
-)
+    return sphere(
+        centers=points,
+        colors=colors,
+        radii=point_radius,
+        phi=phi,
+        theta=theta,
+        vertices=None,
+        faces=None,
+        opacity=opacity,
+    )
+
+
 
 
 
