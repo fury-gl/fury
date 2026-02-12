@@ -1801,8 +1801,10 @@ def point(points, colors, *, point_radius=0.1, phi=8, theta=8, opacity=1.0):
     >>> # window.show(scene)
 
     """
-        colors = np.asarray(colors)
-    return sphere(
+if colors is not None:
+            colors = np.asarray(colors)    
+    
+        return sphere(
         centers=points,
         colors=colors,
         radii=point_radius,
