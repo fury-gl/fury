@@ -1767,17 +1767,17 @@ def dot(points, *, colors=None, opacity=None, dot_size=5):
 
     return poly_actor
 
-
+  )
 @warn_on_args_to_kwargs()
-def point(points, colors, *, point_radius=0.1, phi=8, theta=8, opacity=1.0):
+def point(points, colors=None, *, point_radius=0.1, phi=8, theta=8, opacity=1.0):
     """Visualize one or many points.
 
     Parameters
     ----------
     points : ndarray, shape (N, 3)
         Points positions.
-    colors : ndarray (N, 3) or tuple (3,)
-        RGB values in the range [0, 1].
+    colors : ndarray, shape (N, 3) or (N, 4) or array-like of shape (3,) or (4,), optional
+        RGB or RGBA values in the range [0, 1].
     point_radius : float
         Point radius.
     phi : int
@@ -1793,20 +1793,28 @@ def point(points, colors, *, point_radius=0.1, phi=8, theta=8, opacity=1.0):
 
     See Also
     --------
-    :func:`fury.actor.dot`
-    :func:`fury.actor.sphere`
-
-    Examples
-    --------
-    >>> from fury import window, actor
-    >>> scene = window.Scene()
-    >>> pts = np.random.rand(5, 3)
-    >>> point_actor = actor.point(pts, window.colors.coral)
-    >>> scene.add(point_actor)
-    >>> # window.show(scene)
+    sphere
     """
-    if colors is not None:
+    if colors is None:
+        # Default color: red
+        colors = np.array([[1.0, 0.0, 0.0]], dtype=float)
+    else:
         colors = np.asarray(colors)
+
+        if colors.ndim == 1:
+            if colors.shape[0] not in (3, 4):
+                raise ValueError(
+                    "colors must be a 1D array-like of length 3 (RGB) or 4 (RGBA)"
+                )
+            colors = colors[np.newaxis, :]
+
+        elif colors.ndim == 2:
+            if colors.shape[1] not in (3, 4):
+                raise ValueError(
+                    "Last dimension of colors must be 3 (RGB) or 4 (RGBA)"
+                )
+        else:
+            raise ValueError("colors must be 1D or 2D array-like")
 
     return sphere(
         centers=points,
@@ -1814,10 +1822,10 @@ def point(points, colors, *, point_radius=0.1, phi=8, theta=8, opacity=1.0):
         radii=point_radius,
         phi=phi,
         theta=theta,
-        vertices=None,
-        faces=None,
         opacity=opacity,
     )
+
+
 
 @warn_on_args_to_kwargs()
 def sphere(
