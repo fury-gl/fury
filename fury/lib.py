@@ -157,3 +157,14 @@ else:
     qcall_later = PySide6
 
 register_wgsl_loader("fury", jinja2.PackageLoader("fury.wgsl", "."))
+
+
+def get_device_limits():
+    """Get the shared wgpu device used by pygfx.
+
+    Returns
+    -------
+    dict
+        The limits of the shared wgpu device.
+    """
+    return gfx.renderers.wgpu.get_shared().device.limits
