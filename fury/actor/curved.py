@@ -1256,9 +1256,24 @@ def _create_streamtube_baked(
     ----------
     lines : sequence of array_like, shape (N_i, 3)
         Iterable of polylines representing streamline vertices.
-    colors : array_like or None, optional
-        Per-line colors. Accepts a single RGB/RGBA vector or an array of shape
-        (1, 3|4)/(n_lines, 3|4). Defaults to white per line when None.
+    colors : array_like, str, list of ndarray, or None, optional
+        Specifies how tubes are colored. The following modes are supported:
+
+        - None : All tubes are colored white (default).
+
+        - Single color : A tuple or 1-D array of 3 (RGB) or 4 (RGBA)
+          floats in [0, 1], e.g. (1, 0, 0). Applied uniformly to every tube.
+
+        - Per-line colors : A 2-D array of shape (n_lines, 3) or
+          (n_lines, 4) giving one color per streamline.
+
+        - Per-point colors : A list/tuple of n_lines arrays, each of
+          shape (N_i, 3) or (N_i, 4) where N_i matches the number of
+          points in the corresponding line. Each vertex receives its own color.
+
+        - "rgb" : Each vertex is colored by the absolute value of its
+          local tangent direction mapped to RGB channels
+          (orientation-based coloring).
     opacity : float, optional
         Opacity multiplier applied to the material. Valid range is [0, 1].
     radius : float, optional
