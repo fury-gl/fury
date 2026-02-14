@@ -17,23 +17,29 @@ scene.background = (0.1, 0.1, 0.1)
 def make_helix(center, axis, n_points=100, radius=2.0, pitch=0.5, turns=3):
     t = np.linspace(0, turns * 2 * np.pi, n_points)
     if axis == "x":
-        pts = np.column_stack([
-            center[0] + pitch * t,
-            center[1] + radius * np.cos(t),
-            center[2] + radius * np.sin(t),
-        ])
+        pts = np.column_stack(
+            [
+                center[0] + pitch * t,
+                center[1] + radius * np.cos(t),
+                center[2] + radius * np.sin(t),
+            ]
+        )
     elif axis == "y":
-        pts = np.column_stack([
-            center[0] + radius * np.cos(t),
-            center[1] + pitch * t,
-            center[2] + radius * np.sin(t),
-        ])
+        pts = np.column_stack(
+            [
+                center[0] + radius * np.cos(t),
+                center[1] + pitch * t,
+                center[2] + radius * np.sin(t),
+            ]
+        )
     else:
-        pts = np.column_stack([
-            center[0] + radius * np.cos(t),
-            center[1] + radius * np.sin(t),
-            center[2] + pitch * t,
-        ])
+        pts = np.column_stack(
+            [
+                center[0] + radius * np.cos(t),
+                center[1] + radius * np.sin(t),
+                center[2] + pitch * t,
+            ]
+        )
     return pts.astype(np.float32)
 
 
@@ -78,13 +84,16 @@ lines_perline = [
     make_wave([-2, -2, -3], [-2, 12, -3], amplitude=2.0),
 ]
 
-per_line_colors = np.array([
-    [1.0, 0.2, 0.2],
-    [0.2, 1.0, 0.2],
-    [0.2, 0.2, 1.0],
-    [1.0, 1.0, 0.2],
-    [1.0, 0.2, 1.0],
-], dtype=np.float32)
+per_line_colors = np.array(
+    [
+        [1.0, 0.2, 0.2],
+        [0.2, 1.0, 0.2],
+        [0.2, 0.2, 1.0],
+        [1.0, 1.0, 0.2],
+        [1.0, 0.2, 1.0],
+    ],
+    dtype=np.float32,
+)
 
 tube_perline = fury.actor.streamtube(
     lines_perline,
@@ -114,47 +123,82 @@ n = 50
 length = 10.0
 origin = np.array([0, -15, 0], dtype=np.float32)
 
-x_line = np.column_stack([
-    np.linspace(0, length, n),
-    np.zeros(n),
-    np.zeros(n),
-]).astype(np.float32) + origin
+x_line = (
+    np.column_stack(
+        [
+            np.linspace(0, length, n),
+            np.zeros(n),
+            np.zeros(n),
+        ]
+    ).astype(np.float32)
+    + origin
+)
 
-y_line = np.column_stack([
-    np.zeros(n),
-    np.linspace(0, length, n),
-    np.zeros(n),
-]).astype(np.float32) + origin
+y_line = (
+    np.column_stack(
+        [
+            np.zeros(n),
+            np.linspace(0, length, n),
+            np.zeros(n),
+        ]
+    ).astype(np.float32)
+    + origin
+)
 
-z_line = np.column_stack([
-    np.zeros(n),
-    np.zeros(n),
-    np.linspace(0, length, n),
-]).astype(np.float32) + origin
+z_line = (
+    np.column_stack(
+        [
+            np.zeros(n),
+            np.zeros(n),
+            np.linspace(0, length, n),
+        ]
+    ).astype(np.float32)
+    + origin
+)
 
-diag_xy = np.column_stack([
-    np.linspace(0, length, n),
-    np.linspace(0, length, n),
-    np.zeros(n),
-]).astype(np.float32) + origin
+diag_xy = (
+    np.column_stack(
+        [
+            np.linspace(0, length, n),
+            np.linspace(0, length, n),
+            np.zeros(n),
+        ]
+    ).astype(np.float32)
+    + origin
+)
 
-diag_xz = np.column_stack([
-    np.linspace(0, length, n),
-    np.zeros(n),
-    np.linspace(0, length, n),
-]).astype(np.float32) + origin
+diag_xz = (
+    np.column_stack(
+        [
+            np.linspace(0, length, n),
+            np.zeros(n),
+            np.linspace(0, length, n),
+        ]
+    ).astype(np.float32)
+    + origin
+)
 
-diag_yz = np.column_stack([
-    np.zeros(n),
-    np.linspace(0, length, n),
-    np.linspace(0, length, n),
-]).astype(np.float32) + origin
+diag_yz = (
+    np.column_stack(
+        [
+            np.zeros(n),
+            np.linspace(0, length, n),
+            np.linspace(0, length, n),
+        ]
+    ).astype(np.float32)
+    + origin
+)
 
-diag_xyz = np.column_stack([
-    np.linspace(0, length, n),
-    np.linspace(0, length, n),
-    np.linspace(0, length, n),
-]).astype(np.float32) + origin
+diag_xyz = (
+    np.column_stack(
+        [
+            np.linspace(0, length, n),
+            np.linspace(0, length, n),
+            np.linspace(0, length, n),
+        ]
+    ).astype(np.float32)
+    + origin
+)
 
 axes_rgb = fury.actor.streamtube(
     [x_line, y_line, z_line, diag_xy, diag_xz, diag_yz, diag_xyz],

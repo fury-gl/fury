@@ -1317,21 +1317,31 @@ def _create_streamtube_baked(
         line_data[idx, : line.shape[0]] = line
 
     use_rgb_mode = isinstance(colors, str) and colors.lower() == "rgb"
+
+    _is_per_point = (
+        isinstance(colors, (list, tuple))
+        and len(colors) > 0
+        and isinstance(colors[0], np.ndarray)
+        and colors[0].ndim == 2
+    )
+
     use_per_point_colors = False
+    point_color_data = None
 
     if use_rgb_mode:
-        line_colors = np.zeros((n_lines, 3), dtype=np.float32)
-        point_color_data = None
-    elif isinstance(colors, (list, tuple)) and len(colors) > 0 and isinstance(
-        colors[0], np.ndarray
-    ) and colors[0].ndim == 2:
+        color_components = 3
+        line_colors = None
+
+    elif _is_per_point:
         use_per_point_colors = True
         color_arrays = [np.asarray(c, dtype=np.float32) for c in colors]
+
         if len(color_arrays) != n_lines:
             raise ValueError(
                 f"Per-point colors list must have {n_lines} arrays, "
                 f"got {len(color_arrays)}"
             )
+
         color_components = color_arrays[0].shape[1]
         if color_components not in (3, 4):
             raise ValueError(
@@ -1341,20 +1351,23 @@ def _create_streamtube_baked(
         if color_components == 4:
             color_arrays = [c[:, :3] for c in color_arrays]
             color_components = 3
+
         for idx, (ca, ll) in enumerate(zip(color_arrays, line_lengths)):
             if ca.shape[0] != ll:
                 raise ValueError(
-                    f"Per-point color array {idx} has {ca.shape[0]} points but "
-                    f"line has {ll} points"
+                    f"Per-point color array {idx} has {ca.shape[0]} points "
+                    f"but line has {ll} points"
                 )
+
         point_color_data = np.zeros(
             (n_lines, max_line_length, color_components), dtype=np.float32
         )
         for idx, ca in enumerate(color_arrays):
             point_color_data[idx, : ca.shape[0]] = ca
+
         line_colors = np.zeros((n_lines, color_components), dtype=np.float32)
+
     else:
-        point_color_data = None
         if colors is None:
             colors = np.array([1.0, 1.0, 1.0], dtype=np.float32)
 
@@ -1393,12 +1406,11 @@ def _create_streamtube_baked(
                     f"(number of lines), got {colors.shape[0]}"
                 )
         else:
-            raise ValueError(
-                f"Colors must be 1D or 2D array, got {colors.ndim}D array"
-            )
+            raise ValueError(f"Colors must be 1D or 2D array, got {colors.ndim}D array")
 
-    line_colors = line_colors.astype(np.float32, copy=False)
-    color_components = line_colors.shape[1]
+    if line_colors is not None:
+        line_colors = line_colors.astype(np.float32, copy=False)
+        color_components = line_colors.shape[1]
 
     tube_sides = int(segments)
     segments_per_line = np.maximum(line_lengths - 1, 0).astype(np.uint32)
@@ -1442,9 +1454,9 @@ def _create_streamtube_baked(
                 colors_data[vertex_idx + n_pts * tube_sides] = point_color_data[
                     line_idx, 0
                 ]
-                colors_data[vertex_idx + n_pts * tube_sides + 1] = (
-                    point_color_data[line_idx, n_pts - 1]
-                )
+                colors_data[vertex_idx + n_pts * tube_sides + 1] = point_color_data[
+                    line_idx, n_pts - 1
+                ]
             vertex_idx += int(vertices_per_line[line_idx])
     elif not use_rgb_mode:
         vertex_idx = 0
@@ -1489,7 +1501,12 @@ def _create_streamtube_baked(
     mesh_obj._needs_gpu_update = True
     mesh_obj.line_buffer = Buffer(line_data.reshape(-1))
     mesh_obj.length_buffer = Buffer(line_lengths)
-    mesh_obj.color_buffer = Buffer(line_colors)
+    _color_buf = (
+        line_colors
+        if line_colors is not None
+        else np.zeros((n_lines, color_components), dtype=np.float32)
+    )
+    mesh_obj.color_buffer = Buffer(_color_buf)
     if use_per_point_colors:
         mesh_obj.point_color_buffer = Buffer(
             point_color_data.reshape(-1).astype(np.float32)
