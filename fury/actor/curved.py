@@ -1367,7 +1367,7 @@ def _create_streamtube_baked(
             color_arrays = [c[:, :3] for c in color_arrays]
             color_components = 3
 
-        for idx, (ca, ll) in enumerate(zip(color_arrays, line_lengths)):
+        for idx, (ca, ll) in enumerate(zip(color_arrays, line_lengths, strict=False)):
             if ca.shape[0] != ll:
                 raise ValueError(
                     f"Per-point color array {idx} has {ca.shape[0]} points "
@@ -1587,6 +1587,7 @@ def _slice_colors_for_lines(colors, start_idx, end_idx):
     if colors_arr.ndim == 2 and colors_arr.shape[0] > 1:
         return colors_arr[start_idx:end_idx]
     return colors
+
 
 def _resolve_color_components_for_streamtube(colors, backend):
     """Infer the color channel count used for streamtube buffers.
