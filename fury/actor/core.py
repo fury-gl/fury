@@ -646,3 +646,59 @@ def line(
     obj.prim_count = len(lines)
 
     return obj
+
+def point(points, colors=None, *, point_radius=0.1, phi=8, theta=8, opacity=1.0):
+    """Visualize one or many points.
+
+    Parameters
+    ----------
+    points : ndarray, shape (N, 3)
+        Points positions.
+    colors : ndarray, shape (N, 3) or (N, 4) or array-like of shape (3,) or (4,), optional
+        RGB or RGBA values in the range [0, 1].
+    point_radius : float
+        Point radius.
+    phi : int
+        Number of points in the latitude direction.
+    theta : int
+        Number of points in the longitude direction.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque). Default is 1.
+
+    Returns
+    -------
+    point_actor : Actor
+
+    See Also
+    --------
+    sphere
+    """
+    if colors is None:
+        # Default color: red
+        colors = np.array([[1.0, 0.0, 0.0]], dtype=float)
+    else:
+        colors = np.asarray(colors)
+
+    if colors.ndim == 1:
+        if colors.shape[0] not in (3, 4):
+            raise ValueError(
+                "colors must be a 1D array-like of length 3 (RGB) or 4 (RGBA)"
+            )
+        colors = colors[np.newaxis, :]
+
+    elif colors.ndim == 2:
+        if colors.shape[1] not in (3, 4):
+            raise ValueError(
+                "Last dimension of colors must be 3 (RGB) or 4 (RGBA)"
+            )
+    else:
+        raise ValueError("colors must be 1D or 2D array-like")
+
+    return sphere(
+        centers=points,
+        colors=colors,
+        radii=point_radius,
+        phi=phi,
+        theta=theta,
+        opacity=opacity,
+    )
