@@ -1766,41 +1766,59 @@ def dot(points, *, colors=None, opacity=None, dot_size=5):
     poly_actor.GetProperty().SetPointSize(dot_size)
 
     return poly_actor
-
-
-@warn_on_args_to_kwargs()
-def point(points, colors, *, point_radius=0.1, phi=8, theta=8, opacity=1.0):
+    
+def point(points, colors=None, *, point_radius=0.1, phi=8, theta=8, opacity=1.0):
     """Visualize points as sphere glyphs.
 
     Parameters
     ----------
     points : ndarray, shape (N, 3)
-    colors : ndarray (N,3) or tuple (3,)
-    point_radius : float
-    phi : int
-    theta : int
+    colors : ndarray, tuple, or None, optional
+        Accepted shapes: (3,), (4,), (1, 3), (1, 4), (N, 3), (N, 4).
+        RGB values should be in the range [0, 1].
+        If None, defaults to red (1, 0, 0). Default is None.
+    point_radius : float, optional
+        Radius of each sphere. Default is 0.1.
+    phi : int, optional
+        Number of azimuthal subdivisions. Default is 8.
+    theta : int, optional
+        Number of polar subdivisions. Default is 8.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque). Default is 1.
 
     Returns
     -------
-    point_actor: Actor
-
-    See Also
-    --------
-    :func:`fury.actor.dot`
-    :func:`fury.actor.sphere`
-
-    Examples
-    --------
-    >>> from fury import window, actor
-    >>> scene = window.Scene()
-    >>> pts = np.random.rand(5, 3)
-    >>> point_actor = actor.point(pts, window.colors.coral)
-    >>> scene.add(point_actor)
-    >>> # window.show(scene)
-
+    point_actor : Actor
     """
+    if colors is None:
+        colors = np.array([[1.0, 0.0, 0.0]], dtype=float)
+    else:
+        colors = np.asarray(colors, dtype=float)
+
+    if colors.ndim == 1:
+        if colors.size not in (3, 4):
+            raise ValueError(
+                f"1D colors must have 3 (RGB) or 4 (RGBA) channels; "
+                f"got size {colors.size}"
+            )
+        colors = colors[np.newaxis, :]
+    elif colors.ndim == 2:
+        if colors.shape[1] not in (3, 4):
+            raise ValueError(
+                f"2D colors must have 3 (RGB) or 4 (RGBA) channels per point; "
+                f"got shape {colors.shape}"
+            )
+        n_points = len(points)
+        if colors.shape[0] not in (1, n_points):
+            raise ValueError(
+                f"colors must have 1 row or match the number of points "
+                f"({n_points}); got {colors.shape[0]} rows"
+            )
+    else:
+        raise ValueError(
+            f"colors must be a 1D or 2D array; got {colors.ndim}D"
+        )
+
     return sphere(
         centers=points,
         colors=colors,
@@ -1811,8 +1829,6 @@ def point(points, colors, *, point_radius=0.1, phi=8, theta=8, opacity=1.0):
         faces=None,
         opacity=opacity,
     )
-
-
 @warn_on_args_to_kwargs()
 def sphere(
     centers,
