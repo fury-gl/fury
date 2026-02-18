@@ -26,7 +26,7 @@
   <a href="#how-to-use">How to use</a> •
   <a href="#credits">Credits</a> •
   <a href="#contribute">Contribute</a> •
-  <a href="#credits">Citing</a>
+  <a href="#citing">Citing</a>
 </p>
 
 |         |         |         |

@@ -38,7 +38,7 @@ Write Documentation
 FURY could always use more documentation, whether
 as part of the official FURY docs, in docstrings,
 or even on the web in blog posts, articles, and such.
-FURY uses `Sphinx <http://www.sphinx-doc.org/en/stable/index.html) to generate documentation>`_.
+FURY uses `Sphinx <http://www.sphinx-doc.org/en/stable/index.html>`_ to generate documentation.
 Please follow the `numpy coding style <https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard>`_ and `PEP8 <https://www.python.org/dev/peps/pep-0008/>`_
 for docstring documentation.
 
@@ -125,7 +125,7 @@ Checklist before Releasing
   outstanding issues that can be closed, and whether there are any issues that
   should delay the release.  Label them !
 
-* Check whether there are no build failing on `GitHub Actions`.
+* Check whether there are no builds failing on `GitHub Actions`.
 
 * Review and update the release notes. Get a partial list of contributors with something like::
 
@@ -224,7 +224,7 @@ Doing the release
 
 * Set up maintenance / development branches
 
-  If this is this is a full release you need to set up two branches, one for
+  If this is a full release you need to set up two branches, one for
   further substantial development (often called 'trunk') and another for
   maintenance releases.
 
