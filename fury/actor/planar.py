@@ -388,7 +388,6 @@ def point(
         colors = np.array([[1.0, 0.0, 0.0]], dtype=float)
     else:
         colors = np.asarray(colors, dtype=float)
-
     if colors.ndim == 1:
         if colors.size not in (3, 4):
             raise ValueError(
