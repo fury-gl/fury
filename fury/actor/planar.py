@@ -405,8 +405,7 @@ def point(
             raise ValueError(
                 f"colors must have 1 row or match number of points "
                 f"({n_points}); got {colors.shape[0]}"
-            ) 
-            
+            )    
     geo = buffer_to_geometry(
         positions=centers.astype("float32"),
         colors=colors.astype("float32"),
