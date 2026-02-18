@@ -646,4 +646,3 @@ def line(
     obj.prim_count = len(lines)
 
     return obj
-    
