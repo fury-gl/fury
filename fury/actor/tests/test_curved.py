@@ -11,6 +11,7 @@ from fury.actor.curved import (
     _split_streamtube_lines,
 )
 from fury.actor.tests._helpers import validate_actors
+from fury.lib import BufferUsage
 from fury.material import (
     StreamlinesMaterial,
     _StreamlineBakedMaterial,
@@ -388,6 +389,36 @@ def test_streamlines_helper_populates_buffers_without_roi():
         wobj._input_positions_array.reshape(wobj.geometry.positions.data.shape),
         equal_nan=True,
     )
+
+
+def test_streamlines_filtered_streamlines_and_copy_src_usage(monkeypatch):
+    """Filtered ids come from line metadata and readback is requested."""
+    lines = [
+        np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]], dtype=np.float32),
+        np.array([[0.0, 1.0, 0.0], [1.0, 1.0, 0.0]], dtype=np.float32),
+    ]
+    wobj = actor.streamlines(lines, colors=(1.0, 0.0, 0.0))
+
+    assert wobj.geometry.positions._wgpu_usage & BufferUsage.COPY_SRC
+
+    calls = []
+
+    def _fake_read_buffer(buffer):
+        calls.append(buffer)
+
+    monkeypatch.setattr("fury.actor.curved.read_buffer", _fake_read_buffer)
+
+    kept_ids, filtered_ids = wobj.filtered_streamlines()
+    assert kept_ids == [0, 1]
+    assert filtered_ids == []
+
+    offset = int(wobj._line_offsets[1])
+    length = int(wobj._line_lengths[1])
+    wobj.geometry.positions.data[offset : offset + length] = np.nan
+    kept_ids, filtered_ids = wobj.filtered_streamlines()
+    assert kept_ids == [0]
+    assert filtered_ids == [1]
+    assert calls == [wobj.geometry.positions, wobj.geometry.positions]
 
 
 def test_actor_from_primitive_wireframe():
