@@ -385,7 +385,7 @@ def point(
     >>> show_manager.start()
     """
     if colors is None:
-        colors = np.array([[1.0, 0.0, 0.0]], dtype=float)
+        colors = np.array([1.0, 0.0, 0.0], dtype=float)
     else:
         colors = np.asarray(colors, dtype=float)
     if colors.ndim == 1:
@@ -393,7 +393,7 @@ def point(
             raise ValueError(
                 f"1D colors must have 3 or 4 channels; got size {colors.size}"
             )
-        colors = colors[np.newaxis, :]
+        colors = np.tile(colors, (len(centers), 1))
     elif colors.ndim == 2:
         if colors.shape[1] not in (3, 4):
             raise ValueError(
@@ -404,7 +404,7 @@ def point(
             raise ValueError(
                 f"colors must have 1 row or match number of points "
                 f"({n_points}); got {colors.shape[0]}"
-            )    
+            )
     geo = buffer_to_geometry(
         positions=centers.astype("float32"),
         colors=colors.astype("float32"),
