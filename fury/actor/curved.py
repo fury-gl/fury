@@ -1332,7 +1332,6 @@ def _create_streamtube_baked(
         line_data[idx, : line.shape[0]] = line
 
     use_rgb_mode = isinstance(colors, str) and colors.lower() == "rgb"
-
     use_per_point_colors = (
         isinstance(colors, (list, tuple))
         and len(colors) > 0
@@ -1341,49 +1340,12 @@ def _create_streamtube_baked(
     )
 
     point_color_data = None
+    line_colors = None
 
-    if use_rgb_mode:
-        color_components = 3
-        line_colors = None
+    if colors is None:
+        colors = np.array([1.0, 1.0, 1.0], dtype=np.float32)
 
-    elif use_per_point_colors:
-        color_arrays = [np.asarray(c, dtype=np.float32) for c in colors]
-
-        if len(color_arrays) != n_lines:
-            raise ValueError(
-                f"Per-point colors list must have {n_lines} arrays, "
-                f"got {len(color_arrays)}"
-            )
-
-        color_components = color_arrays[0].shape[1]
-        if color_components not in (3, 4):
-            raise ValueError(
-                "Per-point colors must have 3 (RGB) or 4 (RGBA) components, "
-                f"got {color_components}"
-            )
-        if color_components == 4:
-            color_arrays = [c[:, :3] for c in color_arrays]
-            color_components = 3
-
-        for idx, (ca, ll) in enumerate(zip(color_arrays, line_lengths, strict=False)):
-            if ca.shape[0] != ll:
-                raise ValueError(
-                    f"Per-point color array {idx} has {ca.shape[0]} points "
-                    f"but line has {ll} points"
-                )
-
-        point_color_data = np.zeros(
-            (n_lines, max_line_length, color_components), dtype=np.float32
-        )
-        for idx, ca in enumerate(color_arrays):
-            point_color_data[idx, : ca.shape[0]] = ca
-
-        line_colors = None
-
-    else:
-        if colors is None:
-            colors = np.array([1.0, 1.0, 1.0], dtype=np.float32)
-
+    if not use_rgb_mode and not use_per_point_colors:
         colors = np.asarray(colors, dtype=np.float32)
 
         if colors.ndim == 1:
@@ -1420,6 +1382,41 @@ def _create_streamtube_baked(
                 )
         else:
             raise ValueError(f"Colors must be 1D or 2D array, got {colors.ndim}D array")
+
+    elif use_per_point_colors:
+        color_arrays = [np.asarray(c, dtype=np.float32) for c in colors]
+
+        if len(color_arrays) != n_lines:
+            raise ValueError(
+                f"Per-point colors list must have {n_lines} arrays, "
+                f"got {len(color_arrays)}"
+            )
+
+        color_components = color_arrays[0].shape[1]
+        if color_components not in (3, 4):
+            raise ValueError(
+                "Per-point colors must have 3 (RGB) or 4 (RGBA) components, "
+                f"got {color_components}"
+            )
+        if color_components == 4:
+            color_arrays = [c[:, :3] for c in color_arrays]
+            color_components = 3
+
+        for idx, (ca, ll) in enumerate(zip(color_arrays, line_lengths, strict=False)):
+            if ca.shape[0] != ll:
+                raise ValueError(
+                    f"Per-point color array {idx} has {ca.shape[0]} points "
+                    f"but line has {ll} points"
+                )
+
+        point_color_data = np.zeros(
+            (n_lines, max_line_length, color_components), dtype=np.float32
+        )
+        for idx, ca in enumerate(color_arrays):
+            point_color_data[idx, : ca.shape[0]] = ca
+
+    elif use_rgb_mode:
+        color_components = 3
 
     if line_colors is not None:
         line_colors = line_colors.astype(np.float32, copy=False)
