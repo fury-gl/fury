@@ -1,4 +1,5 @@
 {{ bindings_code }}
+{$ include 'fury.utils.wgsl' $}
 
 const N_LINES = u32({{ n_lines }});
 const OUT_CAPACITY = u32({{ out_capacity }});
@@ -19,7 +20,7 @@ fn mask_idx_from_grid(g: vec3<i32>) -> i32 {
     if (any(g < vec3<i32>(0)) || any(g >= ROI_DIM)) {
         return -1;
     }
-    return (g.z * ROI_DIM.y + g.y) * ROI_DIM.x + g.x;
+    return flatten_from_3d(g, ROI_DIM);
 }
 
 fn mask_value(g: vec3<i32>) -> bool {

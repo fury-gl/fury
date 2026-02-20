@@ -127,9 +127,11 @@ PrimitiveTopology = wgpu.PrimitiveTopology
 CullMode = wgpu.CullMode
 Binding = gfx.renderers.wgpu.Binding
 Buffer = gfx.Buffer
+BufferUsage = wgpu.BufferUsage
 register_wgpu_render_function = gfx.renderers.wgpu.register_wgpu_render_function
 load_wgsl = gfx.renderers.wgpu.load_wgsl
 register_wgsl_loader = gfx.renderers.wgpu.shader.register_wgsl_loader
+wgpu_device = gfx.renderers.wgpu.get_shared().device
 
 Event = gfx.Event
 EventType = gfx.EventType
@@ -157,14 +159,3 @@ else:
     qcall_later = PySide6
 
 register_wgsl_loader("fury", jinja2.PackageLoader("fury.wgsl", "."))
-
-
-def get_device_limits():
-    """Get the shared wgpu device used by pygfx.
-
-    Returns
-    -------
-    dict
-        The limits of the shared wgpu device.
-    """
-    return gfx.renderers.wgpu.get_shared().device.limits

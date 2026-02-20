@@ -5,12 +5,13 @@ import itertools
 
 import numpy as np
 
-from fury.actor import Group, Line, Mesh, actor_from_primitive, create_mesh
+from fury.actor import Group, Line, Mesh, actor_from_primitive, create_mesh, read_buffer
 from fury.geometry import buffer_to_geometry, line_buffer_separator
 from fury.lib import (
     Buffer,
-    get_device_limits,
+    BufferUsage,
     register_wgpu_render_function,
+    wgpu_device,
 )
 from fury.material import (
     StreamlinesMaterial,
@@ -642,6 +643,7 @@ class Streamlines(Line):
             positions=positions_out.astype("float32"),
             colors=colors_out.astype("float32"),
         )
+        self.geometry.positions._wgpu_usage |= BufferUsage.COPY_SRC
 
         material_kwargs = {
             "outline_thickness": outline_thickness,
@@ -808,6 +810,30 @@ class Streamlines(Line):
         if origin.size != 3:
             raise ValueError("roi_origin must have exactly three values.")
         return origin
+
+    def filtered_streamlines(self):
+        """Get the currently filtered line ids after ROI baking.
+
+        Returns
+        -------
+        tuple of lists
+             A tuple (kept_ids, filter_ids) where kept_ids is a list of line ids
+             that passed the ROI filter and filter_ids is a list of line ids that
+             were filtered out.
+        """
+        read_buffer(self.geometry.positions)
+        kept_ids = []
+        filter_ids = []
+        for line_id, (offset, length) in enumerate(
+            zip(self._line_offsets, self._line_lengths, strict=False)
+        ):
+            segment = self.geometry.positions.data[offset : offset + length]
+            if np.isfinite(segment).all():
+                kept_ids.append(line_id)
+            else:
+                filter_ids.append(line_id)
+
+        return kept_ids, filter_ids
 
 
 def streamlines(
@@ -1774,7 +1800,7 @@ def streamtube(
         raise ValueError(f"backend must be 'cpu' or 'gpu', got {backend!r}")
 
     color_components = _resolve_color_components_for_streamtube(colors, backend)
-    max_buffer_size = get_device_limits().get(
+    max_buffer_size = wgpu_device.limits.get(
         "max-storage-buffer-binding-size", 256 * 1024 * 1024
     )
 

@@ -2,7 +2,14 @@
 
 import numpy as np
 
-from fury.lib import AffineTransform, GfxGroup, RecursiveTransform, WorldObject
+from fury.lib import (
+    AffineTransform,
+    Buffer,
+    GfxGroup,
+    RecursiveTransform,
+    WorldObject,
+    wgpu_device,
+)
 from fury.material import validate_opacity
 
 
@@ -192,3 +199,37 @@ def apply_affine_to_actor(actor, affine):
     recursive_transform = RecursiveTransform(affine_transform)
     actor.local = affine_transform
     actor.world = recursive_transform
+
+
+def read_buffer(buffer, *, sync_cpu=True):
+    """Read the contents of a wgpu buffer into a NumPy array.
+
+    Parameters
+    ----------
+    buffer : wgpu.Buffer
+        The buffer to read from.
+    sync_cpu : bool, optional
+        Whether to synchronize the CPU data with the GPU data. If True and the
+        buffer has a CPU-side data array, it will be updated with the contents of
+        the GPU buffer.
+
+    Returns
+    -------
+    np.ndarray
+        The contents of the buffer as a NumPy array.
+    """
+    if not isinstance(buffer, Buffer):
+        raise ValueError("Expected a wgpu.Buffer instance.")
+
+    raw = wgpu_device.queue.read_buffer(buffer)
+    cpu_shape = buffer.data.shape if buffer.data is not None else None
+    gpu_buffer = (
+        np.frombuffer(raw, dtype=np.float32).reshape(cpu_shape).copy()
+        if cpu_shape is not None
+        else np.frombuffer(raw, dtype=np.float32)
+    )
+
+    if sync_cpu and buffer.data is not None:
+        np.asarray(buffer.data)[...] = gpu_buffer
+
+    return gpu_buffer
