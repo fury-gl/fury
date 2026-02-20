@@ -291,10 +291,10 @@ def test_streamtube_buffer_helpers_and_split_ratio(monkeypatch):
     # a Group on CPU backend
     colors = np.eye(len(line_lengths), 3, dtype=np.float32)
     buffer_limit = max_buffer
-    monkeypatch.setattr(
-        "fury.actor.curved.get_device_limits",
-        lambda: {"max-storage-buffer-binding-size": buffer_limit},
-    )
+    fake_device = type(
+        "FakeDevice", (), {"limits": {"max-storage-buffer-binding-size": buffer_limit}}
+    )()
+    monkeypatch.setattr("fury.actor.curved.wgpu_device", fake_device)
     actor_group = actor.streamtube(
         lines,
         colors=colors,

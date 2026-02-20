@@ -5,14 +5,13 @@ import itertools
 
 import numpy as np
 
-from fury.actor import Group, Line, Mesh, actor_from_primitive, create_mesh
+from fury.actor import Group, Line, Mesh, actor_from_primitive, create_mesh, read_buffer
 from fury.geometry import buffer_to_geometry, line_buffer_separator
 from fury.lib import (
     Buffer,
     BufferUsage,
-    get_device_limits,
-    read_buffer,
     register_wgpu_render_function,
+    wgpu_device,
 )
 from fury.material import (
     StreamlinesMaterial,
@@ -1801,7 +1800,7 @@ def streamtube(
         raise ValueError(f"backend must be 'cpu' or 'gpu', got {backend!r}")
 
     color_components = _resolve_color_components_for_streamtube(colors, backend)
-    max_buffer_size = get_device_limits().get(
+    max_buffer_size = wgpu_device.limits.get(
         "max-storage-buffer-binding-size", 256 * 1024 * 1024
     )
 

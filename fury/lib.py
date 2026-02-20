@@ -3,7 +3,6 @@
 from typing import TypeAlias
 
 import jinja2
-import numpy as np
 import pygfx as gfx
 from rendercanvas.auto import RenderCanvas, loop
 from rendercanvas.offscreen import RenderCanvas as OffscreenRenderCanvas
@@ -132,6 +131,7 @@ BufferUsage = wgpu.BufferUsage
 register_wgpu_render_function = gfx.renderers.wgpu.register_wgpu_render_function
 load_wgsl = gfx.renderers.wgpu.load_wgsl
 register_wgsl_loader = gfx.renderers.wgpu.shader.register_wgsl_loader
+wgpu_device = gfx.renderers.wgpu.get_shared().device
 
 Event = gfx.Event
 EventType = gfx.EventType
@@ -159,48 +159,3 @@ else:
     qcall_later = PySide6
 
 register_wgsl_loader("fury", jinja2.PackageLoader("fury.wgsl", "."))
-
-
-def get_device_limits():
-    """Get the shared wgpu device used by pygfx.
-
-    Returns
-    -------
-    dict
-        The limits of the shared wgpu device.
-    """
-    return gfx.renderers.wgpu.get_shared().device.limits
-
-
-def read_buffer(buffer, *, sync_cpu=True):
-    """Read the contents of a wgpu buffer into a NumPy array.
-
-    Parameters
-    ----------
-    buffer : wgpu.Buffer
-        The buffer to read from.
-    sync_cpu : bool, optional
-        Whether to synchronize the CPU data with the GPU data. If True and the
-        buffer has a CPU-side data array, it will be updated with the contents of
-        the GPU buffer.
-
-    Returns
-    -------
-    np.ndarray
-        The contents of the buffer as a NumPy array.
-    """
-    if not isinstance(buffer, Buffer):
-        raise ValueError("Expected a wgpu.Buffer instance.")
-
-    raw = gfx.renderers.wgpu.get_shared().device.queue.read_buffer(buffer)
-    cpu_shape = buffer.data.shape if buffer.data is not None else None
-    gpu_buffer = (
-        np.frombuffer(raw, dtype=np.float32).reshape(cpu_shape).copy()
-        if cpu_shape is not None
-        else np.frombuffer(raw, dtype=np.float32)
-    )
-
-    if sync_cpu and buffer.data is not None:
-        np.asarray(buffer.data)[...] = gpu_buffer
-
-    return gpu_buffer

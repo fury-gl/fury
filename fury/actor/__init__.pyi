@@ -63,6 +63,7 @@ __all__ = [
     "contour_from_volume",
     "contour_from_roi",
     "contour_from_label",
+    "read_buffer",
 ]
 
 from .billboard import billboard
@@ -123,6 +124,7 @@ from .utils import (
     apply_affine_to_actor,
     apply_affine_to_group,
     get_slices,
+    read_buffer,
     set_group_opacity,
     set_group_visibility,
     set_opacity,
