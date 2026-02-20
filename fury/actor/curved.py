@@ -1333,22 +1333,20 @@ def _create_streamtube_baked(
 
     use_rgb_mode = isinstance(colors, str) and colors.lower() == "rgb"
 
-    _is_per_point = (
+    use_per_point_colors = (
         isinstance(colors, (list, tuple))
         and len(colors) > 0
         and isinstance(colors[0], np.ndarray)
         and colors[0].ndim == 2
     )
 
-    use_per_point_colors = False
     point_color_data = None
 
     if use_rgb_mode:
         color_components = 3
         line_colors = None
 
-    elif _is_per_point:
-        use_per_point_colors = True
+    elif use_per_point_colors:
         color_arrays = [np.asarray(c, dtype=np.float32) for c in colors]
 
         if len(color_arrays) != n_lines:
@@ -1380,7 +1378,7 @@ def _create_streamtube_baked(
         for idx, ca in enumerate(color_arrays):
             point_color_data[idx, : ca.shape[0]] = ca
 
-        line_colors = np.zeros((n_lines, color_components), dtype=np.float32)
+        line_colors = None
 
     else:
         if colors is None:
