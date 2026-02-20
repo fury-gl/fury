@@ -3013,8 +3013,6 @@ def vector_text(
 
     texta.SetPosition(*pos)
     return texta
-
-
 @warn_on_args_to_kwargs()
 def text_3d(
     text,
@@ -3033,22 +3031,49 @@ def text_3d(
 
     Parameters
     ----------
-    text : str
-    position : tuple
-    color : tuple
-    font_size : int
+    text : str or list of str
+        Text string or list of text strings to display.
+    position : tuple or list of tuples
+        (x, y, z) position or list of positions. If a list of texts is
+        provided, a matching list of positions should be provided.
+        Default: (0, 0, 0).
+    color : tuple (3,) or list of tuples
+        RGB color or list of RGB colors in range [0, 1].
+        Default: (1, 1, 1).
+    font_size : int or list of int
+        Font size or list of font sizes. Default: 12.
     font_family : str
+        Font family. Default: Arial.
     justification : str
         Left, center or right (default left).
     vertical_justification : str
         Bottom, middle or top (default bottom).
     bold : bool
+        Default False.
     italic : bool
+        Default False.
     shadow : bool
+        Default False.
 
     Returns
     -------
-    Text3D
+    Text3D or Assembly
+        A single Text3D actor if text is a string, or a vtkAssembly
+        containing multiple Text3D actors if text is a list.
+
+    Examples
+    --------
+    >>> from fury import actor, window
+    >>> scene = window.Scene()
+    >>> # Single text
+    >>> t = actor.text_3d('Hello', position=(0, 0, 0))
+    >>> scene.add(t)
+    >>> # Multiple texts
+    >>> texts = ['Hello', 'World', 'FURY']
+    >>> positions = [(0, 0, 0), (1, 0, 0), (2, 0, 0)]
+    >>> t = actor.text_3d(texts, position=positions)
+    >>> scene.add(t)
+    >>> # window.show(scene)
 
     """
 
@@ -3064,7 +3089,7 @@ def text_3d(
 
         def font_size(self, size):
             self.GetTextProperty().SetFontSize(24)
-            text_actor.SetScale((1.0 / 24.0 * size,) * 3)
+            self.SetScale((1.0 / 24.0 * size,) * 3)
 
         @warn_on_args_to_kwargs()
         def font_family(self, *, _family="Arial"):
@@ -3119,17 +3144,49 @@ def text_3d(
         def get_position(self):
             return self.GetPosition()
 
-    text_actor = Text3D()
-    text_actor.message(text)
-    text_actor.font_size(font_size)
-    text_actor.set_position(position)
-    text_actor.font_family(_family=font_family)
-    text_actor.font_style(bold=bold, italic=italic, shadow=shadow)
-    text_actor.color(color)
-    text_actor.justification(justification)
-    text_actor.vertical_justification(vertical_justification)
+    def _make_single(txt, pos, col, fsize):
+        """Create a single Text3D actor."""
+        text_actor = Text3D()
+        text_actor.message(txt)
+        text_actor.font_size(fsize)
+        text_actor.set_position(pos)
+        text_actor.font_family(_family=font_family)
+        text_actor.font_style(bold=bold, italic=italic, shadow=shadow)
+        text_actor.color(col)
+        text_actor.justification(justification)
+        text_actor.vertical_justification(vertical_justification)
+        return text_actor
 
-    return text_actor
+    # Handle multiple texts
+    if isinstance(text, (list, tuple)) and not isinstance(text, str):
+        n = len(text)
+
+        # Normalize positions
+        if isinstance(position, list) and len(position) == n:
+            positions = position
+        else:
+            positions = [position] * n
+
+        # Normalize colors
+        if isinstance(color, list) and len(color) == n:
+            colors = color
+        else:
+            colors = [color] * n
+
+        # Normalize font sizes
+        if isinstance(font_size, (list, np.ndarray)) and len(font_size) == n:
+            font_sizes = list(font_size)
+        else:
+            font_sizes = [font_size] * n
+
+        assembly = Assembly()
+        for txt, pos, col, fsize in zip(text, positions, colors, font_sizes):
+            assembly.AddPart(_make_single(txt, pos, col, fsize))
+        return assembly
+
+    # Single text — original behaviour
+    return _make_single(text, position, color, font_size)
+
 
 
 class Container:
