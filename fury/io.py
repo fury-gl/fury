@@ -239,6 +239,72 @@ def save_image(
     im = Image.fromarray(arr)
     im.save(filename, quality=compression_quality, dpi=dpi)
 
+def load_rectilinear_grid(file_name):
+    """Load a VTK rectilinear grid (.vtr) file.
+
+    Parameters
+    ----------
+    file_name : str
+        Path to the .vtr file.
+
+    Returns
+    -------
+    dict
+        Dictionary containing:
+        - 'x_coords': ndarray of x coordinates
+        - 'y_coords': ndarray of y coordinates
+        - 'z_coords': ndarray of z coordinates
+        - 'point_data': dict of point data arrays
+        - 'cell_data': dict of cell data arrays
+
+    Raises
+    ------
+    FileNotFoundError
+        If the file does not exist.
+    ImportError
+        If vtk is not installed.
+    """
+    if not os.path.isfile(file_name):
+        raise FileNotFoundError(f"File {file_name} does not exist.")
+
+    try:
+        import vtk
+        from vtk.util.numpy_support import vtk_to_numpy
+    except ImportError as e:
+        raise ImportError(
+            "vtk is required to load rectilinear grid files. "
+            "Install it with: pip install vtk"
+        ) from e
+
+    reader = vtk.vtkXMLRectilinearGridReader()
+    reader.SetFileName(file_name)
+    reader.Update()
+    grid = reader.GetOutput()
+
+    x = vtk_to_numpy(grid.GetXCoordinates())
+    y = vtk_to_numpy(grid.GetYCoordinates())
+    z = vtk_to_numpy(grid.GetZCoordinates())
+
+    point_data = {}
+    pd = grid.GetPointData()
+    for i in range(pd.GetNumberOfArrays()):
+        arr = pd.GetArray(i)
+        point_data[arr.GetName()] = vtk_to_numpy(arr)
+
+    cell_data = {}
+    cd = grid.GetCellData()
+    for i in range(cd.GetNumberOfArrays()):
+        arr = cd.GetArray(i)
+        cell_data[arr.GetName()] = vtk_to_numpy(arr)
+
+    return {
+        "x_coords": x,
+        "y_coords": y,
+        "z_coords": z,
+        "point_data": point_data,
+        "cell_data": cell_data,
+    }
+
 
 # def load_polydata(file_name):
 #     """Load a vtk polydata to a supported format file.
