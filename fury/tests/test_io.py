@@ -14,6 +14,7 @@ from fury.io import (
     load_image,
     load_image_as_wgpu_texture_view,
     load_image_texture,
+    load_rectilinear_grid,
     # load_polydata,
     # load_sprite_sheet,
     # load_text,
@@ -238,6 +239,48 @@ def test_save_load_image():
                 assert_greater(os.stat(fname_path).st_size, 0)
             except OSError:
                 continue
+def test_load_rectilinear_grid():
+    """Test load_rectilinear_grid function."""
+    npt.assert_raises(FileNotFoundError, load_rectilinear_grid, "nonexistent.vtr")
+
+    try:
+        import vtk
+        from vtk.util.numpy_support import vtk_to_numpy  # noqa: F401
+    except ImportError:
+        return
+
+    with InTemporaryDirectory() as tdir:
+        grid = vtk.vtkRectilinearGrid()
+        grid.SetDimensions(3, 3, 3)
+
+        x_coords = vtk.vtkFloatArray()
+        y_coords = vtk.vtkFloatArray()
+        z_coords = vtk.vtkFloatArray()
+
+        for i in range(3):
+            x_coords.InsertNextValue(float(i))
+            y_coords.InsertNextValue(float(i))
+            z_coords.InsertNextValue(float(i))
+
+        grid.SetXCoordinates(x_coords)
+        grid.SetYCoordinates(y_coords)
+        grid.SetZCoordinates(z_coords)
+
+        fname = os.path.join(tdir, "test.vtr")
+        writer = vtk.vtkXMLRectilinearGridWriter()
+        writer.SetFileName(fname)
+        writer.SetInputData(grid)
+        writer.Write()
+
+        result = load_rectilinear_grid(fname)
+
+        assert isinstance(result, dict)
+        assert "x_coords" in result
+        assert "y_coords" in result
+        assert "z_coords" in result
+        assert "point_data" in result
+        assert "cell_data" in result
+        npt.assert_array_equal(result["x_coords"], [0.0, 1.0, 2.0])
 
 
 # @pytest.mark.skipif(
