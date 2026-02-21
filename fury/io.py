@@ -239,6 +239,7 @@ def save_image(
     im = Image.fromarray(arr)
     im.save(filename, quality=compression_quality, dpi=dpi)
 
+
 def load_rectilinear_grid(file_name):
     """Load a VTK rectilinear grid (.vtr) file.
 

@@ -239,6 +239,8 @@ def test_save_load_image():
                 assert_greater(os.stat(fname_path).st_size, 0)
             except OSError:
                 continue
+
+
 def test_load_rectilinear_grid():
     """Test load_rectilinear_grid function."""
     npt.assert_raises(FileNotFoundError, load_rectilinear_grid, "nonexistent.vtr")
