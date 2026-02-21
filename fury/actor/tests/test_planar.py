@@ -5,6 +5,7 @@ import pytest
 
 from fury import actor, window
 from fury.actor.tests._helpers import validate_actors
+import fury.primitive as fp
 
 
 def test_square():
@@ -67,6 +68,86 @@ def test_ring():
     assert mean_g == 0 and mean_b == 0
 
     scene.remove(ring_actor_1)
+
+
+def test_ring_per_instance_actor_features():
+    centers = np.array([[0.0, 0.0, 0.0], [5.0, 0.0, 0.0]])
+    colors = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+    inner_radius = np.array([0.2, 0.6])
+    outer_radius = np.array([1.0, 1.8])
+    radial_segments = np.array([1, 2])
+    circumferential_segments = np.array([16, 24])
+
+    ring_actor = actor.ring(
+        centers=centers,
+        colors=colors,
+        inner_radius=inner_radius,
+        outer_radius=outer_radius,
+        radial_segments=radial_segments,
+        circumferential_segments=circumferential_segments,
+    )
+
+    npt.assert_equal(ring_actor.prim_count, 2)
+
+    verts_0, _ = fp.prim_ring(
+        inner_radius=inner_radius[0],
+        outer_radius=outer_radius[0],
+        radial_segments=radial_segments[0],
+        circumferential_segments=circumferential_segments[0],
+    )
+    verts_1, _ = fp.prim_ring(
+        inner_radius=inner_radius[1],
+        outer_radius=outer_radius[1],
+        radial_segments=radial_segments[1],
+        circumferential_segments=circumferential_segments[1],
+    )
+
+    n_verts_0 = len(verts_0)
+    n_verts_1 = len(verts_1)
+
+    positions = ring_actor.geometry.positions.view
+    colors_view = ring_actor.geometry.colors.view
+
+    ring0 = positions[:n_verts_0]
+    ring1 = positions[n_verts_0 : n_verts_0 + n_verts_1]
+
+    ring0_dist = np.sqrt(
+        (ring0[:, 0] - centers[0, 0]) ** 2 + (ring0[:, 1] - centers[0, 1]) ** 2
+    )
+    ring1_dist = np.sqrt(
+        (ring1[:, 0] - centers[1, 0]) ** 2 + (ring1[:, 1] - centers[1, 1]) ** 2
+    )
+
+    npt.assert_almost_equal(np.min(ring0_dist), inner_radius[0], decimal=6)
+    npt.assert_almost_equal(np.max(ring0_dist), outer_radius[0], decimal=6)
+    npt.assert_almost_equal(np.min(ring1_dist), inner_radius[1], decimal=6)
+    npt.assert_almost_equal(np.max(ring1_dist), outer_radius[1], decimal=6)
+
+    npt.assert_array_equal(
+        np.unique(colors_view[:n_verts_0], axis=0), np.array([[1.0, 0.0, 0.0]])
+    )
+    npt.assert_array_equal(
+        np.unique(colors_view[n_verts_0 : n_verts_0 + n_verts_1], axis=0),
+        np.array([[0.0, 1.0, 0.0]]),
+    )
+
+
+def test_ring_per_instance_actor_features_invalid_input():
+    centers = np.array([[0.0, 0.0, 0.0], [5.0, 0.0, 0.0]])
+
+    with pytest.raises(ValueError, match="inner_radius size should be 1 or equal"):
+        actor.ring(centers=centers, inner_radius=np.array([0.1, 0.2, 0.3]))
+
+    with pytest.raises(ValueError, match="outer_radius size should be 1 or equal"):
+        actor.ring(centers=centers, outer_radius=np.array([1.0, 2.0, 3.0]))
+
+    with pytest.raises(ValueError, match="radial_segments size should be 1 or equal"):
+        actor.ring(centers=centers, radial_segments=np.array([1, 2, 3]))
+
+    with pytest.raises(
+        ValueError, match="circumferential_segments size should be 1 or equal"
+    ):
+        actor.ring(centers=centers, circumferential_segments=np.array([16, 24, 32]))
 
 
 def test_point():
