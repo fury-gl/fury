@@ -965,6 +965,7 @@ class TextBlock2D(UI):
         self._bg_size = size
 
         self._last_rendered_size = (0, 0)
+        self._layout_dirty = True
 
         if self._bg_size is None and not self.dynamic_bbox:
             raise ValueError("TextBlock size is required as it is not dynamic.")
@@ -999,11 +1000,15 @@ class TextBlock2D(UI):
         size : (int, int)
             The new (width, height) in pixels.
         """
+        self._bg_size = size
         self.actor.max_width = size[1]
         self.update_bounding_box(size=size)
+        self.mark_layout_dirty()
 
     def update_layout(self):
         """Update the component layout based on current text dimensions."""
+        self._layout_dirty = False
+
         current_w, current_h = self.get_text_actor_size()
         last_w, last_h = self._last_rendered_size
 
@@ -1014,6 +1019,10 @@ class TextBlock2D(UI):
                 self.update_bounding_box()
             else:
                 self.update_alignment()
+
+    def mark_layout_dirty(self):
+        """Mark this component as needing a layout update on the next frame."""
+        self._layout_dirty = True
 
     def _get_actors(self):
         """Get the actors composing this UI component.
@@ -1071,8 +1080,7 @@ class TextBlock2D(UI):
         """
         self._message = text
         self.actor.set_markdown(self.get_formatted_text(text))
-        if self.dynamic_bbox:
-            self.update_bounding_box()
+        self.mark_layout_dirty()
 
     @property
     def font_size(self):
@@ -1095,8 +1103,7 @@ class TextBlock2D(UI):
             Text font size.
         """
         self.actor.font_size = size
-        if self.dynamic_bbox:
-            self.update_bounding_box()
+        self.mark_layout_dirty()
 
     @property
     def font_family(self):
@@ -1119,8 +1126,7 @@ class TextBlock2D(UI):
             The font family.
         """
         self.actor.family = family
-        if self.dynamic_bbox:
-            self.update_bounding_box()
+        self.mark_layout_dirty()
 
     @property
     def justification(self):
@@ -1142,8 +1148,11 @@ class TextBlock2D(UI):
         justification : str
             Possible values are left, center, right.
         """
+        if justification.lower() not in ("left", "center", "right"):
+            msg = "Text can only be justified left, center and right."
+            raise ValueError(msg)
         self._justification = justification
-        self.update_alignment()
+        self.mark_layout_dirty()
 
     @property
     def vertical_justification(self):
@@ -1165,8 +1174,11 @@ class TextBlock2D(UI):
         vertical_justification : str
             Possible values are top, middle, bottom.
         """
+        if vertical_justification.lower() not in ("top", "middle", "bottom"):
+            msg = "Vertical justification must be: top, middle or bottom."
+            raise ValueError(msg)
         self._vertical_justification = vertical_justification
-        self.update_alignment()
+        self.mark_layout_dirty()
 
     @property
     def bold(self):
@@ -1290,8 +1302,7 @@ class TextBlock2D(UI):
             If True, the bounding box resizes to content.
         """
         self._dynamic_bbox = flag
-        if flag:
-            self.update_bounding_box()
+        self.mark_layout_dirty()
 
     def update_alignment(self):
         """Update the text actor alignment within the bounding box."""
