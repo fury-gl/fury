@@ -12,7 +12,7 @@ __all__ = [
     "LineSlider2D",
     #     "TextBox2D",
     #     "LineDoubleSlider2D",
-    #     "RingSlider2D",
+    "RingSlider2D",
     #     "RangeSlider",
     #     "Checkbox",
     #     "Option",
