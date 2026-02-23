@@ -34,7 +34,11 @@ billboard_spheres = actor.sphere(
 # These are actual 3D mesh spheres with vertices and faces.
 
 geometry_spheres = actor.sphere(
-    centers=centers + np.array([[0, -2, 0]]), colors=colors, radii=radii, opacity=1
+    centers=centers + np.array([[0, -2, 0]]),
+    colors=colors,
+    radii=radii,
+    opacity=1,
+    impostor=False,
 )
 
 ###############################################################################

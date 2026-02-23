@@ -49,8 +49,17 @@ fn vs_main(in: VertexInput) -> Varyings {
     var varyings: Varyings;
     varyings.position = vec4<f32>(clip_pos);
     varyings.world_pos = vec3<f32>(world_pos);
-    let color = load_s_colors(billboard_index * 6);
-    varyings.color = vec4<f32>(color, 1.0);
+    $$ if color_buffer_channels == 4
+    varyings.color = vec4<f32>(load_s_colors(billboard_index * 6));
+    $$ elif color_buffer_channels == 3
+    varyings.color = vec4<f32>(load_s_colors(billboard_index * 6), 1.0);
+    $$ elif color_buffer_channels == 2
+    let cvalue = load_s_colors(billboard_index * 6);
+    varyings.color = vec4<f32>(cvalue.r, cvalue.r, cvalue.r, cvalue.g);
+    $$ elif color_buffer_channels == 1
+    let cvalue = load_s_colors(billboard_index * 6);
+    varyings.color = vec4<f32>(cvalue, cvalue, cvalue, 1.0);
+    $$ endif
     varyings.texcoord_vert = vec2<f32>(tex_coord);
     varyings.billboard_center = vec3<f32>(world_center.x, world_center.y, world_center.z);
     varyings.billboard_right = vec3<f32>(cam_right.x, cam_right.y, cam_right.z);

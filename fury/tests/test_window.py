@@ -34,7 +34,7 @@ from fury.window import (
 @pytest.fixture
 def sample_actor():
     "Fixture to provide a simple actor."
-    actor = sphere(np.zeros((1, 3)), material="basic")
+    actor = sphere(np.zeros((1, 3)), material="basic", impostor=False)
     return actor
 
 

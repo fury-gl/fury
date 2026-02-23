@@ -68,7 +68,7 @@ __all__ = [
     "read_buffer",
 ]
 
-from .billboard import Billboard, billboard, billboard_sphere
+from ._billboard import Billboard, billboard, billboard_sphere
 from .bio import contour_from_label, contour_from_roi, peaks_slicer, volume_slicer
 from .core import (
     Actor,

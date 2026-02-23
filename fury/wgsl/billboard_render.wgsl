@@ -49,8 +49,17 @@ fn vs_main(in: VertexInput) -> Varyings {
     varyings.world_pos = vec3<f32>(world_pos);
 
     // Load color if available - colors are duplicated 6x like positions
-    let color = load_s_colors(billboard_index * 6);
-    varyings.color = vec4<f32>(color, 1.0);
+    $$ if color_buffer_channels == 4
+    varyings.color = vec4<f32>(load_s_colors(billboard_index * 6));
+    $$ elif color_buffer_channels == 3
+    varyings.color = vec4<f32>(load_s_colors(billboard_index * 6), 1.0);
+    $$ elif color_buffer_channels == 2
+    let cvalue = load_s_colors(billboard_index * 6);
+    varyings.color = vec4<f32>(cvalue.r, cvalue.r, cvalue.r, cvalue.g);
+    $$ elif color_buffer_channels == 1
+    let cvalue = load_s_colors(billboard_index * 6);
+    varyings.color = vec4<f32>(cvalue, cvalue, cvalue, 1.0);
+    $$ endif
 
     return varyings;
 }

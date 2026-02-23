@@ -125,7 +125,7 @@ def sphere(
             radii_arr = np.full((count,), radii_arr.flat[0], dtype=np.float32)
 
     if impostor:
-        from fury.actor.billboard import billboard_sphere
+        from fury.actor._billboard import billboard_sphere
 
         obj = billboard_sphere(
             centers_arr,
