@@ -22,7 +22,9 @@ from fury.material import (
 def test_sphere():
     centers = np.array([[0, 0, 0]])
     colors = np.array([[1, 0, 0]])
-    validate_actors(centers=centers, colors=colors, actor_type="sphere")
+    validate_actors(
+        centers=centers, colors=colors, actor_type="sphere", impostor=False
+    )
 
 
 def test_cylinder():

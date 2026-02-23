@@ -159,6 +159,7 @@ def test_billboard_sphere(interactive: bool = False):
         colors=colors,
         radii=radii,
         opacity=0.6,
+        impostor=False,
     )
 
     assert isinstance(mesh_spheres.material, MeshPhongMaterial)

@@ -6,7 +6,6 @@ import itertools
 import numpy as np
 
 from fury.actor import Group, Line, Mesh, actor_from_primitive, create_mesh, read_buffer
-from fury.actor.billboard import billboard_sphere
 from fury.geometry import buffer_to_geometry, line_buffer_separator
 from fury.lib import (
     Buffer,
@@ -56,7 +55,7 @@ def sphere(
     smooth=True,
     wireframe=False,
     wireframe_thickness=1.0,
-    impostor=False,
+    impostor=True,
 ):
     """Create one or many spheres with different colors and radii.
 
@@ -126,6 +125,8 @@ def sphere(
             radii_arr = np.full((count,), radii_arr.flat[0], dtype=np.float32)
 
     if impostor:
+        from fury.actor.billboard import billboard_sphere
+
         obj = billboard_sphere(
             centers_arr,
             colors=colors,
