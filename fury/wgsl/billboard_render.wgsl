@@ -44,17 +44,6 @@ fn vs_main(in: VertexInput) -> Varyings {
     // Transform to clip space
     let clip_pos = u_stdinfo.projection_transform * u_stdinfo.cam_transform * vec4<f32>(world_pos, 1.0);
 
-    // Calculate texture coordinates
-    var tex_coord: vec2<f32>;
-    switch vertex_in_quad {
-        case 0: { tex_coord = vec2<f32>(0.0, 0.0); } // bottom left
-        case 1: { tex_coord = vec2<f32>(1.0, 0.0); } // bottom right
-        case 2: { tex_coord = vec2<f32>(0.0, 1.0); } // top left
-        case 3: { tex_coord = vec2<f32>(1.0, 0.0); } // bottom right
-        case 4: { tex_coord = vec2<f32>(1.0, 1.0); } // top right
-        default: { tex_coord = vec2<f32>(0.0, 1.0); } // top left
-    }
-
     var varyings: Varyings;
     varyings.position = vec4<f32>(clip_pos);
     varyings.world_pos = vec3<f32>(world_pos);
@@ -62,7 +51,6 @@ fn vs_main(in: VertexInput) -> Varyings {
     // Load color if available - colors are duplicated 6x like positions
     let color = load_s_colors(billboard_index * 6);
     varyings.color = vec4<f32>(color, 1.0);
-    varyings.texcoord_vert = vec2<f32>(tex_coord);
 
     return varyings;
 }

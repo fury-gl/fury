@@ -7,11 +7,9 @@ factory function plus shader registration.
 
 from __future__ import annotations
 
-__all__ = ["billboard", "billboard_sphere", "Billboard"]
-
 import numpy as np
 
-from fury.actor.core import Mesh
+from fury.actor import Mesh
 from fury.geometry import buffer_to_geometry
 from fury.lib import register_wgpu_render_function
 from fury.material import (
@@ -19,6 +17,7 @@ from fury.material import (
     BillboardSphereMaterial,
     validate_opacity,
 )
+from fury.shader import BillboardShader, BillboardSphereShader
 
 
 def _create_billboard_actor(
@@ -127,9 +126,99 @@ class Billboard(Mesh):
     billboard; the vertex shader reconstructs the quad via ``vertex_index``
     math and uses camera right/up vectors to orient it. Size metadata is
     stored on ``billboard_sizes`` and reused by shaders for impostor variants.
+
+    Parameters
+    ----------
+    geometry : Geometry, optional
+        The geometry object containing vertex data.
+    material : Material, optional
+        The material used to render the billboard.
+    **kwargs : dict
+        Additional keyword arguments forwarded to :class:`Mesh`.
     """
 
-    pass
+    def __init__(self, geometry=None, material=None, **kwargs):
+        """Initialize a Billboard actor.
+
+        Parameters
+        ----------
+        geometry : Geometry, optional
+            The geometry object containing vertex data.
+        material : Material, optional
+            The material used to render the billboard.
+        **kwargs : dict
+            Additional keyword arguments forwarded to :class:`Mesh`.
+        """
+        super().__init__(geometry=geometry, material=material, **kwargs)
+        self._billboard_count = 0
+        self._billboard_centers = np.empty((0, 3), dtype=np.float32)
+        self._billboard_sizes = np.empty((0, 2), dtype=np.float32)
+
+    @property
+    def billboard_count(self):
+        """Get the number of billboards in this actor.
+
+        Returns
+        -------
+        int
+            Number of billboards.
+        """
+        return self._billboard_count
+
+    @billboard_count.setter
+    def billboard_count(self, value):
+        """Set the number of billboards in this actor.
+
+        Parameters
+        ----------
+        value : int
+            Number of billboards.
+        """
+        self._billboard_count = value
+
+    @property
+    def billboard_centers(self):
+        """Get the billboard center positions.
+
+        Returns
+        -------
+        ndarray, shape (N, 3)
+            Billboard center positions.
+        """
+        return self._billboard_centers
+
+    @billboard_centers.setter
+    def billboard_centers(self, value):
+        """Set the billboard center positions.
+
+        Parameters
+        ----------
+        value : array_like, shape (N, 3)
+            Billboard center positions.
+        """
+        self._billboard_centers = np.asarray(value, dtype=np.float32)
+
+    @property
+    def billboard_sizes(self):
+        """Get the billboard width/height pairs.
+
+        Returns
+        -------
+        ndarray, shape (N, 2)
+            Billboard width/height pairs.
+        """
+        return self._billboard_sizes
+
+    @billboard_sizes.setter
+    def billboard_sizes(self, value):
+        """Set the billboard width/height pairs.
+
+        Parameters
+        ----------
+        value : array_like, shape (N, 2)
+            Billboard width/height pairs.
+        """
+        self._billboard_sizes = np.asarray(value, dtype=np.float32)
 
 
 def billboard(
@@ -228,8 +317,6 @@ def register_billboard_render_function(wobject):
     tuple
         Tuple containing the configured shader instance.
     """
-    from fury.shader import BillboardShader
-
     return (BillboardShader(wobject),)
 
 
@@ -248,6 +335,4 @@ def register_billboard_sphere_render_function(wobject):
         Tuple containing the configured
         :class:`~fury.shader.BillboardSphereShader`.
     """
-    from fury.shader import BillboardSphereShader
-
     return (BillboardSphereShader(wobject),)

@@ -29,6 +29,8 @@ __all__ = [
     "text",
     "triangle",
     "billboard",
+    "billboard_sphere",
+    "Billboard",
     "sph_glyph",
     "vector_field",
     "vector_field_slicer",
@@ -66,7 +68,7 @@ __all__ = [
     "read_buffer",
 ]
 
-from .billboard import billboard, billboard_sphere  # noqa: F401
+from .billboard import Billboard, billboard, billboard_sphere
 from .bio import contour_from_label, contour_from_roi, peaks_slicer, volume_slicer
 from .core import (
     Actor,
