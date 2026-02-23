@@ -7,7 +7,7 @@ __all__ = [
     #     "TextBox2D",
     #     "LineSlider2D",
     #     "LineDoubleSlider2D",
-    #     "RingSlider2D",
+    "RingSlider2D",
     #     "RangeSlider",
     #     "Checkbox",
     #     "Option",
@@ -35,6 +35,8 @@ from fury.lib import (
 from fury.material import _create_mesh_material
 from fury.ui.containers import Panel2D
 from fury.ui.core import UI, Anchor, Button2D, Disk2D, Rectangle2D, TextBlock2D
+
+TWO_PI = 2.0 * np.pi
 
 
 class TexturedButton2D(Button2D):
@@ -1864,6 +1866,9 @@ class RingSlider2D(UI):
         replacement fields: `{value:}`, `{ratio:}`, `{angle:}`.
         If callable, this instance of `:class:RingSlider2D` will be
         passed as argument to the text template function.
+    z_order : int, optional
+            Stacking priority of the slider. The handle and text
+            are placed above the track.
 
     Attributes
     ----------
@@ -1893,34 +1898,38 @@ class RingSlider2D(UI):
         handle_outer_radius=10,
         font_size=16,
         text_template="{ratio:.0%}",
+        z_order=0,
     ):
         """Init this UI element.
 
         Parameters
         ----------
-        center : (float, float)
+        center : (float, float), optional
             Position (x, y) of the slider's center.
-        initial_value : float
+        initial_value : float, optional
             Initial value of the slider.
-        min_value : float
+        min_value : float, optional
             Minimum value of the slider.
-        max_value : float
+        max_value : float, optional
             Maximum value of the slider.
-        slider_inner_radius : int
+        slider_inner_radius : int, optional
             Inner radius of the base disk.
-        slider_outer_radius : int
+        slider_outer_radius : int, optional
             Outer radius of the base disk.
-        handle_inner_radius : int
+        handle_inner_radius : int, optional
             Inner radius of the slider's handle.
-        handle_outer_radius : int
+        handle_outer_radius : int, optional
             Outer radius of the slider's handle.
-        font_size : int
+        font_size : int, optional
             Size of the text to display alongside the slider (pt).
-        text_template : str or callable
-            If str, the template may contain one or more of the
-            replacement fields: `{value}`, `{ratio}`, `{angle}`.
-            If callable, this instance of :class:`RingSlider2D`
-            will be passed as an argument to the template function.
+        text_template : str or callable, optional
+            If str, text template can contain one or multiple of the
+            replacement fields: `{value:}`, `{ratio:}`, `{angle:}`.
+            If callable, this instance of `:class:RingSlider2D` will be
+            passed as argument to the text template function.
+        z_order : int, optional
+            Stacking priority of the slider. The handle and text
+            are placed above the track.
         """
         self.default_color = (1, 1, 1)
         self.active_color = (0, 0, 1)
@@ -1929,23 +1938,29 @@ class RingSlider2D(UI):
         self._max_value = max_value
         self._text_template = text_template
 
+        self._track_inner_radius = slider_inner_radius
+        self._track_outer_radius = slider_outer_radius
+        self._handle_inner_radius = handle_inner_radius
+        self._handle_outer_radius = handle_outer_radius
+        self._font_size = font_size
+        self.z_order = z_order
+
         self._value = initial_value
         self._previous_value = initial_value
-        self._angle = 0
-        self._ratio = 0
+        self._angle = 0.0
+        self._ratio = 0.0
 
         # Offer some standard hooks to the user.
         self.on_change = lambda ui: None
         self.on_value_changed = lambda ui: None
         self.on_moving_slider = lambda ui: None
 
-        super(RingSlider2D, self).__init__()
-
-        self.track.outer_radius = slider_outer_radius
-        self.track.inner_radius = slider_inner_radius
-        self.handle.outer_radius = handle_outer_radius
-        self.handle.inner_radius = handle_inner_radius
-        self.text.font_size = font_size
+        super(RingSlider2D, self).__init__(
+            position=center,
+            x_anchor=Anchor.LEFT,
+            y_anchor=Anchor.TOP,
+            z_order=self.z_order,
+        )
 
         self.set_position(center, x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
 
@@ -1953,6 +1968,8 @@ class RingSlider2D(UI):
         self.max_value = max_value
 
         self.value = initial_value
+
+        # Final update
         self.update()
 
     def _setup(self):
@@ -1962,22 +1979,33 @@ class RingSlider2D(UI):
         the text (TextBlock2D).
         """
         # Slider's track
-        self.track = Disk2D(outer_radius=1)
+        self.track = Disk2D(
+            outer_radius=self._track_outer_radius, inner_radius=self._track_inner_radius
+        )
         self.track.color = (1, 0, 0)
 
         # Slider's handle
-        self.handle = Disk2D(outer_radius=1)
+        self.handle = Disk2D(
+            outer_radius=self._handle_outer_radius,
+            inner_radius=self._handle_inner_radius,
+        )
         self.handle.color = self.default_color
+        self.handle.z_order = self.z_order + 1
 
         # Slider Text
         self.text = TextBlock2D(
-            justification="center", vertical_justification="middle", dynamic_bbox=True
+            justification="center",
+            vertical_justification="middle",
+            dynamic_bbox=True,
+            font_size=self._font_size,
         )
+        self.text.z_order = self.z_order + 2
 
         # Add default events listener for this UI component.
         self.track.on_left_mouse_button_pressed = self.track_click_callback
         self.track.on_left_mouse_button_dragged = self.handle_move_callback
         self.track.on_left_mouse_button_released = self.handle_release_callback
+
         self.handle.on_left_mouse_button_dragged = self.handle_move_callback
         self.handle.on_left_mouse_button_released = self.handle_release_callback
 
@@ -2011,30 +2039,21 @@ class RingSlider2D(UI):
         ndarray
             The size of the component.
         """
-        diameter = 2 * (self.track.outer_radius + self.handle.outer_radius)
+        diameter = 2 * (self._track_outer_radius + self._handle_outer_radius)
         return np.array([diameter, diameter])
 
     def _update_actors_position(self):
         """Update the position of the internal actors."""
-        self._set_position(self._position)
-
-    def _set_position(self, coords):
-        """Set the lower-left corner position of this UI component.
-
-        Parameters
-        ----------
-        coords : (float, float)
-            Absolute pixel coordinates (x, y).
-        """
-        center = coords + self.size / 2
-
+        # Position the ring center based on the widget's anchor position.
+        pos = self.get_position(x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP)
+        center = pos + self.size / 2.0
         # Manage stacking orders
         self.track.z_order = self.z_order
         self.handle.z_order = self.z_order + 1
         self.text.z_order = self.z_order + 2
-
+        # Place the track centered
         self.track.set_position(center, x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
-        self.update()
+        self._update_handle_position()
 
     @property
     def mid_track_radius(self):
@@ -2047,6 +2066,18 @@ class RingSlider2D(UI):
         """
         return (self.track.inner_radius + self.track.outer_radius) / 2.0
 
+    def _update_handle_position(self):
+        """Place the handle and the text according to the current angle / ratio."""
+        center = self.track.get_position(x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
+        angle = self._angle  # stored in radians
+        x = self.mid_track_radius * np.cos(angle) + center[0]
+        y = self.mid_track_radius * np.sin(angle) + center[1]
+        self.handle.set_position((x, y), x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
+
+        text = self.format_text()
+        self.text.message = text
+        self.text.set_position(center, x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
+
     def move_handle(self, position):
         """Move the slider's handle.
 
@@ -2055,7 +2086,10 @@ class RingSlider2D(UI):
         position : (float, float)
             The absolute position of the disk (x, y).
         """
-        center = self.get_position(x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
+        center = (
+            self.get_position(x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP)
+            + self.size / 2.0
+        )
         x, y = np.array(position) - center
         angle = np.arctan2(y, x)
         if angle < 0:
@@ -2083,9 +2117,15 @@ class RingSlider2D(UI):
         value : float
             The value to set.
         """
-        value_range = self.max_value - self.min_value
-        self.ratio = (value - self.min_value) / value_range if value_range else 0
+        # Clip to bounds
+        value = np.clip(value, self.min_value, self.max_value)
+        range_val = self.max_value - self.min_value
+        self._value = value
+        self._ratio = (value - self.min_value) / range_val if range_val != 0 else 0.0
+        self._angle = self._ratio * TWO_PI
+        self._update_handle_position()
         self.on_value_changed(self)
+        self.on_change(self)
 
     @property
     def ratio(self):
@@ -2107,7 +2147,11 @@ class RingSlider2D(UI):
         ratio : float
             The ratio to set.
         """
-        self.angle = ratio * TWO_PI
+        self._ratio = float(np.clip(ratio, 0.0, 1.0))
+        self._angle = self._ratio * TWO_PI
+        self._value = self.min_value + self._ratio * (self.max_value - self.min_value)
+        self._update_handle_position()
+        self.on_change(self)
 
     @property
     def angle(self):
@@ -2129,8 +2173,11 @@ class RingSlider2D(UI):
         angle : float
             The angle in radians.
         """
-        self._angle = angle % TWO_PI  # Wraparound
-        self.update()
+        self._angle = float(angle) % TWO_PI  # Wraparound
+        self._ratio = self._angle / TWO_PI
+        self._value = self.min_value + self._ratio * (self.max_value - self.min_value)
+        self._update_handle_position()
+        self.on_change(self)
 
     def format_text(self):
         """Return formatted text to display along the slider.
@@ -2149,25 +2196,10 @@ class RingSlider2D(UI):
 
     def update(self):
         """Update the slider."""
-        # Compute the ratio determined by the position of the slider disk.
-        self._ratio = self.angle / TWO_PI
-
-        # Compute the selected value considering min_value and max_value.
-        value_range = self.max_value - self.min_value
-        self._previous_value = self.value
-        self._value = self.min_value + self.ratio * value_range
-
-        # Update disk actor.
-        center = self.track.get_position(x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
-        x = self.mid_track_radius * np.cos(self.angle) + center[0]
-        y = self.mid_track_radius * np.sin(self.angle) + center[1]
-        self.handle.set_position((x, y), x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
-
-        # Update text.
-        text = self.format_text()
-        self.text.message = text
-        self.text.set_position(center, x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
-
+        # Keep ratio/value/angle consistent and move actors
+        self._ratio = (self._angle / TWO_PI) % 1.0
+        self._value = self.min_value + self._ratio * (self.max_value - self.min_value)
+        self._update_handle_position()
         self.on_change(self)
 
     def track_click_callback(self, event):
@@ -2181,7 +2213,8 @@ class RingSlider2D(UI):
         position = (event.x, event.y)
         self.move_handle(position)
         self.on_moving_slider(self)
-        event.stop_propagation()
+        if hasattr(event, "stop_propagation"):
+            event.stop_propagation()
 
     def handle_move_callback(self, event):
         """Handle movement.
@@ -2195,7 +2228,8 @@ class RingSlider2D(UI):
         self.handle.color = self.active_color
         self.move_handle(position)
         self.on_moving_slider(self)
-        event.stop_propagation()
+        if hasattr(event, "stop_propagation"):
+            event.stop_propagation()
 
     def handle_release_callback(self, event):
         """Handle release.
@@ -2206,7 +2240,8 @@ class RingSlider2D(UI):
             The event object.
         """
         self.handle.color = self.default_color
-        event.stop_propagation()
+        if hasattr(event, "stop_propagation"):
+            event.stop_propagation()
 
     @property
     def min_value(self):
@@ -2228,7 +2263,7 @@ class RingSlider2D(UI):
         value : float
             The minimum value.
         """
-        current_value = self.value
+        current_value = self._value
         self._min_value = value
         self.value = current_value
         self.update()
@@ -2253,7 +2288,7 @@ class RingSlider2D(UI):
         value : float
             The maximum value.
         """
-        current_value = self.value
+        current_value = self._value
         self._max_value = value
         self.value = current_value
         self.update()
