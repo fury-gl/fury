@@ -554,7 +554,7 @@ class ShowManager:
         title="FURY 2.0",
         size=(800, 800),
         window_type="default",
-        pixel_ratio=1,
+        pixel_ratio=1.25,
         camera_light=True,
         screen_config=None,
         enable_events=True,
