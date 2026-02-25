@@ -28,16 +28,14 @@ fn vs_main(in: VertexInput) -> Varyings {
     let raw_center = load_s_positions(billboard_index * 6);
     let world_center = u_wobject.world_transform * vec4<f32>(raw_center.xyz, 1.0);
 
-    // Transform center to camera space
-    let camera_center = u_stdinfo.cam_transform * world_center;
-
     // Get camera right and up vectors in world space
     // Extract right and up vectors from inverse camera transform
     let cam_right = vec3<f32>(u_stdinfo.cam_transform_inv[0].xyz);
     let cam_up = vec3<f32>(u_stdinfo.cam_transform_inv[1].xyz);
 
-    let normal_data = load_s_normals(billboard_index * 6);
-    let size = vec2<f32>(normal_data.x, normal_data.y);
+    // Fetch per-billboard sizes encoded in normals buffer (duplicated per vertex)
+    let raw_size = load_s_normals(billboard_index * 6);
+    let size = raw_size.xy;
 
     // Calculate billboard vertex position in world space
     let billboard_offset = local_pos.x * cam_right * size.x + local_pos.y * cam_up * size.y;
@@ -46,24 +44,22 @@ fn vs_main(in: VertexInput) -> Varyings {
     // Transform to clip space
     let clip_pos = u_stdinfo.projection_transform * u_stdinfo.cam_transform * vec4<f32>(world_pos, 1.0);
 
-    // Calculate texture coordinates
-    var tex_coord: vec2<f32>;
-    switch vertex_in_quad {
-        case 0: { tex_coord = vec2<f32>(0.0, 0.0); } // bottom left
-        case 1: { tex_coord = vec2<f32>(1.0, 0.0); } // bottom right
-        case 2: { tex_coord = vec2<f32>(0.0, 1.0); } // top left
-        case 3: { tex_coord = vec2<f32>(1.0, 0.0); } // bottom right
-        case 4: { tex_coord = vec2<f32>(1.0, 1.0); } // top right
-        default: { tex_coord = vec2<f32>(0.0, 1.0); } // top left
-    }
-
     var varyings: Varyings;
     varyings.position = vec4<f32>(clip_pos);
     varyings.world_pos = vec3<f32>(world_pos);
 
     // Load color if available - colors are duplicated 6x like positions
-    let color = load_s_colors(billboard_index * 6);
-    varyings.color = vec4<f32>(color, 1.0);
+    $$ if color_buffer_channels == 4
+    varyings.color = vec4<f32>(load_s_colors(billboard_index * 6));
+    $$ elif color_buffer_channels == 3
+    varyings.color = vec4<f32>(load_s_colors(billboard_index * 6), 1.0);
+    $$ elif color_buffer_channels == 2
+    let cvalue = load_s_colors(billboard_index * 6);
+    varyings.color = vec4<f32>(cvalue.r, cvalue.r, cvalue.r, cvalue.g);
+    $$ elif color_buffer_channels == 1
+    let cvalue = load_s_colors(billboard_index * 6);
+    varyings.color = vec4<f32>(cvalue, cvalue, cvalue, 1.0);
+    $$ endif
 
     return varyings;
 }
