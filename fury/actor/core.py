@@ -442,7 +442,6 @@ def actor_from_primitive(
         flat_shading=not smooth,
         wireframe=wireframe,
         wireframe_thickness=wireframe_thickness,
-        opacity=opacity if isinstance(opacity, (int, float)) else 1.0,
         alpha_mode="weighted_blend" if is_transparent else "blend",
         depth_write=not is_transparent,
     )
