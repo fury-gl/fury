@@ -1314,9 +1314,24 @@ def _create_streamtube_baked(
     ----------
     lines : sequence of array_like, shape (N_i, 3)
         Iterable of polylines representing streamline vertices.
-    colors : array_like or None, optional
-        Per-line colors. Accepts a single RGB/RGBA vector or an array of shape
-        (1, 3|4)/(n_lines, 3|4). Defaults to white per line when None.
+    colors : array_like, str, list of ndarray, or None, optional
+        Specifies how tubes are colored. The following modes are supported:
+
+        - None : All tubes are colored white (default).
+
+        - Single color : A tuple or 1-D array of 3 (RGB) or 4 (RGBA)
+          floats in [0, 1], e.g. (1, 0, 0). Applied uniformly to every tube.
+
+        - Per-line colors : A 2-D array of shape (n_lines, 3) or
+          (n_lines, 4) giving one color per streamline.
+
+        - Per-point colors : A list/tuple of n_lines arrays, each of
+          shape (N_i, 3) or (N_i, 4) where N_i matches the number of
+          points in the corresponding line. Each vertex receives its own color.
+
+        - "rgb" : Each vertex is colored by the absolute value of its
+          local tangent direction mapped to RGB channels
+          (orientation-based coloring).
     opacity : float, optional
         Opacity multiplier applied to the material. Valid range is [0, 1].
     radius : float, optional
@@ -1374,48 +1389,96 @@ def _create_streamtube_baked(
     for idx, line in enumerate(lines_arr):
         line_data[idx, : line.shape[0]] = line
 
+    use_rgb_mode = isinstance(colors, str) and colors.lower() == "rgb"
+    use_per_point_colors = (
+        isinstance(colors, (list, tuple))
+        and len(colors) > 0
+        and isinstance(colors[0], np.ndarray)
+        and colors[0].ndim == 2
+    )
+
+    point_color_data = None
+    line_colors = None
+
     if colors is None:
         colors = np.array([1.0, 1.0, 1.0], dtype=np.float32)
 
-    colors = np.asarray(colors, dtype=np.float32)
+    if not use_rgb_mode and not use_per_point_colors:
+        colors = np.asarray(colors, dtype=np.float32)
 
-    if colors.ndim == 1:
-        if colors.size == 3:
-            line_colors = np.tile(colors, (n_lines, 1))
-        elif colors.size == 4:
-            line_colors = np.tile(colors[:3], (n_lines, 1))
-        else:
-            raise ValueError(
-                "Single color must have 3 (RGB) or 4 (RGBA) components, "
-                f"got {colors.size}"
-            )
-    elif colors.ndim == 2:
-        if colors.shape[0] == 1:
-            if colors.shape[1] in (3, 4):
-                line_colors = np.tile(colors[0, :3], (n_lines, 1))
+        if colors.ndim == 1:
+            if colors.size == 3:
+                line_colors = np.tile(colors, (n_lines, 1))
+            elif colors.size == 4:
+                line_colors = np.tile(colors[:3], (n_lines, 1))
             else:
                 raise ValueError(
-                    "Color must have 3 (RGB) or 4 (RGBA) components, "
-                    f"got {colors.shape[1]}"
+                    "Single color must have 3 (RGB) or 4 (RGBA) components, "
+                    f"got {colors.size}"
                 )
-        elif colors.shape[0] == n_lines:
-            if colors.shape[1] in (3, 4):
-                line_colors = colors[:, :3].astype(np.float32)
+        elif colors.ndim == 2:
+            if colors.shape[0] == 1:
+                if colors.shape[1] in (3, 4):
+                    line_colors = np.tile(colors[0, :3], (n_lines, 1))
+                else:
+                    raise ValueError(
+                        "Color must have 3 (RGB) or 4 (RGBA) components, "
+                        f"got {colors.shape[1]}"
+                    )
+            elif colors.shape[0] == n_lines:
+                if colors.shape[1] in (3, 4):
+                    line_colors = colors[:, :3].astype(np.float32)
+                else:
+                    raise ValueError(
+                        "Color must have 3 (RGB) or 4 (RGBA) components, "
+                        f"got {colors.shape[1]}"
+                    )
             else:
                 raise ValueError(
-                    "Color must have 3 (RGB) or 4 (RGBA) components, "
-                    f"got {colors.shape[1]}"
+                    f"Color array first dimension must be 1 or {n_lines} "
+                    f"(number of lines), got {colors.shape[0]}"
                 )
         else:
-            raise ValueError(
-                f"Color array first dimension must be 1 or {n_lines} "
-                f"(number of lines), got {colors.shape[0]}"
-            )
-    else:
-        raise ValueError(f"Colors must be 1D or 2D array, got {colors.ndim}D array")
+            raise ValueError(f"Colors must be 1D or 2D array, got {colors.ndim}D array")
 
-    line_colors = line_colors.astype(np.float32, copy=False)
-    color_components = line_colors.shape[1]
+    elif use_per_point_colors:
+        color_arrays = [np.asarray(c, dtype=np.float32) for c in colors]
+
+        if len(color_arrays) != n_lines:
+            raise ValueError(
+                f"Per-point colors list must have {n_lines} arrays, "
+                f"got {len(color_arrays)}"
+            )
+
+        color_components = color_arrays[0].shape[1]
+        if color_components not in (3, 4):
+            raise ValueError(
+                "Per-point colors must have 3 (RGB) or 4 (RGBA) components, "
+                f"got {color_components}"
+            )
+        if color_components == 4:
+            color_arrays = [c[:, :3] for c in color_arrays]
+            color_components = 3
+
+        for idx, (ca, ll) in enumerate(zip(color_arrays, line_lengths, strict=False)):
+            if ca.shape[0] != ll:
+                raise ValueError(
+                    f"Per-point color array {idx} has {ca.shape[0]} points "
+                    f"but line has {ll} points"
+                )
+
+        point_color_data = np.zeros(
+            (n_lines, max_line_length, color_components), dtype=np.float32
+        )
+        for idx, ca in enumerate(color_arrays):
+            point_color_data[idx, : ca.shape[0]] = ca
+
+    elif use_rgb_mode:
+        color_components = 3
+
+    if line_colors is not None:
+        line_colors = line_colors.astype(np.float32, copy=False)
+        color_components = line_colors.shape[1]
 
     tube_sides = int(segments)
     segments_per_line = np.maximum(line_lengths - 1, 0).astype(np.uint32)
@@ -1445,6 +1508,30 @@ def _create_streamtube_baked(
     normals_data = np.zeros((total_vertices, 3), dtype=np.float32)
     colors_data = np.zeros((total_vertices, color_components), dtype=np.float32)
     indices_data = np.zeros((total_triangles, 3), dtype=np.uint32)
+
+    if use_per_point_colors:
+        vertex_idx = 0
+        for line_idx in range(n_lines):
+            n_pts = int(line_lengths[line_idx])
+            for pt_idx in range(n_pts):
+                pt_color = point_color_data[line_idx, pt_idx]
+                start = vertex_idx + pt_idx * tube_sides
+                end = start + tube_sides
+                colors_data[start:end] = pt_color
+            if end_caps:
+                colors_data[vertex_idx + n_pts * tube_sides] = point_color_data[
+                    line_idx, 0
+                ]
+                colors_data[vertex_idx + n_pts * tube_sides + 1] = point_color_data[
+                    line_idx, n_pts - 1
+                ]
+            vertex_idx += int(vertices_per_line[line_idx])
+    elif not use_rgb_mode:
+        vertex_idx = 0
+        for line_idx in range(n_lines):
+            n_verts = int(vertices_per_line[line_idx])
+            colors_data[vertex_idx : vertex_idx + n_verts] = line_colors[line_idx]
+            vertex_idx += n_verts
 
     geometry = buffer_to_geometry(
         positions=positions_data,
@@ -1477,10 +1564,23 @@ def _create_streamtube_baked(
     mesh_obj.lines = lines_arr
     mesh_obj.line_colors = line_colors
     mesh_obj.color_components = color_components
+    mesh_obj.use_rgb_mode = use_rgb_mode
+    mesh_obj.use_per_point_colors = use_per_point_colors
     mesh_obj._needs_gpu_update = True
     mesh_obj.line_buffer = Buffer(line_data.reshape(-1))
     mesh_obj.length_buffer = Buffer(line_lengths)
-    mesh_obj.color_buffer = Buffer(line_colors)
+    _color_buf = (
+        line_colors
+        if line_colors is not None
+        else np.zeros((n_lines, color_components), dtype=np.float32)
+    )
+    mesh_obj.color_buffer = Buffer(_color_buf)
+    if use_per_point_colors:
+        mesh_obj.point_color_buffer = Buffer(
+            point_color_data.reshape(-1).astype(np.float32)
+        )
+    else:
+        mesh_obj.point_color_buffer = None
     mesh_obj.vertex_offset_buffer = Buffer(vertex_offsets)
     mesh_obj.triangle_offset_buffer = Buffer(triangle_offsets)
 
@@ -1557,6 +1657,18 @@ def _resolve_color_components_for_streamtube(colors, backend):
     int
         Number of color channels (3 or 4) to allocate.
     """
+    if isinstance(colors, str) and colors.lower() == "rgb" and backend != "gpu":
+        raise ValueError("colors='rgb' requires backend='gpu'")
+
+    if (
+        isinstance(colors, (list, tuple))
+        and len(colors) > 0
+        and isinstance(colors[0], np.ndarray)
+        and colors[0].ndim == 2
+        and backend != "gpu"
+    ):
+        raise ValueError("Per-point colors (list of arrays) requires backend='gpu'")
+
     if backend == "gpu":
         return 3
 

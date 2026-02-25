@@ -736,6 +736,10 @@ class _StreamtubeBakingShader(BaseShader):
         self["workgroup_size"] = min(64, max(int(wobject.n_lines), 1))
         self["end_caps"] = 1 if getattr(wobject, "end_caps", False) else 0
         self["color_channels"] = getattr(wobject, "color_components", 3)
+        self["use_rgb_mode"] = 1 if getattr(wobject, "use_rgb_mode", False) else 0
+        self["use_per_point_colors"] = (
+            1 if getattr(wobject, "use_per_point_colors", False) else 0
+        )
 
     def get_render_info(self, wobject, _shared):
         """Return the dispatch dimensions for the compute shader.
@@ -804,6 +808,10 @@ class _StreamtubeBakingShader(BaseShader):
         self["workgroup_size"] = min(64, max(int(wobject.n_lines), 1))
         self["color_channels"] = getattr(wobject, "color_components", 3)
         self["end_caps"] = 1 if getattr(wobject, "end_caps", False) else 0
+        self["use_rgb_mode"] = 1 if getattr(wobject, "use_rgb_mode", False) else 0
+        self["use_per_point_colors"] = (
+            1 if getattr(wobject, "use_per_point_colors", False) else 0
+        )
 
         bindings = {
             0: Binding(
@@ -861,6 +869,15 @@ class _StreamtubeBakingShader(BaseShader):
                 "COMPUTE",
             ),
         }
+
+        if getattr(wobject, "point_color_buffer", None) is not None:
+            bindings[9] = Binding(
+                "s_point_colors",
+                "buffer/storage",
+                wobject.point_color_buffer,
+                "COMPUTE",
+            )
+
         self.define_bindings(0, bindings)
         return {0: bindings}
 
@@ -927,6 +944,7 @@ class _StreamtubeRenderShader(MeshPhongShader):
                     "line_buffer",
                     "length_buffer",
                     "color_buffer",
+                    "point_color_buffer",
                     "vertex_offset_buffer",
                     "triangle_offset_buffer",
                 ):
