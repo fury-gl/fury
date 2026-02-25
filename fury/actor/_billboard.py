@@ -5,8 +5,6 @@ existing planar actor module. Provides a Mesh-based world object and a
 factory function plus shader registration.
 """
 
-from __future__ import annotations
-
 import numpy as np
 
 from fury.actor import Mesh
