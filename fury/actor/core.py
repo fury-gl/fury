@@ -442,7 +442,7 @@ def actor_from_primitive(
         flat_shading=not smooth,
         wireframe=wireframe,
         wireframe_thickness=wireframe_thickness,
-        alpha_mode="weighted_blend" if is_transparent else "blend",
+        alpha_mode="weighted_blend" if is_transparent else "auto",
         depth_write=not is_transparent,
     )
     obj = create_mesh(geometry=geo, material=mat)
