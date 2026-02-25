@@ -437,7 +437,7 @@ def actor_from_primitive(
         wireframe_thickness=wireframe_thickness,
     )
     obj = create_mesh(geometry=geo, material=mat)
-    obj.local.position = centers[0]
+    
     obj.prim_count = prim_count
     return obj
 
