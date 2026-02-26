@@ -13,20 +13,47 @@ cd for_testing
 
 # No figure windows for mpl; quote to hide : from travis-ci yaml parsing
 echo "backend : agg" > matplotlibrc
+
+error_code=0
+
 if [ "$COVERAGE" == "1" ] || [ "$COVERAGE" == true ]; then
     cp ../.coveragerc .;
     cp ../.codecov.yml .;
     # Run the tests and check for test coverage.
-    coverage run -m pytest -c ../pyproject.toml -svv --doctest-modules --verbose --durations=10 --pyargs fury
+    # coverage run -m pytest -svv --verbose --durations=10 --pyargs fury   # Need to --doctest-modules flag
+    for file in `find ../fury -name 'test_*.py' -print`;
+    do
+        retVal=0
+        coverage run -m -p pytest -svv $file || retVal=$?
+        if [ $retVal -ne 0 ]; then
+            echo "THE CURRENT ERROR CODE IS $retVal";
+            error_code=1
+        fi
+    done
+    coverage combine .
     coverage report -m  # Generate test coverage report.
     coverage xml  # Generate coverage report in xml format for codecov.
     # codecov  # Upload the report to codecov.
 else
     # Threads issue so we run test on individual file
-    pytest -c ../pyproject.toml -svv --doctest-modules --verbose --durations=10 --pyargs fury
+    # pytest -svv --verbose --durations=10 --pyargs fury # Need to --doctest-modules flag
+    for file in `find ../fury -name 'test_*.py' -print`;
+    do
+      retVal=0
+      pytest -svv $file || retVal=$?
+      if [ $retVal -ne 0 ]; then
+      echo "THE CURRENT ERROR CODE IS $retVal";
+      error_code=1
+      fi
+    done
 fi
 
 cd ..
 ls .
 
 set +ex
+
+if [ "$error_code" -ne 0 ]; then
+    echo "Tests failed. Exiting with error."
+    exit 1
+fi

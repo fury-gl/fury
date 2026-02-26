@@ -1,0 +1,16 @@
+============================= test session starts =============================
+platform win32 -- Python 3.10.0, pytest-9.0.2, pluggy-1.6.0
+rootdir: C:\Users\AMOGA\OneDrive\Desktop\open source\fury
+configfile: pytest.ini
+plugins: anyio-4.11.0
+collected 1 item
+
+fury\tests\test_stream.py .                                              [100%]
+
+============================== warnings summary ===============================
+fury/tests/test_stream.py::test_pillow
+  C:\Users\AMOGA\OneDrive\Desktop\open source\fury\fury\stream\tools.py:682: DeprecationWarning: 'mode' parameter is deprecated and will be removed in Pillow 13 (2026-10-15)
+    image_encoded = Image.fromarray(image, mode="RGB")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 1 passed, 1 warning in 1.96s =========================
