@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 import os
 import time
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -24,10 +24,10 @@ from fury.ui.event_recorder import (
     RecordedEvent,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers — fake rendercanvas Renderer
 # ---------------------------------------------------------------------------
+
 
 def _make_renderer() -> MagicMock:
     """Minimal rendercanvas Renderer mock.
@@ -93,8 +93,10 @@ def _key(et="key_down", key="a", modifiers=None, ts=None):
 def _wheel(x=0.0, y=0.0, dx=0.0, dy=-3.0, ts=None):
     return {
         "event_type": "wheel",
-        "x": x, "y": y,
-        "dx": dx, "dy": dy,
+        "x": x,
+        "y": y,
+        "dx": dx,
+        "dy": dy,
         "modifiers": [],
         "time_stamp": ts if ts is not None else time.perf_counter(),
     }
@@ -104,8 +106,8 @@ def _wheel(x=0.0, y=0.0, dx=0.0, dy=-3.0, ts=None):
 # RecordedEvent tests
 # ---------------------------------------------------------------------------
 
-class TestRecordedEvent:
 
+class TestRecordedEvent:
     def test_defaults(self):
         e = RecordedEvent(event_type="pointer_down")
         assert e.event_type == "pointer_down"
@@ -203,8 +205,8 @@ class TestRecordedEvent:
 # EventRecorder tests
 # ---------------------------------------------------------------------------
 
-class TestEventRecorder:
 
+class TestEventRecorder:
     def test_attach_registers_handler(self):
         renderer = _make_renderer()
         sm = _make_show_manager(renderer)
@@ -380,8 +382,8 @@ class TestEventRecorder:
 # EventCounter tests
 # ---------------------------------------------------------------------------
 
-class TestEventCounter:
 
+class TestEventCounter:
     def test_counts_by_type(self):
         renderer = _make_renderer()
         sm = _make_show_manager(renderer)
@@ -442,13 +444,15 @@ class TestEventCounter:
 # EventPlayer tests
 # ---------------------------------------------------------------------------
 
-class TestEventPlayer:
 
+class TestEventPlayer:
     def _recorded(self, n=3, base_ts=1000.0):
         return [
             RecordedEvent.from_rendercanvas_event(
-                {**_ptr("pointer_down", x=float(i * 10), y=float(i * 10)),
-                 "time_stamp": base_ts + i * 0.1}
+                {
+                    **_ptr("pointer_down", x=float(i * 10), y=float(i * 10)),
+                    "time_stamp": base_ts + i * 0.1,
+                }
             )
             for i in range(n)
         ]
@@ -480,7 +484,9 @@ class TestEventPlayer:
         assert dispatched == ["pointer_down", "key_up"]
 
     def test_play_correct_coordinates(self):
-        events = [RecordedEvent.from_rendercanvas_event(_ptr("pointer_move", x=55, y=77))]
+        events = [
+            RecordedEvent.from_rendercanvas_event(_ptr("pointer_move", x=55, y=77))
+        ]
         player = EventPlayer(recorder=self._recorder_with(events), speed_factor=0.0)
         dispatched = []
         renderer = _make_renderer()
@@ -527,7 +533,9 @@ class TestEventPlayer:
     def test_speed_factor_zero_no_sleep(self, monkeypatch):
         slept = []
         monkeypatch.setattr(time, "sleep", lambda s: slept.append(s))
-        player = EventPlayer(recorder=self._recorder_with(self._recorded(3)), speed_factor=0.0)
+        player = EventPlayer(
+            recorder=self._recorder_with(self._recorded(3)), speed_factor=0.0
+        )
         player.play(_make_show_manager())
         assert slept == []
 
@@ -552,10 +560,16 @@ class TestEventPlayer:
         events = self._recorded(2)
         player = EventPlayer(recorder=self._recorder_with(events), speed_factor=0.0)
 
-        renderer = MagicMock(spec=["add_event_handler", "remove_handler", "dispatch_event"])
+        renderer = MagicMock(
+            spec=["add_event_handler", "remove_handler", "dispatch_event"]
+        )
         dispatched = []
-        renderer.dispatch_event.side_effect = lambda e: dispatched.append(e["event_type"])
-        sm = MagicMock(spec=["renderer"])  # no 'window' attr → forces dispatch_event fallback
+        renderer.dispatch_event.side_effect = lambda e: dispatched.append(
+            e["event_type"]
+        )
+        sm = MagicMock(
+            spec=["renderer"]
+        )  # no 'window' attr → forces dispatch_event fallback
         sm.renderer = renderer
         player.play(sm)
         assert len(dispatched) == 2
@@ -565,8 +579,8 @@ class TestEventPlayer:
 # Integration tests
 # ---------------------------------------------------------------------------
 
-class TestIntegration:
 
+class TestIntegration:
     def test_record_save_load_replay(self, tmp_path):
         """Full round-trip: record → save JSON → load → replay."""
         renderer_src = _make_renderer()
@@ -639,6 +653,7 @@ class TestIntegration:
 
     def test_multiple_sessions_independent(self, tmp_path):
         """Loading a second session replaces the first."""
+
         def _make_session(fname, event_type, n):
             rec = EventRecorder()
             rec._events = [

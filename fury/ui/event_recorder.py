@@ -17,11 +17,10 @@ EventPlayer     – Replays a saved session into a ShowManager.renderer.
 
 from __future__ import annotations
 
+from dataclasses import asdict, dataclass, field
 import json
 import time
-from dataclasses import asdict, dataclass, field
 from typing import Any, Callable, Dict, List, Optional
-
 
 # ---------------------------------------------------------------------------
 # Rendercanvas event types that we observe by default (lowercase strings used
@@ -43,6 +42,7 @@ DEFAULT_OBSERVED_EVENTS: List[str] = [
 # ---------------------------------------------------------------------------
 # RecordedEvent
 # ---------------------------------------------------------------------------
+
 
 @dataclass(frozen=True)
 class RecordedEvent:
@@ -131,16 +131,22 @@ class RecordedEvent:
         RecordedEvent
         """
         if isinstance(event, dict):
+
             def _get(key: str, default: Any = None) -> Any:
                 return event.get(key, default)
+
             raw = dict(event)
         else:
+
             def _get(key: str, default: Any = None) -> Any:  # type: ignore[misc]
                 return getattr(event, key, default)
+
             # Serialise object to a dict so raw is always JSON-safe.
             try:
                 raw = {
-                    "event_type": getattr(event, "event_type", getattr(event, "type", "")),
+                    "event_type": getattr(
+                        event, "event_type", getattr(event, "type", "")
+                    ),
                     "x": float(getattr(event, "x", 0)),
                     "y": float(getattr(event, "y", 0)),
                     "button": int(getattr(event, "button", 0)),
@@ -149,7 +155,9 @@ class RecordedEvent:
                     "modifiers": list(getattr(event, "modifiers", [])),
                     "dx": float(getattr(event, "dx", 0)),
                     "dy": float(getattr(event, "dy", 0)),
-                    "time_stamp": float(getattr(event, "time_stamp", time.perf_counter())),
+                    "time_stamp": float(
+                        getattr(event, "time_stamp", time.perf_counter())
+                    ),
                 }
             except Exception:
                 raw = {}
@@ -160,7 +168,9 @@ class RecordedEvent:
 
         return cls(
             event_type=str(et),
-            timestamp=float(ts if (ts := _get("time_stamp")) is not None else time.perf_counter()),
+            timestamp=float(
+                ts if (ts := _get("time_stamp")) is not None else time.perf_counter()
+            ),
             x=float(_get("x") or 0),
             y=float(_get("y") or 0),
             button=int(_get("button") or 0),
@@ -204,6 +214,7 @@ class RecordedEvent:
 # ---------------------------------------------------------------------------
 # EventRecorder
 # ---------------------------------------------------------------------------
+
 
 class EventRecorder:
     """Records UI events from a FURY v2 ShowManager.
@@ -380,6 +391,7 @@ class EventRecorder:
 # EventCounter
 # ---------------------------------------------------------------------------
 
+
 class EventCounter(EventRecorder):
     """Records events *and* maintains per-type counts.
 
@@ -432,8 +444,12 @@ class EventCounter(EventRecorder):
     # ------------------------------------------------------------------
 
     def _on_event(self, event: Any) -> None:
-        et = event.get("event_type", "unknown") if isinstance(event, dict) else (
-            getattr(event, "event_type", None) or getattr(event, "type", "unknown")
+        et = (
+            event.get("event_type", "unknown")
+            if isinstance(event, dict)
+            else (
+                getattr(event, "event_type", None) or getattr(event, "type", "unknown")
+            )
         )
         self._counts[et] = self._counts.get(et, 0) + 1
         super()._on_event(event)
@@ -442,6 +458,7 @@ class EventCounter(EventRecorder):
 # ---------------------------------------------------------------------------
 # EventPlayer
 # ---------------------------------------------------------------------------
+
 
 class EventPlayer:
     """Replays a sequence of :class:`RecordedEvent` objects into a ShowManager.
@@ -524,14 +541,14 @@ class EventPlayer:
         # 3. renderer.dispatch_event — last resort (expects Event object, not dict)
         if hasattr(renderer, "emit"):
             _dispatch = renderer.emit
-        elif hasattr(show_manager, "window") and hasattr(show_manager.window, "_events"):
+        elif hasattr(show_manager, "window") and hasattr(
+            show_manager.window, "_events"
+        ):
             _dispatch = show_manager.window._events.emit
         elif hasattr(renderer, "dispatch_event"):
             _dispatch = renderer.dispatch_event
         else:
-            raise AttributeError(
-                "Cannot find a dict-compatible event dispatch path."
-            )
+            raise AttributeError("Cannot find a dict-compatible event dispatch path.")
 
         prev_ts: Optional[float] = None
         for idx, evt in enumerate(events):
