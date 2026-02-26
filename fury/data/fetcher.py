@@ -28,7 +28,7 @@ else:
 UW_RW_URL = "https://digital.lib.washington.edu/researchworks/bitstream/handle/"
 
 NEW_ICONS_DATA_URL = (
-    "https://raw.githubusercontent.com/fury-gl/fury-data/master/icons/" "new_icons/"
+    "https://raw.githubusercontent.com/fury-gl/fury-data/master/icons/new_icons/"
 )
 
 CUBEMAP_DATA_URL = (
@@ -296,13 +296,13 @@ def _make_fetcher(
                 if split_ext[-1] == ".gz" or split_ext[-1] == ".bz2":
                     if os.path.splitext(split_ext[0])[-1] == ".tar":
                         ar = tarfile.open(pjoin(folder, f))
-                        ar.extractall(path=folder)
+                        ar.extractall(path=folder, filter="data")
                         ar.close()
                     else:
                         raise ValueError("File extension is not recognized")
                 elif split_ext[-1] == ".zip":
                     z = zipfile.ZipFile(pjoin(folder, f), "r")
-                    z.extractall(folder)
+                    z.extractall(folder, filter="data")
                     z.close()
                 else:
                     raise ValueError("File extension is not recognized")
@@ -570,8 +570,7 @@ fetch_viz_wiki_nw = _make_fetcher(
         "702EE8713994243C8619A29C9ECE32F95305737F583B747C307500F3EC4A6B56",
         "044917A8FBD0EB980D93B6C406A577BEA416FA934E897C26C87E91C218EF4432",
     ],
-    doc="Download the following wiki information"
-    "Interdisciplinary map of the journals",
+    doc="Download the following wiki informationInterdisciplinary map of the journals",
     msg=(
         "More information about complex "
         "networks can be found in this papers:"
