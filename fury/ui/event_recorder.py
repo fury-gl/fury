@@ -1,18 +1,8 @@
-"""
-fury/ui/event_recorder.py
-
-UI Event Recorder, Counter, and Player for FURY v2.
+"""UI event recorder, counter, and player for FURY v2.
 
 Attaches to ``show_manager.renderer`` (a rendercanvas ``EventEmitter``-backed
-``Renderer``) and observes dict-based events dispatched through it.  No VTK
+``Renderer``) and observes dict-based events dispatched through it. No VTK
 dependency; works with the pygfx/rendercanvas/wgpu stack used by FURY v2.
-
-Classes
--------
-RecordedEvent   – Immutable snapshot of a single rendercanvas event.
-EventRecorder   – Hooks into ShowManager.renderer and records events to JSON.
-EventCounter    – Subclass that tallies events by type for test assertions.
-EventPlayer     – Replays a saved session into a ShowManager.renderer.
 """
 
 from __future__ import annotations
@@ -49,29 +39,29 @@ class RecordedEvent:
     """Immutable snapshot of a single rendercanvas UI event.
 
     Attributes
-    ----------
-    event_type : str
-        rendercanvas event type string, e.g. ``"pointer_down"``.
-    timestamp : float
-        Wall-clock time (``time.perf_counter()``) when captured.
-    x : float
-        Pointer x-coordinate in logical pixels (0 for non-pointer events).
-    y : float
-        Pointer y-coordinate in logical pixels (0 for non-pointer events).
-    button : int
-        Mouse button index (1=left, 2=right, 3=middle; 0 if none).
-    buttons : int
-        Bitmask of currently held mouse buttons.
-    key : str
-        Key symbol for keyboard events; empty string for pointer/wheel events.
-    modifiers : tuple
-        Active modifier key names, e.g. ``("Shift", "Control")``.
-    dx : float
-        Wheel delta-x (0 for non-wheel events).
-    dy : float
-        Wheel delta-y (0 for non-wheel events).
-    raw : dict
-        The original event dict for full-fidelity replay.
+        ----------
+        event_type : str
+            Rendercanvas event type string, e.g. ``"pointer_down"``.
+        timestamp : float
+            Wall-clock time (``time.perf_counter()``) when captured.
+        x : float
+            Pointer x-coordinate in logical pixels (0 for non-pointer events).
+        y : float
+            Pointer y-coordinate in logical pixels (0 for non-pointer events).
+        button : int
+            Mouse button index (1=left, 2=right, 3=middle; 0 if none).
+        buttons : int
+            Bitmask of currently held mouse buttons.
+        key : str
+            Key symbol for keyboard events; empty string for pointer/wheel events.
+        modifiers : tuple
+            Active modifier key names, e.g. ``("Shift", "Control")``.
+        dx : float
+            Wheel delta-x (0 for non-wheel events).
+        dy : float
+            Wheel delta-y (0 for non-wheel events).
+        raw : dict
+            The original event dict for full-fidelity replay.
     """
 
     event_type: str
@@ -86,19 +76,32 @@ class RecordedEvent:
     dy: float = 0.0
     raw: dict = field(default_factory=dict)
 
-    # ------------------------------------------------------------------
-    # Serialisation
-    # ------------------------------------------------------------------
-
     def to_dict(self) -> Dict[str, Any]:
-        """Return a JSON-serialisable representation."""
+        """Return a JSON-serialisable representation.
+
+        Returns
+        -------
+        dict
+            JSON-serialisable representation of this event.
+        """
         d = asdict(self)
         d["modifiers"] = list(d["modifiers"])
         return d
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "RecordedEvent":
-        """Reconstruct from a plain dict (e.g. loaded from JSON)."""
+        """Reconstruct from a plain dict (e.g. loaded from JSON).
+
+        Parameters
+        ----------
+        data : dict
+            Plain dict with event fields.
+
+        Returns
+        -------
+        RecordedEvent
+            Reconstructed event instance.
+        """
         return cls(
             event_type=data["event_type"],
             timestamp=data.get("timestamp", 0.0),
@@ -123,12 +126,13 @@ class RecordedEvent:
 
         Parameters
         ----------
-        event :
+        event : Any
             A rendercanvas event dict or event object.
 
         Returns
         -------
         RecordedEvent
+            Snapshot of the given event.
         """
         if isinstance(event, dict):
 
@@ -141,11 +145,12 @@ class RecordedEvent:
             def _get(key: str, default: Any = None) -> Any:  # type: ignore[misc]
                 return getattr(event, key, default)
 
-            # Serialise object to a dict so raw is always JSON-safe.
             try:
                 raw = {
                     "event_type": getattr(
-                        event, "event_type", getattr(event, "type", "")
+                        event,
+                        "event_type",
+                        getattr(event, "type", ""),
                     ),
                     "x": float(getattr(event, "x", 0)),
                     "y": float(getattr(event, "y", 0)),
@@ -162,15 +167,11 @@ class RecordedEvent:
             except Exception:
                 raw = {}
 
-        # ``event_type`` may live under ``"event_type"`` (dict) or ``"type"``
-        # attribute (some pygfx event objects).
         et = _get("event_type") or _get("type") or ""
-
+        ts = _get("time_stamp")
         return cls(
             event_type=str(et),
-            timestamp=float(
-                ts if (ts := _get("time_stamp")) is not None else time.perf_counter()
-            ),
+            timestamp=float(ts if ts is not None else time.perf_counter()),
             x=float(_get("x") or 0),
             y=float(_get("y") or 0),
             button=int(_get("button") or 0),
@@ -191,6 +192,7 @@ class RecordedEvent:
         Returns
         -------
         dict
+            Rendercanvas-compatible event dict.
         """
         if self.raw:
             evt = dict(self.raw)
@@ -207,7 +209,7 @@ class RecordedEvent:
                 "dy": self.dy,
                 "time_stamp": self.timestamp,
             }
-        evt["event_type"] = self.event_type  # always authoritative
+        evt["event_type"] = self.event_type
         return evt
 
 
@@ -221,7 +223,7 @@ class EventRecorder:
 
     Hooks into ``show_manager.renderer`` (the rendercanvas Renderer /
     EventEmitter) and registers an observer for every event type in
-    :attr:`DEFAULT_OBSERVED_EVENTS`.  Each incoming event is packaged into a
+    :attr:`DEFAULT_OBSERVED_EVENTS`. Each incoming event is packaged into a
     :class:`RecordedEvent` and appended to an internal log.
 
     Parameters
@@ -233,7 +235,7 @@ class EventRecorder:
     --------
     >>> recorder = EventRecorder()
     >>> recorder.attach(show_manager)
-    >>> # … user interacts …
+    >>> # ... user interacts ...
     >>> recorder.detach()
     >>> recorder.save("session.json")
     """
@@ -242,6 +244,13 @@ class EventRecorder:
         self,
         observed_events: Optional[List[str]] = None,
     ) -> None:
+        """Initialize EventRecorder.
+
+        Parameters
+        ----------
+        observed_events : list[str], optional
+            Override the default set of observed event type strings.
+        """
         self._events: List[RecordedEvent] = []
         self._observed: List[str] = (
             list(observed_events)
@@ -250,36 +259,36 @@ class EventRecorder:
         )
         self._renderer: Any = None
         self._recording: bool = False
-        # Store a stable reference to the bound method so that add/remove
-        # handler identity checks (``cb is not callback``) work correctly.
-        # Python bound methods are not singletons — ``self._on_event is
-        # self._on_event`` can be False.
         self._callback_ref: Callable = self._on_event
-
-    # ------------------------------------------------------------------
-    # Properties
-    # ------------------------------------------------------------------
 
     @property
     def events(self) -> List[RecordedEvent]:
-        """A copy of the captured event log (read-only)."""
+        """A copy of the captured event log (read-only).
+
+        Returns
+        -------
+        list[RecordedEvent]
+            Copy of the internal event log.
+        """
         return list(self._events)
 
     @property
     def is_recording(self) -> bool:
-        """``True`` while actively recording."""
-        return self._recording
+        """``True`` while actively recording.
 
-    # ------------------------------------------------------------------
-    # Lifecycle
-    # ------------------------------------------------------------------
+        Returns
+        -------
+        bool
+            Whether the recorder is currently attached and recording.
+        """
+        return self._recording
 
     def attach(self, show_manager: Any) -> None:
         """Attach to *show_manager* and begin recording events.
 
         Parameters
         ----------
-        show_manager :
+        show_manager : Any
             A FURY v2 :class:`~fury.window.ShowManager`.
 
         Raises
@@ -305,24 +314,18 @@ class EventRecorder:
         if not self._recording:
             return
         try:
-            # EventEmitter uses remove_handler; Renderer may also expose
-            # remove_event_handler — try both gracefully.
             if hasattr(self._renderer, "remove_handler"):
                 self._renderer.remove_handler(self._callback_ref, *self._observed)
             elif hasattr(self._renderer, "remove_event_handler"):
                 self._renderer.remove_event_handler(self._callback_ref, *self._observed)
         except Exception:
-            pass  # best-effort cleanup
+            pass
         self._renderer = None
         self._recording = False
 
     def clear(self) -> None:
         """Discard all captured events."""
         self._events.clear()
-
-    # ------------------------------------------------------------------
-    # Persistence
-    # ------------------------------------------------------------------
 
     def save(self, filepath: str) -> None:
         """Serialise the event log to a JSON file.
@@ -353,12 +356,14 @@ class EventRecorder:
             payload = json.load(fh)
         self._events = [RecordedEvent.from_dict(d) for d in payload["events"]]
 
-    # ------------------------------------------------------------------
-    # Internal
-    # ------------------------------------------------------------------
-
     def _on_event(self, event: Any) -> None:
-        """Observer callback — called for each registered event."""
+        """Observer callback called for each registered event.
+
+        Parameters
+        ----------
+        event : Any
+            A rendercanvas event dict or event object.
+        """
         self._events.append(RecordedEvent.from_rendercanvas_event(event))
 
     @staticmethod
@@ -367,12 +372,12 @@ class EventRecorder:
 
         Parameters
         ----------
-        show_manager :
+        show_manager : Any
             Any object exposing a ``renderer`` attribute.
 
         Returns
         -------
-        renderer
+        Any
             The renderer / EventEmitter instance.
 
         Raises
@@ -399,23 +404,31 @@ class EventCounter(EventRecorder):
     Useful when a test only needs to assert how many times a certain event
     type fired, without replaying the whole interaction.
 
+    Parameters
+    ----------
+    **kwargs : Any
+        Keyword arguments forwarded to :class:`EventRecorder`.
+
     Examples
     --------
     >>> counter = EventCounter()
     >>> counter.attach(show_manager)
-    >>> # … run test interaction …
+    >>> # ... run test interaction ...
     >>> counter.detach()
     >>> assert counter.get_count("pointer_down") == 3
     >>> assert counter.total() == 10
     """
 
     def __init__(self, **kwargs: Any) -> None:
+        """Initialize EventCounter.
+
+        Parameters
+        ----------
+        **kwargs : Any
+            Keyword arguments forwarded to :class:`EventRecorder`.
+        """
         super().__init__(**kwargs)
         self._counts: Dict[str, int] = {}
-
-    # ------------------------------------------------------------------
-    # Public API
-    # ------------------------------------------------------------------
 
     def get_count(self, event_type: str) -> int:
         """Return how many times *event_type* was observed (0 if never).
@@ -423,16 +436,33 @@ class EventCounter(EventRecorder):
         Parameters
         ----------
         event_type : str
-            rendercanvas event type string, e.g. ``"pointer_down"``.
+            Rendercanvas event type string, e.g. ``"pointer_down"``.
+
+        Returns
+        -------
+        int
+            Number of times the event type was observed.
         """
         return self._counts.get(event_type, 0)
 
     def total(self) -> int:
-        """Total number of events captured across all types."""
+        """Total number of events captured across all types.
+
+        Returns
+        -------
+        int
+            Sum of all event counts.
+        """
         return sum(self._counts.values())
 
     def counts(self) -> Dict[str, int]:
-        """Copy of the full ``{event_type: count}`` mapping."""
+        """Copy of the full ``{event_type: count}`` mapping.
+
+        Returns
+        -------
+        dict
+            Copy of the internal counts dict.
+        """
         return dict(self._counts)
 
     def clear(self) -> None:
@@ -440,18 +470,22 @@ class EventCounter(EventRecorder):
         super().clear()
         self._counts.clear()
 
-    # ------------------------------------------------------------------
-    # Internal
-    # ------------------------------------------------------------------
-
     def _on_event(self, event: Any) -> None:
-        et = (
-            event.get("event_type", "unknown")
-            if isinstance(event, dict)
-            else (
-                getattr(event, "event_type", None) or getattr(event, "type", "unknown")
+        """Increment count and delegate to parent recorder.
+
+        Parameters
+        ----------
+        event : Any
+            A rendercanvas event dict or event object.
+        """
+        if isinstance(event, dict):
+            et: str = str(event.get("event_type") or "unknown")
+        else:
+            et = str(
+                getattr(event, "event_type", None)
+                or getattr(event, "type", None)
+                or "unknown"
             )
-        )
         self._counts[et] = self._counts.get(et, 0) + 1
         super()._on_event(event)
 
@@ -470,14 +504,14 @@ class EventPlayer:
     Parameters
     ----------
     recorder : EventRecorder, optional
-        Source of events to replay.  Pass ``None`` and call :meth:`load`
+        Source of events to replay. Pass ``None`` and call :meth:`load`
         before :meth:`play`.
     speed_factor : float
         Multiplier applied to inter-event delays.
-        ``1.0`` → real-time; ``0.0`` → instant (best for unit tests).
+        ``1.0`` -> real-time; ``0.0`` -> instant (best for unit tests).
     on_event : callable, optional
         Hook called with ``(RecordedEvent, index)`` *before* each event is
-        injected.  Use for inline assertions during replay.
+        injected. Use for inline assertions during replay.
 
     Examples
     --------
@@ -492,13 +526,20 @@ class EventPlayer:
         speed_factor: float = 1.0,
         on_event: Optional[Callable[[RecordedEvent, int], None]] = None,
     ) -> None:
+        """Initialize EventPlayer.
+
+        Parameters
+        ----------
+        recorder : EventRecorder, optional
+            Source of events to replay.
+        speed_factor : float
+            Playback speed multiplier. ``0.0`` for instant replay.
+        on_event : callable, optional
+            Hook called with ``(RecordedEvent, index)`` before each event.
+        """
         self._recorder = recorder
         self.speed_factor = speed_factor
         self.on_event = on_event
-
-    # ------------------------------------------------------------------
-    # Public API
-    # ------------------------------------------------------------------
 
     def load(self, filepath: str) -> None:
         """Load events from a JSON file written by :meth:`EventRecorder.save`.
@@ -517,7 +558,7 @@ class EventPlayer:
 
         Parameters
         ----------
-        show_manager :
+        show_manager : Any
             A FURY v2 ShowManager whose window has been initialised.
 
         Raises
@@ -536,10 +577,6 @@ class EventPlayer:
 
         renderer = EventRecorder._resolve_renderer(show_manager)
 
-        # Dispatch priority:
-        # 1. renderer.emit — synchronous dict-based (works in tests with mocks)
-        # 2. show_manager.window._events.emit — raw EventEmitter on real FURY renderer
-        # 3. renderer.dispatch_event — last resort (expects Event object, not dict)
         if hasattr(renderer, "emit"):
             _dispatch = renderer.emit
         elif hasattr(show_manager, "window") and hasattr(
@@ -553,16 +590,13 @@ class EventPlayer:
 
         prev_ts: Optional[float] = None
         for idx, evt in enumerate(events):
-            # Timing
             if self.speed_factor > 0 and prev_ts is not None:
                 delay = (evt.timestamp - prev_ts) / self.speed_factor
                 if delay > 0:
                     time.sleep(delay)
             prev_ts = evt.timestamp
 
-            # User hook
             if self.on_event is not None:
                 self.on_event(evt, idx)
 
-            # Inject
             _dispatch(evt.to_rendercanvas_event())
