@@ -234,10 +234,10 @@ class EventRecorder:
     Examples
     --------
     >>> recorder = EventRecorder()
-    >>> recorder.attach(show_manager)
+    >>> recorder.attach(show_manager)  # doctest: +SKIP
     >>> # ... user interacts ...
-    >>> recorder.detach()
-    >>> recorder.save("session.json")
+    >>> recorder.detach()  # doctest: +SKIP
+    >>> recorder.save("session.json")  # doctest: +SKIP
     """
 
     def __init__(
@@ -412,11 +412,11 @@ class EventCounter(EventRecorder):
     Examples
     --------
     >>> counter = EventCounter()
-    >>> counter.attach(show_manager)
+    >>> counter.attach(show_manager)  # doctest: +SKIP
     >>> # ... run test interaction ...
-    >>> counter.detach()
-    >>> assert counter.get_count("pointer_down") == 3
-    >>> assert counter.total() == 10
+    >>> counter.detach()  # doctest: +SKIP
+    >>> assert counter.get_count("pointer_down") == 3  # doctest: +SKIP
+    >>> assert counter.total() == 10  # doctest: +SKIP
     """
 
     def __init__(self, **kwargs: Any) -> None:
@@ -516,8 +516,8 @@ class EventPlayer:
     Examples
     --------
     >>> player = EventPlayer(speed_factor=0.0)
-    >>> player.load("session.json")
-    >>> player.play(show_manager)
+    >>> player.load("session.json")  # doctest: +SKIP
+    >>> player.play(show_manager)  # doctest: +SKIP
     """
 
     def __init__(
