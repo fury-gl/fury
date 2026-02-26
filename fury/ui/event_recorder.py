@@ -295,7 +295,8 @@ class EventRecorder:
             )
         renderer = self._resolve_renderer(show_manager)
         self._renderer = renderer
-        # rendercanvas Renderer exposes add_event_handler (wraps EventEmitter.add_handler)
+        # rendercanvas Renderer exposes add_event_handler
+        # (wraps EventEmitter.add_handler)
         renderer.add_event_handler(self._callback_ref, *self._observed)
         self._recording = True
 
