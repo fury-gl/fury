@@ -314,7 +314,7 @@ def test_textblock2d_initialization_default():
     assert tb.background_color is None
 
     assert tb.justification == "left"
-    assert tb.vertical_justification == "bottom"
+    assert tb.vertical_justification == "top"
 
 
 def test_textblock2d_initialization_custom():

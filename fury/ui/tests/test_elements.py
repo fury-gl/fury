@@ -1,39 +1,126 @@
 """Test for components module."""
 
+from PIL import Image
+import numpy as np
 import numpy.testing as npt
 
-from fury import ui
+from fury import ui, window
+from fury.data import fetch_viz_icons, read_viz_icons
+from fury.ui.helpers import Anchor
 
-# def test_ui_textbox(recording=False):
-#     filename = "test_ui_textbox"
-#     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-#     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
-#     print(recording_filename)
-#     # TextBox
-#     textbox_test = ui.TextBox2D(height=3, width=10, text="Text")
-#     another_textbox_test = ui.TextBox2D(height=3, width=10, text="Enter Text")
-#     another_textbox_test.set_message("Enter Text")
-#     # Checking whether textbox went out of focus
-#     is_off_focused = [False]
-#     def _off_focus(textbox):
-#         is_off_focused[0] = True
-#     # Set up a callback when textbox went out of focus
-#     textbox_test.off_focus = _off_focus
-#     # Assign the counter callback to every possible event.
-#     event_counter = EventCounter()
-#     event_counter.monitor(textbox_test)
-#     current_size = (600, 600)
-#     show_manager = window.ShowManager(size=current_size, title="FURY TextBox")
-#     show_manager.scene.add(textbox_test)
-#     if recording:
-#         show_manager.record_events_to_file(recording_filename)
-#         print(list(event_counter.events_counts.items()))
-#         event_counter.save(expected_events_counts_filename)
-#     else:
-#         show_manager.play_events_from_file(recording_filename)
-#         expected = EventCounter.load(expected_events_counts_filename)
-#         event_counter.check_counts(expected)
-#     npt.assert_equal(is_off_focused[0], True)
+
+def test_textured_button_2d_initialization():
+    """Test TexturedButton2D initialization and texture loading."""
+    fetch_viz_icons()
+
+    states = {
+        "default": read_viz_icons(fname="play3.png"),
+        "hover": read_viz_icons(fname="pause2.png"),
+        "pressed": read_viz_icons(fname="stop2.png"),
+    }
+
+    button_size = (50, 50)
+    button_pos = (100, 100)
+
+    button = ui.TexturedButton2D(states=states, position=button_pos, size=button_size)
+
+    npt.assert_equal(button.size, button_size)
+    npt.assert_array_equal(button.get_position(Anchor.LEFT, Anchor.TOP), button_pos)
+    assert "default" in button.texture_map
+    assert "hover" in button.texture_map
+    assert button.child is not None
+
+
+def test_textured_button_state_updates():
+    """Test if TexturedButton2D updates its visual state on interaction."""
+    fetch_viz_icons()
+    states = {
+        "default": read_viz_icons(fname="play3.png"),
+        "hover": read_viz_icons(fname="pause2.png"),
+    }
+
+    button = ui.TexturedButton2D(states=states, size=(40, 40))
+
+    button.update_visual_state()
+    initial_tex = button.child.material.map
+
+    button.is_hovered = True
+    button.update_visual_state()
+    hover_tex = button.child.material.map
+
+    assert initial_tex != hover_tex
+
+
+def test_text_button_2d_initialization_default():
+    """Test TextButton2D with default states and labels."""
+    label = "Click Me"
+    button = ui.TextButton2D(label=label, size=(120, 50))
+
+    npt.assert_equal(button.default_label, label)
+    assert isinstance(button.child, ui.TextBlock2D)
+    npt.assert_equal(button.child.message, label)
+
+    npt.assert_equal(button.child.background.size, (120, 50))
+
+
+def test_text_button_2d_custom_states():
+    """Test TextButton2D with complex state dictionary (text + color)."""
+    custom_states = {
+        "default": {"text": "Idle", "color": (1, 1, 1)},
+        "hover": {"text": "Hovering...", "color": (0, 1, 0)},
+        "pressed": {"text": "Clicked!", "color": (1, 0, 0)},
+    }
+
+    button = ui.TextButton2D(label="Default", states=custom_states)
+
+    button.update_visual_state()
+    npt.assert_equal(button.child.message, "Idle")
+    npt.assert_array_almost_equal(button.child.background.color, (1, 1, 1))
+
+    button.is_hovered = True
+    button.update_visual_state()
+    npt.assert_equal(button.child.message, "Hovering...")
+    npt.assert_array_almost_equal(button.child.background.color, (0, 1, 0))
+
+    button.is_pressed = True
+    button.update_visual_state()
+    npt.assert_equal(button.child.message, "Clicked!")
+    npt.assert_array_almost_equal(button.child.background.color, (1, 0, 0))
+
+
+def test_text_button_2d_visual_snapshot():
+    """Visual test to ensure TextButton2D background color renders."""
+    rect_color = (0.0, 0.0, 1.0)
+    states = {"default": rect_color}
+
+    button = ui.TextButton2D(
+        label="BlueBtn", states=states, size=(100, 50), position=(50, 50)
+    )
+
+    scene = window.Scene()
+    scene.add(button)
+    button.update_visual_state()
+
+    fname = "text_button_render.png"
+    window.snapshot(scene=scene, fname=fname)
+
+    img = Image.open(fname)
+    img_array = np.array(img)
+
+    mean_colors = np.mean(img_array.reshape(-1, img_array.shape[2]), axis=0)
+    assert mean_colors[2] > mean_colors[0]
+    assert mean_colors[2] > mean_colors[1]
+
+
+def test_text_button_resize():
+    """Test if resizing the button resizes the internal TextBlock."""
+    button = ui.TextButton2D(label="ResizeTest", size=(100, 40))
+    new_size = (200, 80)
+
+    button.resize(new_size)
+
+    npt.assert_equal(button.size, new_size)
+    npt.assert_equal(button.child.background.size, new_size)
 
 
 def test_line_slider_2d_functional_initialization():
@@ -143,6 +230,246 @@ def test_line_slider_2d_visibility_propagation():
     slider.set_visibility(True)
     for actor in slider._get_actors():
         assert actor.visible is True
+
+
+# def test_ui_textbox(recording=False):
+#     filename = "test_ui_textbox"
+#     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+#     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+#     print(recording_filename)
+#     # TextBox
+#     textbox_test = ui.TextBox2D(height=3, width=10, text="Text")
+
+#     another_textbox_test = ui.TextBox2D(height=3, width=10, text="Enter Text")
+#     another_textbox_test.set_message("Enter Text")
+
+#     # Checking whether textbox went out of focus
+#     is_off_focused = [False]
+
+#     def _off_focus(textbox):
+#         is_off_focused[0] = True
+
+#     # Set up a callback when textbox went out of focus
+#     textbox_test.off_focus = _off_focus
+
+#     # Assign the counter callback to every possible event.
+#     event_counter = EventCounter()
+#     event_counter.monitor(textbox_test)
+
+#     current_size = (600, 600)
+#     show_manager = window.ShowManager(size=current_size, title="FURY TextBox")
+
+#     show_manager.scene.add(textbox_test)
+
+#     if recording:
+#         show_manager.record_events_to_file(recording_filename)
+#         print(list(event_counter.events_counts.items()))
+#         event_counter.save(expected_events_counts_filename)
+
+#     else:
+#         show_manager.play_events_from_file(recording_filename)
+#         expected = EventCounter.load(expected_events_counts_filename)
+#         event_counter.check_counts(expected)
+
+#     npt.assert_equal(is_off_focused[0], True)
+
+
+# def test_ui_line_slider_2d_horizontal_bottom(recording=False):
+#     filename = "test_ui_line_slider_2d_horizontal_bottom"
+#     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+#     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+#     line_slider_2d_test = ui.LineSlider2D(
+#         initial_value=-2,
+#         min_value=-5,
+#         max_value=5,
+#         orientation="horizontal",
+#         text_alignment="bottom",
+#     )
+#     line_slider_2d_test.center = (300, 300)
+
+#     # Assign the counter callback to every possible event.
+#     event_counter = EventCounter()
+#     event_counter.monitor(line_slider_2d_test)
+
+#     current_size = (600, 600)
+#     show_manager = window.ShowManager(
+#         size=current_size, title="FURY Horizontal Line Slider"
+#     )
+
+#     show_manager.scene.add(line_slider_2d_test)
+
+#     if recording:
+#         show_manager.record_events_to_file(recording_filename)
+#         print(list(event_counter.events_counts.items()))
+#         event_counter.save(expected_events_counts_filename)
+
+#     else:
+#         show_manager.play_events_from_file(recording_filename)
+#         expected = EventCounter.load(expected_events_counts_filename)
+#         event_counter.check_counts(expected)
+
+
+# def test_ui_line_slider_2d_horizontal_top(recording=False):
+#     filename = "test_ui_line_slider_2d_horizontal_top"
+#     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+#     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+#     line_slider_2d_test = ui.LineSlider2D(
+#         initial_value=-2,
+#         min_value=-5,
+#         max_value=5,
+#         orientation="horizontal",
+#         text_alignment="top",
+#     )
+#     line_slider_2d_test.center = (300, 300)
+
+#     # Assign the counter callback to every possible event.
+#     event_counter = EventCounter()
+#     event_counter.monitor(line_slider_2d_test)
+
+#     current_size = (600, 600)
+#     show_manager = window.ShowManager(
+#         size=current_size, title="FURY Horizontal Line Slider"
+#     )
+
+#     show_manager.scene.add(line_slider_2d_test)
+
+#     if recording:
+#         show_manager.record_events_to_file(recording_filename)
+#         print(list(event_counter.events_counts.items()))
+#         event_counter.save(expected_events_counts_filename)
+
+#     else:
+#         show_manager.play_events_from_file(recording_filename)
+#         expected = EventCounter.load(expected_events_counts_filename)
+#         event_counter.check_counts(expected)
+
+
+# def test_ui_line_slider_2d_vertical_left(recording=False):
+#     filename = "test_ui_line_slider_2d_vertical_left"
+#     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+#     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+#     line_slider_2d_test = ui.LineSlider2D(
+#         initial_value=-2,
+#         min_value=-5,
+#         max_value=5,
+#         orientation="vertical",
+#         text_alignment="left",
+#     )
+#     line_slider_2d_test.center = (300, 300)
+
+#     # Assign the counter callback to every possible event.
+#     event_counter = EventCounter()
+#     event_counter.monitor(line_slider_2d_test)
+
+#     current_size = (600, 600)
+#     show_manager = window.ShowManager(
+#         size=current_size, title="FURY Vertical Line Slider"
+#     )
+
+#     show_manager.scene.add(line_slider_2d_test)
+
+#     if recording:
+#         show_manager.record_events_to_file(recording_filename)
+#         print(list(event_counter.events_counts.items()))
+#         event_counter.save(expected_events_counts_filename)
+
+#     else:
+#         show_manager.play_events_from_file(recording_filename)
+#         expected = EventCounter.load(expected_events_counts_filename)
+#         event_counter.check_counts(expected)
+
+
+# def test_ui_line_slider_2d_vertical_right(recording=False):
+#     filename = "test_ui_line_slider_2d_vertical_right"
+#     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+#     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+#     line_slider_2d_test = ui.LineSlider2D(
+#         initial_value=-2,
+#         min_value=-5,
+#         max_value=5,
+#         orientation="vertical",
+#         text_alignment="right",
+#     )
+#     line_slider_2d_test.center = (300, 300)
+
+#     # Assign the counter callback to every possible event.
+#     event_counter = EventCounter()
+#     event_counter.monitor(line_slider_2d_test)
+
+#     current_size = (600, 600)
+#     show_manager = window.ShowManager(
+#         size=current_size, title="FURY Vertical Line Slider"
+#     )
+
+#     show_manager.scene.add(line_slider_2d_test)
+
+#     if recording:
+#         show_manager.record_events_to_file(recording_filename)
+#         print(list(event_counter.events_counts.items()))
+#         event_counter.save(expected_events_counts_filename)
+
+#     else:
+#         show_manager.play_events_from_file(recording_filename)
+#         expected = EventCounter.load(expected_events_counts_filename)
+#         event_counter.check_counts(expected)
+
+
+# def test_ui_2d_line_slider_hooks(recording=False):
+#     global changed, value_changed, slider_moved
+
+#     filename = "test_ui_line_slider_2d_hooks"
+#     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+#     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+#     line_slider_2d = ui.LineSlider2D(center=(300, 300))
+
+#     event_counter = EventCounter()
+#     event_counter.monitor(line_slider_2d)
+
+#     show_manager = window.ShowManager(size=(600, 600), title="FURY Line Slider hooks")
+
+#     # counters for the hooks to increment
+#     changed = value_changed = slider_moved = 0
+
+#     def on_line_slider_change(slider):
+#         global changed
+#         changed += 1
+
+#     def on_line_slider_moved(slider):
+#         global slider_moved
+#         slider_moved += 1
+
+#     def on_line_slider_value_changed(slider):
+#         global value_changed
+#         value_changed += 1
+
+#     line_slider_2d.on_change = on_line_slider_change
+#     line_slider_2d.on_moving_slider = on_line_slider_moved
+#     line_slider_2d.on_value_changed = on_line_slider_value_changed
+
+#     for i in range(100, -1, -1):
+#         line_slider_2d.value = i
+
+#     show_manager.scene.add(line_slider_2d)
+
+#     if recording:
+#         show_manager.record_events_to_file(recording_filename)
+#         event_counter.save(expected_events_counts_filename)
+
+#     else:
+#         show_manager.play_events_from_file(recording_filename)
+#         expected = EventCounter.load(expected_events_counts_filename)
+#         event_counter.check_counts(expected)
+
+#     assert_greater(changed, 0)
+#     assert_greater(value_changed, 0)
+#     assert_greater(slider_moved, 0)
+#     assert_equal(changed, value_changed + slider_moved)
 
 
 # def test_ui_line_double_slider_2d(interactive=False):

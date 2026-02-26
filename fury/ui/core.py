@@ -5,15 +5,12 @@ import abc
 import numpy as np
 
 from fury.actor import Text, create_mesh
-from fury.decorators import warn_on_args_to_kwargs
 from fury.geometry import buffer_to_geometry
 from fury.lib import (
     EventType,
     plane_geometry,
 )
-from fury.material import (
-    _create_mesh_material,
-)
+from fury.material import _create_mesh_material
 from fury.primitive import prim_ring
 from fury.ui import UIContext
 from fury.ui.helpers import UI_Z_RANGE, Anchor, get_anchor_to_multiplier
@@ -137,6 +134,8 @@ class UI(object, metaclass=abc.ABCMeta):
         self.on_middle_mouse_double_clicked = lambda event: None
         self.on_middle_mouse_button_dragged = lambda event: None
         self.on_key_press = lambda event: None
+        self.on_pointer_enter = lambda event: None
+        self.on_pointer_leave = lambda event: None
 
     @abc.abstractmethod
     def _setup(self):
@@ -356,6 +355,8 @@ class UI(object, metaclass=abc.ABCMeta):
         actor.add_event_handler(self.mouse_button_up_callback, EventType.POINTER_UP)
         actor.add_event_handler(self.mouse_move_callback, EventType.POINTER_DRAG)
         actor.add_event_handler(self.key_press_callback, EventType.KEY_UP)
+        actor.add_event_handler(self.pointer_enter_callback, EventType.POINTER_ENTER)
+        actor.add_event_handler(self.pointer_leave_callback, EventType.POINTER_LEAVE)
 
     def mouse_button_down_callback(self, event):
         """Handle mouse button press event.
@@ -501,6 +502,24 @@ class UI(object, metaclass=abc.ABCMeta):
         """
         self.on_key_press(event)
 
+    def pointer_enter_callback(self, event):
+        """Handle pointer enter event.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object."""
+        self.on_pointer_enter(event)
+
+    def pointer_leave_callback(self, event):
+        """Handle pointer leave event.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object."""
+        self.on_pointer_leave(event)
+
 
 class Rectangle2D(UI):
     """A 2D rectangle sub-classed from UI.
@@ -519,7 +538,6 @@ class Rectangle2D(UI):
         `0` is fully transparent, `1` is fully opaque.
     """
 
-    @warn_on_args_to_kwargs()
     def __init__(
         self, *, size=(100, 100), position=(0, 0), color=(1, 1, 1), opacity=1.0
     ):
@@ -700,7 +718,6 @@ class Disk2D(UI):
         Must take values in [0, 1].
     """
 
-    @warn_on_args_to_kwargs()
     def __init__(
         self,
         outer_radius,
@@ -921,7 +938,7 @@ class TextBlock2D(UI):
         font_size=18,
         font_family="Arial",
         justification="left",
-        vertical_justification="bottom",
+        vertical_justification="top",
         bold=False,
         italic=False,
         size=None,
@@ -1346,6 +1363,7 @@ class TextBlock2D(UI):
             pos[1] + size[1],
         ]
         self.background.resize(size)
+        self._bg_size = size
         self.background.set_position(pos)
 
         self.update_alignment()
@@ -1381,222 +1399,219 @@ class TextBlock2D(UI):
             return self._bg_size
 
 
-# class Button2D(UI):
-#     """A 2D overlay button and is of type vtkTexturedActor2D.
+class Button2D(UI):
+    """Base class for interactive 2D Buttons.
 
-#     Currently supports::
+    Parameters
+    ----------
+    position : (float, float), optional
+        Absolute coordinates (x, y) for placement.
+    size : (int, int), optional
+        Width and height in pixels.
+    """
 
-#         - Multiple icons.
-#         - Switching between icons.
+    def __init__(self, position=(0, 0), size=(30, 30)):
+        """Initialize the button instance.
 
-#     """
+        Parameters
+        ----------
+        position : (float, float), optional
+            Absolute coordinates (x, y) for placement.
+        size : (int, int), optional
+            Width and height in pixels.
+        """
+        self._dims = size
+        self.child = None
 
-#     @warn_on_args_to_kwargs()
-#     def __init__(self, icon_fnames, *, position=(0, 0), size=(30, 30)):
-#         """Init class instance.
+        super().__init__(position=position)
 
-#         Parameters
-#         ----------
-#         icon_fnames : List(string, string)
-#             ((iconname, filename), (iconname, filename), ....)
-#         position : (float, float), optional
-#             Absolute coordinates (x, y) of the lower-left corner of the button.
-#         size : (int, int), optional
-#             Width and height in pixels of the button.
+        self.is_hovered = False
+        self.is_pressed = False
+        self._enabled = True
 
-#         """
-#         super(Button2D, self).__init__(position=position)
+        self.on_clicked = None
 
-#         self.icon_extents = {}
-#         self.icons = self._build_icons(icon_fnames)
-#         self.icon_names = [icon[0] for icon in self.icons]
-#         self.current_icon_id = 0
-#         self.current_icon_name = self.icon_names[self.current_icon_id]
-#         self.set_icon(self.icons[self.current_icon_id][1])
-#         self.resize(size)
+        self.on_pointer_enter = self._handle_enter
+        self.on_pointer_leave = self._handle_leave
+        self.on_left_mouse_button_pressed = self._handle_down
+        self.on_left_mouse_button_released = self._handle_up
+        self.on_left_mouse_button_clicked = lambda event: self.do_click()
 
-#     def _get_size(self):
-#         lower_left_corner = self.texture_points.GetPoint(0)
-#         upper_right_corner = self.texture_points.GetPoint(2)
-#         size = np.array(upper_right_corner) - np.array(lower_left_corner)
-#         return abs(size[:2])
+        self.resize(size)
+        self.update_visual_state()
 
-#     def _build_icons(self, icon_fnames):
-#         """Convert file names to ImageData.
+    @property
+    def enabled(self):
+        """Check if the button is enabled.
 
-#         A pre-processing step to prevent re-read of file names during every
-#         state change.
+        Returns
+        -------
+        bool
+            True if interactive, False otherwise.
+        """
+        return self._enabled
 
-#         Parameters
-#         ----------
-#         icon_fnames : List(string, string)
-#             ((iconname, filename), (iconname, filename), ....)
+    @enabled.setter
+    def enabled(self, value):
+        """Set the button enabled state.
 
-#         Returns
-#         -------
-#         icons : List
-#             A list of corresponding ImageData.
+        Parameters
+        ----------
+        value : bool
+            True to enable, False to disable.
+        """
+        self._enabled = bool(value)
 
-#         """
-#         icons = []
-#         for icon_name, icon_fname in icon_fnames:
-#             icons.append((icon_name, load_image(icon_fname, as_vtktype=True)))
+        if not self._enabled:
+            self.is_hovered = False
+            self.is_pressed = False
+        self.update_visual_state()
 
-#         return icons
+    def _handle_enter(self, event):
+        """Handle the pointer entering the button area.
 
-#     def _setup(self):
-#         """Set up this UI component.
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        if not self._enabled:
+            return
+        self.is_hovered = True
+        self.update_visual_state()
 
-#         Creating the button actor used internally.
+    def _handle_leave(self, event):
+        """Handle the pointer leaving the button area.
 
-#         """
-#         # This is highly inspired by
-#         # https://github.com/Kitware/VTK/blob/c3ec2495b183e3327820e927af7f8f90d34c3474/Interaction/Widgets/vtkBalloonRepresentation.cxx#L47
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        if not self._enabled:
+            return
+        self.is_hovered = False
+        self.is_pressed = False
+        self.update_visual_state()
 
-#         self.texture_polydata = PolyData()
-#         self.texture_points = Points()
-#         self.texture_points.SetNumberOfPoints(4)
+    def _handle_down(self, event):
+        """Handle the pointer being pressed down.
 
-#         polys = CellArray()
-#         polys.InsertNextCell(4)
-#         polys.InsertCellPoint(0)
-#         polys.InsertCellPoint(1)
-#         polys.InsertCellPoint(2)
-#         polys.InsertCellPoint(3)
-#         self.texture_polydata.SetPolys(polys)
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        if not self._enabled:
+            return
+        self.is_pressed = True
+        self.update_visual_state()
 
-#         tc = FloatArray()
-#         tc.SetNumberOfComponents(2)
-#         tc.SetNumberOfTuples(4)
-#         tc.InsertComponent(0, 0, 0.0)
-#         tc.InsertComponent(0, 1, 0.0)
-#         tc.InsertComponent(1, 0, 1.0)
-#         tc.InsertComponent(1, 1, 0.0)
-#         tc.InsertComponent(2, 0, 1.0)
-#         tc.InsertComponent(2, 1, 1.0)
-#         tc.InsertComponent(3, 0, 0.0)
-#         tc.InsertComponent(3, 1, 1.0)
-#         self.texture_polydata.GetPointData().SetTCoords(tc)
+    def _handle_up(self, event):
+        """Handle the pointer being released.
 
-#         texture_mapper = PolyDataMapper2D()
-#         texture_mapper = set_input(texture_mapper, self.texture_polydata)
+        Triggers a click action if the release occurs while the button
+        is in a pressed state.
 
-#         button = TexturedActor2D()
-#         button.SetMapper(texture_mapper)
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        if not self._enabled:
+            return
+        if self.is_pressed:
+            self.do_click()
+        self.is_pressed = False
+        self.update_visual_state()
 
-#         self.texture = Texture()
-#         button.SetTexture(self.texture)
+    def do_click(self):
+        """Trigger the assigned click callback."""
+        if self.on_clicked:
+            self.on_clicked(self)
 
-#         button_property = Property2D()
-#         button_property.SetOpacity(1.0)
-#         button.SetProperty(button_property)
-#         self.actor = button
+    def resolve_state_key(self, available_keys):
+        """Determine the current visual state key based on priority.
 
-#         # Add default events listener to the VTK actor.
-#         self.handle_events(self.actor)
+        The priority order is:
+        1. 'disabled' (if not enabled)
+        2. 'pressed' (if is_pressed)
+        3. 'hover' (if is_hovered)
+        4. 'default'
 
-#     def _get_actors(self):
-#         """Get the actors composing this UI component."""
-#         return [self.actor]
+        Parameters
+        ----------
+        available_keys : list or set
+            The keys available in the subclass (e.g., in a color map).
 
-#     def _add_to_scene(self, scene):
-#         """Add all subcomponents or VTK props that compose this UI component.
+        Returns
+        -------
+        str
+            The key representing the highest priority active state.
+        """
 
-#         Parameters
-#         ----------
-#         scene : scene
+        if not self.enabled:
+            return "disabled" if "disabled" in available_keys else "default"
 
-#         """
-#         scene.add(self.actor)
+        if self.is_pressed and "pressed" in available_keys:
+            return "pressed"
 
-#     def resize(self, size):
-#         """Resize the button.
+        if self.is_hovered and "hover" in available_keys:
+            return "hover"
 
-#         Parameters
-#         ----------
-#         size : (float, float)
-#             Button size (width, height) in pixels.
+        return "default"
 
-#         """
-#         # Update actor.
-#         self.texture_points.SetPoint(0, 0, 0, 0.0)
-#         self.texture_points.SetPoint(1, size[0], 0, 0.0)
-#         self.texture_points.SetPoint(2, size[0], size[1], 0.0)
-#         self.texture_points.SetPoint(3, 0, size[1], 0.0)
-#         self.texture_polydata.SetPoints(self.texture_points)
+    def update_visual_state(self):
+        """Update the visual appearance of the button."""
+        pass
 
-#     def _set_position(self, coords):
-#         """Set the lower-left corner position of this UI component.
+    def _get_size(self):
+        """Get the current size of the button.
 
-#         Parameters
-#         ----------
-#         coords: (float, float)
-#             Absolute pixel coordinates (x, y).
+        Returns
+        -------
+        (float, float)
+            The current (width, height) of the button in pixels.
+        """
+        if self.child and hasattr(self.child, "_get_size"):
+            return self.child._get_size()
+        return self._dims
 
-#         """
-#         self.actor.SetPosition(*coords)
+    def resize(self, size):
+        """Resize the button and its child components.
 
-#     @property
-#     def color(self):
-#         """Get the button's color."""
-#         color = self.actor.GetProperty().GetColor()
-#         return np.asarray(color)
+        Parameters
+        ----------
+        size : (float, float)
+            New width and height in pixels.
+        """
+        self._dims = size
+        if self.child:
+            if isinstance(self.child, UI):
+                self.child.resize(size)
+            elif hasattr(self.child, "geometry"):
+                self.child.geometry = plane_geometry(width=size[0], height=size[1])
+        self._update_actors_position()
 
-#     @color.setter
-#     def color(self, color):
-#         """Set the button's color.
+    def _update_actors_position(self):
+        """Update the position of the internal actors."""
+        if self.child:
+            if isinstance(self.child, UI):
+                self.child.set_position(self.get_position())
+            else:
+                pos = self.get_position(x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
+                self.set_actor_position(self.child, pos, self.z_order)
 
-#         Parameters
-#         ----------
-#         color : (float, float, float)
-#             RGB. Must take values in [0, 1].
+    def _get_actors(self):
+        """Get the actors composing this UI component.
 
-#         """
-#         self.actor.GetProperty().SetColor(*color)
-
-#     def scale(self, factor):
-#         """Scale the button.
-
-#         Parameters
-#         ----------
-#         factor : (float, float)
-#             Scaling factor (width, height) in pixels.
-
-#         """
-#         self.resize(self.size * factor)
-
-#     def set_icon_by_name(self, icon_name):
-#         """Set the button icon using its name.
-
-#         Parameters
-#         ----------
-#         icon_name : str
-
-#         """
-#         icon_id = self.icon_names.index(icon_name)
-#         self.set_icon(self.icons[icon_id][1])
-
-#     def set_icon(self, icon):
-#         """Modify the icon used by the vtkTexturedActor2D.
-
-#         Parameters
-#         ----------
-#         icon : imageData
-
-#         """
-#         self.texture = set_input(self.texture, icon)
-
-#     def next_icon_id(self):
-#         """Set the next icon ID while cycling through icons."""
-#         self.current_icon_id += 1
-#         if self.current_icon_id == len(self.icons):
-#             self.current_icon_id = 0
-#         self.current_icon_name = self.icon_names[self.current_icon_id]
-
-#     def next_icon(self):
-#         """Increment the state of the Button.
-
-#         Also changes the icon.
-#         """
-#         self.next_icon_id()
-#         self.set_icon(self.icons[self.current_icon_id][1])
+        Returns
+        -------
+        list
+            List containing the child actor(s).
+        """
+        if self.child:
+            if isinstance(self.child, UI):
+                return self.child.actors
+            return [self.child]
+        return []
