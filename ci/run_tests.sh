@@ -13,6 +13,9 @@ cd for_testing
 
 # No figure windows for mpl; quote to hide : from travis-ci yaml parsing
 echo "backend : agg" > matplotlibrc
+
+error_code=0
+
 if [ "$COVERAGE" == "1" ] || [ "$COVERAGE" == true ]; then
     cp ../.coveragerc .;
     cp ../.codecov.yml .;
@@ -20,8 +23,8 @@ if [ "$COVERAGE" == "1" ] || [ "$COVERAGE" == true ]; then
     # coverage run -m pytest -svv --verbose --durations=10 --pyargs fury   # Need to --doctest-modules flag
     for file in `find ../fury -name 'test_*.py' -print`;
     do
-        coverage run -m -p pytest -svv $file;
-        retVal=$?
+        retVal=0
+        coverage run -m -p pytest -svv $file || retVal=$?
         if [ $retVal -ne 0 ]; then
             echo "THE CURRENT ERROR CODE IS $retVal";
             error_code=1
@@ -36,8 +39,8 @@ else
     # pytest -svv --verbose --durations=10 --pyargs fury # Need to --doctest-modules flag
     for file in `find ../fury -name 'test_*.py' -print`;
     do
-      pytest -svv $file;
-      retVal=$?
+      retVal=0
+      pytest -svv $file || retVal=$?
       if [ $retVal -ne 0 ]; then
       echo "THE CURRENT ERROR CODE IS $retVal";
       error_code=1
@@ -49,3 +52,8 @@ cd ..
 ls .
 
 set +ex
+
+if [ "$error_code" -ne 0 ]; then
+    echo "Tests failed. Exiting with error."
+    exit 1
+fi

@@ -14,21 +14,20 @@ fi
 #---------- FURY Installation -----------------
 
 if [ "$INSTALL_TYPE" == "setup" ]; then
-    python setup.py install
+    $PIPI .
 elif [ "$INSTALL_TYPE" == "pip" ]; then
     $PIPI .
 elif [ "$INSTALL_TYPE" == "sdist" ]; then
-    # python -m pep517.build
-    python setup_egg.py egg_info  # check egg_info while we're here
-    python setup_egg.py sdist
+    python -m pip install build
+    python -m build --sdist
     $PIPI dist/*.tar.gz
 elif [ "$INSTALL_TYPE" == "wheel" ]; then
-    pip install wheel
-    python setup_egg.py bdist_wheel
+    python -m pip install build
+    python -m build --wheel
     $PIPI dist/*.whl
 elif [ "$INSTALL_TYPE" == "requirements" ]; then
     $PIPI -r requirements.txt
-    python setup.py install
+    $PIPI .
 elif [ "$INSTALL_TYPE" == "conda" ]; then
     $PIPI .
 fi
