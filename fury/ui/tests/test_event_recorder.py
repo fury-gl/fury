@@ -408,6 +408,7 @@ class TestEventRecorder:
         with pytest.raises(AttributeError):
             EventRecorder._resolve_renderer(sm)
 
+
 # ---------------------------------------------------------------------------
 # EventCounter tests
 # ---------------------------------------------------------------------------
@@ -477,6 +478,7 @@ class TestEventCounter:
     def test_is_subclass_of_recorder(self):
         """EventCounter should be a subclass of EventRecorder."""
         assert issubclass(EventCounter, EventRecorder)
+
 
 # ---------------------------------------------------------------------------
 # EventPlayer tests
