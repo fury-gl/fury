@@ -446,8 +446,7 @@ def marker(
         RGB or RGBA values in the range [0, 1].
     marker : str or MarkerShape, optional
         The shape of the marker.
-        Options are "●": "circle", "+": "plus", "x": "cross", "♥": "heart",
-        "✳": "asterix".
+        Options are "circle", "plus", "cross", "heart", "asterix".
     edge_color : str or tuple or Color, optional
         The color of line marking the edge of the markers.
     edge_width : float, optional
@@ -756,113 +755,6 @@ def ring(
     centers = np.asarray(centers)
     n_centers = len(centers)
 
-    def _as_per_center(values, *, value_name, cast=None):
-        """Normalize scalar or 1D input to per-center values.
-
-        Parameters
-        ----------
-        values : float or int or ndarray
-            Scalar-like or one-dimensional input values.
-        value_name : str
-            Name of the parameter, used in error messages.
-        cast : type, optional
-            Optional dtype constructor used to cast the output values.
-
-        Returns
-        -------
-        ndarray
-            One-dimensional array with one value per center.
-        """
-        arr = np.asarray(values)
-        if arr.ndim == 0:
-            arr = np.full(n_centers, arr.item())
-        elif arr.ndim == 1 and arr.size == 1:
-            arr = np.full(n_centers, arr.item())
-        elif arr.ndim == 1 and arr.size == n_centers:
-            pass
-        else:
-            raise ValueError(
-                f"{value_name} size should be 1 or equal to the numbers of centers"
-            )
-
-        if cast is not None:
-            arr = arr.astype(cast)
-        return arr
-
-    def _color_at(values, idx):
-        """Return color for one center from scalar-like or per-center colors.
-
-        Parameters
-        ----------
-        values : tuple or list or ndarray
-            Either one color (RGB/RGBA) or one color per center.
-        idx : int
-            Center index.
-
-        Returns
-        -------
-        ndarray
-            Color values for one center.
-        """
-        arr = np.asarray(values)
-        if arr.ndim == 1 and arr.size in (3, 4):
-            return arr
-        if arr.ndim == 2 and arr.shape[0] in (1, n_centers):
-            return arr[0] if arr.shape[0] == 1 else arr[idx]
-        raise ValueError("colors size should be 1 or equal to the numbers of centers")
-
-    def _direction_at(values, idx):
-        """Return direction for one center from scalar-like or per-center input.
-
-        Parameters
-        ----------
-        values : tuple or list or ndarray
-            Either one direction or one direction per center.
-        idx : int
-            Center index.
-
-        Returns
-        -------
-        ndarray
-            Direction vector for one center.
-        """
-        arr = np.asarray(values)
-        if arr.ndim == 1 and arr.size == 3:
-            return arr
-        if arr.ndim == 2 and arr.shape[0] in (1, n_centers):
-            return arr[0] if arr.shape[0] == 1 else arr[idx]
-        raise ValueError(
-            "directions size should be 1 or equal to the numbers of centers"
-        )
-
-    def _scale_at(values, idx):
-        """Return scale for one center from scalar-like or per-center scales.
-
-        Parameters
-        ----------
-        values : float or tuple or ndarray
-            Either one scale, one XYZ scale, or one scale per center.
-        idx : int
-            Center index.
-
-        Returns
-        -------
-        float or ndarray
-            Scale value(s) for one center.
-        """
-        arr = np.asarray(values)
-        if arr.ndim == 0:
-            return arr.item()
-        if arr.ndim == 1 and arr.size == 1:
-            return arr.item()
-        if arr.ndim == 1 and arr.size == 3:
-            return arr
-        if arr.ndim == 1 and arr.size == n_centers:
-            return arr[idx]
-        if arr.ndim == 2 and arr.shape[0] in (1, n_centers) and arr.shape[1] == 3:
-            return arr[0] if arr.shape[0] == 1 else arr[idx]
-        raise ValueError("scales size should be 1 or equal to the numbers of centers")
-
     if n_centers == 0:
         vertices = np.empty((0, 3), dtype=np.float32)
         faces = np.empty((0, 3), dtype=np.int32)
@@ -906,75 +798,61 @@ def ring(
             enable_picking=enable_picking,
         )
 
-    inner_radius_arr = _as_per_center(
-        inner_radius, value_name="inner_radius", cast=np.float64
-    )
-    outer_radius_arr = _as_per_center(
-        outer_radius, value_name="outer_radius", cast=np.float64
-    )
-    radial_segments_arr = _as_per_center(
-        radial_segments, value_name="radial_segments", cast=np.int64
-    )
-    circumferential_segments_arr = _as_per_center(
-        circumferential_segments,
-        value_name="circumferential_segments",
-        cast=np.int64,
-    )
+    # Per-instance ring parameters -- each ring may have different topology,
+    # so we generate each mesh separately and concatenate.
+    ring_params = {
+        "inner_radius": np.atleast_1d(np.asarray(inner_radius)),
+        "outer_radius": np.atleast_1d(np.asarray(outer_radius)),
+        "radial_segments": np.atleast_1d(np.asarray(radial_segments)),
+        "circumferential_segments": np.atleast_1d(np.asarray(circumferential_segments)),
+    }
+    for name, arr in ring_params.items():
+        if arr.size not in (1, n_centers):
+            raise ValueError(
+                f"{name} size should be 1 or equal to the numbers of centers"
+            )
+
+    inner_radius_arr = ring_params["inner_radius"]
+    outer_radius_arr = ring_params["outer_radius"]
+    radial_segments_arr = ring_params["radial_segments"]
+    circumferential_segments_arr = ring_params["circumferential_segments"]
 
     all_vertices = []
     all_faces = []
-    all_colors = []
     face_offset = 0
 
     for idx in range(n_centers):
-        vertices, faces = fp.prim_ring(
+        verts, tri = fp.prim_ring(
             inner_radius=float(inner_radius_arr[idx]),
             outer_radius=float(outer_radius_arr[idx]),
             radial_segments=int(radial_segments_arr[idx]),
             circumferential_segments=int(circumferential_segments_arr[idx]),
         )
 
-        vertices = vertices.copy()
-
-        # Scale
-        vertices *= _scale_at(scales, idx)
-
-        # Rotate according to direction
-        dirs = _direction_at(directions, idx)
-        dir_abs = np.linalg.norm(dirs)
-        if dir_abs:
-            normal = np.array([1.0, 0.0, 0.0])
-            dirs = dirs / dir_abs
-            v = np.cross(normal, dirs)
-            c = np.dot(normal, dirs)
-
-            vmat = np.array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
-
-            if c == -1.0:
-                rotation_matrix = -np.eye(3, dtype=np.float64)
-            else:
-                h = 1 / (1 + c)
-                rotation_matrix = (
-                    np.eye(3, dtype=np.float64) + vmat + (vmat.dot(vmat) * h)
-                )
-        else:
-            rotation_matrix = np.identity(3)
-
-        vertices = np.dot(rotation_matrix[:3, :3], vertices.T).T
-
         # Translate to center
-        vertices += centers[idx]
+        verts = verts + centers[idx]
 
-        all_vertices.append(vertices)
-        all_faces.append(faces + face_offset)
-        color_i = _color_at(colors, idx)
-        all_colors.append(np.repeat(color_i[np.newaxis, :], len(vertices), axis=0))
-
-        face_offset += len(vertices)
+        all_vertices.append(verts)
+        all_faces.append(tri + face_offset)
+        face_offset += len(verts)
 
     big_vertices = np.concatenate(all_vertices, axis=0)
     big_faces = np.concatenate(all_faces, axis=0)
-    big_colors = np.concatenate(all_colors, axis=0)
+
+    # Expand colors to per-vertex
+    colors_arr = np.asarray(colors)
+    if colors_arr.ndim == 1 and colors_arr.size in (3, 4):
+        big_colors = np.tile(colors_arr, (len(big_vertices), 1))
+    elif colors_arr.ndim == 2 and colors_arr.shape[0] == n_centers:
+        per_ring_sizes = [len(v) for v in all_vertices]
+        big_colors = np.concatenate(
+            [np.tile(colors_arr[i], (per_ring_sizes[i], 1)) for i in range(n_centers)],
+            axis=0,
+        )
+    else:
+        big_colors = np.tile(
+            np.asarray([1, 1, 1], dtype=np.float32), (len(big_vertices), 1)
+        )
 
     obj = actor_from_primitive(
         big_vertices,
