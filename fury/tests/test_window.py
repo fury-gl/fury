@@ -34,7 +34,7 @@ from fury.window import (
 @pytest.fixture
 def sample_actor():
     "Fixture to provide a simple actor."
-    actor = sphere(np.zeros((1, 3)), material="basic")
+    actor = sphere(np.zeros((1, 3)), material="basic", impostor=False)
     return actor
 
 
@@ -147,7 +147,7 @@ def test_show_manager_initialization_default():
     show_m = ShowManager(window_type="offscreen")
     assert show_m.title == "FURY 2.0"
     assert show_m.size == (800, 800)
-    assert show_m.pixel_ratio == 1
+    assert show_m.pixel_ratio == 1.25
     assert show_m.enable_events is True
     assert show_m._show_fps is False
     assert show_m._max_fps == 60

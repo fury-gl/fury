@@ -42,7 +42,6 @@ def validate_actors(actor_type="actor_name", prim_count=1, **kwargs):
     scene.add(get_actor)
 
     centers = kwargs.get("centers", None)
-    colors = kwargs.get("colors", None)
 
     if centers is not None:
         npt.assert_array_equal(get_actor.local.position, centers[0])
@@ -74,7 +73,7 @@ def validate_actors(actor_type="actor_name", prim_count=1, **kwargs):
     scene.remove(get_actor)
 
     typ_actor_1 = getattr(actor, actor_type)
-    get_actor_1 = typ_actor_1(centers=centers, colors=colors, material="basic")
+    get_actor_1 = typ_actor_1(**{**kwargs, "material": "basic"})
     scene.add(get_actor_1)
     fname_1 = f"{actor_type}_test_1.png"
     window.snapshot(scene=scene, fname=fname_1)
