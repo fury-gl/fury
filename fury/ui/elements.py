@@ -1859,6 +1859,8 @@ class RingSlider2D(UI):
         Inner radius of the slider's handle.
     handle_outer_radius : int, optional
         Outer radius of the slider's handle.
+    handle_side : int, optional
+        The side length of the square handle when shape="square".
     font_size : int, optional
         Size of the text to display alongside the slider (pt).
     text_template : str or callable, optional
@@ -1866,6 +1868,8 @@ class RingSlider2D(UI):
         replacement fields: `{value:}`, `{ratio:}`, `{angle:}`.
         If callable, this instance of `:class:RingSlider2D` will be
         passed as argument to the text template function.
+    shape : str, optional
+        The handle shape. Supported values are "disk" and "square".
     z_order : int, optional
             Stacking priority of the slider. The handle and text
             are placed above the track.
@@ -1896,8 +1900,10 @@ class RingSlider2D(UI):
         slider_outer_radius=44,
         handle_inner_radius=0,
         handle_outer_radius=10,
+        handle_side=20,
         font_size=16,
         text_template="{ratio:.0%}",
+        shape="disk",
         z_order=0,
     ):
         """Init this UI element.
@@ -1920,6 +1926,8 @@ class RingSlider2D(UI):
             Inner radius of the slider's handle.
         handle_outer_radius : int, optional
             Outer radius of the slider's handle.
+        handle_side : int, optional
+            The side length of the square handle when shape="square".
         font_size : int, optional
             Size of the text to display alongside the slider (pt).
         text_template : str or callable, optional
@@ -1927,6 +1935,8 @@ class RingSlider2D(UI):
             replacement fields: `{value:}`, `{ratio:}`, `{angle:}`.
             If callable, this instance of `:class:RingSlider2D` will be
             passed as argument to the text template function.
+        shape : str, optional
+            The handle shape. Supported values are "disk" and "square".
         z_order : int, optional
             Stacking priority of the slider. The handle and text
             are placed above the track.
@@ -1944,13 +1954,14 @@ class RingSlider2D(UI):
         self._handle_outer_radius = handle_outer_radius
         self._font_size = font_size
         self.z_order = z_order
+        self.shape = shape
+        self._handle_side = handle_side
 
         self._value = initial_value
         self._previous_value = initial_value
         self._angle = 0.0
         self._ratio = 0.0
 
-        # Offer some standard hooks to the user.
         self.on_change = lambda ui: None
         self.on_value_changed = lambda ui: None
         self.on_moving_slider = lambda ui: None
@@ -1969,7 +1980,6 @@ class RingSlider2D(UI):
 
         self.value = initial_value
 
-        # Final update
         self.update()
 
     def _setup(self):
@@ -1978,21 +1988,25 @@ class RingSlider2D(UI):
         Create the slider's circle (Disk2D), the handle (Disk2D) and
         the text (TextBlock2D).
         """
-        # Slider's track
         self.track = Disk2D(
-            outer_radius=self._track_outer_radius, inner_radius=self._track_inner_radius
+            outer_radius=self._track_outer_radius,
+            inner_radius=self._track_inner_radius,
         )
         self.track.color = (1, 0, 0)
 
-        # Slider's handle
-        self.handle = Disk2D(
-            outer_radius=self._handle_outer_radius,
-            inner_radius=self._handle_inner_radius,
-        )
+        if self.shape == "disk":
+            self.handle = Disk2D(
+                outer_radius=self._handle_outer_radius,
+                inner_radius=self._handle_inner_radius,
+            )
+        elif self.shape == "square":
+            self.handle = Rectangle2D(size=(self._handle_side, self._handle_side))
+        else:
+            raise ValueError("shape must be 'disk' or 'square'")
+
         self.handle.color = self.default_color
         self.handle.z_order = self.z_order + 1
 
-        # Slider Text
         self.text = TextBlock2D(
             justification="center",
             vertical_justification="middle",
@@ -2001,7 +2015,6 @@ class RingSlider2D(UI):
         )
         self.text.z_order = self.z_order + 2
 
-        # Add default events listener for this UI component.
         self.track.on_left_mouse_button_pressed = self.track_click_callback
         self.track.on_left_mouse_button_dragged = self.handle_move_callback
         self.track.on_left_mouse_button_released = self.handle_release_callback
@@ -2044,7 +2057,6 @@ class RingSlider2D(UI):
 
     def _update_actors_position(self):
         """Update the position of the internal actors."""
-        # Position the ring center based on the widget's anchor position.
         pos = self.get_position(x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP)
         center = pos + self.size / 2.0
         # Manage stacking orders
