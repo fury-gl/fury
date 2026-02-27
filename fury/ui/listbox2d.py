@@ -178,11 +178,10 @@ class ListBox2D(UI):
         self.scroll_bar.on_left_mouse_button_pressed = self.scroll_click_callback
         self.scroll_bar.on_left_mouse_button_released = self.scroll_release_callback
         self.scroll_bar.on_left_mouse_button_dragged = self.scroll_drag_callback
-        self.panel.background.on_mouse_wheel_up = self.up_button_callback
-        self.panel.background.on_mouse_wheel_down = self.down_button_callback
-        for slot in self.slots:
-            slot.background.on_mouse_wheel_up = self.up_button_callback
-            slot.background.on_mouse_wheel_down = self.down_button_callback
+
+        # TODO: wire up mouse wheel scrolling once WheelEvent is supported
+        # in the v2 UI event system (fury/lib.py has gfx.WheelEvent available
+        # but core.py does not yet define on_mouse_wheel_up/down callbacks).
 
     def _get_actors(self):
         return self.panel.actors
