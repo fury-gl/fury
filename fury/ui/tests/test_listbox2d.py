@@ -1,4 +1,3 @@
-import numpy as np
 from fury.ui import ListBox2D
 
 
