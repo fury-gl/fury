@@ -1,4 +1,8 @@
+import pytest
+
 from fury.ui import ListBox2D
+
+pytestmark = pytest.mark.filterwarnings("ignore::RuntimeWarning")
 
 
 def test_listbox_creation():
