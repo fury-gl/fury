@@ -13,7 +13,12 @@ visibility of a group of colored spheres rendered by FURY.
 """
 
 import numpy as np
-from imgui_bundle import imgui
+try:
+    from imgui_bundle import imgui
+except ImportError:
+    print("imgui_bundle is not installed. skipping this example.")
+    import sys
+    sys.exit(0)
 
 from fury.actor import sphere
 from fury.window import Scene, ShowManager

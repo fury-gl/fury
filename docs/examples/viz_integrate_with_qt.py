@@ -11,11 +11,15 @@ It integrates FURY's rendering capabilities with Qt's event handling and widget 
 import numpy as np
 
 from fury.window import ShowManager, Scene
-from fury.lib import QtWidgets
 from fury.actor import sphere
 
-
-app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
+try:
+    from fury.lib import QtWidgets
+    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
+except ImportError:
+    print("No qt package installed.skipping this example.")
+    import sys
+    sys.exit(0)
 
 
 class Main(QtWidgets.QWidget):
