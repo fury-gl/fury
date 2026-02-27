@@ -531,9 +531,7 @@ class TestEventPlayer:
     def test_play_correct_coordinates(self):
         """play() should dispatch events with correct x/y coordinates."""
         events = [
-            RecordedEvent.from_rendercanvas_event(
-                _ptr("pointer_move", x=55, y=77)
-            )
+            RecordedEvent.from_rendercanvas_event(_ptr("pointer_move", x=55, y=77))
         ]
         player = EventPlayer(recorder=self._recorder_with(events), speed_factor=0.0)
         dispatched = []
