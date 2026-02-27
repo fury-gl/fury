@@ -45,4 +45,5 @@ def test_range_select():
 
 def test_scrollbar_hidden_when_not_needed():
     lb = ListBox2D(values=["a"])
-    assert lb.scroll_bar.visible is False or lb.nb_slots >= len(lb.values)
+    # When all values fit in slots, scroll bar should be hidden or nb_slots >= values
+    assert lb.nb_slots >= len(lb.values)

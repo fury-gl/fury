@@ -134,8 +134,9 @@ class Panel2D(UI):
         actors = []
 
         actors.extend(self.background.actors)
-        for border in self.borders.values():
-            actors.extend(border.actors)
+        if self.has_border:
+            for border in self.borders.values():
+                actors.extend(border.actors)
 
         return actors
 
@@ -185,7 +186,7 @@ class Panel2D(UI):
         for element, offset in self.element_offsets:
             if element == self.background:
                 element.z_order = self.z_order
-            elif element in self.borders.values():
+            elif self.has_border and element in self.borders.values():
                 element.z_order = self.z_order + 1
             else:
                 element.z_order = self.z_order + 2
