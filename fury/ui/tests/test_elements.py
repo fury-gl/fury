@@ -1,5 +1,7 @@
 """Test for components module."""
 
+from types import SimpleNamespace
+
 from PIL import Image
 import numpy as np
 import numpy.testing as npt
@@ -229,6 +231,138 @@ def test_line_slider_2d_visibility_propagation():
 
     slider.set_visibility(True)
     for actor in slider._get_actors():
+        assert actor.visible is True
+
+
+def test_textbox_initialization():
+    """Test property assignment and initial state."""
+    tb = ui.TextBox2D(width=10, height=3, text="Hello")
+
+    assert tb._message == "Hello"
+    assert tb._width == 10
+    assert tb._height == 3
+    assert tb.init is True
+
+    assert hasattr(tb, "text")
+    assert tb.text is not None
+
+
+def test_textbox_set_message():
+    """Verify set_message updates internal state and actor."""
+    tb = ui.TextBox2D(width=10, height=2, text="Old")
+    tb.set_message("NewText")
+
+    assert tb._message == "NewText"
+    assert tb.caret_pos == len("NewText")
+
+    assert "NewText" in tb.text.message.replace("\n", "")
+
+
+def test_textbox_add_and_remove_character():
+    """Test programmatic character insertion and deletion."""
+    tb = ui.TextBox2D(width=5, height=1, text="")
+    tb.edit_mode()
+
+    tb.add_character("a")
+    tb.add_character("b")
+    tb.render_text(show_caret=False)
+
+    assert tb._message == "ab"
+    assert "ab" in tb.text.message.replace("\n", "")
+
+    tb.remove_character()
+    tb.render_text(show_caret=False)
+
+    assert tb._message == "a"
+    assert "a" in tb.text.message.replace("\n", "")
+
+
+def test_textbox_caret_movement_bounds():
+    """Caret should stay within valid range."""
+    tb = ui.TextBox2D(width=5, height=1, text="abcd")
+    tb.set_message("abcd")
+
+    tb.move_left()
+    tb.move_left()
+    assert tb.caret_pos == 2
+
+    tb.move_right()
+    tb.move_right()
+    assert tb.caret_pos == 4
+
+    for _ in range(10):
+        tb.move_right()
+    assert tb.caret_pos == 4
+
+    for _ in range(10):
+        tb.move_left()
+    assert tb.caret_pos == 0
+
+
+def test_textbox_keypress_add_character():
+    """Simulate key_press event for adding characters."""
+    tb = ui.TextBox2D(width=10, height=1, text="")
+    tb.edit_mode()
+
+    tb.key_press(SimpleNamespace(key=None, key_char="x"))
+    tb.key_press(SimpleNamespace(key=None, key_char="y"))
+
+    tb.render_text(show_caret=False)
+
+    assert tb._message == "xy"
+    assert "xy" in tb.text.message.replace("\n", "")
+
+
+def test_textbox_return_triggers_off_focus():
+    """Pressing Return should trigger off_focus callback."""
+    tb = ui.TextBox2D(width=5, height=1, text="Start")
+
+    called = {"off": False}
+
+    def off_cb(widget):
+        called["off"] = True
+
+    tb.off_focus = off_cb
+
+    tb.edit_mode()
+
+    tb.key_press(SimpleNamespace(key="Return", key_char=""))
+
+    assert called["off"] is True
+    assert tb._has_focus is False
+
+
+def test_textbox_render_with_caret():
+    """render_text(show_caret=True) should show caret marker."""
+    tb = ui.TextBox2D(width=10, height=1, text="")
+    tb.set_message("abc")
+
+    tb.caret_pos = 1
+    tb.render_text(show_caret=True)
+
+    assert "_" in tb.text.message
+
+
+def test_textbox_wrapping_logic():
+    """Test width-based wrapping logic."""
+    tb = ui.TextBox2D(width=3, height=2, text="")
+    tb.set_message("abcdef")
+
+    tb.render_text(show_caret=False)
+
+    assert tb.text.message.count("\n") >= 1
+
+
+def test_textbox_visibility_propagation():
+    """Visibility should propagate to internal actors."""
+    tb = ui.TextBox2D(width=5, height=1, text="vis")
+
+    tb.set_visibility(False)
+    for actor in tb._get_actors():
+        assert actor.visible is False
+
+    tb.set_visibility(True)
+    for actor in tb._get_actors():
         assert actor.visible is True
 
 
