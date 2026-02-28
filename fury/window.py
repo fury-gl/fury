@@ -6,7 +6,6 @@ windows using PyGfx. It includes classes and functions for handling
 scenes, cameras, controllers, and rendering multiple screens.
 """
 
-import asyncio
 from dataclasses import dataclass
 from functools import reduce
 import logging
@@ -710,9 +709,6 @@ class ShowManager:
             EventType.RESIZE,
         )
         self.renderer.add_event_handler(
-            self._set_key_long_press_event, EventType.KEY_DOWN, EventType.KEY_UP
-        )
-        self.renderer.add_event_handler(
             self._register_drag,
             EventType.POINTER_DOWN,
             EventType.POINTER_UP,
@@ -734,7 +730,6 @@ class ShowManager:
             self.enable_imgui(imgui_draw_function=imgui_draw_function)
 
         self.enable_events = enable_events
-        self._key_long_press = None
         self._on_resize = lambda _size: None
         self._resize(self._size)
 
@@ -786,6 +781,17 @@ class ShowManager:
             self._toggle_screen_controllers(disable=False)
         elif event.type == EventType.POINTER_MOVE and self._is_dragging:
             self._handle_drag(event)
+
+    def _global_key_handler(self, event):
+        """Handle global key events by forwarding them to the active UI element.
+
+        Parameters
+        ----------
+        event : KeyboardEvent
+            The PyGfx keyboard event object.
+        """
+        if UIContext.active_ui:
+            UIContext.active_ui.on_key_press(event)
 
     def _screen_setup(self, scene, camera, controller, camera_light):
         """
@@ -943,9 +949,15 @@ class ShowManager:
             The PyGfx key event object.
         """
         if event.type == EventType.KEY_DOWN:
-            self._key_long_press = asyncio.create_task(
-                self._handle_key_long_press(event)
-            )
+            if self._key_long_press is not None:
+                return
+            try:
+                loop = asyncio.get_running_loop()
+                self._key_long_press = loop.create_task(
+                    self._handle_key_long_press(event)
+                )
+            except RuntimeError:
+                pass
         elif self._key_long_press is not None:
             self._key_long_press.cancel()
             self._key_long_press = None

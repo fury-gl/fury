@@ -516,12 +516,19 @@ class UI(object, metaclass=abc.ABCMeta):
         """
         Handle key press event.
 
+        If there is an active UI element (e.g. a focused text box), the
+        event is forwarded to it. Otherwise, the event is handled by this
+        component's own ``on_key_press`` callback.
+
         Parameters
         ----------
         event : KeyboardEvent
             The PyGfx keyboard event object.
         """
-        self.on_key_press(event)
+        if UIContext.active_ui is not None:
+            UIContext.active_ui.on_key_press(event)
+        else:
+            self.on_key_press(event)
 
     def pointer_enter_callback(self, event):
         """
@@ -1008,6 +1015,17 @@ class TextBlock2D(UI):
         self.background = Rectangle2D()
         self._children.append(self.background)
         self.handle_events(self.actor)
+        self.background.on_left_mouse_button_pressed = self._forward_background_press
+
+    def _forward_background_press(self, event):
+        """Forward background click to the text block's own press handler.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
+        self.on_left_mouse_button_pressed(event)
 
     def resize(self, size):
         """
@@ -1018,6 +1036,7 @@ class TextBlock2D(UI):
         size : (int, int)
             The new (width, height) in pixels.
         """
+        # Constrain text wrapping to the new width
         self.actor.max_width = size[0]
         self.update_bounding_box(size=size)
 
