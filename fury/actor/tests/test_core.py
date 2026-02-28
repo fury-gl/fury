@@ -248,7 +248,8 @@ def test_actor_from_primitive_transparency(sphere_prim):
     np.testing.assert_allclose(obj.geometry.colors.data[:, 3], 0.25, atol=0.01)
     assert obj.material.alpha_mode == "weighted_blend"
     assert obj.material.depth_write is False
-    
+
+
 def test_actor_from_primitive_transparency_visual(sphere_prim):
     vertices, faces = sphere_prim
     centers = np.array([[0, 0, 0]], dtype=np.float32)
@@ -276,7 +277,7 @@ def test_actor_from_primitive_transparency_visual(sphere_prim):
         img_array_tr.reshape(-1, img_array_tr.shape[2]), axis=0
     )
     assert mean_r_tr > 0
-    
+
     mean_r_op, mean_g_op, mean_b_op, _ = np.mean(
         img_array_op.reshape(-1, img_array_op.shape[2]), axis=0
     )
