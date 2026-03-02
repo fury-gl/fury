@@ -33,6 +33,8 @@ def test_ring():
     ring_actor = actor.ring(centers=centers, colors=colors)
     scene.add(ring_actor)
 
+    npt.assert_array_equal(ring_actor.local.position, centers[0])
+
     mean_vertex = np.round(np.mean(ring_actor.geometry.positions.view, axis=0))
     npt.assert_array_almost_equal(mean_vertex, centers[0])
 

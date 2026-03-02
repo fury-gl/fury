@@ -45,6 +45,8 @@ def validate_actors(actor_type="actor_name", prim_count=1, **kwargs):
     colors = kwargs.get("colors", None)
 
     if centers is not None:
+        npt.assert_array_equal(get_actor.local.position, centers[0])
+
         mean_vertex = np.round(np.mean(get_actor.geometry.positions.view, axis=0))
         npt.assert_array_almost_equal(mean_vertex, centers[0])
 
