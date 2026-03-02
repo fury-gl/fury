@@ -4,6 +4,7 @@ import pytest
 
 from fury import actor, geometry, material, window
 from fury.actor import Actor, Image as ActorImage, Text
+from fury.actor.core import actor_from_primitive
 from fury.actor.tests._helpers import validate_actors
 
 
@@ -188,3 +189,25 @@ def test_axes():
     assert 0 < mean_b < 255
 
     scene.remove(axes_actor)
+
+
+def test_actor_from_primitive_position(sphere_prim):
+    vertices, faces = sphere_prim
+    centers = np.array([[5, 10, 15]], dtype=np.float32)
+    colors = np.array([[1, 0, 0]])
+
+    obj = actor_from_primitive(
+        vertices, faces, centers, colors=colors, repeat_primitive=True
+    )
+    np.testing.assert_array_equal(
+        obj.local.position, np.array([0, 0, 0], dtype=np.float32)
+    )
+    mean_vertex = np.round(np.mean(obj.geometry.positions.data, axis=0))
+    np.testing.assert_array_almost_equal(mean_vertex, centers[0])
+
+    obj = actor_from_primitive(
+        vertices, faces, centers, colors=colors, repeat_primitive=False
+    )
+    np.testing.assert_array_equal(
+        obj.local.position, np.array([5, 10, 15], dtype=np.float32)
+    )
