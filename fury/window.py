@@ -45,7 +45,7 @@ from fury.lib import (
     call_later,
     display_jupyter_widget,
     get_app,
-    la,
+    linalg,
     qcall_later,
     run,
 )
@@ -446,7 +446,6 @@ def set_camera_from_axis(screen, axis_direction):
         The axis direction to set the camera to from the center of the scene.
     """
     camera = screen.camera
-    controller = screen.controller
     target = _get_scene_center(camera, screen.scene)
     axis_direction = np.array(axis_direction, dtype=np.float32, copy=True)
     axis_direction /= np.linalg.norm(axis_direction)
@@ -469,9 +468,7 @@ def set_camera_from_axis(screen, axis_direction):
     camera.world.reference_up = _reference_up_for_axis(axis_direction)
     camera.world.position = new_pos
     camera.look_at(target)
-
-    if controller is not None and hasattr(controller, "target"):
-        controller.target = target
+    update_camera(camera, None, screen.scene)
 
 
 def update_viewports(screens, screen_bbs):
@@ -1151,15 +1148,15 @@ class ShowManager:
             self._axes_helper_click_callback = lambda _axis_dir: None
 
         axes_helper_actors = create_axes_helper(labels=labels, thickness=thickness)
-        self._axes_helper = axes_helper_actors["group"]
+        self._axes_helper = axes_helper_actors.get("group", {})
         self._axes_helper_anchor = Group(name="Axes Helper Anchor")
-        center_disk = axes_helper_actors["center_disk"]
-        axes_helper_disks = axes_helper_actors["disks"]
-        axes_helper_labels = axes_helper_actors["labels"]
-        axes_helper_lines = axes_helper_actors["lines"]
+        center_disk = axes_helper_actors.get("center_disk")
+        axes_helper_disks = axes_helper_actors.get("disks", [])
+        axes_helper_labels = axes_helper_actors.get("labels", [])
+        axes_helper_lines = axes_helper_actors.get("lines", [])
         axis_vectors = [
             np.asarray(axis_vector, dtype=np.float32)
-            for axis_vector in axes_helper_actors["axis_vectors"]
+            for axis_vector in axes_helper_actors.get("axis_vectors", [])
         ]
 
         def _axes_pick_pointer_down(event):
@@ -1175,10 +1172,10 @@ class ShowManager:
             axis_direction = np.asarray(event.target._axes_direction, dtype=np.float32)
             event.stop_propagation()
             set_camera_from_axis(self.screens[screen], axis_direction)
-            self._axes_helper_click_callback(axis_direction)
             camera_rotation = np.asarray([0, 0, 0, 1], dtype=np.float32).copy()
             object_rotation = np.asarray([0, 0, 0, 1], dtype=np.float32).copy()
             _axes_helper_render_callback()
+            self._axes_helper_click_callback(axis_direction)
 
         for disk_actor, label_actor, axis_vector in zip(
             axes_helper_disks,
@@ -1209,14 +1206,16 @@ class ShowManager:
             """Update the axes helper according to camera rotation."""
             nonlocal camera_rotation, object_rotation
 
-            r_delta = la.quat_mul(la.quat_inv(camera.world.rotation), camera_rotation)
+            r_delta = linalg.quat_mul(
+                linalg.quat_inv(camera.world.rotation), camera_rotation
+            )
             camera_rotation = camera.world.rotation
 
-            self._axes_helper.local.rotation = la.quat_mul(
-                la.quat_inv(r_delta), object_rotation
+            self._axes_helper.local.rotation = linalg.quat_mul(
+                linalg.quat_inv(r_delta), object_rotation
             )
             object_rotation = self._axes_helper.local.rotation
-            inv_rotation = la.quat_inv(self._axes_helper.local.rotation)
+            inv_rotation = linalg.quat_inv(self._axes_helper.local.rotation)
 
             center_disk.local.rotation = inv_rotation
             for disk_actor, label_actor in zip(

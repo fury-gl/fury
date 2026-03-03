@@ -636,6 +636,10 @@ def create_axes_helper(
 
     if labels is None:
         labels = ["-X", "+X", "-Y", "+Y", "-Z", "+Z"]
+    elif labels is not None and len(labels) != 6:
+        raise ValueError(
+            "labels must be a list of 6 strings for [-X, +X, -Y, +Y, -Z, +Z]."
+        )
 
     if colors is None:
         colors = [
@@ -646,6 +650,10 @@ def create_axes_helper(
             (0, 0, 0.7),
             (0, 0, 0.7),
         ]
+    elif colors is not None and len(colors) != 6:
+        raise ValueError(
+            "colors must be a list of 6 RGB tuples for [-X, +X, -Y, +Y, -Z, +Z]."
+        )
 
     group = Group(name="Axes Helper")
     centers = [
