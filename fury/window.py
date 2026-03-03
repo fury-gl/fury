@@ -17,7 +17,8 @@ from PIL.Image import fromarray as image_from_array
 import numpy as np
 from scipy import ndimage
 
-from fury.actor import Group as GfxGroup
+from fury.actor import Group
+from fury.actor.core import create_axes_helper
 from fury.io import load_image
 from fury.lib import (
     AmbientLight,
@@ -28,6 +29,7 @@ from fury.lib import (
     Controller,
     DirectionalLight,
     EventType,
+    GfxGroup,
     JupyterCanvas,
     OffscreenCanvas,
     PerspectiveCamera,
@@ -43,6 +45,7 @@ from fury.lib import (
     call_later,
     display_jupyter_widget,
     get_app,
+    la,
     qcall_later,
     run,
 )
@@ -379,6 +382,96 @@ def update_camera(camera, size, target):
     elif size is not None:
         camera.width = size[0]
         camera.height = size[1]
+
+
+def _get_scene_center(camera, scene):
+    """Center of scene using the bounding box.
+
+    Parameters
+    ----------
+    camera : Camera
+        The camera object looking at the scene.
+    scene : Scene
+        Scene used for calculating the center.
+        If the scene is empty, the center is calculated based on the camera position and
+        forward direction.
+
+    Returns
+    -------
+    ndarray
+        The center of the scene as a 3D numpy array.
+    """
+    bbox = scene.main_scene.get_world_bounding_box()
+    if bbox is not None and np.isfinite(bbox).all():
+        return np.asarray(0.5 * (bbox[0] + bbox[1]), dtype=np.float32)
+
+    camera_pos = np.asarray(camera.world.position, dtype=np.float32)
+    return camera_pos + np.asarray(camera.world.forward, dtype=np.float32)
+
+
+def _reference_up_for_axis(axis_dir):
+    """Reference up position based on the axis direction.
+
+    The reference up needs change to handle the camera alignment close to the fixed
+    reference up.
+
+    Parameters
+    ----------
+    axis_dir : tuple or ndarray
+        The direction for which reference up is required.
+
+    Returns
+    -------
+    ndarray
+        The reference up according to the axis direction.
+    """
+    if axis_dir[1] > 0.9:
+        return np.array([0.0, 0.0, -1.0], dtype=np.float32)
+    if axis_dir[1] < -0.9:
+        return np.array([0.0, 0.0, 1.0], dtype=np.float32)
+    return np.array([0.0, 1.0, 0.0], dtype=np.float32)
+
+
+def set_camera_from_axis(screen, axis_direction):
+    """Set camera based on the axis direction proposed.
+
+    This method will preserves the distance it actually had from the center of the
+    scene. It will only move the camera to the new angle based on the direction.
+
+    Parameters
+    ----------
+    screen : Screen
+        Screen in which the camera needs to be updated.
+    axis_direction : tuple or ndarray
+        The axis direction to set the camera to from the center of the scene.
+    """
+    camera = screen.camera
+    controller = screen.controller
+    target = _get_scene_center(camera, screen.scene)
+    axis_direction = np.array(axis_direction, dtype=np.float32, copy=True)
+    axis_direction /= np.linalg.norm(axis_direction)
+
+    camera_pos = np.asarray(camera.world.position, dtype=np.float32)
+    camera_forward = np.asarray(camera.world.forward, dtype=np.float32)
+    distance = float(np.abs(np.dot(target - camera_pos, camera_forward)))
+    if not np.isfinite(distance) or distance < 1e-6:
+        distance = float(max(getattr(camera, "depth", 1.0), 1.0))
+
+    current_view_axis = camera_pos - target
+    current_view_axis_norm = float(np.linalg.norm(current_view_axis))
+
+    if current_view_axis_norm > 1e-6:
+        current_view_axis /= current_view_axis_norm
+        if float(np.dot(current_view_axis, axis_direction)) > 0.995:
+            axis_direction *= -1.0
+
+    new_pos = target + axis_direction * distance
+    camera.world.reference_up = _reference_up_for_axis(axis_direction)
+    camera.world.position = new_pos
+    camera.look_at(target)
+
+    if controller is not None and hasattr(controller, "target"):
+        controller.target = target
 
 
 def update_viewports(screens, screen_bbs):
@@ -984,6 +1077,183 @@ class ShowManager:
             self._imgui.set_gui(imgui_draw_function)
         else:
             logging.warning("ImGui is not enabled for this ShowManager.")
+
+    def show_axes_gizmo(
+        self,
+        *,
+        screen=0,
+        size=30,
+        thickness=2,
+        position=None,
+        labels=None,
+        click_callback=None,
+    ):
+        """Add an axes helper to the first screen for orientation reference.
+
+        Parameters
+        ----------
+        screen : int, optional
+            Index of the screen whose viewport should host the gizmo.
+            If None, defaults to 0 (the first screen). If the index is out of bounds,
+            it will be clamped to the valid range of available screens.
+        size : float, optional
+            The length of the axes lines.
+        thickness : float, optional
+            The thickness of the axes lines.
+        position : tuple, optional
+            The (x, y) position of the axes helper in screen coordinates. If None,
+            it defaults to (60, 60) pixels from the bottom-left corner.
+            The position is relative to the screen's viewport, not the entire window.
+            The origin is bottom-left of the screen viewport.
+        labels : list of str, optional
+            Custom labels for the axes.
+            Defaults to ["-X", "+X", "-Y", "+Y", "-Z", "+Z"] if None.
+        click_callback : callable, optional
+            A function to be called when an axis disk or label is clicked. The function
+            should accept a single argument, which will be the axis direction vector
+            corresponding to the clicked axis.
+        """
+
+        if screen is None:
+            logging.warning("Screen index is None. Defaulting to screen 0.")
+            screen = 0
+        elif isinstance(screen, int):
+            if screen < 0:
+                logging.warning(
+                    f"Negative screen index {screen} is invalid. Defaulting to screen "
+                    "0."
+                )
+                screen = 0
+            elif screen >= len(self.screens):
+                logging.warning(
+                    f"Screen index {screen} exceeds available screens."
+                    f" Defaulting to screen {len(self.screens) - 1}."
+                )
+                screen = len(self.screens) - 1
+        else:
+            logging.warning(
+                f"Invalid screen index type: {type(screen)}. Expected int. Defaulting "
+                "to screen 0."
+            )
+            screen = 0
+
+        if position is not None:
+            px, py = position
+        else:
+            px = py = 60
+
+        if labels is None:
+            labels = ["-X", "+X", "-Y", "+Y", "-Z", "+Z"]
+
+        if click_callback is not None and callable(click_callback):
+            self._axes_helper_click_callback = click_callback
+        else:
+            self._axes_helper_click_callback = lambda _axis_dir: None
+
+        axes_helper_actors = create_axes_helper(labels=labels, thickness=thickness)
+        self._axes_helper = axes_helper_actors["group"]
+        self._axes_helper_anchor = Group(name="Axes Helper Anchor")
+        center_disk = axes_helper_actors["center_disk"]
+        axes_helper_disks = axes_helper_actors["disks"]
+        axes_helper_labels = axes_helper_actors["labels"]
+        axes_helper_lines = axes_helper_actors["lines"]
+        axis_vectors = [
+            np.asarray(axis_vector, dtype=np.float32)
+            for axis_vector in axes_helper_actors["axis_vectors"]
+        ]
+
+        def _axes_pick_pointer_down(event):
+            """Camera alignment callback for axes helper disk and label clicks.
+
+            Parameters
+            ----------
+            event : PointerEvent
+                The disk or label click event containing the target actor with the
+                _axes_direction attribute set.
+            """
+            nonlocal camera_rotation, object_rotation
+            axis_direction = np.asarray(event.target._axes_direction, dtype=np.float32)
+            event.stop_propagation()
+            set_camera_from_axis(self.screens[screen], axis_direction)
+            self._axes_helper_click_callback(axis_direction)
+            camera_rotation = np.asarray([0, 0, 0, 1], dtype=np.float32).copy()
+            object_rotation = np.asarray([0, 0, 0, 1], dtype=np.float32).copy()
+            _axes_helper_render_callback()
+
+        for disk_actor, label_actor, axis_vector in zip(
+            axes_helper_disks,
+            axes_helper_labels,
+            axis_vectors,
+            strict=False,
+        ):
+            axis_direction = np.array(axis_vector, dtype=np.float32)
+            disk_actor._axes_direction = axis_direction
+            label_actor._axes_direction = axis_direction
+            disk_actor.add_event_handler(
+                _axes_pick_pointer_down, EventType.POINTER_DOWN
+            )
+            label_actor.add_event_handler(
+                _axes_pick_pointer_down, EventType.POINTER_DOWN
+            )
+
+        self._axes_helper_anchor.local.position = [px, py, 0.5]
+        self._axes_helper_anchor.local.scale = [size, size, 0.45]
+        self._axes_helper_anchor.add(self._axes_helper)
+        self.screens[screen].scene.ui_scene.add(self._axes_helper_anchor)
+
+        camera = self.screens[screen].camera
+        camera_rotation = camera.world.rotation
+        object_rotation = self._axes_helper.local.rotation
+
+        def _axes_helper_render_callback():
+            """Update the axes helper according to camera rotation."""
+            nonlocal camera_rotation, object_rotation
+
+            r_delta = la.quat_mul(la.quat_inv(camera.world.rotation), camera_rotation)
+            camera_rotation = camera.world.rotation
+
+            self._axes_helper.local.rotation = la.quat_mul(
+                la.quat_inv(r_delta), object_rotation
+            )
+            object_rotation = self._axes_helper.local.rotation
+            inv_rotation = la.quat_inv(self._axes_helper.local.rotation)
+
+            center_disk.local.rotation = inv_rotation
+            for disk_actor, label_actor in zip(
+                axes_helper_disks, axes_helper_labels, strict=False
+            ):
+                disk_actor.local.rotation = inv_rotation
+                label_actor.local.rotation = inv_rotation
+
+            cam_forward = camera.world.forward
+            disk_depths = []
+            for axis_vector in axis_vectors:
+                pos = np.asarray(axis_vector, dtype=np.float32)
+                disk_depths.append(float(np.dot(cam_forward, pos)))
+
+            front_depth = min(disk_depths)
+            back_depth = max(disk_depths)
+            depth_span = max(back_depth - front_depth, 1e-6)
+            min_disk_opacity = 0.1
+
+            for disk_actor, label_actor, line_actor, depth in zip(
+                axes_helper_disks,
+                axes_helper_labels,
+                axes_helper_lines,
+                disk_depths,
+                strict=False,
+            ):
+                depth_factor = (depth - front_depth) / depth_span
+                disk_actor.opacity = 1.0 - depth_factor * (1.0 - min_disk_opacity)
+                label_actor.opacity = 1.0 - depth_factor * (1.0 - min_disk_opacity)
+                line_actor.opacity = 1.0 - depth_factor * (1.0 - min_disk_opacity)
+
+        self.register_callback(
+            _axes_helper_render_callback,
+            time=0.016,
+            repeat=True,
+            name="axes_helper_rotation",
+        )
 
     @property
     def app(self):

@@ -104,7 +104,7 @@ print(affine)
 ###############################################################################
 # Create volume_slicer actor to visualize the 3D data as XY, YZ and XZ slices.
 
-slicer_actor = actor.volume_slicer(data, affine=affine)
+slicer_actor = actor.volume_slicer(data, affine=affine, depth_write=True)
 
 ###############################################################################
 # Create a scene and add the slicer actor to it.
@@ -131,6 +131,7 @@ slicer_actor.add_event_handler(handle_pick_event, EventType.POINTER_DOWN)
 
 show_m = window.ShowManager(scene=scene, title="FURY MNI Template Slicer Example")
 show_m.renderer.add_event_handler(handle_key_event, EventType.KEY_DOWN)
+show_m.show_axes_gizmo()
 
 ################################################################################
 # Start the show manager to display the scene and allow interaction.
