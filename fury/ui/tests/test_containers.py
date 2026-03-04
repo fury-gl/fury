@@ -5,6 +5,7 @@ from os.path import join as pjoin
 from PIL import Image
 import numpy as np
 import numpy.testing as npt
+import pytest
 
 from fury import ui, window
 
@@ -177,6 +178,37 @@ def test_panel2d_visual_snapshot(
     arr_hidden = np.array(img)
 
     npt.assert_almost_equal(np.mean(arr_hidden[..., :3]), 0, decimal=0)
+
+
+def test_image_container_creation():
+    """Test ImageContainer2D creation with grayscale image."""
+    img = np.zeros((10, 10), dtype=np.uint8)
+    container = ui.ImageContainer2D(img)
+
+    assert container is not None
+    assert len(container.actors) == 1
+
+
+def test_image_container_rgb():
+    """Test that RGB images are converted to grayscale."""
+    img = np.zeros((10, 10, 3), dtype=np.uint8)
+    container = ui.ImageContainer2D(img)
+
+    assert container is not None
+
+
+def test_image_container_size():
+    """Test custom size parameter."""
+    img = np.zeros((10, 10), dtype=np.uint8)
+    container = ui.ImageContainer2D(img, size=(50, 50))
+
+    assert container._get_size() == (50, 50)
+
+
+def test_image_container_invalid_input():
+    """Test invalid input type raises TypeError."""
+    with pytest.raises(TypeError):
+        ui.ImageContainer2D(123)
 
 
 # def setup_module():

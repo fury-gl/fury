@@ -4,7 +4,8 @@
 
 import numpy as np
 
-from fury import actor as fury_actor, io
+from fury import io
+from fury.actor import image as image_actor
 from fury.ui.core import UI, Anchor, Rectangle2D
 
 
@@ -981,8 +982,19 @@ class Panel2D(UI):
 
 
 class ImageContainer2D(UI):
+    """A 2D UI component to display images.
 
-    def __init__(self, image_input, position=(0, 0)):
+    Parameters
+    ----------
+    image_input : str or numpy.ndarray
+        Path to the image file or a numpy image array.
+    position : (float, float), optional
+        Absolute coordinates (x, y) of the lower-left corner of the image.
+    size : (float, float), optional
+        Scaling factor (width, height) in pixels.
+    """
+
+    def __init__(self, image_input, position=(0, 0), size=None):
         if isinstance(image_input, str):
             image = io.load_image(image_input)
         elif isinstance(image_input, np.ndarray):
@@ -992,11 +1004,14 @@ class ImageContainer2D(UI):
                 "image_input must be a file path (str) or a NumPy array."
             )
         if image.ndim == 3:
-            image = np.mean(image, axis=2).astype(image.dtype)
+            image = image.mean(axis=2).astype(np.uint8)
         if image.ndim != 2:
             raise ValueError("Only 2D images are supported.")
+        if size is not None and len(size) != 2:
+            raise ValueError("size must be (width, height)")
         self._img = image
-        self._image_actor = fury_actor.image(self._img)
+        self._size = size
+        self._image_actor = image_actor(self._img)
         super().__init__(position=position)
 
     def _setup(self):
@@ -1006,6 +1021,8 @@ class ImageContainer2D(UI):
         return [self._image_actor]
 
     def _get_size(self):
+        if self._size is not None:
+            return self._size
         return self._img.shape[1], self._img.shape[0]
 
     def _update_actors_position(self):
