@@ -422,7 +422,6 @@ def actor_from_primitive(
         else:
             big_colors[:, 3] *= opacity
 
-    # Detect transparency from explicit opacity or from vertex alpha channel
     is_transparent = False
     if isinstance(opacity, (int, float)) and opacity < 1.0:
         is_transparent = True
