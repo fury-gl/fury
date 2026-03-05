@@ -1,4 +1,4 @@
-"""Animation module."""
+"""Animation module for FURY v2 (pygfx backend)."""
 
 from collections import defaultdict
 from time import perf_counter
@@ -7,9 +7,7 @@ from warnings import warn
 import numpy as np
 from scipy.spatial import transform
 
-from fury import utils
-
-# from fury.actor import line
+from fury.animation.helpers import compose_transform_matrix
 from fury.animation.interpolator import (  # noqa F401
     linear_interpolator,
     slerp,
@@ -17,15 +15,13 @@ from fury.animation.interpolator import (  # noqa F401
     step_interpolator,
 )
 
-# from fury.lib import Actor, Camera, Transform
-
 
 class Animation:
-    """Create and manage keyframe animations for Fury actors.
+    """Create and manage keyframe animations for FURY actors.
 
     Animation is responsible for handling keyframe animations for a single actor
     or a group of actors. It provides control over multiple attributes and
-    properties of Fury actors including position, rotation, scale, color, and
+    properties of FURY actors including position, rotation, scale, color, and
     opacity. The class also supports custom data interpolation. By default,
     linear interpolation is used to interpolate data between keyframes.
 
@@ -95,8 +91,9 @@ class Animation:
         self._added_to_scene = True
         self._motion_path_res = motion_path_res
         self._motion_path_actor = None
-        # self._transform = Transform()
         self._general_callbacks = []
+        # Store original colors for actors
+        self._actor_original_colors = {}
         # Adding actors to the animation
         if actors is not None:
             self.add_actor(actors)
@@ -171,25 +168,11 @@ class Animation:
             [lines.append(self.get_position(t).tolist()) for t in ts]
             if self.is_interpolatable("color"):
                 [colors.append(self.get_color(t)) for t in ts]
-            elif len(self._actors) >= 1:
-                colors = sum([i.vcolors[0] / 255 for i in self._actors]) / len(
-                    self._actors
-                )
             else:
                 colors = [1, 1, 1]
 
-        # if len(lines) > 0:
-        #     lines = np.array([lines])
-        #     if isinstance(colors, list):
-        #         colors = np.array([colors])
-
-        #     mpa = line(lines, colors=colors, opacity=0.6)
-        #     if self._scene:
-        #         # remove old motion path actor
-        #         if self._motion_path_actor is not None:
-        #             self._scene.rm(self._motion_path_actor)
-        #         self._scene.add(mpa)
-        #     self._motion_path_actor = mpa
+        # Motion path visualization can be implemented here if needed
+        # using fury.actor.line() when available
 
     def _get_data(self):
         """Get animation data.
@@ -327,7 +310,7 @@ class Animation:
                 self.set_keyframe(attrib, t, keyframe)
 
     def is_inside_scene_at(self, timestamp):
-        """Check if the Animation is set to be inside the scene at a specific timestamp.
+        """Check if the Animation is set to be inside the scene at a timestamp.
 
         Parameters
         ----------
@@ -362,7 +345,7 @@ class Animation:
         Parameters
         ----------
         timestamp : float
-            Timestamp of the event when the animation should be added to the scene.
+            Timestamp of the event when the animation should be added to scene.
         """
         if not self.is_interpolatable("in_scene"):
             self.set_keyframe("in_scene", timestamp, True)
@@ -376,7 +359,7 @@ class Animation:
         Parameters
         ----------
         timestamp : float
-            Timestamp of the event when the animation should be removed from the scene.
+            Timestamp of the event when the animation should be removed.
         """
         if not self.is_interpolatable("in_scene"):
             self.set_keyframe("in_scene", timestamp, False)
@@ -398,7 +381,7 @@ class Animation:
                 self._scene.add(*self._actors)
                 self._added_to_scene = True
             elif not should_be_in_scene and self._added_to_scene:
-                self._scene.rm(*self._actors)
+                self._scene.remove(*self._actors)
                 self._added_to_scene = False
 
     def set_interpolator(self, attrib, interpolator, *, is_evaluator=False, **kwargs):
@@ -419,8 +402,8 @@ class Animation:
                 return np.array([np.sin(t), np.cos(t) * 5, 5])
         **kwargs : dict, optional
             Additional parameters for the interpolator. This can include:
-            - spline_degree : int - The degree of the spline in case of setting a
-              spline interpolator.
+            - spline_degree : int - The degree of the spline in case of setting
+              a spline interpolator.
 
         Notes
         -----
@@ -432,8 +415,10 @@ class Animation:
 
         Examples
         --------
-        >>> Animation.set_interpolator('position', linear_interpolator) # doctest: +SKIP
-        >>> pos_fun = lambda t: np.array([np.sin(t), np.cos(t), 0]) # doctest: +SKIP
+        >>> Animation.set_interpolator('position', linear_interpolator)
+        ... # doctest: +SKIP
+        >>> pos_fun = lambda t: np.array([np.sin(t), np.cos(t), 0])
+        ... # doctest: +SKIP
         >>> Animation.set_interpolator('position', pos_fun) # doctest: +SKIP
         """
         attrib_data = self._get_attribute_data(attrib)
@@ -489,8 +474,8 @@ class Animation:
             function that does not depend on keyframes.
         **kwargs : dict, optional
             Additional parameters for the interpolator. This can include:
-            - degree : int - The degree of the spline interpolation in case of setting
-              the `spline_interpolator`.
+            - degree : int - The degree of the spline interpolation in case of
+              setting the `spline_interpolator`.
         """
         self.set_interpolator(
             "position", interpolator, is_evaluator=is_evaluator, **kwargs
@@ -546,7 +531,8 @@ class Animation:
 
         Examples
         --------
-        >>> Animation.set_color_interpolator(lab_color_interpolator) # doctest: +SKIP
+        >>> Animation.set_color_interpolator(lab_color_interpolator)
+        ... # doctest: +SKIP
         """
         self.set_interpolator("color", interpolator, is_evaluator=is_evaluator)
 
@@ -564,7 +550,8 @@ class Animation:
 
         Examples
         --------
-        >>> Animation.set_opacity_interpolator(step_interpolator) # doctest: +SKIP
+        >>> Animation.set_opacity_interpolator(step_interpolator)
+        ... # doctest: +SKIP
         """
         self.set_interpolator("opacity", interpolator, is_evaluator=is_evaluator)
 
@@ -823,8 +810,8 @@ class Animation:
         Returns
         -------
         ndarray, shape (1, 3) or shape (1, 4)
-            The interpolated rotation as Euler degrees by default or as quaternion if
-            as_quat is True.
+            The interpolated rotation as Euler degrees by default or as
+            quaternion if as_quat is True.
         """
         rot = self.get_value("rotation", t)
         if len(rot) == 4:
@@ -892,17 +879,18 @@ class Animation:
 
         Parameters
         ----------
-        item : Animation, vtkActor, list[Animation], or list[vtkActor]
+        item : Animation, Actor, list[Animation], or list[Actor]
             Actor/s to be animated by the Animation.
         """
         if isinstance(item, list):
             for a in item:
                 self.add(a)
             return
-        # elif isinstance(item, Actor):
-        #     self.add_actor(item)
         elif isinstance(item, Animation):
             self.add_child_animation(item)
+        elif hasattr(item, "local"):
+            # pygfx objects have a 'local' attribute for transforms
+            self.add_actor(item)
         else:
             raise ValueError(f"Object of type {type(item)} can't be animated")
 
@@ -928,7 +916,7 @@ class Animation:
 
         Parameters
         ----------
-        actor : vtkActor or list(vtkActor)
+        actor : Actor or list(Actor)
             Actor/s to be animated by the Animation.
         static : bool
             Indicated whether the actor should be animated and controlled by
@@ -943,7 +931,12 @@ class Animation:
                 self._static_actors.append(actor)
         else:
             if actor not in self._actors:
-                actor.vcolors = utils.colors_from_actor(actor)
+                # Store original colors for color animation
+                if hasattr(actor, "geometry") and hasattr(actor.geometry, "colors"):
+                    if actor.geometry.colors is not None:
+                        self._actor_original_colors[id(actor)] = np.array(
+                            actor.geometry.colors.data
+                        ).copy()
                 self._actors.append(actor)
 
     @property
@@ -1018,14 +1011,14 @@ class Animation:
         return self._animations
 
     def add_static_actor(self, actor):
-        """Add static actor(s) which will not be controlled/animated by the Animation.
+        """Add static actor(s) which will not be animated by the Animation.
 
-        All static actors will be added to the scene when the Animation is added to the
-        scene.
+        All static actors will be added to the scene when the Animation is
+        added to the scene.
 
         Parameters
         ----------
-        actor : vtkActor or list(vtkActor)
+        actor : Actor or list(Actor)
             Static actor/s.
         """
         self.add_actor(actor, static=True)
@@ -1050,14 +1043,17 @@ class Animation:
 
         Parameters
         ----------
-        actor : vtkActor
+        actor : Actor
             Actor to be removed from the Animation.
         """
         self._actors.remove(actor)
+        if id(actor) in self._actor_original_colors:
+            del self._actor_original_colors[id(actor)]
 
     def remove_actors(self):
         """Remove all actors from the Animation."""
         self._actors.clear()
+        self._actor_original_colors.clear()
 
     @property
     def loop(self):
@@ -1085,9 +1081,9 @@ class Animation:
     def add_update_callback(self, callback, prop=None):
         """Add a function to be called each time animation is updated.
 
-        Add a callback function that will be invoked whenever the animation is updated.
-        The function must accept only one argument which is the current value
-        of the named property.
+        Add a callback function that will be invoked whenever the animation
+        is updated. The function must accept only one argument which is the
+        current value of the named property.
 
         Parameters
         ----------
@@ -1119,10 +1115,8 @@ class Animation:
             The time to update animation at. If None, the animation will play
             without adding it to a Timeline.
         """
-        has_handler = True
         if time is None:
             time = perf_counter() - self._start_time
-            has_handler = False
 
         # handling in/out of scene events
         in_scene = self.is_inside_scene_at(time)
@@ -1133,42 +1127,66 @@ class Animation:
                 time = time % self.duration
             elif time > self.duration:
                 time = self.duration
+
+        # Get parent transform matrix if exists
+        parent_matrix = None
         if isinstance(self._parent_animation, Animation):
-            self._transform.DeepCopy(self._parent_animation._transform)
-        else:
-            self._transform.Identity()
+            # Get parent's current transform from first actor if available
+            if self._parent_animation._actors:
+                parent_matrix = self._parent_animation._actors[0].local.matrix
 
         self._current_timestamp = time
 
         # actors properties
         if in_scene:
+            # Build transformation matrix
+            position = None
+            rotation_quat = None
+            scale_factors = None
+
             if self.is_interpolatable("position"):
                 position = self.get_position(time)
-                self._transform.Translate(*position)
+
+            if self.is_interpolatable("rotation"):
+                rotation_quat = self.get_rotation(time, as_quat=True)
+
+            if self.is_interpolatable("scale"):
+                scale_factors = self.get_scale(time)
+
+            # Only apply transform if any property is animated
+            if (
+                position is not None
+                or rotation_quat is not None
+                or scale_factors is not None
+            ):
+                transform_matrix = compose_transform_matrix(
+                    position=position,
+                    rotation_quat=rotation_quat,
+                    scale_factors=scale_factors,
+                    parent_matrix=parent_matrix,
+                )
+                for actor in self.actors:
+                    actor.local.matrix = transform_matrix
 
             if self.is_interpolatable("opacity"):
                 opacity = self.get_opacity(time)
-                [act.GetProperty().SetOpacity(opacity) for act in self.actors]
-
-            if self.is_interpolatable("rotation"):
-                x, y, z = self.get_rotation(time)
-                # Rotate in the same order as VTK defaults.
-                self._transform.RotateZ(z)
-                self._transform.RotateX(x)
-                self._transform.RotateY(y)
-
-            if self.is_interpolatable("scale"):
-                scale = self.get_scale(time)
-                self._transform.Scale(*scale)
+                opacity_val = float(np.asarray(opacity).flatten()[0])
+                for actor in self.actors:
+                    if hasattr(actor, "material"):
+                        actor.material.opacity = opacity_val
 
             if self.is_interpolatable("color"):
                 color = self.get_color(time)
-                for act in self.actors:
-                    act.vcolors[:] = color * 255
-                    utils.update_actor(act)
-
-            # update actors' transformation matrix
-            [act.SetUserTransform(self._transform) for act in self.actors]
+                color = np.asarray(color).flatten()[:3]
+                for actor in self.actors:
+                    if hasattr(actor, "geometry") and hasattr(actor.geometry, "colors"):
+                        if actor.geometry.colors is not None:
+                            # Update vertex colors
+                            colors_data = actor.geometry.colors.data
+                            if colors_data.shape[-1] >= 3:
+                                # Set RGB values
+                                colors_data[:, :3] = color
+                                actor.geometry.colors.update_range()
 
         for attrib in self._data:
             callbacks = self._data.get(attrib, {}).get("callbacks", [])
@@ -1182,9 +1200,6 @@ class Animation:
         # Also update all child Animations.
         [animation.update_animation(time=time) for animation in self._animations]
 
-        if self._scene and not has_handler:
-            self._scene.reset_clipping_range()
-
     def add_to_scene(self, scene):
         """Add this Animation, its actors and sub Animations to the scene.
 
@@ -1195,7 +1210,7 @@ class Animation:
         """
         [scene.add(actor) for actor in self._actors]
         [scene.add(static_act) for static_act in self._static_actors]
-        [scene.add(animation) for animation in self._animations]
+        [animation.add_to_scene(scene) for animation in self._animations]
 
         if self._motion_path_actor:
             scene.add(self._motion_path_actor)
@@ -1210,14 +1225,15 @@ class Animation:
         Parameters
         ----------
         scene : Scene
-            The scene from which to remove the animation, actors, and sub-animations.
+            The scene from which to remove the animation, actors, and
+            sub-animations.
         """
-        [scene.rm(act) for act in self.actors]
-        [scene.rm(static_act) for static_act in self._static_actors]
+        [scene.remove(act) for act in self.actors]
+        [scene.remove(static_act) for static_act in self._static_actors]
         for anim in self.child_animations:
             anim.remove_from_scene(scene)
         if self._motion_path_actor:
-            scene.rm(self._motion_path_actor)
+            scene.remove(self._motion_path_actor)
         self._added_to_scene = False
 
 
@@ -1270,6 +1286,28 @@ class CameraAnimation(Animation):
         )
         self._camera = camera
 
+    @property
+    def camera(self):
+        """Get the camera being animated.
+
+        Returns
+        -------
+        Camera
+            The camera being animated.
+        """
+        return self._camera
+
+    @camera.setter
+    def camera(self, camera):
+        """Set the camera to be animated.
+
+        Parameters
+        ----------
+        camera : Camera
+            The camera to animate.
+        """
+        self._camera = camera
+
     def set_focal(self, timestamp, position, **kwargs):
         """Set camera's focal position keyframe.
 
@@ -1282,12 +1320,12 @@ class CameraAnimation(Animation):
         **kwargs : dict, optional
             Additional keyword arguments for the keyframe. The following
             parameters are supported:
-            - in_cp: ndarray - The in control point for cubic Bézier interpolation.
-            - out_cp: ndarray - The out control point for cubic Bézier interpolation.
-            - in_tangent: ndarray - The in tangent at that position for cubic spline
-              curve.
-            - out_tangent: ndarray - The out tangent at that position for cubic spline
-              curve.
+            - in_cp: ndarray - The in control point for cubic Bézier interp.
+            - out_cp: ndarray - The out control point for cubic Bézier interp.
+            - in_tangent: ndarray - The in tangent at that position for cubic
+              spline curve.
+            - out_tangent: ndarray - The out tangent at that position for cubic
+              spline curve.
         """
         self.set_keyframe("focal", timestamp, position, **kwargs)
 
@@ -1303,12 +1341,12 @@ class CameraAnimation(Animation):
         **kwargs : dict, optional
             Additional keyword arguments for the keyframe. The following
             parameters are supported:
-            - in_cp: ndarray - The in control point for cubic Bézier interpolation.
-            - out_cp: ndarray - The out control point for cubic Bézier interpolation.
-            - in_tangent: ndarray - The in tangent at that position for cubic spline
-              curve.
-            - out_tangent: ndarray - The out tangent at that position for cubic spline
-              curve.
+            - in_cp: ndarray - The in control point for cubic Bézier interp.
+            - out_cp: ndarray - The out control point for cubic Bézier interp.
+            - in_tangent: ndarray - The in tangent at that position for cubic
+              spline curve.
+            - out_tangent: ndarray - The out tangent at that position for cubic
+              spline curve.
         """
         self.set_keyframe("view_up", timestamp, direction, **kwargs)
 
@@ -1423,36 +1461,51 @@ class CameraAnimation(Animation):
             The time to update the camera animation at. If None, the animation
             will play.
         """
-        if self._camera is None:
-            if self._scene:
-                self._camera = self._scene.camera()
-                self.update_animation(tile=time)
-                return
-        else:
-            if self.is_interpolatable("rotation"):
-                pos = self._camera.GetPosition()
-                translation = np.identity(4)
-                translation[:3, 3] = pos
-                # camera axis is reverted
-                rot = -self.get_rotation(time, as_quat=True)
-                rot = transform.Rotation.from_quat(rot).as_matrix()
-                rot = np.array([[*rot[0], 0], [*rot[1], 0], [*rot[2], 0], [0, 0, 0, 1]])
-                rot = translation @ rot @ np.linalg.inv(translation)
-                self._camera.SetModelTransformMatrix(rot.flatten())
+        if time is None:
+            time = perf_counter() - self._start_time
 
+        if self.duration:
+            if self._loop and time > self.duration:
+                time = time % self.duration
+            elif time > self.duration:
+                time = self.duration
+
+        self._current_timestamp = time
+
+        if self._camera is None:
+            return
+
+        # Update camera position using local.position (pygfx cameras)
+        if self.is_interpolatable("position"):
+            cam_pos = self.get_position(time)
+            self._camera.local.position = tuple(cam_pos)
+
+        # Update view up direction first (affects look_at behavior)
+        if self.is_interpolatable("view_up"):
+            up = self.get_view_up(time)
+            self._camera.local.reference_up = tuple(up)
+
+        # Update camera to look at focal point
+        if self.is_interpolatable("focal"):
+            cam_foc = self.get_focal(time)
+            # In pygfx, look_at takes just the target position
+            if hasattr(self._camera, "look_at"):
+                self._camera.look_at(tuple(cam_foc))
+
+        # Handle rotation if set directly
+        if self.is_interpolatable("rotation"):
+            rot_quat = self.get_rotation(time, as_quat=True)
+            # Convert quaternion to rotation matrix for camera
+            rot = transform.Rotation.from_quat(rot_quat)
+            rot_mat = np.identity(4, dtype=np.float32)
+            rot_mat[:3, :3] = rot.as_matrix()
+
+            # Combine with position if available
             if self.is_interpolatable("position"):
                 cam_pos = self.get_position(time)
-                self._camera.SetPosition(cam_pos)
+                rot_mat[:3, 3] = cam_pos
 
-            if self.is_interpolatable("focal"):
-                cam_foc = self.get_focal(time)
-                self._camera.SetFocalPoint(cam_foc)
+            self._camera.local.matrix = rot_mat
 
-            if self.is_interpolatable("view_up"):
-                cam_up = self.get_view_up(time)
-                self._camera.SetViewUp(cam_up)
-            elif not self.is_interpolatable("view_up"):
-                # to preserve up-view as default after user interaction
-                self._camera.SetViewUp(0, 1, 0)
-            if self._scene:
-                self._scene.reset_clipping_range()
+        # Executing general callbacks
+        [callback(time) for callback in self._general_callbacks]

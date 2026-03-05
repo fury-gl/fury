@@ -1,6 +1,54 @@
 """Interpolation functions for keyframes."""
 
 import numpy as np
+from scipy.spatial import transform
+
+
+def compose_transform_matrix(
+    position=None, rotation_quat=None, scale_factors=None, parent_matrix=None
+):
+    """Compose a 4x4 transformation matrix from position, rotation, and scale.
+
+    Parameters
+    ----------
+    position : ndarray, shape (3,), optional
+        Translation vector.
+    rotation_quat : ndarray, shape (4,), optional
+        Rotation quaternion [x, y, z, w].
+    scale_factors : ndarray, shape (3,), optional
+        Scale factors for x, y, z.
+    parent_matrix : ndarray, shape (4, 4), optional
+        Parent transformation matrix to multiply with.
+
+    Returns
+    -------
+    ndarray, shape (4, 4)
+        The composed transformation matrix.
+    """
+    matrix = np.identity(4, dtype=np.float32)
+
+    if parent_matrix is not None:
+        matrix = parent_matrix.copy()
+
+    if scale_factors is not None:
+        scale_mat = np.identity(4, dtype=np.float32)
+        scale_mat[0, 0] = scale_factors[0]
+        scale_mat[1, 1] = scale_factors[1]
+        scale_mat[2, 2] = scale_factors[2]
+        matrix = matrix @ scale_mat
+
+    if rotation_quat is not None:
+        rot = transform.Rotation.from_quat(rotation_quat)
+        rot_mat = np.identity(4, dtype=np.float32)
+        rot_mat[:3, :3] = rot.as_matrix()
+        matrix = matrix @ rot_mat
+
+    if position is not None:
+        trans_mat = np.identity(4, dtype=np.float32)
+        trans_mat[:3, 3] = position
+        matrix = trans_mat @ matrix
+
+    return matrix
 
 
 def get_previous_timestamp(timestamps, current_time, *, include_last=False):
