@@ -109,7 +109,7 @@ def load_image(filename):
             raw = pil_image.tobytes("raw", pil_image.mode)
             dtype = ">u2" if pil_image.mode.endswith("B") else "<u2"
             image = np.frombuffer(raw, dtype=dtype)
-            image.reshape(pil_image.size[::-1]).astype("=u2")
+            image = image.reshape(pil_image.size[::-1]).astype("=u2")
         else:
             try:
                 image = pil_image.convert("RGBA")
