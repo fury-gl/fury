@@ -8,6 +8,7 @@ import numpy.testing as npt
 import pygfx as gfx
 import pytest
 
+import fury.ui as ui
 from fury.ui.event_recorder import (
     DEFAULT_OBSERVED_EVENTS,
     EventCounter,
@@ -632,4 +633,67 @@ def test_integration_multiple_sessions_independent(tmp_path):
     player.play(dst)
     npt.assert_equal(counter.get_count("key_down"), 5)
     npt.assert_equal(counter.get_count("pointer_down"), 0)
+    counter.detach()
+
+
+# ---------------------------------------------------------------------------
+# UI element integration tests
+# ---------------------------------------------------------------------------
+
+
+def test_recorder_attaches_to_rectangle2d():
+    """EventRecorder should attach to a real Rectangle2D actor."""
+    rect = ui.Rectangle2D()
+    recorder = EventRecorder()
+    recorder.attach(rect.actor)
+    rect.actor.handle_event(_pointer_event("pointer_down", x=50.0, y=50.0))
+    npt.assert_equal(len(recorder.events), 1)
+    npt.assert_equal(recorder.events[0].event_type, "pointer_down")
+    npt.assert_almost_equal(recorder.events[0].x, 50.0)
+    recorder.detach()
+
+
+def test_recorder_attaches_to_disk2d():
+    """EventRecorder should attach to a real Disk2D actor."""
+    disk = ui.Disk2D(outer_radius=50)
+    recorder = EventRecorder()
+    recorder.attach(disk.actor)
+    disk.actor.handle_event(_pointer_event("pointer_down"))
+    disk.actor.handle_event(_pointer_event("pointer_up"))
+    npt.assert_equal(len(recorder.events), 2)
+    recorder.detach()
+
+
+def test_player_replays_into_rectangle2d():
+    """EventPlayer should replay events into a Rectangle2D actor."""
+    rect = ui.Rectangle2D()
+    recorder = EventRecorder()
+    recorder.attach(rect.actor)
+    rect.actor.handle_event(_pointer_event("pointer_down", x=10.0, y=20.0))
+    rect.actor.handle_event(_pointer_event("pointer_up", x=10.0, y=20.0))
+    recorder.detach()
+
+    received = []
+    rect2 = ui.Rectangle2D()
+    rect2.actor.add_event_handler(
+        lambda e: received.append(e.type), *DEFAULT_OBSERVED_EVENTS
+    )
+
+    EventPlayer(recorder=recorder, speed_factor=0.0).play(rect2.actor)
+    npt.assert_equal(received, ["pointer_down", "pointer_up"])
+
+
+def test_counter_on_rectangle2d_click_sequence():
+    """EventCounter tallies clicks on a Rectangle2D correctly."""
+    rect = ui.Rectangle2D()
+    counter = EventCounter()
+    counter.attach(rect.actor)
+
+    for _ in range(3):
+        rect.actor.handle_event(_pointer_event("pointer_down"))
+    rect.actor.handle_event(_pointer_event("pointer_up"))
+
+    npt.assert_equal(counter.get_count("pointer_down"), 3)
+    npt.assert_equal(counter.get_count("pointer_up"), 1)
+    npt.assert_equal(counter.total(), 4)
     counter.detach()
