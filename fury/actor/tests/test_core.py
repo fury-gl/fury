@@ -211,3 +211,76 @@ def test_actor_from_primitive_position(sphere_prim):
     np.testing.assert_array_equal(
         obj.local.position, np.array([5, 10, 15], dtype=np.float32)
     )
+
+
+def test_actor_from_primitive_transparency(sphere_prim):
+    vertices, faces = sphere_prim
+    centers = np.array([[0, 0, 0]], dtype=np.float32)
+    rgb = np.array([[1, 0, 0]])
+    rgba_opaque = np.array([[1, 0, 0, 1.0]])
+    rgba_transparent = np.array([[1, 0, 1, 0.3]])
+
+    obj = actor_from_primitive(vertices, faces, centers, colors=rgb)
+    assert obj.material.alpha_mode == "auto"
+    assert obj.material.depth_write is True
+
+    obj = actor_from_primitive(vertices, faces, centers, colors=rgb, opacity=1.0)
+    assert obj.material.alpha_mode == "auto"
+    assert obj.material.depth_write is True
+
+    obj = actor_from_primitive(vertices, faces, centers, colors=rgba_opaque)
+    assert obj.material.alpha_mode == "auto"
+    assert obj.material.depth_write is True
+
+    obj = actor_from_primitive(vertices, faces, centers, colors=rgb, opacity=0.5)
+    assert obj.material.alpha_mode == "weighted_blend"
+    assert obj.material.depth_write is False
+
+    obj = actor_from_primitive(vertices, faces, centers, colors=rgba_transparent)
+    assert obj.material.alpha_mode == "weighted_blend"
+    assert obj.material.depth_write is False
+
+    obj = actor_from_primitive(vertices, faces, centers, colors=rgb, opacity=0.4)
+    np.testing.assert_allclose(obj.geometry.colors.data[:, 3], 0.4, atol=0.01)
+
+    rgba_half = np.array([[1, 0, 0, 0.5]])
+    obj = actor_from_primitive(vertices, faces, centers, colors=rgba_half, opacity=0.5)
+    np.testing.assert_allclose(obj.geometry.colors.data[:, 3], 0.25, atol=0.01)
+    assert obj.material.alpha_mode == "weighted_blend"
+    assert obj.material.depth_write is False
+
+
+def test_actor_from_primitive_transparency_visual(sphere_prim):
+    vertices, faces = sphere_prim
+    centers = np.array([[0, 0, 0]], dtype=np.float32)
+    colors = np.array([[1, 0, 0]])
+
+    scene = window.Scene(background=(0, 1, 0))
+
+    opaque = actor_from_primitive(vertices, faces, centers, colors=colors)
+    scene.add(opaque)
+    fname = "transparency_opaque_test.png"
+    window.snapshot(scene=scene, fname=fname)
+    img_array_op = np.array(Image.open(fname))
+    mid = img_array_op[img_array_op.shape[0] // 2, img_array_op.shape[1] // 2]
+    assert mid[0] > mid[1] and mid[0] > mid[2]
+    scene.remove(opaque)
+
+    transparent = actor_from_primitive(
+        vertices, faces, centers, colors=colors, opacity=0.5
+    )
+    scene.add(transparent)
+    fname = "transparency_semi_test.png"
+    window.snapshot(scene=scene, fname=fname)
+    img_array_tr = np.array(Image.open(fname))
+    mean_r_tr, mean_g_tr, mean_b_tr, _ = np.mean(
+        img_array_tr.reshape(-1, img_array_tr.shape[2]), axis=0
+    )
+    assert mean_r_tr > 0
+
+    mean_r_op, mean_g_op, mean_b_op, _ = np.mean(
+        img_array_op.reshape(-1, img_array_op.shape[2]), axis=0
+    )
+    assert mean_r_op > 0
+    assert mean_g_tr > mean_g_op
+    scene.remove(transparent)

@@ -422,6 +422,12 @@ def actor_from_primitive(
         else:
             big_colors[:, 3] *= opacity
 
+    is_transparent = False
+    if isinstance(opacity, (int, float)) and opacity < 1.0:
+        is_transparent = True
+    elif big_colors.shape[1] == 4 and np.any(big_colors[:, 3] < 1.0):
+        is_transparent = True
+
     geo = buffer_to_geometry(
         indices=big_faces.astype("int32"),
         positions=big_vertices.astype("float32"),
@@ -435,6 +441,8 @@ def actor_from_primitive(
         flat_shading=not smooth,
         wireframe=wireframe,
         wireframe_thickness=wireframe_thickness,
+        alpha_mode="weighted_blend" if is_transparent else "auto",
+        depth_write=not is_transparent,
     )
     obj = create_mesh(geometry=geo, material=mat)
     if not repeat_primitive:
