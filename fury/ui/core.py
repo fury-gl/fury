@@ -1654,3 +1654,238 @@ class Button2D(UI):
             else:
                 self._children.append(self.child)
         return []
+
+
+class Slider2D(UI):
+    """Base class for interactive 2D Sliders.
+
+    Parameters
+    ----------
+    position : (float, float), optional
+        Absolute coordinates (x, y) for placement.
+    initial_value : float, optional
+        The starting value of the slider.
+    min_value : float, optional
+        The minimum value of the slider range.
+    max_value : float, optional
+        The maximum value of the slider range.
+    text_template : str or callable, optional
+        A formatting string or callable for the label.
+    z_order : int, optional
+        The stacking priority.
+    """
+
+    def __init__(
+        self,
+        *,
+        position=(0, 0),
+        initial_value=50,
+        min_value=0,
+        max_value=100,
+        text_template="{value:.1f} ({ratio:.0%})",
+        z_order=0,
+    ):
+        """Initialize the 2D slider.
+
+        Parameters
+        ----------
+        position : (float, float), optional
+            Absolute coordinates (x, y) for placement.
+        initial_value : float, optional
+            The starting value of the slider.
+        min_value : float, optional
+            The minimum value of the slider range.
+        max_value : float, optional
+            The maximum value of the slider range.
+        text_template : str or callable, optional
+            A formatting string or callable for the label.
+        z_order : int, optional
+            The stacking priority.
+        """
+        self.default_color = (1, 1, 1)
+        self.active_color = (0, 0, 1)
+        self._value = initial_value
+        range_val = max_value - min_value
+        self._ratio = (initial_value - min_value) / range_val if range_val != 0 else 0
+        self._min_value = min_value
+        self._max_value = max_value
+        self.text_template = text_template
+
+        self.on_change = lambda ui: None
+        self.on_value_changed = lambda ui: None
+        self.on_moving_slider = lambda ui: None
+
+        self.track = None
+        self.handle = None
+        self.text = None
+
+        super().__init__(position=position, z_order=z_order)
+
+    @property
+    def value(self):
+        """Get the current numeric value of the slider.
+
+        Returns
+        -------
+        float
+            The slider value.
+        """
+        return self._value
+
+    @value.setter
+    def value(self, val):
+        """Set the slider numeric value.
+
+        Parameters
+        ----------
+        val : float
+            New numeric value. Will be clamped to [min_value, max_value].
+        """
+        val = np.clip(val, self.min_value, self.max_value)
+        self._value = val
+        range_val = self.max_value - self.min_value
+        self._ratio = (val - self.min_value) / range_val if range_val != 0 else 0
+        self._update_handle_position()
+        self.on_value_changed(self)
+        self.on_change(self)
+
+    @property
+    def ratio(self):
+        """Get the current normalized ratio (0 to 1).
+
+        Returns
+        -------
+        float
+            The slider ratio.
+        """
+        return self._ratio
+
+    @ratio.setter
+    def ratio(self, r):
+        """Set the slider ratio.
+
+        Parameters
+        ----------
+        r : float
+            New ratio value. Will be clamped to [0, 1].
+        """
+        self._ratio = np.clip(r, 0, 1)
+        self._value = self.min_value + self._ratio * (self.max_value - self.min_value)
+        self._update_handle_position()
+        self.on_change(self)
+
+    @property
+    def min_value(self):
+        """Get the minimum value of the slider.
+
+        Returns
+        -------
+        float
+            The minimum value.
+        """
+        return self._min_value
+
+    @min_value.setter
+    def min_value(self, val):
+        """Set the minimum value of the slider.
+
+        Parameters
+        ----------
+        val : float
+            The minimum value.
+        """
+        self._min_value = val
+        self.value = self._value
+
+    @property
+    def max_value(self):
+        """Get the maximum value of the slider.
+
+        Returns
+        -------
+        float
+            The maximum value.
+        """
+        return self._max_value
+
+    @max_value.setter
+    def max_value(self, val):
+        """Set the maximum value of the slider.
+
+        Parameters
+        ----------
+        val : float
+            The maximum value.
+        """
+        self._max_value = val
+        self.value = self._value
+
+    def track_click_callback(self, event):
+        """Handle mouse click events on the slider track.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        self.handle_move_callback(event)
+
+    @abc.abstractmethod
+    def handle_move_callback(self, event):
+        """Handle mouse drag events to update the slider state.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        pass
+
+    def handle_release_callback(self, event):
+        """Handle the release of the mouse button.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        if self.handle:
+            self.handle.color = self.default_color
+
+    @abc.abstractmethod
+    def _update_handle_position(self):
+        """Update the position of the track and handle actors."""
+        pass
+
+    def format_text(self):
+        """Return formatted text to display along the slider.
+
+        Returns
+        -------
+        str
+            The formatted text.
+        """
+        if callable(self.text_template):
+            return self.text_template(self)
+
+        context = {"value": self.value, "ratio": self.ratio}
+        if hasattr(self, "angle"):
+            context["angle"] = np.rad2deg(self.angle)
+        return self.text_template.format(**context)
+
+    def _get_actors(self):
+        """Get the actors composing this UI component.
+
+        Returns
+        -------
+        list
+            List of actors from the track, handle, and text elements.
+        """
+        actors = []
+        if self.track:
+            actors += self.track.actors
+        if self.handle:
+            actors += self.handle.actors
+        if self.text:
+            actors += self.text.actors
+        return actors

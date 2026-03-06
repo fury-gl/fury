@@ -214,7 +214,7 @@ class TextButton2D(Button2D):
             self.child.message = target_text
 
 
-class LineSlider2D(UI):
+class LineSlider2D(Slider2D):
     """A 2D Line Slider component.
 
     Parameters
@@ -300,13 +300,8 @@ class LineSlider2D(UI):
         z_order : int, optional
             The stacking priority. The handle is assigned z_order + 1.
         """
-        self._ratio = 0
-        self._value = 0
-
         self.shape = shape
         self.orientation = orientation.lower().strip()
-        self.default_color = (1, 1, 1)
-        self.active_color = (0, 0, 1)
 
         self._length = length
         self._line_width = line_width
@@ -315,20 +310,14 @@ class LineSlider2D(UI):
         self._handle_side = handle_side
         self._font_size = font_size
 
-        self.min_value = min_value
-        self.max_value = max_value
-        self.text_template = text_template
-
-        super(LineSlider2D, self).__init__(
+        super().__init__(
             position=position,
-            x_anchor=Anchor.LEFT,
-            y_anchor=Anchor.TOP,
+            initial_value=initial_value,
+            min_value=min_value,
+            max_value=max_value,
+            text_template=text_template,
             z_order=z_order,
         )
-
-        self.on_change = lambda ui: None
-        self.on_value_changed = lambda ui: None
-        self.on_moving_slider = lambda ui: None
 
         self.value = initial_value
 
@@ -403,6 +392,9 @@ class LineSlider2D(UI):
 
     def _update_handle_position(self):
         """Calculate specific coordinates for the handle and text label."""
+        if not self.track:
+            return
+
         track_origin = self.track.get_position(
             x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP
         )
@@ -424,70 +416,7 @@ class LineSlider2D(UI):
         )
         self.text.set_position(text_pos, x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
 
-        self.text.message = self.text_template.format(
-            value=self.value, ratio=self.ratio
-        )
-
-    @property
-    def value(self):
-        """Get the current numeric value of the slider.
-
-        Returns
-        -------
-        float
-            The slider value.
-        """
-        return self._value
-
-    @value.setter
-    def value(self, val):
-        """Set the slider numeric value.
-
-        Parameters
-        ----------
-        val : float
-            New numeric value. Will be clamped to [min_value, max_value].
-        """
-        val = np.clip(val, self.min_value, self.max_value)
-        self._value = val
-        range_val = self.max_value - self.min_value
-        self._ratio = (val - self.min_value) / range_val if range_val != 0 else 0
-        self._update_handle_position()
-        self.on_value_changed(self)
-
-    @property
-    def ratio(self):
-        """Get the current normalized ratio (0 to 1).
-
-        Returns
-        -------
-        float
-            The slider ratio.
-        """
-        return self._ratio
-
-    @ratio.setter
-    def ratio(self, r):
-        """Set the slider ratio.
-
-        Parameters
-        ----------
-        r : float
-            New ratio value. Will be clamped to [0, 1].
-        """
-        self._ratio = np.clip(r, 0, 1)
-        self._value = self.min_value + self._ratio * (self.max_value - self.min_value)
-        self._update_handle_position()
-
-    def track_click_callback(self, event):
-        """Handle mouse click events on the slider track.
-
-        Parameters
-        ----------
-        event : PointerEvent
-            The PyGfx pointer event.
-        """
-        self.handle_move_callback(event)
+        self.text.message = self.format_text()
 
     def handle_move_callback(self, event):
         """Handle mouse drag events to update the slider state.
@@ -517,17 +446,6 @@ class LineSlider2D(UI):
         self.ratio = new_ratio
 
         self.on_moving_slider(self)
-        self.on_change(self)
-
-    def handle_release_callback(self, event):
-        """Handle the release of the mouse button.
-
-        Parameters
-        ----------
-        event : PointerEvent
-            The PyGfx pointer event.
-        """
-        self.handle.color = self.default_color
 
 
 class PlaybackPanel(UI):
@@ -1835,7 +1753,7 @@ class PlaybackPanel(UI):
 #         i_ren.force_render()
 
 
-class RingSlider2D(UI):
+class RingSlider2D(Slider2D):
     """A disk slider.
 
     A disk moves along the boundary of a ring.
@@ -1944,43 +1862,27 @@ class RingSlider2D(UI):
         self.default_color = (1, 1, 1)
         self.active_color = (0, 0, 1)
 
-        self._min_value = min_value
-        self._max_value = max_value
-        self._text_template = text_template
-
         self._track_inner_radius = slider_inner_radius
         self._track_outer_radius = slider_outer_radius
         self._handle_inner_radius = handle_inner_radius
         self._handle_outer_radius = handle_outer_radius
         self._font_size = font_size
-        self.z_order = z_order
         self.shape = shape
         self._handle_side = handle_side
 
-        self._value = initial_value
-        self._previous_value = initial_value
         self._angle = 0.0
-        self._ratio = 0.0
 
-        self.on_change = lambda ui: None
-        self.on_value_changed = lambda ui: None
-        self.on_moving_slider = lambda ui: None
-
-        super(RingSlider2D, self).__init__(
+        super().__init__(
             position=center,
-            x_anchor=Anchor.LEFT,
-            y_anchor=Anchor.TOP,
-            z_order=self.z_order,
+            initial_value=initial_value,
+            min_value=min_value,
+            max_value=max_value,
+            text_template=text_template,
+            z_order=z_order,
         )
 
         self.set_position(center, x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
-
-        self.min_value = min_value
-        self.max_value = max_value
-
         self.value = initial_value
-
-        self.update()
 
     def _setup(self):
         """Setup this UI component.
@@ -2080,90 +1982,17 @@ class RingSlider2D(UI):
 
     def _update_handle_position(self):
         """Place the handle and the text according to the current angle / ratio."""
+        if not self.track:
+            return
+
         center = self.track.get_position(x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
-        angle = self._angle  # stored in radians
+        angle = self.angle  # stored in radians
         x = self.mid_track_radius * np.cos(angle) + center[0]
         y = self.mid_track_radius * np.sin(angle) + center[1]
         self.handle.set_position((x, y), x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
 
-        text = self.format_text()
-        self.text.message = text
+        self.text.message = self.format_text()
         self.text.set_position(center, x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
-
-    def move_handle(self, position):
-        """Move the slider's handle.
-
-        Parameters
-        ----------
-        position : (float, float)
-            The absolute position of the disk (x, y).
-        """
-        center = (
-            self.get_position(x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP)
-            + self.size / 2.0
-        )
-        x, y = np.array(position) - center
-        angle = np.arctan2(y, x)
-        if angle < 0:
-            angle += TWO_PI
-
-        self.angle = angle
-
-    @property
-    def value(self):
-        """Return the current value of the slider.
-
-        Returns
-        -------
-        float
-            The value.
-        """
-        return self._value
-
-    @value.setter
-    def value(self, value):
-        """Set the current value of the slider.
-
-        Parameters
-        ----------
-        value : float
-            The value to set.
-        """
-        # Clip to bounds
-        value = np.clip(value, self.min_value, self.max_value)
-        range_val = self.max_value - self.min_value
-        self._value = value
-        self._ratio = (value - self.min_value) / range_val if range_val != 0 else 0.0
-        self._angle = self._ratio * TWO_PI
-        self._update_handle_position()
-        self.on_value_changed(self)
-        self.on_change(self)
-
-    @property
-    def ratio(self):
-        """Return the current ratio of the slider.
-
-        Returns
-        -------
-        float
-            The ratio.
-        """
-        return self._ratio
-
-    @ratio.setter
-    def ratio(self, ratio):
-        """Set the current ratio of the slider.
-
-        Parameters
-        ----------
-        ratio : float
-            The ratio to set.
-        """
-        self._ratio = float(np.clip(ratio, 0.0, 1.0))
-        self._angle = self._ratio * TWO_PI
-        self._value = self.min_value + self._ratio * (self.max_value - self.min_value)
-        self._update_handle_position()
-        self.on_change(self)
 
     @property
     def angle(self):
@@ -2172,138 +2001,31 @@ class RingSlider2D(UI):
         Returns
         -------
         float
-            The angle in radians.
+            The angle.
         """
-        return self._angle
-
-    @angle.setter
-    def angle(self, angle):
-        """Set the handle angle.
-
-        Parameters
-        ----------
-        angle : float
-            The angle in radians.
-        """
-        self._angle = float(angle) % TWO_PI  # Wraparound
-        self._ratio = self._angle / TWO_PI
-        self._value = self.min_value + self._ratio * (self.max_value - self.min_value)
-        self._update_handle_position()
-        self.on_change(self)
-
-    def format_text(self):
-        """Return formatted text to display along the slider.
-
-        Returns
-        -------
-        str
-            Formatted text.
-        """
-        if callable(self._text_template):
-            return self._text_template(self)
-
-        return self._text_template.format(
-            ratio=self.ratio, value=self.value, angle=np.rad2deg(self.angle)
-        )
-
-    def update(self):
-        """Update the slider."""
-        # Keep ratio/value/angle consistent and move actors
-        self._ratio = (self._angle / TWO_PI) % 1.0
-        self._value = self.min_value + self._ratio * (self.max_value - self.min_value)
-        self._update_handle_position()
-        self.on_change(self)
-
-    def track_click_callback(self, event):
-        """Update disk position and grab the focus.
-
-        Parameters
-        ----------
-        event : PointerEvent
-            The event object.
-        """
-        position = (event.x, event.y)
-        self.move_handle(position)
-        self.on_moving_slider(self)
-        if hasattr(event, "stop_propagation"):
-            event.stop_propagation()
+        return self.ratio * TWO_PI
 
     def handle_move_callback(self, event):
-        """Handle movement.
+        """Handle mouse drag events to update the slider state.
 
         Parameters
         ----------
         event : PointerEvent
-            The event object.
+            The PyGfx pointer event.
         """
-        position = (event.x, event.y)
         self.handle.color = self.active_color
-        self.move_handle(position)
+        center = (
+            self.get_position(x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP)
+            + self.size / 2.0
+        )
+        x, y = event.x - center[0], event.y - center[1]
+        angle = np.arctan2(y, x)
+        if angle < 0:
+            angle += TWO_PI
+
+        self._angle = angle
+        self.ratio = angle / TWO_PI
         self.on_moving_slider(self)
-        if hasattr(event, "stop_propagation"):
-            event.stop_propagation()
-
-    def handle_release_callback(self, event):
-        """Handle release.
-
-        Parameters
-        ----------
-        event : PointerEvent
-            The event object.
-        """
-        self.handle.color = self.default_color
-        if hasattr(event, "stop_propagation"):
-            event.stop_propagation()
-
-    @property
-    def min_value(self):
-        """Return the minimum value of the slider.
-
-        Returns
-        -------
-        float
-            The minimum value.
-        """
-        return self._min_value
-
-    @min_value.setter
-    def min_value(self, value):
-        """Set the minimum value of the slider.
-
-        Parameters
-        ----------
-        value : float
-            The minimum value.
-        """
-        current_value = self._value
-        self._min_value = value
-        self.value = current_value
-        self.update()
-
-    @property
-    def max_value(self):
-        """Return the maximum value of the slider.
-
-        Returns
-        -------
-        float
-            The maximum value.
-        """
-        return self._max_value
-
-    @max_value.setter
-    def max_value(self, value):
-        """Set the maximum value of the slider.
-
-        Parameters
-        ----------
-        value : float
-            The maximum value.
-        """
-        current_value = self._value
-        self._max_value = value
-        self.value = current_value
-        self.update()
 
 
 # class RangeSlider(UI):
