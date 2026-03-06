@@ -238,7 +238,7 @@ def test__StreamtubeBakingShader_setup_and_bindings():
     render_info = shader.get_render_info(wobject, {})
     assert render_info["indices"] == (expected_groups, 1, 1)
 
-    bindings = shader.get_bindings_info(wobject, {})
+    bindings = shader.get_bindings_info(wobject, {}, None)
     assert set(bindings.keys()) == {0}
     assert set(bindings[0].keys()) == {0, 1, 2, 3, 4, 5, 6, 7, 8}
     assert bindings[0][0].resource is wobject.line_buffer
