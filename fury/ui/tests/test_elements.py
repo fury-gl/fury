@@ -727,6 +727,8 @@ def test_ring_slider_2d_functional_initialization():
 
     assert isinstance(slider.handle, ui.Disk2D)
     npt.assert_equal(slider.handle.outer_radius, 12)
+    npt.assert_equal(slider.track.inner_radius, 40)
+    npt.assert_equal(slider.track.outer_radius, 50)
 
 
 def test_ring_slider_2d_programmatic_clamping():

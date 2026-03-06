@@ -7,6 +7,7 @@ __all__ = [
     "Rectangle2D",
     "Disk2D",
     "TextBlock2D",
+    # "Slider2D",
     "TexturedButton2D",
     "TextButton2D",
     "LineSlider2D",
@@ -48,7 +49,13 @@ __all__ = [
 from .containers import Panel2D
 from .context import UIContext
 from .core import UI, Anchor, Disk2D, Rectangle2D, TextBlock2D
-from .elements import LineSlider2D, PlaybackPanel, TextButton2D, TexturedButton2D
+from .elements import (
+    LineSlider2D,
+    PlaybackPanel,
+    RingSlider2D,
+    TextButton2D,
+    TexturedButton2D,
+)
 
 # from .elements import (
 #     Card2D,

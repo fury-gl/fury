@@ -36,11 +36,11 @@ line_slider_v = LineSlider2D(
 # Ring Slider
 ring_slider = RingSlider2D(
     center=(200, 400),
-    initial_value=180,
+    initial_value=0,
     min_value=0,
     max_value=360,
     slider_inner_radius=50,
-    slider_outer_radius=60,
+    slider_outer_radius=55,
     handle_outer_radius=12,
     text_template="Angle: {angle:.0f}°",
 )

@@ -1669,8 +1669,18 @@ class Slider2D(UI):
         The minimum value of the slider range.
     max_value : float, optional
         The maximum value of the slider range.
+    handle_inner_radius : int, optional
+        The inner radius for disk-shaped handles.
+    handle_outer_radius : int, optional
+        The outer radius for disk-shaped handles.
+    handle_side : int, optional
+        The side length for square-shaped handles.
+    font_size : int, optional
+        The font size for the value label.
     text_template : str or callable, optional
         A formatting string or callable for the label.
+    shape : str, optional
+        The handle shape: disk or square.
     z_order : int, optional
         The stacking priority.
     """
@@ -1682,7 +1692,12 @@ class Slider2D(UI):
         initial_value=50,
         min_value=0,
         max_value=100,
+        handle_inner_radius=0,
+        handle_outer_radius=10,
+        handle_side=20,
+        font_size=16,
         text_template="{value:.1f} ({ratio:.0%})",
+        shape="disk",
         z_order=0,
     ):
         """Initialize the 2D slider.
@@ -1697,8 +1712,18 @@ class Slider2D(UI):
             The minimum value of the slider range.
         max_value : float, optional
             The maximum value of the slider range.
+        handle_inner_radius : int, optional
+            The inner radius for disk-shaped handles.
+        handle_outer_radius : int, optional
+            The outer radius for disk-shaped handles.
+        handle_side : int, optional
+            The side length for square-shaped handles.
+        font_size : int, optional
+            The font size for the value label.
         text_template : str or callable, optional
             A formatting string or callable for the label.
+        shape : str, optional
+            The handle shape: disk or square.
         z_order : int, optional
             The stacking priority.
         """
@@ -1710,6 +1735,12 @@ class Slider2D(UI):
         self._min_value = min_value
         self._max_value = max_value
         self.text_template = text_template
+
+        self._handle_inner_radius = handle_inner_radius
+        self._handle_outer_radius = handle_outer_radius
+        self._handle_side = handle_side
+        self._font_size = font_size
+        self.shape = shape
 
         self.on_change = lambda ui: None
         self.on_value_changed = lambda ui: None
@@ -1849,13 +1880,22 @@ class Slider2D(UI):
         event : PointerEvent
             The PyGfx pointer event.
         """
-        if self.handle:
-            self.handle.color = self.default_color
+        self.handle.color = self.default_color
 
     @abc.abstractmethod
     def _update_handle_position(self):
         """Update the position of the track and handle actors."""
         pass
+
+    def _get_actors(self):
+        """Get the actors composing this UI component.
+
+        Returns
+        -------
+        list
+            Empty list, as child UI components are added directly when adding parent.
+        """
+        return []
 
     def format_text(self):
         """Return formatted text to display along the slider.
@@ -1873,19 +1913,26 @@ class Slider2D(UI):
             context["angle"] = np.rad2deg(self.angle)
         return self.text_template.format(**context)
 
-    def _get_actors(self):
-        """Get the actors composing this UI component.
+    def _setup(self):
+        """Set up the common slider components."""
+        if self.shape == "disk":
+            self.handle = Disk2D(
+                outer_radius=self._handle_outer_radius,
+                inner_radius=self._handle_inner_radius,
+            )
+        elif self.shape == "square":
+            self.handle = Rectangle2D(size=(self._handle_side, self._handle_side))
+        else:
+            raise ValueError("shape must be 'disk' or 'square'")
 
-        Returns
-        -------
-        list
-            List of actors from the track, handle, and text elements.
-        """
-        actors = []
-        if self.track:
-            actors += self.track.actors
-        if self.handle:
-            actors += self.handle.actors
-        if self.text:
-            actors += self.text.actors
-        return actors
+        self.handle.z_order = self.z_order + 1
+
+        self.text = TextBlock2D(
+            justification="center",
+            vertical_justification="middle",
+            dynamic_bbox=True,
+            font_size=self._font_size,
+        )
+        self.text.z_order = self.z_order + 2
+
+        self._children.extend([self.handle, self.text])
