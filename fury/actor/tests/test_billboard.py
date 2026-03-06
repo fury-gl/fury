@@ -223,3 +223,59 @@ def _assert_red_visible(image):
     has_red = np.any(red > 50)
     if not has_red:
         raise AssertionError("No visible red pixels found in rendered billboard")
+
+
+def test_billboard_bounding_box():
+    bb = actor.billboard(
+        centers=np.array([[0.0, 0.0, 0.0]]),
+        sizes=(4.0, 4.0),
+    )
+    aabb = bb.get_bounding_box()
+    npt.assert_allclose(aabb[0], [-2, -2, -2])
+    npt.assert_allclose(aabb[1], [2, 2, 2])
+
+
+def test_billboard_sphere_bounding_box():
+    centers = np.array(
+        [[0.0, 0.0, 0.0], [10.0, 0.0, 0.0], [5.0, 5.0, 5.0]],
+        dtype=np.float32,
+    )
+    radii = np.array([2.0, 3.0, 1.0], dtype=np.float32)
+
+    bb = actor.sphere(centers, radii=radii, impostor=True)
+    aabb = bb.get_bounding_box()
+
+    npt.assert_allclose(aabb[0], [-2, -3, -3])
+    npt.assert_allclose(aabb[1], [13, 6, 6])
+
+
+def test_billboard_bounding_box_single_sphere():
+    bb = actor.sphere(
+        centers=np.array([[0.0, 0.0, 0.0]]),
+        radii=5.0,
+        impostor=True,
+    )
+    bsphere = bb.get_world_bounding_sphere()
+
+    npt.assert_allclose(bsphere[:3], [0, 0, 0], atol=1e-6)
+    npt.assert_allclose(bsphere[3], 5.0 * np.sqrt(3), atol=0.01)
+
+
+def test_billboard_bounding_box_camera_framing():
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+
+    bb = actor.sphere(
+        centers=np.array([[0.0, 0.0, 0.0]]),
+        colors=np.array([[1.0, 0.0, 0.0]]),
+        radii=5.0,
+        impostor=True,
+    )
+    scene.add(bb)
+
+    arr = window.snapshot(scene=scene, return_array=True)
+    assert arr is not None
+
+    _assert_red_visible(arr)
+
+    scene.clear()
