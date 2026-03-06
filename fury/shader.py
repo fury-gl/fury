@@ -76,7 +76,7 @@ class VectorFieldComputeShader(BaseShader):
         """
         return {}
 
-    def get_bindings(self, wobject, _shared):
+    def get_bindings(self, wobject, _shared, _scene):
         """Get the bindings for the vector field compute shader.
 
         Parameters
@@ -85,6 +85,8 @@ class VectorFieldComputeShader(BaseShader):
             The vector field object to be rendered.
         _shared : dict
             Shared information for the shader.
+        _scene : Scene
+            The scene containing the object to be rendered.
 
         Returns
         -------
@@ -315,7 +317,7 @@ class _StreamlineBakingShader(BaseShader):
         """
         return {}
 
-    def get_bindings(self, wobject, _shared):
+    def get_bindings(self, wobject, _shared, _scene):
         """Get the bindings for the streamline baking compute shader.
 
         Parameters
@@ -324,6 +326,8 @@ class _StreamlineBakingShader(BaseShader):
             The streamline object to be rendered.
         _shared : dict
             Shared information for the shader.
+        _scene : Scene
+            The scene containing the object to be rendered.
 
         Returns
         -------
@@ -488,7 +492,7 @@ class SphGlyphComputeShader(BaseShader):
         """
         return {}
 
-    def get_bindings(self, wobject, _shared):
+    def get_bindings(self, wobject, _shared, _scene):
         """Get the bindings for the spherical harmonic glyph compute shader.
 
         Parameters
@@ -497,6 +501,8 @@ class SphGlyphComputeShader(BaseShader):
             The spherical glyph object to be rendered.
         _shared : dict
             Shared information for the shader.
+        _scene : Scene
+            The scene containing the object to be rendered.
 
         Returns
         -------
@@ -606,7 +612,7 @@ class LineProjectionComputeShader(BaseShader):
             "indices": (n, 1, 1),
         }
 
-    def get_bindings(self, wobject, _shared):
+    def get_bindings(self, wobject, _shared, _scene):
         """Get the bindings for the line projection compute shader.
 
         Parameters
@@ -615,6 +621,8 @@ class LineProjectionComputeShader(BaseShader):
             The line projection object to be rendered.
         _shared : dict
             Shared information for the shader.
+        _scene : Scene
+            The scene containing the object to be rendered.
 
         Returns
         -------
@@ -783,7 +791,7 @@ class _StreamtubeBakingShader(BaseShader):
 
         return {}
 
-    def get_bindings(self, wobject, _shared):
+    def get_bindings(self, wobject, _shared, _scene):
         """Describe storage buffers used by the compute shader.
 
         Parameters
@@ -792,6 +800,8 @@ class _StreamtubeBakingShader(BaseShader):
             Mesh whose buffers are bound to the compute shader.
         _shared : dict
             Shared pipeline state (unused).
+        _scene : Scene
+            The scene containing the object to be rendered (unused).
 
         Returns
         -------
