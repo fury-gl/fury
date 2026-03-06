@@ -3,8 +3,13 @@ import numpy as np
 import pytest
 
 from fury import actor, geometry, material, window
-from fury.actor import Actor, Image as ActorImage, Text
-from fury.actor.core import actor_from_primitive
+from fury.actor import (
+    Actor,
+    Image as ActorImage,
+    Text,
+    actor_from_primitive,
+    create_axes_helper,
+)
 from fury.actor.tests._helpers import validate_actors
 
 
@@ -284,3 +289,40 @@ def test_actor_from_primitive_transparency_visual(sphere_prim):
     assert mean_r_op > 0
     assert mean_g_tr > mean_g_op
     scene.remove(transparent)
+
+
+def test_create_axes_helper_structure():
+    helper = create_axes_helper()
+
+    expected_keys = {
+        "group",
+        "center_disk",
+        "disks",
+        "labels",
+        "lines",
+        "line_points",
+        "axis_vectors",
+    }
+
+    assert set(helper.keys()) == expected_keys
+    assert len(helper["disks"]) == 6
+    assert len(helper["labels"]) == 6
+    assert len(helper["lines"]) == 6
+
+
+def test_create_axes_helper_axis_vector_order():
+    helper = create_axes_helper()
+    axis_vectors = np.stack(helper["axis_vectors"])
+    expected = np.array(
+        [
+            [-1.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [0.0, -1.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, 1.0],
+            [0.0, 0.0, -1.0],
+        ],
+        dtype=np.float32,
+    )
+
+    np.testing.assert_array_equal(axis_vectors, expected)
