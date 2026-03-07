@@ -25,5 +25,4 @@ sphere_actor = sphere(
 )
 
 
-if __name__ == "__main__":
-    show(actors=[sphere_actor])
+show(actors=[sphere_actor])

@@ -94,11 +94,10 @@ title_text_2 = TextBlock2D(
 scene.add(title_text_1, title_text_2)
 
 
-if __name__ == "__main__":
-    current_size = (1300, 750)
-    show_manager = ShowManager(
-        scene=scene,
-        size=current_size,
-        title="FURY 2.0: TextBlock2D Justification Example",
-    )
-    show_manager.start()
+current_size = (1300, 750)
+show_manager = ShowManager(
+    scene=scene,
+    size=current_size,
+    title="FURY TextBlock2D Justification Example",
+)
+show_manager.start()
