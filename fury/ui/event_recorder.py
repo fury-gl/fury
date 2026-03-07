@@ -47,19 +47,6 @@ class RecordedEvent:
         Wheel delta-y.
     """
 
-    __slots__ = (
-        "event_type",
-        "timestamp",
-        "x",
-        "y",
-        "button",
-        "buttons",
-        "key",
-        "modifiers",
-        "dx",
-        "dy",
-    )
-
     def __init__(
         self,
         event_type,
@@ -74,44 +61,69 @@ class RecordedEvent:
         dx=0.0,
         dy=0.0,
     ):
-        """Initialise a RecordedEvent.
+        self._event_type = str(event_type)
+        self._timestamp = float(timestamp)
+        self._x = float(x)
+        self._y = float(y)
+        self._button = int(button)
+        self._buttons = tuple(buttons)
+        self._key = str(key)
+        self._modifiers = tuple(modifiers)
+        self._dx = float(dx)
+        self._dy = float(dy)
 
-        Parameters
-        ----------
-        event_type : str
-            Pygfx event type string, e.g. ``"pointer_down"``.
-        timestamp : float, optional
-            Wall-clock time when captured.
-        x : float, optional
-            Pointer x-coordinate in logical pixels.
-        y : float, optional
-            Pointer y-coordinate in logical pixels.
-        button : int, optional
-            Mouse button index (1=left, 2=right, 3=middle; 0 if none).
-        buttons : tuple, optional
-            Currently held mouse buttons.
-        key : str, optional
-            Key symbol for keyboard events.
-        modifiers : tuple, optional
-            Active modifier key names, e.g. ``("Shift", "Control")``.
-        dx : float, optional
-            Wheel delta-x.
-        dy : float, optional
-            Wheel delta-y.
-        """
-        object.__setattr__(self, "event_type", str(event_type))
-        object.__setattr__(self, "timestamp", float(timestamp))
-        object.__setattr__(self, "x", float(x))
-        object.__setattr__(self, "y", float(y))
-        object.__setattr__(self, "button", int(button))
-        object.__setattr__(self, "buttons", tuple(buttons))
-        object.__setattr__(self, "key", str(key))
-        object.__setattr__(self, "modifiers", tuple(modifiers))
-        object.__setattr__(self, "dx", float(dx))
-        object.__setattr__(self, "dy", float(dy))
+    @property
+    def event_type(self):
+        """str: Pygfx event type string."""
+        return self._event_type
+
+    @property
+    def timestamp(self):
+        """float: Wall-clock time when captured."""
+        return self._timestamp
+
+    @property
+    def x(self):
+        """float: Pointer x-coordinate."""
+        return self._x
+
+    @property
+    def y(self):
+        """float: Pointer y-coordinate."""
+        return self._y
+
+    @property
+    def button(self):
+        """int: Mouse button index."""
+        return self._button
+
+    @property
+    def buttons(self):
+        """tuple: Currently held mouse buttons."""
+        return self._buttons
+
+    @property
+    def key(self):
+        """str: Key symbol for keyboard events."""
+        return self._key
+
+    @property
+    def modifiers(self):
+        """tuple: Active modifier key names."""
+        return self._modifiers
+
+    @property
+    def dx(self):
+        """float: Wheel delta-x."""
+        return self._dx
+
+    @property
+    def dy(self):
+        """float: Wheel delta-y."""
+        return self._dy
 
     def __setattr__(self, name, value):
-        """Prevent mutation after construction.
+        """Prevent mutation of public fields after construction.
 
         Parameters
         ----------
@@ -123,9 +135,11 @@ class RecordedEvent:
         Raises
         ------
         AttributeError
-            Always, since RecordedEvent is immutable.
+            If attempting to set a public (non-private) attribute.
         """
-        raise AttributeError("RecordedEvent is immutable.")
+        if not name.startswith("_"):
+            raise AttributeError("RecordedEvent is immutable.")
+        super().__setattr__(name, value)
 
     def to_dict(self):
         """Return a JSON-serialisable representation.
@@ -136,16 +150,16 @@ class RecordedEvent:
             JSON-serialisable dict of all event fields.
         """
         return {
-            "event_type": self.event_type,
-            "timestamp": self.timestamp,
-            "x": self.x,
-            "y": self.y,
-            "button": self.button,
-            "buttons": list(self.buttons),
-            "key": self.key,
-            "modifiers": list(self.modifiers),
-            "dx": self.dx,
-            "dy": self.dy,
+            "event_type": self._event_type,
+            "timestamp": self._timestamp,
+            "x": self._x,
+            "y": self._y,
+            "button": self._button,
+            "buttons": list(self._buttons),
+            "key": self._key,
+            "modifiers": list(self._modifiers),
+            "dx": self._dx,
+            "dy": self._dy,
         }
 
     @classmethod
@@ -214,7 +228,7 @@ class RecordedEvent:
         """
         import pygfx as gfx
 
-        et = self.event_type
+        et = self._event_type
         if et in (
             "pointer_down",
             "pointer_up",
@@ -226,31 +240,31 @@ class RecordedEvent:
         ):
             return gfx.PointerEvent(
                 et,
-                x=self.x,
-                y=self.y,
-                button=self.button,
-                buttons=self.buttons,
-                modifiers=self.modifiers,
-                time_stamp=self.timestamp,
+                x=self._x,
+                y=self._y,
+                button=self._button,
+                buttons=self._buttons,
+                modifiers=self._modifiers,
+                time_stamp=self._timestamp,
             )
         elif et in ("key_down", "key_up"):
             return gfx.KeyboardEvent(
                 et,
-                key=self.key,
-                modifiers=self.modifiers,
-                time_stamp=self.timestamp,
+                key=self._key,
+                modifiers=self._modifiers,
+                time_stamp=self._timestamp,
             )
         elif et == "wheel":
             return gfx.WheelEvent(
                 et,
                 x=0.0,
                 y=0.0,
-                dx=self.dx,
-                dy=self.dy,
-                time_stamp=self.timestamp,
+                dx=self._dx,
+                dy=self._dy,
+                time_stamp=self._timestamp,
             )
         else:
-            return gfx.Event(et, time_stamp=self.timestamp)
+            return gfx.Event(et, time_stamp=self._timestamp)
 
 
 class EventRecorder:
@@ -273,13 +287,6 @@ class EventRecorder:
     """
 
     def __init__(self, observed_events=None):
-        """Initialise EventRecorder.
-
-        Parameters
-        ----------
-        observed_events : list, optional
-            Override the default set of observed event type strings.
-        """
         self._events = []
         self._observed = (
             list(observed_events)
@@ -291,24 +298,12 @@ class EventRecorder:
 
     @property
     def events(self):
-        """A copy of the captured event log.
-
-        Returns
-        -------
-        list
-            Copy of the internal event log.
-        """
+        """list: A copy of the captured event log."""
         return list(self._events)
 
     @property
     def is_recording(self):
-        """True while actively recording.
-
-        Returns
-        -------
-        bool
-            Whether the recorder is currently attached and recording.
-        """
+        """bool: True while actively recording."""
         return self._recording
 
     def attach(self, actor):
@@ -377,13 +372,6 @@ class EventRecorder:
         self._events = [RecordedEvent.from_dict(d) for d in payload["events"]]
 
     def _on_event(self, event):
-        """Observer callback called for each registered event.
-
-        Parameters
-        ----------
-        event : pygfx Event
-            A live pygfx event object.
-        """
         self._events.append(RecordedEvent.from_pygfx_event(event))
 
 
@@ -406,13 +394,6 @@ class EventCounter(EventRecorder):
     """
 
     def __init__(self, observed_events=None):
-        """Initialise EventCounter.
-
-        Parameters
-        ----------
-        observed_events : list, optional
-            Override the default set of observed event type strings.
-        """
         super().__init__(observed_events=observed_events)
         self._counts = {}
 
@@ -432,7 +413,7 @@ class EventCounter(EventRecorder):
         return self._counts.get(event_type, 0)
 
     def total(self):
-        """Total number of events captured across all types.
+        """Return total number of events captured across all types.
 
         Returns
         -------
@@ -442,7 +423,7 @@ class EventCounter(EventRecorder):
         return sum(self._counts.values())
 
     def counts(self):
-        """Copy of the full event_type to count mapping.
+        """Return a copy of the full event_type to count mapping.
 
         Returns
         -------
@@ -457,13 +438,6 @@ class EventCounter(EventRecorder):
         self._counts.clear()
 
     def _on_event(self, event):
-        """Increment count and delegate to parent recorder.
-
-        Parameters
-        ----------
-        event : pygfx Event
-            A live pygfx event object.
-        """
         et = str(getattr(event, "type", "") or "unknown")
         self._counts[et] = self._counts.get(et, 0) + 1
         super()._on_event(event)
@@ -491,15 +465,6 @@ class EventPlayer:
     """
 
     def __init__(self, recorder=None, speed_factor=1.0):
-        """Initialise EventPlayer.
-
-        Parameters
-        ----------
-        recorder : EventRecorder, optional
-            Source of events to replay.
-        speed_factor : float, optional
-            Playback speed multiplier. ``0.0`` for instant replay.
-        """
         self._recorder = recorder
         self.speed_factor = speed_factor
 

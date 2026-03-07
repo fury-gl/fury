@@ -58,11 +58,6 @@ def _wheel_event(dx=0.0, dy=-3.0):
     )
 
 
-# ---------------------------------------------------------------------------
-# RecordedEvent tests
-# ---------------------------------------------------------------------------
-
-
 def test_recorded_event_defaults():
     """Default fields should all be falsy/zero."""
     e = RecordedEvent("pointer_down")
@@ -161,11 +156,6 @@ def test_recorded_event_to_pygfx_wheel():
     evt = rec.to_pygfx_event()
     assert isinstance(evt, gfx.WheelEvent)
     npt.assert_almost_equal(evt.dy, -3.0)
-
-
-# ---------------------------------------------------------------------------
-# EventRecorder tests
-# ---------------------------------------------------------------------------
 
 
 def test_event_recorder_not_recording_initially():
@@ -272,7 +262,6 @@ def test_event_recorder_custom_observed_events():
     recorder.attach(actor)
     actor.handle_event(_pointer_event("pointer_down"))
     actor.handle_event(_pointer_event("pointer_up"))
-    # pointer_up was not in observed_events
     npt.assert_equal(len(recorder.events), 1)
     npt.assert_equal(recorder.events[0].event_type, "pointer_down")
     recorder.detach()
@@ -344,11 +333,6 @@ def test_event_recorder_load_replaces_existing(tmp_path):
     npt.assert_equal(rec2.events[0].event_type, "pointer_down")
 
 
-# ---------------------------------------------------------------------------
-# EventCounter tests
-# ---------------------------------------------------------------------------
-
-
 def test_event_counter_counts_by_type():
     """get_count() should return correct per-type tallies."""
     actor = _make_actor()
@@ -416,11 +400,6 @@ def test_event_counter_log_populated():
 def test_event_counter_is_subclass_of_recorder():
     """EventCounter should be a subclass of EventRecorder."""
     assert issubclass(EventCounter, EventRecorder)
-
-
-# ---------------------------------------------------------------------------
-# EventPlayer tests
-# ---------------------------------------------------------------------------
 
 
 def test_event_player_replays_all_events():
@@ -517,11 +496,6 @@ def test_event_player_load_then_play(tmp_path):
     player.load(p)
     player.play(replay_actor)
     npt.assert_equal(len(received), 2)
-
-
-# ---------------------------------------------------------------------------
-# Integration tests
-# ---------------------------------------------------------------------------
 
 
 def test_integration_record_save_load_replay(tmp_path):
@@ -634,11 +608,6 @@ def test_integration_multiple_sessions_independent(tmp_path):
     npt.assert_equal(counter.get_count("key_down"), 5)
     npt.assert_equal(counter.get_count("pointer_down"), 0)
     counter.detach()
-
-
-# ---------------------------------------------------------------------------
-# UI element integration tests
-# ---------------------------------------------------------------------------
 
 
 def test_recorder_attaches_to_rectangle2d():
