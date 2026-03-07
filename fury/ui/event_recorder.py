@@ -89,37 +89,79 @@ class RecordedEvent:
 
     @property
     def y(self):
-        """float: Pointer y-coordinate."""
+        """Pointer y-coordinate.
+
+        Returns
+        -------
+        float
+            Pointer y-coordinate in logical pixels.
+        """
         return self._y
 
     @property
     def button(self):
-        """int: Mouse button index."""
+        """Mouse button index.
+
+        Returns
+        -------
+        int
+            Mouse button index (1=left, 2=right, 3=middle; 0 if none).
+        """
         return self._button
 
     @property
     def buttons(self):
-        """tuple: Currently held mouse buttons."""
+        """Currently held mouse buttons.
+
+        Returns
+        -------
+        tuple
+            Currently held mouse buttons.
+        """
         return self._buttons
 
     @property
     def key(self):
-        """str: Key symbol for keyboard events."""
+        """Key symbol for keyboard events.
+
+        Returns
+        -------
+        str
+            Key symbol for keyboard events.
+        """
         return self._key
 
     @property
     def modifiers(self):
-        """tuple: Active modifier key names."""
+        """Active modifier key names.
+
+        Returns
+        -------
+        tuple
+            Active modifier key names.
+        """
         return self._modifiers
 
     @property
     def dx(self):
-        """float: Wheel delta-x."""
+        """Wheel delta-x.
+
+        Returns
+        -------
+        float
+            Wheel delta-x.
+        """
         return self._dx
 
     @property
     def dy(self):
-        """float: Wheel delta-y."""
+        """Wheel delta-y.
+
+        Returns
+        -------
+        float
+            Wheel delta-y.
+        """
         return self._dy
 
     def __setattr__(self, name, value):
@@ -287,6 +329,13 @@ class EventRecorder:
     """
 
     def __init__(self, observed_events=None):
+        """Initialise EventRecorder.
+
+        Parameters
+        ----------
+        observed_events : list, optional
+            Override the default set of observed event type strings.
+        """
         self._events = []
         self._observed = (
             list(observed_events)
@@ -298,12 +347,24 @@ class EventRecorder:
 
     @property
     def events(self):
-        """list: A copy of the captured event log."""
+        """A copy of the captured event log.
+
+        Returns
+        -------
+        list
+            Copy of the internal event log.
+        """
         return list(self._events)
 
     @property
     def is_recording(self):
-        """bool: True while actively recording."""
+        """True while actively recording.
+
+        Returns
+        -------
+        bool
+            Whether the recorder is currently attached and recording.
+        """
         return self._recording
 
     def attach(self, actor):
@@ -372,6 +433,13 @@ class EventRecorder:
         self._events = [RecordedEvent.from_dict(d) for d in payload["events"]]
 
     def _on_event(self, event):
+        """Append a captured event to the internal log.
+
+        Parameters
+        ----------
+        event : pygfx Event
+            A live pygfx event object.
+        """
         self._events.append(RecordedEvent.from_pygfx_event(event))
 
 
@@ -394,6 +462,13 @@ class EventCounter(EventRecorder):
     """
 
     def __init__(self, observed_events=None):
+        """Initialise EventCounter.
+
+        Parameters
+        ----------
+        observed_events : list, optional
+            Override the default set of observed event type strings.
+        """
         super().__init__(observed_events=observed_events)
         self._counts = {}
 
@@ -438,6 +513,13 @@ class EventCounter(EventRecorder):
         self._counts.clear()
 
     def _on_event(self, event):
+        """Increment count and delegate to parent recorder.
+
+        Parameters
+        ----------
+        event : pygfx Event
+            A live pygfx event object.
+        """
         et = str(getattr(event, "type", "") or "unknown")
         self._counts[et] = self._counts.get(et, 0) + 1
         super()._on_event(event)
@@ -465,6 +547,15 @@ class EventPlayer:
     """
 
     def __init__(self, recorder=None, speed_factor=1.0):
+        """Initialise EventPlayer.
+
+        Parameters
+        ----------
+        recorder : EventRecorder, optional
+            Source of events to replay.
+        speed_factor : float, optional
+            Playback speed multiplier. ``0.0`` for instant replay.
+        """
         self._recorder = recorder
         self.speed_factor = speed_factor
 
