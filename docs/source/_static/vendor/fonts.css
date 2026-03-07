@@ -1,2 +1,8 @@
-/* Impoting Syncopate for new logos */
+/* Logo display font */
 @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&display=swap');
+
+/* Body + UI font: Inter — clean, modern, highly legible */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Monospace: JetBrains Mono — excellent for code blocks */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
