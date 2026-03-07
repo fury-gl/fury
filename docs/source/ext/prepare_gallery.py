@@ -98,7 +98,7 @@ def prepare_gallery(app=None):
             filename = example.readme.split("file:")[1].strip()
             shutil.copy(Path(examples_dir, filename), Path(folder, "README.rst"))
         else:
-            with open(Path(folder, "README.rst"), "w") as fi:
+            with open(Path(folder, "README.rst"), "w", encoding="utf-8") as fi:
                 fi.write(example.readme)
 
         # Copy files to folder
