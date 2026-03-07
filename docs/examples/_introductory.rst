@@ -1,5 +1,5 @@
-These tutorials show:
+Introductory
+------------
 
-- How to combine a timer with an actor
-- How to slice data with the slicer actor
-- How to use the normals of your data.
+Examples of the basic usage of the library, including how to create a simple model,
+how to train it, and how to make predictions with it.
