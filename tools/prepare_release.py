@@ -211,20 +211,27 @@ def check_license_year():
             break
 
 
-def create_release_announcement(*, author="skoudoro", version="0.11.0"):
+def create_release_announcement(
+    *, author="skoudoro", name="Serge Koudoro", version="0.11.0"
+):
     """Create a release announcement blog post.
 
     Parameters
     ----------
     author : str, optional
         The author of the blog post.
+    name : str, optional
+        The name of the author.
     version : str, optional
         The version of the release.
     """
     print("--- Creating release announcement blog post... ---")
     username = input(f"Enter blog post author (e.g., {author}): ").strip()
     if username:
-        author = username
+        author_id = username
+    name = input(f"Enter blog post author name (e.g., {name}): ").strip()
+    if name:
+        author_name = name
     today = datetime.date.today()
     year = today.year
     posts_dir = os.path.join("docs", "source", "posts")
@@ -236,12 +243,15 @@ def create_release_announcement(*, author="skoudoro", version="0.11.0"):
     file_name = f"{today.strftime('%Y-%m-%d')}-release-announcement.rst"
     file_path = os.path.join(year_dir, file_name)
 
+    release_title = f"FURY {version} Released"
+    underline = "=" * len(release_title)
+    release_title = f"{release_title}\n{underline}\n"
+
     content = f"""
-FURY {version} Released
-====================
+{release_title}
 
 .. post:: {today.strftime("%B %d, %Y")}
-   :author: {author}
+   :author: {author_id}
    :tags: fury
    :category: release
 
@@ -284,7 +294,7 @@ We would like to thanks to :ref:`all contributors <community>` for this release:
 
 On behalf of the :ref:`FURY developers <community>`,
 
-Serge K.
+- {author_name}
 """  # noqa
 
     with open(file_path, "w", encoding="utf-8") as f:
