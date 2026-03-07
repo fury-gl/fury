@@ -61,6 +61,31 @@ class RecordedEvent:
         dx=0.0,
         dy=0.0,
     ):
+        """Initialise a RecordedEvent.
+
+        Parameters
+        ----------
+        event_type : str
+            Pygfx event type string, e.g. ``"pointer_down"``.
+        timestamp : float, optional
+            Wall-clock time when captured.
+        x : float, optional
+            Pointer x-coordinate in logical pixels.
+        y : float, optional
+            Pointer y-coordinate in logical pixels.
+        button : int, optional
+            Mouse button index (1=left, 2=right, 3=middle; 0 if none).
+        buttons : tuple, optional
+            Currently held mouse buttons.
+        key : str, optional
+            Key symbol for keyboard events.
+        modifiers : tuple, optional
+            Active modifier key names.
+        dx : float, optional
+            Wheel delta-x.
+        dy : float, optional
+            Wheel delta-y.
+        """
         self._event_type = str(event_type)
         self._timestamp = float(timestamp)
         self._x = float(x)
@@ -74,17 +99,35 @@ class RecordedEvent:
 
     @property
     def event_type(self):
-        """str: Pygfx event type string."""
+        """Pygfx event type string.
+
+        Returns
+        -------
+        str
+            Pygfx event type string, e.g. ``"pointer_down"``.
+        """
         return self._event_type
 
     @property
     def timestamp(self):
-        """float: Wall-clock time when captured."""
+        """Wall-clock time when captured.
+
+        Returns
+        -------
+        float
+            Wall-clock time when captured.
+        """
         return self._timestamp
 
     @property
     def x(self):
-        """float: Pointer x-coordinate."""
+        """Pointer x-coordinate.
+
+        Returns
+        -------
+        float
+            Pointer x-coordinate in logical pixels.
+        """
         return self._x
 
     @property
