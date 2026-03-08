@@ -232,6 +232,213 @@ def test_line_slider_2d_visibility_propagation():
         assert actor.visible is True
 
 
+# --- LineDoubleSlider2D Tests ---
+
+
+def test_line_double_slider_2d_initialization():
+    """Test LineDoubleSlider2D initialization with defaults and variants."""
+    slider = ui.LineDoubleSlider2D()
+    npt.assert_equal(slider.left_disk_value, 0)
+    npt.assert_equal(slider.right_disk_value, 100)
+    npt.assert_equal(slider.orientation, "horizontal")
+    npt.assert_equal(slider.shape, "disk")
+    assert isinstance(slider.handles[0], ui.Disk2D)
+    assert isinstance(slider.handles[1], ui.Disk2D)
+    assert len(slider.handles) == 2
+    assert len(slider.text) == 2
+
+    slider_sq = ui.LineDoubleSlider2D(shape="square", handle_side=15)
+    assert isinstance(slider_sq.handles[0], ui.Rectangle2D)
+    npt.assert_equal(slider_sq.handles[0].size, (15, 15))
+
+    slider_v = ui.LineDoubleSlider2D(orientation="vertical")
+    npt.assert_equal(slider_v.orientation, "vertical")
+
+
+def test_line_double_slider_2d_clamping():
+    """Test that values are clamped to min/max."""
+    slider = ui.LineDoubleSlider2D(min_value=10, max_value=90, initial_values=(10, 90))
+
+    slider.left_disk_value = -50
+    npt.assert_equal(slider.left_disk_value, 10)
+
+    slider.right_disk_value = 200
+    npt.assert_equal(slider.right_disk_value, 90)
+
+
+def test_line_double_slider_2d_crossing_prevention():
+    """Test that handles cannot cross each other."""
+    slider = ui.LineDoubleSlider2D(min_value=0, max_value=100, initial_values=(30, 70))
+
+    slider.left_disk_value = 80
+    assert slider.left_disk_value <= slider.right_disk_value
+
+    slider.right_disk_value = 20
+    assert slider.right_disk_value >= slider.left_disk_value
+
+
+def test_line_double_slider_2d_synchronization():
+    """Test ratio-value synchronization."""
+    slider = ui.LineDoubleSlider2D(min_value=0, max_value=100, initial_values=(0, 100))
+
+    slider.left_disk_ratio = 0.5
+    npt.assert_almost_equal(slider.left_disk_value, 50)
+
+    slider.right_disk_value = 75
+    npt.assert_almost_equal(slider.right_disk_ratio, 0.75)
+
+
+def test_line_double_slider_2d_alias_properties():
+    """Test that left/bottom and right/top aliases match."""
+    slider = ui.LineDoubleSlider2D(initial_values=(20, 80))
+
+    npt.assert_equal(slider.left_disk_value, slider.bottom_disk_value)
+    npt.assert_equal(slider.right_disk_value, slider.top_disk_value)
+    npt.assert_equal(slider.left_disk_ratio, slider.bottom_disk_ratio)
+    npt.assert_equal(slider.right_disk_ratio, slider.top_disk_ratio)
+
+    slider.bottom_disk_value = 25
+    npt.assert_equal(slider.left_disk_value, 25)
+
+    slider.top_disk_ratio = 0.9
+    npt.assert_almost_equal(slider.right_disk_ratio, 0.9)
+
+
+def test_line_double_slider_2d_layout():
+    """Test _get_size() for both orientations."""
+    slider_h = ui.LineDoubleSlider2D(
+        length=300, line_width=10, orientation="horizontal"
+    )
+    size_h = slider_h._get_size()
+    npt.assert_equal(size_h[0], 300)
+    assert size_h[1] >= 10
+
+    slider_v = ui.LineDoubleSlider2D(length=300, line_width=10, orientation="vertical")
+    size_v = slider_v._get_size()
+    npt.assert_equal(size_v[1], 300)
+    assert size_v[0] >= 10
+
+
+def test_line_double_slider_2d_text_formatting():
+    """Test string and callable text templates."""
+    slider = ui.LineDoubleSlider2D(
+        initial_values=(25, 75),
+        text_template="{value:.2f}",
+    )
+    assert slider.text[0].message == "25.00"
+    assert slider.text[1].message == "75.00"
+
+    def custom_template(s):
+        return "custom"
+
+    slider2 = ui.LineDoubleSlider2D(
+        initial_values=(10, 90),
+        text_template=custom_template,
+    )
+    assert slider2.text[0].message == "custom"
+    assert slider2.text[1].message == "custom"
+
+
+def test_line_double_slider_2d_callbacks():
+    """Test that on_value_changed fires on value set."""
+    slider = ui.LineDoubleSlider2D(initial_values=(0, 100))
+    triggered = {"count": 0}
+
+    def on_change(s):
+        triggered["count"] += 1
+
+    slider.on_value_changed = on_change
+
+    slider.left_disk_value = 10
+    assert triggered["count"] >= 1
+
+    prev = triggered["count"]
+    slider.right_disk_value = 90
+    assert triggered["count"] > prev
+
+
+def test_line_double_slider_2d_visibility():
+    """Test visibility propagation to all sub-actors."""
+    slider = ui.LineDoubleSlider2D()
+
+    slider.set_visibility(False)
+    for actor in slider._get_actors():
+        assert actor.visible is False
+
+    slider.set_visibility(True)
+    for actor in slider._get_actors():
+        assert actor.visible is True
+
+
+def test_line_double_slider_2d_zero_range():
+    """Test edge case where min_value equals max_value."""
+    slider = ui.LineDoubleSlider2D(min_value=50, max_value=50, initial_values=(50, 50))
+    npt.assert_equal(slider.left_disk_value, 50)
+    npt.assert_equal(slider.right_disk_value, 50)
+    npt.assert_equal(slider.left_disk_ratio, 0)
+    npt.assert_equal(slider.right_disk_ratio, 0)
+
+
+# --- RangeSlider Tests ---
+
+
+def test_range_slider_initialization():
+    """Test RangeSlider creates its sub-sliders correctly."""
+    slider = ui.RangeSlider()
+
+    assert isinstance(slider.range_slider, ui.LineDoubleSlider2D)
+    assert isinstance(slider.value_slider, ui.LineSlider2D)
+
+    npt.assert_equal(slider.range_slider.left_disk_value, 0)
+    npt.assert_equal(slider.range_slider.right_disk_value, 100)
+    npt.assert_equal(slider.value_slider.value, 50)
+
+
+def test_range_slider_actors():
+    """Test that actor count matches combined sub-sliders."""
+    slider = ui.RangeSlider()
+
+    expected_count = len(slider.range_slider.actors) + len(slider.value_slider.actors)
+    npt.assert_equal(len(slider.actors), expected_count)
+    assert len(slider.actors) > 0
+
+
+def test_range_slider_size():
+    """Test that size returns positive dimensions."""
+    slider = ui.RangeSlider()
+    size = slider._get_size()
+    assert size[0] > 0
+    assert size[1] > 0
+
+
+def test_range_slider_visibility():
+    """Test visibility propagation to all actors."""
+    slider = ui.RangeSlider()
+
+    slider.set_visibility(False)
+    for actor in slider._get_actors():
+        assert actor.visible is False
+
+    slider.set_visibility(True)
+    for actor in slider._get_actors():
+        assert actor.visible is True
+
+
+def test_range_slider_text_precision():
+    """Test that text templates match precision parameters."""
+    slider = ui.RangeSlider(range_precision=2, value_precision=3)
+
+    assert slider.range_slider_text_template == "{value:.2f}"
+    assert slider.value_slider_text_template == "{value:.3f}"
+
+
+def test_range_slider_scene_add():
+    """Test that RangeSlider can be added to a Scene without error."""
+    scene = window.Scene()
+    slider = ui.RangeSlider(position=(50, 50))
+    scene.add(slider)
+
+
 # def test_ui_textbox(recording=False):
 #     filename = "test_ui_textbox"
 #     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
@@ -472,133 +679,6 @@ def test_line_slider_2d_visibility_propagation():
 #     assert_equal(changed, value_changed + slider_moved)
 
 
-# def test_ui_line_double_slider_2d(interactive=False):
-#     line_double_slider_2d_horizontal_test = ui.LineDoubleSlider2D(
-#         center=(300, 300),
-#         shape="disk",
-#         outer_radius=15,
-#         min_value=-10,
-#         max_value=10,
-#         initial_values=(-10, 10),
-#     )
-#     npt.assert_equal(line_double_slider_2d_horizontal_test.handles[0].size, (30, 30))
-#     npt.assert_equal(line_double_slider_2d_horizontal_test.left_disk_value, -10)
-#     npt.assert_equal(line_double_slider_2d_horizontal_test.right_disk_value, 10)
-
-#     line_double_slider_2d_vertical_test = ui.LineDoubleSlider2D(
-#         center=(300, 300),
-#         shape="disk",
-#         outer_radius=15,
-#         min_value=-10,
-#         max_value=10,
-#         initial_values=(-10, 10),
-#     )
-#     npt.assert_equal(line_double_slider_2d_vertical_test.handles[0].size, (30, 30))
-#     npt.assert_equal(line_double_slider_2d_vertical_test.bottom_disk_value, -10)
-#     npt.assert_equal(line_double_slider_2d_vertical_test.top_disk_value, 10)
-
-#     if interactive:
-#         show_manager = window.ShowManager(
-#             size=(600, 600), title="FURY Line Double Slider"
-#         )
-#         show_manager.scene.add(line_double_slider_2d_horizontal_test)
-#         show_manager.scene.add(line_double_slider_2d_vertical_test)
-#         show_manager.start()
-
-#     line_double_slider_2d_horizontal_test = ui.LineDoubleSlider2D(
-#         center=(300, 300),
-#         shape="square",
-#         handle_side=5,
-#         orientation="horizontal",
-#         initial_values=(50, 40),
-#     )
-#     npt.assert_equal(line_double_slider_2d_horizontal_test.handles[0].size, (5, 5))
-#     npt.assert_equal(line_double_slider_2d_horizontal_test.left_disk_value, 39)
-#     npt.assert_equal(line_double_slider_2d_horizontal_test.right_disk_value, 40)
-#     npt.assert_equal(line_double_slider_2d_horizontal_test.left_disk_ratio, 0.39)
-#     npt.assert_equal(line_double_slider_2d_horizontal_test.right_disk_ratio, 0.4)
-
-#     line_double_slider_2d_vertical_test = ui.LineDoubleSlider2D(
-#         center=(300, 300),
-#         shape="square",
-#         handle_side=5,
-#         orientation="vertical",
-#         initial_values=(50, 40),
-#     )
-#     npt.assert_equal(line_double_slider_2d_vertical_test.handles[0].size, (5, 5))
-#     npt.assert_equal(line_double_slider_2d_vertical_test.bottom_disk_value, 39)
-#     npt.assert_equal(line_double_slider_2d_vertical_test.top_disk_value, 40)
-#     npt.assert_equal(line_double_slider_2d_vertical_test.bottom_disk_ratio, 0.39)
-#     npt.assert_equal(line_double_slider_2d_vertical_test.top_disk_ratio, 0.4)
-
-#     with npt.assert_raises(ValueError):
-#         ui.LineDoubleSlider2D(orientation="Not_hor_not_vert")
-
-#     if interactive:
-#         show_manager = window.ShowManager(
-#             size=(600, 600), title="FURY Line Double Slider"
-#         )
-#         show_manager.scene.add(line_double_slider_2d_horizontal_test)
-#         show_manager.scene.add(line_double_slider_2d_vertical_test)
-#         show_manager.start()
-
-
-# def test_ui_2d_line_double_slider_hooks(recording=False):
-#     global changed, value_changed, slider_moved
-
-#     filename = "test_ui_line_double_slider_2d_hooks"
-#     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-#     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
-
-#     line_double_slider_2d = ui.LineDoubleSlider2D(center=(300, 300))
-
-#     event_counter = EventCounter()
-#     event_counter.monitor(line_double_slider_2d)
-
-#     show_manager = window.ShowManager(
-#         size=(600, 600), title="FURY Line Double Slider hooks"
-#     )
-
-#     # counters for the line double slider's changes
-#     changed = value_changed = slider_moved = 0
-
-#     def on_line_double_slider_change(slider):
-#         global changed
-#         changed += 1
-
-#     def on_line_double_slider_moved(slider):
-#         global slider_moved
-#         slider_moved += 1
-
-#     def on_line_double_slider_value_changed(slider):
-#         global value_changed
-#         value_changed += 1
-
-#     line_double_slider_2d.on_change = on_line_double_slider_change
-#     line_double_slider_2d.on_moving_slider = on_line_double_slider_moved
-#     line_double_slider_2d.on_value_changed = on_line_double_slider_value_changed
-
-#     for i in range(50, -1, -1):
-#         line_double_slider_2d.left_disk_value = i
-#         line_double_slider_2d.right_disk_value = 100 - i
-
-#     show_manager.scene.add(line_double_slider_2d)
-
-#     if recording:
-#         show_manager.record_events_to_file(recording_filename)
-#         event_counter.save(expected_events_counts_filename)
-
-#     else:
-#         show_manager.play_events_from_file(recording_filename)
-#         expected = EventCounter.load(expected_events_counts_filename)
-#         event_counter.check_counts(expected)
-
-#     assert_greater(changed, 0)
-#     assert_greater(value_changed, 0)
-#     assert_greater(slider_moved, 0)
-#     assert_equal(changed, value_changed + slider_moved)
-
-
 # def test_ui_ring_slider_2d(recording=False):
 #     filename = "test_ui_ring_slider_2d"
 #     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
@@ -686,68 +766,6 @@ def test_line_slider_2d_visibility_propagation():
 #     assert_greater(value_changed, 0)
 #     assert_greater(slider_moved, 0)
 #     assert_equal(changed, value_changed + slider_moved)
-
-
-# def test_ui_range_slider(interactive=False):
-#     range_slider_test_horizontal = ui.RangeSlider(shape="square")
-#     range_slider_test_vertical = ui.RangeSlider(shape="square", orientation="vertical")  # noqa: E501
-
-#     if interactive:
-#         show_manager = window.ShowManager(
-#             size=(600, 600), title="FURY Line Double Slider"
-#         )
-#         show_manager.scene.add(range_slider_test_horizontal)
-#         show_manager.scene.add(range_slider_test_vertical)
-#         show_manager.start()
-
-
-# def test_ui_slider_value_range():
-#     with npt.assert_no_warnings():
-#         # LineSlider2D
-#         line_slider = ui.LineSlider2D(min_value=0, max_value=0)
-#         assert_equal(line_slider.value, 0)
-#         assert_equal(line_slider.min_value, 0)
-#         assert_equal(line_slider.max_value, 0)
-#         line_slider.value = 100
-#         assert_equal(line_slider.value, 0)
-#         line_slider.value = -100
-#         assert_equal(line_slider.value, 0)
-
-#         line_slider = ui.LineSlider2D(min_value=0, max_value=100)
-#         line_slider.value = 105
-#         assert_equal(line_slider.value, 100)
-#         line_slider.value = -100
-#         assert_equal(line_slider.value, 0)
-
-#         # LineDoubleSlider2D
-#         line_double_slider = ui.LineDoubleSlider2D(min_value=0, max_value=0)
-#         assert_equal(line_double_slider.left_disk_value, 0)
-#         assert_equal(line_double_slider.right_disk_value, 0)
-#         line_double_slider.left_disk_value = 100
-#         assert_equal(line_double_slider.left_disk_value, 0)
-#         line_double_slider.right_disk_value = -100
-#         assert_equal(line_double_slider.right_disk_value, 0)
-
-#         line_double_slider = ui.LineDoubleSlider2D(min_value=50, max_value=100)
-#         line_double_slider.right_disk_value = 150
-#         assert_equal(line_double_slider.right_disk_value, 100)
-#         line_double_slider.left_disk_value = -150
-#         assert_equal(line_double_slider.left_disk_value, 50)
-
-#         # RingSlider2D
-#         ring_slider = ui.RingSlider2D(initial_value=0, min_value=0, max_value=0)
-#         assert_equal(ring_slider.value, 0)
-#         assert_equal(ring_slider.previous_value, 0)
-#         ring_slider.value = 180
-#         assert_equal(ring_slider.value, 0)
-#         ring_slider.value = -180
-#         assert_equal(ring_slider.value, 0)
-
-#         # RangeSlider
-#         range_slider_2d = ui.RangeSlider(min_value=0, max_value=0)
-#         assert_equal(range_slider_2d.value_slider.value, 0)
-#         range_slider_2d.value_slider.value = 100
-#         assert_equal(range_slider_2d.value_slider.value, 0)
 
 
 # def test_ui_option(interactive=False):

@@ -10,10 +10,10 @@ __all__ = [
     "TexturedButton2D",
     "TextButton2D",
     "LineSlider2D",
+    "LineDoubleSlider2D",
+    "RangeSlider",
     #     "TextBox2D",
-    #     "LineDoubleSlider2D",
     #     "RingSlider2D",
-    #     "RangeSlider",
     #     "Checkbox",
     #     "Option",
     #     "RadioButton",
@@ -48,7 +48,13 @@ __all__ = [
 from .containers import Panel2D
 from .context import UIContext
 from .core import UI, Anchor, Disk2D, Rectangle2D, TextBlock2D
-from .elements import LineSlider2D, TextButton2D, TexturedButton2D
+from .elements import (
+    LineDoubleSlider2D,
+    LineSlider2D,
+    RangeSlider,
+    TextButton2D,
+    TexturedButton2D,
+)
 
 # from .elements import (
 #     Card2D,
