@@ -28,61 +28,6 @@ with updating pydata-theme, I had to change some styles because dark mode was in
   color: var(--colorPrimaryDark);
 }
 
-/* ── Version switcher on dark navbar ── */
-.version-switcher__button {
-  color: rgba(255,255,255,0.9) !important;
-  background: rgba(255,255,255,0.1) !important;
-  border: 1px solid rgba(255,255,255,0.28) !important;
-  border-radius: 8px !important;
-  font-family: "Inter", sans-serif !important;
-  font-size: 0.8rem !important;
-  padding: 0.3rem 0.8rem !important;
-  transition: background 0.2s, border-color 0.2s !important;
-}
-.version-switcher__button:hover,
-.version-switcher__button:focus {
-  background: rgba(255,255,255,0.18) !important;
-  border-color: rgba(255,255,255,0.5) !important;
-  color: #fff !important;
-}
-.version-switcher__button::after {
-  border-top-color: rgba(255,255,255,0.8) !important;
-}
-/* Dropdown menu stays readable */
-.version-switcher__menu {
-  font-family: "Inter", sans-serif !important;
-  font-size: 0.875rem !important;
-  border-radius: 8px !important;
-  border: 1px solid rgba(0,0,0,0.1) !important;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
-  overflow: hidden;
-}
-.version-switcher__menu .list-group-item {
-  padding: 0.5rem 1rem !important;
-  transition: background 0.15s;
-}
-.version-switcher__menu .list-group-item:hover {
-  background: rgba(153,0,0,0.07) !important;
-}
-.version-switcher__menu .list-group-item.active {
-  background: rgb(153,0,0) !important;
-  color: #fff !important;
-  border-color: rgb(153,0,0) !important;
-}
-
-/* ── Theme-switcher icon on dark navbar ── */
-.theme-switch-button .theme-switch {
-  color: rgba(255,255,255,0.85) !important;
-}
-
-/* ── GitHub icon on dark navbar ── */
-.navbar-icon-links a.nav-link {
-  color: rgba(255,255,255,0.85) !important;
-}
-.navbar-icon-links a.nav-link:hover {
-  color: #fff !important;
-}
-
 /* For mobile version color handling */
 @media screen and (max-width: 960px) {
   .navbar-nav li a {
