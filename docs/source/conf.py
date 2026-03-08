@@ -16,6 +16,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+from datetime import datetime
 import os
 import re
 import sys
@@ -85,7 +86,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "FURY"
-copyright = "2018-2025, FURY"
+copyright = f"2018-{datetime.now().year}, FURY"
 author = "FURY"
 
 # The version info for the project you're documenting, acts as replacement for

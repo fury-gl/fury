@@ -101,6 +101,7 @@
 
 .fury-footer__col ul li a {
   color: rgba(255,255,255,0.8);
+  font-size: 1.3em;
   text-decoration: none;
   transition: color 0.15s;
 }
@@ -117,7 +118,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 3rem 0.9rem;
+  padding: 40px 0;
   border-top: 1px solid rgba(255,255,255,0.12);
   font-size: 0.875rem;
   color: rgba(255,255,255,0.80);
