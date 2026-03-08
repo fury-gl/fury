@@ -17,7 +17,7 @@
     <li class="nav-item ">
         <a class="nav-link" href="{{ pathto('community') }}">Community</a>
     </li>
-    {% for external_link in theme_external_links %}e
+    {% for external_link in theme_external_links %}
     <li class="nav-item">
         <a class="nav-link nav-external" href="{{ external_link.url }}">{{ _(external_link.name) }}<i class="fas fa-external-link-alt"></i></a>
     </li>
