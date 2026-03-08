@@ -992,11 +992,11 @@ class TextBlock2D(UI):
         self.have_bg = bool(bg_color)
         self.color = color
         self.background_color = bg_color
-        self.font_family = font_family
         self.bold = bold
         self.italic = italic
-        self.message = text
+        self.font_family = font_family
         self.font_size = font_size
+        self.message = text
 
         self.update_bounding_box()
 
@@ -1112,6 +1112,7 @@ class TextBlock2D(UI):
             Text font size.
         """
         self.actor.font_size = size
+        self._refresh_text_layout()
         if self.dynamic_bbox:
             self.update_bounding_box()
 
@@ -1136,6 +1137,7 @@ class TextBlock2D(UI):
             The font family.
         """
         self.actor.family = family
+        self._refresh_text_layout()
         if self.dynamic_bbox:
             self.update_bounding_box()
 
@@ -1371,6 +1373,14 @@ class TextBlock2D(UI):
     def _update_actors_position(self):
         """Update the position of the internal actors."""
         self.update_bounding_box()
+
+    def _refresh_text_layout(self):
+        """Force recalculation of the text bounding box.
+
+        Re-sets the markdown text so that pygfx recomputes its internal
+        layout metrics after property changes like font_size or font_family.
+        """
+        self.actor.set_markdown(self.get_formatted_text(self._message))
 
     def get_text_actor_size(self):
         """Get the rendered size of the text actor.

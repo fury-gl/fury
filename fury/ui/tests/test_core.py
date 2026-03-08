@@ -464,6 +464,41 @@ def test_textblock2d_resize():
     npt.assert_equal(tb.boundingbox[3] - tb.boundingbox[1], new_size[1])
 
 
+def test_textblock2d_text_positioning():
+    """Test that text actor size reflects font_size and positioning is correct.
+
+    Regression test for https://github.com/fury-gl/fury/issues/838.
+    pygfx Text._aabb was not recalculated when font_size was changed after
+    construction, causing get_text_actor_size() to return stale values
+    and misposition text within the bounding box.
+    """
+    tb = ui.TextBlock2D(text="HI", size=(300, 150), font_size=80)
+    w, h = tb.get_text_actor_size()
+
+    # Text actor size should scale with font_size, not stay at default (~12px)
+    assert w > 50, f"Text width {w} too small for font_size=80"
+    assert h > 50, f"Text height {h} too small for font_size=80"
+
+    # Changing font_size dynamically should update text actor size
+    tb.font_size = 40
+    w2, h2 = tb.get_text_actor_size()
+    assert w2 < w, "Halving font_size should reduce text width"
+    assert h2 < h, "Halving font_size should reduce text height"
+
+    # Left/top justification: actor x should be offset inward by half text width
+    tb_lt = ui.TextBlock2D(
+        text="HI",
+        size=(300, 150),
+        font_size=60,
+        position=(100, 100),
+        justification="left",
+        vertical_justification="top",
+    )
+    text_w, _ = tb_lt.get_text_actor_size()
+    expected_x = tb_lt.boundingbox[0] + text_w // 2
+    npt.assert_almost_equal(tb_lt.actor.local.x, expected_x)
+
+
 def test_textblock2d_visual_snapshot():
     """
     Visual test for TextBlock2D.
