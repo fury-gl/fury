@@ -28,38 +28,6 @@ with updating pydata-theme, I had to change some styles because dark mode was in
   color: var(--colorPrimaryDark);
 }
 
-/* ── Search button on dark navbar ── */
-.search-button__button {
-  color: rgba(255,255,255,0.9) !important;
-  background: rgba(255,255,255,0.1) !important;
-  border: 1px solid rgba(255,255,255,0.28) !important;
-  border-radius: 8px !important;
-  font-family: "Inter", sans-serif !important;
-  font-size: 0.8rem !important;
-  padding: 0.3rem 0.8rem !important;
-  display: inline-flex !important;
-  align-items: center;
-  gap: 0.4rem;
-  transition: background 0.2s, border-color 0.2s !important;
-  white-space: nowrap;
-}
-.search-button__button:hover {
-  background: rgba(255,255,255,0.18) !important;
-  border-color: rgba(255,255,255,0.5) !important;
-}
-/* Ctrl+K kbd pills — white, only on the dark red navbar */
-.bd-header .kbd-shortcut__modifier,
-.bd-header .search-button__kbd-shortcut kbd {
-  background: rgba(255,255,255,0.15) !important;
-  border: 1px solid rgba(255,255,255,0.3) !important;
-  color: rgba(255,255,255,0.9) !important;
-  border-radius: 4px !important;
-  font-size: 0.68rem !important;
-  padding: 0.1em 0.45em !important;
-  font-family: "Inter", sans-serif !important;
-  line-height: 1.6 !important;
-}
-
 /* ── Version switcher on dark navbar ── */
 .version-switcher__button {
   color: rgba(255,255,255,0.9) !important;
