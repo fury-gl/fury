@@ -1007,6 +1007,9 @@ class TextBlock2D(UI):
         )
         self.background = Rectangle2D()
         self.handle_events(self.actor)
+        self.background.on_left_mouse_button_pressed = (
+            lambda event: self.on_left_mouse_button_pressed(event)
+        )
 
     def resize(self, size):
         """Resize the TextBlock2D bounding box.
@@ -1016,7 +1019,7 @@ class TextBlock2D(UI):
         size : (int, int)
             The new (width, height) in pixels.
         """
-        self.actor.max_width = size[1]
+        self.actor.max_width = size[0]
         self.update_bounding_box(size=size)
 
     def update_layout(self):

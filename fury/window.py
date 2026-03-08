@@ -650,6 +650,9 @@ class ShowManager:
             EventType.POINTER_UP,
             EventType.POINTER_MOVE,
         )
+        self.renderer.add_event_handler(
+            self._global_key_handler, EventType.KEY_DOWN, EventType.KEY_UP
+        )
 
         self._total_screens = 0
         self._screen_config = screen_config
@@ -702,6 +705,17 @@ class ShowManager:
             self._drag_target = None
         elif event.type == EventType.POINTER_MOVE and self._is_dragging:
             self._handle_drag(event)
+
+    def _global_key_handler(self, event):
+        """Handle global key events by forwarding them to the active UI element.
+
+        Parameters
+        ----------
+        event : KeyboardEvent
+            The PyGfx keyboard event object.
+        """
+        if UIContext.active_ui:
+            UIContext.active_ui.on_key_press(event)
 
     def _screen_setup(self, scene, camera, controller, camera_light):
         """Prepare scene, camera, controller, and light lists for screen creation.
@@ -850,9 +864,15 @@ class ShowManager:
             The PyGfx key event object."""
 
         if event.type == EventType.KEY_DOWN:
-            self._key_long_press = asyncio.create_task(
-                self._handle_key_long_press(event)
-            )
+            if self._key_long_press is not None:
+                return
+            try:
+                loop = asyncio.get_running_loop()
+                self._key_long_press = loop.create_task(
+                    self._handle_key_long_press(event)
+                )
+            except RuntimeError:
+                pass
         elif self._key_long_press is not None:
             self._key_long_press.cancel()
             self._key_long_press = None

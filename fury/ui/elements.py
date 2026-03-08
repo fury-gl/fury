@@ -35,6 +35,7 @@ from fury.lib import (
     plane_geometry,
 )
 from fury.material import _create_mesh_material
+from fury.ui.context import UIContext
 from fury.ui.core import UI, Anchor, Button2D, Disk2D, Rectangle2D, TextBlock2D
 
 
@@ -918,6 +919,7 @@ class TextBox2D(UI):
             self.init = False
             self.caret_pos = 0
         self._has_focus = True
+        UIContext.active_ui = self.text
         self.render_text()
 
     def left_button_press(self, event):
@@ -940,6 +942,8 @@ class TextBox2D(UI):
         """
         key = getattr(event, "key", None)
         key_char = getattr(event, "key_char", "")
+        if not key_char and key and len(key) == 1:
+            key_char = key
         is_done = self.handle_character(key, key_char)
         if is_done:
             self._has_focus = False
