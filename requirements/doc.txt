@@ -8,3 +8,9 @@ tomli; python_version < "3.11"
 sphinx-copybutton
 sphinx-gallery>=0.10.0
 pydata-sphinx-theme==0.15.2
+dipy
+nibabel
+matplotlib>=3.9.0
+PySide6
+jupyter-rfb
+imgui_bundle; python_version >= "3.12"

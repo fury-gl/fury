@@ -54,11 +54,10 @@ scene.add(btn)
 ###############################################################################
 # Starting the ShowManager
 
-if __name__ == "__main__":
-    current_size = (700, 700)
-    show_manager = ShowManager(
-        scene=scene,
-        size=current_size,
-        title="FURY 2.0: Button2D Example",
-    )
-    show_manager.start()
+current_size = (700, 700)
+show_manager = ShowManager(
+    scene=scene,
+    size=current_size,
+    title="FURY Button2D Example",
+)
+show_manager.start()

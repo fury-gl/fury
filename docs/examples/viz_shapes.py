@@ -76,11 +76,10 @@ disk.on_right_mouse_button_pressed = disk_right_button_pressed
 scene.add(rect)
 scene.add(disk)
 
-if __name__ == "__main__":
-    current_size = (800, 800)
-    show_manager = ShowManager(
-        scene=scene,
-        size=current_size,
-        title="FURY Shapes Example",
-    )
-    show_manager.start()
+current_size = (800, 800)
+show_manager = ShowManager(
+    scene=scene,
+    size=current_size,
+    title="FURY Shapes Example",
+)
+show_manager.start()

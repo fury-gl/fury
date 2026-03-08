@@ -24,6 +24,7 @@ Contributors
 ------------
 
 * Adam Rybinski
+* Aditya Gupta
 * Aju100
 * Alexandre Gauvin
 * Aman Soni
@@ -44,6 +45,7 @@ Contributors
 * Eleftherios Garyfallidis
 * Enes Albay
 * Etienne St-Onge
+* Faris Abouagour
 * Filipi Nascimento Silva
 * Francois Rheault
 * Frank Cerasoli
@@ -81,6 +83,7 @@ Contributors
 * Naman Bansal
 * Nasim Anousheh
 * Omar Ocegueda
+* Pedamallu Umesh Gupta
 * Pietro Astolfi
 * Praneeth Shetty
 * Prashil

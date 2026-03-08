@@ -202,7 +202,10 @@ def fetch_contributor_stats(project="fury-gl/fury"):
 
     cumulative_commits = 0
     desired_keys = ["login", "avatar_url", "html_url"]
-    with open(os.path.join(os.path.dirname(__file__), "..", CONTRIBUTORS_FILE)) as f:
+    with open(
+        os.path.join(os.path.dirname(__file__), "..", CONTRIBUTORS_FILE),
+        encoding="utf-8",
+    ) as f:
         extra_info = json.load(f)
         extra_info = extra_info["team"] + extra_info["core_team"]
 
@@ -479,7 +482,10 @@ def version_compare(current_version, version_number, op="eq", all_versions=None)
 
 
 def username_to_fullname(all_authors):
-    with open(os.path.join(os.path.dirname(__file__), "..", CONTRIBUTORS_FILE)) as f:
+    with open(
+        os.path.join(os.path.dirname(__file__), "..", CONTRIBUTORS_FILE),
+        encoding="utf-8",
+    ) as f:
         extra_info = json.load(f)
         extra_info = extra_info["team"] + extra_info["core_team"]
         extra_info = {i["username"]: i["fullname"] for i in extra_info}
@@ -501,7 +507,7 @@ def github_stats(**kwargs):
         version = kwargs.get("version", "vx.x.x")
         fname = "releasev" + version + ".rst"
         fpath = os.path.join(os.path.dirname(__file__), "..", "release_notes", fname)
-        f = open(fpath, "w")
+        f = open(fpath, "w", encoding="utf-8")
         orig_stdout = sys.stdout
         sys.stdout = f
         print(".. _{}".format(fname.replace(".rst", ":")))

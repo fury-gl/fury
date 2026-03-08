@@ -92,7 +92,7 @@ def update_authors(*, file_path="AUTHORS.rst"):
     """
     print(f"--- Updating {file_path} file... ---")
     # Read the content of the authors.rst file
-    with open(file_path, "r") as file:
+    with open(file_path, "r", encoding="utf-8") as file:
         lines = file.readlines()
 
     # Find the index of the "Contributors" line
@@ -128,7 +128,7 @@ def update_authors(*, file_path="AUTHORS.rst"):
     lines[contributors_index + 1 : contributors_index + 1] = authors
 
     # Write the updated content back to the file
-    with open(file_path, "w", newline="\n") as file:
+    with open(file_path, "w", encoding="utf-8", newline="\n") as file:
         file.writelines(lines)
 
     run("git diff AUTHORS.rst")
@@ -150,7 +150,7 @@ def update_release_history(
     """
     print("--- Updating release-history.rst file... ---")
     # Read the content of the release-history.rst file
-    with open(file_path, "r") as file:
+    with open(file_path, "r", encoding="utf-8") as file:
         lines = file.readlines()
 
     # Find the index to insert the new version
@@ -183,7 +183,7 @@ def update_release_history(
     # Insert the authors after the "Contributors" line
     lines[insert_index:insert_index] = release_notes
     # Write the updated content back to the file
-    with open(file_path, "w", newline="\n") as file:
+    with open(file_path, "w", encoding="utf-8", newline="\n") as file:
         file.writelines(lines)
 
     run("git diff docs/source/release-history.rst")
@@ -193,7 +193,7 @@ def check_license_year():
     """Check and update the LICENSE file with the current year."""
     print("--- Checking LICENSE year range... ---")
     current_year = datetime.datetime.now().year
-    with open("LICENSE", "r") as f:
+    with open("LICENSE", "r", encoding="utf-8") as f:
         lines = f.readlines()
     for i, line in enumerate(lines):
         if "Copyright (c)" in line:
@@ -203,7 +203,7 @@ def check_license_year():
                     f"Copyright (c) 2014–{current_year}, FURY - Free Unified Rendering "
                     "in Python. All rights reserved.\n"
                 )
-                with open("LICENSE", "w", newline="\n") as f_out:
+                with open("LICENSE", "w", encoding="utf-8", newline="\n") as f_out:
                     f_out.writelines(lines)
                 run("git diff LICENSE")
             else:
@@ -211,20 +211,27 @@ def check_license_year():
             break
 
 
-def create_release_announcement(*, author="skoudoro", version="0.11.0"):
+def create_release_announcement(
+    *, author="skoudoro", name="Serge Koudoro", version="0.11.0"
+):
     """Create a release announcement blog post.
 
     Parameters
     ----------
     author : str, optional
         The author of the blog post.
+    name : str, optional
+        The name of the author.
     version : str, optional
         The version of the release.
     """
     print("--- Creating release announcement blog post... ---")
     username = input(f"Enter blog post author (e.g., {author}): ").strip()
     if username:
-        author = username
+        author_id = username
+    name = input(f"Enter blog post author name (e.g., {name}): ").strip()
+    if name:
+        author_name = name
     today = datetime.date.today()
     year = today.year
     posts_dir = os.path.join("docs", "source", "posts")
@@ -236,12 +243,15 @@ def create_release_announcement(*, author="skoudoro", version="0.11.0"):
     file_name = f"{today.strftime('%Y-%m-%d')}-release-announcement.rst"
     file_path = os.path.join(year_dir, file_name)
 
+    release_title = f"FURY {version} Released"
+    underline = "=" * len(release_title)
+    release_title = f"{release_title}\n{underline}\n"
+
     content = f"""
-FURY {version} Released
-====================
+{release_title}
 
 .. post:: {today.strftime("%B %d, %Y")}
-   :author: {author}
+   :author: {author_id}
    :tags: fury
    :category: release
 
@@ -284,10 +294,10 @@ We would like to thanks to :ref:`all contributors <community>` for this release:
 
 On behalf of the :ref:`FURY developers <community>`,
 
-Serge K.
+- {author_name}
 """  # noqa
 
-    with open(file_path, "w") as f:
+    with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
 
     print(f"→ Created blog post at {file_path}")
