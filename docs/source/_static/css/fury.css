@@ -1354,7 +1354,7 @@ a.article-title:hover {
 }
 #footer {
   padding: 40px 0;
-  color: rgba(255,255,255,0.6);
+  color: rgba(255,255,255,0.85);
   font-family: Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
   position: relative;
   background: #990000;  /*171f26; */

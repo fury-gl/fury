@@ -32,7 +32,6 @@
 .fury-footer__logo {
   height: 52px;
   width: auto;
-  filter: brightness(0) invert(1);
 }
 
 .fury-footer__name {
@@ -118,10 +117,10 @@
   justify-content: space-between;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.9rem 3rem;
+  padding: 0.5rem 3rem 0.9rem;
   border-top: 1px solid rgba(255,255,255,0.12);
-  font-size: 0.78rem;
-  color: rgba(255,255,255,0.55);
+  font-size: 0.875rem;
+  color: rgba(255,255,255,0.80);
   max-width: 1200px;
   margin: 0 auto;
 }

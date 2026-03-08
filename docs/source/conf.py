@@ -16,7 +16,6 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-from datetime import datetime
 import os
 import re
 import sys
@@ -86,7 +85,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "FURY"
-copyright = f"2018-{datetime.now().year}, FURY"
+copyright = "2018-2025, FURY"
 author = "FURY"
 
 # The version info for the project you're documenting, acts as replacement for
@@ -190,9 +189,7 @@ html_favicon = "_static/images/logo.ico"
 # Log:3/3/24 ~ search-field is not necessary in sidebar anymore,
 # it is in the Navbar. Also with this update it can be easily accessed,
 # with the shortcut, which was not working previously.
-html_sidebars = {
-    "**": ["globaltoc.html"]
-}
+html_sidebars = {"**": ["globaltoc.html"]}
 
 # ghissue config
 github_project_url = "https://github.com/fury-gl/fury"
