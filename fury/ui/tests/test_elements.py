@@ -232,6 +232,184 @@ def test_line_slider_2d_visibility_propagation():
         assert actor.visible is True
 
 
+# ============================================================
+# LineDoubleSlider2D tests
+# ============================================================
+
+
+def test_line_double_slider_2d_initialization_disk():
+    """Test LineDoubleSlider2D with disk handles."""
+    slider = ui.LineDoubleSlider2D(
+        initial_values=(-10, 10),
+        min_value=-10,
+        max_value=10,
+        shape="disk",
+        outer_radius=15,
+        orientation="horizontal",
+    )
+
+    npt.assert_equal(slider.left_disk_value, -10)
+    npt.assert_equal(slider.right_disk_value, 10)
+    npt.assert_almost_equal(slider.left_disk_ratio, 0.0)
+    npt.assert_almost_equal(slider.right_disk_ratio, 1.0)
+    assert isinstance(slider.handles[0], ui.Disk2D)
+    assert isinstance(slider.handles[1], ui.Disk2D)
+    npt.assert_equal(slider.handles[0].size, (30, 30))
+    npt.assert_equal(slider.handles[1].size, (30, 30))
+
+
+def test_line_double_slider_2d_initialization_square():
+    """Test LineDoubleSlider2D with square handles."""
+    slider = ui.LineDoubleSlider2D(
+        initial_values=(25, 75),
+        min_value=0,
+        max_value=100,
+        shape="square",
+        handle_side=12,
+        orientation="horizontal",
+    )
+
+    npt.assert_equal(slider.left_disk_value, 25)
+    npt.assert_equal(slider.right_disk_value, 75)
+    assert isinstance(slider.handles[0], ui.Rectangle2D)
+    assert isinstance(slider.handles[1], ui.Rectangle2D)
+    npt.assert_equal(slider.handles[0].size, (12, 12))
+
+
+def test_line_double_slider_2d_value_clamping():
+    """Verify values are clamped to [min_value, max_value]."""
+    slider = ui.LineDoubleSlider2D(
+        min_value=0, max_value=100, initial_values=(0, 100)
+    )
+
+    # Right disk beyond max should clamp.
+    slider.right_disk_value = 150
+    npt.assert_equal(slider.right_disk_value, 100)
+
+    # Left disk below min should clamp.
+    slider.left_disk_value = -50
+    npt.assert_equal(slider.left_disk_value, 0)
+
+
+def test_line_double_slider_2d_handle_constraints():
+    """Verify handle 0 cannot exceed handle 1 and vice versa."""
+    slider = ui.LineDoubleSlider2D(
+        min_value=0, max_value=100, initial_values=(30, 70)
+    )
+
+    # Try to move left handle past the right handle.
+    slider.left_disk_value = 80
+    assert slider.left_disk_value <= slider.right_disk_value
+
+    # Try to move right handle before the left handle.
+    slider.right_disk_value = 20
+    assert slider.right_disk_value >= slider.left_disk_value
+
+
+def test_line_double_slider_2d_value_ratio_sync():
+    """Test value ↔ ratio synchronization."""
+    slider = ui.LineDoubleSlider2D(
+        min_value=0, max_value=100, initial_values=(0, 100)
+    )
+
+    slider.left_disk_ratio = 0.5
+    npt.assert_almost_equal(slider.left_disk_value, 50)
+
+    slider.right_disk_value = 75
+    npt.assert_almost_equal(slider.right_disk_ratio, 0.75)
+
+
+def test_line_double_slider_2d_vertical():
+    """Test vertical orientation."""
+    slider = ui.LineDoubleSlider2D(
+        min_value=0,
+        max_value=100,
+        initial_values=(0, 100),
+        orientation="vertical",
+    )
+
+    npt.assert_equal(slider.orientation, "vertical")
+    npt.assert_equal(slider.bottom_disk_value, 0)
+    npt.assert_equal(slider.top_disk_value, 100)
+
+    slider.bottom_disk_value = 25
+    npt.assert_equal(slider.bottom_disk_value, 25)
+    npt.assert_almost_equal(slider.bottom_disk_ratio, 0.25)
+
+    slider.top_disk_ratio = 0.5
+    npt.assert_equal(slider.top_disk_value, 50)
+
+
+def test_line_double_slider_2d_text_formatting():
+    """Test text template formatting for both handles."""
+    template = "V:{value:.0f}"
+    slider = ui.LineDoubleSlider2D(
+        initial_values=(10, 90),
+        min_value=0,
+        max_value=100,
+        text_template=template,
+    )
+
+    npt.assert_equal(slider.texts[0].message, "V:10")
+    npt.assert_equal(slider.texts[1].message, "V:90")
+
+    slider.left_disk_value = 33
+    npt.assert_equal(slider.texts[0].message, "V:33")
+
+
+def test_line_double_slider_2d_callable_text_template():
+    """Test callable text template."""
+    def custom_template(slider):
+        return "Custom"
+
+    slider = ui.LineDoubleSlider2D(
+        initial_values=(10, 90),
+        text_template=custom_template,
+    )
+
+    npt.assert_equal(slider.texts[0].message, "Custom")
+    npt.assert_equal(slider.texts[1].message, "Custom")
+
+
+def test_line_double_slider_2d_callback_logic():
+    """Test callback hooks fire when values change."""
+    slider = ui.LineDoubleSlider2D(initial_values=(0, 100))
+
+    hooks = {"value_changed": 0, "change": 0}
+
+    def on_change(ui):
+        hooks["change"] += 1
+
+    def on_value_changed(ui):
+        hooks["value_changed"] += 1
+
+    slider.on_change = on_change
+    slider.on_value_changed = on_value_changed
+
+    slider.left_disk_value = 10
+    assert hooks["value_changed"] > 0
+    assert hooks["change"] > 0
+
+
+def test_line_double_slider_2d_visibility():
+    """Test visibility propagation to sub-components."""
+    slider = ui.LineDoubleSlider2D()
+
+    slider.set_visibility(False)
+    for actor in slider._get_actors():
+        assert actor.visible is False
+
+    slider.set_visibility(True)
+    for actor in slider._get_actors():
+        assert actor.visible is True
+
+
+def test_line_double_slider_2d_invalid_orientation():
+    """Test that invalid orientation raises ValueError."""
+    with npt.assert_raises(ValueError):
+        ui.LineDoubleSlider2D(orientation="diagonal")
+
+
 # def test_ui_textbox(recording=False):
 #     filename = "test_ui_textbox"
 #     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
