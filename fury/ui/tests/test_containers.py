@@ -112,6 +112,33 @@ def test_panel2d_add_remove_element():
         panel.remove_element(mock_child)
 
 
+def test_panel2d_no_border_actors_and_scene():
+    """Test Panel2D without borders can return actors and be added to a scene."""
+    panel = ui.Panel2D(size=(200, 200))
+
+    # _get_actors should work without borders
+    actors = panel.actors
+    assert len(actors) > 0
+
+    # _update_actors_position should work without borders
+    panel.set_position((10, 10))
+
+    # Adding to a scene should not raise
+    scene = window.Scene()
+    scene.add(panel)
+
+    # Adding child elements should also work
+    child = ui.Rectangle2D(size=(20, 20))
+    panel.add_element(child, (0.5, 0.5))
+    panel._update_actors_position()
+
+    # Border properties should not raise when has_border=False
+    assert panel.border_color == []
+    assert panel.border_width == []
+    panel.update_border_coords()
+    panel.resize((300, 300))
+
+
 def test_panel2d_z_ordering():
     """Test that internal Z-ordering is set correctly by _update_actors_position."""
     panel = ui.Panel2D(size=(100, 100), has_border=True, border_width=1)
