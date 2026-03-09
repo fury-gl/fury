@@ -38,13 +38,16 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering",
 ]
 
 dependencies = [
     "numpy>=1.15",
 	"scipy>=1.0",
-    "vtk>=9.1.0, <9.4.0",
+    "vtk>=9.1.0",
     "pillow>=5.4.1",
     "packaging >=17.0",
     "pygltflib>=1.15.3",
