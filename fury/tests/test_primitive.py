@@ -425,6 +425,58 @@ def test_prim_ring_vertices_and_triangles():
     )
 
 
+def test_normalize_geom_param():
+    import pytest
+
+    # Scalar float broadcasts to all centers
+    result = fp._normalize_geom_param(0.5, 3, "test")
+    npt.assert_array_equal(result, [0.5, 0.5, 0.5])
+    assert result.shape == (3,)
+
+    # Scalar int
+    result = fp._normalize_geom_param(2, 4, "test")
+    npt.assert_array_equal(result, [2.0, 2.0, 2.0, 2.0])
+
+    # Numpy scalar
+    result = fp._normalize_geom_param(np.float64(1.5), 2, "test")
+    npt.assert_array_equal(result, [1.5, 1.5])
+
+    # Single-element list broadcasts
+    result = fp._normalize_geom_param([0.7], 3, "test")
+    npt.assert_array_equal(result, [0.7, 0.7, 0.7])
+
+    # Single-element tuple broadcasts
+    result = fp._normalize_geom_param((0.7,), 3, "test")
+    npt.assert_array_equal(result, [0.7, 0.7, 0.7])
+
+    # Single-element ndarray broadcasts
+    result = fp._normalize_geom_param(np.array([0.7]), 3, "test")
+    npt.assert_array_equal(result, [0.7, 0.7, 0.7])
+
+    # Array of correct length returned as-is
+    result = fp._normalize_geom_param(np.array([1.0, 2.0, 3.0]), 3, "test")
+    npt.assert_array_equal(result, [1.0, 2.0, 3.0])
+
+    # List of correct length
+    result = fp._normalize_geom_param([1.0, 2.0], 2, "test")
+    npt.assert_array_equal(result, [1.0, 2.0])
+
+    # N=1 with scalar
+    result = fp._normalize_geom_param(0.5, 1, "test")
+    npt.assert_array_equal(result, [0.5])
+
+    # Wrong-size array raises ValueError with param name
+    with pytest.raises(ValueError, match="my_param"):
+        fp._normalize_geom_param(np.array([1.0, 2.0]), 3, "my_param")
+
+    with pytest.raises(ValueError, match="radius"):
+        fp._normalize_geom_param([1.0, 2.0, 3.0], 5, "radius")
+
+    # dtype is float64
+    result = fp._normalize_geom_param(1, 2, "test")
+    assert result.dtype == np.float64
+
+
 def test_prim_ring_error_handling():
     with npt.assert_raises(ValueError):
         fp.prim_ring(radial_segments=0)

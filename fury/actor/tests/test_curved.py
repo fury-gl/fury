@@ -424,6 +424,94 @@ def test_streamtube_geometry_min_max_bounds():
     )
 
 
+def test_cone_per_instance_geometry():
+    """Test cone actor with per-instance radii and height."""
+    centers = np.array([[0, 0, 0], [2, 0, 0], [4, 0, 0]])
+    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+
+    # Per-instance radii and height
+    radii = np.array([0.3, 0.5, 0.7])
+    heights = np.array([1.0, 1.5, 2.0])
+    cone_actor = actor.cone(centers=centers, colors=colors, radii=radii, height=heights)
+    assert cone_actor.prim_count == 3
+
+    # Verify geometry varies: per-instance vertex extents differ
+    verts = cone_actor.geometry.positions.view
+    n_verts_per = len(verts) // 3
+    extents = []
+    for i in range(3):
+        chunk = verts[i * n_verts_per : (i + 1) * n_verts_per] - centers[i]
+        extents.append(chunk[:, 0].max() - chunk[:, 0].min())
+    # Larger radii should yield wider extents
+    assert extents[0] < extents[1] < extents[2]
+
+    # Scalar (backward compat)
+    cone_actor_scalar = actor.cone(
+        centers=centers, colors=colors, radii=0.5, height=1.0
+    )
+    assert cone_actor_scalar.prim_count == 3
+
+    # Wrong-size array raises ValueError
+    with pytest.raises(ValueError, match="radii"):
+        actor.cone(
+            centers=centers,
+            colors=colors,
+            radii=np.array([0.3, 0.5]),
+        )
+
+    with pytest.raises(ValueError, match="height"):
+        actor.cone(
+            centers=centers,
+            colors=colors,
+            height=np.array([1.0, 1.5]),
+        )
+
+
+def test_cylinder_per_instance_geometry():
+    """Test cylinder actor with per-instance radii and height."""
+    centers = np.array([[0, 0, 0], [2, 0, 0], [4, 0, 0]])
+    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+
+    # Per-instance radii and height
+    radii = np.array([0.3, 0.5, 0.7])
+    heights = np.array([1.0, 1.5, 2.0])
+    cyl_actor = actor.cylinder(
+        centers=centers, colors=colors, radii=radii, height=heights
+    )
+    assert cyl_actor.prim_count == 3
+
+    # Verify geometry varies: per-instance vertex extents differ
+    verts = cyl_actor.geometry.positions.view
+    n_verts_per = len(verts) // 3
+    extents = []
+    for i in range(3):
+        chunk = verts[i * n_verts_per : (i + 1) * n_verts_per] - centers[i]
+        extents.append(chunk[:, 0].max() - chunk[:, 0].min())
+    # Larger radii should yield wider extents
+    assert extents[0] < extents[1] < extents[2]
+
+    # Scalar (backward compat)
+    cyl_actor_scalar = actor.cylinder(
+        centers=centers, colors=colors, radii=0.5, height=1.0
+    )
+    assert cyl_actor_scalar.prim_count == 3
+
+    # Wrong-size array raises ValueError
+    with pytest.raises(ValueError, match="radii"):
+        actor.cylinder(
+            centers=centers,
+            colors=colors,
+            radii=np.array([0.3, 0.5]),
+        )
+
+    with pytest.raises(ValueError, match="height"):
+        actor.cylinder(
+            centers=centers,
+            colors=colors,
+            height=np.array([1.0, 1.5]),
+        )
+
+
 def test_actor_from_primitive_wireframe():
     """Test wireframe and wireframe_thickness for primitive actors."""
     sphere_actor = actor.sphere(
