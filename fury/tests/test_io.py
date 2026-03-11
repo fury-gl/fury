@@ -2,7 +2,7 @@ import os
 from os.path import join as pjoin
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 
-# from PIL import Image
+from PIL import Image
 import numpy as np
 import numpy.testing as npt
 
@@ -58,6 +58,20 @@ def test_load_image_as_wgpu_texture_view_uses_show_manager_device():
     npt.assert_array_equal(texture_view.texture.size, (8, 8, 1))
     assert texture_view.texture._device is show_m.device
 
+def test_load_16bit_image():
+    with InTemporaryDirectory() as odir:
+        # Create a 16-bit grayscale image
+        data = np.random.randint(0, 65535, size=(64, 128), dtype=np.uint16)
+        fname_path = pjoin(odir, "test_16bit.png")
+
+        img = Image.fromarray(data)
+        img.save(fname_path)
+
+        # Load and verify shape is preserved (not flattened to 1D)
+        out_image = load_image(fname_path)
+        npt.assert_equal(out_image.ndim, 2)
+        npt.assert_equal(out_image.shape, (64, 128))
+        npt.assert_array_equal(out_image, data)
 
 # def test_save_and_load_polydata():
 #     l_ext = ["vtk", "fib", "ply", "xml"]
