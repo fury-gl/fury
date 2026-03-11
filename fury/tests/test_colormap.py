@@ -194,3 +194,83 @@ def test_color_converters():
         hsv_color = colormap.rgb2hsv(color)
         rgb_from_hsv_color = colormap.hsv2rgb(hsv_color)
         npt.assert_almost_equal(rgb_from_hsv_color, color)
+
+
+def test_normalize_colors():
+    from fury.colormap import normalize_colors
+
+    # [0, 255] RGB tuple
+    result = normalize_colors((255, 0, 0))
+    npt.assert_array_almost_equal(result, [[1.0, 0.0, 0.0]])
+    assert result.dtype == np.float32
+
+    # [0, 1] RGB tuple (backward compat)
+    result = normalize_colors((0.5, 0.5, 0.5))
+    npt.assert_array_almost_equal(result, [[0.5, 0.5, 0.5]])
+    assert result.dtype == np.float32
+
+    # [0, 255] ndarray
+    colors_255 = np.array([[255, 0, 0], [0, 255, 0]])
+    result = normalize_colors(colors_255)
+    expected = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+    npt.assert_array_almost_equal(result, expected)
+    assert result.shape == (2, 3)
+
+    # RGBA [0, 255]
+    result = normalize_colors((255, 0, 0, 128))
+    npt.assert_array_almost_equal(result, [[1.0, 0.0, 0.0, 128 / 255.0]])
+    assert result.shape == (1, 4)
+
+    # RGBA [0, 1]
+    result = normalize_colors((1.0, 0.0, 0.0, 0.5))
+    npt.assert_array_almost_equal(result, [[1.0, 0.0, 0.0, 0.5]])
+
+    # Hex string
+    result = normalize_colors("#FF0000")
+    npt.assert_array_almost_equal(result, [[1.0, 0.0, 0.0]])
+
+    # Hex list
+    result = normalize_colors(["#FF0000", "#00FF00"])
+    npt.assert_array_almost_equal(result, [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+    assert result.shape == (2, 3)
+
+    # n_points broadcasting
+    result = normalize_colors((255, 0, 0), n_points=5)
+    assert result.shape == (5, 3)
+    npt.assert_array_almost_equal(result[0], [1.0, 0.0, 0.0])
+    npt.assert_array_almost_equal(result[4], [1.0, 0.0, 0.0])
+
+    # None → default red
+    result = normalize_colors(None)
+    npt.assert_array_almost_equal(result, [[1.0, 0.0, 0.0]])
+
+    # Single color with n_points broadcasts (no error)
+    result = normalize_colors((255, 0, 0), n_points=3)
+    assert result.shape == (3, 3)
+
+    # Multiple colors mismatching n_points → ValueError
+    with pytest.raises(ValueError):
+        normalize_colors(np.array([[255, 0, 0], [0, 255, 0]]), n_points=5)
+
+    # Output dtype is always float32
+    result = normalize_colors(np.array([[0.1, 0.2, 0.3]], dtype=np.float64))
+    assert result.dtype == np.float32
+
+    # Black (0, 0, 0) passes through correctly
+    result = normalize_colors((0, 0, 0))
+    npt.assert_array_almost_equal(result, [[0.0, 0.0, 0.0]])
+
+    # Hex string with n_points broadcasting
+    result = normalize_colors("#FF0000", n_points=3)
+    assert result.shape == (3, 3)
+
+    # Hex list with n_points mismatch
+    with pytest.raises(ValueError):
+        normalize_colors(["#FF0000", "#00FF00"], n_points=5)
+
+    # Invalid channel count
+    with pytest.raises(ValueError):
+        normalize_colors((1, 2))
+
+    with pytest.raises(ValueError):
+        normalize_colors((1, 2, 3, 4, 5))

@@ -55,7 +55,9 @@ def square(
     directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the square.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
         The size of the square in each dimension. If a single value is provided,
         the same size will be used for all squares.
@@ -130,7 +132,9 @@ def star(
     directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the star.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
         The size of the star in each dimension. If a single value is
         provided, the same size will be used for all stars.
@@ -202,7 +206,9 @@ def disk(
     centers : ndarray, shape (N, 3)
         Disk positions.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     radii : float or ndarray (N,) or tuple, optional
         The radius of the disks, single value applies to all disks,
         while an array specifies a radius for each disk individually.
@@ -308,7 +314,9 @@ def triangle(
     directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the triangle.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
         The size of the triangle in each dimension. If a single value is provided,
         the same size will be used for all triangles.
@@ -379,7 +387,9 @@ def point(
     size : float, optional
         The size (diameter) of the points in logical pixels.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA values in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     material : str, optional
         The material type for the points.
         Options are 'basic', 'gaussian'.
@@ -410,30 +420,13 @@ def point(
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
-    if colors is None:
-        colors = np.array([1.0, 0.0, 0.0], dtype=float)
-    else:
-        colors = np.asarray(colors, dtype=float)
-    if colors.ndim == 1:
-        if colors.size not in (3, 4):
-            raise ValueError(
-                f"1D colors must have 3 or 4 channels; got size {colors.size}"
-            )
-        colors = np.tile(colors, (len(centers), 1))
-    elif colors.ndim == 2:
-        if colors.shape[1] not in (3, 4):
-            raise ValueError(
-                f"2D colors must have 3 or 4 channels; got shape {colors.shape}"
-            )
-        n_points = len(centers)
-        if colors.shape[0] not in (1, n_points):
-            raise ValueError(
-                f"colors must have 1 row or match number of points "
-                f"({n_points}); got {colors.shape[0]}"
-            )
+    from fury.colormap import normalize_colors
+
+    colors = normalize_colors(colors, n_points=len(centers))
+
     geo = buffer_to_geometry(
         positions=centers.astype("float32"),
-        colors=colors.astype("float32"),
+        colors=colors,
     )
 
     mat = _create_points_material(
@@ -469,7 +462,9 @@ def marker(
     size : float, optional
         The size (diameter) of the points in logical pixels.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA values in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     marker : str or MarkerShape, optional
         The shape of the marker.
         Options are "●": "circle", "+": "plus", "x": "cross", "♥": "heart",
@@ -501,9 +496,13 @@ def marker(
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
+    from fury.colormap import normalize_colors
+
+    colors = normalize_colors(colors, n_points=len(centers))
+
     geo = buffer_to_geometry(
         positions=centers.astype("float32"),
-        colors=colors.astype("float32"),
+        colors=colors,
     )
 
     mat = _create_points_material(
@@ -815,7 +814,9 @@ def ring(
     directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the ring.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
         The size of the ring in each dimension. If a single value is provided,
         the same size will be used for all rings.

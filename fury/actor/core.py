@@ -370,7 +370,9 @@ def actor_from_primitive(
     centers : ndarray, shape (N, 3)
         Primitive positions.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
         The size of the primitive in each dimension. If a single value is provided,
         the same size will be used for all primitives.
@@ -403,6 +405,12 @@ def actor_from_primitive(
         A mesh actor containing the generated primitive, with the specified
         material and properties.
     """
+    from fury.colormap import normalize_colors
+
+    if repeat_primitive:
+        colors = normalize_colors(colors, n_points=len(centers))
+    else:
+        colors = normalize_colors(colors)
 
     if repeat_primitive:
         res = fp.repeat_primitive(
@@ -484,7 +492,9 @@ def arrow(
     directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the arrow.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     height : float or ndarray, shape (N,), optional
         The total height of the arrow, including the shaft and tip. A single
         value applies to all arrows, while an array specifies a value per arrow.
@@ -800,7 +810,9 @@ def line(
     lines : list of ndarray of shape (P, 3) or ndarray of shape (N, P, 3)
         Lines points.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
     material : str, optional
@@ -827,6 +839,13 @@ def line(
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
+    from fury.colormap import normalize_colors
+
+    if colors is not None:
+        colors = normalize_colors(colors)
+        # Squeeze single-color back to 1D for line_buffer_separator compatibility
+        if colors.ndim == 2 and len(colors) == 1:
+            colors = colors[0]
 
     lines_positions, lines_colors = line_buffer_separator(lines, color=colors)
 

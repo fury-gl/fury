@@ -808,6 +808,97 @@ def hex_to_rgb(color):
     return np.array([r, g, b])
 
 
+def normalize_colors(colors, n_points=None):
+    """Normalize colors to float32 arrays in [0, 1] range.
+
+    Accepts colors in multiple formats and converts them to a consistent
+    float32 ndarray with values in [0, 1], suitable for the GPU pipeline.
+
+    Parameters
+    ----------
+    colors : tuple, list, ndarray, str, or None
+        Input colors. Supported formats:
+
+        - Hex string: ``"#FF0000"`` or list of hex strings.
+        - Numeric RGB ``[0, 255]``: values > 1.0 are divided by 255.
+        - Numeric RGB ``[0, 1]``: float values <= 1.0 pass through.
+        - RGBA variants of the above.
+        - ``None``: returns default red ``[[1.0, 0.0, 0.0]]``.
+    n_points : int, optional
+        Expected number of points. If given and a single color is provided,
+        it will be broadcast (tiled) to ``(n_points, C)``. If the number of
+        colors doesn't match ``n_points`` and isn't 1, a ``ValueError``
+        is raised.
+
+    Returns
+    -------
+    ndarray, shape (N, 3) or (N, 4), dtype float32
+        Normalized colors in [0, 1].
+    """
+    if colors is None:
+        colors = np.array([[1.0, 0.0, 0.0]], dtype=np.float32)
+        if n_points is not None:
+            colors = np.tile(colors, (n_points, 1))
+        return colors
+
+    # Handle hex strings
+    if isinstance(colors, str):
+        colors = np.array([hex_to_rgb(colors)], dtype=np.float32)
+        if n_points is not None:
+            colors = np.tile(colors, (n_points, 1))
+        return colors
+
+    if isinstance(colors, (list, tuple)) and len(colors) > 0:
+        if isinstance(colors[0], str):
+            colors = np.array([hex_to_rgb(c) for c in colors], dtype=np.float32)
+            if n_points is not None:
+                if len(colors) == 1:
+                    colors = np.tile(colors, (n_points, 1))
+                elif len(colors) != n_points:
+                    raise ValueError(
+                        f"Number of colors ({len(colors)}) must be 1 or match "
+                        f"n_points ({n_points})."
+                    )
+            return colors
+
+    # Numeric input
+    colors = np.asarray(colors, dtype=np.float64)
+
+    if colors.size == 0:
+        return colors.astype(np.float32).reshape(-1, 3)
+
+    # Ensure 2D; pass through higher-dimensional arrays with range normalization
+    if colors.ndim == 1:
+        if colors.size not in (3, 4):
+            raise ValueError(f"1D colors must have 3 or 4 elements; got {colors.size}.")
+        colors = colors.reshape(1, -1)
+    elif colors.ndim > 2:
+        if colors.max() > 1.0:
+            colors = colors / 255.0
+        return colors.astype(np.float32)
+
+    if colors.shape[1] not in (3, 4):
+        raise ValueError(f"colors must have 3 or 4 channels; got {colors.shape[1]}.")
+
+    # Detect [0, 255] range and normalize
+    if colors.max() > 1.0:
+        colors = colors / 255.0
+
+    colors = colors.astype(np.float32)
+
+    # Broadcasting
+    if n_points is not None:
+        if len(colors) == 1:
+            colors = np.tile(colors, (n_points, 1))
+        elif len(colors) != n_points:
+            raise ValueError(
+                f"Number of colors ({len(colors)}) must be 1 or match "
+                f"n_points ({n_points})."
+            )
+
+    return colors
+
+
 def rgb2hsv(rgb):
     """Convert RGB color values to HSV color space.
 

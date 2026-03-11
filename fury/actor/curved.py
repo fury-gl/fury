@@ -64,7 +64,9 @@ def sphere(
     centers : ndarray, shape (N, 3)
         Spheres positions.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        RGB or RGBA colors. When ``impostor=False``, accepts values in
+        [0, 255] (int), [0, 1] (float), or hex strings (e.g. "#FF0000").
+        When ``impostor=True`` (default), values must be in [0, 1].
     radii : float or ndarray, shape (N,), optional
         Sphere radius. Can be a single value for all spheres or an array of
         radii for each sphere.
@@ -189,7 +191,9 @@ def ellipsoid(
     lengths : ndarray (N, 3) or (3,) or tuple (3,), optional
         Scaling factors along each axis.
     colors : array-like or tuple, optional
-        RGB/RGBA colors for each ellipsoid.
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     opacity : float, optional
         Opacity of the ellipsoids. Takes values from 0 (fully transparent) to
         1 (opaque). If both `opacity` and RGBA are provided, the final alpha
@@ -321,7 +325,9 @@ def cylinder(
     centers : ndarray, shape (N, 3)
         Cylinder positions.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     height : float or ndarray, shape (N,), optional
         The height of the cylinder. A single value applies to all cylinders,
         while an array specifies a height for each cylinder individually.
@@ -444,7 +450,9 @@ def cone(
     centers : ndarray, shape (N, 3)
         Cone positions.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     height : float or ndarray, shape (N,), optional
         The height of the cone. A single value applies to all cones,
         while an array specifies a height for each cone individually.
