@@ -219,7 +219,7 @@ def warn_on_args_to_kwargs(
                                 func.__name__, func.__name__, func_params_sample
                             ),
                             UserWarning,
-                            stacklevel=3,
+                            stacklevel=2,
                         )
 
                     # if the current version of fury is less than from_version,
