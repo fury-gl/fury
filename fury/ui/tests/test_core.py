@@ -506,3 +506,113 @@ def test_textblock2d_visual_snapshot():
 
         mean_hidden = np.mean(arr_hidden[:, :, :3])
         npt.assert_almost_equal(mean_hidden, 0, decimal=0)
+
+
+def test_event_counter_monitor_and_count():
+    """Test EventCounter monitors and counts UI callbacks correctly."""
+    from fury.testing import EventCounter
+
+    rect = ui.Rectangle2D(size=(100, 100))
+    counter = EventCounter()
+    counter.monitor(rect)
+
+    # Simulate left button press -> release -> click sequence
+    rect.left_button_click_callback(None)
+    rect.left_button_release_callback(None)
+
+    npt.assert_equal(counter.events_counts["on_left_mouse_button_pressed"], 1)
+    npt.assert_equal(counter.events_counts["on_left_mouse_button_clicked"], 1)
+    npt.assert_equal(counter.events_counts["on_left_mouse_button_released"], 1)
+
+    # Right button
+    rect.right_button_click_callback(None)
+    rect.right_button_release_callback(None)
+
+    npt.assert_equal(counter.events_counts["on_right_mouse_button_pressed"], 1)
+    npt.assert_equal(counter.events_counts["on_right_mouse_button_clicked"], 1)
+    npt.assert_equal(counter.events_counts["on_right_mouse_button_released"], 1)
+
+    # Key press
+    rect.key_press_callback(None)
+    npt.assert_equal(counter.events_counts["on_key_press"], 1)
+
+    # Unmonitored events stay at zero
+    npt.assert_equal(counter.events_counts["on_left_mouse_button_dragged"], 0)
+
+
+def test_event_counter_save_and_load():
+    """Test EventCounter save and load round-trip."""
+    import tempfile
+    import os
+    from fury.testing import EventCounter
+
+    rect = ui.Rectangle2D(size=(100, 100))
+    counter = EventCounter()
+    counter.monitor(rect)
+
+    rect.left_button_click_callback(None)
+    rect.left_button_click_callback(None)
+    rect.key_press_callback(None)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        fname = os.path.join(tmpdir, "counts.json")
+        counter.save(fname)
+
+        loaded = EventCounter.load(fname)
+        npt.assert_equal(
+            loaded.events_counts["on_left_mouse_button_pressed"],
+            counter.events_counts["on_left_mouse_button_pressed"],
+        )
+        npt.assert_equal(
+            loaded.events_counts["on_key_press"],
+            counter.events_counts["on_key_press"],
+        )
+
+
+def test_event_counter_check_counts():
+    """Test EventCounter.check_counts raises on mismatch."""
+    from fury.testing import EventCounter
+
+    rect = ui.Rectangle2D(size=(100, 100))
+    counter = EventCounter()
+    counter.monitor(rect)
+    rect.left_button_click_callback(None)
+
+    # click_callback sets state to "pressing", release_callback fires clicked+released
+    rect.left_button_release_callback(None)
+
+    expected = EventCounter()
+    expected.events_counts["on_left_mouse_button_pressed"] = 1
+    expected.events_counts["on_left_mouse_button_clicked"] = 1
+    expected.events_counts["on_left_mouse_button_released"] = 1
+
+    # Should not raise
+    counter.check_counts(expected)
+
+    # Should raise on wrong count
+    expected.events_counts["on_left_mouse_button_pressed"] = 5
+    try:
+        counter.check_counts(expected)
+        assert False, "Expected AssertionError"
+    except AssertionError:
+        pass
+
+
+def test_event_counter_custom_callback_preserved():
+    """Test that original callbacks still fire after monitor()."""
+    from fury.testing import EventCounter
+
+    fired = []
+    rect = ui.Rectangle2D(size=(100, 100))
+    rect.on_left_mouse_button_clicked = lambda e: fired.append(e)
+
+    counter = EventCounter()
+    counter.monitor(rect)
+
+    rect.left_button_click_callback(None)
+    rect.left_button_release_callback(None)
+
+    # Counter incremented
+    npt.assert_equal(counter.events_counts["on_left_mouse_button_clicked"], 1)
+    # Original callback also fired
+    npt.assert_equal(len(fired), 1)

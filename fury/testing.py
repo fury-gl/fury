@@ -367,3 +367,136 @@ def check_for_warnings(warn_printed, w_msg):
     assert len(selected_w) >= 1
     msg = [str(m.message) for m in selected_w]
     assert_equal(w_msg in msg, True)
+
+
+class EventCounter:
+    """Count UI events fired on a v2 UI component.
+
+    Attaches to the callback attributes of a :class:`~fury.ui.core.UI`
+    element and counts how many times each event fires. Designed to be
+    used in tests alongside an offscreen :class:`~fury.window.ShowManager`.
+
+    Parameters
+    ----------
+    events_names : list of str, optional
+        Event attribute names to monitor on the UI element.
+        If ``None``, defaults to the standard set of v2 UI callbacks.
+
+    Examples
+    --------
+    >>> from fury import ui
+    >>> from fury.testing import EventCounter
+    >>> rect = ui.Rectangle2D(size=(100, 100))
+    >>> counter = EventCounter()
+    >>> counter.monitor(rect)
+    >>> rect.on_left_mouse_button_clicked(None)
+    >>> counter.events_counts["on_left_mouse_button_clicked"]
+    1
+    """
+
+    def __init__(self, *, events_names=None):
+        """Initialize the EventCounter.
+
+        Parameters
+        ----------
+        events_names : list of str, optional
+            Event attribute names to monitor on the UI element.
+            If ``None``, defaults to the standard v2 UI callback names.
+        """
+        if events_names is None:
+            events_names = [
+                "on_left_mouse_button_pressed",
+                "on_left_mouse_button_released",
+                "on_left_mouse_button_clicked",
+                "on_left_mouse_double_clicked",
+                "on_left_mouse_button_dragged",
+                "on_right_mouse_button_pressed",
+                "on_right_mouse_button_released",
+                "on_right_mouse_button_clicked",
+                "on_right_mouse_double_clicked",
+                "on_right_mouse_button_dragged",
+                "on_middle_mouse_button_pressed",
+                "on_middle_mouse_button_released",
+                "on_middle_mouse_button_clicked",
+                "on_middle_mouse_double_clicked",
+                "on_middle_mouse_button_dragged",
+                "on_key_press",
+            ]
+
+        self.events_counts = dict.fromkeys(events_names, 0)
+
+    def monitor(self, ui_component):
+        """Attach counting callbacks to all monitored events on a UI element.
+
+        Wraps each existing callback so the original behaviour is preserved
+        and the counter is incremented on every invocation.
+
+        Parameters
+        ----------
+        ui_component : UI
+            Any FURY v2 :class:`~fury.ui.core.UI` element.
+        """
+        for event_name in self.events_counts:
+            if not hasattr(ui_component, event_name):
+                continue
+
+            def _make_counter(name, original):
+                def _callback(event):
+                    self.events_counts[name] += 1
+                    original(event)
+                return _callback
+
+            original = getattr(ui_component, event_name)
+            setattr(ui_component, event_name, _make_counter(event_name, original))
+
+    def save(self, filename):
+        """Save event counts to a JSON file.
+
+        Parameters
+        ----------
+        filename : str
+            Path to save the event counts.
+        """
+        with open(filename, "w") as f:
+            json.dump(self.events_counts, f)
+
+    @classmethod
+    def load(cls, filename):
+        """Load event counts from a JSON file.
+
+        Parameters
+        ----------
+        filename : str
+            Path to the JSON file with saved event counts.
+
+        Returns
+        -------
+        EventCounter
+            A new EventCounter instance with the loaded counts.
+        """
+        counter = cls(events_names=[])
+        with open(filename) as f:
+            counter.events_counts = json.load(f)
+        return counter
+
+    def check_counts(self, expected):
+        """Compare current counts with expected counts.
+
+        Parameters
+        ----------
+        expected : EventCounter
+            An EventCounter with the expected event counts.
+
+        Raises
+        ------
+        AssertionError
+            If any count does not match the expected value.
+        """
+        for event, count in expected.events_counts.items():
+            actual = self.events_counts.get(event, 0)
+            if actual != count:
+                raise AssertionError(
+                    "Wrong count for '{}': got {} expected {}.".format(
+                        event, actual, count
+                    )
+                )
