@@ -421,6 +421,34 @@ def test_streamlines_filtered_streamlines_and_copy_src_usage(monkeypatch):
     assert calls == [wobj.geometry.positions, wobj.geometry.positions]
 
 
+def test_streamtube_geometry_min_max_bounds():
+    """Test that streamtube geometry stores min/max points correctly."""
+    lines = [
+        np.array([[0.0, 0.0, 0.0], [1.0, 2.0, 3.0], [2.0, 4.0, 6.0]], dtype=np.float32),
+        np.array([[-5.0, -2.0, -1.0], [0.5, 1.0, 1.5]], dtype=np.float32),
+        np.array([[3.0, 8.0, 4.0], [4.0, 10.0, 5.0]], dtype=np.float32),
+    ]
+
+    mesh = actor.streamtube(
+        lines, colors=(1.0, 0.0, 0.0), radius=0.1, segments=6, backend="gpu"
+    )
+
+    positions = mesh.geometry.positions.data
+
+    expected_min = np.array([-5.0, -2.0, -1.0], dtype=np.float32)
+    expected_max = np.array([4.0, 10.0, 6.0], dtype=np.float32)
+
+    actual_min = positions[0]
+    actual_max = positions[1]
+
+    assert np.allclose(actual_min, expected_min), (
+        f"Min point mismatch: expected {expected_min}, got {actual_min}"
+    )
+    assert np.allclose(actual_max, expected_max), (
+        f"Max point mismatch: expected {expected_max}, got {actual_max}"
+    )
+
+
 def test_actor_from_primitive_wireframe():
     """Test wireframe and wireframe_thickness for primitive actors."""
     sphere_actor = actor.sphere(

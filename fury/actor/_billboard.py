@@ -152,6 +152,36 @@ class Billboard(Mesh):
         self._billboard_centers = np.empty((0, 3), dtype=np.float32)
         self._billboard_sizes = np.empty((0, 2), dtype=np.float32)
 
+    def get_bounding_box(self):
+        """Compute the axis-aligned bounding box including billboard visual size.
+
+        Returns
+        -------
+        ndarray, shape (2, 3), or None
+            Axis-aligned bounding box as ``[[min, min, min], [max, max, max]]``.
+        """
+        centers = self._billboard_centers
+        sizes = self._billboard_sizes
+
+        if centers.size == 0 or sizes.size == 0:
+            return super().get_bounding_box()
+
+        half_extents = sizes.max(axis=1) / 2.0
+
+        expanded_min = centers - half_extents[:, np.newaxis]
+        expanded_max = centers + half_extents[:, np.newaxis]
+
+        aabb = np.empty((2, 3), dtype=np.float64)
+        aabb[0] = expanded_min.min(axis=0)
+        aabb[1] = expanded_max.max(axis=0)
+
+        parent_aabb = super().get_bounding_box()
+        if parent_aabb is not None:
+            aabb[0] = np.minimum(aabb[0], parent_aabb[0])
+            aabb[1] = np.maximum(aabb[1], parent_aabb[1])
+
+        return aabb
+
     @property
     def billboard_count(self):
         """Get the number of billboards in this actor.

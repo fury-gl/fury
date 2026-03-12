@@ -48,7 +48,7 @@ dependencies = [
     "pillow>=10.4.0",
     "packaging>=23.0",
     "lazy_loader>=0.4",
-    "pygfx>=0.14.0",
+    "pygfx>=0.16.0",
     "glfw>=2.7.0",
     "aiohttp"
 ]
@@ -71,6 +71,8 @@ optional = ["fury[window, plot, medical, compute]"]
 dev = [
     "gitpython",
     "twine",
+    "build",
+    "fury[style, typing, test]",
     ]
 doc = [
     "numpydoc",
@@ -81,6 +83,7 @@ doc = [
     "sphinx-copybutton",
     "sphinx-gallery>=0.10.0",
     "pydata-sphinx-theme==0.15.2",
+    "fury[window, plot, medical]",
     ]
 style = ["ruff", "pre-commit"]
 typing = ["mypy", "types-Pillow", "data-science-types"]

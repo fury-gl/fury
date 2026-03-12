@@ -34,12 +34,11 @@ line_slider_v = LineSlider2D(
 scene.add(line_slider_h)
 scene.add(line_slider_v)
 
-if __name__ == "__main__":
-    current_size = (800, 700)
-    show_manager = ShowManager(
-        scene=scene,
-        size=current_size,
-        title="FURY 2.0: Sliders Example",
-    )
+current_size = (800, 700)
+show_manager = ShowManager(
+    scene=scene,
+    size=current_size,
+    title="FURY Sliders Example",
+)
 
-    show_manager.start()
+show_manager.start()

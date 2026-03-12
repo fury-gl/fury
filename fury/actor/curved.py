@@ -1508,6 +1508,16 @@ def _create_streamtube_baked(
     normals_data = np.zeros((total_vertices, 3), dtype=np.float32)
     colors_data = np.zeros((total_vertices, color_components), dtype=np.float32)
     indices_data = np.zeros((total_triangles, 3), dtype=np.uint32)
+    min_point = max_point = np.zeros(3, dtype=np.float32)
+    for line in lines_arr:
+        if line.size == 0:
+            continue
+        line_min = line.min(axis=0)
+        line_max = line.max(axis=0)
+        min_point = np.minimum(min_point, line_min)
+        max_point = np.maximum(max_point, line_max)
+    positions_data[0] = min_point
+    positions_data[1] = max_point
 
     if use_per_point_colors:
         vertex_idx = 0

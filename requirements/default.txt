@@ -5,6 +5,6 @@ scipy>=1.13.0
 pillow>=10.4.0
 packaging>=23.0
 lazy_loader>=0.4
-pygfx>=0.14.0
+pygfx>=0.16.0
 glfw>=2.7.0
 aiohttp

@@ -66,6 +66,7 @@ __all__ = [
     "contour_from_roi",
     "contour_from_label",
     "read_buffer",
+    "create_axes_helper",
 ]
 
 from ._billboard import Billboard, billboard, billboard_sphere
@@ -82,6 +83,7 @@ from .core import (
     actor_from_primitive,
     arrow,
     axes,
+    create_axes_helper,
     create_image,
     create_line,
     create_mesh,

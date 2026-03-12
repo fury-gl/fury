@@ -61,5 +61,4 @@ class Main(QtWidgets.QWidget):
 m = Main()
 m.setWindowTitle("FURY Qt Example")
 
-# if __name__ == "__main__":
 m.show_manager.start()
