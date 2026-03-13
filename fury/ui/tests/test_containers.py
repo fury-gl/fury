@@ -194,7 +194,8 @@ def test_image_container_rgb():
     img = np.zeros((10, 10, 3), dtype=np.uint8)
     container = ui.ImageContainer2D(img)
 
-    assert container is not None
+    assert container._img.ndim == 2
+    assert container._img.shape == (10, 10)
 
 
 def test_image_container_size():
@@ -209,6 +210,14 @@ def test_image_container_invalid_input():
     """Test invalid input type raises TypeError."""
     with pytest.raises(TypeError):
         ui.ImageContainer2D(123)
+
+
+def test_image_container_invalid_shape():
+    """Test invalid image shape raises ValueError."""
+    img = np.zeros((10,), dtype=np.uint8)
+
+    with pytest.raises(ValueError):
+        ui.ImageContainer2D(img)
 
 
 # def setup_module():

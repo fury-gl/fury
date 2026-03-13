@@ -1011,10 +1011,11 @@ class ImageContainer2D(UI):
             raise ValueError("size must be (width, height)")
         self._img = image
         self._size = size
-        self._image_actor = image_actor(self._img)
+        self._image_actor = None
         super().__init__(position=position)
 
     def _setup(self):
+        self._image_actor = image_actor(self._img)
         self._actors = [self._image_actor]
 
     def _get_actors(self):
@@ -1024,6 +1025,11 @@ class ImageContainer2D(UI):
         if self._size is not None:
             return self._size
         return self._img.shape[1], self._img.shape[0]
+
+    def resize(self, size):
+        if size is not None and len(size) != 2:
+            raise ValueError("size must be (width, height)")
+        self._size = size
 
     def _update_actors_position(self):
         self.set_actor_position(
