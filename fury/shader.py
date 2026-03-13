@@ -791,7 +791,7 @@ class _StreamtubeBakingShader(BaseShader):
 
         return {}
 
-    def get_bindings(self, wobject, _shared, _scene):
+    def get_bindings(self, wobject, _shared, _scene=None):
         """Describe storage buffers used by the compute shader.
 
         Parameters
@@ -890,6 +890,9 @@ class _StreamtubeBakingShader(BaseShader):
 
         self.define_bindings(0, bindings)
         return {0: bindings}
+
+    def get_bindings_info(self, wobject, shared, scene=None):
+        return super().get_bindings_info(wobject, shared)
 
     def get_code(self):
         """Load the WGSL source for the streamtube compute shader.

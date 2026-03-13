@@ -719,6 +719,7 @@ class ShowManager:
         self._show_fps = show_fps
         self._max_fps = max_fps
         self._frame_count = 0
+        self._layout_dirty = True
         self._window_type = self._setup_window(window_type)
         self._is_dragging = False
         self._drag_target = None
@@ -1402,7 +1403,12 @@ class ShowManager:
             self._stats_initialized = True
 
         self._frame_count += 1
-        update_layout = True if self._frame_count == 2 else False
+        update_layout = False
+        if self._frame_count <= 2:
+            update_layout = True
+        elif self._layout_dirty:
+            update_layout = True
+            self._layout_dirty = False
         render_screens(
             self.renderer, self.screens, stats=self._stats, is_dirty=update_layout
         )
