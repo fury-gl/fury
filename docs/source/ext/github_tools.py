@@ -4,6 +4,7 @@
 Taken from ipython
 """
 
+import time 
 import argparse
 from datetime import datetime, timedelta
 import json
@@ -62,10 +63,15 @@ def fetch_url(url):
         f = urlopen(req)
     except Exception as e:
         print(e)
+        # In modern Python, HTTPError already has a built-in read-only .status property
+        if hasattr(e, 'code'):
+            return e
+            
+        # If it's a network drop or non-HTTP error, return a dummy object to prevent the dictionary crash
+        class MockError:
+            status = 500
         print("return Empty data", file=sys.stderr)
-        return {}
-
-    return f
+        return MockError()
 
 
 def parse_link_header(headers):
@@ -100,10 +106,19 @@ def get_paged_request(url, response_key=None):
         f = fetch_url(url)
         if f.status != 200:
             # Avoid infinite loop
-            if counter == 5:
+            if counter >= 5:
+                print(f"Failed to fetch {url} after 5 retries. Status: {f.status}")
                 break
+            
+            # If we hit a Rate Limit (429) or Forbidden API abuse (403), apply exponential backoff
+            if f.status in [429, 403]:
+                wait_time = 2 ** counter  # Waits 1s, 2s, 4s, 8s, 16s...
+                print(f"GitHub API rate limit hit (Status {f.status}). Retrying in {wait_time} seconds...")
+                time.sleep(wait_time)
+            
             counter += 1
             continue
+
         response = get_json_from_response(f, key=response_key)
         results.extend(response)
         links = parse_link_header(f.headers)
