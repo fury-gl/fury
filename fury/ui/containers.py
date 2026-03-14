@@ -1564,8 +1564,8 @@ class ListBox2D(UI):
         text_color=(0.2, 0.2, 0.2),
         selected_color=(0.9, 0.6, 0.6),
         unselected_color=(0.6, 0.6, 0.6),
-        scroll_bar_active_color=(0.6, 0.2, 0.2),
-        scroll_bar_inactive_color=(0.9, 0.0, 0.0),
+        scroll_bar_active_color=(0.4, 0.4, 0.4),
+        scroll_bar_inactive_color=(0.7, 0.7, 0.7),
         background_opacity=1.0,
     ):
         """Initialize a ListBox2D.
@@ -1787,7 +1787,7 @@ class ListBox2D(UI):
         """
         if not self.scroll_step_size:
             return
-        offset = int((event.y - self.scroll_init_position) / self.scroll_step_size)
+        offset = int((self.scroll_init_position - event.y) / self.scroll_step_size)
         if offset > 0 and self.view_offset > 0:
             offset = min(offset, self.view_offset)
         elif offset < 0 and (self.view_offset + self.nb_slots < len(self.values)):
@@ -1806,7 +1806,7 @@ class ListBox2D(UI):
         view_start = self.view_offset
         view_end = view_start + self.nb_slots
         values_to_show = self.values[view_start:view_end]
-        for i, choice in enumerate(values_to_show):
+        for i, choice in enumerate(reversed(values_to_show)):
             slot = self.slots[i]
             slot.element = choice
             slot.set_visibility(True)
