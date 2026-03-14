@@ -1444,6 +1444,138 @@ class ShowManager:
         """Close the rendering window and terminate the application if necessary."""
         self.window.close()
 
+    def record_events_to_file(self, filename="record.json"):
+        """Record UI events during interaction and save to a file.
+
+        Opens the window and records all user interactions (mouse clicks,
+        key presses, etc.) until the window is closed. The recorded events
+        are saved to ``filename`` as JSON for later replay.
+
+        Parameters
+        ----------
+        filename : str, optional
+            Path to save the recorded events. Defaults to ``"record.json"``.
+
+        See Also
+        --------
+        play_events_from_file : Replay recorded events from a file.
+        """
+        import json
+
+        recorded = []
+
+        def _serialize(obj):
+            """Convert obj to a JSON-safe string representation.
+
+            Parameters
+            ----------
+            obj : object
+                Any Python object to serialize.
+
+            Returns
+            -------
+            str or None
+                String representation of obj, or None if conversion fails.
+            """
+            try:
+                return str(obj)
+            except Exception:
+                return None
+
+        def _on_event(event):
+            """Capture and sanitize an incoming event dict for JSON storage.
+
+            Parameters
+            ----------
+            event : dict
+                Raw rendercanvas event dictionary.
+            """
+            safe = {}
+            for k, v in event.items():
+                try:
+                    import json as _j
+
+                    _j.dumps(v)
+                    safe[k] = v
+                except (TypeError, ValueError):
+                    safe[k] = _serialize(v)
+            recorded.append(safe)
+
+        for event_type in [
+            "pointer_down",
+            "pointer_up",
+            "pointer_move",
+            "key_down",
+            "key_up",
+            "wheel",
+            "double_click",
+        ]:
+            self.window.add_event_handler(_on_event, event_type)
+
+        self.start()
+
+        with open(filename, "w") as f:
+            json.dump(recorded, f, indent=2)
+
+    def play_events_from_file(self, filename):
+        """Replay recorded UI events from a file into this ShowManager.
+
+        Loads events previously saved by :meth:`record_events_to_file` and
+        dispatches them to the UI elements in the scene whose bounding boxes
+        contain the event coordinates. Use with
+        :class:`~fury.testing.EventCounter` to assert UI behaviour in tests.
+
+        Parameters
+        ----------
+        filename : str
+            Path to the JSON file containing the recorded events.
+
+        See Also
+        --------
+        record_events_to_file : Record events to a file.
+        """
+        import json
+
+        with open(filename) as f:
+            events = json.load(f)
+
+        # Collect all UI elements across all screens
+        ui_elements = []
+        for screen in self.screens:
+            ui_elements.extend(screen.scene.ui_elements)
+
+        from types import SimpleNamespace
+
+        for event in events:
+            event_type = event.get("event_type", "")
+            x = event.get("x", 0)
+            y = event.get("y", 0)
+            evt_obj = SimpleNamespace(**event, type=event.get("event_type", ""))
+
+            for ui_elem in ui_elements:
+                pos = ui_elem.get_position()
+                size = ui_elem.size
+                # Check if pointer is within UI element bounds
+                # Note: y is flipped (canvas y=0 is top)
+                canvas_h = self.size[1]
+                ui_y = canvas_h - pos[1]
+                in_bounds = (
+                    pos[0] <= x <= pos[0] + size[0] and ui_y - size[1] <= y <= ui_y
+                )
+
+                if in_bounds:
+                    if event_type == "pointer_down":
+                        ui_elem.mouse_button_down_callback(evt_obj)
+                    elif event_type == "pointer_up":
+                        ui_elem.mouse_button_up_callback(evt_obj)
+                    elif event_type == "pointer_move":
+                        ui_elem.mouse_move_callback(evt_obj)
+                    elif event_type == "key_down":
+                        ui_elem.key_press_callback(evt_obj)
+                    elif event_type == "double_click":
+                        ui_elem.mouse_button_down_callback(evt_obj)
+                        ui_elem.mouse_button_up_callback(evt_obj)
+
 
 def snapshot(
     *,

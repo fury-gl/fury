@@ -110,131 +110,6 @@ def assert_arrays_equal(arrays1, arrays2):
         assert_array_equal(arr1, arr2)
 
 
-class EventCounter:
-    """Count and record UI events for testing.
-
-    This class provides functionality to count event occurrences for UI testing
-    and verification. It can record counts, save them to a file, and compare them
-    with expected counts.
-
-    Parameters
-    ----------
-    events_names : list of str, optional
-        List of event names to count. If None, defaults to common VTK events.
-    """
-
-    def __init__(self, *, events_names=None):
-        """Initialize the EventCounter.
-
-        Parameters
-        ----------
-        events_names : list of str, optional
-            List of event names to count. If None, defaults to common VTK events.
-        """
-        if events_names is None:
-            events_names = [
-                "CharEvent",
-                "MouseMoveEvent",
-                "KeyPressEvent",
-                "KeyReleaseEvent",
-                "LeftButtonPressEvent",
-                "LeftButtonReleaseEvent",
-                "RightButtonPressEvent",
-                "RightButtonReleaseEvent",
-                "MiddleButtonPressEvent",
-                "MiddleButtonReleaseEvent",
-            ]
-
-        # Events to count
-        self.events_counts = dict.fromkeys(events_names, 0)
-
-    def count(self, i_ren, _obj, _element):
-        """Count events occurrences.
-
-        Parameters
-        ----------
-        i_ren : object
-            The interaction renderer with event data.
-        _obj : object
-            The object that received the event.
-        _element : object
-            UI element that received the event.
-        """
-        self.events_counts[i_ren.event.name] += 1
-
-    def monitor(self, ui_component):
-        """Add callbacks to monitor events on a UI component.
-
-        Parameters
-        ----------
-        ui_component : object
-            UI component with actors to monitor for events.
-        """
-        for event in self.events_counts:
-            for obj_actor in ui_component.actors:
-                ui_component.add_callback(obj_actor, event, self.count)
-
-    def save(self, filename):
-        """Save event counts to a JSON file.
-
-        Parameters
-        ----------
-        filename : str
-            Path to save the event counts.
-        """
-        with open(filename, "w") as f:
-            json.dump(self.events_counts, f)
-
-    @classmethod
-    def load(cls, filename):
-        """Load event counts from a JSON file.
-
-        Parameters
-        ----------
-        filename : str
-            Path to the JSON file with saved event counts.
-
-        Returns
-        -------
-        EventCounter
-            A new EventCounter instance with loaded counts.
-        """
-        event_counter = cls()
-        with open(filename) as f:
-            event_counter.events_counts = json.load(f)
-
-        return event_counter
-
-    def check_counts(self, expected):
-        """Compare current event counts with expected counts.
-
-        Parameters
-        ----------
-        expected : EventCounter
-            EventCounter instance with expected event counts.
-
-        Raises
-        ------
-        AssertionError
-            If the counts don't match the expected counts.
-        """
-        assert_equal(len(self.events_counts), len(expected.events_counts))
-
-        # Useful loop for debugging.
-        msg = "{}: {} vs. {} (expected)"
-        for event, count in expected.events_counts.items():
-            if self.events_counts[event] != count:
-                print(msg.format(event, self.events_counts[event], count))
-
-        msg = "Wrong count for '{}'."
-        for event, count in expected.events_counts.items():
-            assert_equal(
-                self.events_counts[event],
-                count,
-                msg=msg.format(event),
-            )
-
-
 class clear_and_catch_warnings(warnings.catch_warnings):
     """Context manager that resets warning registry for catching warnings.
 
@@ -444,6 +319,7 @@ class EventCounter:
                 def _callback(event):
                     self.events_counts[name] += 1
                     original(event)
+
                 return _callback
 
             original = getattr(ui_component, event_name)

@@ -542,8 +542,9 @@ def test_event_counter_monitor_and_count():
 
 def test_event_counter_save_and_load():
     """Test EventCounter save and load round-trip."""
-    import tempfile
     import os
+    import tempfile
+
     from fury.testing import EventCounter
 
     rect = ui.Rectangle2D(size=(100, 100))
@@ -593,7 +594,7 @@ def test_event_counter_check_counts():
     expected.events_counts["on_left_mouse_button_pressed"] = 5
     try:
         counter.check_counts(expected)
-        assert False, "Expected AssertionError"
+        raise AssertionError("check_counts should have raised")
     except AssertionError:
         pass
 
