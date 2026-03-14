@@ -1,7 +1,6 @@
 """Utilities for testing."""
 
 from contextlib import contextmanager
-from distutils.version import LooseVersion
 from functools import partial
 import io
 import json
@@ -11,6 +10,7 @@ import warnings
 
 import numpy as np
 from numpy.testing import assert_array_equal
+from packaging.version import Version as LooseVersion
 import scipy  # type: ignore
 
 
