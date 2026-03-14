@@ -37,7 +37,8 @@ files = [
     "viz_line_projections.py",
     "viz_streamlines_roi.py",
     "viz_contour.py",
-
+    "viz_billboard_spheres.py",
+    "viz_streamtube.py",
 ]
 
 [ui]
@@ -49,6 +50,7 @@ files = [
     "viz_panel.py",
     "viz_sliders.py",
     "viz_button.py",
+    "viz_textblock.py",
 ]
 
 [animation]
