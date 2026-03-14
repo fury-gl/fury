@@ -667,14 +667,12 @@ def test_panel2d_visual_snapshot(
 #     npt.assert_equal(5, next(collapses))
 
 
-@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_listbox_creation():
     lb = ui.ListBox2D(values=["a", "b", "c"])
     assert lb.values == ["a", "b", "c"]
     assert lb.selected == []
 
 
-@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_single_selection():
     lb = ui.ListBox2D(values=["a", "b", "c"])
     item = lb.slots[0]
@@ -683,7 +681,6 @@ def test_single_selection():
     assert lb.selected == ["a"]
 
 
-@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_multiselect():
     lb = ui.ListBox2D(values=["a", "b", "c"], multiselection=True)
     item1 = lb.slots[0]
@@ -697,7 +694,6 @@ def test_multiselect():
     assert set(lb.selected) == {"a", "b"}
 
 
-@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_range_select():
     lb = ui.ListBox2D(values=["a", "b", "c", "d"], multiselection=True)
 
@@ -712,7 +708,6 @@ def test_range_select():
     assert lb.selected == ["a", "b", "c"]
 
 
-@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_scrollbar_hidden_when_not_needed():
     lb = ui.ListBox2D(values=["a"])
     assert lb.nb_slots >= len(lb.values)

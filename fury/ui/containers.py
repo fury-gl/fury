@@ -1616,12 +1616,13 @@ class ListBox2D(UI):
         self.reverse_scrolling = reverse_scrolling
         super().__init__(position=position)
 
-        denom = len(self.values) - self.nb_slots
-        if not denom:
-            denom += 1
-        self.scroll_step_size = (
-            self.slot_height * self.nb_slots - self.scroll_bar.height
-        ) / denom
+        if len(self.values) > self.nb_slots:
+            denom = len(self.values) - self.nb_slots
+            self.scroll_step_size = (
+                self.slot_height * self.nb_slots - self.scroll_bar.height
+            ) / denom
+        else:
+            self.scroll_step_size = 0
 
         self.scroll_bar_active_color = scroll_bar_active_color
         self.scroll_bar_inactive_color = scroll_bar_inactive_color
@@ -1637,6 +1638,7 @@ class ListBox2D(UI):
         size = self.panel_size
         self.nb_slots = int((size[1] - 2 * self.margin) // self.slot_height)
         self.panel = Panel2D(size=size, color=(1, 1, 1))
+        self._children.append(self.panel)
 
         scroll_bar_height = (
             self.nb_slots * (size[1] - 2 * self.margin) / len(self.values)
@@ -1644,7 +1646,6 @@ class ListBox2D(UI):
         self.scroll_bar = Rectangle2D(size=(int(size[0] / 20), int(scroll_bar_height)))
         if len(self.values) <= self.nb_slots:
             self.scroll_bar.set_visibility(False)
-            self.scroll_bar.height = 0
 
         scroll_bar_x = size[0] - self.scroll_bar.size[0] - self.margin
         scroll_bar_y = size[1] - self.scroll_bar.size[1] - self.margin
@@ -1784,6 +1785,8 @@ class ListBox2D(UI):
         event : PointerEvent
             The PyGfx pointer event object.
         """
+        if not self.scroll_step_size:
+            return
         offset = int((event.y - self.scroll_init_position) / self.scroll_step_size)
         if offset > 0 and self.view_offset > 0:
             offset = min(offset, self.view_offset)
@@ -1816,29 +1819,28 @@ class ListBox2D(UI):
         for slot in self.slots[len(values_to_show) :]:
             slot.element = None
             slot.set_visibility(False)
-            slot.resize((self.slot_width, 0))
             slot.deselect()
 
     def update_scrollbar(self):
         """Recalculate and reposition the scroll bar after values change."""
-        self.scroll_bar.set_visibility(True)
-        self.scroll_bar.height = int(
+        scroll_bar_height = int(
             self.nb_slots * (self.panel_size[1] - 2 * self.margin) / len(self.values)
         )
-        denom = len(self.values) - self.nb_slots
-        if not denom:
-            denom += 1
-        self.scroll_step_size = (
-            self.slot_height * self.nb_slots - self.scroll_bar.height
-        ) / denom
+        self.scroll_bar.resize((self.scroll_bar.size[0], max(1, scroll_bar_height)))
+        if len(self.values) > self.nb_slots:
+            self.scroll_bar.set_visibility(True)
+            denom = len(self.values) - self.nb_slots
+            self.scroll_step_size = (
+                self.slot_height * self.nb_slots - scroll_bar_height
+            ) / denom
+        else:
+            self.scroll_bar.set_visibility(False)
+            self.scroll_step_size = 0
         scroll_bar_x = self.panel_size[0] - self.scroll_bar.size[0] - self.margin
         scroll_bar_y = self.panel_size[1] - self.scroll_bar.size[1] - self.margin
         self.panel.update_element(
             self.scroll_bar, (int(scroll_bar_x), int(scroll_bar_y))
         )
-        if len(self.values) <= self.nb_slots:
-            self.scroll_bar.set_visibility(False)
-            self.scroll_bar.height = 0
 
     def clear_selection(self):
         """Clear all selected items."""
