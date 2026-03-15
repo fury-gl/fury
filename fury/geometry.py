@@ -124,7 +124,7 @@ def rotate_vector(v, axis, angle):
     angle : float
         The angle of rotation in radians.
 
-    returns
+    Returns
     -------
     array_like
         The rotated vector.
@@ -198,3 +198,5 @@ def axes_for_dir(d, prev_x=None):
     x /= np.linalg.norm(x)
     y = np.cross(d, x)
     return x, y
+
+
