@@ -1004,11 +1004,16 @@ class ImageContainer2D(UI):
                 "image_input must be a file path (str) or a NumPy array."
             )
         if image.ndim == 3:
-            image = image.mean(axis=2).astype(np.uint8)
-        if image.ndim != 2:
-            raise ValueError("Only 2D images are supported.")
-        if size is not None and len(size) != 2:
-            raise ValueError("size must be (width, height)")
+            if image.shape[-1] == 3:
+                image = image.mean(axis=2)
+            elif image.shape[-1] == 1:
+                image = image[:, :, 0]
+            else:
+                raise ValueError("Unsupported image shape")
+        elif image.ndim != 2:
+            raise ValueError("Unsupported image shape")
+        if image.dtype != np.uint8:
+            image = (image * 255).astype(np.uint8)
         self._img = image
         self._size = size
         self._image_actor = None

@@ -198,6 +198,14 @@ def test_image_container_rgb():
     assert container._img.shape == (10, 10)
 
 
+def test_image_container_grayscale():
+    """Grayscale should remain unchanged."""
+    img = np.zeros((10, 10), dtype=np.uint8)
+    container = ui.ImageContainer2D(img)
+
+    assert container._img.shape == (10, 10)
+
+
 def test_image_container_size():
     """Test custom size parameter."""
     img = np.zeros((10, 10), dtype=np.uint8)
