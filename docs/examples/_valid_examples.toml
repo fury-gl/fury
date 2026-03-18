@@ -47,6 +47,7 @@ enable = true
 files = [
     "viz_shapes.py",
     "viz_panel.py",
+    "viz_textbox.py",
     "viz_sliders.py",
     "viz_button.py",
 ]

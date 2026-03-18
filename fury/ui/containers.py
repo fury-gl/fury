@@ -4,7 +4,329 @@
 
 import numpy as np
 
-from fury.ui.core import UI, Anchor, Rectangle2D
+from fury.ui.context import UIContext
+from fury.ui.core import UI, Anchor, Rectangle2D, TextBlock2D
+import re
+import string
+
+
+class TextBox2D(UI):
+    """An editable 2D text box UI component.
+
+    Parameters
+    ----------
+    width : int
+        Number of characters per line (logical width).
+    height : int
+        Number of lines (logical height).
+    text : str, optional
+        Initial text.
+    position : (float, float), optional
+        Top-left position in pixels.
+    color : (float, float, float), optional
+        Text color (0-1).
+    font_size : int, optional
+        Font size in pixels.
+    font_family : str, optional
+        Font family.
+    justification : str, optional
+        left, center, right.
+    bold : bool, optional
+        Bold text.
+    italic : bool, optional
+        Italic text.
+    shadow : bool, optional
+        Unused in v2 for now (kept for API compatibility).
+    """
+
+    def __init__(
+        self,
+        width,
+        height,
+        *,
+        text="Enter Text",
+        position=(100, 10),
+        color=(0, 0, 0),
+        font_size=18,
+        font_family="Arial",
+        justification="left",
+        bold=False,
+        italic=False,
+        shadow=False,
+    ):
+        self.width = int(width)
+        self.height = int(height)
+
+        self.message = text
+        self.window_left = 0
+        self.window_right = 0
+        self.caret_pos = 0
+        self.init = True
+
+        self.off_focus = lambda ui: None
+
+        self._font_size = font_size
+        self._font_family = font_family
+        self._justification = justification
+        self._bold = bold
+        self._italic = italic
+        self._shadow = shadow
+        self._color = color
+        self._bg_color = (1, 1, 1)
+        self._padding_px = 0
+        self._inner_size = (1, 1)
+        self._bg_size = (1, 1)
+
+        super(TextBox2D, self).__init__(position=position, x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP)
+
+        self.on_key_press = self._key_press
+
+        self.text.message = text
+        self.text.font_size = font_size
+        self.text.font_family = font_family
+        self.text.justification = justification
+        self.text.bold = bold
+        self.text.italic = italic
+        self.text.color = color
+
+        self.window_right = len(self.message)
+        self.caret_pos = self.window_right
+        self.render_text(show_caret=False)
+
+    def _setup(self):
+        self.text = TextBlock2D(
+            text="",
+            dynamic_bbox=True,
+            bg_color=self._bg_color,
+            font_size=self._font_size,
+            font_family=self._font_family,
+            justification=self._justification,
+            vertical_justification="middle",
+            bold=self._bold,
+            italic=self._italic,
+            color=self._color,
+        )
+
+        self.text.on_left_mouse_button_pressed = self._left_button_press
+        self.text.background.on_left_mouse_button_pressed = self._left_button_press
+
+    def _get_actors(self):
+        return self.text.actors
+
+    def _get_size(self):
+        return self.text.size
+
+    def _update_actors_position(self):
+        pos = self.get_position(x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP)
+        self.text.set_position(pos, x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP)
+
+    def set_message(self, message):
+        self.message = message
+        self.text.message = message
+        self.init = False
+        self.window_right = len(self.message)
+        self.window_left = 0
+        self.caret_pos = self.window_right
+
+    def width_set_text(self, text):
+        multi_line_text = ""
+        for i, t in enumerate(text):
+            multi_line_text += t
+            if (i + 1) % self.width == 0:
+                multi_line_text += "\n"
+        return multi_line_text.rstrip("\n")
+
+    def move_caret_right(self):
+        self.caret_pos = min(self.caret_pos + 1, len(self.message))
+
+    def move_caret_left(self):
+        self.caret_pos = max(self.caret_pos - 1, 0)
+
+    def right_move_right(self):
+        if self.window_right <= len(self.message):
+            self.window_right += 1
+
+    def right_move_left(self):
+        if self.window_right > 0:
+            self.window_right -= 1
+
+    def left_move_right(self):
+        if self.window_left <= len(self.message):
+            self.window_left += 1
+
+    def left_move_left(self):
+        if self.window_left > 0:
+            self.window_left -= 1
+
+    def add_character(self, character):
+        if len(character) > 1 and character.lower() != "space":
+            return
+        if character.lower() == "space":
+            character = " "
+        self.message = self.message[: self.caret_pos] + character + self.message[self.caret_pos :]
+        self.move_caret_right()
+        if self.window_right - self.window_left == self.height * self.width - 1:
+            self.left_move_right()
+        self.right_move_right()
+
+    def remove_character(self):
+        if self.caret_pos == 0:
+            return
+        self.message = self.message[: self.caret_pos - 1] + self.message[self.caret_pos :]
+        self.move_caret_left()
+        if len(self.message) < self.height * self.width - 1:
+            self.right_move_left()
+        if self.window_right - self.window_left == self.height * self.width - 1:
+            if self.window_left > 0:
+                self.left_move_left()
+                self.right_move_left()
+
+    def move_left(self):
+        self.move_caret_left()
+        if self.caret_pos == self.window_left - 1:
+            if self.window_right - self.window_left == self.height * self.width - 1:
+                self.left_move_left()
+                self.right_move_left()
+
+    def move_right(self):
+        self.move_caret_right()
+        if self.caret_pos == self.window_right + 1:
+            if self.window_right - self.window_left == self.height * self.width - 1:
+                self.left_move_right()
+                self.right_move_right()
+
+    def showable_text(self, show_caret):
+        if show_caret:
+            ret_text = self.message[: self.caret_pos] + "_" + self.message[self.caret_pos :]
+        else:
+            ret_text = self.message
+        return ret_text[self.window_left : self.window_right + 1]
+
+    def render_text(self, *, show_caret=True):
+        text = self.showable_text(show_caret)
+        if text == "":
+            text = "Enter Text"
+        display_text = text.replace(" ", "\u00A0")
+        self.text.message = self.width_set_text(display_text)
+
+    def edit_mode(self):
+        if self.init:
+            self.message = ""
+            self.init = False
+            self.caret_pos = 0
+            self.window_left = 0
+            self.window_right = 0
+        UIContext.active_ui = self
+        self.render_text()
+
+    def _left_button_press(self, _event):
+        self.edit_mode()
+
+    def _key_press(self, event):
+        if UIContext.active_ui is not self:
+            return
+
+        ev_t = str(getattr(event, "type", "")).lower()
+        if "key_up" in ev_t:
+            return
+
+        key_raw = getattr(event, "key", "") or ""
+        key = key_raw if key_raw == " " else key_raw.strip()
+        key_l = key.lower()
+        modifiers = getattr(event, "modifiers", None) or ()
+
+        if key_l in {
+            "shift",
+            "control",
+            "ctrl",
+            "alt",
+            "meta",
+            "capslock",
+            "numlock",
+            "scrolllock",
+            "tab",
+            "escape",
+            "esc",
+        }:
+            return
+
+        if key_l in {"enter", "return"}:
+            self.render_text(show_caret=False)
+            UIContext.active_ui = None
+            self.off_focus(self)
+            return
+
+        if key_l == "backspace":
+            self.remove_character()
+        elif key_l in {"arrowleft", "left"}:
+            self.move_left()
+        elif key_l in {"arrowright", "right"}:
+            self.move_right()
+        else:
+            key_char = ""
+
+            if key_l in {"space", "spacebar"}:
+                key_char = " "
+            elif len(key) == 1 and key in string.printable and key not in "\r\n\t":
+                key_char = key
+            elif "numpad" in key_l or key_l.startswith("kp") or key_l.startswith("kp_"):
+                m = re.search(r"([0-9])", key_l)
+                if m:
+                    key_char = m.group(1)
+            elif key_l in {
+                "end",
+                "down",
+                "pagedown",
+                "left",
+                "clear",
+                "right",
+                "home",
+                "up",
+                "pageup",
+                "insert",
+            }:
+                nav_to_digit = {
+                    "end": "1",
+                    "down": "2",
+                    "pagedown": "3",
+                    "left": "4",
+                    "clear": "5",
+                    "right": "6",
+                    "home": "7",
+                    "up": "8",
+                    "pageup": "9",
+                    "insert": "0",
+                }
+                key_char = nav_to_digit.get(key_l, "")
+            elif key_l.startswith("key") and len(key) >= 4:
+                key_char = key[-1]
+            elif key_l.startswith("digit") and len(key) >= 6:
+                key_char = key[-1]
+            else:
+                named = {
+                    "minus": "-",
+                    "equal": "=",
+                    "comma": ",",
+                    "period": ".",
+                    "slash": "/",
+                    "backslash": "\\",
+                    "semicolon": ";",
+                    "quote": "'",
+                    "bracketleft": "[",
+                    "bracketright": "]",
+                    "backquote": "`",
+                }
+                if key_l in named:
+                    key_char = named[key_l]
+                else:
+                    m = re.search(r"([A-Za-z0-9])$", key)
+                    if m:
+                        key_char = m.group(1)
+
+            if key_char:
+                self.add_character(key_char)
+
+        self.render_text()
 
 
 class Panel2D(UI):
