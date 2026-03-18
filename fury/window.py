@@ -12,6 +12,7 @@ from functools import reduce
 import logging
 import os
 import sys
+import types
 
 from PIL.Image import fromarray as image_from_array
 import numpy as np
@@ -38,6 +39,7 @@ from fury.lib import (
     ScreenCoordsCamera,
     Stats,
     TrackballController,
+    KeyboardEvent,
     UIRenderer,
     Viewport,
     call_later,
@@ -641,7 +643,8 @@ class ShowManager:
             lambda event: self._resize(size=(event.width, event.height)),
             EventType.RESIZE,
         )
-        self.renderer.add_event_handler(
+
+        self.window.add_event_handler(
             self._set_key_long_press_event, EventType.KEY_DOWN, EventType.KEY_UP
         )
         self.renderer.add_event_handler(
@@ -669,6 +672,7 @@ class ShowManager:
         self._key_long_press = None
         self._on_resize = lambda _size: None
         self._resize(self._size)
+        self.set_enable_events(enable_events)
 
     def _handle_drag(self, event):
         """Handle drag events for pointer interactions.
@@ -829,33 +833,49 @@ class ShowManager:
         reposition_ui(self.screens)
         self.render()
 
-    async def _handle_key_long_press(self, event):
-        """Handle long press events for key inputs.
+    def _set_key_long_press_event(self, event):
+        """Handle key events for input routing.
 
         Parameters
         ----------
         event : KeyEvent
             The PyGfx key event object."""
+
+        from_canvas_dict = isinstance(event, dict)
+        if from_canvas_dict:
+            ev_type = (
+                event.get("event_type", "")
+                or event.get("type", "")
+                or ""
+            ).lower()
+            ev_key = (
+                event.get("key", "")
+                or event.get("text", "")
+                or event.get("value", "")
+                or event.get("code", "")
+                or ""
+            )
+            ev_mods = event.get("modifiers", None)
+            if isinstance(ev_mods, (list, tuple)):
+                ev_mods = tuple(ev_mods)
+            elif ev_mods is None:
+                ev_mods = ()
+
+            if ev_type not in {"key_down", "key_up"}:
+                return
+            pseudo_type = EventType.KEY_DOWN if ev_type == "key_down" else EventType.KEY_UP
+            event = types.SimpleNamespace(
+                type=pseudo_type, key=ev_key, modifiers=ev_mods, target=None
+            )
 
         if self._key_long_press is not None:
-            await asyncio.sleep(0.05)
-            self.renderer.dispatch_event(event)
-
-    def _set_key_long_press_event(self, event):
-        """Handle long press events for key inputs.
-
-        Parameters
-        ----------
-        event : KeyEvent
-            The PyGfx key event object."""
-
-        if event.type == EventType.KEY_DOWN:
-            self._key_long_press = asyncio.create_task(
-                self._handle_key_long_press(event)
-            )
-        elif self._key_long_press is not None:
             self._key_long_press.cancel()
             self._key_long_press = None
+
+        if UIContext.active_ui is not None:
+            UIContext.active_ui.on_key_press(event)
+
+        self.window.request_draw(self._draw_function)
 
     def _on_repeat_callback(self, func, time, name, *args):
         """Internal method to handle the timing and execution of callbacks.
