@@ -338,6 +338,8 @@ sphinx_gallery_conf = {
     },
     "filename_pattern": re.escape(os.sep),
     "plot_gallery": "'True'",
+    "ignore_pattern": r"viz_imgui.py",
+
 }
 
 # -- Options for Blog -------------------------------------------
