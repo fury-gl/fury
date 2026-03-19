@@ -40,3 +40,14 @@ test
    Source Code <https://github.com/fury-gl/fury>
    File a bug <https://github.com/fury-gl/fury/issues/new/choose>
    Feature Request <https://github.com/fury-gl/fury/issues/new/choose>
+
+
+   Documentation Setup
+   -------------------
+
+   To build the documentation locally, install required dependencies:
+
+   pip install sphinx-gallery ipython sphinx-copybutton matplotlib numpydoc pillow imageio pydata-sphinx-theme
+
+   Optional dependency (for some examples):
+   pip install imgui-bundle
