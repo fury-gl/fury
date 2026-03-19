@@ -267,9 +267,10 @@ class Animation:
             Interpolator will be reinitialized if True.
         **kwargs : dict, optional
             Additional parameters for the keyframe. This can include:
+
             - `in_cp` and `out_cp` for cubic Bézier interpolation (float).
             - `in_tangent` and `out_tangent` for cubic spline interpolation,
-                ndarray, shape (1, M).
+              ndarray, shape (1, M).
         """
         attrib_data = self._get_attribute_data(attrib)
         keyframes = attrib_data.get("keyframes")
@@ -419,6 +420,7 @@ class Animation:
                 return np.array([np.sin(t), np.cos(t) * 5, 5])
         **kwargs : dict, optional
             Additional parameters for the interpolator. This can include:
+
             - spline_degree : int - The degree of the spline in case of setting a
               spline interpolator.
 
@@ -489,6 +491,7 @@ class Animation:
             function that does not depend on keyframes.
         **kwargs : dict, optional
             Additional parameters for the interpolator. This can include:
+
             - degree : int - The degree of the spline interpolation in case of setting
               the `spline_interpolator`.
         """
@@ -618,6 +621,7 @@ class Animation:
             Position value.
         **kwargs : dict, optional
             Additional parameters for the keyframe. This can include:
+
             - `in_cp` and `out_cp` for cubic Bézier interpolation (float).
             - `in_tangent` and `out_tangent` for cubic spline interpolation,
               ndarray, shape (1, M).
@@ -1246,7 +1250,7 @@ class CameraAnimation(Animation):
     duration : float
         The duration of the animation in seconds.
     loop : bool
-        Whether the animation is in loop mode (True) or play one mode (False).
+        Whether the animation is in loop mode (True) or play once mode (False).
     """
 
     def __init__(self, *, camera=None, length=None, loop=True, motion_path_res=None):
@@ -1282,6 +1286,7 @@ class CameraAnimation(Animation):
         **kwargs : dict, optional
             Additional keyword arguments for the keyframe. The following
             parameters are supported:
+
             - in_cp: ndarray - The in control point for cubic Bézier interpolation.
             - out_cp: ndarray - The out control point for cubic Bézier interpolation.
             - in_tangent: ndarray - The in tangent at that position for cubic spline
@@ -1303,6 +1308,7 @@ class CameraAnimation(Animation):
         **kwargs : dict, optional
             Additional keyword arguments for the keyframe. The following
             parameters are supported:
+
             - in_cp: ndarray - The in control point for cubic Bézier interpolation.
             - out_cp: ndarray - The out control point for cubic Bézier interpolation.
             - in_tangent: ndarray - The in tangent at that position for cubic spline
@@ -1426,7 +1432,7 @@ class CameraAnimation(Animation):
         if self._camera is None:
             if self._scene:
                 self._camera = self._scene.camera()
-                self.update_animation(tile=time)
+                self.update_animation(time=time)
                 return
         else:
             if self.is_interpolatable("rotation"):
