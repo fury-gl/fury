@@ -8,7 +8,7 @@ from fury.lib import (
     GfxGroup,
     RecursiveTransform,
     WorldObject,
-    wgpu_device,
+    gfx_wgpu,
 )
 from fury.material import validate_opacity
 
@@ -221,6 +221,7 @@ def read_buffer(buffer, *, sync_cpu=True):
     if not isinstance(buffer, Buffer):
         raise ValueError("Expected a wgpu.Buffer instance.")
 
+    wgpu_device = gfx_wgpu.get_shared().device
     raw = wgpu_device.queue.read_buffer(buffer)
     cpu_shape = buffer.data.shape if buffer.data is not None else None
     gpu_buffer = (
