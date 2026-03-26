@@ -17,7 +17,6 @@ from fury.actor import (
 import fury.actor.utils as actor_utils
 from fury.lib import (
     AffineTransform,
-    Buffer,
     Geometry,
     Material,
     RecursiveTransform,
@@ -73,20 +72,6 @@ def group_line_projection():
     obj.add(projection_y)
     obj.add(projection_x)
     return obj
-
-
-class _FakeQueue:
-    def __init__(self, raw_bytes):
-        self._raw_bytes = raw_bytes
-
-    def read_buffer(self, _buffer):
-        return self._raw_bytes
-
-
-class _FakeDevice:
-    def __init__(self, raw_bytes=b"", limits=None):
-        self.queue = _FakeQueue(raw_bytes)
-        self.limits = {} if limits is None else limits
 
 
 def test_set_group_visibility_type_error():
@@ -317,26 +302,15 @@ def test_affine_transform_properties():
     assert actor.world.own == actor.local
 
 
-def test_read_buffer_syncs_cpu_data(monkeypatch):
-    expected = np.arange(6, dtype=np.float32).reshape(2, 3)
-    buffer = Buffer(np.zeros_like(expected))
-    monkeypatch.setattr(actor_utils, "wgpu_device", _FakeDevice(expected.tobytes()))
+@pytest.mark.parametrize("sync_cpu", [True, False])
+def test_read_buffer_requires_underlying_wgpu_buffer(group_line_projection, sync_cpu):
+    actor_obj = group_line_projection.children[0]
+    buffer = actor_obj.geometry.positions
 
-    out = actor_utils.read_buffer(buffer)
-
-    assert np.array_equal(out, expected)
-    assert np.array_equal(buffer.data, expected)
-
-
-def test_read_buffer_without_sync_keeps_cpu_data(monkeypatch):
-    expected = np.arange(6, dtype=np.float32).reshape(2, 3)
-    buffer = Buffer(np.zeros_like(expected))
-    monkeypatch.setattr(actor_utils, "wgpu_device", _FakeDevice(expected.tobytes()))
-
-    out = actor_utils.read_buffer(buffer, sync_cpu=False)
-
-    assert np.array_equal(out, expected)
-    assert np.array_equal(buffer.data, np.zeros_like(expected))
+    with pytest.raises(AttributeError) as exc_info:
+        actor_utils.read_buffer(buffer, sync_cpu=sync_cpu)
+    assert "size" in str(exc_info.value)
+    assert "Buffer" in str(exc_info.value)
 
 
 def test_read_buffer_rejects_non_buffer_instance():

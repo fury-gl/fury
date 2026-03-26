@@ -132,7 +132,7 @@ BufferUsage = wgpu.BufferUsage
 register_wgpu_render_function = gfx.renderers.wgpu.register_wgpu_render_function
 load_wgsl = gfx.renderers.wgpu.load_wgsl
 register_wgsl_loader = gfx.renderers.wgpu.shader.register_wgsl_loader
-wgpu_device = gfx.renderers.wgpu.get_shared().device
+gfx_wgpu = gfx.renderers.wgpu
 linalg = pylinalg
 
 Event = gfx.Event
