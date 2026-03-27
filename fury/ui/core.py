@@ -1112,8 +1112,7 @@ class TextBlock2D(UI):
             Text font size.
         """
         self.actor.font_size = size
-        if self.dynamic_bbox:
-            self.update_bounding_box()
+        self.update_layout()
 
     @property
     def font_family(self):
