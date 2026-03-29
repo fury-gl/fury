@@ -1111,8 +1111,20 @@ class TextBlock2D(UI):
         size : int
             Text font size.
         """
+        old_font_size = self.actor._font_size
         self.actor.font_size = size
-        self.update_layout()
+
+        if self.dynamic_bbox and old_font_size > 0:
+            ratio = size / old_font_size
+            aabb = self.actor._aabb
+            current_w = aabb[1][0] - aabb[0][0]
+            current_h = aabb[1][1] - aabb[0][1]
+            new_w = max(1, int(current_w * ratio))
+            new_h = max(1, int(current_h * ratio))
+            self.background.resize((new_w, new_h))
+            self._bg_size = (new_w, new_h)
+        else:
+            self.update_layout()
 
     @property
     def font_family(self):
