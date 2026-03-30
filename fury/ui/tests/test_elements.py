@@ -232,6 +232,69 @@ def test_line_slider_2d_visibility_propagation():
         assert actor.visible is True
 
 
+def test_ring_slider_value_ratio_sync():
+    """Verify that setting ratio updates value and vice versa."""
+    slider = ui.RingSlider2D(min_value=0, max_value=360)
+
+    slider.ratio = 0.5
+    assert slider.value == 180
+
+    slider.value = 90
+    assert slider.ratio == 0.25
+
+
+def test_ring_slider_clamping():
+    """Ensure value is clamped within the defined range."""
+    slider = ui.RingSlider2D(min_value=0, max_value=360)
+
+    slider.value = 500
+    assert slider.value == 360
+
+    slider.value = -50
+    assert slider.value == 0
+
+
+def test_ring_slider_handle_moves():
+    """Check that handle position changes when ratio changes."""
+    slider = ui.RingSlider2D()
+
+    slider.ratio = 0.0
+    p1 = slider.handle.get_position().copy()
+
+    slider.ratio = 0.5
+    p2 = slider.handle.get_position().copy()
+
+    assert not np.allclose(p1, p2)
+
+
+def test_ring_slider_size():
+    """Validate computed size based on radii and handle size."""
+    slider = ui.RingSlider2D(
+        slider_inner_radius=40,
+        slider_outer_radius=60,
+        handle_outer_radius=10,
+    )
+
+    size = slider._get_size()
+    expected = 2 * (60 + slider.handle.outer_radius)
+
+    assert size[0] == expected
+    assert size[1] == expected
+
+
+def test_ring_slider_text():
+    """Ensure displayed text updates correctly with value changes."""
+    slider = ui.RingSlider2D(
+        initial_value=90,
+        text_template="Angle: {angle:.0f}",
+    )
+
+    assert "90" in slider.text.message
+
+    slider.value = 180
+    assert "180" in slider.text.message
+
+
 # def test_ui_textbox(recording=False):
 #     filename = "test_ui_textbox"
 #     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")

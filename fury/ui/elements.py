@@ -1460,291 +1460,138 @@ class LineSlider2D(UI):
 #         i_ren.force_render()
 
 
-# class RingSlider2D(UI):
-#     """A disk slider.
+class RingSlider2D(UI):
+    """A circular 2D slider where a handle moves along a ring.
 
-#     A disk moves along the boundary of a ring.
-#     Goes from 0-360 degrees.
+    Parameters
+    ----------
+    center : (float, float), optional
+        Center position (x, y) of the slider.
+    slider_inner_radius : float, optional
+        Inner radius of the circular track.
+    slider_outer_radius : float, optional
+        Outer radius of the circular track.
+    handle_outer_radius : float, optional
+        Radius of the draggable handle.
+    initial_value : float, optional
+        Initial value of the slider.
+    min_value : float, optional
+        Minimum value of the slider.
+    max_value : float, optional
+        Maximum value of the slider.
+    text_template : str, optional
+        Template string for displaying slider value.
+    position : (float, float), optional
+        Absolute position of the UI component.
+    """
 
-#     Attributes
-#     ----------
-#     mid_track_radius: float
-#         Distance from the center of the slider to the middle of the track.
-#     previous_value: float
-#         Value of Rotation of the actor before the current value.
-#     track : :class:`Disk2D`
-#         The circle on which the slider's handle moves.
-#     handle : :class:`Disk2D`
-#         The moving part of the slider.
-#     text : :class:`TextBlock2D`
-#         The text that shows percentage.
-#     default_color : (float, float, float)
-#         Color of the handle when in unpressed state.
-#     active_color : (float, float, float)
-#         Color of the handle when it is pressed.
+    def __init__(
+        self,
+        *,
+        center=(0, 0),
+        slider_inner_radius=40,
+        slider_outer_radius=50,
+        handle_outer_radius=10,
+        initial_value=0,
+        min_value=0,
+        max_value=360,
+        text_template="{value:.0f}",
+        position=(0, 0),
+    ):
+        self.center = center
+        self.slider_inner_radius = slider_inner_radius
+        self.slider_outer_radius = slider_outer_radius
+        self.handle_outer_radius = handle_outer_radius
+        self._min_value = min_value
+        self._max_value = max_value
+        self._value = initial_value
+        range_val = max_value - min_value
+        self._ratio = (
+            (initial_value - min_value) / range_val if range_val != 0 else 0
+        )
+        self.text_template = text_template
+        self.angle = 0
+        self.on_change = lambda ui: None
+        self.on_value_changed = lambda ui: None
+        self.on_moving_slider = lambda ui: None
+        super().__init__(position=position)
 
-#     """
+    def _setup(self):
+        self.track = Disk2D(outer_radius=self.slider_outer_radius)
+        self.handle = Disk2D(outer_radius=self.handle_outer_radius)
+        self.text = TextBlock2D(dynamic_bbox=True)
+        self._update_handle_position()
 
-#     @warn_on_args_to_kwargs()
-#     def __init__(
-#         self,
-#         *,
-#         center=(0, 0),
-#         initial_value=180,
-#         min_value=0,
-#         max_value=360,
-#         slider_inner_radius=40,
-#         slider_outer_radius=44,
-#         handle_inner_radius=0,
-#         handle_outer_radius=10,
-#         font_size=16,
-#         text_template="{ratio:.0%}",
-#     ):
-#         """Init this UI element.
+    def _get_size(self):
+        d = 2 * (self.slider_outer_radius + self.handle.outer_radius)
+        return np.array([d, d])
 
-#         Parameters
-#         ----------
-#         center : (float, float)
-#             Position (x, y) of the slider's center.
-#         initial_value : float
-#             Initial value of the slider.
-#         min_value : float
-#             Minimum value of the slider.
-#         max_value : float
-#             Maximum value of the slider.
-#         slider_inner_radius : int
-#             Inner radius of the base disk.
-#         slider_outer_radius : int
-#             Outer radius of the base disk.
-#         handle_outer_radius : int
-#             Outer radius of the slider's handle.
-#         handle_inner_radius : int
-#             Inner radius of the slider's handle.
-#         font_size : int
-#             Size of the text to display alongside the slider (pt).
-#         text_template : str, callable
-#             If str, text template can contain one or multiple of the
-#             replacement fields: `{value:}`, `{ratio:}`, `{angle:}`.
-#             If callable, this instance of `:class:RingSlider2D` will be
-#             passed as argument to the text template function.
+    def _get_actors(self):
+        actors = []
+        if self.track:
+            actors += self.track.actors
+        if self.handle:
+            actors += self.handle.actors
+        if self.text:
+            actors += self.text.actors
+        return actors
 
-#         """
-#         self.default_color = (1, 1, 1)
-#         self.active_color = (0, 0, 1)
-#         super(RingSlider2D, self).__init__()
+    def _update_actors_position(self):
+        self._update_handle_position()
 
-#         self.track.inner_radius = slider_inner_radius
-#         self.track.outer_radius = slider_outer_radius
-#         self.handle.inner_radius = handle_inner_radius
-#         self.handle.outer_radius = handle_outer_radius
-#         self.center = center
+    @property
+    def value(self):
+        return self._value
 
-#         self.min_value = min_value
-#         self.max_value = max_value
-#         self.text.font_size = font_size
-#         self.text_template = text_template
+    @value.setter
+    def value(self, val):
+        val = np.clip(val, self._min_value, self._max_value)
+        self._value = val
+        range_val = self._max_value - self._min_value
+        self._ratio = (
+            (val - self._min_value) / range_val if range_val != 0 else 0
+        )
+        self._update_handle_position()
+        self.on_value_changed(self)
+        self.on_change(self)
 
-#         # Offer some standard hooks to the user.
-#         self.on_change = lambda ui: None
-#         self.on_value_changed = lambda ui: None
-#         self.on_moving_slider = lambda ui: None
+    @property
+    def ratio(self):
+        return self._ratio
 
-#         self._value = initial_value
-#         self.value = initial_value
-#         self._previous_value = initial_value
-#         self._angle = 0
-#         self._ratio = self.angle / TWO_PI
+    @ratio.setter
+    def ratio(self, r):
+        self._ratio = np.clip(r, 0, 1)
+        self._value = self._min_value + self._ratio * (
+            self._max_value - self._min_value
+        )
+        self._update_handle_position()
+        self.on_change(self)
 
-#     def _setup(self):
-#         """Setup this UI component.
+    def _update_handle_position(self):
+        self.angle = self.ratio * 2 * np.pi
+        cx, cy = self.center
+        r = (self.slider_inner_radius + self.slider_outer_radius) / 2
+        x = cx + r * np.cos(self.angle)
+        y = cy + r * np.sin(self.angle)
+        self.handle.set_position((x, y))
+        if self.text:
+            self.text.message = self.format_text()
 
-#         Create the slider's circle (Disk2D), the handle (Disk2D) and
-#         the text (TextBlock2D).
+    def handle_move_callback(self, event):
+        mx, my = event.position
+        cx, cy = self.center
+        angle = np.arctan2(my - cy, mx - cx)
+        angle = (angle + 2 * np.pi) % (2 * np.pi)
+        self.ratio = angle / (2 * np.pi)
+        self.on_moving_slider(self)
 
-#         """
-#         # Slider's track.
-#         self.track = Disk2D(outer_radius=1)
-#         self.track.color = (1, 0, 0)
-
-#         # Slider's handle.
-#         self.handle = Disk2D(outer_radius=1)
-#         self.handle.color = self.default_color
-
-#         # Slider Text
-#         self.text = TextBlock2D(
-#                               justification="center", vertical_justification="middle")
-
-#         # Add default events listener for this UI component.
-#         self.track.on_left_mouse_button_pressed = self.track_click_callback
-#         self.track.on_left_mouse_button_dragged = self.handle_move_callback
-#         self.track.on_left_mouse_button_released = self.handle_release_callback
-#         self.handle.on_left_mouse_button_dragged = self.handle_move_callback
-#         self.handle.on_left_mouse_button_released = self.handle_release_callback
-
-#     def _get_actors(self):
-#         """Get the actors composing this UI component."""
-#         return self.track.actors + self.handle.actors + self.text.actors
-
-#     def _add_to_scene(self, scene):
-#         """Add all subcomponents or VTK props that compose this UI component.
-
-#         Parameters
-#         ----------
-#         scene : scene
-
-#         """
-#         self.track.add_to_scene(scene)
-#         self.handle.add_to_scene(scene)
-#         self.text.add_to_scene(scene)
-
-#     def _get_size(self):
-#         return self.track.size + self.handle.size
-
-#     def _set_position(self, coords):
-#         """Set the lower-left corner position of this UI component.
-
-#         Parameters
-#         ----------
-#         coords: (float, float)
-#             Absolute pixel coordinates (x, y).
-
-#         """
-#         self.track.position = coords + self.handle.size / 2.0
-#         self.handle.position += coords - self.position
-#         # Position the text in the center of the slider's track.
-#         self.text.position = coords + self.size / 2.0
-
-#     @property
-#     def mid_track_radius(self):
-#         return (self.track.inner_radius + self.track.outer_radius) / 2.0
-
-#     @property
-#     def value(self):
-#         return self._value
-
-#     @value.setter
-#     def value(self, value):
-#         value_range = self.max_value - self.min_value
-#         self.ratio = (value - self.min_value) / value_range if value_range else 0
-#         self.on_value_changed(self)
-
-#     @property
-#     def previous_value(self):
-#         return self._previous_value
-
-#     @property
-#     def ratio(self):
-#         return self._ratio
-
-#     @ratio.setter
-#     def ratio(self, ratio):
-#         self.angle = ratio * TWO_PI
-
-#     @property
-#     def angle(self):
-#         """Return Angle (in rad) the handle makes with x-axis."""
-#         return self._angle
-
-#     @angle.setter
-#     def angle(self, angle):
-#         self._angle = angle % TWO_PI  # Wraparound
-#         self.update()
-
-#     def format_text(self):
-#         """Return formatted text to display along the slider."""
-#         if callable(self.text_template):
-#             return self.text_template(self)
-
-#         return self.text_template.format(
-#             ratio=self.ratio, value=self.value, angle=np.rad2deg(self.angle)
-#         )
-
-#     def update(self):
-#         """Update the slider."""
-#         # Compute the ratio determined by the position of the slider disk.
-#         self._ratio = self.angle / TWO_PI
-
-#         # Compute the selected value considering min_value and max_value.
-#         value_range = self.max_value - self.min_value
-#         self._previous_value = self.value
-#         self._value = self.min_value + self.ratio * value_range
-
-#         # Update text disk actor.
-#         x = self.mid_track_radius * np.cos(self.angle) + self.center[0]
-#         y = self.mid_track_radius * np.sin(self.angle) + self.center[1]
-#         self.handle.center = (x, y)
-
-#         # Update text.
-#         text = self.format_text()
-#         self.text.message = text
-
-#         self.on_change(self)  # Call hook.
-
-#     def move_handle(self, click_position):
-#         """Move the slider's handle.
-
-#         Parameters
-#         ----------
-#         click_position: (float, float)
-#             Position of the mouse click.
-
-#         """
-#         x, y = np.array(click_position) - self.center
-#         angle = np.arctan2(y, x)
-#         if angle < 0:
-#             angle += TWO_PI
-
-#         self.angle = angle
-
-#     def track_click_callback(self, i_ren, _obj, _slider):
-#         """Update disk position and grab the focus.
-
-#         Parameters
-#         ----------
-#         i_ren : :class:`CustomInteractorStyle`
-#         obj : :class:`vtkActor`
-#             The picked actor
-#         _slider : :class:`RingSlider2D`
-
-#         """
-#         click_position = i_ren.event.position
-#         self.move_handle(click_position=click_position)
-#         self.on_moving_slider(self)
-#         i_ren.force_render()
-#         i_ren.event.abort()  # Stop propagating the event.
-
-#     def handle_move_callback(self, i_ren, _obj, _slider):
-#         """Move the slider's handle.
-
-#         Parameters
-#         ----------
-#         i_ren : :class:`CustomInteractorStyle`
-#         obj : :class:`vtkActor`
-#             The picked actor
-#         _slider : :class:`RingSlider2D`
-
-#         """
-#         click_position = i_ren.event.position
-#         self.handle.color = self.active_color
-#         self.move_handle(click_position=click_position)
-#         self.on_moving_slider(self)
-#         i_ren.force_render()
-#         i_ren.event.abort()  # Stop propagating the event.
-
-#     def handle_release_callback(self, i_ren, _obj, _slider):
-#         """Change color when handle is released.
-
-#         Parameters
-#         ----------
-#         i_ren : :class:`CustomInteractorStyle`
-#         vtkactor : :class:`vtkActor`
-#             The picked actor
-#         _slider : :class:`RingSlider2D`
-
-#         """
-#         self.handle.color = self.default_color
-#         i_ren.force_render()
-
+    def format_text(self):
+        return self.text_template.format(
+            value=self.value,
+            ratio=self.ratio,
+            angle=np.degrees(self.angle),
+        )
 
 # class RangeSlider(UI):
 #     """A set of a LineSlider2D and a LineDoubleSlider2D.
