@@ -245,85 +245,50 @@ def check_for_warnings(warn_printed, w_msg):
 
 
 class EventCounter:
-    """Count UI events fired on a v2 UI component.
+    """Count renderer-level UI events via ShowManager's built-in registry.
 
-    Attaches to the callback attributes of a :class:`~fury.ui.core.UI`
-    element and counts how many times each event fires. Designed to be
-    used in tests alongside an offscreen :class:`~fury.window.ShowManager`.
+    Wraps :attr:`~fury.window.ShowManager.event_counts` for convenient
+    use in tests. Supports saving, loading, and comparing counts.
 
     Parameters
     ----------
-    events_names : list of str, optional
-        Event attribute names to monitor on the UI element.
-        If ``None``, defaults to the standard set of v2 UI callbacks.
+    show_manager : ShowManager
+        The ShowManager whose event registry to track.
 
     Examples
     --------
-    >>> from fury import ui
+    >>> from fury import window
     >>> from fury.testing import EventCounter
-    >>> rect = ui.Rectangle2D(size=(100, 100))
-    >>> counter = EventCounter()
-    >>> counter.monitor(rect)
-    >>> rect.on_left_mouse_button_clicked(None)
-    >>> counter.events_counts["on_left_mouse_button_clicked"]
-    1
+    >>> show_m = window.ShowManager(window_type='offscreen')
+    >>> counter = EventCounter(show_m)
+    >>> show_m.event_counts
+    {...}
     """
 
-    def __init__(self, *, events_names=None):
+    def __init__(self, show_manager):
         """Initialize the EventCounter.
 
         Parameters
         ----------
-        events_names : list of str, optional
-            Event attribute names to monitor on the UI element.
-            If ``None``, defaults to the standard v2 UI callback names.
+        show_manager : ShowManager
+            The ShowManager whose event registry to track.
         """
-        if events_names is None:
-            events_names = [
-                "on_left_mouse_button_pressed",
-                "on_left_mouse_button_released",
-                "on_left_mouse_button_clicked",
-                "on_left_mouse_double_clicked",
-                "on_left_mouse_button_dragged",
-                "on_right_mouse_button_pressed",
-                "on_right_mouse_button_released",
-                "on_right_mouse_button_clicked",
-                "on_right_mouse_double_clicked",
-                "on_right_mouse_button_dragged",
-                "on_middle_mouse_button_pressed",
-                "on_middle_mouse_button_released",
-                "on_middle_mouse_button_clicked",
-                "on_middle_mouse_double_clicked",
-                "on_middle_mouse_button_dragged",
-                "on_key_press",
-            ]
+        self._show_manager = show_manager
 
-        self.events_counts = dict.fromkeys(events_names, 0)
+    @property
+    def events_counts(self):
+        """Return the current event counts from ShowManager.
 
-    def monitor(self, ui_component):
-        """Attach counting callbacks to all monitored events on a UI element.
-
-        Wraps each existing callback so the original behaviour is preserved
-        and the counter is incremented on every invocation.
-
-        Parameters
-        ----------
-        ui_component : UI
-            Any FURY v2 :class:`~fury.ui.core.UI` element.
+        Returns
+        -------
+        dict
+            Dictionary mapping event type strings to their counts.
         """
-        for event_name in self.events_counts:
-            if not hasattr(ui_component, event_name):
-                continue
+        return self._show_manager.event_counts
 
-            def _make_counter(name, original):
-                def _callback(event):
-                    self.events_counts[name] += 1
-                    original(event)
-
-                return _callback
-
-            original = getattr(ui_component, event_name)
-            setattr(ui_component, event_name, _make_counter(event_name, original))
+    def reset(self):
+        """Reset all event counts to zero."""
+        self._show_manager.reset_event_counts()
 
     def save(self, filename):
         """Save event counts to a JSON file.
@@ -347,28 +312,26 @@ class EventCounter:
 
         Returns
         -------
-        EventCounter
-            A new EventCounter instance with the loaded counts.
+        dict
+            Dictionary of event counts.
         """
-        counter = cls(events_names=[])
         with open(filename) as f:
-            counter.events_counts = json.load(f)
-        return counter
+            return json.load(f)
 
     def check_counts(self, expected):
         """Compare current counts with expected counts.
 
         Parameters
         ----------
-        expected : EventCounter
-            An EventCounter with the expected event counts.
+        expected : dict
+            Dictionary with expected event counts.
 
         Raises
         ------
         AssertionError
             If any count does not match the expected value.
         """
-        for event, count in expected.events_counts.items():
+        for event, count in expected.items():
             actual = self.events_counts.get(event, 0)
             if actual != count:
                 raise AssertionError(

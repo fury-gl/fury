@@ -748,6 +748,19 @@ class ShowManager:
         self.screens = self._create_screens()
         self._callbacks = {}
 
+        # Built-in event registry — tracks counts of all window-level events.
+        self._event_registry = {
+            "pointer_down": 0,
+            "pointer_up": 0,
+            "pointer_move": 0,
+            "double_click": 0,
+            "key_down": 0,
+            "key_up": 0,
+            "wheel": 0,
+        }
+        for _evt_name in self._event_registry:
+            self.window.add_event_handler(self._track_event, _evt_name)
+
         self._stats = None
         self._stats_initialized = False
 
@@ -774,6 +787,34 @@ class ShowManager:
             x=event.x, y=event.y, type=EventType.POINTER_DRAG, target=self._drag_target
         )
         self.renderer.dispatch_event(drag_event)
+
+    @property
+    def event_counts(self):
+        """Return a copy of the current event counts.
+
+        Returns
+        -------
+        dict
+            Dictionary mapping event type strings to their counts.
+        """
+        return dict(self._event_registry)
+
+    def reset_event_counts(self):
+        """Reset all event counts to zero."""
+        for key in self._event_registry:
+            self._event_registry[key] = 0
+
+    def _track_event(self, event):
+        """Increment the count for a received window-level event.
+
+        Parameters
+        ----------
+        event : dict
+            The rendercanvas event dictionary.
+        """
+        evt_type = event.get("event_type", "")
+        if evt_type in self._event_registry:
+            self._event_registry[evt_type] += 1
 
     def _register_drag(self, event):
         """Register drag events for pointer interactions.

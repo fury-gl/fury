@@ -508,36 +508,79 @@ def test_textblock2d_visual_snapshot():
         npt.assert_almost_equal(mean_hidden, 0, decimal=0)
 
 
-def test_event_counter_monitor_and_count():
-    """Test EventCounter monitors and counts UI callbacks correctly."""
+def test_event_counter_counts():
+    """Test EventCounter counts renderer-level events via ShowManager."""
     from fury.testing import EventCounter
 
-    rect = ui.Rectangle2D(size=(100, 100))
-    counter = EventCounter()
-    counter.monitor(rect)
+    scene = window.Scene()
+    show_m = window.ShowManager(scene=scene, size=(800, 800), window_type="offscreen")
 
-    # Simulate left button press -> release -> click sequence
-    rect.left_button_click_callback(None)
-    rect.left_button_release_callback(None)
+    counter = EventCounter(show_m)
 
-    npt.assert_equal(counter.events_counts["on_left_mouse_button_pressed"], 1)
-    npt.assert_equal(counter.events_counts["on_left_mouse_button_clicked"], 1)
-    npt.assert_equal(counter.events_counts["on_left_mouse_button_released"], 1)
+    show_m.window._events.emit(
+        {
+            "event_type": "pointer_down",
+            "x": 10,
+            "y": 10,
+            "button": 1,
+            "buttons": [1],
+            "modifiers": [],
+        }
+    )
+    show_m.window._events.emit(
+        {
+            "event_type": "pointer_up",
+            "x": 10,
+            "y": 10,
+            "button": 1,
+            "buttons": [],
+            "modifiers": [],
+        }
+    )
+    show_m.window._events.emit(
+        {
+            "event_type": "pointer_move",
+            "x": 20,
+            "y": 20,
+            "button": 0,
+            "buttons": [],
+            "modifiers": [],
+        }
+    )
 
-    # Right button
-    rect.right_button_click_callback(None)
-    rect.right_button_release_callback(None)
+    npt.assert_equal(counter.events_counts["pointer_down"], 1)
+    npt.assert_equal(counter.events_counts["pointer_up"], 1)
+    npt.assert_equal(counter.events_counts["pointer_move"], 1)
+    npt.assert_equal(counter.events_counts["key_down"], 0)
 
-    npt.assert_equal(counter.events_counts["on_right_mouse_button_pressed"], 1)
-    npt.assert_equal(counter.events_counts["on_right_mouse_button_clicked"], 1)
-    npt.assert_equal(counter.events_counts["on_right_mouse_button_released"], 1)
+    show_m.close()
 
-    # Key press
-    rect.key_press_callback(None)
-    npt.assert_equal(counter.events_counts["on_key_press"], 1)
 
-    # Unmonitored events stay at zero
-    npt.assert_equal(counter.events_counts["on_left_mouse_button_dragged"], 0)
+def test_event_counter_reset():
+    """Test EventCounter reset clears all counts."""
+    from fury.testing import EventCounter
+
+    scene = window.Scene()
+    show_m = window.ShowManager(scene=scene, size=(800, 800), window_type="offscreen")
+
+    counter = EventCounter(show_m)
+
+    show_m.window._events.emit(
+        {
+            "event_type": "pointer_down",
+            "x": 10,
+            "y": 10,
+            "button": 1,
+            "buttons": [1],
+            "modifiers": [],
+        }
+    )
+    npt.assert_equal(counter.events_counts["pointer_down"], 1)
+
+    counter.reset()
+    npt.assert_equal(counter.events_counts["pointer_down"], 0)
+
+    show_m.close()
 
 
 def test_event_counter_save_and_load():
@@ -547,73 +590,94 @@ def test_event_counter_save_and_load():
 
     from fury.testing import EventCounter
 
-    rect = ui.Rectangle2D(size=(100, 100))
-    counter = EventCounter()
-    counter.monitor(rect)
+    scene = window.Scene()
+    show_m = window.ShowManager(scene=scene, size=(800, 800), window_type="offscreen")
 
-    rect.left_button_click_callback(None)
-    rect.left_button_click_callback(None)
-    rect.key_press_callback(None)
+    counter = EventCounter(show_m)
+
+    show_m.window._events.emit(
+        {
+            "event_type": "pointer_down",
+            "x": 10,
+            "y": 10,
+            "button": 1,
+            "buttons": [1],
+            "modifiers": [],
+        }
+    )
 
     with tempfile.TemporaryDirectory() as tmpdir:
         fname = os.path.join(tmpdir, "counts.json")
         counter.save(fname)
-
         loaded = EventCounter.load(fname)
-        npt.assert_equal(
-            loaded.events_counts["on_left_mouse_button_pressed"],
-            counter.events_counts["on_left_mouse_button_pressed"],
-        )
-        npt.assert_equal(
-            loaded.events_counts["on_key_press"],
-            counter.events_counts["on_key_press"],
-        )
+        npt.assert_equal(loaded["pointer_down"], 1)
+
+    show_m.close()
 
 
 def test_event_counter_check_counts():
     """Test EventCounter.check_counts raises on mismatch."""
     from fury.testing import EventCounter
 
-    rect = ui.Rectangle2D(size=(100, 100))
-    counter = EventCounter()
-    counter.monitor(rect)
-    rect.left_button_click_callback(None)
+    scene = window.Scene()
+    show_m = window.ShowManager(scene=scene, size=(800, 800), window_type="offscreen")
 
-    # click_callback sets state to "pressing", release_callback fires clicked+released
-    rect.left_button_release_callback(None)
+    counter = EventCounter(show_m)
 
-    expected = EventCounter()
-    expected.events_counts["on_left_mouse_button_pressed"] = 1
-    expected.events_counts["on_left_mouse_button_clicked"] = 1
-    expected.events_counts["on_left_mouse_button_released"] = 1
+    show_m.window._events.emit(
+        {
+            "event_type": "pointer_down",
+            "x": 10,
+            "y": 10,
+            "button": 1,
+            "buttons": [1],
+            "modifiers": [],
+        }
+    )
 
     # Should not raise
-    counter.check_counts(expected)
+    counter.check_counts({"pointer_down": 1})
 
     # Should raise on wrong count
-    expected.events_counts["on_left_mouse_button_pressed"] = 5
     try:
-        counter.check_counts(expected)
+        counter.check_counts({"pointer_down": 5})
         raise AssertionError("check_counts should have raised")
     except AssertionError:
         pass
 
+    show_m.close()
 
-def test_event_counter_custom_callback_preserved():
-    """Test that original callbacks still fire after monitor()."""
-    from fury.testing import EventCounter
 
-    fired = []
-    rect = ui.Rectangle2D(size=(100, 100))
-    rect.on_left_mouse_button_clicked = lambda e: fired.append(e)
+def test_show_manager_event_counts_property():
+    """Test ShowManager.event_counts returns correct counts."""
+    scene = window.Scene()
+    show_m = window.ShowManager(scene=scene, size=(800, 800), window_type="offscreen")
 
-    counter = EventCounter()
-    counter.monitor(rect)
+    show_m.window._events.emit(
+        {
+            "event_type": "pointer_down",
+            "x": 10,
+            "y": 10,
+            "button": 1,
+            "buttons": [1],
+            "modifiers": [],
+        }
+    )
+    show_m.window._events.emit(
+        {
+            "event_type": "pointer_down",
+            "x": 20,
+            "y": 20,
+            "button": 1,
+            "buttons": [1],
+            "modifiers": [],
+        }
+    )
 
-    rect.left_button_click_callback(None)
-    rect.left_button_release_callback(None)
+    counts = show_m.event_counts
+    npt.assert_equal(counts["pointer_down"], 2)
 
-    # Counter incremented
-    npt.assert_equal(counter.events_counts["on_left_mouse_button_clicked"], 1)
-    # Original callback also fired
-    npt.assert_equal(len(fired), 1)
+    show_m.reset_event_counts()
+    npt.assert_equal(show_m.event_counts["pointer_down"], 0)
+
+    show_m.close()
