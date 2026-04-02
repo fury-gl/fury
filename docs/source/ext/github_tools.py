@@ -1,45 +1,28 @@
-import requests
-from requests.exceptions import HTTPError
+import urllib.request
 
 
-def extract_status(response):
-    """
-    Extracts the status code from a response or error object.
-    This ensures that we handle different cases where the status code may not be directly accessible.
-    """
-    if hasattr(response, 'status_code'):
-        return response.status_code
-    if hasattr(response, 'response') and hasattr(response.response, 'status_code'):
-        return response.response.status_code
-    return None
+# Helper function to extract HTTP status from an HTTPError.
+# This is crucial as HTTPError uses .code instead of .status.
+def _get_http_status(obj):
+    return obj.code if hasattr(obj, 'code') else None
 
 
-def safe_request(url):
-    """
-    Performs a GET request to the specified URL and safely handles HTTP errors.
-    This function will catch HTTPError exceptions and return a None status code if unable to extract.
-    """
-    try:
-        response = requests.get(url)
-        response.raise_for_status()  # Raise for HTTP errors
-        return response.json()
-    except HTTPError as http_err:
-        status = extract_status(http_err)
-        print(f'HTTP error occurred: {http_err}, Status code: {status}')  # Or handle the error as needed
-        return None
-    except Exception as err:
-        print(f'An error occurred: {err}')  # General error handling
-        return None
+def get_paged_request(url, retries=5):
+    while retries > 0:
+        try:
+            with urllib.request.urlopen(url) as response:
+                status = response.getcode()
+                yield response.read()
+                break  # exit loop on successful request
+        except urllib.error.HTTPError as f:
+            status = _get_http_status(f)
+            print(f'Received HTTPError: {status}')  # adjusted print statement
+            retries -= 1
+            if retries == 0:
+                raise
 
 
-# Mock error handling for testing purposes
-class MockHTTPError(HTTPError):
-    def __init__(self, message, headers=None):
-        super().__init__(message)
-        self.response = requests.Response()
-        self.response.status_code = 400
-        if headers:
-            self.response.headers = headers
-
-# Example usage of safe_request:
-# result = safe_request('https://api.example.com/resource')
+# MockError class to simulate HTTP errors for testing
+class MockError(Exception):
+    def __init__(self):
+        self.headers = {}  # Define headers as an empty dict
