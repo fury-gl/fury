@@ -88,20 +88,24 @@ Ready to contribute? Here's how to set up `FURY` for local development.
     $ git commit -m "Your detailed description of your changes."
     $ git push origin name-of-your-bugfix-or-feature
 
-7. Install the required packages for running the unittests::
+7. Install the required packages for running the unittests and linting::
 
     $ pip install -r requirements/optional.txt
     $ pip install -r requirements/test.txt
     $ pip install -r requirements/style.txt
 
-8. When you're done making changes, check that your changes pass ruff and pytest::
+8. Set up pre-commit hooks for automatic code formatting::
+
+    $ pre-commit install
+
+   This will ensure that your code is automatically formatted according to the project's style guidelines before you push your changes.
+
+9. When you're done making changes, check that your changes pass ruff and pytest::
 
     $ ruff check fury
     $ pytest fury
 
-    To get ruff and pytest, install style and test requirements into your virtualenv.
-
-9. Submit a pull request through the GitHub website.
+10. Submit a pull request through the GitHub website.
 
 Pull Request Guidelines
 -----------------------
