@@ -12,8 +12,6 @@ from fury.window import Scene, ShowManager
 from fury.data import fetch_viz_icons, read_viz_icons
 
 ##############################################################################
-from fury.data import fetch_viz_icons, read_viz_icons
-
 # Load RGB image from assets
 img_rgb = read_viz_icons(fname="circle-right.png")
 
