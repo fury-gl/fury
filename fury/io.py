@@ -237,7 +237,26 @@ def save_image(
         )
 
     im = Image.fromarray(arr)
-    im.save(filename, quality=compression_quality, dpi=dpi)
+
+    save_kwargs = {"dpi": dpi}
+
+    if extension in (".tiff", ".tif"):
+        if compression_type is not None:
+            compression_map = {
+                "lzw": "tiff_lzw",
+                "deflation": "tiff_deflate",
+            }
+            pil_compression = compression_map.get(compression_type)
+            if pil_compression is None:
+                raise OSError(
+                    f"Unknown compression type '{compression_type}'. "
+                    f"Supported types for TIFF: {list(compression_map.keys())}"
+                )
+            save_kwargs["compression"] = pil_compression
+    else:
+        save_kwargs["quality"] = compression_quality
+
+    im.save(filename, **save_kwargs)
 
 
 # def load_polydata(file_name):
