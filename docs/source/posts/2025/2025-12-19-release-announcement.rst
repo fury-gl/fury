@@ -1,6 +1,6 @@
 
 FURY 2.0.0a4 Released
-====================
+======================
 
 .. post:: December 19, 2025
    :author: maharshi-gor
