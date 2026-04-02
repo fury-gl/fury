@@ -1000,9 +1000,7 @@ class ImageContainer2D(UI):
         elif isinstance(image_input, np.ndarray):
             image = image_input
         else:
-            raise TypeError(
-                "image_input must be a file path (str) or a NumPy array."
-            )
+            raise TypeError("image_input must be a file path (str) or a NumPy array.")
         if image.ndim == 3:
             if image.shape[-1] == 3:
                 image = image.mean(axis=2)
@@ -1020,23 +1018,28 @@ class ImageContainer2D(UI):
         super().__init__(position=position)
 
     def _setup(self):
+        """Initialize internal actor."""
         self._image_actor = image_actor(self._img)
         self._actors = [self._image_actor]
 
     def _get_actors(self):
+        """Return actors composing this UI element."""
         return [self._image_actor]
 
     def _get_size(self):
+        """Return size of the image container."""
         if self._size is not None:
             return self._size
         return self._img.shape[1], self._img.shape[0]
 
     def resize(self, size):
+        """Return size of the image container."""
         if size is not None and len(size) != 2:
             raise ValueError("size must be (width, height)")
         self._size = size
 
     def _update_actors_position(self):
+        """Update actor position in the scene."""
         self.set_actor_position(
             self._image_actor,
             self.get_position(),

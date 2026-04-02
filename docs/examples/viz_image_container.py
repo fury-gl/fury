@@ -7,23 +7,23 @@ ImageContainer2D
 ##############################################################################
 # Imports
 
-import numpy as np
 from fury.ui import ImageContainer2D
 from fury.window import Scene, ShowManager
+from fury.data import fetch_viz_icons, read_viz_icons
+
+##############################################################################
+from fury.data import fetch_viz_icons, read_viz_icons
+
+# Load RGB image from assets
+img_rgb = read_viz_icons(fname="circle-right.png")
+
+# Convert to grayscale manually (for demo comparison)
+img_gray = img_rgb.mean(axis=2).astype("uint8")
 
 ##############################################################################
 # Creating a Scene
 
 scene = Scene()
-
-##############################################################################
-# Creating sample images
-
-# Grayscale image (used as-is)
-img_gray = np.random.randint(0, 255, (200, 200), dtype=np.uint8)
-
-# RGB image (will be converted internally to grayscale)
-img_rgb = np.random.randint(0, 255, (200, 200, 3), dtype=np.uint8)
 
 ##############################################################################
 # Creating ImageContainer2D UI elements
