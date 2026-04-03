@@ -1064,6 +1064,10 @@ class TextBlock2D(UI):
     def get_formatted_text(self, text):
         """Format the given text with markdown syntax for bold/italic styles.
 
+        pygfx markdown only supports ``**`` (bold) and ``*`` (italic) as
+        separate two-char / one-char star tokens.  It does **not** recognise
+        ``***`` for bold-italic, so we must wrap each word individually.
+
         Parameters
         ----------
         text : str
@@ -1074,14 +1078,40 @@ class TextBlock2D(UI):
         str
             The formatted markdown string.
         """
-        affix_char = ""
-        if self.bold:
-            affix_char = "**"
-        elif self.italic:
-            affix_char = "*"
+        if not self.bold and not self.italic:
+            return text
+
+        def _wrap_word(word):
+            """Wrap a single word with the appropriate markdown markers.
+
+            Parameters
+            ----------
+            word : str
+                The word to wrap with markdown markers.
+
+            Returns
+            -------
+            str
+                The word wrapped with bold/italic markdown markers.
+            """
+            if not word.strip():
+                return word
+            if self.bold and self.italic:
+                zws = "\u200b"
+                return f"*{zws}**{word}**{zws}*"
+            if self.bold:
+                return f"**{word}**"
+            return f"*{word}*"
 
         lines = text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
-        formatted_lines = [f"{affix_char}{line}{affix_char}" for line in lines]
+        formatted_lines = []
+        for line in lines:
+            if not line.strip():
+                formatted_lines.append(line)
+                continue
+            words = line.split(" ")
+            formatted_words = [_wrap_word(w) if w else w for w in words]
+            formatted_lines.append(" ".join(formatted_words))
 
         return "\n".join(formatted_lines)
 
