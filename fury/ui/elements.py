@@ -645,17 +645,14 @@ class TextBox2D(UI):
         """Setup this UI component.
 
         Create the TextBlock2D component used for the textbox.
+        Uses dynamic_bbox so the bounding box adapts as the user types.
         """
-        char_w = int(self._font_size * 0.6)
-        char_h = int(self._font_size * 1.2)
-        bbox_size = (self._width * char_w, self._height * char_h)
-
         self.text = TextBlock2D(
             text=self._message,
             font_size=self._font_size,
             font_family=self._font_family,
             justification=self._justification,
-            size=bbox_size,
+            dynamic_bbox=True,
         )
         self.text.color = self._color
         self.text.bold = self._bold
