@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-"""Simple tools to query github.com and gather repo information.
+"""
+Simple tools to query github.com and gather repo information.
 
-Taken from ipython
+Taken from ipython.
 """
 
 import argparse
@@ -12,6 +13,7 @@ import os
 import re
 from subprocess import check_output
 import sys
+import time
 from urllib.request import Request, urlopen
 
 # ----------------------------------------------------------------------------
@@ -37,6 +39,37 @@ GH_TOKEN = os.environ.get("GH_TOKEN", "")
 # ----------------------------------------------------------------------------
 # Functions
 # ----------------------------------------------------------------------------
+def _get_http_status(response):
+    """Return an HTTP status code from a urlopen()-like response.
+
+    Parameters
+    ----------
+    response : object
+        Object returned by ``urllib.request.urlopen`` (or an exception object
+        such as ``urllib.error.HTTPError``).
+
+    Returns
+    -------
+    status : int or None
+        HTTP status code, if available.
+
+    Notes
+    -----
+    ``urllib.error.HTTPError`` exposes the status code via ``.code``.
+    Some response objects expose ``.status`` or ``.getcode()``.
+    """
+    if response is None:
+        return None
+    if hasattr(response, "status"):
+        return response.status
+    if hasattr(response, "code"):
+        return response.code
+    if hasattr(response, "getcode"):
+        try:
+            return response.getcode()
+        except Exception:
+            return None
+    return None
 
 
 def fetch_url(url):
@@ -60,12 +93,18 @@ def fetch_url(url):
             msg = "Please make sure you use http/https connection"
             raise ValueError(msg)
         f = urlopen(req)
+        return f
     except Exception as e:
         print(e)
-        print("return Empty data", file=sys.stderr)
-        return {}
+        if hasattr(e, "code"):
+            return e
 
-    return f
+        class MockError:
+            status = 500
+            headers = {}
+
+        print("return Empty data", file=sys.stderr)
+        return MockError()
 
 
 def parse_link_header(headers):
@@ -98,15 +137,29 @@ def get_paged_request(url, response_key=None):
     counter = 0
     while url:
         f = fetch_url(url)
-        if f.status != 200:
+        status = _get_http_status(f)
+        if status != 200:
             # Avoid infinite loop
-            if counter == 5:
+            if counter >= 5:
+                print(f"Failed to fetch {url} after 5 retries. Status: {status}")
                 break
+
+            # If we hit a Rate Limit (429) or Forbidden API abuse (403),
+            # apply exponential backoff
+            if status in [429, 403]:
+                wait_time = 2**counter  # Waits 1s, 2s, 4s, 8s, 16s...
+                print(
+                    f"GitHub API rate limit hit (Status {status}). "
+                    f"Retrying in {wait_time} seconds..."
+                )
+                time.sleep(wait_time)
+
             counter += 1
             continue
+
         response = get_json_from_response(f, key=response_key)
         results.extend(response)
-        links = parse_link_header(f.headers)
+        links = parse_link_header(getattr(f, "headers", {}))
         url = links.get("next")
     return results
 
@@ -223,12 +276,12 @@ def fetch_contributor_stats(project="fury-gl/fury"):
             continue
 
         # Replace key name
-        contributor_dict["username"] = usrname = contributor_dict.pop("login")
+        contributor_dict["username"] = username = contributor_dict.pop("login")
         contributor_dict["nb_commits"] = contributor["total"]
 
         # Add extra information like fullname and affiliation
         l_extra_info = [
-            e for e in extra_info if e["username"].lower() == usrname.lower()
+            e for e in extra_info if e["username"].lower() == username.lower()
         ]
 
         l_extra_info = l_extra_info[0] if l_extra_info else {}
@@ -259,20 +312,19 @@ def fetch_contributor_stats(project="fury-gl/fury"):
 
 
 def cumulative_contributors(project="fury-gl/fury", show=True):
-    """Calculate total contributors as new contributors join with time.
+    """Calculate the cumulative number of contributors over time.
 
     Parameters
     ----------
-    contributors_list : list
-        List of contributors with weeks of contributions. Example:
-        [
-            {
-                'weeks': [
-                        {'w': 1254009600, 'a': 5, 'c': 2, 'd': 9},
-                    ],
-                .....
-            },
-        ]
+    project : str, optional
+        Repository path in ``owner/repo`` form.
+    show : bool, optional
+        If True, plot the cumulative contributor count.
+
+    Returns
+    -------
+    cumulative_list : list of tuple
+        Sorted list of ``(timestamp, cumulative_contributor_count)`` pairs.
 
     """
     url = f"https://api.github.com/repos/{project}/stats/contributors"
@@ -289,9 +341,9 @@ def cumulative_contributors(project="fury-gl/fury", show=True):
 
     cumulative_join_date = {}
     cumulative = 0
-    for time in sorted(contributors_join_date):
-        cumulative += contributors_join_date[time]
-        cumulative_join_date[time] = cumulative
+    for join_time in sorted(contributors_join_date):
+        cumulative += contributors_join_date[join_time]
+        cumulative_join_date[join_time] = cumulative
 
     cumulative_list = list(cumulative_join_date.items())
     cumulative_list.sort()
@@ -490,12 +542,12 @@ def username_to_fullname(all_authors):
         extra_info = extra_info["team"] + extra_info["core_team"]
         extra_info = {i["username"]: i["fullname"] for i in extra_info}
 
-    curent_authors = all_authors
+    current_authors = all_authors
     for i, author in enumerate(all_authors):
         if author[2:] in extra_info.keys():
-            curent_authors[i] = "* " + extra_info[author[2:]]
+            current_authors[i] = "* " + extra_info[author[2:]]
 
-    return curent_authors
+    return current_authors
 
 
 def github_stats(**kwargs):
@@ -529,13 +581,11 @@ def github_stats(**kwargs):
             except Exception:
                 tag = sys.argv[1]
         else:
-            tag = check_output(
-                ["git", "describe", "--abbrev=0"], universal_newlines=True
-            ).strip()
+            tag = check_output(["git", "describe", "--abbrev=0"], text=True).strip()
 
     if tag:
         cmd = ["git", "log", "-1", "--format=%ai", tag]
-        tagday, _ = check_output(cmd, universal_newlines=True).strip().rsplit(" ", 1)
+        tagday, _ = check_output(cmd, text=True).strip().rsplit(" ", 1)
         since = datetime.strptime(tagday, "%Y-%m-%d %H:%M:%S")
     else:
         since = datetime.now() - timedelta(days=days)
@@ -569,11 +619,11 @@ def github_stats(**kwargs):
         # print git info, in addition to GitHub info:
         since_tag = tag + ".."
         cmd = ["git", "log", "--oneline", since_tag]
-        ncommits = check_output(cmd, universal_newlines=True).splitlines()
+        ncommits = check_output(cmd, text=True).splitlines()
         ncommits = len(ncommits)
 
         author_cmd = ["git", "log", "--format=* %aN", since_tag]
-        all_authors = check_output(author_cmd, universal_newlines=True).splitlines()
+        all_authors = check_output(author_cmd, text=True).splitlines()
         # Replace username by author name
         all_authors = username_to_fullname(all_authors)
         unique_authors = sorted(set(all_authors))
