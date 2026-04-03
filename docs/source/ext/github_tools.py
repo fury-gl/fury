@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-"""Simple tools to query github.com and gather repo information.
+"""
+Simple tools to query github.com and gather repo information.
 
-Taken from ipython
+Taken from ipython.
 """
 
-import time 
 import argparse
 from datetime import datetime, timedelta
 import json
@@ -13,6 +13,7 @@ import os
 import re
 from subprocess import check_output
 import sys
+import time
 from urllib.request import Request, urlopen
 
 # ----------------------------------------------------------------------------
@@ -39,12 +40,23 @@ GH_TOKEN = os.environ.get("GH_TOKEN", "")
 # Functions
 # ----------------------------------------------------------------------------
 def _get_http_status(response):
-    """Safely extract an HTTP status code from a urlopen()-like response.
+    """Return an HTTP status code from a urlopen()-like response.
+
+    Parameters
+    ----------
+    response : object
+        Object returned by ``urllib.request.urlopen`` (or an exception object
+        such as ``urllib.error.HTTPError``).
+
+    Returns
+    -------
+    status : int or None
+        HTTP status code, if available.
 
     Notes
     -----
-    `urllib.error.HTTPError` exposes the HTTP status as `.code`,
-    while some response objects expose `.status`. Do not assume `.status` exists.
+    ``urllib.error.HTTPError`` exposes the status code via ``.code``.
+    Some response objects expose ``.status`` or ``.getcode()``.
     """
     if response is None:
         return None
@@ -52,7 +64,13 @@ def _get_http_status(response):
         return response.status
     if hasattr(response, "code"):
         return response.code
+    if hasattr(response, "getcode"):
+        try:
+            return response.getcode()
+        except Exception:
+            return None
     return None
+
 
 def fetch_url(url):
     """
@@ -78,14 +96,13 @@ def fetch_url(url):
         return f
     except Exception as e:
         print(e)
-        # In modern Python, HTTPError already has a built-in read-only .status property
-        if hasattr(e, 'code'):
+        if hasattr(e, "code"):
             return e
-            
-        # If it's a network drop or non-HTTP error, return a dummy object to prevent the dictionary crash
+
         class MockError:
             status = 500
             headers = {}
+
         print("return Empty data", file=sys.stderr)
         return MockError()
 
@@ -126,13 +143,17 @@ def get_paged_request(url, response_key=None):
             if counter >= 5:
                 print(f"Failed to fetch {url} after 5 retries. Status: {status}")
                 break
-            
-            # If we hit a Rate Limit (429) or Forbidden API abuse (403), apply exponential backoff
+
+            # If we hit a Rate Limit (429) or Forbidden API abuse (403),
+            # apply exponential backoff
             if status in [429, 403]:
-                wait_time = 2 ** counter  # Waits 1s, 2s, 4s, 8s, 16s...
-                print(f"GitHub API rate limit hit (Status {status}). Retrying in {wait_time} seconds...")
+                wait_time = 2**counter  # Waits 1s, 2s, 4s, 8s, 16s...
+                print(
+                    f"GitHub API rate limit hit (Status {status}). "
+                    f"Retrying in {wait_time} seconds..."
+                )
                 time.sleep(wait_time)
-            
+
             counter += 1
             continue
 
@@ -291,20 +312,19 @@ def fetch_contributor_stats(project="fury-gl/fury"):
 
 
 def cumulative_contributors(project="fury-gl/fury", show=True):
-    """Calculate total contributors as new contributors join with time.
+    """Calculate the cumulative number of contributors over time.
 
     Parameters
     ----------
-    contributors_list : list
-        List of contributors with weeks of contributions. Example:
-        [
-            {
-                'weeks': [
-                        {'w': 1254009600, 'a': 5, 'c': 2, 'd': 9},
-                    ],
-                .....
-            },
-        ]
+    project : str, optional
+        Repository path in ``owner/repo`` form.
+    show : bool, optional
+        If True, plot the cumulative contributor count.
+
+    Returns
+    -------
+    cumulative_list : list of tuple
+        Sorted list of ``(timestamp, cumulative_contributor_count)`` pairs.
 
     """
     url = f"https://api.github.com/repos/{project}/stats/contributors"
@@ -321,9 +341,9 @@ def cumulative_contributors(project="fury-gl/fury", show=True):
 
     cumulative_join_date = {}
     cumulative = 0
-    for time in sorted(contributors_join_date):
-        cumulative += contributors_join_date[time]
-        cumulative_join_date[time] = cumulative
+    for join_time in sorted(contributors_join_date):
+        cumulative += contributors_join_date[join_time]
+        cumulative_join_date[join_time] = cumulative
 
     cumulative_list = list(cumulative_join_date.items())
     cumulative_list.sort()
@@ -561,9 +581,7 @@ def github_stats(**kwargs):
             except Exception:
                 tag = sys.argv[1]
         else:
-            tag = check_output(
-                ["git", "describe", "--abbrev=0"], text=True
-            ).strip()
+            tag = check_output(["git", "describe", "--abbrev=0"], text=True).strip()
 
     if tag:
         cmd = ["git", "log", "-1", "--format=%ai", tag]
@@ -684,4 +702,3 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     github_stats(**vars(args))
-
