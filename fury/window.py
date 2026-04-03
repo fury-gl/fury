@@ -758,8 +758,16 @@ class ShowManager:
             "key_up": 0,
             "wheel": 0,
         }
-        for _evt_name in self._event_registry:
-            self.window.add_event_handler(self._track_event, _evt_name)
+        self.renderer.add_event_handler(
+            self._track_event,
+            EventType.POINTER_DOWN,
+            EventType.POINTER_UP,
+            EventType.POINTER_MOVE,
+            EventType.DOUBLE_CLICK,
+            EventType.KEY_DOWN,
+            EventType.KEY_UP,
+            EventType.WHEEL,
+        )
 
         self._stats = None
         self._stats_initialized = False
@@ -805,14 +813,14 @@ class ShowManager:
             self._event_registry[key] = 0
 
     def _track_event(self, event):
-        """Increment the count for a received window-level event.
+        """Increment the count for a received renderer-level event.
 
         Parameters
         ----------
-        event : dict
-            The rendercanvas event dictionary.
+        event : Event
+            The pygfx Event object.
         """
-        evt_type = event.get("event_type", "")
+        evt_type = event.type
         if evt_type in self._event_registry:
             self._event_registry[evt_type] += 1
 
