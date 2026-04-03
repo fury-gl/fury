@@ -1,7 +1,5 @@
 """Test for components module."""
 
-from types import SimpleNamespace
-
 from PIL import Image
 import numpy as np
 import numpy.testing as npt
@@ -300,12 +298,12 @@ def test_textbox_caret_movement_bounds():
 
 
 def test_textbox_keypress_add_character():
-    """Simulate key_press event for adding characters."""
+    """Test adding characters through the handle_character method."""
     tb = ui.TextBox2D(width=10, height=1, text="")
     tb.edit_mode()
 
-    tb.key_press(SimpleNamespace(key="x"))
-    tb.key_press(SimpleNamespace(key="y"))
+    tb.handle_character("x", "x")
+    tb.handle_character("y", "y")
 
     tb.render_text(show_caret=False)
 
@@ -326,7 +324,7 @@ def test_textbox_return_triggers_off_focus():
 
     tb.edit_mode()
 
-    tb.key_press(SimpleNamespace(key="Return"))
+    tb.handle_character("Return", "")
 
     assert called["off"] is True
     assert tb._has_focus is False
