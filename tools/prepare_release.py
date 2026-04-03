@@ -118,6 +118,7 @@ def update_authors(*, file_path="AUTHORS.rst"):
         authors = sorted(set(authors))
         authors.remove("")
         authors.remove("dependabot[bot]")
+        authors.remove("Your Name")
     except subprocess.CalledProcessError as e:
         raise RuntimeError(f"Failed to execute git command: {e}") from e
 
@@ -174,9 +175,7 @@ def update_release_history(
     ]
 
     release_notes.sort(
-        key=lambda v: list(
-            map(int, re.search(r"v(\d+\.\d+\.\d+)", v).group(1).split("."))
-        ),
+        key=lambda v: Version(v.strip().split("releasev", 1)[1]),
         reverse=True,
     )
     print(release_notes)
@@ -226,9 +225,12 @@ def create_release_announcement(
         The version of the release.
     """
     print("--- Creating release announcement blog post... ---")
-    username = input(f"Enter blog post author (e.g., {author}): ").strip()
-    if username:
-        author_id = username
+    author_id = author
+    author = input(f"Enter blog post author (e.g., {author}): ").strip()
+    if author:
+        author_id = author
+
+    author_name = name
     name = input(f"Enter blog post author name (e.g., {name}): ").strip()
     if name:
         author_name = name
@@ -410,20 +412,21 @@ def main():
     # 7. Run tests and build docs
     while True:
         os.environ["FURY_OFFSCREEN"] = "1"
-        if platform.system().lower() == "windows":
-            if is_powershell():
-                run("pytest -c pyproject.toml -svv --doctest-modules fury")
-                run(
-                    "cd docs; .\\make.bat clean; .\\make.bat html; cd .."  # noqa
-                )
+        run("pytest -c pyproject.toml -svv --doctest-modules fury")
+
+        # Build docs using directory handling instead of shell chaining
+        original_dir = os.getcwd()
+        try:
+            os.chdir("docs")
+            if platform.system().lower() == "windows":
+                run(".\\make.bat clean")
+                run(".\\make.bat html")
             else:
-                run("pytest -c pyproject.toml -svv --doctest-modules fury")
-                run(
-                    "cd docs && .\\make.bat clean && .\\make.bat html && cd .."  # noqa
-                )
-        else:
-            run("pytest -c pyproject.toml -svv --doctest-modules fury")
-            run("cd docs && make clean && make -C . html && cd ..")
+                run("make clean")
+                run("make -C . html")
+        finally:
+            os.chdir(original_dir)
+
         os.environ["FURY_OFFSCREEN"] = "0"
 
         answer = input("Have you checked the generated docs [yes/no]: ").strip()
