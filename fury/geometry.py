@@ -198,5 +198,3 @@ def axes_for_dir(d, prev_x=None):
     x /= np.linalg.norm(x)
     y = np.cross(d, x)
     return x, y
-
-
