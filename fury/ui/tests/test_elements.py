@@ -304,8 +304,8 @@ def test_textbox_keypress_add_character():
     tb = ui.TextBox2D(width=10, height=1, text="")
     tb.edit_mode()
 
-    tb.key_press(SimpleNamespace(key=None, key_char="x"))
-    tb.key_press(SimpleNamespace(key=None, key_char="y"))
+    tb.key_press(SimpleNamespace(key="x"))
+    tb.key_press(SimpleNamespace(key="y"))
 
     tb.render_text(show_caret=False)
 
@@ -326,7 +326,7 @@ def test_textbox_return_triggers_off_focus():
 
     tb.edit_mode()
 
-    tb.key_press(SimpleNamespace(key="Return", key_char=""))
+    tb.key_press(SimpleNamespace(key="Return"))
 
     assert called["off"] is True
     assert tb._has_focus is False

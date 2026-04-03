@@ -29,7 +29,6 @@ from string import printable
 import numpy as np
 
 from fury.actor import create_mesh
-from fury.decorators import warn_on_args_to_kwargs
 from fury.io import load_image_texture
 from fury.lib import (
     plane_geometry,
@@ -569,7 +568,6 @@ class TextBox2D(UI):
         Flag which says whether the textbox has just been initialized.
     """
 
-    @warn_on_args_to_kwargs()
     def __init__(
         self,
         width,
@@ -648,18 +646,24 @@ class TextBox2D(UI):
 
         Create the TextBlock2D component used for the textbox.
         """
+        char_w = int(self._font_size * 0.6)
+        char_h = int(self._font_size * 1.2)
+        bbox_size = (self._width * char_w, self._height * char_h)
+
         self.text = TextBlock2D(
             text=self._message,
             font_size=self._font_size,
             font_family=self._font_family,
             justification=self._justification,
-            dynamic_bbox=True,
+            size=bbox_size,
         )
         self.text.color = self._color
         self.text.bold = self._bold
         self.text.italic = self._italic
         self.text.shadow = self._shadow
         self.text.background_color = (1, 1, 1)
+
+        self._children.append(self.text)
 
         self.window_right = len(self._message)
         self.window_left = 0
@@ -673,30 +677,13 @@ class TextBox2D(UI):
 
         Returns
         -------
-        tuple
-            Width and height of the text bounding box.
+        list
+            List of actors from all child UI components.
         """
-        return self.text.actors
-
-    def _add_to_scene(self, scene):
-        """Add all subcomponents or VTK props that compose this UI component.
-
-        Parameters
-        ----------
-        scene : scene
-                The scene to which the component will be added.
-        """
-        self.text.add_to_scene(scene)
-
-    def _set_position(self, coords):
-        """Set the lower-left corner position of this UI component.
-
-        Parameters
-        ----------
-        coords : (float, float)
-            Absolute pixel coordinates (x, y).
-        """
-        self.text.set_position(coords, x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP)
+        actors = []
+        for child in self._children:
+            actors.extend(child.actors)
+        return actors
 
     def _get_size(self):
         """Return the size of the textbox.
@@ -713,9 +700,6 @@ class TextBox2D(UI):
 
         This implements the abstract layout hook required by UI.
         """
-        if not hasattr(self, "text") or self.text is None:
-            return
-
         pos = self.get_position(x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP)
 
         self.text.set_position(pos, x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP)
@@ -898,7 +882,6 @@ class TextBox2D(UI):
         ret_text = ret_text[self.window_left : self.window_right + 1]
         return ret_text
 
-    @warn_on_args_to_kwargs()
     def render_text(self, *, show_caret=True):
         """Render text after processing.
 
@@ -937,13 +920,11 @@ class TextBox2D(UI):
 
         Parameters
         ----------
-        event : PointerEvent
-            The pointer event.
+        event : KeyboardEvent
+            The keyboard event.
         """
-        key = getattr(event, "key", None)
-        key_char = getattr(event, "key_char", "")
-        if not key_char and key and len(key) == 1:
-            key_char = key
+        key = event.key
+        key_char = key if key and len(key) == 1 else ""
         is_done = self.handle_character(key, key_char)
         if is_done:
             self._has_focus = False
