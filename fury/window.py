@@ -714,6 +714,7 @@ class ShowManager:
             EventType.POINTER_UP,
             EventType.POINTER_MOVE,
         )
+        self.renderer.add_event_handler(self._global_key_handler, EventType.KEY_UP)
 
         self._total_screens = 0
         self._screen_config = screen_config
@@ -783,7 +784,11 @@ class ShowManager:
             self._handle_drag(event)
 
     def _global_key_handler(self, event):
-        """Handle global key events by forwarding them to the active UI element.
+        """Forward global key events to the active UI element.
+
+        This renderer-level handler ensures that key events reach the
+        currently focused UI component (e.g. an active TextBox2D)
+        regardless of pointer position.
 
         Parameters
         ----------
@@ -792,7 +797,7 @@ class ShowManager:
         """
         if UIContext.active_ui:
             UIContext.active_ui.on_key_press(event)
-
+            
     def _screen_setup(self, scene, camera, controller, camera_light):
         """
         Prepare scene, camera, controller, and light lists for screen creation.

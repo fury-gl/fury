@@ -392,8 +392,9 @@ class UI(object, metaclass=abc.ABCMeta):
             self.middle_button_release_callback(event)
 
     def left_button_click_callback(self, event):
-        """
-        Handle left mouse button press event.
+        """Handle left mouse button press event.
+
+        Promotes the currently **Hot** UI element to **Active** state.
 
         Parameters
         ----------
@@ -403,13 +404,13 @@ class UI(object, metaclass=abc.ABCMeta):
         self.left_button_state = "pressing"
 
         if UIContext.hot_ui is not None:
+            # Deactivate a different previously-active element.
             if (
                 UIContext.active_ui is not None
                 and UIContext.active_ui is not UIContext.hot_ui
             ):
-                UIContext.active_ui.on_blur(event)
+                UIContext.active_ui = None
             UIContext.active_ui = UIContext.hot_ui
-            UIContext.active_ui.on_focus(event)
 
         self.on_left_mouse_button_pressed(event)
 
@@ -531,8 +532,7 @@ class UI(object, metaclass=abc.ABCMeta):
             self.on_key_press(event)
 
     def pointer_enter_callback(self, event):
-        """
-        Handle pointer enter event.
+        """Handle pointer enter event.
 
         Parameters
         ----------
@@ -540,11 +540,10 @@ class UI(object, metaclass=abc.ABCMeta):
             The PyGfx pointer event object.
         """
         UIContext.hot_ui = self
-        self.on_hover(event)
+        self.on_pointer_enter(event)
 
     def pointer_leave_callback(self, event):
-        """
-        Handle pointer leave event.
+        """Handle pointer leave event.
 
         Parameters
         ----------
@@ -553,7 +552,7 @@ class UI(object, metaclass=abc.ABCMeta):
         """
         if UIContext.hot_ui is self:
             UIContext.hot_ui = None
-        self.on_dishover(event)
+        self.on_pointer_leave(event)
 
 
 class Rectangle2D(UI):
@@ -677,10 +676,8 @@ class Rectangle2D(UI):
         size : (float, float)
             Rectangle size (width, height) in pixels.
         """
-        self._size = list(size)
-        w, h = size
-        w = w if w != 0 else 1
-        h = h if h != 0 else 1
+        w = max(size[0], 1)
+        h = max(size[1], 1)
         self.actor.geometry = plane_geometry(width=w, height=h)
         self._update_actors_position()
 
@@ -1016,6 +1013,8 @@ class TextBlock2D(UI):
         self._children.append(self.background)
         self.handle_events(self.actor)
         self.background.on_left_mouse_button_pressed = self._forward_background_press
+        self.background.on_pointer_enter = self._forward_background_pointer_enter
+        self.background.on_pointer_leave = self._forward_background_pointer_leave
 
     def _forward_background_press(self, event):
         """Forward background click to the text block's own press handler.
@@ -1026,6 +1025,29 @@ class TextBlock2D(UI):
             The PyGfx pointer event object.
         """
         self.on_left_mouse_button_pressed(event)
+
+    def _forward_background_pointer_enter(self, event):
+        """Forward background pointer-enter to set hot_ui to this TextBlock2D.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
+        UIContext.hot_ui = self
+        self.on_pointer_enter(event)
+
+    def _forward_background_pointer_leave(self, event):
+        """Forward background pointer-leave to clear hot_ui if still this element.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
+        if UIContext.hot_ui is self:
+            UIContext.hot_ui = None
+        self.on_pointer_leave(event)
 
     def resize(self, size):
         """
@@ -1082,6 +1104,10 @@ class TextBlock2D(UI):
         """
         Format the given text with markdown syntax for bold/italic styles.
 
+        pygfx markdown only supports ``**`` (bold) and ``*`` (italic) as
+        separate two-char / one-char star tokens.  It does **not** recognise
+        ``***`` for bold-italic, so we must wrap each word individually.
+
         Parameters
         ----------
         text : str
@@ -1092,14 +1118,40 @@ class TextBlock2D(UI):
         str
             The formatted markdown string.
         """
-        affix_char = ""
-        if self.bold:
-            affix_char = "**"
-        elif self.italic:
-            affix_char = "*"
+        if not self.bold and not self.italic:
+            return text
+
+        def _wrap_word(word):
+            """Wrap a single word with the appropriate markdown markers.
+
+            Parameters
+            ----------
+            word : str
+                The word to wrap with markdown markers.
+
+            Returns
+            -------
+            str
+                The word wrapped with bold/italic markdown markers.
+            """
+            if not word.strip():
+                return word
+            if self.bold and self.italic:
+                zws = "\u200b"
+                return f"*{zws}**{word}**{zws}*"
+            if self.bold:
+                return f"**{word}**"
+            return f"*{word}*"
 
         lines = text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
-        formatted_lines = [f"{affix_char}{line}{affix_char}" for line in lines]
+        formatted_lines = []
+        for line in lines:
+            if not line.strip():
+                formatted_lines.append(line)
+                continue
+            words = line.split(" ")
+            formatted_words = [_wrap_word(w) if w else w for w in words]
+            formatted_lines.append(" ".join(formatted_words))
 
         return "\n".join(formatted_lines)
 

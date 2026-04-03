@@ -40,7 +40,6 @@ def test_textured_button_state_updates():
     }
 
     button = ui.TexturedButton2D(states=states, size=(40, 40))
-
     button.update_visual_state()
     initial_tex = button.child.actor.material.map
 
