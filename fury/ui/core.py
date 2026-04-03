@@ -654,7 +654,9 @@ class Rectangle2D(UI):
         size : (float, float)
             Rectangle size (width, height) in pixels.
         """
-        self.actor.geometry = plane_geometry(width=size[0], height=size[1])
+        w = max(size[0], 1)
+        h = max(size[1], 1)
+        self.actor.geometry = plane_geometry(width=w, height=h)
         self._update_actors_position()
 
     def _update_actors_position(self):
