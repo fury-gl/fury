@@ -42,7 +42,7 @@ _FACE_DIRECTIONS = np.array(
     dtype=np.int8,
 )
 
-_FACE_AXES = np.array([0, 0, 1, 1, 2, 2], dtype=np.int8) 
+_FACE_AXES = np.array([0, 0, 1, 1, 2, 2], dtype=np.int8)
 _FACE_SIGNS = np.array([1, -1, 1, -1, 1, -1], dtype=np.int8)  #:nodoc:
 
 
