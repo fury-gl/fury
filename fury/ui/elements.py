@@ -4,6 +4,7 @@ __all__ = [
     "TexturedButton2D",
     "TextButton2D",
     "LineSlider2D",
+    "RingSlider2D",
     #     "TextBox2D",
     #     "LineSlider2D",
     #     "LineDoubleSlider2D",
@@ -33,6 +34,7 @@ from fury.lib import (
 )
 from fury.material import _create_mesh_material
 from fury.ui.core import UI, Anchor, Button2D, Disk2D, Rectangle2D, TextBlock2D
+from fury.ui.helpers import TWO_PI
 
 
 class TexturedButton2D(Button2D):
@@ -500,6 +502,422 @@ class LineSlider2D(UI):
 
     def handle_release_callback(self, event):
         """Handle the release of the mouse button.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        self.handle.color = self.default_color
+
+
+class RingSlider2D(UI):
+    """A circular slider component.
+
+    A disk handle moves along the boundary of a ring and encodes
+    a value mapped over an angular range (by default 0–360 degrees).
+
+    Parameters
+    ----------
+    center : (float, float), optional
+        Absolute coordinates (x, y) of the slider center.
+    initial_value : float, optional
+        Initial numeric value of the slider.
+    min_value : float, optional
+        Minimum value of the slider range.
+    max_value : float, optional
+        Maximum value of the slider range.
+    slider_inner_radius : int, optional
+        Inner radius of the base ring.
+    slider_outer_radius : int, optional
+        Outer radius of the base ring.
+    handle_inner_radius : int, optional
+        Inner radius of the handle disk.
+    handle_outer_radius : int, optional
+        Outer radius of the handle disk.
+    font_size : int, optional
+        Font size of the text label.
+    text_template : str or callable, optional
+        Format string or callable for the label. When a string,
+        it may use `{value}`, `{ratio}`, and `{angle}` (degrees).
+        When a callable, the RingSlider2D instance is passed in.
+    z_order : int, optional
+        Z-order of the component. The handle is drawn above the track.
+    """
+
+    def __init__(
+        self,
+        *,
+        center=(0, 0),
+        initial_value=180,
+        min_value=0,
+        max_value=360,
+        slider_inner_radius=40,
+        slider_outer_radius=44,
+        handle_inner_radius=0,
+        handle_outer_radius=10,
+        font_size=16,
+        text_template="{ratio:.0%}",
+        z_order=0,
+    ):
+        """Initialize the circular slider instance.
+
+        Parameters
+        ----------
+        center : (float, float), optional
+            Absolute coordinates (x, y) of the slider center.
+        initial_value : float, optional
+            Initial numeric value of the slider.
+        min_value : float, optional
+            Minimum value of the slider range.
+        max_value : float, optional
+            Maximum value of the slider range.
+        slider_inner_radius : int, optional
+            Inner radius of the base ring.
+        slider_outer_radius : int, optional
+            Outer radius of the base ring.
+        handle_inner_radius : int, optional
+            Inner radius of the handle disk.
+        handle_outer_radius : int, optional
+            Outer radius of the handle disk.
+        font_size : int, optional
+            Font size of the text label.
+        text_template : str or callable, optional
+            Format string or callable for the label.
+        z_order : int, optional
+            Z-order of the component. The handle is drawn above the track.
+        """
+        self._slider_inner_radius = slider_inner_radius
+        self._slider_outer_radius = slider_outer_radius
+        self._handle_inner_radius = handle_inner_radius
+        self._handle_outer_radius = handle_outer_radius
+
+        self.min_value = min_value
+        self.max_value = max_value
+        self.text_template = text_template
+        self._font_size = font_size
+
+        self.default_color = (1, 1, 1)
+        self.active_color = (0, 0, 1)
+
+        # Internal state mirrors the legacy implementation semantics.
+        self._angle = 0.0
+        self._ratio = 0.0
+        self._value = float(initial_value)
+        self._previous_value = float(initial_value)
+
+        super(RingSlider2D, self).__init__(
+            position=center,
+            x_anchor=Anchor.CENTER,
+            y_anchor=Anchor.CENTER,
+            z_order=z_order,
+        )
+
+        # User hooks
+        self.on_change = lambda ui: None
+        self.on_value_changed = lambda ui: None
+        self.on_moving_slider = lambda ui: None
+
+        self.value = initial_value
+
+    def _setup(self):
+        """Set up internal actors for the ring slider."""
+        # Base ring track
+        self.track = Disk2D(
+            outer_radius=self._slider_outer_radius,
+            inner_radius=self._slider_inner_radius,
+            center=(0, 0),
+        )
+        self.track.color = (1, 0, 0)
+
+        # Handle disk
+        self.handle = Disk2D(
+            outer_radius=self._handle_outer_radius,
+            inner_radius=self._handle_inner_radius,
+            center=(0, 0),
+        )
+        self.handle.color = self.default_color
+        self.handle.z_order = self.z_order + 1
+
+        # Text label in the middle of the ring
+        self.text = TextBlock2D(
+            text=self.text_template,
+            font_size=self._font_size,
+            dynamic_bbox=True,
+        )
+
+        # Forward pointer events from the track and handle to this slider
+        self.track.on_left_mouse_button_pressed = self.track_click_callback
+        self.track.on_left_mouse_button_dragged = self.handle_move_callback
+        self.track.on_left_mouse_button_released = self.handle_release_callback
+
+        self.handle.on_left_mouse_button_dragged = self.handle_move_callback
+        self.handle.on_left_mouse_button_released = self.handle_release_callback
+
+    def _get_actors(self):
+        """Get the actors composing this UI component.
+
+        Returns
+        -------
+        list
+            List of actors from the track, handle, and text elements.
+        """
+        return self.track.actors + self.handle.actors + self.text.actors
+
+    def _get_size(self):
+        """Calculate the approximate bounding-box size of the slider.
+
+        The radius is defined by the base ring plus the handle radius.
+
+        Returns
+        -------
+        numpy.ndarray
+            The (width, height) of the slider in pixels.
+        """
+        radius = self._slider_outer_radius + self._handle_outer_radius
+        diameter = 2 * radius
+        return np.array([diameter, diameter])
+
+    def _update_actors_position(self):
+        """Update the position of the internal actors based on center."""
+        center = self.get_position(x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
+
+        # Position the base ring at the slider center
+        self.track.set_position(center, x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
+
+        # Position handle and text using the current angle/value
+        self._update_handle_and_text(center)
+
+    # ------------------------------------------------------------------
+    # Public properties
+    # ------------------------------------------------------------------
+    @property
+    def center(self):
+        """Get the center of the slider in screen coordinates.
+
+        Returns
+        -------
+        numpy.ndarray
+            Center coordinates (x, y).
+        """
+        return self.get_position(x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
+
+    @center.setter
+    def center(self, coords):
+        """Set the center of the slider in screen coordinates.
+
+        Parameters
+        ----------
+        coords : array_like
+            New center coordinates (x, y).
+        """
+        self.set_position(coords, x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
+
+    @property
+    def mid_track_radius(self):
+        """Get the radius at the middle of the track ring.
+
+        Returns
+        -------
+        float
+            Radius at the mid-point of the track ring.
+        """
+        return (self._slider_inner_radius + self._slider_outer_radius) / 2.0
+
+    @property
+    def value(self):
+        """Get the current numeric value of the slider.
+
+        Returns
+        -------
+        float
+            The slider value.
+        """
+        return self._value
+
+    @value.setter
+    def value(self, val):
+        """Set the current numeric value.
+
+        The value is clamped to ``[min_value, max_value]`` and mapped
+        linearly to the angle domain.
+
+        Parameters
+        ----------
+        val : float
+            New numeric value for the slider.
+        """
+        range_val = self.max_value - self.min_value
+        old_value = self._value
+
+        if range_val == 0:
+            self._value = float(self.min_value)
+            self._ratio = 0.0
+            self._angle = 0.0
+        else:
+            val = float(np.clip(val, self.min_value, self.max_value))
+            self._value = val
+            self._ratio = (val - self.min_value) / range_val
+            self._angle = self._ratio * TWO_PI
+
+        self._previous_value = old_value
+
+        center = self.get_position(x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
+        self._update_handle_and_text(center)
+
+        # Match legacy behavior: both change and value_changed fire
+        # on programmatic value updates.
+        self.on_change(self)
+        self.on_value_changed(self)
+
+    @property
+    def previous_value(self):
+        """Get the previous numeric value before the last update.
+
+        Returns
+        -------
+        float
+            The previous slider value.
+        """
+        return self._previous_value
+
+    @property
+    def ratio(self):
+        """Get the normalized ratio in ``[0, 1]``.
+
+        Returns
+        -------
+        float
+            The slider ratio.
+        """
+        return self._ratio
+
+    @ratio.setter
+    def ratio(self, r):
+        """Set the slider ratio and update the angle accordingly.
+
+        Parameters
+        ----------
+        r : float
+            New ratio value in the ``[0, 1]`` range.
+        """
+        angle = float(r) * TWO_PI
+        self.angle = angle
+
+    @property
+    def angle(self):
+        """Get the handle angle in radians (wrapped to [0, 2π)).
+
+        Returns
+        -------
+        float
+            The current angle in radians.
+        """
+        return self._angle
+
+    @angle.setter
+    def angle(self, angle):
+        """Set the slider angle in radians and update state.
+
+        This method is primarily used by pointer interactions.
+
+        Parameters
+        ----------
+        angle : float
+            New angle value in radians.
+        """
+        self._angle = float(angle) % TWO_PI
+
+        # Update ratio and value from the new angle
+        self._ratio = self._angle / TWO_PI
+        range_val = self.max_value - self.min_value
+        self._previous_value = self._value
+        self._value = (
+            self.min_value + self._ratio * range_val
+            if range_val != 0
+            else self.min_value
+        )
+
+        center = self.get_position(x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
+        self._update_handle_and_text(center)
+
+        self.on_change(self)
+
+    # ------------------------------------------------------------------
+    # Internal helpers
+    # ------------------------------------------------------------------
+    def _update_handle_and_text(self, center):
+        """Update handle and label based on the current state.
+
+        Parameters
+        ----------
+        center : array_like
+            Slider center in screen coordinates.
+        """
+        # Handle position along the ring
+        radius = self.mid_track_radius
+        x = center[0] + radius * np.cos(self._angle)
+        y = center[1] + radius * np.sin(self._angle)
+
+        self.handle.set_position((x, y), x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
+
+        # Text label at the center of the ring
+        self.text.set_position(center, x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
+
+        # Update label text
+        if callable(self.text_template):
+            text = self.text_template(self)
+        else:
+            text = self.text_template.format(
+                value=self.value,
+                ratio=self.ratio,
+                angle=float(np.rad2deg(self.angle)),
+            )
+        self.text.message = text
+
+    def _update_angle_from_event(self, event):
+        """Update the slider angle based on a pointer event.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        center = self.get_position(x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
+        x, y = event.x - center[0], event.y - center[1]
+        angle = float(np.arctan2(y, x))
+        if angle < 0:
+            angle += TWO_PI
+        self.angle = angle
+
+    # ------------------------------------------------------------------
+    # Pointer event callbacks
+    # ------------------------------------------------------------------
+    def track_click_callback(self, event):
+        """Handle pointer presses on the ring track.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        self._update_angle_from_event(event)
+        self.on_moving_slider(self)
+
+    def handle_move_callback(self, event):
+        """Handle drag events on the handle or ring.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        self.handle.color = self.active_color
+        self._update_angle_from_event(event)
+        self.on_moving_slider(self)
+
+    def handle_release_callback(self, event):
+        """Reset handle color when the pointer button is released.
 
         Parameters
         ----------

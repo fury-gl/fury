@@ -232,6 +232,106 @@ def test_line_slider_2d_visibility_propagation():
         assert actor.visible is True
 
 
+def test_ring_slider_2d_initialization_and_geometry():
+    """Basic construction and geometric configuration."""
+    slider = ui.RingSlider2D(
+        center=(200, 200),
+        initial_value=90,
+        min_value=0,
+        max_value=360,
+        slider_inner_radius=40,
+        slider_outer_radius=60,
+        handle_outer_radius=8,
+    )
+
+    # Core state
+    npt.assert_equal(slider.value, 90)
+    npt.assert_almost_equal(slider.ratio, 90 / 360.0)
+    npt.assert_almost_equal(slider.angle, 2 * np.pi * slider.ratio)
+
+    # Geometry and mid-track radius
+    assert isinstance(slider.track, ui.Disk2D)
+    assert isinstance(slider.handle, ui.Disk2D)
+
+    center = slider.center
+    handle_center = slider.handle.get_position(Anchor.CENTER, Anchor.CENTER)
+    dist = np.linalg.norm(handle_center - center)
+    npt.assert_allclose(dist, slider.mid_track_radius, rtol=1e-2, atol=1e-2)
+
+
+def test_ring_slider_2d_clamping_and_previous_value():
+    """Verify clamping and previous_value tracking for programmatic updates."""
+    slider = ui.RingSlider2D(min_value=0, max_value=100, initial_value=50)
+
+    # Initial state mirrors legacy semantics: previous == current.
+    npt.assert_equal(slider.value, 50)
+    npt.assert_equal(slider.previous_value, 50)
+
+    slider.value = 200
+    npt.assert_equal(slider.value, 100)
+    npt.assert_equal(slider.previous_value, 50)
+
+    slider.value = -10
+    npt.assert_equal(slider.value, 0)
+    npt.assert_equal(slider.previous_value, 100)
+
+    # Degenerate range
+    slider = ui.RingSlider2D(min_value=0, max_value=0, initial_value=0)
+    npt.assert_equal(slider.value, 0)
+    npt.assert_equal(slider.previous_value, 0)
+    slider.value = 180
+    npt.assert_equal(slider.value, 0)
+    npt.assert_equal(slider.previous_value, 0)
+
+
+def test_ring_slider_2d_ratio_and_angle_synchronization():
+    """Changing ratio updates angle and value consistently."""
+    slider = ui.RingSlider2D(min_value=-180, max_value=180, initial_value=0)
+
+    slider.ratio = 0.25
+    npt.assert_almost_equal(slider.angle, 0.25 * 2 * np.pi)
+    npt.assert_almost_equal(slider.value, -180 + 0.25 * (360))
+
+    slider.ratio = 0.75
+    npt.assert_almost_equal(slider.angle, 0.75 * 2 * np.pi)
+    npt.assert_almost_equal(slider.value, -180 + 0.75 * (360))
+
+
+def test_ring_slider_2d_text_and_callbacks():
+    """Test text formatting and on_value_changed hook."""
+    template = "Val={value:.1f}, R={ratio:.2f}, A={angle:.1f}"
+    slider = ui.RingSlider2D(
+        initial_value=0,
+        min_value=0,
+        max_value=100,
+        text_template=template,
+    )
+
+    callbacks = {"value_changed": False}
+
+    def cb(ui_obj):  # noqa: ANN001
+        callbacks["value_changed"] = True
+
+    slider.on_value_changed = cb
+
+    slider.value = 25
+    assert callbacks["value_changed"] is True
+    assert "Val=25.0" in slider.text.message
+
+
+def test_ring_slider_2d_visibility_propagation():
+    """Visibility changes propagate to all internal actors."""
+    slider = ui.RingSlider2D()
+
+    slider.set_visibility(False)
+    for actor in slider._get_actors():
+        assert actor.visible is False
+
+    slider.set_visibility(True)
+    for actor in slider._get_actors():
+        assert actor.visible is True
+
+
 # def test_ui_textbox(recording=False):
 #     filename = "test_ui_textbox"
 #     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
