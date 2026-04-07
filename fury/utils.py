@@ -1,3 +1,4 @@
+
 """Utility functions for 3D graphics and visualization.
 
 This module contains various utility functions for 3D graphics and
@@ -21,6 +22,7 @@ from scipy.special import factorial, lpmv
 
 from fury.transform import cart2sphere
 
+#: Numpy array of shape (3, 4, 3) containing relative offsets for voxel face corners.
 _FACE_QUAD_OFFSETS = np.array(
     [
         [[0, 0, 0], [0, 1, 0], [0, 1, 1], [0, 0, 1]],  # axis 0 (YZ plane)
@@ -30,6 +32,7 @@ _FACE_QUAD_OFFSETS = np.array(
     dtype=np.int8,
 )
 
+#: Normal vectors for each of the six voxel faces.
 _FACE_DIRECTIONS = np.array(
     [
         [1, 0, 0],
@@ -42,8 +45,12 @@ _FACE_DIRECTIONS = np.array(
     dtype=np.int8,
 )
 
+#: Index of the axis (0=x, 1=y, 2=z) orthogonal to each voxel face.
 _FACE_AXES = np.array([0, 0, 1, 1, 2, 2], dtype=np.int8)
-_FACE_SIGNS = np.array([1, -1, 1, -1, 1, -1], dtype=np.int8)  #:nodoc:
+
+#: The direction sign (+1 or -1) for each voxel face normal.
+_FACE_SIGNS = np.array([1, -1, 1, -1, 1, -1], dtype=np.int8)
+
 
 
 def map_coordinates_3d_4d(input_array, indices):
