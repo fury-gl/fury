@@ -1111,20 +1111,9 @@ class TextBlock2D(UI):
         size : int
             Text font size.
         """
-        old_font_size = self.actor._font_size
         self.actor.font_size = size
-
-        if self.dynamic_bbox and old_font_size > 0:
-            ratio = size / old_font_size
-            aabb = self.actor._aabb
-            current_w = aabb[1][0] - aabb[0][0]
-            current_h = aabb[1][1] - aabb[0][1]
-            new_w = max(1, int(current_w * ratio))
-            new_h = max(1, int(current_h * ratio))
-            self.background.resize((new_w, new_h))
-            self._bg_size = (new_w, new_h)
-        else:
-            self.update_layout()
+        if self.dynamic_bbox:
+            self.update_bounding_box()
 
     @property
     def font_family(self):
@@ -1373,11 +1362,13 @@ class TextBlock2D(UI):
             pos[0] + size[0],
             pos[1] + size[1],
         ]
+
         self.background.resize(size)
         self._bg_size = size
         self.background.set_position(pos)
 
         self.update_alignment()
+
 
     def _update_actors_position(self):
         """Update the position of the internal actors."""
@@ -1391,6 +1382,7 @@ class TextBlock2D(UI):
         (float, float)
             The (width, height) of the rendered text.
         """
+        self.actor._update_object()
         return (
             self.actor._aabb[1][0] - self.actor._aabb[0][0],
             self.actor._aabb[1][1] - self.actor._aabb[0][1],
