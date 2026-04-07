@@ -1362,13 +1362,11 @@ class TextBlock2D(UI):
             pos[0] + size[0],
             pos[1] + size[1],
         ]
-
         self.background.resize(size)
         self._bg_size = size
         self.background.set_position(pos)
 
         self.update_alignment()
-
 
     def _update_actors_position(self):
         """Update the position of the internal actors."""
