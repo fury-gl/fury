@@ -1023,17 +1023,32 @@ class ImageContainer2D(UI):
         self._actors = [self._image_actor]
 
     def _get_actors(self):
-        """Return actors composing this UI element."""
+        """Return actors composing this UI element.
+
+            Returns
+            -------
+            list
+            List of actors."""
         return [self._image_actor]
 
     def _get_size(self):
-        """Return size of the image container."""
+        """Return size of the image container.
+
+            Returns
+            -------
+            tuple
+                (width, height) of the image."""
         if self._size is not None:
             return self._size
         return self._img.shape[1], self._img.shape[0]
 
     def resize(self, size):
-        """Return size of the image container."""
+        """Resize the image container.
+
+            Parameters
+            ----------
+            size : tuple
+                New size as (width, height)."""
         if size is not None and len(size) != 2:
             raise ValueError("size must be (width, height)")
         self._size = size
