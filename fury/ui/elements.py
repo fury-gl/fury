@@ -2292,7 +2292,7 @@ class TextBox2D(UI):
 
 #         """
 #         if len(checked_labels) > 1:
-#             err_msg = "Only one option can be pre-selected for radio buttons."
+#             err_msg = "Only one option can be preselected for radio buttons."
 #             raise ValueError(err_msg)
 
 #         super(RadioButton, self).__init__(
