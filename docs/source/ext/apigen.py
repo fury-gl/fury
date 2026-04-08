@@ -352,7 +352,7 @@ class ApiDocWriter:
             body += f + "\n"
             body += self.rst_section_levels[3] * len(f) + "\n"
             # Smart check: If it's one of our constants, use autodata
-            if f.startswith('_FACE_') or f.isupper():
+            if f.startswith("_FACE_") or f.isupper():
                 body += "\n.. autodata:: " + f + "\n\n"
             else:
                 body += "\n.. autofunction:: " + f + "\n\n"

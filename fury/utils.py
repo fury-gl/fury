@@ -1,4 +1,3 @@
-
 """Utility functions for 3D graphics and visualization.
 
 This module contains various utility functions for 3D graphics and
@@ -50,7 +49,6 @@ _FACE_AXES = np.array([0, 0, 1, 1, 2, 2], dtype=np.int8)
 
 #: The direction sign (+1 or -1) for each voxel face normal.
 _FACE_SIGNS = np.array([1, -1, 1, -1, 1, -1], dtype=np.int8)
-
 
 
 def map_coordinates_3d_4d(input_array, indices):
