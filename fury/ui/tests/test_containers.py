@@ -710,3 +710,109 @@ def test_range_select():
 def test_scrollbar_hidden_when_not_needed():
     lb = ui.ListBox2D(values=["a"])
     assert lb.nb_slots >= len(lb.values)
+
+
+def test_listbox_item_z_order_propagation():
+    """Test that ListBoxItem2D propagates z_order to sub-components."""
+    lb = ui.ListBox2D(values=["a", "b", "c"])
+    lb.panel._update_actors_position()
+
+    for slot in lb.slots:
+        assert slot.background.z_order == slot.z_order
+        assert slot.textblock.z_order == slot.z_order + 1
+        assert slot.z_order > lb.panel.background.z_order
+
+
+def test_listbox_update_populates_slots():
+    """Test that update() fills all visible slots."""
+    values = ["a", "b", "c", "d", "e"]
+    lb = ui.ListBox2D(values=values, size=(200, 200))
+
+    visible = [slot.element for slot in lb.slots if slot.element is not None]
+    assert len(visible) == min(lb.nb_slots, len(values))
+    assert set(visible) == set(values[: lb.nb_slots])
+
+
+def test_listbox_scroll_offset():
+    """Test that scrolling changes the visible items."""
+    values = ["a", "b", "c", "d", "e", "f", "g", "h"]
+    lb = ui.ListBox2D(values=values, size=(200, 100))
+
+    lb.view_offset = 1
+    lb.update()
+    visible = [slot.element for slot in lb.slots if slot.element is not None]
+    assert "a" not in visible
+    assert "b" in visible
+
+
+def test_listbox_clear_selection():
+    """Test that clear_selection empties the selected list."""
+    lb = ui.ListBox2D(values=["a", "b", "c"])
+    item = lb.slots[0]
+    item.element = "a"
+    lb.select(item)
+    assert lb.selected == ["a"]
+
+    lb.clear_selection()
+    assert lb.selected == []
+
+
+def test_listbox_on_change_callback():
+    """Test that selecting an item triggers the on_change callback."""
+    lb = ui.ListBox2D(values=["a", "b", "c"])
+    call_count = [0]
+
+    def on_change():
+        call_count[0] += 1
+
+    lb.on_change = on_change
+
+    item = lb.slots[0]
+    item.element = "a"
+    lb.select(item)
+    assert call_count[0] == 1
+
+
+def test_listbox_multiselect_toggle():
+    """Test that multiselect can add multiple items to selection."""
+    lb = ui.ListBox2D(values=["x", "y", "z"], multiselection=True)
+
+    item = lb.slots[0]
+    item.element = "x"
+    lb.select(item, multiselect=True)
+    assert "x" in lb.selected
+
+    item2 = lb.slots[1]
+    item2.element = "y"
+    lb.select(item2, multiselect=True)
+    assert "x" in lb.selected
+    assert "y" in lb.selected
+
+
+def test_listbox_children_hierarchy():
+    """Test that _children chain is correct for scene traversal."""
+    lb = ui.ListBox2D(values=["a", "b", "c"])
+    assert lb.panel in lb._children
+
+    assert lb.scroll_bar in lb.panel._children
+    for slot in lb.slots:
+        assert slot in lb.panel._children
+
+
+def test_listbox_visual_snapshot(tmp_path):
+    """Visual test: ListBox2D renders non-empty content."""
+    lb = ui.ListBox2D(
+        values=["Alpha", "Beta", "Gamma"],
+        position=(50, 50),
+        size=(200, 150),
+    )
+
+    scene = window.Scene()
+    scene.add(lb)
+
+    fname = pjoin(tmp_path, "listbox_visible.png")
+    window.snapshot(scene=scene, fname=str(fname))
+    img = Image.open(fname)
+    arr = np.array(img)
+
+    assert np.sum(arr) > 0

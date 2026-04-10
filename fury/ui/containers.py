@@ -1419,17 +1419,6 @@ class ListBoxItem2D(UI):
         """
         return self.background.actors + self.textblock.actors
 
-    def _add_to_scene(self, scene):
-        """Add subcomponents to the scene.
-
-        Parameters
-        ----------
-        scene : scene
-            The scene to add the component to.
-        """
-        self.background.add_to_scene(scene)
-        self.textblock.add_to_scene(scene)
-
     def _get_size(self):
         """Return the size of this item.
 
@@ -1441,8 +1430,15 @@ class ListBoxItem2D(UI):
         return self.background.size
 
     def _update_actors_position(self):
-        """Update positions of background and textblock."""
+        """Update positions of background and textblock.
+
+        Propagates the z_order set by the parent Panel2D so that
+        the item actors render above the panel background and
+        correctly receive pointer events.
+        """
         coords = self.get_position()
+        self.background.z_order = self.z_order
+        self.textblock.z_order = self.z_order + 1
         self.background.set_position(coords)
         self.textblock.set_position(coords)
 
@@ -1454,6 +1450,8 @@ class ListBoxItem2D(UI):
         coords : (float, float)
             Absolute pixel coordinates (x, y).
         """
+        self.background.z_order = self.z_order
+        self.textblock.z_order = self.z_order + 1
         self.background.set_position(coords)
         self.textblock.set_position(coords)
 
@@ -1505,12 +1503,20 @@ class ListBoxItem2D(UI):
     def left_button_clicked(self, event):
         """Handle left click and delegate selection to parent ListBox2D.
 
+        Checks for keyboard modifiers to support multi-selection (Ctrl)
+        and range selection (Shift).
+
         Parameters
         ----------
         event : PointerEvent
             The PyGfx pointer event object.
         """
-        self.list_box.select(item=self)
+        modifiers = getattr(event, "modifiers", ()) or ()
+        multiselect = "Control" in modifiers
+        range_select = "Shift" in modifiers
+        self.list_box.select(
+            item=self, multiselect=multiselect, range_select=range_select
+        )
 
 
 class ListBox2D(UI):
@@ -1643,7 +1649,7 @@ class ListBox2D(UI):
         scroll_bar_height = (
             self.nb_slots * (size[1] - 2 * self.margin) / len(self.values)
         )
-        self.scroll_bar = Rectangle2D(size=(int(size[0] / 20), int(scroll_bar_height)))
+        self.scroll_bar = Rectangle2D(size=(int(size[0] / 10), int(scroll_bar_height)))
         if len(self.values) <= self.nb_slots:
             self.scroll_bar.set_visibility(False)
 
@@ -1688,16 +1694,6 @@ class ListBox2D(UI):
             List of actors.
         """
         return self.panel.actors
-
-    def _add_to_scene(self, scene):
-        """Add all subcomponents to the scene.
-
-        Parameters
-        ----------
-        scene : scene
-            The scene to add the component to.
-        """
-        self.panel.add_to_scene(scene)
 
     def _get_size(self):
         """Return the size of this component.
@@ -1801,6 +1797,8 @@ class ListBox2D(UI):
         self.update()
         self.scroll_init_position += offset * self.scroll_step_size
 
+
+
     def update(self):
         """Refresh the visible slots to match the current view_offset."""
         view_start = self.view_offset
@@ -1820,6 +1818,25 @@ class ListBox2D(UI):
             slot.element = None
             slot.set_visibility(False)
             slot.deselect()
+
+        if len(self.values) > self.nb_slots:
+            scroll_bar_x = (
+                self.panel_size[0] - self.scroll_bar.size[0] - self.margin
+            )
+            total_range = (
+                self.panel_size[1] - 2 * self.margin - self.scroll_bar.size[1]
+            )
+            scroll_bar_y = (
+                self.margin
+                + int(
+                    self.view_offset
+                    * total_range
+                    / (len(self.values) - self.nb_slots)
+                )
+            )
+            self.panel.update_element(
+                self.scroll_bar, (int(scroll_bar_x), int(scroll_bar_y))
+            )
 
     def update_scrollbar(self):
         """Recalculate and reposition the scroll bar after values change."""
