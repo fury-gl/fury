@@ -10,35 +10,40 @@ ImageContainer2D
 from fury.ui import ImageContainer2D
 from fury.window import Scene, ShowManager
 from fury.data import fetch_viz_icons, read_viz_icons
+from fury.io import load_image
 
 ##############################################################################
-# Fetch sample images (required before reading)
+# Fetch icons
 
 fetch_viz_icons()
 
 ##############################################################################
-# Load RGB image from assets
-img_rgb = read_viz_icons(fname="circle-right.png")
+# Load image properly
+
+img_path = read_viz_icons(fname="circle-right.png")
+img_rgb = load_image(img_path)
 
 # Convert to grayscale manually (for demo comparison)
-img_gray = img_rgb.mean(axis=2).astype("uint8")
+img_gray = (
+    0.2989 * img_rgb[..., 0]
+    + 0.5870 * img_rgb[..., 1]
+    + 0.1140 * img_rgb[..., 2]
+).astype("uint8")
 
 ##############################################################################
-# Creating a Scene
+# Scene
 
 scene = Scene()
 
 ##############################################################################
-# Creating ImageContainer2D UI elements
+# UI elements
 
-# Grayscale → displayed directly
 image_ui_gray = ImageContainer2D(
     img_gray,
     position=(50, 250),
     size=(200, 200),
 )
 
-# RGB → converted to grayscale before rendering
 image_ui_rgb = ImageContainer2D(
     img_rgb,
     position=(300, 250),
@@ -49,7 +54,7 @@ scene.add(image_ui_gray)
 scene.add(image_ui_rgb)
 
 ##############################################################################
-# Starting the ShowManager
+# Run
 
 if __name__ == "__main__":
     show_manager = ShowManager(
