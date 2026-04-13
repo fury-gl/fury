@@ -537,13 +537,14 @@ def arrow(
     tip_radius_arr = fp._normalize_geom_param(tip_radius, n_centers, "tip_radius")
     shaft_radius_arr = fp._normalize_geom_param(shaft_radius, n_centers, "shaft_radius")
 
-    # Fast path: all uniform
-    if (
+    all_uniform = (
         np.all(height_arr == height_arr[0])
         and np.all(tip_length_arr == tip_length_arr[0])
         and np.all(tip_radius_arr == tip_radius_arr[0])
         and np.all(shaft_radius_arr == shaft_radius_arr[0])
-    ):
+    )
+
+    if all_uniform:
         vertices, faces = fp.prim_arrow(
             height=height_arr[0],
             resolution=resolution,
@@ -563,7 +564,6 @@ def arrow(
             enable_picking=enable_picking,
         )
 
-    # Slow path: per-instance geometry
     _, faces = fp.prim_arrow(
         height=height_arr[0],
         resolution=resolution,

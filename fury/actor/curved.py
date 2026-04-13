@@ -374,8 +374,11 @@ def cylinder(
     radii_arr = fp._normalize_geom_param(radii, n_centers, "radii")
     height_arr = fp._normalize_geom_param(height, n_centers, "height")
 
-    # Fast path: all uniform
-    if np.all(radii_arr == radii_arr[0]) and np.all(height_arr == height_arr[0]):
+    all_uniform = np.all(radii_arr == radii_arr[0]) and np.all(
+        height_arr == height_arr[0]
+    )
+
+    if all_uniform:
         vertices, faces = fp.prim_cylinder(
             radius=radii_arr[0], height=height_arr[0], sectors=sectors, capped=capped
         )
@@ -393,7 +396,6 @@ def cylinder(
             wireframe_thickness=wireframe_thickness,
         )
 
-    # Slow path: per-instance geometry
     _, faces = fp.prim_cylinder(
         radius=radii_arr[0], height=height_arr[0], sectors=sectors, capped=capped
     )
@@ -492,8 +494,11 @@ def cone(
     radii_arr = fp._normalize_geom_param(radii, n_centers, "radii")
     height_arr = fp._normalize_geom_param(height, n_centers, "height")
 
-    # Fast path: all uniform
-    if np.all(radii_arr == radii_arr[0]) and np.all(height_arr == height_arr[0]):
+    all_uniform = np.all(radii_arr == radii_arr[0]) and np.all(
+        height_arr == height_arr[0]
+    )
+
+    if all_uniform:
         vertices, faces = fp.prim_cone(
             radius=radii_arr[0], height=height_arr[0], sectors=sectors
         )
@@ -511,7 +516,6 @@ def cone(
             wireframe_thickness=wireframe_thickness,
         )
 
-    # Slow path: per-instance geometry
     _, faces = fp.prim_cone(radius=radii_arr[0], height=height_arr[0], sectors=sectors)
     all_verts = [
         fp.prim_cone(radius=radii_arr[i], height=height_arr[i], sectors=sectors)[0]

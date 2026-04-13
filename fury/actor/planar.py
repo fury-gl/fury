@@ -248,8 +248,9 @@ def disk(
     n_centers = len(centers)
     radii_arr = fp._normalize_geom_param(radii, n_centers, "radii")
 
-    # Fast path: all uniform
-    if np.all(radii_arr == radii_arr[0]):
+    all_uniform = np.all(radii_arr == radii_arr[0])
+
+    if all_uniform:
         vertices, faces = fp.prim_disk(radius=radii_arr[0], sectors=sectors)
         return actor_from_primitive(
             vertices,
@@ -265,7 +266,6 @@ def disk(
             wireframe_thickness=wireframe_thickness,
         )
 
-    # Slow path: per-instance geometry
     _, faces = fp.prim_disk(radius=radii_arr[0], sectors=sectors)
     all_verts = [
         fp.prim_disk(radius=radii_arr[i], sectors=sectors)[0] for i in range(n_centers)
@@ -850,8 +850,11 @@ def ring(
     inner_arr = fp._normalize_geom_param(inner_radius, n_centers, "inner_radius")
     outer_arr = fp._normalize_geom_param(outer_radius, n_centers, "outer_radius")
 
-    # Fast path: all uniform – single primitive, no tiling needed
-    if np.all(inner_arr == inner_arr[0]) and np.all(outer_arr == outer_arr[0]):
+    all_uniform = np.all(inner_arr == inner_arr[0]) and np.all(
+        outer_arr == outer_arr[0]
+    )
+
+    if all_uniform:
         vertices, faces = fp.prim_ring(
             inner_radius=inner_arr[0],
             outer_radius=outer_arr[0],
@@ -870,7 +873,6 @@ def ring(
             enable_picking=enable_picking,
         )
 
-    # Slow path: per-instance geometry
     _, faces = fp.prim_ring(
         inner_radius=inner_arr[0],
         outer_radius=outer_arr[0],
