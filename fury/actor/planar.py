@@ -14,6 +14,7 @@ from fury.actor import (
     create_point,
     create_text,
 )
+from fury.colormap import normalize_colors
 from fury.geometry import (
     buffer_to_geometry,
     line_buffer_separator,
@@ -420,8 +421,6 @@ def point(
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
-    from fury.colormap import normalize_colors
-
     colors = normalize_colors(colors, n_points=len(centers))
 
     geo = buffer_to_geometry(
@@ -496,8 +495,6 @@ def marker(
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
-    from fury.colormap import normalize_colors
-
     colors = normalize_colors(colors, n_points=len(centers))
 
     geo = buffer_to_geometry(

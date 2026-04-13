@@ -6,6 +6,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation as Rot
 
 from fury.actor import set_opacity
+from fury.colormap import normalize_colors
 from fury.geometry import (
     buffer_to_geometry,
     line_buffer_separator,
@@ -405,8 +406,6 @@ def actor_from_primitive(
         A mesh actor containing the generated primitive, with the specified
         material and properties.
     """
-    from fury.colormap import normalize_colors
-
     if repeat_primitive:
         colors = normalize_colors(colors, n_points=len(centers))
     else:
@@ -839,8 +838,6 @@ def line(
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
-    from fury.colormap import normalize_colors
-
     if colors is not None:
         colors = normalize_colors(colors)
         # Squeeze single-color back to 1D for line_buffer_separator compatibility
