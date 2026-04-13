@@ -1,6 +1,6 @@
 """UI container module."""
 
-# from warnings import warn
+from warnings import warn
 
 import numpy as np
 
@@ -414,6 +414,7 @@ class Panel2D(UI):
         """
 
         if not self.has_border:
+            warn("Border is not present, border color is not available.", stacklevel=2)
             return []
         return [self.borders[side].color for side in self.border_sides]
 
@@ -432,6 +433,10 @@ class Panel2D(UI):
             raise ValueError(f"{side} not a valid border side")
 
         if not self.has_border:
+            warn(
+                "Border is not present, setting border color will be ignored.",
+                stacklevel=2,
+            )
             return
 
         self.borders[side].color = color
@@ -448,6 +453,7 @@ class Panel2D(UI):
         """
 
         if not self.has_border:
+            warn("Border is not present, border width is not available.", stacklevel=2)
             return []
 
         widths = []
@@ -473,6 +479,10 @@ class Panel2D(UI):
         side, border_width = side_width
 
         if not self.has_border:
+            warn(
+                "Border is not present, setting border width will be ignored.",
+                stacklevel=2,
+            )
             return
 
         if side.lower() in ["left", "right"]:
