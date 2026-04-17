@@ -104,7 +104,13 @@ def validate_slices_group(group):
         raise TypeError("group must be an instance of Group.")
 
     if group.name == "VectorFieldSlicer":
-        if not hasattr(group.children[0], "cross_section"):
+        if not hasattr(group, "children"):
+            raise AttributeError("Group must have a children attribute.")
+        elif not isinstance(group.children, (list, tuple)):
+            raise TypeError("Group must have a children attribute that is a list.")
+        elif not len(group.children) >= 1:
+            raise ValueError("Group must contain at least one child.")
+        elif not hasattr(group.children[0], "cross_section"):
             raise AttributeError(
                 "Children do not have the required cross_section attribute."
             )
@@ -142,6 +148,11 @@ def get_slices(group):
         return np.asarray([child.material.plane[-1] for child in group.children])
     elif group.name == "VectorFieldSlicer":
         return np.asarray(group.children[0].cross_section)
+    else:
+        raise ValueError(
+            f"Group {group.name} is not a valid slices group. "
+            "Must be either 'Slicer' or 'VectorFieldSlicer'."
+        )
 
 
 def show_slices(group, position):

@@ -13,6 +13,7 @@ from fury.actor import (
     set_group_visibility,
     set_opacity,
     show_slices,
+    vector_field_slicer,
 )
 import fury.actor.utils as actor_utils
 from fury.lib import (
@@ -67,7 +68,7 @@ def group_line_projection():
         outline_color=(1, 1, 1),
     )
 
-    obj = Group()
+    obj = Group(name="Slicer")
     obj.add(projection_z)
     obj.add(projection_y)
     obj.add(projection_x)
@@ -150,14 +151,14 @@ def test_get_slices_type_error():
 
 
 def test_get_slices_value_error(actor):
-    group = Group()
+    group = Group(name="Slicer")
     group.add(actor, Mesh())
     with pytest.raises(ValueError):
         get_slices(group)
 
 
 def test_get_slices_attribute_error(actor):
-    group = Group()
+    group = Group(name="Slicer")
     group.add(actor, Mesh(), Mesh())
     with pytest.raises(AttributeError):
         get_slices(group)
@@ -169,6 +170,30 @@ def test_get_slices_valid(group_slicer):
     result = get_slices(group_slicer)
     expected = np.array([0, 10, 20])
     assert np.array_equal(result, expected)
+
+
+def test_get_slices_vector_field_slicer_group():
+    """get_slices reads cross_section from the first VectorField child."""
+    field = np.random.rand(3, 3, 3, 3).astype(np.float32)
+    group = vector_field_slicer(field, cross_section=[1, 1, 1])
+    assert group.name == "VectorFieldSlicer"
+    np.testing.assert_array_equal(get_slices(group), np.array([1, 1, 1]))
+
+
+def test_show_slices_vector_field_slicer_group():
+    """show_slices sets the same cross_section on every chunked VectorField."""
+    field = np.random.rand(3, 3, 3, 3).astype(np.float32)
+    group = vector_field_slicer(field, cross_section=[0, 1, 2])
+    show_slices(group, [2, 2, 2])
+    for child in group.children:
+        np.testing.assert_array_equal(child.cross_section, np.array([2, 2, 2]))
+
+
+def test_get_slices_vector_field_slicer_validates_cross_section():
+    group = Group(name="VectorFieldSlicer")
+    group.add(Mesh(Geometry(), Material()))
+    with pytest.raises(AttributeError, match="cross_section"):
+        get_slices(group)
 
 
 def test_show_slices_type_error():

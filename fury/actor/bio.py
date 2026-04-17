@@ -4,7 +4,6 @@ import numpy as np
 
 from fury.actor import (
     Group,
-    apply_affine_to_actor,
     apply_affine_to_group,
     contour_from_volume,
     data_slicer,
@@ -133,14 +132,17 @@ def peaks_slicer(
     )
 
     if affine is not None:
-        apply_affine_to_actor(obj, affine)
         bounds = obj.get_bounding_box()
+        for child in obj.children:
+            child.local.matrix = affine @ child.local.matrix
         obj.bounds = get_transformed_cube_bounds(
             affine,
             bounds[0],
             bounds[1],
         )
-        obj.cross_section = np.asarray(obj.bounds).mean(axis=0)
+        for child in obj.children:
+            child.bounds = obj.bounds
+        show_slices(obj, np.asarray(obj.bounds).mean(axis=0))
 
     return obj
 
