@@ -7,28 +7,38 @@ ImageContainer2D
 ##############################################################################
 # Imports
 
+import numpy as np
+from PIL import Image
 from fury.ui import ImageContainer2D
 from fury.window import Scene, ShowManager
-from fury.data import fetch_viz_icons, read_viz_icons
-from fury.io import load_image
 
 ##############################################################################
-# Fetch icons
+# Use a controlled image instead of random textures
 
-fetch_viz_icons()
+img_rgb = np.zeros((512, 512, 3), dtype=np.uint8)
+
+for i in range(512):
+    img_rgb[:, i, 0] = i % 256
+    img_rgb[i, :, 1] = (i * 2) % 256
 
 ##############################################################################
-# Load image properly
+# Ensure contiguous memory (VTK requirement)
 
-img_path = read_viz_icons(fname="circle-right.png")
-img_rgb = load_image(img_path)
+img_rgb = np.ascontiguousarray(img_rgb)
 
-# Convert to grayscale manually (for demo comparison)
+img_rgb = np.flipud(img_rgb)
+
+# # Convert to grayscale manually
 img_gray = (
     0.2989 * img_rgb[..., 0]
     + 0.5870 * img_rgb[..., 1]
     + 0.1140 * img_rgb[..., 2]
-).astype("uint8")
+).astype(np.uint8)
+
+img_gray_rgb = np.stack([img_gray] * 3, axis=-1)
+
+img_gray_rgb = np.ascontiguousarray(img_gray_rgb)
+img_gray_rgb = np.flipud(img_gray_rgb)
 
 ##############################################################################
 # Scene
@@ -36,31 +46,34 @@ img_gray = (
 scene = Scene()
 
 ##############################################################################
-# UI elements
+# Fixed UI size (no distortion)
+size = (300, 300)
 
+# UI elements
 image_ui_gray = ImageContainer2D(
-    img_gray,
-    position=(50, 250),
-    size=(200, 200),
+    img_gray_rgb,
+    position=(50, 200),
+    size=size,
 )
 
 image_ui_rgb = ImageContainer2D(
     img_rgb,
-    position=(300, 250),
-    size=(200, 200),
+    position=(400, 200),
+    size=size,
 )
 
 scene.add(image_ui_gray)
 scene.add(image_ui_rgb)
 
 ##############################################################################
-# Run
+# RUN\
 
 if __name__ == "__main__":
     show_manager = ShowManager(
         scene=scene,
-        size=(700, 700),
+        size=(800, 600),
         title="FURY 2.0: ImageContainer2D Example",
     )
 
     show_manager.start()
+    
