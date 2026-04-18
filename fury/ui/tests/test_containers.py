@@ -1,7 +1,6 @@
 """Test containers module."""
 
 from os.path import join as pjoin
-import warnings
 
 from PIL import Image
 import numpy as np
@@ -133,12 +132,9 @@ def test_panel2d_no_border_actors_and_scene():
     panel.add_element(child, (0.5, 0.5))
     panel._update_actors_position()
 
-    # Border properties should warn and return empty when has_border=False
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter("always")
-        assert panel.border_color == []
-        assert panel.border_width == []
-        assert len(w) == 2
+    # Border properties should return empty when has_border=False
+    assert panel.border_color == []
+    assert panel.border_width == []
     panel.update_border_coords()
     panel.resize((300, 300))
 
