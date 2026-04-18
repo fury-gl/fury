@@ -886,7 +886,6 @@ def normalize_colors(colors, n_points=None):
 
     colors = colors.astype(np.float32)
 
-    # Broadcasting
     if n_points is not None:
         if len(colors) == 1:
             colors = np.tile(colors, (n_points, 1))

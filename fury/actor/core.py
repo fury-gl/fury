@@ -840,7 +840,6 @@ def line(
     """
     if colors is not None:
         colors = normalize_colors(colors)
-        # Squeeze single-color back to 1D for line_buffer_separator compatibility
         if colors.ndim == 2 and len(colors) == 1:
             colors = colors[0]
 
