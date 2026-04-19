@@ -23,6 +23,12 @@ from importlib import import_module
 import os
 import re
 
+# NumPy attributes that should be excluded from documentation
+NP_EXCLUDES = {
+    'T', 'data', 'dtype', 'flags', 'flat', 'imag', 'real', 'size',
+    'itemsize', 'nbytes', 'ndim', 'shape', 'strides', 'ctypes', 'base'
+}
+
 # suppress print statements (warnings for empty files)
 DEBUG = True
 
@@ -339,6 +345,7 @@ class ApiDocWriter:
                 "  :members:\n"
                 "  :undoc-members:\n"
                 "  :show-inheritance:\n"
+                "  :no-index:\n"
                 "\n"
                 "  .. automethod:: __init__\n\n"
             )
@@ -348,14 +355,19 @@ class ApiDocWriter:
         head += "\n"
 
         for f in functions:
+            # SKIP NumPy attributes to prevent duplicate warnings
+            if f in NP_EXCLUDES:
+                continue
             # must NOT exclude from index to keep cross-refs working
             body += f + "\n"
             body += self.rst_section_levels[3] * len(f) + "\n"
             # Smart check: If it's one of our constants, use autodata
             if f.startswith("_FACE_") or f.isupper():
-                body += "\n.. autodata:: " + f + "\n\n"
+                body += "\n.. autodata:: " + f + "\n"
+                body += "   :no-index:\n\n"  # Add this line
             else:
-                body += "\n.. autofunction:: " + f + "\n\n"
+                body += "\n.. autofunction:: " + f + "\n"
+                body += "   :no-index:\n\n"  # Add this line
 
         return head, body
 
