@@ -393,14 +393,6 @@ class UI(object, metaclass=abc.ABCMeta):
 
         Promotes the currently **Hot** UI element to **Active** state.
 
-        For simple widgets the hot element IS ``self`` (set by
-        ``pointer_enter_callback``). For composite widgets (e.g.
-        ``TextBlock2D`` whose background ``Rectangle2D`` forwards its
-        POINTER_ENTER to the logical parent) the hot element may differ from
-        ``self``, but ``UIContext.hot_ui`` will already point to the correct
-        logical owner. Promoting ``UIContext.hot_ui`` directly handles both
-        cases uniformly.
-
         Parameters
         ----------
         event : PointerEvent
@@ -532,9 +524,6 @@ class UI(object, metaclass=abc.ABCMeta):
     def pointer_enter_callback(self, event):
         """Handle pointer enter event.
 
-        Transitions this UI element to the **Hot** state by setting
-        ``UIContext.hot_ui = self``.
-
         Parameters
         ----------
         event : PointerEvent
@@ -545,9 +534,6 @@ class UI(object, metaclass=abc.ABCMeta):
 
     def pointer_leave_callback(self, event):
         """Handle pointer leave event.
-
-        Clears the **Hot** state for this element, transitioning back to
-        Normal (unless the element is also currently active).
 
         Parameters
         ----------
@@ -1063,11 +1049,6 @@ class TextBlock2D(UI):
 
     def _forward_background_pointer_enter(self, event):
         """Forward background pointer-enter to set hot_ui to this TextBlock2D.
-
-        The background Rectangle2D is a visual sub-component. Its POINTER_ENTER
-        must promote ``hot_ui`` to the parent TextBlock2D (not the Rectangle2D
-        itself), otherwise clicking the background would set ``active_ui`` to
-        the Rectangle2D which has no key handler registered.
 
         Parameters
         ----------

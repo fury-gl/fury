@@ -894,13 +894,7 @@ class TextBox2D(UI):
         self.text.message = self.width_set_text(text)
 
     def edit_mode(self):
-        """Turn on edit mode.
-
-        Prepares the textbox for editing: clears the placeholder text on first
-        activation and shows the caret. The ``UIContext.active_ui`` transition
-        is handled by the base-class ``left_button_click_callback`` via the
-        Hot -> Active promotion, so it is not set here.
-        """
+        """Turn on edit mode."""
         if self.init:
             self._message = ""
             self.init = False
