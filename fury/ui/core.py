@@ -391,12 +391,32 @@ class UI(object, metaclass=abc.ABCMeta):
     def left_button_click_callback(self, event):
         """Handle left mouse button press event.
 
+        Promotes the currently **Hot** UI element to **Active** state.
+
+        For simple widgets the hot element IS ``self`` (set by
+        ``pointer_enter_callback``). For composite widgets (e.g.
+        ``TextBlock2D`` whose background ``Rectangle2D`` forwards its
+        POINTER_ENTER to the logical parent) the hot element may differ from
+        ``self``, but ``UIContext.hot_ui`` will already point to the correct
+        logical owner. Promoting ``UIContext.hot_ui`` directly handles both
+        cases uniformly.
+
         Parameters
         ----------
         event : PointerEvent
             The PyGfx pointer event object.
         """
         self.left_button_state = "pressing"
+
+        if UIContext.hot_ui is not None:
+            # Deactivate a different previously-active element.
+            if (
+                UIContext.active_ui is not None
+                and UIContext.active_ui is not UIContext.hot_ui
+            ):
+                UIContext.active_ui = None
+            UIContext.active_ui = UIContext.hot_ui
+
         self.on_left_mouse_button_pressed(event)
 
     def left_button_release_callback(self, event):
@@ -512,19 +532,30 @@ class UI(object, metaclass=abc.ABCMeta):
     def pointer_enter_callback(self, event):
         """Handle pointer enter event.
 
+        Transitions this UI element to the **Hot** state by setting
+        ``UIContext.hot_ui = self``.
+
         Parameters
         ----------
         event : PointerEvent
-            The PyGfx pointer event object."""
+            The PyGfx pointer event object.
+        """
+        UIContext.hot_ui = self
         self.on_pointer_enter(event)
 
     def pointer_leave_callback(self, event):
         """Handle pointer leave event.
 
+        Clears the **Hot** state for this element, transitioning back to
+        Normal (unless the element is also currently active).
+
         Parameters
         ----------
         event : PointerEvent
-            The PyGfx pointer event object."""
+            The PyGfx pointer event object.
+        """
+        if UIContext.hot_ui is self:
+            UIContext.hot_ui = None
         self.on_pointer_leave(event)
 
 
@@ -1017,6 +1048,8 @@ class TextBlock2D(UI):
         self.background = Rectangle2D()
         self.handle_events(self.actor)
         self.background.on_left_mouse_button_pressed = self._forward_background_press
+        self.background.on_pointer_enter = self._forward_background_pointer_enter
+        self.background.on_pointer_leave = self._forward_background_pointer_leave
 
     def _forward_background_press(self, event):
         """Forward background click to the text block's own press handler.
@@ -1027,6 +1060,34 @@ class TextBlock2D(UI):
             The PyGfx pointer event object.
         """
         self.on_left_mouse_button_pressed(event)
+
+    def _forward_background_pointer_enter(self, event):
+        """Forward background pointer-enter to set hot_ui to this TextBlock2D.
+
+        The background Rectangle2D is a visual sub-component. Its POINTER_ENTER
+        must promote ``hot_ui`` to the parent TextBlock2D (not the Rectangle2D
+        itself), otherwise clicking the background would set ``active_ui`` to
+        the Rectangle2D which has no key handler registered.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
+        UIContext.hot_ui = self
+        self.on_pointer_enter(event)
+
+    def _forward_background_pointer_leave(self, event):
+        """Forward background pointer-leave to clear hot_ui if still this element.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
+        if UIContext.hot_ui is self:
+            UIContext.hot_ui = None
+        self.on_pointer_leave(event)
 
     def resize(self, size):
         """Resize the TextBlock2D bounding box.

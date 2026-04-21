@@ -760,6 +760,7 @@ class TextBox2D(UI):
         if k == "return":
             self.render_text(show_caret=False)
             self._has_focus = False
+            UIContext.active_ui = None
             self.off_focus(self)
             return True
 
@@ -893,13 +894,18 @@ class TextBox2D(UI):
         self.text.message = self.width_set_text(text)
 
     def edit_mode(self):
-        """Turn on edit mode."""
+        """Turn on edit mode.
+
+        Prepares the textbox for editing: clears the placeholder text on first
+        activation and shows the caret. The ``UIContext.active_ui`` transition
+        is handled by the base-class ``left_button_click_callback`` via the
+        Hot -> Active promotion, so it is not set here.
+        """
         if self.init:
             self._message = ""
             self.init = False
             self.caret_pos = 0
         self._has_focus = True
-        UIContext.active_ui = self.text
         self.render_text()
 
     def left_button_press(self, event):
