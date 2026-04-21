@@ -364,10 +364,10 @@ class ApiDocWriter:
             # Smart check: If it's one of our constants, use autodata
             if f.startswith("_FACE_") or f.isupper():
                 body += "\n.. autodata:: " + f + "\n"
-                body += "   :no-index:\n\n"  # Add this line
+                body += "   :no-index:\n\n"
             else:
                 body += "\n.. autofunction:: " + f + "\n"
-                body += "   :no-index:\n\n"  # Add this line
+                body += "   :no-index:\n\n"
 
         return head, body
 
