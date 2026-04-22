@@ -18,7 +18,7 @@ __all__ = [
     #     "FileMenu2D",
     #     "DrawShape",
     #     "DrawPanel",
-    #     "PlaybackPanel",
+    "PlaybackPanel",
     #     "Card2D",
     #     "SpinBox",
 ]
@@ -27,11 +27,13 @@ __all__ = [
 import numpy as np
 
 from fury.actor import create_mesh
+from fury.data import read_viz_icons
 from fury.io import load_image_texture
 from fury.lib import (
     plane_geometry,
 )
 from fury.material import _create_mesh_material
+from fury.ui.containers import Panel2D
 from fury.ui.core import UI, Anchor, Button2D, Disk2D, Rectangle2D, TextBlock2D
 
 
@@ -46,9 +48,11 @@ class TexturedButton2D(Button2D):
         Absolute coordinates (x, y) for placement.
     size : (int, int)
         Width and height in pixels.
+    is_toggle : bool, optional
+        If True, the button behaves as a toggle switch.
     """
 
-    def __init__(self, states, position=(0, 0), size=(30, 30)):
+    def __init__(self, states, position=(0, 0), size=(30, 30), is_toggle=False):
         """Initialize the textured button instance.
 
         Parameters
@@ -59,9 +63,11 @@ class TexturedButton2D(Button2D):
             Absolute coordinates (x, y) for placement.
         size : (int, int)
             Width and height in pixels.
+        is_toggle : bool, optional
+                If True, the button behaves as a toggle switch.
         """
         self.texture_map = self._load_textures(states)
-        super().__init__(position=position, size=size)
+        super().__init__(position=position, size=size, is_toggle=is_toggle)
 
     def _load_textures(self, states):
         """Load image files into PyGfx textures.
@@ -122,10 +128,18 @@ class TextButton2D(Button2D):
         Width and height in pixels for the button background.
     font_size : int
         Size of the text font.
+    is_toggle : bool, optional
+        If True, the button behaves as a toggle switch.
     """
 
     def __init__(
-        self, label, states=None, position=(0, 0), size=(100, 40), font_size=25
+        self,
+        label,
+        states=None,
+        position=(0, 0),
+        size=(100, 40),
+        font_size=25,
+        is_toggle=False,
     ):
         """Initialize the text button instance.
 
@@ -142,6 +156,8 @@ class TextButton2D(Button2D):
             Width and height in pixels for the button background.
         font_size : int
             Size of the text font.
+        is_toggle : bool, optional
+            If True, the button behaves as a toggle switch.
         """
         self.default_label = label
         self.font_size = font_size
@@ -153,7 +169,7 @@ class TextButton2D(Button2D):
             "disabled": (0.2, 0.2, 0.2),
         }
 
-        super().__init__(position=position, size=size)
+        super().__init__(position=position, size=size, is_toggle=is_toggle)
 
     def _setup(self):
         """Set up the internal TextBlock2D component.
@@ -344,15 +360,18 @@ class LineSlider2D(UI):
         self.handle.on_left_mouse_button_dragged = self.handle_move_callback
         self.handle.on_left_mouse_button_released = self.handle_release_callback
 
+        self._children.extend([self.track, self.handle, self.text])
+
     def _get_actors(self):
         """Get the actors composing this UI component.
 
         Returns
         -------
         list
-            List of actors from the track, handle, and text elements.
+            Empty list as this UI uses other UI elements as children
+            instead of direct actors.
         """
-        return self.track.actors + self.handle.actors + self.text.actors
+        return []
 
     def _get_size(self):
         """Calculate the total bounding box size of the slider.
@@ -507,6 +526,360 @@ class LineSlider2D(UI):
             The PyGfx pointer event.
         """
         self.handle.color = self.default_color
+
+
+class PlaybackPanel(UI):
+    """A playback controller designed for FURY v2.
+
+    Parameters
+    ----------
+    loop : bool, optional
+        If True, the playback starts in looping mode.
+    position : (float, float), optional
+        Absolute coordinates (x, y) for placement.
+    width : int, optional
+        The total width of the playback panel in pixels.
+    z_order : int, optional
+        The stacking priority of the panel.
+    """
+
+    def __init__(self, *, loop=False, position=(0, 0), width=900, z_order=0):
+        """Initialize the playback panel instance.
+
+        Parameters
+        ----------
+        loop : bool, optional
+            If True, the playback starts in looping mode.
+        position : (float, float), optional
+            Absolute coordinates (x, y) for placement.
+        width : int, optional
+            The total width of the playback panel in pixels.
+        z_order : int, optional
+            The stacking priority of the panel.
+        """
+        self._width = width
+        self._playing = False
+        self._loop = None
+
+        self.on_play_pause_toggle = lambda state: None
+        self.on_play = lambda: None
+        self.on_pause = lambda: None
+        self.on_stop = lambda: None
+        self.on_loop_toggle = lambda is_looping: None
+        self.on_progress_bar_changed = lambda x: None
+        self.on_speed_changed = lambda x: None
+
+        super(PlaybackPanel, self).__init__(position=position, z_order=z_order)
+
+        self.loop() if loop else self.play_once()
+        self.current_time = 0
+        self.speed = 1.0
+
+    def _setup(self):
+        """Set up internal components including buttons, slider, and text labels."""
+        self.panel = Panel2D(
+            size=(220, 45),
+            color=(1, 1, 1),
+            has_border=True,
+            border_color=(0, 0.3, 0),
+            border_width=2,
+        )
+
+        self.time_text = TextBlock2D(
+            text="00:00.00",
+            font_size=16,
+            color=(1, 1, 1),
+            justification="left",
+            vertical_justification="middle",
+            dynamic_bbox=True,
+        )
+        self.speed_text = TextBlock2D(
+            text="1x",
+            font_size=21,
+            color=(0.2, 0.2, 0.2),
+            bold=True,
+            justification="center",
+            vertical_justification="middle",
+            dynamic_bbox=True,
+        )
+
+        icon_play_pause = {
+            "default": read_viz_icons(fname="play3.png"),
+            "pressed": read_viz_icons(fname="pause2.png"),
+        }
+        icon_loop = {
+            "default": read_viz_icons(fname="checkmark.png"),
+            "pressed": read_viz_icons(fname="infinite.png"),
+        }
+
+        self._play_pause_btn = TexturedButton2D(
+            states=icon_play_pause, size=(25, 25), is_toggle=True
+        )
+        self._stop_btn = TexturedButton2D(
+            states={"default": read_viz_icons(fname="stop2.png")}, size=(25, 25)
+        )
+        self._loop_btn = TexturedButton2D(
+            states=icon_loop, size=(25, 25), is_toggle=True
+        )
+        self._speed_up_btn = TexturedButton2D(
+            states={"default": read_viz_icons(fname="plus.png")}, size=(15, 15)
+        )
+        self._slow_down_btn = TexturedButton2D(
+            states={"default": read_viz_icons(fname="minus.png")}, size=(15, 15)
+        )
+
+        self._progress_bar = LineSlider2D(
+            initial_value=0,
+            length=self._width - 330,
+            line_width=9,
+            text_template="",
+            shape="disk",
+            outer_radius=10,
+        )
+        self._progress_bar.track.color = (1, 0, 0)
+
+        self.panel.add_element(self._play_pause_btn, (10, 10))
+        self.panel.add_element(self._stop_btn, (45, 10))
+        self.panel.add_element(self._loop_btn, (80, 10))
+        self.panel.add_element(self._slow_down_btn, (125, 15))
+        self.panel.add_element(self.speed_text, (157, 15), anchor="center")
+        self.panel.add_element(self._speed_up_btn, (195, 15))
+
+        self._play_pause_btn.on_clicked = self._play_pause_callback
+        self._stop_btn.on_clicked = lambda e: self.stop()
+        self._loop_btn.on_clicked = self._loop_callback
+        self._speed_up_btn.on_clicked = self._speed_up_callback
+        self._slow_down_btn.on_clicked = self._slow_down_callback
+        self._progress_bar.on_moving_slider = self._on_progress_change
+
+    def _update_actors_position(self):
+        """Update internal actor positions."""
+        pos = self.get_position(x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP)
+
+        self.panel.set_position(pos + (5, 5))
+
+        pbar_length = max(self._width - 330, 10.0)
+        self._progress_bar._length = pbar_length
+
+        self._progress_bar.set_position(
+            (pos[0] + 240, pos[1] + 27), x_anchor=Anchor.LEFT, y_anchor=Anchor.CENTER
+        )
+
+        self.time_text.set_position(
+            (pos[0] + 250 + pbar_length, pos[1] + 27),
+            x_anchor=Anchor.LEFT,
+            y_anchor=Anchor.CENTER,
+        )
+
+        self._children.extend([self.panel, self._progress_bar, self.time_text])
+
+    def _get_actors(self):
+        """Get the actors composing this UI component.
+
+        Returns
+        -------
+        list
+            Empty list as this UI uses other UI elements as children
+            instead of direct actors.
+        """
+        return []
+
+    def _get_size(self):
+        """Get the total width and height of the playback panel.
+
+        Returns
+        -------
+        numpy.ndarray
+            The (width, height) in pixels.
+        """
+        return np.array([self._width, 55])
+
+    def _play_pause_callback(self, event):
+        """Handle toggle logic between play and pause states.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        self._playing = not self._playing
+        self.play() if self._playing else self.pause()
+        self.on_play_pause_toggle(self._playing)
+
+    def _loop_callback(self, event):
+        """Handle toggle logic for the looping state.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        self._loop = not self._loop
+        self.loop() if self._loop else self.play_once()
+        self.on_loop_toggle(self._loop)
+
+    def _speed_up_callback(self, event):
+        """Increment the playback speed.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        inc = 10 ** np.floor(np.log10(self.speed))
+        self.speed = round(self.speed + inc, 13)
+        self.on_speed_changed(self._speed)
+
+    def _slow_down_callback(self, event):
+        """Decrement the playback speed.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        safe_speed = max(self.speed - self.speed / 10, 0.01)
+        dec = 10 ** np.floor(np.log10(safe_speed))
+        self.speed = round(self.speed - dec, 13)
+        self.on_speed_changed(self._speed)
+
+    def _on_progress_change(self, slider):
+        """Update time tracking based on slider movement.
+
+        Parameters
+        ----------
+        slider : LineSlider2D
+            The slider component instance.
+        """
+        self.on_progress_bar_changed(slider.value)
+        self.current_time = slider.value
+
+    def play(self):
+        """Set the controller to playing state."""
+        self._playing = True
+        self._play_pause_btn.toggled = True
+        self.on_play()
+
+    def pause(self):
+        """Set the controller to paused state."""
+        self._playing = False
+        self._play_pause_btn.toggled = False
+        self.on_pause()
+
+    def stop(self):
+        """Stop the playback and reset the timer."""
+        self._playing = False
+        self.current_time = 0
+        self._play_pause_btn.toggled = False
+        self.on_stop()
+
+    def loop(self):
+        """Enable looping mode."""
+        self._loop = True
+        self._loop_btn.toggled = True
+
+    def play_once(self):
+        """Disable looping mode."""
+        self._loop = False
+        self._loop_btn.toggled = False
+
+    @property
+    def current_time(self):
+        """Get the current playback time.
+
+        Returns
+        -------
+        float
+            Current time in seconds.
+        """
+        return self._progress_bar.value
+
+    @current_time.setter
+    def current_time(self, t):
+        """Set the current playback time.
+
+        Parameters
+        ----------
+        t : float
+            New time in seconds.
+        """
+        self._progress_bar.value = t
+        self.current_time_str = t
+
+    @property
+    def final_time(self):
+        """Get the total duration of the playback.
+
+        Returns
+        -------
+        float
+            Total duration in seconds.
+        """
+        return self._progress_bar.max_value
+
+    @final_time.setter
+    def final_time(self, t):
+        """Set the total duration of the playback.
+
+        Parameters
+        ----------
+        t : float
+            New total duration.
+        """
+        self._progress_bar.max_value = t
+
+    @property
+    def current_time_str(self):
+        """Get the formatted string representation of current time.
+
+        Returns
+        -------
+        str
+            Formatted time string.
+        """
+        return self.time_text.message
+
+    @current_time_str.setter
+    def current_time_str(self, t):
+        """Update the time label string based on seconds.
+
+        Parameters
+        ----------
+        t : float
+            Time in seconds.
+        """
+        t = np.clip(t, 0, self.final_time)
+        m, s = divmod(t, 60)
+        if self.final_time < 3600:
+            t_str = f"{int(m):02d}:{s:05.2f}"
+        else:
+            h, m = divmod(m, 60)
+            t_str = f"{int(h):02d}:{int(m):02d}:{s:02d}"
+        self.time_text.message = t_str
+
+    @property
+    def speed(self):
+        """Get the current playback speed.
+
+        Returns
+        -------
+        float
+            Playback speed multiplier.
+        """
+        return self._speed
+
+    @speed.setter
+    def speed(self, val):
+        """Set the playback speed multiplier.
+
+        Parameters
+        ----------
+        val : float
+            New speed value.
+        """
+        self._speed = max(val, 0.01)
+        speed_str = f"{self._speed}".strip("0").rstrip(".") + "x"
+        self.speed_text.message = speed_str if speed_str and speed_str != "." else "0"
 
 
 # class TextBox2D(UI):
@@ -3936,367 +4309,6 @@ class LineSlider2D(UI):
 #         mouse_position = self.clamp_mouse_position(i_ren.event.position)
 #         self.handle_mouse_drag(mouse_position)
 #         i_ren.force_render()
-
-
-# class PlaybackPanel(UI):
-#     """A playback controller that can do essential functionalities.
-#     such as play, pause, stop, and seek.
-#     """
-
-#     @warn_on_args_to_kwargs()
-#     def __init__(self, *, loop=False, position=(0, 0), width=None):
-#         self._width = width if width is not None else 900
-#         self._auto_width = width is None
-#         self._position = position
-#         super(PlaybackPanel, self).__init__(position=position)
-#         self._playing = False
-#         self._loop = None
-#         self.loop() if loop else self.play_once()
-#         self._speed = 1
-#         # callback functions
-#         self.on_play_pause_toggle = lambda state: None
-#         self.on_play = lambda: None
-#         self.on_pause = lambda: None
-#         self.on_stop = lambda: None
-#         self.on_loop_toggle = lambda is_looping: None
-#         self.on_progress_bar_changed = lambda x: None
-#         self.on_speed_up = lambda x: None
-#         self.on_slow_down = lambda x: None
-#         self.on_speed_changed = lambda x: None
-#         self._set_position(position)
-
-#     def _setup(self):
-#         """Setup this Panel component."""
-#         self.time_text = TextBlock2D()
-#         self.speed_text = TextBlock2D(
-#             text="1",
-#             font_size=21,
-#             color=(0.2, 0.2, 0.2),
-#             bold=True,
-#             justification="center",
-#             vertical_justification="middle",
-#         )
-
-#         self.panel = Panel2D(
-#             size=(190, 30),
-#             color=(1, 1, 1),
-#             align="right",
-#             has_border=True,
-#             border_color=(0, 0.3, 0),
-#             border_width=2,
-#         )
-
-#         play_pause_icons = [
-#             ("play", read_viz_icons(fname="play3.png")),
-#             ("pause", read_viz_icons(fname="pause2.png")),
-#         ]
-
-#         loop_icons = [
-#             ("once", read_viz_icons(fname="checkmark.png")),
-#             ("loop", read_viz_icons(fname="infinite.png")),
-#         ]
-
-#         self._play_pause_btn = Button2D(icon_fnames=play_pause_icons)
-
-#         self._loop_btn = Button2D(icon_fnames=loop_icons)
-
-#         self._stop_btn = Button2D(
-#             icon_fnames=[("stop", read_viz_icons(fname="stop2.png"))]
-#         )
-
-#         self._speed_up_btn = Button2D(
-#             icon_fnames=[("plus", read_viz_icons(fname="plus.png"))], size=(15, 15)
-#         )
-
-#         self._slow_down_btn = Button2D(
-#             icon_fnames=[("minus", read_viz_icons(fname="minus.png"))], size=(15, 15)
-#         )
-
-#         self._progress_bar = LineSlider2D(
-#             initial_value=0,
-#             orientation="horizontal",
-#             min_value=0,
-#             max_value=100,
-#             text_alignment="top",
-#             length=590,
-#             text_template="",
-#             line_width=9,
-#         )
-
-#         start = 0.04
-#         w = 0.2
-#         self.panel.add_element(self._play_pause_btn, (start, 0.04))
-#         self.panel.add_element(self._stop_btn, (start + w, 0.04))
-#         self.panel.add_element(self._loop_btn, (start + 2 * w, 0.04))
-#         self.panel.add_element(self._slow_down_btn, (start + 0.63, 0.3))
-#         self.panel.add_element(self.speed_text, (start + 0.78, 0.45))
-#         self.panel.add_element(self._speed_up_btn, (start + 0.86, 0.3))
-
-#         def play_pause_toggle(i_ren, _obj, _button):
-#             self._playing = not self._playing
-#             if self._playing:
-#                 self.play()
-#             else:
-#                 self.pause()
-#             self.on_play_pause_toggle(self._playing)
-#             i_ren.force_render()
-
-#         def stop(i_ren, _obj, _button):
-#             self.stop()
-#             i_ren.force_render()
-
-#         def speed_up(i_ren, _obj, _button):
-#             inc = 10 ** np.floor(np.log10(self.speed))
-#             self.speed = round(self.speed + inc, 13)
-#             self.on_speed_up(self._speed)
-#             self.on_speed_changed(self._speed)
-#             i_ren.force_render()
-
-#         def slow_down(i_ren, _obj, _button):
-#             dec = 10 ** np.floor(np.log10(self.speed - self.speed / 10))
-#             self.speed = round(self.speed - dec, 13)
-#             self.on_slow_down(self._speed)
-#             self.on_speed_changed(self._speed)
-#             i_ren.force_render()
-
-#         def loop_toggle(i_ren, _obj, _button):
-#             self._loop = not self._loop
-#             if self._loop:
-#                 self.loop()
-#             else:
-#                 self.play_once()
-#             self.on_loop_toggle(self._loop)
-#             i_ren.force_render()
-
-#         # using the adapters created above
-#         self._play_pause_btn.on_left_mouse_button_pressed = play_pause_toggle
-#         self._stop_btn.on_left_mouse_button_pressed = stop
-#         self._loop_btn.on_left_mouse_button_pressed = loop_toggle
-#         self._speed_up_btn.on_left_mouse_button_pressed = speed_up
-#         self._slow_down_btn.on_left_mouse_button_pressed = slow_down
-
-#         def on_progress_change(slider):
-#             t = slider.value
-#             self.on_progress_bar_changed(t)
-#             self.current_time = t
-
-#         self._progress_bar.on_moving_slider = on_progress_change
-#         self.current_time = 0
-
-#     def play(self):
-#         """Play the playback"""
-#         self._playing = True
-#         self._play_pause_btn.set_icon_by_name("pause")
-#         self.on_play()
-
-#     def stop(self):
-#         """Stop the playback"""
-#         self._playing = False
-#         self._play_pause_btn.set_icon_by_name("play")
-#         self.on_stop()
-
-#     def pause(self):
-#         """Pause the playback"""
-#         self._playing = False
-#         self._play_pause_btn.set_icon_by_name("play")
-#         self.on_pause()
-
-#     def loop(self):
-#         """Set repeating mode to loop."""
-#         self._loop = True
-#         self._loop_btn.set_icon_by_name("loop")
-
-#     def play_once(self):
-#         """Set repeating mode to repeat once."""
-#         self._loop = False
-#         self._loop_btn.set_icon_by_name("once")
-
-#     @property
-#     def final_time(self):
-#         """Set final progress slider time value.
-
-#         Returns
-#         -------
-#         float
-#             Final time for the progress slider.
-
-#         """
-#         return self._progress_bar.max_value
-
-#     @final_time.setter
-#     def final_time(self, t):
-#         """Set final progress slider time value.
-
-#         Parameters
-#         ----------
-#         t: float
-#             Final time for the progress slider.
-
-#         """
-#         self._progress_bar.max_value = t
-
-#     @property
-#     def current_time(self):
-#         """Get current time of the progress slider.
-
-#         Returns
-#         -------
-#         float
-#             Progress slider current value.
-
-#         """
-#         return self._progress_bar.value
-
-#     @current_time.setter
-#     def current_time(self, t):
-#         """Set progress slider value.
-
-#         Parameters
-#         ----------
-#         t: float
-#             Current time to be set.
-
-#         """
-#         self._progress_bar.value = t
-#         self.current_time_str = t
-
-#     @property
-#     def current_time_str(self):
-#         """Returns current time as a string.
-
-#         Returns
-#         -------
-#         str
-#             Current time formatted as a string in the form:`HH:MM:SS`.
-
-#         """
-#         return self.time_text.message
-
-#     @current_time_str.setter
-#     def current_time_str(self, t):
-#         """Set time counter.
-
-#         Parameters
-#         ----------
-#         t: float
-#             Time to be set in the time_text counter.
-
-#         Notes
-#         -----
-#         This should only be used when the `current_value` is not being set
-#         since setting`current_value` automatically sets this property as well.
-
-#         """
-#         t = np.clip(t, 0, self.final_time)
-#         if self.final_time < 3600:
-#             m, s = divmod(t, 60)
-#             t_str = r"%02d:%05.2f" % (m, s)
-#         else:
-#             m, s = divmod(t, 60)
-#             h, m = divmod(m, 60)
-#             t_str = r"%02d:%02d:%02d" % (h, m, s)
-#         self.time_text.message = t_str
-
-#     @property
-#     def speed(self):
-#         """Returns current speed.
-
-#         Returns
-#         -------
-#         str
-#             Current time formatted as a string in the form:`HH:MM:SS`.
-
-#         """
-#         return self._speed
-
-#     @speed.setter
-#     def speed(self, speed):
-#         """Set time counter.
-
-#         Parameters
-#         ----------
-#         speed: float
-#             Speed value to be set in the speed_text counter.
-
-#         """
-#         if speed <= 0:
-#             speed = 0.01
-#         self._speed = speed
-#         speed_str = f"{speed}".strip("0").rstrip(".")
-#         self.speed_text.font_size = 21 if 0.01 <= speed < 100 else 14
-#         self.speed_text.message = speed_str
-
-#     def show(self):
-#         [act.SetVisibility(1) for act in self._get_actors()]
-
-#     def hide(self):
-#         [act.SetVisibility(0) for act in self._get_actors()]
-
-#     def _get_actors(self):
-#         """Get the actors composing this UI component."""
-#         return self.panel.actors + self._progress_bar.actors + self.time_text.actors
-
-#     def _add_to_scene(self, _scene):
-#         """Add all subcomponents or VTK props that compose this UI component.
-
-#         Parameters
-#         ----------
-#         _scene : scene
-
-#         """
-
-#         def resize_cbk(caller, ev):
-#             if self._auto_width:
-#                 width = _scene.GetSize()[0]
-#                 if width == self.width:
-#                     return
-#                 self._width = width
-#                 self._set_position(self.position)
-#                 self._progress_bar.value = self._progress_bar.value
-
-#         _scene.AddObserver(Command.StartEvent, resize_cbk)
-#         self.panel.add_to_scene(_scene)
-#         self._progress_bar.add_to_scene(_scene)
-#         self.time_text.add_to_scene(_scene)
-
-#     @property
-#     def width(self):
-#         """Return the width of the PlaybackPanel
-
-#         Returns
-#         -------
-#         float
-#             The width of the PlaybackPanel.
-
-#         """
-#         return self._width
-
-#     @width.setter
-#     def width(self, width):
-#         """Set width of the PlaybackPanel.
-
-#         Parameters
-#         ----------
-#         width: float
-#             The width of the whole panel.
-#             If set to None, The width will be the same as the window's width.
-
-#         """
-#         self._width = width if width is not None else 900
-#         self._auto_width = width is None
-#         self._set_position(self.position)
-
-#     def _set_position(self, _coords):
-#         x, y = self.position
-#         width = self.width
-#         self.panel.position = (x + 5, y + 5)
-#         progress_length = max(width - 310 - x, 1.0)
-#         self._progress_bar.track.width = progress_length
-#         self._progress_bar.center = (x + 215 + progress_length / 2, y + 20)
-#         self.time_text.position = (x + 225 + progress_length, y + 10)
-
-#     def _get_size(self):
-#         return self.panel.size + self._progress_bar.size + self.time_text.size
 
 
 # class Card2D(UI):

@@ -50,6 +50,7 @@ files = [
     "viz_textblock.py",
     "viz_sliders.py",
     "viz_button.py",
+    "viz_playback_panel.py",
 ]
 
 [animation]
