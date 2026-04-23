@@ -282,6 +282,11 @@ def create_text(text, material, **kwargs):
     ------
     TypeError
         If text is not a string or material is not an instance of TextMaterial.
+
+    Examples
+    --------
+    >>> mat = TextMaterial()
+    >>> t = create_text("Hello", mat)
     """
     if not isinstance(text, str):
         raise TypeError("text must be a string.")
@@ -289,8 +294,7 @@ def create_text(text, material, **kwargs):
     if not isinstance(material, TextMaterial):
         raise TypeError("material must be an instance of TextMaterial.")
 
-    text = Text(text=text, material=material, **kwargs)
-    return text
+    return Text(text=text, material=material, **kwargs)
 
 
 def create_image(image_input, material, **kwargs):
