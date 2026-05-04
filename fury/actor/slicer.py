@@ -18,6 +18,7 @@ from fury.lib import (
     Texture,
     VolumeSliceMaterial,
     WorldObject,
+    gfx_wgpu,
     register_wgpu_render_function,
 )
 from fury.material import (
@@ -294,7 +295,10 @@ class VectorField(WorldObject, Actor):
         Parameters
         ----------
         value : {list, tuple, ndarray}
-            The cross section dimensions to set.
+            The cross section in world-space coordinates.  When this actor is
+            part of a chunked group its ``local.position`` offset is already
+            baked in, so the caller always works in the same coordinate frame
+            as the full field.
         """
         if not isinstance(value, (list, tuple, np.ndarray)):
             raise ValueError(
@@ -305,8 +309,10 @@ class VectorField(WorldObject, Actor):
             raise ValueError(f"Cross section must have length 3, but got {len(value)}")
         value = np.asarray(value, dtype=np.float32)
         bounds = self.bounds if hasattr(self, "bounds") else self.get_bounding_box()
-        value = np.maximum(bounds[0], value)
-        value = np.minimum(bounds[1], value)
+        world_min = np.asarray(bounds[0], dtype=np.float32)
+        world_max = np.asarray(bounds[1], dtype=np.float32)
+        value = np.maximum(world_min, value)
+        value = np.minimum(world_max, value)
         self.material.cross_section = value.astype(np.int32)
 
     @property
@@ -334,6 +340,113 @@ class VectorField(WorldObject, Actor):
         if not isinstance(value, (list, tuple)) or len(value) != 3:
             raise ValueError("Visibility must be a tuple of three boolean values.")
         self.material.visibility = value
+
+
+def _max_voxels_per_chunk(*, max_buffer_size, max_workgroups):
+    """Compute the maximum number of voxels that fit in one VectorField chunk.
+
+    Two independent device limits constrain how large a single VectorField
+    actor may be:
+
+    * **Storage-buffer binding size** – the largest individual buffer that the
+      GPU accepts.  The bottleneck buffer holds two float32 (x, y, z) vertices
+      per vector (start + end point), so it costs ``n_vectors × 2 × 3 × 4``
+      bytes.
+    * **Compute workgroup dispatch dimension** – the compute pass dispatches
+      ``ceil(n_voxels / workgroup_size)`` workgroups along the X axis.  WebGPU
+      limits this to ``max-compute-workgroups-per-dimension`` (typically
+      65 535).
+
+    Parameters
+    ----------
+    max_buffer_size : int
+        Device limit ``max-storage-buffer-binding-size`` in bytes.
+    max_workgroups : int
+        Device limit ``max-compute-workgroups-per-dimension``.
+
+    Returns
+    -------
+    int
+        Maximum number of voxels per chunk that satisfies both limits.
+    """
+    _VECTOR_FIELD_WORKGROUP_SIZE = 64
+    from_buffer = max_buffer_size // (2 * 3 * 4)
+    from_dispatch = max_workgroups * _VECTOR_FIELD_WORKGROUP_SIZE
+    return min(from_buffer, from_dispatch)
+
+
+def _create_chunked_vector_field(
+    field,
+    *,
+    group_name,
+    scales,
+    actor_params,
+    chunk_actor_postprocess=None,
+):
+    """Create a VectorField group, chunking when required by device limits.
+
+    Parameters
+    ----------
+    field : ndarray, shape {(X, Y, Z, N, 3), (X, Y, Z, 3)}
+        Vector field data.
+    group_name : str
+        Name for the returned Group.
+    scales : {float, ndarray}
+        Scalar value or per-voxel scales array.
+    actor_params : dict
+        Keyword arguments passed to each VectorField actor.
+    chunk_actor_postprocess : callable, optional
+        Callback invoked as ``fn(actor, x_start)`` for each chunk actor after
+        chunk positioning, used for chunk-specific updates.
+
+    Returns
+    -------
+    Group
+        A Group containing one or more VectorField actors.
+    """
+    wgpu_device = gfx_wgpu.get_shared().device
+    max_buffer_size = wgpu_device.limits.get(
+        "max-storage-buffer-binding-size", 256 * 1024 * 1024
+    )
+    max_workgroups = wgpu_device.limits.get(
+        "max-compute-workgroups-per-dimension", 65535
+    )
+
+    total_voxels = int(np.prod(field.shape[:3]))
+    max_voxels = _max_voxels_per_chunk(
+        max_buffer_size=max_buffer_size,
+        max_workgroups=max_workgroups,
+    )
+    group = Group(name=group_name)
+
+    if total_voxels <= max_voxels:
+        actor = VectorField(field, scales=scales, **actor_params)
+        group.add(actor)
+        return group
+
+    voxels_per_x_slice = int(np.prod(field.shape[1:3]))
+    chunk_x = max(1, max_voxels // voxels_per_x_slice)
+
+    x_size = field.shape[0]
+    n_chunks = int(np.ceil(x_size / chunk_x))
+
+    for i in range(n_chunks):
+        x_start = i * chunk_x
+        x_end = min(x_start + chunk_x, x_size)
+        chunk_field = field[x_start:x_end]
+
+        if isinstance(scales, np.ndarray):
+            chunk_scales = scales[x_start:x_end]
+        else:
+            chunk_scales = scales
+
+        actor = VectorField(chunk_field, scales=chunk_scales, **actor_params)
+        actor.local.position = [x_start, 0, 0]
+        if chunk_actor_postprocess is not None:
+            chunk_actor_postprocess(actor, x_start)
+        group.add(actor)
+
+    return group
 
 
 def vector_field(
@@ -368,19 +481,21 @@ def vector_field(
 
     Returns
     -------
-    VectorField
-        A vector field object.
+    Group
+        A Group of VectorField chunks.
     """
-
-    obj = VectorField(
+    actor_params = {
+        "actor_type": actor_type,
+        "colors": colors,
+        "opacity": opacity,
+        "thickness": thickness,
+    }
+    return _create_chunked_vector_field(
         field,
-        actor_type=actor_type,
-        colors=colors,
+        group_name="VectorField",
         scales=scales,
-        opacity=opacity,
-        thickness=thickness,
+        actor_params=actor_params,
     )
-    return obj
 
 
 def vector_field_slicer(
@@ -423,24 +538,32 @@ def vector_field_slicer(
 
     Returns
     -------
-    VectorField
-        A vector field object.
+    VectorField or Group
+        A single VectorField when the data fits within the device limits,
+        or a Group of VectorField chunks otherwise.
     """
-
     if cross_section is None:
         cross_section = np.asarray(field.shape[:3], dtype=np.int32) // 2
 
-    obj = VectorField(
+    cross_section = np.asarray(cross_section, dtype=np.int32)
+
+    actor_params = {
+        "actor_type": actor_type,
+        "cross_section": cross_section,
+        "colors": colors,
+        "opacity": opacity,
+        "thickness": thickness,
+        "visibility": visibility,
+    }
+    return _create_chunked_vector_field(
         field,
-        actor_type=actor_type,
-        cross_section=cross_section,
-        colors=colors,
+        group_name="VectorFieldSlicer",
         scales=scales,
-        opacity=opacity,
-        thickness=thickness,
-        visibility=visibility,
+        actor_params=actor_params,
+        chunk_actor_postprocess=lambda actor, _: setattr(
+            actor, "cross_section", cross_section.copy()
+        ),
     )
-    return obj
 
 
 @register_wgpu_render_function(VectorField, VectorFieldThinLineMaterial)
