@@ -7,6 +7,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 
 from fury.actor import (
+    Group,
     Points,
     actor_from_primitive,
     create_image,
@@ -513,14 +514,17 @@ def text(
 
     Parameters
     ----------
-    text : str or list[str]
-        The plain text to render.
-        The text is split in one TextBlock per line,
-        unless a list is given, in which case each (str) item becomes a TextBlock.
-    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA values in the range [0, 1].
-    position : tuple, optional
-        The (x, y, z) coordinates to place the text in 3D space.
+    text : str or list of str
+        The plain text to render. When a list is given, each item becomes
+        a separate text actor and a Group is returned.
+    colors : tuple (3,) or tuple (4,) or list of tuple, optional
+        RGB or RGBA values in the range [0, 1]. When ``text`` is a list,
+        this can be a single color applied to all actors, or a list of
+        colors (one per text item).
+    position : tuple (3,) or list of tuple (3,), optional
+        The (x, y, z) coordinates to place the text in 3D space. When
+        ``text`` is a list, this can be a single position applied to all
+        actors, or a list of positions (one per text item).
     font_size : float, optional
         The size of the font, in object coordinates or pixel screen coordinates.
     family : str, optional
@@ -548,9 +552,17 @@ def text(
 
     Returns
     -------
-    Actor
-        A text actor containing the generated text with the specified material
-        and properties.
+    Text or Group
+        A single Text actor if ``text`` is a string, or a Group of Text
+        actors if ``text`` is a list.
+
+    Raises
+    ------
+    TypeError
+        If ``text`` is not a string or list of strings.
+    ValueError
+        If ``colors`` or ``position`` is a list whose length does not match
+        the length of ``text``.
 
     Examples
     --------
@@ -561,6 +573,65 @@ def text(
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
+    if isinstance(text, (list, tuple)):
+        if not all(isinstance(t, str) for t in text):
+            raise TypeError("All items in text list must be strings.")
+
+        n = len(text)
+
+        is_color_seq = (
+            isinstance(colors, (list, tuple))
+            and len(colors) > 0
+            and isinstance(colors[0], (list, tuple))
+        )
+        if is_color_seq:
+            if len(colors) != n:
+                raise ValueError(
+                    "Length of colors list must match length of text list."
+                )
+            colors_list = colors
+        else:
+            colors_list = [colors] * n
+
+        is_pos_seq = (
+            isinstance(position, (list, tuple))
+            and len(position) > 0
+            and isinstance(position[0], (list, tuple))
+        )
+        if is_pos_seq:
+            if len(position) != n:
+                raise ValueError(
+                    "Length of position list must match length of text list."
+                )
+            position_list = position
+        else:
+            position_list = [position] * n
+
+        group = Group()
+        for t, c, p in zip(text, colors_list, position_list, strict=True):
+            mat = _create_text_material(
+                color=c,
+                opacity=opacity,
+                outline_color=outline_color,
+                outline_thickness=outline_thickness,
+            )
+            obj = create_text(
+                text=t,
+                material=mat,
+                font_size=font_size,
+                family=family,
+                anchor=anchor,
+                max_width=max_width,
+                line_height=line_height,
+                text_align=text_align,
+            )
+            obj.local.position = p
+            group.add(obj)
+        return group
+
+    if not isinstance(text, str):
+        raise TypeError("text must be a string.")
+
     mat = _create_text_material(
         color=colors,
         opacity=opacity,

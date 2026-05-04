@@ -4,6 +4,7 @@ import numpy.testing as npt
 import pytest
 
 from fury import actor, window
+from fury.actor import Group
 from fury.actor.tests._helpers import validate_actors
 
 
@@ -202,6 +203,75 @@ def test_text():
     assert 0 < mean_b < 255
 
     scene.remove(text_actor_1)
+
+
+def test_text_list_returns_group():
+    texts = ["Hello", "World", "FURY"]
+    positions = [(0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (2.0, 0.0, 0.0)]
+    group = actor.text(text=texts, position=positions)
+    assert isinstance(group, Group)
+    assert len(group.children) == 3
+    for child, pos in zip(group.children, positions, strict=True):
+        npt.assert_array_equal(child.local.position, np.array(pos))
+
+
+def test_text_list_shared_position():
+    texts = ["Hello", "World"]
+    group = actor.text(text=texts)
+    assert isinstance(group, Group)
+    assert len(group.children) == 2
+
+
+def test_text_list_per_color():
+    texts = ["Hello", "World"]
+    colors = [(1.0, 0.0, 0.0), (0.0, 1.0, 0.0)]
+    group = actor.text(text=texts, colors=colors)
+    assert isinstance(group, Group)
+    assert len(group.children) == 2
+
+
+def test_text_list_invalid_items_raises():
+    with pytest.raises(TypeError):
+        actor.text(text=["Hello", 123])
+
+
+def test_text_list_position_length_mismatch_raises():
+    with pytest.raises(ValueError):
+        actor.text(
+            text=["Hello", "World", "FURY"],
+            position=[(0.0, 0.0, 0.0), (1.0, 0.0, 0.0)],
+        )
+
+
+def test_text_list_colors_length_mismatch_raises():
+    with pytest.raises(ValueError):
+        actor.text(
+            text=["Hello", "World", "FURY"],
+            colors=[(1.0, 0.0, 0.0), (0.0, 1.0, 0.0)],
+        )
+
+
+def test_text_tuple_of_strings():
+    texts = ("Hello", "World")
+    group = actor.text(text=texts)
+    assert isinstance(group, Group)
+    assert len(group.children) == 2
+
+
+def test_text_tuple_of_positions():
+    texts = ["Hello", "World"]
+    positions = ((0.0, 0.0, 0.0), (1.0, 0.0, 0.0))
+    group = actor.text(text=texts, position=positions)
+    assert isinstance(group, Group)
+    assert len(group.children) == 2
+
+
+def test_text_tuple_of_colors():
+    texts = ["Hello", "World"]
+    colors = ((1.0, 0.0, 0.0), (0.0, 1.0, 0.0))
+    group = actor.text(text=texts, colors=colors)
+    assert isinstance(group, Group)
+    assert len(group.children) == 2
 
 
 def test_image():
