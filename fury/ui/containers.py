@@ -1,6 +1,6 @@
 """UI container module."""
 
-# from warnings import warn
+import logging
 
 import numpy as np
 
@@ -134,8 +134,9 @@ class Panel2D(UI):
         actors = []
 
         actors.extend(self.background.actors)
-        for border in self.borders.values():
-            actors.extend(border.actors)
+        if self.has_border:
+            for border in self.borders.values():
+                actors.extend(border.actors)
 
         return actors
 
@@ -185,7 +186,7 @@ class Panel2D(UI):
         for element, offset in self.element_offsets:
             if element == self.background:
                 element.z_order = self.z_order
-            elif element in self.borders.values():
+            elif self.has_border and element in self.borders.values():
                 element.z_order = self.z_order + 1
             else:
                 element.z_order = self.z_order + 2
@@ -395,6 +396,8 @@ class Panel2D(UI):
 
     def update_border_coords(self):
         """Update the coordinates of the borders."""
+        if not self.has_border:
+            return
 
         for key in self.borders.keys():
             self.update_element(self.borders[key], self.border_coords[key])
@@ -410,6 +413,9 @@ class Panel2D(UI):
             borders, respectively.
         """
 
+        if not self.has_border:
+            logging.warning("Border is not present, border color is not available.")
+            return []
         return [self.borders[side].color for side in self.border_sides]
 
     @border_color.setter
@@ -426,6 +432,12 @@ class Panel2D(UI):
         if side.lower() not in ["left", "right", "top", "bottom"]:
             raise ValueError(f"{side} not a valid border side")
 
+        if not self.has_border:
+            logging.warning(
+                "Border is not present, setting border color will be ignored."
+            )
+            return
+
         self.borders[side].color = color
 
     @property
@@ -438,6 +450,10 @@ class Panel2D(UI):
             A list containing the width (for left/right) and height (for top/bottom)
             of the borders.
         """
+
+        if not self.has_border:
+            logging.warning("Border is not present, border width is not available.")
+            return []
 
         widths = []
 
@@ -460,6 +476,12 @@ class Panel2D(UI):
             Iterable `[side, width]` containing the side (str) and the width (float).
         """
         side, border_width = side_width
+
+        if not self.has_border:
+            logging.warning(
+                "Border is not present, setting border width will be ignored."
+            )
+            return
 
         if side.lower() in ["left", "right"]:
             self.borders[side].width = border_width
