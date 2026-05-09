@@ -391,8 +391,6 @@ class UI(object, metaclass=abc.ABCMeta):
     def left_button_click_callback(self, event):
         """Handle left mouse button press event.
 
-        Promotes the currently **Hot** UI element to **Active** state.
-
         Parameters
         ----------
         event : PointerEvent
@@ -401,7 +399,6 @@ class UI(object, metaclass=abc.ABCMeta):
         self.left_button_state = "pressing"
 
         if UIContext.hot_ui is not None:
-            # Deactivate a different previously-active element.
             if (
                 UIContext.active_ui is not None
                 and UIContext.active_ui is not UIContext.hot_ui
@@ -506,10 +503,6 @@ class UI(object, metaclass=abc.ABCMeta):
 
     def key_press_callback(self, event):
         """Handle key press event.
-
-        If there is an active UI element (e.g. a focused text box), the
-        event is forwarded to it. Otherwise, the event is handled by this
-        component's own ``on_key_press`` callback.
 
         Parameters
         ----------
@@ -1006,6 +999,8 @@ class TextBlock2D(UI):
         self._message = text
         self._dynamic_bbox = dynamic_bbox
         self._bg_size = size
+        self._padding = 5
+        self._shadow = False
 
         self._last_rendered_size = (0, 0)
 
@@ -1028,9 +1023,7 @@ class TextBlock2D(UI):
 
     def _setup(self):
         """Set up this UI component."""
-        self.actor = Text(
-            markdown=self._message, screen_space=True, anchor="middle-center"
-        )
+        self.actor = Text(markdown=self._message, screen_space=True, anchor="top-left")
         self.background = Rectangle2D()
         self.handle_events(self.actor)
         self.background.on_left_mouse_button_pressed = self._forward_background_press
@@ -1078,7 +1071,6 @@ class TextBlock2D(UI):
         size : (int, int)
             The new (width, height) in pixels.
         """
-        # Constrain text wrapping to the new width
         self.actor.max_width = size[0]
         self.update_bounding_box(size=size)
 
@@ -1107,10 +1099,6 @@ class TextBlock2D(UI):
 
     def get_formatted_text(self, text):
         """Format the given text with markdown syntax for bold/italic styles.
-
-        pygfx markdown only supports ``**`` (bold) and ``*`` (italic) as
-        separate two-char / one-char star tokens.  It does **not** recognise
-        ``***`` for bold-italic, so we must wrap each word individually.
 
         Parameters
         ----------
@@ -1323,6 +1311,51 @@ class TextBlock2D(UI):
         self._italic = flag
 
     @property
+    def shadow(self):
+        """Return whether the text has a shadow.
+
+        Returns
+        -------
+        bool
+            True if text has a shadow.
+        """
+        return self._shadow
+
+    @shadow.setter
+    def shadow(self, flag):
+        """Set text shadow.
+
+        Parameters
+        ----------
+        flag : bool
+            True if text has a shadow.
+        """
+        self._shadow = flag
+
+    @property
+    def padding(self):
+        """Return the text padding.
+
+        Returns
+        -------
+        int
+            Text padding in pixels.
+        """
+        return self._padding
+
+    @padding.setter
+    def padding(self, value):
+        """Set text padding.
+
+        Parameters
+        ----------
+        value : int
+            Padding in pixels.
+        """
+        self._padding = value
+        self.update_alignment()
+
+    @property
     def color(self):
         """Get text color.
 
@@ -1406,35 +1439,40 @@ class TextBlock2D(UI):
     def update_alignment(self):
         """Update the text actor alignment within the bounding box."""
         updated_text_position = [0, 0]
-        text_actor_size = self.get_text_actor_size()
-
         if self.justification.lower() == "left":
             self.actor.text_align = "left"
-            updated_text_position[0] = self.boundingbox[0] + text_actor_size[0] // 2
+            x_anchor = "left"
+            updated_text_position[0] = self.boundingbox[0] + self.padding
         elif self.justification.lower() == "center":
             self.actor.text_align = "center"
+            x_anchor = "center"
             updated_text_position[0] = (
                 self.boundingbox[0] + (self.boundingbox[2] - self.boundingbox[0]) // 2
             )
         elif self.justification.lower() == "right":
             self.actor.text_align = "right"
-            updated_text_position[0] = self.boundingbox[2] - text_actor_size[0] // 2
+            x_anchor = "right"
+            updated_text_position[0] = self.boundingbox[2] - self.padding
         else:
             msg = "Text can only be justified left, center and right."
             raise ValueError(msg)
 
         if self.vertical_justification.lower() == "top":
-            updated_text_position[1] = self.boundingbox[1] + text_actor_size[1] // 2
+            y_anchor = "top"
+            updated_text_position[1] = self.boundingbox[1] + self.padding
         elif self.vertical_justification.lower() == "middle":
+            y_anchor = "middle"
             updated_text_position[1] = (
                 self.boundingbox[1] + (self.boundingbox[3] - self.boundingbox[1]) // 2
             )
         elif self.vertical_justification.lower() == "bottom":
-            updated_text_position[1] = self.boundingbox[3] - text_actor_size[1] // 2
+            y_anchor = "bottom"
+            updated_text_position[1] = self.boundingbox[3] - self.padding
         else:
             msg = "Vertical justification must be: top, middle or bottom."
             raise ValueError(msg)
 
+        self.actor.anchor = f"{y_anchor}-{x_anchor}"
         self.set_actor_position(self.actor, updated_text_position, self.z_order)
 
     def update_bounding_box(self, *, size=None):
