@@ -612,10 +612,8 @@ class TextBox2D(UI):
             Rendering order of the widget.
         """
         self._width = width
+        self._height = height
         self._max_height = height
-        self._height = min(
-            max(1, (len(text) + width - 1) // width if text else 1), self._max_height
-        )
         self._message = text
         self._color = color
         self._font_size = font_size
@@ -681,26 +679,11 @@ class TextBox2D(UI):
         self.text.on_key_press = self.key_press
 
     def _update_height(self):
-        """Update the current height of the textbox based on message length.
+        """Update the window boundaries of the textbox.
 
-        The height increases as you type until it reaches `_max_height`.
+        In static mode, the background height remains constant.
         """
-        msg_len = len(self._message)
-        req_lines = (msg_len + self._width - 1) // self._width if msg_len > 0 else 1
-        new_height = min(max(1, req_lines), self._max_height)
-
-        if new_height != self._height:
-            self._height = new_height
-            bold_factor = 1.25 if self._bold else 1.0
-            italic_factor = 1.1 if self._italic else 1.0
-            bg_width = (
-                int(self._width * self._font_size * 0.7 * bold_factor * italic_factor)
-                + 20
-            )
-            bg_height = int(self._height * self._font_size * 1.5) + 10
-            self.text.resize((bg_width, bg_height))
-
-            self.window_right = self.window_left + self._width * self._height - 1
+        self.window_right = self.window_left + self._width * self._height - 1
 
     def _get_actors(self):
         """Get the actors composing this UI component.
@@ -743,9 +726,9 @@ class TextBox2D(UI):
         """
         self._message = message
         self.init = False
-        self.window_right = len(self._message)
         self.window_left = 0
-        self.caret_pos = self.window_right
+        self.window_right = self._width * self._height - 1
+        self.caret_pos = len(self._message)
         self.render_text(show_caret=False)
 
     def width_set_text(self, text):
