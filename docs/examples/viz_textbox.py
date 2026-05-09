@@ -13,7 +13,7 @@ textbox_single = TextBox2D(
     width=20,
     height=1,
     text="Single line",
-    position=(50, 400),
+    position=(50, 450),
     color=(1, 0, 0),
     font_size=20,
 )
@@ -27,11 +27,20 @@ textbox_multi = TextBox2D(
     font_size=25,
 )
 
+textbox_static = TextBox2D(
+    width=20,
+    height=2,
+    text="Static Text box",
+    position=(50, 200),
+    color=(0, 0, 0),
+    font_size=20,
+)
+
 textbox_styled = TextBox2D(
     width=20,
     height=2,
     text="Bold & Italic\nCenter justification",
-    position=(50, 150),
+    position=(50, 100),
     color=(0, 0.5, 0),
     font_size=18,
     justification="center",
@@ -41,6 +50,7 @@ textbox_styled = TextBox2D(
 
 scene.add(textbox_single)
 scene.add(textbox_multi)
+scene.add(textbox_static)
 scene.add(textbox_styled)
 
 if __name__ == "__main__":

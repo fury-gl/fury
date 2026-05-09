@@ -117,10 +117,12 @@ class UI(object, metaclass=abc.ABCMeta):
         self.on_middle_mouse_double_clicked = lambda event: None
         self.on_middle_mouse_button_dragged = lambda event: None
         self.on_key_press = lambda event: None
+        self.on_key_release = lambda event: None
         self.on_hover = lambda event: None
         self.on_dishover = lambda event: None
         self.on_focus = lambda event: None
         self.on_blur = lambda event: None
+        self.on_wheel = lambda event: None
 
     @abc.abstractmethod
     def _setup(self):
@@ -355,9 +357,11 @@ class UI(object, metaclass=abc.ABCMeta):
         actor.add_event_handler(self.mouse_button_down_callback, EventType.POINTER_DOWN)
         actor.add_event_handler(self.mouse_button_up_callback, EventType.POINTER_UP)
         actor.add_event_handler(self.mouse_move_callback, EventType.POINTER_DRAG)
-        actor.add_event_handler(self.key_press_callback, EventType.KEY_UP)
+        actor.add_event_handler(self.key_press_callback, EventType.KEY_DOWN)
+        actor.add_event_handler(self.key_release_callback, EventType.KEY_UP)
         actor.add_event_handler(self.pointer_enter_callback, EventType.POINTER_ENTER)
         actor.add_event_handler(self.pointer_leave_callback, EventType.POINTER_LEAVE)
+        actor.add_event_handler(self.wheel_callback, EventType.WHEEL)
 
     def mouse_button_down_callback(self, event):
         """
@@ -394,8 +398,6 @@ class UI(object, metaclass=abc.ABCMeta):
     def left_button_click_callback(self, event):
         """Handle left mouse button press event.
 
-        Promotes the currently **Hot** UI element to **Active** state.
-
         Parameters
         ----------
         event : PointerEvent
@@ -404,7 +406,6 @@ class UI(object, metaclass=abc.ABCMeta):
         self.left_button_state = "pressing"
 
         if UIContext.hot_ui is not None:
-            # Deactivate a different previously-active element.
             if (
                 UIContext.active_ui is not None
                 and UIContext.active_ui is not UIContext.hot_ui
@@ -517,10 +518,6 @@ class UI(object, metaclass=abc.ABCMeta):
         """
         Handle key press event.
 
-        If there is an active UI element (e.g. a focused text box), the
-        event is forwarded to it. Otherwise, the event is handled by this
-        component's own ``on_key_press`` callback.
-
         Parameters
         ----------
         event : KeyboardEvent
@@ -530,6 +527,32 @@ class UI(object, metaclass=abc.ABCMeta):
             UIContext.active_ui.on_key_press(event)
         else:
             self.on_key_press(event)
+
+    def key_release_callback(self, event):
+        """Handle key release event.
+
+        Parameters
+        ----------
+        event : KeyboardEvent
+            The PyGfx keyboard event object.
+        """
+        if UIContext.active_ui is not None:
+            UIContext.active_ui.on_key_release(event)
+        else:
+            self.on_key_release(event)
+
+    def wheel_callback(self, event):
+        """Handle wheel event.
+
+        Parameters
+        ----------
+        event : WheelEvent
+            The PyGfx wheel event object.
+        """
+        if UIContext.hot_ui is not None:
+            UIContext.hot_ui.on_wheel(event)
+        else:
+            self.on_wheel(event)
 
     def pointer_enter_callback(self, event):
         """Handle pointer enter event.
@@ -984,6 +1007,8 @@ class TextBlock2D(UI):
         self._message = text
         self._dynamic_bbox = dynamic_bbox
         self._bg_size = size
+        self._padding = 5
+        self._shadow = False
 
         self._last_rendered_size = (0, 0)
 
@@ -1006,48 +1031,43 @@ class TextBlock2D(UI):
 
     def _setup(self):
         """Set up this UI component."""
-        self.actor = Text(
-            markdown=self._message, screen_space=True, anchor="middle-center"
-        )
+        self.actor = Text(markdown=self._message, screen_space=True, anchor="top-left")
         self.background = Rectangle2D()
         self._children.append(self.background)
         self.handle_events(self.actor)
-        self.background.on_left_mouse_button_pressed = self._forward_background_press
-        self.background.on_pointer_enter = self._forward_background_pointer_enter
-        self.background.on_pointer_leave = self._forward_background_pointer_leave
 
-    def _forward_background_press(self, event):
-        """Forward background click to the text block's own press handler.
+        # Forward background callbacks directly to this TextBlock2D so that
+        # clicks and hovers on the background behave as if they hit the text.
+        self.background.on_left_mouse_button_pressed = lambda event: (
+            self.on_left_mouse_button_pressed(event)
+        )
 
-        Parameters
-        ----------
-        event : PointerEvent
-            The PyGfx pointer event object.
-        """
-        self.on_left_mouse_button_pressed(event)
+        def _bg_hover(event):
+            """Redirect hot_ui to this TextBlock2D on background hover.
 
-    def _forward_background_pointer_enter(self, event):
-        """Forward background pointer-enter to set hot_ui to this TextBlock2D.
+            Parameters
+            ----------
+            event : PointerEvent
+                The PyGfx pointer event object.
+            """
+            UIContext.hot_ui = self
+            self.on_hover(event)
 
-        Parameters
-        ----------
-        event : PointerEvent
-            The PyGfx pointer event object.
-        """
-        UIContext.hot_ui = self
-        self.on_pointer_enter(event)
+        def _bg_dishover(event):
+            """Clear hot_ui on background pointer-leave.
 
-    def _forward_background_pointer_leave(self, event):
-        """Forward background pointer-leave to clear hot_ui if still this element.
+            Parameters
+            ----------
+            event : PointerEvent
+                The PyGfx pointer event object.
+            """
+            if UIContext.hot_ui is self:
+                UIContext.hot_ui = None
+            self.on_dishover(event)
 
-        Parameters
-        ----------
-        event : PointerEvent
-            The PyGfx pointer event object.
-        """
-        if UIContext.hot_ui is self:
-            UIContext.hot_ui = None
-        self.on_pointer_leave(event)
+        self.background.on_hover = _bg_hover
+        self.background.on_dishover = _bg_dishover
+        self.background.on_wheel = lambda event: self.on_wheel(event)
 
     def resize(self, size):
         """
@@ -1058,7 +1078,6 @@ class TextBlock2D(UI):
         size : (int, int)
             The new (width, height) in pixels.
         """
-        # Constrain text wrapping to the new width
         self.actor.max_width = size[0]
         self.update_bounding_box(size=size)
 
@@ -1103,10 +1122,6 @@ class TextBlock2D(UI):
     def get_formatted_text(self, text):
         """
         Format the given text with markdown syntax for bold/italic styles.
-
-        pygfx markdown only supports ``**`` (bold) and ``*`` (italic) as
-        separate two-char / one-char star tokens.  It does **not** recognise
-        ``***`` for bold-italic, so we must wrap each word individually.
 
         Parameters
         ----------
@@ -1333,6 +1348,51 @@ class TextBlock2D(UI):
         self._italic = flag
 
     @property
+    def shadow(self):
+        """Return whether the text has a shadow.
+
+        Returns
+        -------
+        bool
+            True if text has a shadow.
+        """
+        return self._shadow
+
+    @shadow.setter
+    def shadow(self, flag):
+        """Set text shadow.
+
+        Parameters
+        ----------
+        flag : bool
+            True if text has a shadow.
+        """
+        self._shadow = flag
+
+    @property
+    def padding(self):
+        """Return the text padding.
+
+        Returns
+        -------
+        int
+            Text padding in pixels.
+        """
+        return self._padding
+
+    @padding.setter
+    def padding(self, value):
+        """Set text padding.
+
+        Parameters
+        ----------
+        value : int
+            Padding in pixels.
+        """
+        self._padding = value
+        self.update_alignment()
+
+    @property
     def color(self):
         """
         Get text color.
@@ -1422,35 +1482,40 @@ class TextBlock2D(UI):
     def update_alignment(self):
         """Update the text actor alignment within the bounding box."""
         updated_text_position = [0, 0]
-        text_actor_size = self.get_text_actor_size()
-
         if self.justification.lower() == "left":
             self.actor.text_align = "left"
-            updated_text_position[0] = self.boundingbox[0] + text_actor_size[0] // 2
+            x_anchor = "left"
+            updated_text_position[0] = self.boundingbox[0] + self.padding
         elif self.justification.lower() == "center":
             self.actor.text_align = "center"
+            x_anchor = "center"
             updated_text_position[0] = (
                 self.boundingbox[0] + (self.boundingbox[2] - self.boundingbox[0]) // 2
             )
         elif self.justification.lower() == "right":
             self.actor.text_align = "right"
-            updated_text_position[0] = self.boundingbox[2] - text_actor_size[0] // 2
+            x_anchor = "right"
+            updated_text_position[0] = self.boundingbox[2] - self.padding
         else:
             msg = "Text can only be justified left, center and right."
             raise ValueError(msg)
 
         if self.vertical_justification.lower() == "top":
-            updated_text_position[1] = self.boundingbox[1] + text_actor_size[1] // 2
+            y_anchor = "top"
+            updated_text_position[1] = self.boundingbox[1] + self.padding
         elif self.vertical_justification.lower() == "middle":
+            y_anchor = "middle"
             updated_text_position[1] = (
                 self.boundingbox[1] + (self.boundingbox[3] - self.boundingbox[1]) // 2
             )
         elif self.vertical_justification.lower() == "bottom":
-            updated_text_position[1] = self.boundingbox[3] - text_actor_size[1] // 2
+            y_anchor = "bottom"
+            updated_text_position[1] = self.boundingbox[3] - self.padding
         else:
             msg = "Vertical justification must be: top, middle or bottom."
             raise ValueError(msg)
 
+        self.actor.anchor = f"{y_anchor}-{x_anchor}"
         self.set_actor_position(self.actor, updated_text_position, self.z_order)
 
     def update_bounding_box(self, *, size=None):
