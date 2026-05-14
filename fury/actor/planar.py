@@ -245,8 +245,32 @@ def disk(
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
+    n_centers = len(centers)
+    radii_arr = fp._normalize_geom_param(radii, n_centers, "radii")
 
-    vertices, faces = fp.prim_disk(radius=radii, sectors=sectors)
+    all_uniform = np.all(radii_arr == radii_arr[0])
+
+    if all_uniform:
+        vertices, faces = fp.prim_disk(radius=radii_arr[0], sectors=sectors)
+        return actor_from_primitive(
+            vertices,
+            faces,
+            centers=centers,
+            colors=colors,
+            scales=scales,
+            directions=directions,
+            opacity=opacity,
+            material=material,
+            enable_picking=enable_picking,
+            wireframe=wireframe,
+            wireframe_thickness=wireframe_thickness,
+        )
+
+    _, faces = fp.prim_disk(radius=radii_arr[0], sectors=sectors)
+    all_verts = [
+        fp.prim_disk(radius=radii_arr[i], sectors=sectors)[0] for i in range(n_centers)
+    ]
+    vertices = np.concatenate(all_verts)
     return actor_from_primitive(
         vertices,
         faces,
@@ -259,6 +283,7 @@ def disk(
         enable_picking=enable_picking,
         wireframe=wireframe,
         wireframe_thickness=wireframe_thickness,
+        have_tiled_verts=True,
     )
 
 
@@ -777,10 +802,12 @@ def ring(
     ----------
     centers : ndarray, shape (N, 3)
         Ring positions.
-    inner_radius : float, optional
-        The inner radius of the ring (radius of the hole).
-    outer_radius : float, optional
-        The outer radius of the ring.
+    inner_radius : float or ndarray, shape (N,), optional
+        The inner radius of the ring (radius of the hole). A single value
+        applies to all rings, while an array specifies a value per ring.
+    outer_radius : float or ndarray, shape (N,), optional
+        The outer radius of the ring. A single value applies to all rings,
+        while an array specifies a value per ring.
     radial_segments : int, optional
         Number of segments along the radial direction.
     circumferential_segments : int, optional
@@ -819,12 +846,49 @@ def ring(
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
-    vertices, faces = fp.prim_ring(
-        inner_radius=inner_radius,
-        outer_radius=outer_radius,
+    n_centers = len(centers)
+    inner_arr = fp._normalize_geom_param(inner_radius, n_centers, "inner_radius")
+    outer_arr = fp._normalize_geom_param(outer_radius, n_centers, "outer_radius")
+
+    all_uniform = np.all(inner_arr == inner_arr[0]) and np.all(
+        outer_arr == outer_arr[0]
+    )
+
+    if all_uniform:
+        vertices, faces = fp.prim_ring(
+            inner_radius=inner_arr[0],
+            outer_radius=outer_arr[0],
+            radial_segments=radial_segments,
+            circumferential_segments=circumferential_segments,
+        )
+        return actor_from_primitive(
+            vertices,
+            faces,
+            centers=centers,
+            colors=colors,
+            scales=scales,
+            directions=directions,
+            opacity=opacity,
+            material=material,
+            enable_picking=enable_picking,
+        )
+
+    _, faces = fp.prim_ring(
+        inner_radius=inner_arr[0],
+        outer_radius=outer_arr[0],
         radial_segments=radial_segments,
         circumferential_segments=circumferential_segments,
     )
+    all_verts = [
+        fp.prim_ring(
+            inner_radius=inner_arr[i],
+            outer_radius=outer_arr[i],
+            radial_segments=radial_segments,
+            circumferential_segments=circumferential_segments,
+        )[0]
+        for i in range(n_centers)
+    ]
+    vertices = np.concatenate(all_verts)
     return actor_from_primitive(
         vertices,
         faces,
@@ -835,6 +899,7 @@ def ring(
         opacity=opacity,
         material=material,
         enable_picking=enable_picking,
+        have_tiled_verts=True,
     )
 
 

@@ -322,8 +322,9 @@ def cylinder(
         Cylinder positions.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
-    height : float, optional
-        The height of the cylinder.
+    height : float or ndarray, shape (N,), optional
+        The height of the cylinder. A single value applies to all cylinders,
+        while an array specifies a height for each cylinder individually.
     sectors : int, optional
         The number of divisions around the cylinder's circumference.
         Higher values produce smoother cylinders.
@@ -369,10 +370,42 @@ def cylinder(
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
+    n_centers = len(centers)
+    radii_arr = fp._normalize_geom_param(radii, n_centers, "radii")
+    height_arr = fp._normalize_geom_param(height, n_centers, "height")
 
-    vertices, faces = fp.prim_cylinder(
-        radius=radii, height=height, sectors=sectors, capped=capped
+    all_uniform = np.all(radii_arr == radii_arr[0]) and np.all(
+        height_arr == height_arr[0]
     )
+
+    if all_uniform:
+        vertices, faces = fp.prim_cylinder(
+            radius=radii_arr[0], height=height_arr[0], sectors=sectors, capped=capped
+        )
+        return actor_from_primitive(
+            vertices,
+            faces,
+            centers=centers,
+            colors=colors,
+            scales=scales,
+            directions=directions,
+            opacity=opacity,
+            material=material,
+            enable_picking=enable_picking,
+            wireframe=wireframe,
+            wireframe_thickness=wireframe_thickness,
+        )
+
+    _, faces = fp.prim_cylinder(
+        radius=radii_arr[0], height=height_arr[0], sectors=sectors, capped=capped
+    )
+    all_verts = [
+        fp.prim_cylinder(
+            radius=radii_arr[i], height=height_arr[i], sectors=sectors, capped=capped
+        )[0]
+        for i in range(n_centers)
+    ]
+    vertices = np.concatenate(all_verts)
     return actor_from_primitive(
         vertices,
         faces,
@@ -385,6 +418,7 @@ def cylinder(
         enable_picking=enable_picking,
         wireframe=wireframe,
         wireframe_thickness=wireframe_thickness,
+        have_tiled_verts=True,
     )
 
 
@@ -411,8 +445,9 @@ def cone(
         Cone positions.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
-    height : float, optional
-        The height of the cone.
+    height : float or ndarray, shape (N,), optional
+        The height of the cone. A single value applies to all cones,
+        while an array specifies a height for each cone individually.
     sectors : int, optional
         The number of divisions around the cone's circumference.
         Higher values produce smoother cones.
@@ -455,8 +490,38 @@ def cone(
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
+    n_centers = len(centers)
+    radii_arr = fp._normalize_geom_param(radii, n_centers, "radii")
+    height_arr = fp._normalize_geom_param(height, n_centers, "height")
 
-    vertices, faces = fp.prim_cone(radius=radii, height=height, sectors=sectors)
+    all_uniform = np.all(radii_arr == radii_arr[0]) and np.all(
+        height_arr == height_arr[0]
+    )
+
+    if all_uniform:
+        vertices, faces = fp.prim_cone(
+            radius=radii_arr[0], height=height_arr[0], sectors=sectors
+        )
+        return actor_from_primitive(
+            vertices,
+            faces,
+            centers=centers,
+            colors=colors,
+            scales=scales,
+            directions=directions,
+            opacity=opacity,
+            material=material,
+            enable_picking=enable_picking,
+            wireframe=wireframe,
+            wireframe_thickness=wireframe_thickness,
+        )
+
+    _, faces = fp.prim_cone(radius=radii_arr[0], height=height_arr[0], sectors=sectors)
+    all_verts = [
+        fp.prim_cone(radius=radii_arr[i], height=height_arr[i], sectors=sectors)[0]
+        for i in range(n_centers)
+    ]
+    vertices = np.concatenate(all_verts)
     return actor_from_primitive(
         vertices,
         faces,
@@ -469,6 +534,7 @@ def cone(
         enable_picking=enable_picking,
         wireframe=wireframe,
         wireframe_thickness=wireframe_thickness,
+        have_tiled_verts=True,
     )
 
 
