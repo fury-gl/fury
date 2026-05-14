@@ -93,13 +93,12 @@ scene.add(sphere_actor)
 # ``imgui_draw_function`` argument specifies which function will be
 # used to define the ImGui user interface each frame.
 
-if __name__ == "__main__":
-    show_m = ShowManager(
-        title="FURY ImGui Integration Example",
-        scene=scene,
-        size=(800, 600),
-        window_type="default",
-        imgui=True,
-        imgui_draw_function=create_imgui_controls,
-    )
-    show_m.start()
+show_m = ShowManager(
+    title="FURY ImGui Integration Example",
+    scene=scene,
+    size=(800, 600),
+    window_type="default",
+    imgui=True,
+    imgui_draw_function=create_imgui_controls,
+)
+show_m.start()

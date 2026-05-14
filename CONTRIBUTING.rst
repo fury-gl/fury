@@ -88,19 +88,24 @@ Ready to contribute? Here's how to set up `FURY` for local development.
     $ git commit -m "Your detailed description of your changes."
     $ git push origin name-of-your-bugfix-or-feature
 
-7. Install the required packages for running the unittests::
+7. Install the required packages for running the unittests and linting::
 
     $ pip install -r requirements/optional.txt
     $ pip install -r requirements/test.txt
+    $ pip install -r requirements/style.txt
 
-8. When you're done making changes, check that your changes pass flake8 and pytest::
+8. Set up pre-commit hooks for automatic code formatting::
 
-    $ flake8 fury
-    $ pytest -svv fury
+    $ pre-commit install
 
-   To get flake8 and pytest, just pip install them into your virtualenv.
+   This will ensure that your code is automatically formatted according to the project's style guidelines before you push your changes.
 
-9. Submit a pull request through the GitHub website.
+9. When you're done making changes, check that your changes pass ruff and pytest::
+
+    $ ruff check fury
+    $ pytest fury
+
+10. Submit a pull request through the GitHub website.
 
 Pull Request Guidelines
 -----------------------
@@ -111,7 +116,7 @@ Before you submit a pull request, check that it meets these guidelines:
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and add the
    feature to the list in README.md.
-3. The pull request should work for Python 3.6, 3.7, 3.8, 3.9 and for PyPy. Check
+3. The pull request should work for supported Python versions (3.10+). Check
    https://github.com/fury-gl/fury/actions
    and make sure that the tests pass for all supported Python versions.
 

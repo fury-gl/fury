@@ -5,6 +5,7 @@ from fury.actor import (
     Group,
     contour_from_label,
     contour_from_roi,
+    get_slices,
     peaks_slicer,
     volume_slicer,
 )
@@ -70,10 +71,13 @@ def test_peaks_slicer_basic_functionality():
     result = peaks_slicer(peak_dirs)
 
     assert result is not None
+    assert isinstance(result, Group)
+    assert result.name == "VectorFieldSlicer"
     assert hasattr(result, "get_bounding_box")
     assert np.all(result.get_bounding_box() == np.array([[0, 0, 0], [4, 4, 4]]))
-    assert np.all(result.cross_section == np.array([2, 2, 2]))
-    assert result.material.opacity == 1.0  # Default value
+    vf = result.children[0]
+    assert np.all(vf.cross_section == np.array([2, 2, 2]))
+    assert vf.material.opacity == 1.0  # Default value
 
 
 def test_peaks_slicer_with_affine_transform():
@@ -84,13 +88,13 @@ def test_peaks_slicer_with_affine_transform():
 
     result = peaks_slicer(peak_dirs, affine=affine)
     assert result is not None
+    assert isinstance(result, Group)
     # Verify bounding box was transformed
     assert hasattr(result, "get_bounding_box")
     assert hasattr(result, "bounds")
-    assert np.allclose(result.get_bounding_box()[0], (0, 0, 0))
     assert np.allclose(result.bounds[0], np.array([10, 20, 30]))
     assert np.allclose(result.bounds[1], np.array([12, 22, 32]))
-    assert np.allclose(result.cross_section, np.array([11, 21, 31]))
+    assert np.allclose(get_slices(result), np.array([11, 21, 31]))
 
 
 def test_peaks_slicer_invalid_peak_dirs_shape():
@@ -137,7 +141,8 @@ def test_peaks_slicer_visual_properties():
     )
 
     assert result is not None
-    assert result.material.opacity == 0.5
+    assert isinstance(result, Group)
+    assert result.children[0].material.opacity == 0.5
 
 
 def test_peaks_slicer_cross_section():
@@ -148,7 +153,7 @@ def test_peaks_slicer_cross_section():
 
     assert result_default is not None
 
-    with pytest.raises(ValueError):
+    with pytest.raises((ValueError, TypeError)):
         peaks_slicer(peak_dirs, cross_section=0.0)
 
 

@@ -5,7 +5,9 @@ import pytest
 
 from fury import actor
 from fury.actor import Group
+from fury.actor.slicer import _max_voxels_per_chunk
 from fury.actor.utils import get_slices, set_group_visibility, show_slices
+from fury.lib import gfx_wgpu
 from fury.material import (
     VectorFieldArrowMaterial,
     VectorFieldLineMaterial,
@@ -236,21 +238,106 @@ def test_vector_field_helper_functions():
     field = np.random.rand(5, 5, 5, 3)
 
     # Test vector_field
-    vf = actor.vector_field(field, actor_type="arrow", opacity=0.5, thickness=2.0)
+    vf_group = actor.vector_field(field, actor_type="arrow", opacity=0.5, thickness=2.0)
+    assert vf_group.name == "VectorField"
+    assert len(vf_group.children) == 1
+    vf = vf_group.children[0]
     assert isinstance(vf.material, VectorFieldArrowMaterial)
     assert vf.material.opacity == 0.5
     assert vf.material.thickness == 2.0
 
     # Test vector_field_slicer
-    vf = actor.vector_field_slicer(
+    slicer_group = actor.vector_field_slicer(
         field,
         actor_type="line",
         cross_section=[2, 2, 2],
         visibility=(True, False, True),
     )
-    assert isinstance(vf.material, VectorFieldLineMaterial)
-    assert np.all(vf.cross_section == np.array([2, 2, 2]))
-    assert np.all(vf.visibility == np.asarray((True, False, True)))
+    assert slicer_group.name == "VectorFieldSlicer"
+    assert len(slicer_group.children) == 1
+    vfs = slicer_group.children[0]
+    assert isinstance(vfs.material, VectorFieldLineMaterial)
+    assert np.all(vfs.cross_section == np.array([2, 2, 2]))
+    assert np.all(vfs.visibility == np.asarray((True, False, True)))
+
+
+@pytest.mark.parametrize(
+    ("max_buffer_size", "max_workgroups", "expected"),
+    [
+        (24, 65535, 1),
+        (24 * 100, 1, 64),
+        (2 * 3 * 4 * 100, 2, min(100, 2 * 64)),
+    ],
+)
+def test_max_voxels_per_chunk(max_buffer_size, max_workgroups, expected):
+    """Storage-buffer and dispatch limits both cap chunk voxel count."""
+    got = _max_voxels_per_chunk(
+        max_buffer_size=max_buffer_size,
+        max_workgroups=max_workgroups,
+    )
+    assert got == expected
+
+
+def test_vector_field_cross_section_world_bounds_with_chunk_offset():
+    """Cross section clamps in world space when the actor has a local X offset."""
+    field = np.random.rand(5, 5, 5, 3)
+    vf = actor.VectorField(field)
+    vf.local.position = [10.0, 0.0, 0.0]
+    vf.cross_section = [20, 2, 2]
+    np.testing.assert_array_equal(vf.cross_section, np.array([4, 2, 2]))
+
+
+def test_vector_field_chunks_when_exceeding_device_limits():
+    """Large fields are split into several actors along X with contiguous offsets."""
+    device = gfx_wgpu.get_shared().device
+    max_voxels = _max_voxels_per_chunk(
+        max_buffer_size=device.limits.get(
+            "max-storage-buffer-binding-size", 256 * 1024 * 1024
+        ),
+        max_workgroups=device.limits.get("max-compute-workgroups-per-dimension", 65535),
+    )
+    y, z = 32, 32
+    x = int(max_voxels // (y * z)) + 5
+    shape = (x, y, z, 3)
+    total = int(np.prod(shape[:3]))
+    field = np.random.default_rng(0).random(shape, dtype=np.float32)
+    scales = np.random.default_rng(1).random(shape[:3], dtype=np.float32)
+
+    group = actor.vector_field(field, scales=scales)
+    assert group.name == "VectorField"
+    if total > max_voxels:
+        assert len(group.children) >= 2
+        assert sum(ch.field_shape[0] for ch in group.children) == x
+        x_cursor = 0
+        for ch in group.children:
+            assert ch.local.position[0] == x_cursor
+            x_cursor += ch.field_shape[0]
+
+
+def test_vector_field_slicer_chunks_when_exceeding_device_limits():
+    """vector_field_slicer uses the same chunking strategy as vector_field."""
+    device = gfx_wgpu.get_shared().device
+    max_voxels = _max_voxels_per_chunk(
+        max_buffer_size=device.limits.get(
+            "max-storage-buffer-binding-size", 256 * 1024 * 1024
+        ),
+        max_workgroups=device.limits.get("max-compute-workgroups-per-dimension", 65535),
+    )
+    y, z = 24, 24
+    x = int(max_voxels // (y * z)) + 3
+    shape = (x, y, z, 3)
+    total = int(np.prod(shape[:3]))
+    field = np.random.default_rng(2).random(shape, dtype=np.float32)
+    cs = np.array([min(5, x - 1), y // 2, z // 2], dtype=np.int32)
+
+    group = actor.vector_field_slicer(field, cross_section=cs)
+    assert group.name == "VectorFieldSlicer"
+    if total > max_voxels:
+        assert len(group.children) >= 2
+        assert sum(ch.field_shape[0] for ch in group.children) == x
+    else:
+        assert len(group.children) == 1
+        np.testing.assert_array_equal(group.children[0].cross_section, cs)
 
 
 def test_vector_field_edge_cases():

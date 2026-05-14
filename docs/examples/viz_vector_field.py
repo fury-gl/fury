@@ -106,13 +106,13 @@ show_manager = window.ShowManager(
 
 def handle_key_event(event):
     print("Key pressed:", event.key)
-    position = vector_field_slicer_actor.cross_section
+    position = actor.get_slices(vector_field_slicer_actor)
     if event.key == "ArrowUp":
         position = (position[0], position[1], position[2] + sparse_step)
     elif event.key == "ArrowDown":
         position = (position[0], position[1], position[2] - sparse_step)
 
-    vector_field_slicer_actor.cross_section = position
+    actor.show_slices(vector_field_slicer_actor, position)
     show_manager.render()
 
 

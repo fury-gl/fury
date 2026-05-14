@@ -24,6 +24,8 @@ Contributors
 ------------
 
 * Adam Rybinski
+* Adeel Ahmad
+* Aditya Gupta
 * Aju100
 * Alexandre Gauvin
 * Aman Soni
@@ -40,10 +42,12 @@ Contributors
 * Daniel S. Katz
 * David Reagan
 * Devanshu Modi
+* Dhruv Sahu
 * Dwij Raj Hari
 * Eleftherios Garyfallidis
 * Enes Albay
 * Etienne St-Onge
+* Faris Abouagour
 * Filipi Nascimento Silva
 * Francois Rheault
 * Frank Cerasoli
@@ -58,6 +62,7 @@ Contributors
 * Jacob Wasserth
 * Javier Guaje
 * Jhalak Gupta
+* JigyasuRajput
 * Jiri Borovec
 * Joao Victor Dell Agli
 * Johny Daras
@@ -81,6 +86,7 @@ Contributors
 * Naman Bansal
 * Nasim Anousheh
 * Omar Ocegueda
+* Pedamallu Umesh Gupta
 * Pietro Astolfi
 * Praneeth Shetty
 * Prashil
@@ -98,6 +104,7 @@ Contributors
 * Shahnawaz Ahmed
 * Shreyas Bhujbal
 * Siddharth Gautam
+* Siddharth Verma
 * Soham Biswas
 * Sreekar Chigurupati
 * Stefan van der Walt

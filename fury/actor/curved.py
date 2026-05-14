@@ -10,8 +10,8 @@ from fury.geometry import buffer_to_geometry, line_buffer_separator
 from fury.lib import (
     Buffer,
     BufferUsage,
+    gfx_wgpu,
     register_wgpu_render_function,
-    wgpu_device,
 )
 from fury.material import (
     StreamlinesMaterial,
@@ -1508,6 +1508,16 @@ def _create_streamtube_baked(
     normals_data = np.zeros((total_vertices, 3), dtype=np.float32)
     colors_data = np.zeros((total_vertices, color_components), dtype=np.float32)
     indices_data = np.zeros((total_triangles, 3), dtype=np.uint32)
+    min_point = max_point = np.zeros(3, dtype=np.float32)
+    for line in lines_arr:
+        if line.size == 0:
+            continue
+        line_min = line.min(axis=0)
+        line_max = line.max(axis=0)
+        min_point = np.minimum(min_point, line_min)
+        max_point = np.maximum(max_point, line_max)
+    positions_data[0] = min_point
+    positions_data[1] = max_point
 
     if use_per_point_colors:
         vertex_idx = 0
@@ -1944,6 +1954,7 @@ def streamtube(
         raise ValueError(f"backend must be 'cpu' or 'gpu', got {backend!r}")
 
     color_components = _resolve_color_components_for_streamtube(colors, backend)
+    wgpu_device = gfx_wgpu.get_shared().device
     max_buffer_size = wgpu_device.limits.get(
         "max-storage-buffer-binding-size", 256 * 1024 * 1024
     )

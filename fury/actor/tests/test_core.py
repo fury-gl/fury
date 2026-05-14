@@ -3,7 +3,13 @@ import numpy as np
 import pytest
 
 from fury import actor, geometry, material, window
-from fury.actor import Actor, Image as ActorImage, Text
+from fury.actor import (
+    Actor,
+    Image as ActorImage,
+    Text,
+    actor_from_primitive,
+    create_axes_helper,
+)
 from fury.actor.tests._helpers import validate_actors
 
 
@@ -188,3 +194,135 @@ def test_axes():
     assert 0 < mean_b < 255
 
     scene.remove(axes_actor)
+
+
+def test_actor_from_primitive_position(sphere_prim):
+    vertices, faces = sphere_prim
+    centers = np.array([[5, 10, 15]], dtype=np.float32)
+    colors = np.array([[1, 0, 0]])
+
+    obj = actor_from_primitive(
+        vertices, faces, centers, colors=colors, repeat_primitive=True
+    )
+    np.testing.assert_array_equal(
+        obj.local.position, np.array([0, 0, 0], dtype=np.float32)
+    )
+    mean_vertex = np.round(np.mean(obj.geometry.positions.data, axis=0))
+    np.testing.assert_array_almost_equal(mean_vertex, centers[0])
+
+    obj = actor_from_primitive(
+        vertices, faces, centers, colors=colors, repeat_primitive=False
+    )
+    np.testing.assert_array_equal(
+        obj.local.position, np.array([5, 10, 15], dtype=np.float32)
+    )
+
+
+def test_actor_from_primitive_transparency(sphere_prim):
+    vertices, faces = sphere_prim
+    centers = np.array([[0, 0, 0]], dtype=np.float32)
+    rgb = np.array([[1, 0, 0]])
+    rgba_opaque = np.array([[1, 0, 0, 1.0]])
+    rgba_transparent = np.array([[1, 0, 1, 0.3]])
+
+    obj = actor_from_primitive(vertices, faces, centers, colors=rgb)
+    assert obj.material.alpha_mode == "auto"
+    assert obj.material.depth_write is True
+
+    obj = actor_from_primitive(vertices, faces, centers, colors=rgb, opacity=1.0)
+    assert obj.material.alpha_mode == "auto"
+    assert obj.material.depth_write is True
+
+    obj = actor_from_primitive(vertices, faces, centers, colors=rgba_opaque)
+    assert obj.material.alpha_mode == "auto"
+    assert obj.material.depth_write is True
+
+    obj = actor_from_primitive(vertices, faces, centers, colors=rgb, opacity=0.5)
+    assert obj.material.alpha_mode == "weighted_blend"
+    assert obj.material.depth_write is False
+
+    obj = actor_from_primitive(vertices, faces, centers, colors=rgba_transparent)
+    assert obj.material.alpha_mode == "weighted_blend"
+    assert obj.material.depth_write is False
+
+    obj = actor_from_primitive(vertices, faces, centers, colors=rgb, opacity=0.4)
+    np.testing.assert_allclose(obj.geometry.colors.data[:, 3], 0.4, atol=0.01)
+
+    rgba_half = np.array([[1, 0, 0, 0.5]])
+    obj = actor_from_primitive(vertices, faces, centers, colors=rgba_half, opacity=0.5)
+    np.testing.assert_allclose(obj.geometry.colors.data[:, 3], 0.25, atol=0.01)
+    assert obj.material.alpha_mode == "weighted_blend"
+    assert obj.material.depth_write is False
+
+
+def test_actor_from_primitive_transparency_visual(sphere_prim):
+    vertices, faces = sphere_prim
+    centers = np.array([[0, 0, 0]], dtype=np.float32)
+    colors = np.array([[1, 0, 0]])
+
+    scene = window.Scene(background=(0, 1, 0))
+
+    opaque = actor_from_primitive(vertices, faces, centers, colors=colors)
+    scene.add(opaque)
+    fname = "transparency_opaque_test.png"
+    window.snapshot(scene=scene, fname=fname)
+    img_array_op = np.array(Image.open(fname))
+    mid = img_array_op[img_array_op.shape[0] // 2, img_array_op.shape[1] // 2]
+    assert mid[0] > mid[1] and mid[0] > mid[2]
+    scene.remove(opaque)
+
+    transparent = actor_from_primitive(
+        vertices, faces, centers, colors=colors, opacity=0.5
+    )
+    scene.add(transparent)
+    fname = "transparency_semi_test.png"
+    window.snapshot(scene=scene, fname=fname)
+    img_array_tr = np.array(Image.open(fname))
+    mean_r_tr, mean_g_tr, mean_b_tr, _ = np.mean(
+        img_array_tr.reshape(-1, img_array_tr.shape[2]), axis=0
+    )
+    assert mean_r_tr > 0
+
+    mean_r_op, mean_g_op, mean_b_op, _ = np.mean(
+        img_array_op.reshape(-1, img_array_op.shape[2]), axis=0
+    )
+    assert mean_r_op > 0
+    assert mean_g_tr > mean_g_op
+    scene.remove(transparent)
+
+
+def test_create_axes_helper_structure():
+    helper = create_axes_helper()
+
+    expected_keys = {
+        "group",
+        "center_disk",
+        "disks",
+        "labels",
+        "lines",
+        "line_points",
+        "axis_vectors",
+    }
+
+    assert set(helper.keys()) == expected_keys
+    assert len(helper["disks"]) == 6
+    assert len(helper["labels"]) == 6
+    assert len(helper["lines"]) == 6
+
+
+def test_create_axes_helper_axis_vector_order():
+    helper = create_axes_helper()
+    axis_vectors = np.stack(helper["axis_vectors"])
+    expected = np.array(
+        [
+            [-1.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [0.0, -1.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, 1.0],
+            [0.0, 0.0, -1.0],
+        ],
+        dtype=np.float32,
+    )
+
+    np.testing.assert_array_equal(axis_vectors, expected)

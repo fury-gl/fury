@@ -282,6 +282,11 @@ def create_text(text, material, **kwargs):
     ------
     TypeError
         If text is not a string or material is not an instance of TextMaterial.
+
+    Examples
+    --------
+    >>> mat = TextMaterial()
+    >>> t = create_text("Hello", mat)
     """
     if not isinstance(text, str):
         raise TypeError("text must be a string.")
@@ -289,8 +294,7 @@ def create_text(text, material, **kwargs):
     if not isinstance(material, TextMaterial):
         raise TypeError("material must be an instance of TextMaterial.")
 
-    text = Text(text=text, material=material, **kwargs)
-    return text
+    return Text(text=text, material=material, **kwargs)
 
 
 def create_image(image_input, material, **kwargs):
@@ -422,6 +426,12 @@ def actor_from_primitive(
         else:
             big_colors[:, 3] *= opacity
 
+    is_transparent = False
+    if isinstance(opacity, (int, float)) and opacity < 1.0:
+        is_transparent = True
+    elif big_colors.shape[1] == 4 and np.any(big_colors[:, 3] < 1.0):
+        is_transparent = True
+
     geo = buffer_to_geometry(
         indices=big_faces.astype("int32"),
         positions=big_vertices.astype("float32"),
@@ -435,9 +445,12 @@ def actor_from_primitive(
         flat_shading=not smooth,
         wireframe=wireframe,
         wireframe_thickness=wireframe_thickness,
+        alpha_mode="weighted_blend" if is_transparent else "auto",
+        depth_write=not is_transparent,
     )
     obj = create_mesh(geometry=geo, material=mat)
-    obj.local.position = centers[0]
+    if not repeat_primitive:
+        obj.local.position = centers[0]
     obj.prim_count = prim_count
     return obj
 
@@ -579,6 +592,142 @@ def axes(
 
     obj = arrow(centers=centers, directions=directions, colors=colors, scales=scales)
     return obj
+
+
+def create_axes_helper(
+    *,
+    labels=None,
+    colors=None,
+    thickness=2,
+    center_disk_radius=0.11,
+    endpoint_disk_radius=0.33,
+    label_font_size=0.4,
+):
+    """Create actors composing a UI axes helper.
+
+    This returns the helper group and related actor lists so callers can
+    attach callbacks and place it in scene-specific coordinate systems.
+
+    Parameters
+    ----------
+    labels : list of str, optional
+        Labels for [-X, +X, -Y, +Y, -Z, +Z].
+    colors : list of tuple, optional
+        RGB colors for each axis endpoint.
+    thickness : float, optional
+        Thickness for endpoint lines.
+    center_disk_radius : float, optional
+        Radius of the center disk.
+    endpoint_disk_radius : float, optional
+        Radius of endpoint disks.
+    label_font_size : float, optional
+        Font size for endpoint labels.
+
+    Returns
+    -------
+    dict
+        A dictionary containing:
+        - group
+        - center_disk
+        - disks
+        - labels
+        - lines
+        - line_points
+        - axis_vectors
+    """
+    from fury.actor.curved import streamlines
+    from fury.actor.planar import disk, text
+
+    if labels is None:
+        labels = ["-X", "+X", "-Y", "+Y", "-Z", "+Z"]
+    elif labels is not None and len(labels) != 6:
+        raise ValueError(
+            "labels must be a list of 6 strings for [-X, +X, -Y, +Y, -Z, +Z]."
+        )
+
+    if colors is None:
+        colors = [
+            (0.9, 0.3, 0.23),
+            (0.9, 0.3, 0.23),
+            (0.5, 0.7, 0),
+            (0.5, 0.7, 0),
+            (0, 0, 0.7),
+            (0, 0, 0.7),
+        ]
+    elif colors is not None and len(colors) != 6:
+        raise ValueError(
+            "colors must be a list of 6 RGB tuples for [-X, +X, -Y, +Y, -Z, +Z]."
+        )
+
+    group = Group(name="Axes Helper")
+    centers = [
+        np.array([-1.0, 0.0, 0.0], dtype=np.float32),
+        np.array([1.0, 0.0, 0.0], dtype=np.float32),
+        np.array([0.0, -1.0, 0.0], dtype=np.float32),
+        np.array([0.0, 1.0, 0.0], dtype=np.float32),
+        np.array([0.0, 0.0, -1.0], dtype=np.float32),
+        np.array([0.0, 0.0, 1.0], dtype=np.float32),
+    ]
+
+    center_disk = disk(
+        np.asarray([[0.0, 0.0, 0.0]], dtype=np.float32),
+        radii=center_disk_radius,
+        colors=(0.5, 0.5, 0.5),
+        material="basic",
+    )
+    group.add(center_disk)
+
+    disks = []
+    labels_actors = []
+    lines = []
+    line_points = []
+
+    for i, endpoint_center in enumerate(centers):
+        disk_actor = disk(
+            np.asarray([[0.0, 0.0, 0.0]], dtype=np.float32),
+            radii=endpoint_disk_radius,
+            colors=colors[i],
+            material="basic",
+        )
+        disk_actor.local.position = endpoint_center.tolist()
+
+        label_actor = text(
+            labels[i],
+            position=endpoint_center.tolist(),
+            font_size=label_font_size,
+        )
+
+        axis_dir = endpoint_center / np.linalg.norm(endpoint_center)
+        line_start = (axis_dir * center_disk_radius).tolist()
+        line_end = (endpoint_center - axis_dir * endpoint_disk_radius).tolist()
+        line_actor = streamlines(
+            [[line_start, line_end]],
+            colors=[colors[i]],
+            thickness=thickness,
+            outline_thickness=0,
+        )
+
+        disks.append(disk_actor)
+        labels_actors.append(label_actor)
+        lines.append(line_actor)
+        line_points.append((line_start, line_end))
+
+        # Due to the convention of the z -ve is forward.
+        axis_vectors = centers[:4] + centers[5:] + centers[4:5]
+
+        group.add(disk_actor)
+        group.add(label_actor)
+        group.add(line_actor)
+
+    return {
+        "group": group,
+        "center_disk": center_disk,
+        "disks": disks,
+        "labels": labels_actors,
+        "lines": lines,
+        "line_points": line_points,
+        "axis_vectors": axis_vectors,
+    }
 
 
 def line(

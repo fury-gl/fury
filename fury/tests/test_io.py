@@ -225,19 +225,43 @@ def test_save_load_image():
         dpi=(72, 72),
     )
 
-    compression_type = [None, "bits", "random"]
-
-    for ct in compression_type:
+    # Test valid TIFF compression types produce files
+    for ct in [None, "lzw", "deflation"]:
         with InTemporaryDirectory() as odir:
-            try:
-                data = np.random.randint(0, 255, size=(50, 3), dtype=np.uint8)
-                fname_path = pjoin(odir, f"{fname}.tif")
+            data = np.random.randint(0, 255, size=(50, 3), dtype=np.uint8)
+            fname_path = pjoin(odir, f"{fname}.tif")
 
-                save_image(data, fname_path, compression_type=ct)
-                npt.assert_equal(os.path.isfile(fname_path), True)
-                assert_greater(os.stat(fname_path).st_size, 0)
-            except OSError:
-                continue
+            save_image(data, fname_path, compression_type=ct)
+            npt.assert_equal(os.path.isfile(fname_path), True)
+            assert_greater(os.stat(fname_path).st_size, 0)
+
+    # Test that compression actually changes file output
+    with InTemporaryDirectory() as odir:
+        data = np.zeros((100, 100, 3), dtype=np.uint8)
+        path_none = pjoin(odir, "none.tiff")
+        path_lzw = pjoin(odir, "lzw.tiff")
+        path_deflate = pjoin(odir, "deflate.tiff")
+
+        save_image(data, path_none, compression_type=None)
+        save_image(data, path_lzw, compression_type="lzw")
+        save_image(data, path_deflate, compression_type="deflation")
+
+        size_none = os.stat(path_none).st_size
+        size_lzw = os.stat(path_lzw).st_size
+        size_deflate = os.stat(path_deflate).st_size
+
+        # Compressed files should be smaller than uncompressed for uniform data
+        assert size_lzw < size_none
+        assert size_deflate < size_none
+
+    # Test invalid compression type raises OSError
+    npt.assert_raises(
+        OSError,
+        save_image,
+        np.random.randint(0, 255, size=(50, 3), dtype=np.uint8),
+        "test.tiff",
+        compression_type="invalid",
+    )
 
 
 # @pytest.mark.skipif(

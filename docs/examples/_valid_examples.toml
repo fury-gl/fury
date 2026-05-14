@@ -21,7 +21,7 @@ files = [
     "viz_multi_screen.py",
     "viz_show.py",
     "viz_imgui.py",
-    "viz_shapes.py"
+    "viz_text.py"
 
 ]
 
@@ -43,11 +43,10 @@ files = [
 [ui]
 readme = "file: _ui.rst"
 position = 7
-enable = false
+enable = true
 files = [
     "viz_shapes.py",
     "viz_panel.py",
-    "viz_textblock.py",
     "viz_sliders.py",
     "viz_button.py",
 ]

@@ -39,11 +39,10 @@ panel.add_element(disk, (0.5, 0.5), anchor="center")
 # Now that all the elements have been initialised, we add them to the scene.
 scene.add(panel)
 
-if __name__ == "__main__":
-    current_size = (800, 800)
-    show_manager = ShowManager(
-        scene=scene,
-        size=current_size,
-        title="FURY Panel2D Example",
-    )
-    show_manager.start()
+current_size = (800, 800)
+show_manager = ShowManager(
+    scene=scene,
+    size=current_size,
+    title="FURY Panel2D Example",
+)
+show_manager.start()

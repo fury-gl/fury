@@ -75,10 +75,9 @@ scene1.add(sphere_actor1)
 scene2.add(sphere_actor2)
 
 
-if __name__ == "__main__":
-    show_m = ShowManager(
-        scene=[scene0, scene1, scene2],
-        title="FURY Multi Screen Example",
-        screen_config=[2, 1],
-    )
-    show_m.start()
+show_m = ShowManager(
+    scene=[scene0, scene1, scene2],
+    title="FURY Multi Screen Example",
+    screen_config=[2, 1],
+)
+show_m.start()

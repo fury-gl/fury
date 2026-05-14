@@ -204,7 +204,7 @@ class ApiDocWriter:
             # nothing that we could handle here.
             return ([], [])
 
-        f = open(filename)
+        f = open(filename, encoding="utf-8")
         functions, classes = self._parse_lines(f)
         f.close()
         return functions, classes
@@ -230,7 +230,7 @@ class ApiDocWriter:
         patterns = "(?:{0})".format("|".join(self.object_skip_patterns))
         pat = re.compile(patterns)
 
-        with open(mod.__file__) as fi:
+        with open(mod.__file__, encoding="utf-8") as fi:
             node = ast.parse(fi.read())
 
         functions = []
@@ -476,7 +476,7 @@ class ApiDocWriter:
 
             out_module = ulm + self.rst_extension
             outfile = os.path.join(outdir, out_module)
-            fileobj = open(outfile, "w")
+            fileobj = open(outfile, "w", encoding="utf-8")
 
             fileobj.writelines(document_head + document_body)
             fileobj.close()
@@ -536,7 +536,7 @@ class ApiDocWriter:
             relpath = (outdir + os.path.sep).replace(relative_to + os.path.sep, "")
         else:
             relpath = outdir
-        idx = open(path, "w")
+        idx = open(path, "w", encoding="utf-8")
         w = idx.write
         w(".. AUTO-GENERATED FILE -- DO NOT EDIT!\n\n")
 

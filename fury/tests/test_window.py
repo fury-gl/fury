@@ -12,6 +12,7 @@ from fury.lib import (
     OffscreenCanvas,
     OrbitController,
     PerspectiveCamera,
+    PointerEvent,
     Renderer,
     Scene as GfxScene,
     ScreenCoordsCamera,
@@ -22,9 +23,12 @@ from fury.ui import Rectangle2D
 from fury.window import (
     Scene,
     ShowManager,
+    _get_scene_center,
+    _reference_up_for_axis,
     analyze_snapshot,
     calculate_screen_sizes,
     create_screen,
+    set_camera_from_axis,
     show,
     update_camera,
     update_viewports,
@@ -88,6 +92,94 @@ def test_scene_set_skybox():
     )  # Mock skybox
     scene.set_skybox(skybox)
     assert scene._bg_actor is not None
+
+
+def test_get_scene_center_uses_bounding_box():
+    """Ensure bounding box midpoint is used when available."""
+    bbox = np.array([0, 0, 800.0, 800.0], dtype=np.float32)
+    renderer = Renderer(OffscreenCanvas())
+    screen = create_screen(renderer, rect=bbox)
+    center = _get_scene_center(screen.camera, screen.scene)
+    # Empty scene use cam.forward as center.
+    np.testing.assert_array_equal(center, [0, 0, -1])
+
+
+def test_get_scene_center_defaults_to_camera_direction():
+    """Fallback should use camera position and forward vector when bbox is missing."""
+    renderer = Renderer(OffscreenCanvas())
+    screen = create_screen(renderer)
+    expected = screen.camera.world.position + screen.camera.world.forward
+    center = _get_scene_center(screen.camera, screen.scene)
+    np.testing.assert_array_equal(center, expected)
+
+
+@pytest.mark.parametrize(
+    "axis, expected",
+    [
+        (
+            np.array([0.0, 1.0, 0.0], dtype=np.float32),
+            np.array([0.0, 0.0, -1.0], dtype=np.float32),
+        ),
+        (
+            np.array([0.0, -1.0, 0.0], dtype=np.float32),
+            np.array([0.0, 0.0, 1.0], dtype=np.float32),
+        ),
+        (
+            np.array([1.0, 0.0, 0.0], dtype=np.float32),
+            np.array([0.0, 1.0, 0.0], dtype=np.float32),
+        ),
+    ],
+)
+def test_reference_up_for_axis(axis, expected):
+    """Reference up vector should switch near the poles to avoid gimbal lock."""
+    np.testing.assert_array_equal(_reference_up_for_axis(axis), expected)
+
+
+def test_set_camera_from_axis_updates_camera_and_controller_target():
+    """Camera snap via axes helper should reposition camera and controller."""
+    bbox = np.array([0, 0, 800.0, 800.0], dtype=np.float32)
+    screen = create_screen(Renderer(OffscreenCanvas()), rect=bbox)
+    set_camera_from_axis(screen, (1.0, 0.0, 0.0))
+
+    np.testing.assert_array_equal(
+        screen.camera.world.reference_up, np.array([0.0, 1.0, 0.0], dtype=np.float32)
+    )
+
+
+def test_show_axes_gizmo_click_callback_invoked_with_axis_direction():
+    """Custom click callbacks should receive the clicked axis direction vector."""
+
+    bbox = [[0, 0, 800.0, 800.0]]
+    show_m = ShowManager(window_type="offscreen", screen_config=bbox)
+    captured_axes = []
+
+    show_m.show_axes_gizmo(
+        click_callback=lambda axis: captured_axes.append(axis.copy())
+    )
+    show_m.renderer.dispatch_event(
+        PointerEvent(
+            x=-1, y=-1, type="pointer_down", target=show_m._axes_helper.children[1]
+        )
+    )
+
+    assert len(captured_axes) == 1
+
+
+def test_show_axes_gizmo_defaults_to_noop_click_callback_when_invalid():
+    """Non-callable click callbacks should fall back to a no-op function."""
+
+    bbox = [[0, 0, 800.0, 800.0]]
+    show_m = ShowManager(window_type="offscreen", screen_config=bbox)
+    invalid_callback = "not a function"
+
+    show_m.show_axes_gizmo(click_callback=invalid_callback)
+
+    assert callable(show_m._axes_helper_click_callback)
+    assert show_m._axes_helper_click_callback != invalid_callback
+    assert (
+        show_m._axes_helper_click_callback(np.array([1.0, 0.0, 0.0], dtype=np.float32))
+        is None
+    )
 
 
 def test_scene_clear(sample_actor, sample_ui_actor):
