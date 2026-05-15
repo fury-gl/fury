@@ -232,6 +232,116 @@ def test_line_slider_2d_visibility_propagation():
         assert actor.visible is True
 
 
+def test_playback_panel_functional_init():
+    """Test PlaybackPanel initialization and default states."""
+    panel_width = 800
+    playback = ui.PlaybackPanel(width=panel_width, loop=True)
+
+    npt.assert_equal(playback._width, panel_width)
+    npt.assert_equal(playback._get_size(), np.array([panel_width, 55]))
+
+    assert playback._loop is True
+    assert playback._playing is False
+    npt.assert_equal(playback.speed, 1.0)
+    npt.assert_equal(playback.current_time, 0)
+    assert playback.current_time_str == "00:00.00"
+
+
+def test_playback_panel_state_commands():
+    """Test programmatic play, pause, stop, and loop commands."""
+    playback = ui.PlaybackPanel()
+
+    playback.play()
+    assert playback._playing is True
+    assert playback._play_pause_btn.toggled is True
+
+    playback.pause()
+    assert playback._playing is False
+    assert playback._play_pause_btn.toggled is False
+
+    playback.current_time = 50
+    playback.play()
+    playback.stop()
+    assert playback._playing is False
+    npt.assert_equal(playback.current_time, 0)
+
+    playback.play_once()
+    assert playback._loop is False
+    assert playback._loop_btn.toggled is False
+
+    playback.loop()
+    assert playback._loop is True
+    assert playback._loop_btn.toggled is True
+
+
+def test_playback_panel_time_logic():
+    """Test time formatting and slider synchronization."""
+    playback = ui.PlaybackPanel()
+    playback.final_time = 125  # 2 minutes, 5 seconds
+
+    playback.current_time = 65.5
+    npt.assert_equal(playback._progress_bar.value, 65.5)
+
+    assert playback.current_time_str == "01:05.50"
+
+    playback.final_time = 4000
+    playback.current_time = 3661  # 1h, 1m, 1s
+    assert playback.current_time_str == "01:01:01"
+
+
+def test_playback_panel_speed_logic():
+    """Test speed adjustment logic and string display."""
+    playback = ui.PlaybackPanel()
+
+    playback.speed = 2.0
+    npt.assert_equal(playback.speed, 2.0)
+    assert playback.speed_text.message == "2x"
+
+    playback.speed = -1.0
+    npt.assert_equal(playback.speed, 0.01)
+
+    playback.speed = 1.500
+    assert playback.speed_text.message == "1.5x"
+
+
+def test_playback_panel_callback_logic():
+    """Test that UI actions trigger the associated programmatic hooks."""
+    playback = ui.PlaybackPanel()
+
+    results = {"played": False, "speed": 0}
+
+    def on_play():
+        results["played"] = True
+
+    def on_speed(val):
+        results["speed"] = val
+
+    playback.on_play = on_play
+    playback.on_speed_changed = on_speed
+
+    playback.play()
+    assert results["played"] is True
+
+    playback.speed = 4.0
+    playback.on_speed_changed(playback.speed)
+    npt.assert_equal(results["speed"], 4.0)
+
+
+def test_playback_panel_layout_and_visibility():
+    """Test visibility propagation and sub-component layout."""
+    playback = ui.PlaybackPanel()
+
+    assert playback.panel in playback._children
+    assert playback._progress_bar in playback._children
+
+    playback.set_visibility(False)
+    assert playback.panel.actors[0].visible is False
+    assert playback._progress_bar.track.actor.visible is False
+
+    playback.set_visibility(True)
+    assert playback.panel.actors[0].visible is True
+
+
 # def test_ui_textbox(recording=False):
 #     filename = "test_ui_textbox"
 #     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")

@@ -49,6 +49,7 @@ files = [
     "viz_panel.py",
     "viz_sliders.py",
     "viz_button.py",
+    "viz_playback_panel.py",
 ]
 
 [animation]

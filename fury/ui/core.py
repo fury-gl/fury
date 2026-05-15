@@ -301,6 +301,8 @@ class UI(object, metaclass=abc.ABCMeta):
             raise ValueError("Z-order must be an integer.")
 
         self._z_order = z_order
+        for child in self._children:
+            child.z_order = z_order
         UIContext.z_order_bounds = z_order
 
     @abc.abstractmethod
@@ -342,6 +344,9 @@ class UI(object, metaclass=abc.ABCMeta):
         """
         for actor in self.actors:
             actor.visible = visibility
+
+        for child in self._children:
+            child.set_visibility(visibility)
 
     def handle_events(self, actor):
         """Attach event handlers to the UI object.
@@ -565,9 +570,7 @@ class Rectangle2D(UI):
         Create the plane actor used internally.
         """
         geo = plane_geometry(width=1, height=1)
-        mat = _create_mesh_material(
-            material="basic", enable_picking=True, flat_shading=True
-        )
+        mat = _create_mesh_material(material="basic", alpha_mode="auto")
         self.actor = create_mesh(geometry=geo, material=mat)
 
         self.handle_events(self.actor)
@@ -647,6 +650,8 @@ class Rectangle2D(UI):
         size : (float, float)
             Rectangle size (width, height) in pixels.
         """
+        if tuple(size) == (0, 0):
+            size = np.array([1, 1])
         self.actor.geometry = plane_geometry(width=size[0], height=size[1])
         self._update_actors_position()
 
@@ -762,9 +767,7 @@ class Disk2D(UI):
             inner_radius=self.inner_radius, outer_radius=self.outer_radius
         )
         geo = buffer_to_geometry(positions=positions, indices=indices)
-        mat = _create_mesh_material(
-            material="basic", enable_picking=True, flat_shading=True
-        )
+        mat = _create_mesh_material(material="basic", alpha_mode="auto")
         self.actor = create_mesh(geometry=geo, material=mat)
 
         self.handle_events(self.actor)
@@ -1006,6 +1009,7 @@ class TextBlock2D(UI):
             markdown=self._message, screen_space=True, anchor="middle-center"
         )
         self.background = Rectangle2D()
+        self._children.append(self.background)
         self.handle_events(self.actor)
 
     def resize(self, size):
@@ -1040,7 +1044,7 @@ class TextBlock2D(UI):
         list
             List containing the text actor and background actors.
         """
-        return [self.actor] + self.background.actors
+        return [self.actor]
 
     def get_formatted_text(self, text):
         """Format the given text with markdown syntax for bold/italic styles.
@@ -1408,9 +1412,11 @@ class Button2D(UI):
         Absolute coordinates (x, y) for placement.
     size : (int, int), optional
         Width and height in pixels.
+    is_toggle : bool, optional
+        If True, the button behaves as a toggle switch.
     """
 
-    def __init__(self, position=(0, 0), size=(30, 30)):
+    def __init__(self, position=(0, 0), size=(30, 30), is_toggle=False):
         """Initialize the button instance.
 
         Parameters
@@ -1419,9 +1425,13 @@ class Button2D(UI):
             Absolute coordinates (x, y) for placement.
         size : (int, int), optional
             Width and height in pixels.
+        is_toggle : bool, optional
+            If True, the button behaves as a toggle switch.
         """
         self._dims = size
         self.child = None
+        self.is_toggle = is_toggle
+        self.toggled = False
 
         super().__init__(position=position)
 
@@ -1435,7 +1445,6 @@ class Button2D(UI):
         self.on_pointer_leave = self._handle_leave
         self.on_left_mouse_button_pressed = self._handle_down
         self.on_left_mouse_button_released = self._handle_up
-        self.on_left_mouse_button_clicked = lambda event: self.do_click()
 
         self.resize(size)
         self.update_visual_state()
@@ -1465,6 +1474,29 @@ class Button2D(UI):
         if not self._enabled:
             self.is_hovered = False
             self.is_pressed = False
+        self.update_visual_state()
+
+    @property
+    def toggled(self):
+        """Check if the button is toggled.
+
+        Returns
+        -------
+        bool
+            True if toggled, False otherwise.
+        """
+        return self._toggled
+
+    @toggled.setter
+    def toggled(self, value):
+        """Set the button's toggled state.
+
+        Parameters
+        ----------
+        value : bool
+            True to toggle, False otherwise.
+        """
+        self._toggled = bool(value)
         self.update_visual_state()
 
     def _handle_enter(self, event):
@@ -1526,16 +1558,21 @@ class Button2D(UI):
         self.update_visual_state()
 
     def do_click(self):
-        """Trigger the assigned click callback."""
+        """Trigger the assigned click callback and handle toggle state."""
+        if self.is_toggle:
+            self.toggled = not self.toggled
+
         if self.on_clicked:
             self.on_clicked(self)
+
+        self.update_visual_state()
 
     def resolve_state_key(self, available_keys):
         """Determine the current visual state key based on priority.
 
         The priority order is:
         1. 'disabled' (if not enabled)
-        2. 'pressed' (if is_pressed)
+        2. 'pressed' (if is_pressed or toggled is True)
         3. 'hover' (if is_hovered)
         4. 'default'
 
@@ -1549,11 +1586,12 @@ class Button2D(UI):
         str
             The key representing the highest priority active state.
         """
-
         if not self.enabled:
             return "disabled" if "disabled" in available_keys else "default"
 
-        if self.is_pressed and "pressed" in available_keys:
+        is_active = self.is_pressed or (self.is_toggle and self.toggled)
+
+        if is_active and "pressed" in available_keys:
             return "pressed"
 
         if self.is_hovered and "hover" in available_keys:
@@ -1611,7 +1649,8 @@ class Button2D(UI):
             List containing the child actor(s).
         """
         if self.child:
-            if isinstance(self.child, UI):
-                return self.child.actors
-            return [self.child]
+            if not isinstance(self.child, UI):
+                return [self.child]
+            else:
+                self._children.append(self.child)
         return []

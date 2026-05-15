@@ -23,7 +23,7 @@ __all__ = [
     #     "FileMenu2D",
     #     "DrawShape",
     #     "DrawPanel",
-    #     "PlaybackPanel",
+    "PlaybackPanel",
     #     "Card2D",
     #     "SpinBox",
     "UI",
@@ -48,7 +48,7 @@ __all__ = [
 from .containers import Panel2D
 from .context import UIContext
 from .core import UI, Anchor, Disk2D, Rectangle2D, TextBlock2D
-from .elements import LineSlider2D, TextButton2D, TexturedButton2D
+from .elements import LineSlider2D, PlaybackPanel, TextButton2D, TexturedButton2D
 
 # from .elements import (
 #     Card2D,
