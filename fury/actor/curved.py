@@ -239,7 +239,7 @@ def ellipsoid(
 
     orientation_matrices = np.asarray(orientation_matrices)
     lengths = np.asarray(lengths)
-    colors = np.asarray(colors)
+    colors = normalize_colors(colors)
 
     if centers.ndim == 1:
         centers = centers.reshape(1, 3)

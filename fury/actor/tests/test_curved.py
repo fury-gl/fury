@@ -554,3 +554,13 @@ def test_sphere_accepts_hex_colors():
     np.testing.assert_array_almost_equal(
         a1.geometry.colors.view, a2.geometry.colors.view
     )
+
+
+def test_ellipsoid_accepts_hex_colors():
+    """Ellipsoid actor accepts hex color strings."""
+    centers = np.array([[0, 0, 0]])
+    a1 = actor.ellipsoid(centers=centers, colors="#FF0000")
+    a2 = actor.ellipsoid(centers=centers, colors=(1.0, 0.0, 0.0))
+    np.testing.assert_array_almost_equal(
+        a1.geometry.colors.view, a2.geometry.colors.view
+    )

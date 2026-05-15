@@ -252,6 +252,9 @@ def test_normalize_colors():
     with pytest.raises(ValueError):
         normalize_colors(np.array([[255, 0, 0], [0, 255, 0]]), n_points=5)
 
+    with pytest.raises(ValueError):
+        normalize_colors(np.zeros((2, 2, 3)), n_points=5)
+
     # Output dtype is always float32
     result = normalize_colors(np.array([[0.1, 0.2, 0.3]], dtype=np.float64))
     assert result.dtype == np.float32
