@@ -6,6 +6,7 @@ import itertools
 import numpy as np
 
 from fury.actor import Group, Line, Mesh, actor_from_primitive, create_mesh, read_buffer
+from fury.colormap import normalize_colors
 from fury.geometry import buffer_to_geometry, line_buffer_separator
 from fury.lib import (
     Buffer,
@@ -64,7 +65,8 @@ def sphere(
     centers : ndarray, shape (N, 3)
         Spheres positions.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1]
+        (float), or hex strings (e.g. "#FF0000").
     radii : float or ndarray, shape (N,), optional
         Sphere radius. Can be a single value for all spheres or an array of
         radii for each sphere.
@@ -113,6 +115,8 @@ def sphere(
     if centers_arr.ndim == 1:
         centers_arr = centers_arr.reshape(1, 3)
     count = len(centers_arr)
+
+    colors = normalize_colors(colors)
 
     radii_arr = np.asarray(radii, dtype=np.float32)
     if radii_arr.ndim == 0:
@@ -189,7 +193,9 @@ def ellipsoid(
     lengths : ndarray (N, 3) or (3,) or tuple (3,), optional
         Scaling factors along each axis.
     colors : array-like or tuple, optional
-        RGB/RGBA colors for each ellipsoid.
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     opacity : float, optional
         Opacity of the ellipsoids. Takes values from 0 (fully transparent) to
         1 (opaque). If both `opacity` and RGBA are provided, the final alpha
@@ -233,7 +239,7 @@ def ellipsoid(
 
     orientation_matrices = np.asarray(orientation_matrices)
     lengths = np.asarray(lengths)
-    colors = np.asarray(colors)
+    colors = normalize_colors(colors)
 
     if centers.ndim == 1:
         centers = centers.reshape(1, 3)
@@ -321,7 +327,9 @@ def cylinder(
     centers : ndarray, shape (N, 3)
         Cylinder positions.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     height : float or ndarray, shape (N,), optional
         The height of the cylinder. A single value applies to all cylinders,
         while an array specifies a height for each cylinder individually.
@@ -444,7 +452,9 @@ def cone(
     centers : ndarray, shape (N, 3)
         Cone positions.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     height : float or ndarray, shape (N,), optional
         The height of the cone. A single value applies to all cones,
         while an array specifies a height for each cone individually.

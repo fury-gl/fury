@@ -630,3 +630,33 @@ def test_line_projection_material_properties():
     assert projection.material.size == 5.0
     assert projection.material.edge_width == 1.0
     assert np.round(projection.material.opacity, 1) == 0.5
+
+
+def test_disk_accepts_255_colors():
+    """Disk actor accepts [0, 255] colors."""
+    centers = np.array([[0, 0, 0]])
+    a1 = actor.disk(centers=centers, colors=(255, 0, 0))
+    a2 = actor.disk(centers=centers, colors=(1.0, 0.0, 0.0))
+    np.testing.assert_array_almost_equal(
+        a1.geometry.colors.view, a2.geometry.colors.view
+    )
+
+
+def test_point_accepts_255_colors():
+    """Point actor accepts [0, 255] colors."""
+    centers = np.array([[0, 0, 0]])
+    a1 = actor.point(centers=centers, colors=(255, 0, 0))
+    a2 = actor.point(centers=centers, colors=(1.0, 0.0, 0.0))
+    np.testing.assert_array_almost_equal(
+        a1.geometry.colors.view, a2.geometry.colors.view
+    )
+
+
+def test_marker_accepts_hex_colors():
+    """Marker actor accepts hex color strings."""
+    centers = np.array([[0, 0, 0]])
+    a1 = actor.marker(centers=centers, colors="#FF0000")
+    a2 = actor.marker(centers=centers, colors=(1.0, 0.0, 0.0))
+    np.testing.assert_array_almost_equal(
+        a1.geometry.colors.view, a2.geometry.colors.view
+    )

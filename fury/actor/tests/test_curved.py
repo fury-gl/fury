@@ -534,3 +534,33 @@ def test_actor_from_primitive_wireframe():
     new_thickness = 5.0
     sphere_actor.material.wireframe_thickness = new_thickness
     assert sphere_actor.material.wireframe_thickness == new_thickness
+
+
+def test_cylinder_accepts_255_colors():
+    """Cylinder actor accepts [0, 255] colors."""
+    centers = np.array([[0, 0, 0]])
+    a1 = actor.cylinder(centers=centers, colors=(255, 0, 0))
+    a2 = actor.cylinder(centers=centers, colors=(1.0, 0.0, 0.0))
+    np.testing.assert_array_almost_equal(
+        a1.geometry.colors.view, a2.geometry.colors.view
+    )
+
+
+def test_sphere_accepts_hex_colors():
+    """Sphere actor (non-impostor) accepts hex color strings."""
+    centers = np.array([[0, 0, 0]])
+    a1 = actor.sphere(centers=centers, colors="#FF0000", impostor=False)
+    a2 = actor.sphere(centers=centers, colors=(1.0, 0.0, 0.0), impostor=False)
+    np.testing.assert_array_almost_equal(
+        a1.geometry.colors.view, a2.geometry.colors.view
+    )
+
+
+def test_ellipsoid_accepts_hex_colors():
+    """Ellipsoid actor accepts hex color strings."""
+    centers = np.array([[0, 0, 0]])
+    a1 = actor.ellipsoid(centers=centers, colors="#FF0000")
+    a2 = actor.ellipsoid(centers=centers, colors=(1.0, 0.0, 0.0))
+    np.testing.assert_array_almost_equal(
+        a1.geometry.colors.view, a2.geometry.colors.view
+    )

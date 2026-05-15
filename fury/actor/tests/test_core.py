@@ -390,3 +390,31 @@ def test_create_axes_helper_axis_vector_order():
     )
 
     np.testing.assert_array_equal(axis_vectors, expected)
+
+
+def test_actor_accepts_255_colors():
+    """Colors in [0, 255] produce same result as [0, 1]."""
+    centers = np.array([[0, 0, 0]])
+    a1 = actor.arrow(centers=centers, colors=(255, 0, 0))
+    a2 = actor.arrow(centers=centers, colors=(1.0, 0.0, 0.0))
+    np.testing.assert_array_almost_equal(
+        a1.geometry.colors.view, a2.geometry.colors.view
+    )
+
+
+def test_actor_accepts_hex_colors():
+    """Hex color strings produce same result as [0, 1]."""
+    centers = np.array([[0, 0, 0]])
+    a1 = actor.arrow(centers=centers, colors="#FF0000")
+    a2 = actor.arrow(centers=centers, colors=(1.0, 0.0, 0.0))
+    np.testing.assert_array_almost_equal(
+        a1.geometry.colors.view, a2.geometry.colors.view
+    )
+
+
+def test_actor_accepts_255_array_colors():
+    """Array of [0, 255] colors works for multiple centers."""
+    centers = np.array([[0, 0, 0], [1, 0, 0], [2, 0, 0]])
+    colors_255 = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
+    a = actor.arrow(centers=centers, colors=colors_255)
+    assert a.prim_count == 3

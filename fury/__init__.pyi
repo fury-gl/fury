@@ -164,6 +164,7 @@ from .colormap import (
     lab2rgb as lab2rgb,
     lab2xyz as lab2xyz,
     line_colors as line_colors,
+    normalize_colors as normalize_colors,
     orient2rgb as orient2rgb,
     rgb2hsv as rgb2hsv,
     rgb2lab as rgb2lab,
