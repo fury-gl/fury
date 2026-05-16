@@ -37,7 +37,7 @@ files = [
     "viz_line_projections.py",
     "viz_streamlines_roi.py",
     "viz_contour.py",
-
+    "viz_network.py",
 ]
 
 [ui]
