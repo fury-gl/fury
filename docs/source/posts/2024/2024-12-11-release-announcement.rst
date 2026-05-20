@@ -1,26 +1,24 @@
-
-FURY 0.11.0 Released
+FURY 0.12.0 Released
 ====================
 
-
-.. post:: March 07, 2026
-   :author: maharshi-gor
+.. post:: December 11 2024
+   :author: skoudoro
    :tags: fury
    :category: release
 
 
-The FURY project is happy to announce the release of FURY 0.11.0!
+The FURY project is happy to announce the release of FURY 0.12.0!
 FURY is a free and open source software library for scientific visualization and 3D animations.
 
 You can show your support by `adding a star <https://github.com/fury-gl/fury/stargazers>`_ on FURY github project.
 
 This Release is mainly a maintenance release. The **major highlights** of this release are:
 
-.. include:: ../../release_notes/releasev0.11.0.rst
+.. include:: ../../release_notes/releasev0.12.0.rst
     :start-after: --------------
     :end-before: Details
 
-.. note:: The complete release notes are available :ref:`here <releasev0.11.0>`
+.. note:: The complete release notes are available :ref:`here <releasev0.12.0>`
 
 **To upgrade or install FURY**
 
@@ -40,11 +38,11 @@ We can also join our `discord community <https://discord.gg/6btFPPj>`_
 
 We would like to thanks to :ref:`all contributors <community>` for this release:
 
-.. include:: ../../release_notes/releasev0.11.0.rst
+.. include:: ../../release_notes/releasev0.12.0.rst
     :start-after: commits.
     :end-before: We closed
 
 
 On behalf of the :ref:`FURY developers <community>`,
 
-- Maharshi Gor
+Serge K.
