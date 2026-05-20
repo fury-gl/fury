@@ -1654,3 +1654,285 @@ class Button2D(UI):
             else:
                 self._children.append(self.child)
         return []
+
+
+class Slider2D(UI):
+    """Base class for interactive 2D Sliders.
+
+    Parameters
+    ----------
+    position : (float, float), optional
+        Absolute coordinates (x, y) for placement.
+    initial_value : float, optional
+        The starting value of the slider.
+    min_value : float, optional
+        The minimum value of the slider range.
+    max_value : float, optional
+        The maximum value of the slider range.
+    handle_inner_radius : int, optional
+        The inner radius for disk-shaped handles.
+    handle_outer_radius : int, optional
+        The outer radius for disk-shaped handles.
+    handle_side : int, optional
+        The side length for square-shaped handles.
+    font_size : int, optional
+        The font size for the value label.
+    text_template : str or callable, optional
+        A formatting string or callable for the label.
+    shape : str, optional
+        The handle shape: disk or square.
+    z_order : int, optional
+        The stacking priority.
+    """
+
+    def __init__(
+        self,
+        *,
+        position=(0, 0),
+        initial_value=50,
+        min_value=0,
+        max_value=100,
+        handle_inner_radius=0,
+        handle_outer_radius=10,
+        handle_side=20,
+        font_size=16,
+        text_template="{value:.1f} ({ratio:.0%})",
+        shape="disk",
+        z_order=0,
+    ):
+        """Initialize the 2D slider.
+
+        Parameters
+        ----------
+        position : (float, float), optional
+            Absolute coordinates (x, y) for placement.
+        initial_value : float, optional
+            The starting value of the slider.
+        min_value : float, optional
+            The minimum value of the slider range.
+        max_value : float, optional
+            The maximum value of the slider range.
+        handle_inner_radius : int, optional
+            The inner radius for disk-shaped handles.
+        handle_outer_radius : int, optional
+            The outer radius for disk-shaped handles.
+        handle_side : int, optional
+            The side length for square-shaped handles.
+        font_size : int, optional
+            The font size for the value label.
+        text_template : str or callable, optional
+            A formatting string or callable for the label.
+        shape : str, optional
+            The handle shape: disk or square.
+        z_order : int, optional
+            The stacking priority.
+        """
+        self.default_color = (1, 1, 1)
+        self.active_color = (0, 0, 1)
+        self._value = initial_value
+        range_val = max_value - min_value
+        self._ratio = (initial_value - min_value) / range_val if range_val != 0 else 0
+        self._min_value = min_value
+        self._max_value = max_value
+        self.text_template = text_template
+
+        self._handle_inner_radius = handle_inner_radius
+        self._handle_outer_radius = handle_outer_radius
+        self._handle_side = handle_side
+        self._font_size = font_size
+        self.shape = shape
+
+        self.on_change = lambda ui: None
+        self.on_value_changed = lambda ui: None
+        self.on_moving_slider = lambda ui: None
+
+        self.track = None
+        self.handle = None
+        self.text = None
+
+        super().__init__(position=position, z_order=z_order)
+
+    @property
+    def value(self):
+        """Get the current numeric value of the slider.
+
+        Returns
+        -------
+        float
+            The slider value.
+        """
+        return self._value
+
+    @value.setter
+    def value(self, val):
+        """Set the slider numeric value.
+
+        Parameters
+        ----------
+        val : float
+            New numeric value. Will be clamped to [min_value, max_value].
+        """
+        val = np.clip(val, self.min_value, self.max_value)
+        self._value = val
+        range_val = self.max_value - self.min_value
+        self._ratio = (val - self.min_value) / range_val if range_val != 0 else 0
+        self._update_handle_position()
+        self.on_value_changed(self)
+        self.on_change(self)
+
+    @property
+    def ratio(self):
+        """Get the current normalized ratio (0 to 1).
+
+        Returns
+        -------
+        float
+            The slider ratio.
+        """
+        return self._ratio
+
+    @ratio.setter
+    def ratio(self, r):
+        """Set the slider ratio.
+
+        Parameters
+        ----------
+        r : float
+            New ratio value. Will be clamped to [0, 1].
+        """
+        self._ratio = np.clip(r, 0, 1)
+        self._value = self.min_value + self._ratio * (self.max_value - self.min_value)
+        self._update_handle_position()
+        self.on_change(self)
+
+    @property
+    def min_value(self):
+        """Get the minimum value of the slider.
+
+        Returns
+        -------
+        float
+            The minimum value.
+        """
+        return self._min_value
+
+    @min_value.setter
+    def min_value(self, val):
+        """Set the minimum value of the slider.
+
+        Parameters
+        ----------
+        val : float
+            The minimum value.
+        """
+        self._min_value = val
+        self.value = self._value
+
+    @property
+    def max_value(self):
+        """Get the maximum value of the slider.
+
+        Returns
+        -------
+        float
+            The maximum value.
+        """
+        return self._max_value
+
+    @max_value.setter
+    def max_value(self, val):
+        """Set the maximum value of the slider.
+
+        Parameters
+        ----------
+        val : float
+            The maximum value.
+        """
+        self._max_value = val
+        self.value = self._value
+
+    def track_click_callback(self, event):
+        """Handle mouse click events on the slider track.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        self.handle_move_callback(event)
+
+    @abc.abstractmethod
+    def handle_move_callback(self, event):
+        """Handle mouse drag events to update the slider state.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        pass
+
+    def handle_release_callback(self, event):
+        """Handle the release of the mouse button.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        self.handle.color = self.default_color
+
+    @abc.abstractmethod
+    def _update_handle_position(self):
+        """Update the position of the track and handle actors."""
+        pass
+
+    def _get_actors(self):
+        """Get the actors composing this UI component.
+
+        Returns
+        -------
+        list
+            Empty list, as child UI components are added directly when adding parent.
+        """
+        return []
+
+    def format_text(self):
+        """Return formatted text to display along the slider.
+
+        Returns
+        -------
+        str
+            The formatted text.
+        """
+        if callable(self.text_template):
+            return self.text_template(self)
+
+        context = {"value": self.value, "ratio": self.ratio}
+        if hasattr(self, "angle"):
+            context["angle"] = np.rad2deg(self.angle)
+        return self.text_template.format(**context)
+
+    def _setup(self):
+        """Set up the common slider components."""
+        if self.shape == "disk":
+            self.handle = Disk2D(
+                outer_radius=self._handle_outer_radius,
+                inner_radius=self._handle_inner_radius,
+            )
+        elif self.shape == "square":
+            self.handle = Rectangle2D(size=(self._handle_side, self._handle_side))
+        else:
+            raise ValueError("shape must be 'disk' or 'square'")
+
+        self.handle.z_order = self.z_order + 1
+
+        self.text = TextBlock2D(
+            justification="center",
+            vertical_justification="middle",
+            dynamic_bbox=True,
+            font_size=self._font_size,
+        )
+        self.text.z_order = self.z_order + 2
+
+        self._children.extend([self.handle, self.text])

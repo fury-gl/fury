@@ -506,3 +506,39 @@ def test_textblock2d_visual_snapshot():
 
         mean_hidden = np.mean(arr_hidden[:, :, :3])
         npt.assert_almost_equal(mean_hidden, 0, decimal=0)
+
+
+def test_slider2d_base_logic():
+    """Test the core logic of the Slider2D base class using RingSlider2D."""
+    slider = ui.RingSlider2D(initial_value=50, min_value=0, max_value=100)
+
+    npt.assert_equal(slider.value, 50)
+    npt.assert_almost_equal(slider.ratio, 0.5)
+
+    slider.value = 150
+    npt.assert_equal(slider.value, 100)
+    npt.assert_equal(slider.ratio, 1.0)
+
+    slider.value = -50
+    npt.assert_equal(slider.value, 0)
+    npt.assert_equal(slider.ratio, 0.0)
+
+    slider.ratio = 1.5
+    npt.assert_equal(slider.ratio, 1.0)
+    npt.assert_equal(slider.value, 100)
+
+    slider.value = 75
+    slider.text_template = "V: {value:.0f}"
+    assert slider.format_text() == "V: 75"
+
+    slider.text_template = lambda s: f"R: {s.ratio:.2f}"
+    assert slider.format_text() == "R: 0.75"
+
+    hook_data = {"called": False}
+
+    def on_change(s):
+        hook_data["called"] = True
+
+    slider.on_change = on_change
+    slider.value = 25
+    assert hook_data["called"] is True
