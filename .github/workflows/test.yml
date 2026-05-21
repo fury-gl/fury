@@ -5,9 +5,9 @@ name: FURY Tests
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, v2 ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, v2 ]
   schedule:
     - cron: '0 2 * * Mon'  # weekly
 
