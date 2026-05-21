@@ -557,6 +557,8 @@ class PlaybackPanel(UI):
         z_order : int, optional
             The stacking priority of the panel.
         """
+        self._drag_offset = None
+
         self._width = width
         self._playing = False
         self._loop = None
@@ -651,6 +653,12 @@ class PlaybackPanel(UI):
         self._speed_up_btn.on_clicked = self._speed_up_callback
         self._slow_down_btn.on_clicked = self._slow_down_callback
         self._progress_bar.on_moving_slider = self._on_progress_change
+
+        self.panel.on_left_mouse_button_pressed = self.left_button_pressed
+        self.panel.on_left_mouse_button_dragged = self.left_button_dragged
+
+        self.panel.background.on_left_mouse_button_pressed = self.left_button_pressed
+        self.panel.background.on_left_mouse_button_dragged = self.left_button_dragged
 
     def _update_actors_position(self):
         """Update internal actor positions."""
@@ -880,6 +888,30 @@ class PlaybackPanel(UI):
         self._speed = max(val, 0.01)
         speed_str = f"{self._speed}".strip("0").rstrip(".") + "x"
         self.speed_text.message = speed_str if speed_str and speed_str != "." else "0"
+
+    def left_button_pressed(self, event):
+        """Handle left mouse button press event for PlaybackPanel.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
+        click_pos = np.array([event.x, event.y])
+        self._drag_offset = click_pos - self.get_position()
+
+    def left_button_dragged(self, event):
+        """Handle left mouse button drag event for PlaybackPanel.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
+        if self._drag_offset is not None:
+            click_position = np.array([event.x, event.y])
+            new_position = click_position - self._drag_offset
+            self.set_position(new_position)
 
 
 # class TextBox2D(UI):

@@ -775,6 +775,17 @@ class ShowManager:
         )
         self.renderer.dispatch_event(drag_event)
 
+    def _toggle_screen_controllers(self, disable):
+        """Toggle the enabled state for controllers across multiple screen viewports.
+
+        Parameters
+        ----------
+        disable : bool
+            If True, deactivates the screen controllers; if False, enables them.
+        """
+        for screen in self.screens:
+            screen.controller.enabled = not disable
+
     def _register_drag(self, event):
         """Register drag events for pointer interactions.
 
@@ -783,13 +794,15 @@ class ShowManager:
         event : PointerEvent
             The PyGfx pointer event object.
         """
-
         if event.type == EventType.POINTER_DOWN:
             self._is_dragging = True
             self._drag_target = event.target
+            if UIContext.hot_ui:
+                self._toggle_screen_controllers(disable=True)
         elif event.type == EventType.POINTER_UP:
             self._is_dragging = False
             self._drag_target = None
+            self._toggle_screen_controllers(disable=False)
         elif event.type == EventType.POINTER_MOVE and self._is_dragging:
             self._handle_drag(event)
 

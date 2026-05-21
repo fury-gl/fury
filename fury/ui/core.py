@@ -134,8 +134,10 @@ class UI(object, metaclass=abc.ABCMeta):
         self.on_middle_mouse_double_clicked = lambda event: None
         self.on_middle_mouse_button_dragged = lambda event: None
         self.on_key_press = lambda event: None
-        self.on_pointer_enter = lambda event: None
-        self.on_pointer_leave = lambda event: None
+        self.on_hover = lambda event: None
+        self.on_dishover = lambda event: None
+        self.on_focus = lambda event: None
+        self.on_blur = lambda event: None
 
     @abc.abstractmethod
     def _setup(self):
@@ -402,6 +404,16 @@ class UI(object, metaclass=abc.ABCMeta):
             The PyGfx pointer event object.
         """
         self.left_button_state = "pressing"
+
+        if UIContext.hot_ui is not None:
+            if (
+                UIContext.active_ui is not None
+                and UIContext.active_ui is not UIContext.hot_ui
+            ):
+                UIContext.active_ui.on_blur(event)
+            UIContext.active_ui = UIContext.hot_ui
+            UIContext.active_ui.on_focus(event)
+
         self.on_left_mouse_button_pressed(event)
 
     def left_button_release_callback(self, event):
@@ -514,7 +526,8 @@ class UI(object, metaclass=abc.ABCMeta):
         ----------
         event : PointerEvent
             The PyGfx pointer event object."""
-        self.on_pointer_enter(event)
+        UIContext.hot_ui = self
+        self.on_hover(event)
 
     def pointer_leave_callback(self, event):
         """Handle pointer leave event.
@@ -523,7 +536,9 @@ class UI(object, metaclass=abc.ABCMeta):
         ----------
         event : PointerEvent
             The PyGfx pointer event object."""
-        self.on_pointer_leave(event)
+        if UIContext.hot_ui is self:
+            UIContext.hot_ui = None
+        self.on_dishover(event)
 
 
 class Rectangle2D(UI):
@@ -1441,8 +1456,8 @@ class Button2D(UI):
 
         self.on_clicked = None
 
-        self.on_pointer_enter = self._handle_enter
-        self.on_pointer_leave = self._handle_leave
+        self.on_hover = self._handle_hover
+        self.on_dishover = self._handle_dishover
         self.on_left_mouse_button_pressed = self._handle_down
         self.on_left_mouse_button_released = self._handle_up
 
@@ -1499,8 +1514,8 @@ class Button2D(UI):
         self._toggled = bool(value)
         self.update_visual_state()
 
-    def _handle_enter(self, event):
-        """Handle the pointer entering the button area.
+    def _handle_hover(self, event):
+        """Handle the hover on the button area.
 
         Parameters
         ----------
@@ -1512,8 +1527,8 @@ class Button2D(UI):
         self.is_hovered = True
         self.update_visual_state()
 
-    def _handle_leave(self, event):
-        """Handle the pointer leaving the button area.
+    def _handle_dishover(self, event):
+        """Handle the dishover on the button area.
 
         Parameters
         ----------
