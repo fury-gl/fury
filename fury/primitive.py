@@ -14,7 +14,7 @@ from scipy.version import short_version
 
 from fury.data import DATA_DIR
 from fury.decorators import warn_on_args_to_kwargs
-from fury.transform import cart2sphere, sphere2cart
+from fury.transform import cart2sphere
 from fury.utils import fix_winding_order
 
 SCIPY_1_4_PLUS = parse(short_version) >= parse("1.4.0")
@@ -462,27 +462,34 @@ def prim_sphere(*, name="symmetric362", gen_faces=False, phi=None, theta=None):
         phi = phi if phi >= 3 else 3
         theta = theta if theta >= 3 else 3
 
-        phi_indices, theta_indices = np.arange(0, phi), np.arange(1, theta - 1)
+        u = np.linspace(0, 1, phi + 1)
+        v = np.linspace(0, 1, theta + 1)
 
-        # phi and theta angles are same as standard physics convention
-        phi_angles = 2 * np.pi * phi_indices / phi
-        theta_angles = np.pi * theta_indices / (theta - 1)
+        U, V = np.meshgrid(u, v)
 
-        # combinations of all phi and theta angles
-        mesh = np.array(np.meshgrid(phi_angles, theta_angles))
-        combs = mesh.T.reshape(-1, 2)
+        phi_angle = U * 2.0 * np.pi - np.pi
+        theta_angle = V * np.pi - (np.pi / 2.0)
 
-        _angles = np.array([[1, 1], [0, np.pi], [np.pi / 2, -np.pi / 2]])
-        _points = np.array(sphere2cart(_angles[0], _angles[1], _angles[2])).T
+        x = np.cos(theta_angle) * np.sin(phi_angle)
+        y = np.sin(theta_angle)
+        z = np.cos(theta_angle) * np.cos(phi_angle)
 
-        x, y, z = sphere2cart(1, combs[:, 1:], combs[:, :1])
+        verts = np.column_stack((x.ravel(), y.ravel(), z.ravel()))
 
-        x = np.reshape(np.append(x, _points[:, :1]), (-1,))
-        y = np.reshape(np.append(y, _points[:, 1:2]), (-1,))
-        z = np.reshape(np.append(z, _points[:, -1:]), (-1,))
+        faces = []
+        for i in range(theta):
+            for j in range(phi):
+                p1 = i * (phi + 1) + j
+                p2 = p1 + 1
+                p3 = (i + 1) * (phi + 1) + j
+                p4 = p3 + 1
 
-        verts = np.vstack([x, y, z]).T
-        faces = faces_from_sphere_vertices(verts)
+                if i != 0:
+                    faces.append([p1, p3, p2])
+                if i != theta - 1:
+                    faces.append([p2, p3, p4])
+
+        faces = np.array(faces, dtype=np.uint32)
         faces = fix_winding_order(verts, faces, clockwise=True)
         return verts, faces
 
