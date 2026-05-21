@@ -49,27 +49,7 @@ class Panel2D(UI):
         border_width=0,
         has_border=False,
     ):
-        """Initialize class instance.
-
-        Parameters
-        ----------
-        size : (int, int)
-            Size (width, height) in pixels of the panel.
-        position : (float, float), optional
-            Absolute coordinates (x, y) of the lower-left corner of the panel.
-        color : (float, float, float), optional
-            Must take values in [0, 1].
-        opacity : float, optional
-            Must take values in [0, 1].
-        align : [left, right], optional
-            Alignment of the panel with respect to the overall screen.
-        border_color : (float, float, float), optional
-            RGB color of the border. Must take values in [0, 1].
-        border_width : float, optional
-            Width of the border.
-        has_border : bool, optional
-            If the panel should have borders.
-        """
+        """Initialize class instance."""
         self.border_sides = ["left", "right", "top", "bottom"]
         self.border_coords = {
             "left": (0.0, 0.0),

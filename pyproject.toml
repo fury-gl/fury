@@ -150,4 +150,5 @@ checks = [
 exclude = [  # don't report on objects that match any of these regex
     '\.undocumented_method$',
     '\.__repr__$',
+    '\.__init__$',
 ]

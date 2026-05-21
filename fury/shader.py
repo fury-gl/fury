@@ -27,13 +27,7 @@ class VectorFieldComputeShader(BaseShader):
     type = "compute"
 
     def __init__(self, wobject):
-        """Initialize the vector field compute shader.
-
-        Parameters
-        ----------
-        wobject : VectorField
-            The vector field object to be rendered.
-        """
+        """Initialize the vector field compute shader."""
         super().__init__(wobject)
         self["num_vectors"] = wobject.vectors_per_voxel
         self["data_shape"] = wobject.field_shape
@@ -130,13 +124,7 @@ class VectorFieldThinShader(ThinLineSegmentShader):
     """
 
     def __init__(self, wobject):
-        """Initialize the VectorFieldThinLineShader with the given vector field object.
-
-        Parameters
-        ----------
-        wobject : VectorField
-            The vector field object to be rendered.
-        """
+        """Initialize the VectorFieldThinShader with the given vector field."""
         super().__init__(wobject)
         self["num_vectors"] = wobject.vectors_per_voxel
         self["data_shape"] = wobject.field_shape
@@ -162,13 +150,7 @@ class VectorFieldShader(LineShader):
     """
 
     def __init__(self, wobject):
-        """Initialize the VectorFieldShader with the given vector field object.
-
-        Parameters
-        ----------
-        wobject : VectorField
-            The vector field object to be rendered.
-        """
+        """Initialize the VectorFieldShader with the given vector field object."""
         super().__init__(wobject)
         self["num_vectors"] = wobject.vectors_per_voxel
         self["data_shape"] = wobject.field_shape
@@ -248,13 +230,7 @@ class _StreamlineBakingShader(BaseShader):
     type = "compute"
 
     def __init__(self, wobject):
-        """Initialize the streamline baking compute shader.
-
-        Parameters
-        ----------
-        wobject : Streamlines
-            The streamline object to be rendered.
-        """
+        """Initialize the streamline baking compute shader."""
         super().__init__(wobject)
         n_lines = int(getattr(wobject, "n_lines", 0))
         self["n_lines"] = n_lines
@@ -416,13 +392,7 @@ class VectorFieldArrowShader(VectorFieldShader):
     """
 
     def __init__(self, wobject):
-        """Initialize the VectorFieldArrowShader with the given vector field object.
-
-        Parameters
-        ----------
-        wobject : VectorField
-            The vector field object to be rendered.
-        """
+        """Initialize the VectorFieldArrowShader with the given vector field object."""
         super().__init__(wobject)
         self["line_type"] = "arrow"
 
@@ -439,13 +409,7 @@ class SphGlyphComputeShader(BaseShader):
     type = "compute"
 
     def __init__(self, wobject):
-        """Initialize the SphGlyphComputeShader with the given spherical glyph object.
-
-        Parameters
-        ----------
-        wobject : SphGlyph
-            The spherical glyph object to be rendered.
-        """
+        """Initialize SphGlyphComputeShader with the given spherical glyph object."""
         super().__init__(wobject)
         self["n_coeffs"] = wobject.n_coeff
         self["vertices_per_glyph"] = wobject.vertices_per_glyph
@@ -564,13 +528,7 @@ class LineProjectionComputeShader(BaseShader):
     type = "compute"
 
     def __init__(self, wobject):
-        """Initialize the line projection compute shader.
-
-        Parameters
-        ----------
-        wobject : LineProjection
-            The line projection object to be rendered.
-        """
+        """Initialize the line projection compute shader."""
         super().__init__(wobject)
         self["num_lines"] = wobject.num_lines
         self["workgroup_size"] = 64
@@ -682,13 +640,7 @@ class BillboardShader(MeshShader):
     """
 
     def __init__(self, wobject):
-        """Initialize the BillboardShader with the given mesh object.
-
-        Parameters
-        ----------
-        wobject : Mesh
-            The mesh object containing billboard data.
-        """
+        """Initialize the BillboardShader with the given mesh object."""
         super().__init__(wobject)
         if hasattr(wobject, "billboard_count"):
             self["billboard_count"] = wobject.billboard_count
@@ -726,13 +678,7 @@ class _StreamtubeBakingShader(BaseShader):
     type = "compute"
 
     def __init__(self, wobject):
-        """Initialise the compute shader state for the provided mesh.
-
-        Parameters
-        ----------
-        wobject : Mesh
-            Mesh containing preallocated geometry and line buffers.
-        """
+        """Initialise the compute shader state for the provided mesh."""
 
         super().__init__(wobject)
         if not hasattr(wobject, "_needs_gpu_update"):
@@ -975,13 +921,7 @@ class BillboardSphereShader(MeshShader):
     """
 
     def __init__(self, wobject):
-        """Initialize the shader with billboard impostor metadata.
-
-        Parameters
-        ----------
-        wobject : Mesh
-            World object whose geometry contains billboard impostor data.
-        """
+        """Initialize the shader with billboard impostor metadata."""
 
         super().__init__(wobject)
         self["billboard_count"] = getattr(wobject, "billboard_count", 1)

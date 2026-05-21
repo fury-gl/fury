@@ -67,23 +67,7 @@ class Timeline:
     def __init__(
         self, *, animations=None, playback_panel=False, loop=True, length=None
     ):
-        """Initialize the Timeline.
-
-        Parameters
-        ----------
-        animations : Animation or list[Animation], optional
-            Actor/s to be animated directly by the Timeline (main Animation).
-            Default is None.
-        playback_panel : bool, optional
-            If True, the timeline will have a playback panel set, which can be used
-            to control the playback of the timeline. Default is False.
-        loop : bool, optional
-            Whether to loop playing the timeline or play once. Default is True.
-        length : float or int, optional
-            The fixed length of the timeline. If set to None, the timeline will get
-            its length from the animations that it controls automatically.
-            Default is None.
-        """
+        """Initialize the Timeline."""
         self._scene = None
         self.playback_panel = None
         self._current_timestamp = 0

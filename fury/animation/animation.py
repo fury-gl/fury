@@ -63,21 +63,7 @@ class Animation:
     """
 
     def __init__(self, *, actors=None, length=None, loop=True, motion_path_res=None):
-        """Initialize the Animation.
-
-        Parameters
-        ----------
-        actors : Actor or list of Actor, optional
-            Actor(s) to be animated.
-        length : float or int, optional
-            The fixed length/duration of the animation in seconds. If None,
-            the animation will derive its duration from the keyframes.
-        loop : bool, optional
-            Whether to loop the animation (True) or play once (False).
-        motion_path_res : int, optional
-            The number of line segments used to visualize the animation's motion
-            path (position visualization). Higher values create smoother paths.
-        """
+        """Initialize the Animation."""
         super().__init__()
         self._data = defaultdict(dict)
         self._animations = []
@@ -269,7 +255,7 @@ class Animation:
             Additional parameters for the keyframe. This can include:
             - `in_cp` and `out_cp` for cubic Bézier interpolation (float).
             - `in_tangent` and `out_tangent` for cubic spline interpolation,
-                ndarray, shape (1, M).
+              ndarray, shape (1, M).
         """
         attrib_data = self._get_attribute_data(attrib)
         keyframes = attrib_data.get("keyframes")
@@ -1250,21 +1236,7 @@ class CameraAnimation(Animation):
     """
 
     def __init__(self, *, camera=None, length=None, loop=True, motion_path_res=None):
-        """Initialize CameraAnimation.
-
-        Parameters
-        ----------
-        camera : Camera, optional
-            Camera to be animated. If None, active camera will be animated.
-        length : float or int, optional
-            The fixed length/duration of the animation in seconds. If None,
-            the animation will derive its duration from the keyframes.
-        loop : bool, optional
-            Whether to loop the animation (True) or play once (False).
-        motion_path_res : int, optional
-            The number of line segments used to visualize the animation's motion
-            path (position visualization). Higher values create smoother paths.
-        """
+        """Initialize CameraAnimation."""
         super(CameraAnimation, self).__init__(
             length=length, loop=loop, motion_path_res=motion_path_res
         )

@@ -89,23 +89,7 @@ class UI(object, metaclass=abc.ABCMeta):
     def __init__(
         self, *, position=(0, 0), x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP, z_order=0
     ):
-        """Init scene.
-
-        Parameters
-        ----------
-        position : (float, float)
-            Absolute pixel coordinates `(x, y)` which, in combination with
-            `x_anchor` and `y_anchor`, define the initial placement of this
-            UI component.
-        x_anchor : str, optional
-            Define the horizontal anchor point for `position`. Can be "LEFT",
-            "CENTER", or "RIGHT".
-        y_anchor : str, optional
-            Define the vertical anchor point for `position`. Can be "BOTTOM",
-            "CENTER", or "TOP".
-        z_order : int, optional
-            The initial Z-order of the UI component.
-        """
+        """Init scene."""
         self._position = np.array([0, 0])
         self._children = []
         self._anchors = [x_anchor, y_anchor]
@@ -531,34 +515,21 @@ class Rectangle2D(UI):
 
     Parameters
     ----------
-    size : (int, int), optional
-        Initial `(width, height)` of the rectangle in pixels.
-    position : (float, float), optional
-        Coordinates `(x, y)` of the rectangle. The interpretation of `(x,y)`
-        (e.g., top-left, bottom-left) depends on the current UI version.
-    color : (float, float, float), optional
-        RGB color tuple, with values in the range `[0, 1]`.
-    opacity : float, optional
-        Degree of transparency, with values in the range `[0, 1]`.
-        `0` is fully transparent, `1` is fully opaque.
+    size : (int, int)
+        The size of the rectangle (width, height) in pixels.
+    position : (float, float)
+        Coordinates (x, y) of the lower-left corner of the rectangle.
+    color : (float, float, float)
+        Must take values in [0, 1].
+    opacity : float
+        Must take values in [0, 1].
     """
 
     def __init__(
         self, *, size=(100, 100), position=(0, 0), color=(1, 1, 1), opacity=1.0
     ):
-        """Initialize a rectangle.
+        """Initialize a rectangle."""
 
-        Parameters
-        ----------
-        size : (int, int)
-            The size of the rectangle (width, height) in pixels.
-        position : (float, float)
-            Coordinates (x, y) of the lower-left corner of the rectangle.
-        color : (float, float, float)
-            Must take values in [0, 1].
-        opacity : float
-            Must take values in [0, 1].
-        """
         super(Rectangle2D, self).__init__(position=position)
         self.color = color
         self.opacity = opacity
@@ -713,7 +684,7 @@ class Disk2D(UI):
     ----------
     outer_radius : int
         Outer radius of the disk.
-    inner_radius : int
+    inner_radius : int, optional
         Inner radius of the disk.
     center : (float, float), optional
         Coordinates (x, y) of the center of the disk.
@@ -732,21 +703,7 @@ class Disk2D(UI):
         color=(1, 1, 1),
         opacity=1.0,
     ):
-        """Initialize a 2D Disk.
-
-        Parameters
-        ----------
-        outer_radius : int
-            Outer radius of the disk.
-        inner_radius : int, optional
-            Inner radius of the disk.
-        center : (float, float), optional
-            Coordinates (x, y) of the center of the disk.
-        color : (float, float, float), optional
-            Must take values in [0, 1].
-        opacity : float, optional
-            Must take values in [0, 1].
-        """
+        """Initialize a 2D Disk."""
         self.actor = None
         self.inner_radius = inner_radius
         self.outer_radius = outer_radius
@@ -950,35 +907,7 @@ class TextBlock2D(UI):
         position=(0, 0),
         dynamic_bbox=False,
     ):
-        """Initialize the text block instance.
-
-        Parameters
-        ----------
-        text : str, optional
-            The initial text message.
-        font_size : int, optional
-            Size of the text font.
-        font_family : str, optional
-            The font family name.
-        justification : str, optional
-            Horizontal alignment ("left", "center", "right").
-        vertical_justification : str, optional
-            Vertical alignment ("top", "middle", "bottom").
-        bold : bool, optional
-            If True, makes text bold.
-        italic : bool, optional
-            If True, makes text italicized.
-        size : (int, int), optional
-            The (width, height) in pixels for the text bounding box.
-        color : (float, float, float), optional
-            RGB color for the text (0-1).
-        bg_color : (float, float, float), optional
-            RGB color for the background (0-1). If None, no background is drawn.
-        position : (float, float), optional
-            Absolute coordinates (x, y) for placement.
-        dynamic_bbox : bool, optional
-            If True, resizes the bounding box to fit the content.
-        """
+        """Initialize the text block instance."""
         self.boundingbox = [0, 0, 0, 0]
         self._message = text
         self._dynamic_bbox = dynamic_bbox
@@ -1417,17 +1346,7 @@ class Button2D(UI):
     """
 
     def __init__(self, position=(0, 0), size=(30, 30), is_toggle=False):
-        """Initialize the button instance.
-
-        Parameters
-        ----------
-        position : (float, float), optional
-            Absolute coordinates (x, y) for placement.
-        size : (int, int), optional
-            Width and height in pixels.
-        is_toggle : bool, optional
-            If True, the button behaves as a toggle switch.
-        """
+        """Initialize the button instance."""
         self._dims = size
         self.child = None
         self.is_toggle = is_toggle
