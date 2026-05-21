@@ -136,17 +136,7 @@ class Billboard(Mesh):
     """
 
     def __init__(self, geometry=None, material=None, **kwargs):
-        """Initialize a Billboard actor.
-
-        Parameters
-        ----------
-        geometry : Geometry, optional
-            The geometry object containing vertex data.
-        material : Material, optional
-            The material used to render the billboard.
-        **kwargs : dict
-            Additional keyword arguments forwarded to :class:`Mesh`.
-        """
+        """Initialize a Billboard actor."""
         super().__init__(geometry=geometry, material=material, **kwargs)
         self._billboard_count = 0
         self._billboard_centers = np.empty((0, 3), dtype=np.float32)

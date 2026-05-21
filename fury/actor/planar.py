@@ -951,30 +951,6 @@ class LineProjection(Points):
     ):
         """Initialize the line projection object.
 
-        Parameters
-        ----------
-        lines : sequence
-            A list of lines to be projected.
-        plane : tuple, optional
-            The plane equation (a, b, c, d) for the projection.
-        colors : {tuple, list, ndarray}, optional
-            The color of the cross-section point. It can be a single color or
-            a list of colors for each line.
-        lengths : list, optional
-            A list of lengths for each line.
-        offsets : list, optional
-            A list of offsets for each line.
-        thickness : float, optional
-            Thickness of the cross-section.
-        outline_color : tuple, optional
-            The color of the outline.
-        outline_thickness : float, optional
-            The thickness of the outline.
-        opacity : float, optional
-            The opacity of the lines.
-        lift : float, optional
-            A small lift applied to the projected points along the plane normal
-            to avoid z-fighting.
 
         Raises
         ------

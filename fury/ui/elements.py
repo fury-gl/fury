@@ -63,19 +63,8 @@ class TexturedButton2D(Button2D):
     """
 
     def __init__(self, states, position=(0, 0), size=(30, 30), is_toggle=False):
-        """Initialize the textured button instance.
+        """Initialize the textured button instance."""
 
-        Parameters
-        ----------
-        states : dict
-            A mapping of state names to image file paths.
-        position : (float, float)
-            Absolute coordinates (x, y) for placement.
-        size : (int, int)
-            Width and height in pixels.
-        is_toggle : bool, optional
-                If True, the button behaves as a toggle switch.
-        """
         self.texture_map = self._load_textures(states)
         super().__init__(position=position, size=size, is_toggle=is_toggle)
 
@@ -151,24 +140,8 @@ class TextButton2D(Button2D):
         font_size=25,
         is_toggle=False,
     ):
-        """Initialize the text button instance.
+        """Initialize the text button instance."""
 
-        Parameters
-        ----------
-        label : str
-            The default text to display on the button.
-        states : dict
-            Configuration for visual states. Supports mapping keys to RGB
-            tuples or dictionaries containing 'text' and 'color' keys.
-        position : (float, float)
-            Absolute coordinates (x, y) for placement.
-        size : (int, int)
-            Width and height in pixels for the button background.
-        font_size : int
-            Size of the text font.
-        is_toggle : bool, optional
-            If True, the button behaves as a toggle switch.
-        """
         self.default_label = label
         self.font_size = font_size
 
@@ -275,39 +248,8 @@ class LineSlider2D(Slider2D):
         shape="disk",
         z_order=0,
     ):
-        """Initialize the slider instance.
+        """Initialize the slider instance."""
 
-        Parameters
-        ----------
-        position : (float, float), optional
-            Absolute coordinates (x, y) for placement.
-        initial_value : float, optional
-            The starting value of the slider.
-        min_value : float, optional
-            The minimum value of the slider range.
-        max_value : float, optional
-            The maximum value of the slider range.
-        length : int, optional
-            The length of the slider track in pixels.
-        line_width : int, optional
-            The thickness of the slider track.
-        inner_radius : int, optional
-            The inner radius for disk-shaped handles (for rings).
-        outer_radius : int, optional
-            The outer radius for disk-shaped handles.
-        handle_side : int, optional
-            The side length for square-shaped handles.
-        font_size : int, optional
-            The font size for the value label.
-        orientation : str, optional
-            The slider orientation: "horizontal" or "vertical".
-        text_template : str, optional
-            A formatting string for the label. Supports {value} and {ratio}.
-        shape : str, optional
-            The handle shape: "disk" or "square".
-        z_order : int, optional
-            The stacking priority. The handle is assigned z_order + 1.
-        """
         self.orientation = orientation.lower().strip()
         self._length = length
         self._line_width = line_width

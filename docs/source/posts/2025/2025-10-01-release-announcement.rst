@@ -1,6 +1,5 @@
-
 FURY 2.0.0a3 Released
-======================
+=====================
 
 .. post:: October 01, 2025
    :author: skoudoro

@@ -124,13 +124,7 @@ class EventCounter:
     """
 
     def __init__(self, *, events_names=None):
-        """Initialize the EventCounter.
-
-        Parameters
-        ----------
-        events_names : list of str, optional
-            List of event names to count. If None, defaults to common VTK events.
-        """
+        """Initialize the EventCounter."""
         if events_names is None:
             events_names = [
                 "CharEvent",
@@ -279,19 +273,7 @@ class clear_and_catch_warnings(warnings.catch_warnings):
     class_modules = ()
 
     def __init__(self, *, record=True, modules=()):
-        """Initialize the context manager.
-
-        Parameters
-        ----------
-        record : bool, optional
-            Specifies whether warnings should be captured by a custom
-            implementation of ``warnings.showwarning()`` and be appended to a list
-            returned by the context manager. Otherwise None is returned by the
-            context manager. Default is True.
-        modules : sequence, optional
-            Sequence of modules for which to reset warnings registry on entry and
-            restore on exit.
-        """
+        """Initialize the context manager."""
         self.modules = set(modules).union(self.class_modules)
         self._warnreg_copies = {}
         super(clear_and_catch_warnings, self).__init__(record=record)

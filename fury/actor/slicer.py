@@ -182,33 +182,7 @@ class VectorField(WorldObject, Actor):
         thickness=1.0,
         visibility=None,
     ):
-        """Initialize a vector field.
-
-        Parameters
-        ----------
-        field : ndarray, shape {(X, Y, Z, N, 3), (X, Y, Z, 3)}
-            The vector field data, where X, Y, Z represent the position in 3D,
-            N is the number of vectors per voxel, and 3 represents the vector
-        actor_type : str, optional
-            The type of vector field visualization. Options are "thin_line",
-            "line", and "arrow".
-        cross_section : list or tuple, shape (3,), optional
-            A list or tuple representing the cross section dimensions.
-            If None, the cross section will be ignored and complete field will be shown.
-        colors : tuple, optional
-            Color for the vectors. If None, the color will used from the orientation.
-        scales : {float, ndarray}, shape {(X, Y, Z, N) or (X, Y, Z)}, optional
-            Scale factor for the vectors. If ndarray, it should match the shape of the
-            field.
-        opacity : float, optional
-            Takes values from 0 (fully transparent) to 1 (opaque).
-        thickness : float, optional
-            The thickness of the lines in the vector field visualization.
-            Only applicable for "line" and "arrow" types.
-        visibility : tuple, optional
-            A tuple of three boolean values indicating the visibility of the slices
-            in the x, y, and z dimensions, respectively.
-        """
+        """Initialize a vector field."""
         super().__init__()
         if not (field.ndim == 5 or field.ndim == 4):
             raise ValueError(
@@ -632,7 +606,7 @@ class SphGlyph(Mesh):
         The spherical harmonics coefficients. X, Y, Z denotes the position and N
         represents the number of coefficients.
     sphere : tuple
-            Vertices and faces of the sphere to use for the glyph.
+        Vertices and faces of the sphere to use for the glyph.
     basis_type : str, optional
         The type of basis to use for the spherical harmonics.
         Options are 'standard', 'descoteaux07'.
@@ -652,24 +626,7 @@ class SphGlyph(Mesh):
         color_type="sign",
         shininess=50,
     ):
-        """Visualize a spherical harmonic glyph with different features.
-
-        Parameters
-        ----------
-        coeffs : ndarray, shape (X, Y, Z, N)
-            The spherical harmonics coefficients. X, Y, Z denotes the position and N
-            represents the number of coefficients.
-        sphere : tuple
-            Vertices and faces of the sphere to use for the glyph.
-        basis_type : str, optional
-            The type of basis to use for the spherical harmonics.
-            Options are 'standard', 'descoteaux07'.
-        color_type : str, optional
-            The type of color mapping to use for the spherical glyph.
-            Options are 'sign' and 'orientation'.
-        shininess : float, optional
-            The shininess of the material for the spherical glyph.
-        """
+        """Visualize a spherical harmonic glyph with different features."""
 
         super().__init__()
 

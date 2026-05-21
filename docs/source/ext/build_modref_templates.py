@@ -38,6 +38,9 @@ def generate_api_reference_rst(
         r"\._version.*$",
         r"\.interactor.*$",
         r"\.optpkg.*$",
+        r"\.actor\..+$",
+        r"\.ui\..+$",
+        r"\.animation\..+$",
     ]
     docwriter.object_skip_patterns += [
         r".*FetcherError.*$",
