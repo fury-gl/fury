@@ -43,24 +43,6 @@ class Timeline:
     ----------
     playback_panel : PlaybackPanel or None
         The panel used to control the playback of the timeline.
-    duration : float
-        The duration of the timeline in seconds.
-    current_timestamp : float
-        The current time position in the timeline.
-    speed : float
-        The playback speed multiplier.
-    playing : bool
-        Whether the timeline is currently playing.
-    stopped : bool
-        Whether the timeline is currently stopped.
-    paused : bool
-        Whether the timeline is currently paused.
-    loop : bool
-        Whether the timeline is set to loop or play once.
-    animations : list
-        List of animations controlled by the timeline.
-    has_playback_panel : bool
-        Whether the timeline has a playback panel.
     """
 
     @warn_on_args_to_kwargs()
@@ -530,7 +512,7 @@ class Timeline:
 
         Parameters
         ----------
-        scene : Scene
+        scene : fury.window.Scene
             The scene to add the Timeline and its Animations to.
         """
         self._scene = scene
@@ -543,7 +525,7 @@ class Timeline:
 
         Parameters
         ----------
-        scene : Scene
+        scene : fury.window.Scene
             The scene from which to remove the Timeline and its Animations.
         """
         self._scene = None

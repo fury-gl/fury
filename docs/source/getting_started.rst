@@ -62,7 +62,7 @@ Now, we create a cylinder::
 
     cylinders = actor.cylinder(centers, directions, colors, heights=heights)
 
-Anything that has to be rendered needs to be added to the scene so let's create a :py:class:`.Scene()`::
+Anything that has to be rendered needs to be added to the scene so let's create a :py:class:`~fury.window.Scene`::
 
     scene = window.Scene()
 
@@ -76,7 +76,7 @@ We add a text block to add some information::
     tb = ui.TextBlock2D(position=(450, 550), font_size=23)
     tb.message = "Hello Fury"
 
-The function :py:meth:`.Scene.add()` is used to add the created objects to the scene to be rendered::
+The function :py:meth:`~fury.window.Scene.add` is used to add the created objects to the scene to be rendered::
 
     scene.add(suzanne)
     scene.add(cylinders)

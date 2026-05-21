@@ -64,6 +64,7 @@ class TexturedButton2D(Button2D):
 
     def __init__(self, states, position=(0, 0), size=(30, 30), is_toggle=False):
         """Initialize the textured button instance."""
+
         self.texture_map = self._load_textures(states)
         super().__init__(position=position, size=size, is_toggle=is_toggle)
 
@@ -140,6 +141,7 @@ class TextButton2D(Button2D):
         is_toggle=False,
     ):
         """Initialize the text button instance."""
+
         self.default_label = label
         self.font_size = font_size
 
@@ -247,6 +249,7 @@ class LineSlider2D(Slider2D):
         z_order=0,
     ):
         """Initialize the slider instance."""
+
         self.orientation = orientation.lower().strip()
         self._length = length
         self._line_width = line_width

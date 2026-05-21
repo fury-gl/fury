@@ -157,6 +157,7 @@ def cal_bounding_box_2d(vertices):
     -------
     tuple
         A tuple containing three arrays:
+
         - bounding_box_min : ndarray
             Minimum coordinates of the bounding box [min_x, min_y].
         - bounding_box_max : ndarray

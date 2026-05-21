@@ -79,7 +79,7 @@ class VectorFieldComputeShader(BaseShader):
             The vector field object to be rendered.
         _shared : dict
             Shared information for the shader.
-        _scene : Scene
+        _scene : fury.window.Scene
             The scene containing the object to be rendered.
 
         Returns
@@ -302,7 +302,7 @@ class _StreamlineBakingShader(BaseShader):
             The streamline object to be rendered.
         _shared : dict
             Shared information for the shader.
-        _scene : Scene
+        _scene : fury.window.Scene
             The scene containing the object to be rendered.
 
         Returns
@@ -465,7 +465,7 @@ class SphGlyphComputeShader(BaseShader):
             The spherical glyph object to be rendered.
         _shared : dict
             Shared information for the shader.
-        _scene : Scene
+        _scene : fury.window.Scene
             The scene containing the object to be rendered.
 
         Returns
@@ -579,7 +579,7 @@ class LineProjectionComputeShader(BaseShader):
             The line projection object to be rendered.
         _shared : dict
             Shared information for the shader.
-        _scene : Scene
+        _scene : fury.window.Scene
             The scene containing the object to be rendered.
 
         Returns
@@ -746,7 +746,7 @@ class _StreamtubeBakingShader(BaseShader):
             Mesh whose buffers are bound to the compute shader.
         _shared : dict
             Shared pipeline state (unused).
-        _scene : Scene
+        _scene : fury.window.Scene
             The scene containing the object to be rendered (unused).
 
         Returns

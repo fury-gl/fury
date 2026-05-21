@@ -29,8 +29,6 @@ class UI(object, metaclass=abc.ABCMeta):
         UI component.
     center : (float, float)
         Absolute coordinates (x, y) of the center of this UI component.
-    size : (int, int)
-        Width and height in pixels of this UI component.
     on_left_mouse_button_pressed: function
         Callback function for when the left mouse button is pressed.
     on_left_mouse_button_released: function
@@ -1347,6 +1345,7 @@ class Button2D(UI):
 
     def __init__(self, position=(0, 0), size=(30, 30), is_toggle=False):
         """Initialize the button instance."""
+
         self._dims = size
         self.child = None
         self.is_toggle = is_toggle
