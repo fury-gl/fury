@@ -250,9 +250,7 @@ def test_tab_panel2d_properties_and_content():
 
 def test_tab_ui_initialization_and_selection():
     """Test TabUI initialization, element visibility, and tab selection."""
-    tab_ui = ui.TabUI(
-        position=(50, 50), size=(300, 300), nb_tabs=3, startup_tab_id=1
-    )
+    tab_ui = ui.TabUI(position=(50, 50), size=(300, 300), nb_tabs=3, startup_tab_id=1)
 
     npt.assert_equal(tab_ui.size, (300, 300))
     npt.assert_equal(tab_ui.nb_tabs, 3)
@@ -308,13 +306,9 @@ def test_tab_ui_layout_and_invalid_index():
     npt.assert_equal(tab_ui_top.tabs[0].size, (100, 30))
     npt.assert_equal(tab_ui_top.tabs[0].content_panel.size, (300, 270))
     npt.assert_array_equal(tab_ui_top.tabs[0].get_position(), (50, 50))
-    npt.assert_array_equal(
-        tab_ui_top.tabs[0].content_panel.get_position(), (50, 80)
-    )
+    npt.assert_array_equal(tab_ui_top.tabs[0].content_panel.get_position(), (50, 80))
 
-    npt.assert_array_equal(
-        tab_ui_bottom.tabs[0].content_panel.get_position(), (50, 50)
-    )
+    npt.assert_array_equal(tab_ui_bottom.tabs[0].content_panel.get_position(), (50, 50))
     npt.assert_array_equal(tab_ui_bottom.tabs[0].get_position(), (50, 320))
 
     npt.assert_equal(tab_ui_accordion.tabs[0].size, (300, 30))
