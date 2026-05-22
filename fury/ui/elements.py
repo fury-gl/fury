@@ -322,6 +322,10 @@ class LineSlider2D(Slider2D):
         """Update the position of the track and handle actors."""
         pos = self.get_position(x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP)
 
+        self.track.z_order = self.z_order
+        self.handle.z_order = self.z_order + 1
+        self.text.z_order = self.z_order + 2
+
         self.track.set_position(
             pos + self.size / 2, x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER
         )
