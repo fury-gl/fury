@@ -9,6 +9,7 @@ from fury.io import load_image
 from fury.lib import (
     AmbientLight,
     DirectionalLight,
+    EventType,
     OffscreenCanvas,
     OrbitController,
     PerspectiveCamera,
@@ -19,7 +20,7 @@ from fury.lib import (
     Texture,
     have_imgui_bundle,
 )
-from fury.ui import Rectangle2D
+from fury.ui import Rectangle2D, UIContext
 from fury.window import (
     Scene,
     ShowManager,
@@ -748,3 +749,47 @@ def test_analyze_snapshot(tmpdir):
     # Depending on the image and strel, this could be 1 or 2.
     # For this specific setup, the squares are far apart.
     assert report_strel.objects == 2
+
+
+def test_show_manager_toggle_screen_controllers():
+    """Test toggling the screen controllers."""
+    show_m = ShowManager(window_type="offscreen")
+    show_m._toggle_screen_controllers(disable=True)
+    for screen in show_m.screens:
+        assert screen.controller.enabled is False
+    show_m._toggle_screen_controllers(disable=False)
+    for screen in show_m.screens:
+        assert screen.controller.enabled is True
+
+
+def test_show_manager_register_drag():
+    """Test registering drag events."""
+    show_m = ShowManager(window_type="offscreen")
+
+    event_down = PointerEvent(x=0, y=0, type=EventType.POINTER_DOWN, target="target1")
+
+    original_hot_ui = UIContext.hot_ui
+    UIContext.hot_ui = Rectangle2D(size=(5, 5))
+    try:
+        show_m._register_drag(event_down)
+        assert show_m._is_dragging is True
+        assert show_m._drag_target == "target1"
+        for screen in show_m.screens:
+            assert screen.controller.enabled is False
+    finally:
+        UIContext.hot_ui = original_hot_ui
+
+    drag_called = []
+    show_m._handle_drag = lambda event: drag_called.append(event)
+
+    event_move = PointerEvent(x=10, y=10, type=EventType.POINTER_MOVE, target="target1")
+    show_m._register_drag(event_move)
+    assert len(drag_called) == 1
+    assert drag_called[0] == event_move
+
+    event_up = PointerEvent(x=10, y=10, type=EventType.POINTER_UP, target="target1")
+    show_m._register_drag(event_up)
+    assert show_m._is_dragging is False
+    assert show_m._drag_target is None
+    for screen in show_m.screens:
+        assert screen.controller.enabled is True
