@@ -992,19 +992,17 @@ class TabUI(UI):
             Tab panel receiving selection, collapse, and optional drag
             callbacks.
         """
-        tab_panel.text_block.on_right_mouse_button_clicked = (
-            lambda event: self.collapse_tab_ui()
+        tab_panel.text_block.on_right_mouse_button_clicked = lambda event: (
+            self.collapse_tab_ui()
         )
-        tab_panel.panel.background.on_right_mouse_button_clicked = (
-            lambda event: self.collapse_tab_ui()
+        tab_panel.panel.background.on_right_mouse_button_clicked = lambda event: (
+            self.collapse_tab_ui()
         )
 
         if self.draggable:
             for element in [tab_panel.panel.background, tab_panel.text_block]:
-                element.on_left_mouse_button_pressed = (
-                    lambda event, tab_idx=idx: self.left_button_pressed(
-                        event, tab_idx
-                    )
+                element.on_left_mouse_button_pressed = lambda event, tab_idx=idx: (
+                    self.left_button_pressed(event, tab_idx)
                 )
                 element.on_left_mouse_button_dragged = self.left_button_dragged
                 element.on_left_mouse_button_released = lambda event: None
