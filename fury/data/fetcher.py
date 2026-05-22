@@ -24,8 +24,9 @@ if "FURY_HOME" in os.environ:
 else:
     fury_home = pjoin(os.path.expanduser("~"), ".fury")
 
-# The URL to the University of Washington Researchworks repository:
-UW_RW_URL = "https://digital.lib.washington.edu/researchworks/bitstream/handle/"
+ICOMOON_ICONS_DATA_URL = (
+    "https://github.com/fury-gl/fury-data/raw/refs/heads/master/icons/"
+)
 
 NEW_ICONS_DATA_URL = (
     "https://raw.githubusercontent.com/fury-gl/fury-data/master/icons/new_icons/"
@@ -94,8 +95,6 @@ def update_progressbar(progress, total_length):
     if progress >= 1.0:
         sys.stdout.write("\n")
         _last_line_length = 0
-
-
 
 
 @warn_on_args_to_kwargs()
@@ -488,7 +487,7 @@ fetch_viz_cubemaps = _make_fetcher(
 fetch_viz_icons = _make_fetcher(
     "fetch_viz_icons",
     pjoin(fury_home, "icons"),
-    UW_RW_URL + "1773/38478/",
+    ICOMOON_ICONS_DATA_URL,
     ["icomoon.tar.gz"],
     ["icomoon.tar.gz"],
     sha_list=["BC1FEEA6F58BA3601D6A0B029EB8DFC5F352E21F2A16BA41099A96AA3F5A4735"],
