@@ -439,6 +439,22 @@ def test_textblock2d_background_color_property():
     assert tb.background.actor.visible is False
 
 
+def test_textblock2d_visibility_preserves_disabled_background():
+    """Test visibility does not show background when bg_color is None."""
+    tb = ui.TextBlock2D(size=(100, 50), bg_color=None)
+
+    assert tb.have_bg is False
+    assert tb.background.actor.visible is False
+
+    tb.set_visibility(False)
+    assert tb.actor.visible is False
+    assert tb.background.actor.visible is False
+
+    tb.set_visibility(True)
+    assert tb.actor.visible is True
+    assert tb.background.actor.visible is False
+
+
 def test_textblock2d_dynamic_bbox_property():
     """Test dynamic_bbox property toggling."""
     tb = ui.TextBlock2D(size=(100, 50))
@@ -458,6 +474,7 @@ def test_textblock2d_resize():
 
     tb.resize(new_size)
 
+    npt.assert_equal(tb.actor.max_width, new_size[0])
     npt.assert_equal(tb.background.size, new_size)
 
     npt.assert_equal(tb.boundingbox[2] - tb.boundingbox[0], new_size[0])

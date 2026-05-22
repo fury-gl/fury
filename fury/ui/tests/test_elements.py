@@ -193,6 +193,25 @@ def test_line_slider_2d_layout_logic():
     assert pos_start[1] != pos_end[1]
 
 
+def test_line_slider_2d_preserves_internal_z_order():
+    """Test slider restores child z-order after parent z-order changes."""
+    slider = ui.LineSlider2D(z_order=2)
+
+    npt.assert_equal(slider.track.z_order, 2)
+    npt.assert_equal(slider.handle.z_order, 3)
+    npt.assert_equal(slider.text.z_order, 4)
+
+    slider.z_order = 10
+    npt.assert_equal(slider.track.z_order, 10)
+    npt.assert_equal(slider.handle.z_order, 10)
+    npt.assert_equal(slider.text.z_order, 10)
+
+    slider.set_position((50, 50))
+    npt.assert_equal(slider.track.z_order, 10)
+    npt.assert_equal(slider.handle.z_order, 11)
+    npt.assert_equal(slider.text.z_order, 12)
+
+
 def test_line_slider_2d_text_formatting():
     """Test the template system for programmatic text updates."""
     custom_template = "Value: {value:.2f}"
