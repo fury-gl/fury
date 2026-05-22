@@ -206,6 +206,126 @@ def test_panel2d_visual_snapshot(
     npt.assert_almost_equal(np.mean(arr_hidden[..., :3]), 0, decimal=0)
 
 
+def test_tab_panel2d_properties_and_content():
+    """Test TabPanel2D title proxies and content element management."""
+    tab_panel = ui.TabPanel2D(size=(120, 30), title="Tab 1")
+
+    npt.assert_equal(tab_panel.size, (120, 30))
+    npt.assert_equal(tab_panel.title, "Tab 1")
+    npt.assert_equal(tab_panel.title_bold, False)
+    npt.assert_equal(tab_panel.title_italic, False)
+    npt.assert_equal(tab_panel.title_font_size, 18)
+
+    tab_panel.title = "Updated"
+    tab_panel.title_bold = True
+    tab_panel.title_italic = True
+    tab_panel.title_color = (1, 0, 0)
+    tab_panel.title_font_size = 12
+
+    npt.assert_equal(tab_panel.title, "Updated")
+    npt.assert_equal(tab_panel.title_bold, True)
+    npt.assert_equal(tab_panel.title_italic, True)
+    npt.assert_array_almost_equal(tab_panel.title_color, (1, 0, 0))
+    npt.assert_equal(tab_panel.title_font_size, 12)
+
+    element = ui.Rectangle2D(size=(10, 10))
+    tab_panel.add_element(element, (0.5, 0.5))
+    assert element in tab_panel.content_panel._elements
+    assert not element.actors[0].visible
+
+    tab_panel.update_element(element, (10, 10))
+    tab_panel.remove_element(element)
+    assert element not in tab_panel.content_panel._elements
+
+
+def test_tab_ui_initialization_and_selection():
+    """Test TabUI initialization, element visibility, and tab selection."""
+    tab_ui = ui.TabUI(
+        position=(50, 50), size=(300, 300), nb_tabs=3, startup_tab_id=1
+    )
+
+    npt.assert_equal(tab_ui.size, (300, 300))
+    npt.assert_equal(tab_ui.nb_tabs, 3)
+    npt.assert_equal(tab_ui.active_tab_idx, 1)
+    npt.assert_equal(tab_ui.collapsed, False)
+
+    assert not tab_ui.tabs[0].content_panel.actors[0].visible
+    assert tab_ui.tabs[1].content_panel.actors[0].visible
+    assert not tab_ui.tabs[2].content_panel.actors[0].visible
+
+    element = ui.Rectangle2D(size=(20, 20))
+    tab_ui.add_element(1, element, (0.5, 0.5))
+    assert element.actors[0].visible
+
+    changes = []
+    collapses = []
+    tab_ui.on_change = lambda ui_obj: changes.append(ui_obj.active_tab_idx)
+    tab_ui.on_collapse = lambda ui_obj: collapses.append(ui_obj.collapsed)
+
+    tab_ui.select_tab(2)
+    npt.assert_equal(tab_ui.active_tab_idx, 2)
+    npt.assert_equal(changes, [2])
+    assert not tab_ui.tabs[1].content_panel.actors[0].visible
+    assert tab_ui.tabs[2].content_panel.actors[0].visible
+
+    tab_ui.select_tab(2)
+    npt.assert_equal(tab_ui.active_tab_idx, 2)
+    npt.assert_equal(tab_ui.collapsed, False)
+    npt.assert_equal(changes, [2, 2])
+    npt.assert_equal(collapses, [])
+    assert not tab_ui.tabs[2].content_panel.actors[0].visible
+
+    tab_ui.collapse_tab_ui()
+    npt.assert_equal(tab_ui.active_tab_idx, None)
+    npt.assert_equal(tab_ui.collapsed, True)
+    npt.assert_equal(collapses, [True])
+
+
+def test_tab_ui_layout_and_invalid_index():
+    """Test TabUI layout and invalid index checks."""
+    tab_ui_top = ui.TabUI(position=(50, 50), size=(300, 300), nb_tabs=3)
+    tab_ui_bottom = ui.TabUI(
+        position=(50, 50), size=(300, 300), nb_tabs=3, tab_bar_pos="bottom"
+    )
+    tab_ui_accordion = ui.TabUI(
+        position=(50, 50),
+        size=(300, 300),
+        nb_tabs=3,
+        startup_tab_id=1,
+        tab_bar_pos="accordion",
+    )
+
+    npt.assert_equal(tab_ui_top.tabs[0].size, (100, 30))
+    npt.assert_equal(tab_ui_top.tabs[0].content_panel.size, (300, 270))
+    npt.assert_array_equal(tab_ui_top.tabs[0].get_position(), (50, 50))
+    npt.assert_array_equal(
+        tab_ui_top.tabs[0].content_panel.get_position(), (50, 80)
+    )
+
+    npt.assert_array_equal(
+        tab_ui_bottom.tabs[0].content_panel.get_position(), (50, 50)
+    )
+    npt.assert_array_equal(tab_ui_bottom.tabs[0].get_position(), (50, 320))
+
+    npt.assert_equal(tab_ui_accordion.tabs[0].size, (300, 30))
+    npt.assert_equal(tab_ui_accordion.tabs[0].content_panel.size, (300, 210))
+    npt.assert_array_equal(tab_ui_accordion.tabs[0].get_position(), (50, 50))
+    npt.assert_array_equal(tab_ui_accordion.tabs[1].get_position(), (50, 80))
+    npt.assert_array_equal(
+        tab_ui_accordion.tabs[1].content_panel.get_position(), (50, 110)
+    )
+    npt.assert_array_equal(tab_ui_accordion.tabs[2].get_position(), (50, 320))
+
+    with npt.assert_raises(IndexError):
+        tab_ui_top.add_element(3, ui.Rectangle2D(size=(10, 10)), (0.5, 0.5))
+
+    with npt.assert_raises(IndexError):
+        tab_ui_top.remove_element(3, ui.Rectangle2D(size=(10, 10)))
+
+    with npt.assert_raises(IndexError):
+        tab_ui_top.update_element(3, ui.Rectangle2D(size=(10, 10)), (0.5, 0.5))
+
+
 # def setup_module():
 #     fetch_viz_icons()
 
