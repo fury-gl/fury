@@ -1033,7 +1033,7 @@ class TextBox2D(UI):
         """
         k = key.lower() if isinstance(key, str) else None
 
-        if k == "return":
+        if k in ("enter", "return"):
             self.render_text(show_caret=False)
             self._has_focus = False
             UIContext.active_ui = None
@@ -1045,9 +1045,9 @@ class TextBox2D(UI):
 
         if k == "backspace":
             self.remove_character()
-        elif k == "left":
+        elif k in ("arrowleft", "left"):
             self.move_left()
-        elif k == "right":
+        elif k in ("arrowright", "right"):
             self.move_right()
 
         self.render_text()
