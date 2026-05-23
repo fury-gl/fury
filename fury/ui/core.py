@@ -956,42 +956,38 @@ class TextBlock2D(UI):
         self.background = Rectangle2D()
         self._children.append(self.background)
         self.handle_events(self.actor)
-        self.background.on_left_mouse_button_pressed = self._forward_background_press
-        self.background.on_pointer_enter = self._forward_background_pointer_enter
-        self.background.on_pointer_leave = self._forward_background_pointer_leave
 
-    def _forward_background_press(self, event):
-        """Forward background click to the text block's own press handler.
+        # Forward background callbacks directly to this TextBlock2D so that
+        # clicks and hovers on the background behave as if they hit the text.
+        self.background.on_left_mouse_button_pressed = lambda event: (
+            self.on_left_mouse_button_pressed(event)
+        )
 
-        Parameters
-        ----------
-        event : PointerEvent
-            The PyGfx pointer event object.
-        """
-        self.on_left_mouse_button_pressed(event)
+        def _bg_hover(event):
+            """Redirect hot_ui to this TextBlock2D on background hover.
 
-    def _forward_background_pointer_enter(self, event):
-        """Forward background pointer-enter to set hot_ui to this TextBlock2D.
+            Parameters
+            ----------
+            event : PointerEvent
+                The PyGfx pointer event object.
+            """
+            UIContext.hot_ui = self
+            self.on_hover(event)
 
-        Parameters
-        ----------
-        event : PointerEvent
-            The PyGfx pointer event object.
-        """
-        UIContext.hot_ui = self
-        self.on_pointer_enter(event)
+        def _bg_dishover(event):
+            """Clear hot_ui on background pointer-leave.
 
-    def _forward_background_pointer_leave(self, event):
-        """Forward background pointer-leave to clear hot_ui if still this element.
+            Parameters
+            ----------
+            event : PointerEvent
+                The PyGfx pointer event object.
+            """
+            if UIContext.hot_ui is self:
+                UIContext.hot_ui = None
+            self.on_dishover(event)
 
-        Parameters
-        ----------
-        event : PointerEvent
-            The PyGfx pointer event object.
-        """
-        if UIContext.hot_ui is self:
-            UIContext.hot_ui = None
-        self.on_pointer_leave(event)
+        self.background.on_hover = _bg_hover
+        self.background.on_dishover = _bg_dishover
 
     def resize(self, size):
         """Resize the TextBlock2D bounding box.
