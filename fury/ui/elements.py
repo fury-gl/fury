@@ -940,6 +940,7 @@ class TextBox2D(UI):
 
         self.text.on_left_mouse_button_pressed = self.left_button_press
         self.text.on_key_press = self.key_press
+        self.text.on_wheel = self.wheel_scroll
 
     def _update_height(self):
         """Update the window boundaries of the textbox.
@@ -1049,6 +1050,10 @@ class TextBox2D(UI):
             self.move_left()
         elif k in ("arrowright", "right"):
             self.move_right()
+        elif k in ("arrowup", "up"):
+            self.move_up()
+        elif k in ("arrowdown", "down"):
+            self.move_down()
 
         self.render_text()
         return False
@@ -1081,6 +1086,36 @@ class TextBox2D(UI):
         if self.window_left > 0:
             self.window_left -= 1
 
+    def _adjust_window(self):
+        """Adjust the window boundaries to ensure caret and text visibility."""
+        if self.caret_pos < self.window_left:
+            if self._height > 1:
+                self.window_left = (self.caret_pos // self._width) * self._width
+            else:
+                self.window_left = self.caret_pos
+
+        self._update_height()
+        if self.caret_pos > self.window_right:
+            if self._height > 1:
+                line_of_caret = self.caret_pos // self._width
+                self.window_left = max(
+                    0, (line_of_caret - self._height + 1) * self._width
+                )
+            else:
+                self.window_left = self.caret_pos - self._width + 1
+
+        if self._height > 1:
+            max_window_left = max(
+                0, (len(self._message) // self._width - self._height + 1) * self._width
+            )
+        else:
+            max_window_left = max(0, len(self._message) - self._width + 1)
+
+        if self.window_left > max_window_left:
+            self.window_left = max_window_left
+
+        self._update_height()
+
     def add_character(self, character):
         """Insert a character into the text and moves window and caret.
 
@@ -1099,15 +1134,7 @@ class TextBox2D(UI):
             + self._message[self.caret_pos :]
         )
         self.move_caret_right()
-        self._update_height()
-        if self.caret_pos > self.window_right:
-            if self._height >= self._max_height:
-                if self._height > 1:
-                    self.window_left += self._width
-                    self.window_right += self._width
-                else:
-                    self.window_left += 1
-                    self.window_right += 1
+        self._adjust_window()
 
     def remove_character(self):
         """Remove a character and moves window and caret accordingly."""
@@ -1117,40 +1144,33 @@ class TextBox2D(UI):
             self._message[: self.caret_pos - 1] + self._message[self.caret_pos :]
         )
         self.move_caret_left()
-        self._update_height()
-        if self.caret_pos < self.window_left:
-            if self._height >= self._max_height:
-                if self._height > 1:
-                    self.window_left -= self._width
-                    self.window_right -= self._width
-                    if self.window_left < 0:
-                        self.window_left = 0
-                        self.window_right = self._width * self._height - 1
-                else:
-                    self.window_left -= 1
-                    self.window_right -= 1
+        self._adjust_window()
 
     def move_left(self):
         """Handle left button press."""
         self.move_caret_left()
-        if self.caret_pos < self.window_left:
-            if self._height > 1:
-                self.window_left = max(0, self.window_left - self._width)
-                self.window_right = self.window_left + self._width * self._height - 1
-            else:
-                self.window_left = max(0, self.window_left - 1)
-                self.window_right = self.window_left + self._width * self._height - 1
+        self._adjust_window()
 
     def move_right(self):
         """Handle right button press."""
         self.move_caret_right()
-        if self.caret_pos > self.window_right:
-            if self._height > 1:
-                self.window_left += self._width
-                self.window_right += self._width
-            else:
-                self.window_left += 1
-                self.window_right += 1
+        self._adjust_window()
+
+    def move_up(self):
+        """Handle up button press."""
+        if self._height > 1:
+            self.caret_pos = max(0, self.caret_pos - self._width)
+        else:
+            self.caret_pos = 0
+        self._adjust_window()
+
+    def move_down(self):
+        """Handle down button press."""
+        if self._height > 1:
+            self.caret_pos = min(len(self._message), self.caret_pos + self._width)
+        else:
+            self.caret_pos = len(self._message)
+        self._adjust_window()
 
     def showable_text(self, show_caret):
         """Chop out text to be shown on the screen.
@@ -1220,6 +1240,20 @@ class TextBox2D(UI):
         if is_done:
             self._has_focus = False
             self.off_focus(self)
+
+    def wheel_scroll(self, event):
+        """Handle mouse wheel event for textbox.
+
+        Parameters
+        ----------
+        event : WheelEvent
+            The wheel event.
+        """
+        if event.dy > 0:
+            self.move_down()
+        elif event.dy < 0:
+            self.move_up()
+        self.render_text()
 
 
 # class LineDoubleSlider2D(UI):

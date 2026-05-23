@@ -120,6 +120,7 @@ class UI(object, metaclass=abc.ABCMeta):
         self.on_dishover = lambda event: None
         self.on_focus = lambda event: None
         self.on_blur = lambda event: None
+        self.on_wheel = lambda event: None
 
     @abc.abstractmethod
     def _setup(self):
@@ -346,6 +347,7 @@ class UI(object, metaclass=abc.ABCMeta):
         actor.add_event_handler(self.key_press_callback, EventType.KEY_UP)
         actor.add_event_handler(self.pointer_enter_callback, EventType.POINTER_ENTER)
         actor.add_event_handler(self.pointer_leave_callback, EventType.POINTER_LEAVE)
+        actor.add_event_handler(self.wheel_callback, EventType.WHEEL)
 
     def mouse_button_down_callback(self, event):
         """Handle mouse button press event.
@@ -503,6 +505,19 @@ class UI(object, metaclass=abc.ABCMeta):
             UIContext.active_ui.on_key_press(event)
         else:
             self.on_key_press(event)
+
+    def wheel_callback(self, event):
+        """Handle wheel event.
+
+        Parameters
+        ----------
+        event : WheelEvent
+            The PyGfx wheel event object.
+        """
+        if UIContext.hot_ui is not None:
+            UIContext.hot_ui.on_wheel(event)
+        else:
+            self.on_wheel(event)
 
     def pointer_enter_callback(self, event):
         """Handle pointer enter event.
@@ -988,6 +1003,7 @@ class TextBlock2D(UI):
 
         self.background.on_hover = _bg_hover
         self.background.on_dishover = _bg_dishover
+        self.background.on_wheel = lambda event: self.on_wheel(event)
 
     def resize(self, size):
         """Resize the TextBlock2D bounding box.
