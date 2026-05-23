@@ -41,43 +41,10 @@ class Animation:
     motion_path_res : int, optional
         The number of line segments used to visualize the animation's motion
         path (position visualization). Higher values create smoother paths.
-
-    Attributes
-    ----------
-    actors : list
-        List of actors controlled by the Animation.
-    child_animations : list
-        List of child Animations of this Animation.
-    duration : float
-        The duration of the animation in seconds.
-    current_timestamp : float
-        The current time of the animation in seconds.
-    loop : bool
-        Whether the animation is in loop mode (True) or play once mode (False).
-    parent_animation : Animation
-        The hierarchical parent Animation for the current Animation.
-    static_actors : list
-        List of static actors that are not animated but added to the scene.
-    timeline : Timeline
-        The Timeline instance handling the current animation.
     """
 
     def __init__(self, *, actors=None, length=None, loop=True, motion_path_res=None):
-        """Initialize the Animation.
-
-        Parameters
-        ----------
-        actors : Actor or list of Actor, optional
-            Actor(s) to be animated.
-        length : float or int, optional
-            The fixed length/duration of the animation in seconds. If None,
-            the animation will derive its duration from the keyframes.
-        loop : bool, optional
-            Whether to loop the animation (True) or play once (False).
-        motion_path_res : int, optional
-            The number of line segments used to visualize the animation's motion
-            path (position visualization). Higher values create smoother paths.
-        """
+        """Initialize the Animation."""
         super().__init__()
         self._data = defaultdict(dict)
         self._animations = []
@@ -267,9 +234,10 @@ class Animation:
             Interpolator will be reinitialized if True.
         **kwargs : dict, optional
             Additional parameters for the keyframe. This can include:
+
             - `in_cp` and `out_cp` for cubic Bézier interpolation (float).
             - `in_tangent` and `out_tangent` for cubic spline interpolation,
-                ndarray, shape (1, M).
+              ndarray, shape (1, M).
         """
         attrib_data = self._get_attribute_data(attrib)
         keyframes = attrib_data.get("keyframes")
@@ -413,12 +381,14 @@ class Animation:
             interpolate/evaluate keyframes.
         is_evaluator : bool, optional
             Specifies whether the `interpolator` is time-only based evaluation
-            function that does not depend on keyframes such as:
+            function that does not depend on keyframes such as::
 
-            def get_position(t):
-                return np.array([np.sin(t), np.cos(t) * 5, 5])
+                def get_position(t):
+                    return np.array([np.sin(t), np.cos(t) * 5, 5])
+
         **kwargs : dict, optional
             Additional parameters for the interpolator. This can include:
+
             - spline_degree : int - The degree of the spline in case of setting a
               spline interpolator.
 
@@ -489,6 +459,7 @@ class Animation:
             function that does not depend on keyframes.
         **kwargs : dict, optional
             Additional parameters for the interpolator. This can include:
+
             - degree : int - The degree of the spline interpolation in case of setting
               the `spline_interpolator`.
         """
@@ -618,6 +589,7 @@ class Animation:
             Position value.
         **kwargs : dict, optional
             Additional parameters for the keyframe. This can include:
+
             - `in_cp` and `out_cp` for cubic Bézier interpolation (float).
             - `in_tangent` and `out_tangent` for cubic spline interpolation,
               ndarray, shape (1, M).
@@ -1190,7 +1162,7 @@ class Animation:
 
         Parameters
         ----------
-        scene : Scene
+        scene : fury.window.Scene
             The scene to add the animation, actors, and sub-animations to.
         """
         [scene.add(actor) for actor in self._actors]
@@ -1209,7 +1181,7 @@ class Animation:
 
         Parameters
         ----------
-        scene : Scene
+        scene : fury.window.Scene
             The scene from which to remove the animation, actors, and sub-animations.
         """
         [scene.rm(act) for act in self.actors]
@@ -1250,21 +1222,7 @@ class CameraAnimation(Animation):
     """
 
     def __init__(self, *, camera=None, length=None, loop=True, motion_path_res=None):
-        """Initialize CameraAnimation.
-
-        Parameters
-        ----------
-        camera : Camera, optional
-            Camera to be animated. If None, active camera will be animated.
-        length : float or int, optional
-            The fixed length/duration of the animation in seconds. If None,
-            the animation will derive its duration from the keyframes.
-        loop : bool, optional
-            Whether to loop the animation (True) or play once (False).
-        motion_path_res : int, optional
-            The number of line segments used to visualize the animation's motion
-            path (position visualization). Higher values create smoother paths.
-        """
+        """Initialize CameraAnimation."""
         super(CameraAnimation, self).__init__(
             length=length, loop=loop, motion_path_res=motion_path_res
         )
@@ -1282,6 +1240,7 @@ class CameraAnimation(Animation):
         **kwargs : dict, optional
             Additional keyword arguments for the keyframe. The following
             parameters are supported:
+
             - in_cp: ndarray - The in control point for cubic Bézier interpolation.
             - out_cp: ndarray - The out control point for cubic Bézier interpolation.
             - in_tangent: ndarray - The in tangent at that position for cubic spline
@@ -1303,6 +1262,7 @@ class CameraAnimation(Animation):
         **kwargs : dict, optional
             Additional keyword arguments for the keyframe. The following
             parameters are supported:
+
             - in_cp: ndarray - The in control point for cubic Bézier interpolation.
             - out_cp: ndarray - The out control point for cubic Bézier interpolation.
             - in_tangent: ndarray - The in tangent at that position for cubic spline

@@ -84,17 +84,7 @@ class Scene(GfxGroup):
         This class acts as a scene graph container, managing actors, background,
         and lighting for rendering.
 
-        Parameters
-        ----------
-        background : tuple, optional
-            Uniform color (R, G, B, A) for the scene background.
-            Defaults to (0, 0, 0, 1).
-        skybox : Texture, optional
-            A PyGfx Texture object representing a cubemap for the background.
-            If provided, overrides the `background` color. Defaults to None.
-        lights : list of Light, optional
-            A list of PyGfx Light objects to illuminate the scene. If None,
-            a default AmbientLight is added. Defaults to None."""
+        """
         super().__init__()
 
         self.main_scene = GfxScene()
@@ -658,56 +648,6 @@ class ShowManager:
 
         Handles window creation, screen layout, rendering loop, and event handling.
 
-        Parameters
-        ----------
-        renderer : Renderer, optional
-            A PyGfx Renderer object. If None, a new one is created based on the
-            `window_type`.
-        scene : Scene or list of Scene, optional
-            A single Scene object to be used for all screens, or a list of Scene
-            objects, one for each screen defined by `screen_config`. If None,
-            new Scene objects are created.
-        camera : Camera or list of Camera, optional
-            A single Camera object for all screens, or a list of Camera objects,
-            one for each screen. If None, new PerspectiveCamera objects are
-            created.
-        controller : Controller or list of Controller, optional
-            A single Controller for all screens, or a list of Controller objects,
-            one for each screen. If None, new OrbitController objects are
-            created.
-        title : str, optional
-            The title displayed in the window's title bar. Defaults to "FURY 2.0".
-        size : tuple, optional
-            The initial size (width, height) of the window in pixels.
-        window_type : str, optional
-            The type of window canvas to create. Accepted values are 'default'
-            (or 'glfw'), 'qt', 'jupyter', 'offscreen'.
-        pixel_ratio : float, optional
-            The ratio between render buffer and display buffer pixels. Affects
-            anti-aliasing and performance.
-        camera_light : bool or list of bool, optional
-            Whether to attach a DirectionalLight to the camera(s). Can be a
-            single value for all screens or a list.
-        screen_config : list, optional
-            Defines the screen layout. Can be a list of integers (vertical/horizontal
-            sections) or a list of explicit bounding box tuples (x, y, w, h).
-            If None, assumes a single screen covering the window. Defaults to None.
-        enable_events : bool, optional
-            Whether to enable mouse and keyboard interactions initially.
-        qt_app : QApplication, optional
-            An existing QtWidgets QApplication instance (required if `window_type`
-            is 'qt' and no global app exists).
-        qt_parent : QWidget, optional
-            An existing QWidget to embed the QtCanvas within (if `window_type`
-            is 'qt').
-        show_fps : bool, optional
-            Whether to display FPS statistics in the renderer.
-        max_fps : int, optional
-            Maximum frames per second for the canvas.
-        imgui : bool, optional
-            Whether to enable ImGui UI rendering support.
-        imgui_draw_function : callable, optional
-            A function that updates the ImGui UI elements each frame.
         """
         self._size = size
         self._title = title
@@ -771,6 +711,17 @@ class ShowManager:
         )
         self.renderer.dispatch_event(drag_event)
 
+    def _toggle_screen_controllers(self, disable):
+        """Toggle the enabled state for controllers across multiple screen viewports.
+
+        Parameters
+        ----------
+        disable : bool
+            If True, deactivates the screen controllers; if False, enables them.
+        """
+        for screen in self.screens:
+            screen.controller.enabled = not disable
+
     def _register_drag(self, event):
         """Register drag events for pointer interactions.
 
@@ -779,13 +730,15 @@ class ShowManager:
         event : PointerEvent
             The PyGfx pointer event object.
         """
-
         if event.type == EventType.POINTER_DOWN:
             self._is_dragging = True
             self._drag_target = event.target
+            if UIContext.hot_ui:
+                self._toggle_screen_controllers(disable=True)
         elif event.type == EventType.POINTER_UP:
             self._is_dragging = False
             self._drag_target = None
+            self._toggle_screen_controllers(disable=False)
         elif event.type == EventType.POINTER_MOVE and self._is_dragging:
             self._handle_drag(event)
 

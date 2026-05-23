@@ -26,7 +26,9 @@ def box(
     directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the box.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
         The size of the box in each dimension. If a single value is provided,
         the same size will be used for all boxes.
@@ -101,7 +103,9 @@ def frustum(
     directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the frustum.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
         The size of the frustum in each dimension. If a single value is provided,
         the same size will be used for all frustums.
@@ -173,7 +177,9 @@ def tetrahedron(
     directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the tetrahedron.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
         The size of the tetrahedron in each dimension. If a single value is provided,
         the same size will be used for all tetrahedrons.
@@ -245,7 +251,9 @@ def icosahedron(
     directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the icosahedron.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
         The size of the icosahedron in each dimension. If a single value is provided,
         the same size will be used for all icosahedrons.
@@ -317,7 +325,9 @@ def rhombicuboctahedron(
     directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the rhombicuboctahedron.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
         The size of the rhombicuboctahedron in each dimension. If a single value is
         provided, the same size will be used for all rhombicuboctahedrons.
@@ -390,7 +400,9 @@ def triangularprism(
     directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the triangular prism.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
         The size of the triangular prism in each dimension. If a single value is
         provided, the same size will be used for all triangular prisms.
@@ -462,7 +474,9 @@ def pentagonalprism(
     directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the pentagonal prism.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
         The size of the pentagonal prism in each dimension. If a single value is
         provided, the same size will be used for all pentagonal prisms.
@@ -534,7 +548,9 @@ def octagonalprism(
     directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the octagonal prism.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
         The size of the octagonal prism in each dimension. If a single value is
         provided, the same size will be used for all octagonal prisms.
@@ -609,7 +625,9 @@ def superquadric(
     roundness : tuple, optional
         Parameters (Phi and Theta) that control the shape of the superquadric.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
         The size of the superquadric in each dimension. If a single value is
         provided, the same size will be used for all superquadrics.

@@ -66,7 +66,7 @@ PyBullet Physics client can be shutdown by the following command:
 Setting Gravity
 ---------------
 
-Global :py:class:`.Scene()` gravity can be set using the following command:
+Global :py:class:`~fury.window.Scene` gravity can be set using the following command:
 
 .. code-block:: python
 

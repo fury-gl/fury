@@ -43,47 +43,13 @@ class Timeline:
     ----------
     playback_panel : PlaybackPanel or None
         The panel used to control the playback of the timeline.
-    duration : float
-        The duration of the timeline in seconds.
-    current_timestamp : float
-        The current time position in the timeline.
-    speed : float
-        The playback speed multiplier.
-    playing : bool
-        Whether the timeline is currently playing.
-    stopped : bool
-        Whether the timeline is currently stopped.
-    paused : bool
-        Whether the timeline is currently paused.
-    loop : bool
-        Whether the timeline is set to loop or play once.
-    animations : list
-        List of animations controlled by the timeline.
-    has_playback_panel : bool
-        Whether the timeline has a playback panel.
     """
 
     @warn_on_args_to_kwargs()
     def __init__(
         self, *, animations=None, playback_panel=False, loop=True, length=None
     ):
-        """Initialize the Timeline.
-
-        Parameters
-        ----------
-        animations : Animation or list[Animation], optional
-            Actor/s to be animated directly by the Timeline (main Animation).
-            Default is None.
-        playback_panel : bool, optional
-            If True, the timeline will have a playback panel set, which can be used
-            to control the playback of the timeline. Default is False.
-        loop : bool, optional
-            Whether to loop playing the timeline or play once. Default is True.
-        length : float or int, optional
-            The fixed length of the timeline. If set to None, the timeline will get
-            its length from the animations that it controls automatically.
-            Default is None.
-        """
+        """Initialize the Timeline."""
         self._scene = None
         self.playback_panel = None
         self._current_timestamp = 0
@@ -546,7 +512,7 @@ class Timeline:
 
         Parameters
         ----------
-        scene : Scene
+        scene : fury.window.Scene
             The scene to add the Timeline and its Animations to.
         """
         self._scene = scene
@@ -559,7 +525,7 @@ class Timeline:
 
         Parameters
         ----------
-        scene : Scene
+        scene : fury.window.Scene
             The scene from which to remove the Timeline and its Animations.
         """
         self._scene = None

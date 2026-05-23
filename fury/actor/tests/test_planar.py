@@ -293,6 +293,80 @@ def test_star():
     validate_actors(centers=centers, colors=colors, actor_type="star")
 
 
+def test_ring_per_instance_geometry():
+    """Test ring actor with per-instance inner_radius and outer_radius."""
+    centers = np.array([[0, 0, 0], [2, 0, 0], [4, 0, 0]])
+    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+
+    # Per-instance inner/outer radius arrays
+    inner = np.array([0.2, 0.3, 0.4])
+    outer = np.array([0.8, 1.0, 1.2])
+    ring_actor = actor.ring(
+        centers=centers, colors=colors, inner_radius=inner, outer_radius=outer
+    )
+    assert ring_actor.prim_count == 3
+
+    # Verify geometry actually varies: compute per-instance vertex extents
+    verts = ring_actor.geometry.positions.view
+    n_verts_per = len(verts) // 3
+    for i in range(3):
+        chunk = verts[i * n_verts_per : (i + 1) * n_verts_per] - centers[i]
+        dists = np.sqrt(chunk[:, 0] ** 2 + chunk[:, 1] ** 2)
+        npt.assert_almost_equal(dists.max(), outer[i], decimal=2)
+
+    # Scalar values (backward compat)
+    ring_actor_scalar = actor.ring(
+        centers=centers, colors=colors, inner_radius=0.5, outer_radius=1.0
+    )
+    assert ring_actor_scalar.prim_count == 3
+
+    # Wrong-size array raises ValueError
+    with pytest.raises(ValueError, match="inner_radius"):
+        actor.ring(
+            centers=centers,
+            colors=colors,
+            inner_radius=np.array([0.2, 0.3]),
+        )
+
+    with pytest.raises(ValueError, match="outer_radius"):
+        actor.ring(
+            centers=centers,
+            colors=colors,
+            outer_radius=np.array([0.8, 1.0]),
+        )
+
+
+def test_disk_per_instance_radii():
+    """Test disk actor with per-instance radii."""
+    centers = np.array([[0, 0, 0], [2, 0, 0], [4, 0, 0]])
+    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+
+    # Per-instance radii
+    radii = np.array([0.3, 0.5, 0.7])
+    disk_actor = actor.disk(centers=centers, colors=colors, radii=radii)
+    assert disk_actor.prim_count == 3
+
+    # Verify geometry actually varies: check max distance from center per instance
+    verts = disk_actor.geometry.positions.view
+    n_verts_per = len(verts) // 3
+    for i in range(3):
+        chunk = verts[i * n_verts_per : (i + 1) * n_verts_per] - centers[i]
+        dists = np.sqrt(chunk[:, 0] ** 2 + chunk[:, 1] ** 2)
+        npt.assert_almost_equal(dists.max(), radii[i], decimal=2)
+
+    # Scalar (backward compat)
+    disk_actor_scalar = actor.disk(centers=centers, colors=colors, radii=0.5)
+    assert disk_actor_scalar.prim_count == 3
+
+    # Wrong-size array raises ValueError
+    with pytest.raises(ValueError, match="radii"):
+        actor.disk(
+            centers=centers,
+            colors=colors,
+            radii=np.array([0.3, 0.5]),
+        )
+
+
 def test_line_projection():
     """Test line_projection function with default parameters."""
     lines = [
@@ -556,3 +630,33 @@ def test_line_projection_material_properties():
     assert projection.material.size == 5.0
     assert projection.material.edge_width == 1.0
     assert np.round(projection.material.opacity, 1) == 0.5
+
+
+def test_disk_accepts_255_colors():
+    """Disk actor accepts [0, 255] colors."""
+    centers = np.array([[0, 0, 0]])
+    a1 = actor.disk(centers=centers, colors=(255, 0, 0))
+    a2 = actor.disk(centers=centers, colors=(1.0, 0.0, 0.0))
+    np.testing.assert_array_almost_equal(
+        a1.geometry.colors.view, a2.geometry.colors.view
+    )
+
+
+def test_point_accepts_255_colors():
+    """Point actor accepts [0, 255] colors."""
+    centers = np.array([[0, 0, 0]])
+    a1 = actor.point(centers=centers, colors=(255, 0, 0))
+    a2 = actor.point(centers=centers, colors=(1.0, 0.0, 0.0))
+    np.testing.assert_array_almost_equal(
+        a1.geometry.colors.view, a2.geometry.colors.view
+    )
+
+
+def test_marker_accepts_hex_colors():
+    """Marker actor accepts hex color strings."""
+    centers = np.array([[0, 0, 0]])
+    a1 = actor.marker(centers=centers, colors="#FF0000")
+    a2 = actor.marker(centers=centers, colors=(1.0, 0.0, 0.0))
+    np.testing.assert_array_almost_equal(
+        a1.geometry.colors.view, a2.geometry.colors.view
+    )

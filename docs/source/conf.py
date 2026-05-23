@@ -337,7 +337,7 @@ sphinx_gallery_conf = {
         "fury": None,
     },
     "filename_pattern": re.escape(os.sep),
-    "plot_gallery": "'True'",
+    "plot_gallery": "True",
 }
 
 # -- Options for Blog -------------------------------------------

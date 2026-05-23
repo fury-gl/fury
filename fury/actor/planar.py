@@ -14,6 +14,7 @@ from fury.actor import (
     create_point,
     create_text,
 )
+from fury.colormap import normalize_colors
 from fury.geometry import (
     buffer_to_geometry,
     line_buffer_separator,
@@ -55,7 +56,9 @@ def square(
     directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the square.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
         The size of the square in each dimension. If a single value is provided,
         the same size will be used for all squares.
@@ -130,7 +133,9 @@ def star(
     directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the star.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
         The size of the star in each dimension. If a single value is
         provided, the same size will be used for all stars.
@@ -202,7 +207,9 @@ def disk(
     centers : ndarray, shape (N, 3)
         Disk positions.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     radii : float or ndarray (N,) or tuple, optional
         The radius of the disks, single value applies to all disks,
         while an array specifies a radius for each disk individually.
@@ -245,8 +252,32 @@ def disk(
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
+    n_centers = len(centers)
+    radii_arr = fp._normalize_geom_param(radii, n_centers, "radii")
 
-    vertices, faces = fp.prim_disk(radius=radii, sectors=sectors)
+    all_uniform = np.all(radii_arr == radii_arr[0])
+
+    if all_uniform:
+        vertices, faces = fp.prim_disk(radius=radii_arr[0], sectors=sectors)
+        return actor_from_primitive(
+            vertices,
+            faces,
+            centers=centers,
+            colors=colors,
+            scales=scales,
+            directions=directions,
+            opacity=opacity,
+            material=material,
+            enable_picking=enable_picking,
+            wireframe=wireframe,
+            wireframe_thickness=wireframe_thickness,
+        )
+
+    _, faces = fp.prim_disk(radius=radii_arr[0], sectors=sectors)
+    all_verts = [
+        fp.prim_disk(radius=radii_arr[i], sectors=sectors)[0] for i in range(n_centers)
+    ]
+    vertices = np.concatenate(all_verts)
     return actor_from_primitive(
         vertices,
         faces,
@@ -259,6 +290,7 @@ def disk(
         enable_picking=enable_picking,
         wireframe=wireframe,
         wireframe_thickness=wireframe_thickness,
+        have_tiled_verts=True,
     )
 
 
@@ -283,7 +315,9 @@ def triangle(
     directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the triangle.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
         The size of the triangle in each dimension. If a single value is provided,
         the same size will be used for all triangles.
@@ -354,7 +388,9 @@ def point(
     size : float, optional
         The size (diameter) of the points in logical pixels.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA values in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     material : str, optional
         The material type for the points.
         Options are 'basic', 'gaussian'.
@@ -385,30 +421,11 @@ def point(
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
-    if colors is None:
-        colors = np.array([1.0, 0.0, 0.0], dtype=float)
-    else:
-        colors = np.asarray(colors, dtype=float)
-    if colors.ndim == 1:
-        if colors.size not in (3, 4):
-            raise ValueError(
-                f"1D colors must have 3 or 4 channels; got size {colors.size}"
-            )
-        colors = np.tile(colors, (len(centers), 1))
-    elif colors.ndim == 2:
-        if colors.shape[1] not in (3, 4):
-            raise ValueError(
-                f"2D colors must have 3 or 4 channels; got shape {colors.shape}"
-            )
-        n_points = len(centers)
-        if colors.shape[0] not in (1, n_points):
-            raise ValueError(
-                f"colors must have 1 row or match number of points "
-                f"({n_points}); got {colors.shape[0]}"
-            )
+    colors = normalize_colors(colors, n_points=len(centers))
+
     geo = buffer_to_geometry(
         positions=centers.astype("float32"),
-        colors=colors.astype("float32"),
+        colors=colors,
     )
 
     mat = _create_points_material(
@@ -444,7 +461,9 @@ def marker(
     size : float, optional
         The size (diameter) of the points in logical pixels.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA values in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     marker : str or MarkerShape, optional
         The shape of the marker.
         Options are "●": "circle", "+": "plus", "x": "cross", "♥": "heart",
@@ -476,9 +495,11 @@ def marker(
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
+    colors = normalize_colors(colors, n_points=len(centers))
+
     geo = buffer_to_geometry(
         positions=centers.astype("float32"),
-        colors=colors.astype("float32"),
+        colors=colors,
     )
 
     mat = _create_points_material(
@@ -777,10 +798,12 @@ def ring(
     ----------
     centers : ndarray, shape (N, 3)
         Ring positions.
-    inner_radius : float, optional
-        The inner radius of the ring (radius of the hole).
-    outer_radius : float, optional
-        The outer radius of the ring.
+    inner_radius : float or ndarray, shape (N,), optional
+        The inner radius of the ring (radius of the hole). A single value
+        applies to all rings, while an array specifies a value per ring.
+    outer_radius : float or ndarray, shape (N,), optional
+        The outer radius of the ring. A single value applies to all rings,
+        while an array specifies a value per ring.
     radial_segments : int, optional
         Number of segments along the radial direction.
     circumferential_segments : int, optional
@@ -788,7 +811,9 @@ def ring(
     directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the ring.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
         The size of the ring in each dimension. If a single value is provided,
         the same size will be used for all rings.
@@ -819,12 +844,49 @@ def ring(
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
-    vertices, faces = fp.prim_ring(
-        inner_radius=inner_radius,
-        outer_radius=outer_radius,
+    n_centers = len(centers)
+    inner_arr = fp._normalize_geom_param(inner_radius, n_centers, "inner_radius")
+    outer_arr = fp._normalize_geom_param(outer_radius, n_centers, "outer_radius")
+
+    all_uniform = np.all(inner_arr == inner_arr[0]) and np.all(
+        outer_arr == outer_arr[0]
+    )
+
+    if all_uniform:
+        vertices, faces = fp.prim_ring(
+            inner_radius=inner_arr[0],
+            outer_radius=outer_arr[0],
+            radial_segments=radial_segments,
+            circumferential_segments=circumferential_segments,
+        )
+        return actor_from_primitive(
+            vertices,
+            faces,
+            centers=centers,
+            colors=colors,
+            scales=scales,
+            directions=directions,
+            opacity=opacity,
+            material=material,
+            enable_picking=enable_picking,
+        )
+
+    _, faces = fp.prim_ring(
+        inner_radius=inner_arr[0],
+        outer_radius=outer_arr[0],
         radial_segments=radial_segments,
         circumferential_segments=circumferential_segments,
     )
+    all_verts = [
+        fp.prim_ring(
+            inner_radius=inner_arr[i],
+            outer_radius=outer_arr[i],
+            radial_segments=radial_segments,
+            circumferential_segments=circumferential_segments,
+        )[0]
+        for i in range(n_centers)
+    ]
+    vertices = np.concatenate(all_verts)
     return actor_from_primitive(
         vertices,
         faces,
@@ -835,6 +897,7 @@ def ring(
         opacity=opacity,
         material=material,
         enable_picking=enable_picking,
+        have_tiled_verts=True,
     )
 
 
@@ -888,30 +951,6 @@ class LineProjection(Points):
     ):
         """Initialize the line projection object.
 
-        Parameters
-        ----------
-        lines : sequence
-            A list of lines to be projected.
-        plane : tuple, optional
-            The plane equation (a, b, c, d) for the projection.
-        colors : {tuple, list, ndarray}, optional
-            The color of the cross-section point. It can be a single color or
-            a list of colors for each line.
-        lengths : list, optional
-            A list of lengths for each line.
-        offsets : list, optional
-            A list of offsets for each line.
-        thickness : float, optional
-            Thickness of the cross-section.
-        outline_color : tuple, optional
-            The color of the outline.
-        outline_thickness : float, optional
-            The thickness of the outline.
-        opacity : float, optional
-            The opacity of the lines.
-        lift : float, optional
-            A small lift applied to the projected points along the plane normal
-            to avoid z-fighting.
 
         Raises
         ------

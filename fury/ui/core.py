@@ -29,8 +29,6 @@ class UI(object, metaclass=abc.ABCMeta):
         UI component.
     center : (float, float)
         Absolute coordinates (x, y) of the center of this UI component.
-    size : (int, int)
-        Width and height in pixels of this UI component.
     on_left_mouse_button_pressed: function
         Callback function for when the left mouse button is pressed.
     on_left_mouse_button_released: function
@@ -89,23 +87,7 @@ class UI(object, metaclass=abc.ABCMeta):
     def __init__(
         self, *, position=(0, 0), x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP, z_order=0
     ):
-        """Init scene.
-
-        Parameters
-        ----------
-        position : (float, float)
-            Absolute pixel coordinates `(x, y)` which, in combination with
-            `x_anchor` and `y_anchor`, define the initial placement of this
-            UI component.
-        x_anchor : str, optional
-            Define the horizontal anchor point for `position`. Can be "LEFT",
-            "CENTER", or "RIGHT".
-        y_anchor : str, optional
-            Define the vertical anchor point for `position`. Can be "BOTTOM",
-            "CENTER", or "TOP".
-        z_order : int, optional
-            The initial Z-order of the UI component.
-        """
+        """Init scene."""
         self._position = np.array([0, 0])
         self._children = []
         self._anchors = [x_anchor, y_anchor]
@@ -134,8 +116,10 @@ class UI(object, metaclass=abc.ABCMeta):
         self.on_middle_mouse_double_clicked = lambda event: None
         self.on_middle_mouse_button_dragged = lambda event: None
         self.on_key_press = lambda event: None
-        self.on_pointer_enter = lambda event: None
-        self.on_pointer_leave = lambda event: None
+        self.on_hover = lambda event: None
+        self.on_dishover = lambda event: None
+        self.on_focus = lambda event: None
+        self.on_blur = lambda event: None
 
     @abc.abstractmethod
     def _setup(self):
@@ -301,6 +285,8 @@ class UI(object, metaclass=abc.ABCMeta):
             raise ValueError("Z-order must be an integer.")
 
         self._z_order = z_order
+        for child in self._children:
+            child.z_order = z_order
         UIContext.z_order_bounds = z_order
 
     @abc.abstractmethod
@@ -342,6 +328,9 @@ class UI(object, metaclass=abc.ABCMeta):
         """
         for actor in self.actors:
             actor.visible = visibility
+
+        for child in self._children:
+            child.set_visibility(visibility)
 
     def handle_events(self, actor):
         """Attach event handlers to the UI object.
@@ -403,8 +392,9 @@ class UI(object, metaclass=abc.ABCMeta):
                 UIContext.active_ui is not None
                 and UIContext.active_ui is not UIContext.hot_ui
             ):
-                UIContext.active_ui = None
+                UIContext.active_ui.on_blur(event)
             UIContext.active_ui = UIContext.hot_ui
+            UIContext.active_ui.on_focus(event)
 
         self.on_left_mouse_button_pressed(event)
 
@@ -520,10 +510,9 @@ class UI(object, metaclass=abc.ABCMeta):
         Parameters
         ----------
         event : PointerEvent
-            The PyGfx pointer event object.
-        """
+            The PyGfx pointer event object."""
         UIContext.hot_ui = self
-        self.on_pointer_enter(event)
+        self.on_hover(event)
 
     def pointer_leave_callback(self, event):
         """Handle pointer leave event.
@@ -531,11 +520,10 @@ class UI(object, metaclass=abc.ABCMeta):
         Parameters
         ----------
         event : PointerEvent
-            The PyGfx pointer event object.
-        """
+            The PyGfx pointer event object."""
         if UIContext.hot_ui is self:
             UIContext.hot_ui = None
-        self.on_pointer_leave(event)
+        self.on_dishover(event)
 
 
 class Rectangle2D(UI):
@@ -543,34 +531,21 @@ class Rectangle2D(UI):
 
     Parameters
     ----------
-    size : (int, int), optional
-        Initial `(width, height)` of the rectangle in pixels.
-    position : (float, float), optional
-        Coordinates `(x, y)` of the rectangle. The interpretation of `(x,y)`
-        (e.g., top-left, bottom-left) depends on the current UI version.
-    color : (float, float, float), optional
-        RGB color tuple, with values in the range `[0, 1]`.
-    opacity : float, optional
-        Degree of transparency, with values in the range `[0, 1]`.
-        `0` is fully transparent, `1` is fully opaque.
+    size : (int, int)
+        The size of the rectangle (width, height) in pixels.
+    position : (float, float)
+        Coordinates (x, y) of the lower-left corner of the rectangle.
+    color : (float, float, float)
+        Must take values in [0, 1].
+    opacity : float
+        Must take values in [0, 1].
     """
 
     def __init__(
         self, *, size=(100, 100), position=(0, 0), color=(1, 1, 1), opacity=1.0
     ):
-        """Initialize a rectangle.
+        """Initialize a rectangle."""
 
-        Parameters
-        ----------
-        size : (int, int)
-            The size of the rectangle (width, height) in pixels.
-        position : (float, float)
-            Coordinates (x, y) of the lower-left corner of the rectangle.
-        color : (float, float, float)
-            Must take values in [0, 1].
-        opacity : float
-            Must take values in [0, 1].
-        """
         super(Rectangle2D, self).__init__(position=position)
         self.color = color
         self.opacity = opacity
@@ -582,9 +557,7 @@ class Rectangle2D(UI):
         Create the plane actor used internally.
         """
         geo = plane_geometry(width=1, height=1)
-        mat = _create_mesh_material(
-            material="basic", enable_picking=True, flat_shading=True
-        )
+        mat = _create_mesh_material(material="basic", alpha_mode="auto")
         self.actor = create_mesh(geometry=geo, material=mat)
 
         self.handle_events(self.actor)
@@ -664,9 +637,9 @@ class Rectangle2D(UI):
         size : (float, float)
             Rectangle size (width, height) in pixels.
         """
-        w = max(size[0], 1)
-        h = max(size[1], 1)
-        self.actor.geometry = plane_geometry(width=w, height=h)
+        if tuple(size) == (0, 0):
+            size = np.array([1, 1])
+        self.actor.geometry = plane_geometry(width=size[0], height=size[1])
         self._update_actors_position()
 
     def _update_actors_position(self):
@@ -727,7 +700,7 @@ class Disk2D(UI):
     ----------
     outer_radius : int
         Outer radius of the disk.
-    inner_radius : int
+    inner_radius : int, optional
         Inner radius of the disk.
     center : (float, float), optional
         Coordinates (x, y) of the center of the disk.
@@ -746,21 +719,7 @@ class Disk2D(UI):
         color=(1, 1, 1),
         opacity=1.0,
     ):
-        """Initialize a 2D Disk.
-
-        Parameters
-        ----------
-        outer_radius : int
-            Outer radius of the disk.
-        inner_radius : int, optional
-            Inner radius of the disk.
-        center : (float, float), optional
-            Coordinates (x, y) of the center of the disk.
-        color : (float, float, float), optional
-            Must take values in [0, 1].
-        opacity : float, optional
-            Must take values in [0, 1].
-        """
+        """Initialize a 2D Disk."""
         self.actor = None
         self.inner_radius = inner_radius
         self.outer_radius = outer_radius
@@ -781,9 +740,7 @@ class Disk2D(UI):
             inner_radius=self.inner_radius, outer_radius=self.outer_radius
         )
         geo = buffer_to_geometry(positions=positions, indices=indices)
-        mat = _create_mesh_material(
-            material="basic", enable_picking=True, flat_shading=True
-        )
+        mat = _create_mesh_material(material="basic", alpha_mode="auto")
         self.actor = create_mesh(geometry=geo, material=mat)
 
         self.handle_events(self.actor)
@@ -966,35 +923,7 @@ class TextBlock2D(UI):
         position=(0, 0),
         dynamic_bbox=False,
     ):
-        """Initialize the text block instance.
-
-        Parameters
-        ----------
-        text : str, optional
-            The initial text message.
-        font_size : int, optional
-            Size of the text font.
-        font_family : str, optional
-            The font family name.
-        justification : str, optional
-            Horizontal alignment ("left", "center", "right").
-        vertical_justification : str, optional
-            Vertical alignment ("top", "middle", "bottom").
-        bold : bool, optional
-            If True, makes text bold.
-        italic : bool, optional
-            If True, makes text italicized.
-        size : (int, int), optional
-            The (width, height) in pixels for the text bounding box.
-        color : (float, float, float), optional
-            RGB color for the text (0-1).
-        bg_color : (float, float, float), optional
-            RGB color for the background (0-1). If None, no background is drawn.
-        position : (float, float), optional
-            Absolute coordinates (x, y) for placement.
-        dynamic_bbox : bool, optional
-            If True, resizes the bounding box to fit the content.
-        """
+        """Initialize the text block instance."""
         self.boundingbox = [0, 0, 0, 0]
         self._message = text
         self._dynamic_bbox = dynamic_bbox
@@ -1025,6 +954,7 @@ class TextBlock2D(UI):
         """Set up this UI component."""
         self.actor = Text(markdown=self._message, screen_space=True, anchor="top-left")
         self.background = Rectangle2D()
+        self._children.append(self.background)
         self.handle_events(self.actor)
         self.background.on_left_mouse_button_pressed = self._forward_background_press
         self.background.on_pointer_enter = self._forward_background_pointer_enter
@@ -1095,7 +1025,7 @@ class TextBlock2D(UI):
         list
             List containing the text actor and background actors.
         """
-        return [self.actor] + self.background.actors
+        return [self.actor]
 
     def get_formatted_text(self, text):
         """Format the given text with markdown syntax for bold/italic styles.
@@ -1539,20 +1469,17 @@ class Button2D(UI):
         Absolute coordinates (x, y) for placement.
     size : (int, int), optional
         Width and height in pixels.
+    is_toggle : bool, optional
+        If True, the button behaves as a toggle switch.
     """
 
-    def __init__(self, position=(0, 0), size=(30, 30)):
-        """Initialize the button instance.
+    def __init__(self, position=(0, 0), size=(30, 30), is_toggle=False):
+        """Initialize the button instance."""
 
-        Parameters
-        ----------
-        position : (float, float), optional
-            Absolute coordinates (x, y) for placement.
-        size : (int, int), optional
-            Width and height in pixels.
-        """
         self._dims = size
         self.child = None
+        self.is_toggle = is_toggle
+        self.toggled = False
 
         super().__init__(position=position)
 
@@ -1562,11 +1489,10 @@ class Button2D(UI):
 
         self.on_clicked = None
 
-        self.on_pointer_enter = self._handle_enter
-        self.on_pointer_leave = self._handle_leave
+        self.on_hover = self._handle_hover
+        self.on_dishover = self._handle_dishover
         self.on_left_mouse_button_pressed = self._handle_down
         self.on_left_mouse_button_released = self._handle_up
-        self.on_left_mouse_button_clicked = lambda event: self.do_click()
 
         self.resize(size)
         self.update_visual_state()
@@ -1598,8 +1524,31 @@ class Button2D(UI):
             self.is_pressed = False
         self.update_visual_state()
 
-    def _handle_enter(self, event):
-        """Handle the pointer entering the button area.
+    @property
+    def toggled(self):
+        """Check if the button is toggled.
+
+        Returns
+        -------
+        bool
+            True if toggled, False otherwise.
+        """
+        return self._toggled
+
+    @toggled.setter
+    def toggled(self, value):
+        """Set the button's toggled state.
+
+        Parameters
+        ----------
+        value : bool
+            True to toggle, False otherwise.
+        """
+        self._toggled = bool(value)
+        self.update_visual_state()
+
+    def _handle_hover(self, event):
+        """Handle the hover on the button area.
 
         Parameters
         ----------
@@ -1611,8 +1560,8 @@ class Button2D(UI):
         self.is_hovered = True
         self.update_visual_state()
 
-    def _handle_leave(self, event):
-        """Handle the pointer leaving the button area.
+    def _handle_dishover(self, event):
+        """Handle the dishover on the button area.
 
         Parameters
         ----------
@@ -1657,16 +1606,21 @@ class Button2D(UI):
         self.update_visual_state()
 
     def do_click(self):
-        """Trigger the assigned click callback."""
+        """Trigger the assigned click callback and handle toggle state."""
+        if self.is_toggle:
+            self.toggled = not self.toggled
+
         if self.on_clicked:
             self.on_clicked(self)
+
+        self.update_visual_state()
 
     def resolve_state_key(self, available_keys):
         """Determine the current visual state key based on priority.
 
         The priority order is:
         1. 'disabled' (if not enabled)
-        2. 'pressed' (if is_pressed)
+        2. 'pressed' (if is_pressed or toggled is True)
         3. 'hover' (if is_hovered)
         4. 'default'
 
@@ -1680,11 +1634,12 @@ class Button2D(UI):
         str
             The key representing the highest priority active state.
         """
-
         if not self.enabled:
             return "disabled" if "disabled" in available_keys else "default"
 
-        if self.is_pressed and "pressed" in available_keys:
+        is_active = self.is_pressed or (self.is_toggle and self.toggled)
+
+        if is_active and "pressed" in available_keys:
             return "pressed"
 
         if self.is_hovered and "hover" in available_keys:
@@ -1742,7 +1697,290 @@ class Button2D(UI):
             List containing the child actor(s).
         """
         if self.child:
-            if isinstance(self.child, UI):
-                return self.child.actors
-            return [self.child]
+            if not isinstance(self.child, UI):
+                return [self.child]
+            else:
+                self._children.append(self.child)
         return []
+
+
+class Slider2D(UI):
+    """Base class for interactive 2D Sliders.
+
+    Parameters
+    ----------
+    position : (float, float), optional
+        Absolute coordinates (x, y) for placement.
+    initial_value : float, optional
+        The starting value of the slider.
+    min_value : float, optional
+        The minimum value of the slider range.
+    max_value : float, optional
+        The maximum value of the slider range.
+    handle_inner_radius : int, optional
+        The inner radius for disk-shaped handles.
+    handle_outer_radius : int, optional
+        The outer radius for disk-shaped handles.
+    handle_side : int, optional
+        The side length for square-shaped handles.
+    font_size : int, optional
+        The font size for the value label.
+    text_template : str or callable, optional
+        A formatting string or callable for the label.
+    shape : str, optional
+        The handle shape: disk or square.
+    z_order : int, optional
+        The stacking priority.
+    """
+
+    def __init__(
+        self,
+        *,
+        position=(0, 0),
+        initial_value=50,
+        min_value=0,
+        max_value=100,
+        handle_inner_radius=0,
+        handle_outer_radius=10,
+        handle_side=20,
+        font_size=16,
+        text_template="{value:.1f} ({ratio:.0%})",
+        shape="disk",
+        z_order=0,
+    ):
+        """Initialize the 2D slider.
+
+        Parameters
+        ----------
+        position : (float, float), optional
+            Absolute coordinates (x, y) for placement.
+        initial_value : float, optional
+            The starting value of the slider.
+        min_value : float, optional
+            The minimum value of the slider range.
+        max_value : float, optional
+            The maximum value of the slider range.
+        handle_inner_radius : int, optional
+            The inner radius for disk-shaped handles.
+        handle_outer_radius : int, optional
+            The outer radius for disk-shaped handles.
+        handle_side : int, optional
+            The side length for square-shaped handles.
+        font_size : int, optional
+            The font size for the value label.
+        text_template : str or callable, optional
+            A formatting string or callable for the label.
+        shape : str, optional
+            The handle shape: disk or square.
+        z_order : int, optional
+            The stacking priority.
+        """
+        self.default_color = (1, 1, 1)
+        self.active_color = (0, 0, 1)
+        self._value = initial_value
+        range_val = max_value - min_value
+        self._ratio = (initial_value - min_value) / range_val if range_val != 0 else 0
+        self._min_value = min_value
+        self._max_value = max_value
+        self.text_template = text_template
+
+        self._handle_inner_radius = handle_inner_radius
+        self._handle_outer_radius = handle_outer_radius
+        self._handle_side = handle_side
+        self._font_size = font_size
+        self.shape = shape
+
+        self.on_change = lambda ui: None
+        self.on_value_changed = lambda ui: None
+        self.on_moving_slider = lambda ui: None
+
+        self.track = None
+        self.handle = None
+        self.text = None
+
+        super().__init__(position=position, z_order=z_order)
+
+    @property
+    def value(self):
+        """Get the current numeric value of the slider.
+
+        Returns
+        -------
+        float
+            The slider value.
+        """
+        return self._value
+
+    @value.setter
+    def value(self, val):
+        """Set the slider numeric value.
+
+        Parameters
+        ----------
+        val : float
+            New numeric value. Will be clamped to [min_value, max_value].
+        """
+        val = np.clip(val, self.min_value, self.max_value)
+        self._value = val
+        range_val = self.max_value - self.min_value
+        self._ratio = (val - self.min_value) / range_val if range_val != 0 else 0
+        self._update_handle_position()
+        self.on_value_changed(self)
+        self.on_change(self)
+
+    @property
+    def ratio(self):
+        """Get the current normalized ratio (0 to 1).
+
+        Returns
+        -------
+        float
+            The slider ratio.
+        """
+        return self._ratio
+
+    @ratio.setter
+    def ratio(self, r):
+        """Set the slider ratio.
+
+        Parameters
+        ----------
+        r : float
+            New ratio value. Will be clamped to [0, 1].
+        """
+        self._ratio = np.clip(r, 0, 1)
+        self._value = self.min_value + self._ratio * (self.max_value - self.min_value)
+        self._update_handle_position()
+        self.on_change(self)
+
+    @property
+    def min_value(self):
+        """Get the minimum value of the slider.
+
+        Returns
+        -------
+        float
+            The minimum value.
+        """
+        return self._min_value
+
+    @min_value.setter
+    def min_value(self, val):
+        """Set the minimum value of the slider.
+
+        Parameters
+        ----------
+        val : float
+            The minimum value.
+        """
+        self._min_value = val
+        self.value = self._value
+
+    @property
+    def max_value(self):
+        """Get the maximum value of the slider.
+
+        Returns
+        -------
+        float
+            The maximum value.
+        """
+        return self._max_value
+
+    @max_value.setter
+    def max_value(self, val):
+        """Set the maximum value of the slider.
+
+        Parameters
+        ----------
+        val : float
+            The maximum value.
+        """
+        self._max_value = val
+        self.value = self._value
+
+    def track_click_callback(self, event):
+        """Handle mouse click events on the slider track.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        self.handle_move_callback(event)
+
+    @abc.abstractmethod
+    def handle_move_callback(self, event):
+        """Handle mouse drag events to update the slider state.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        pass
+
+    def handle_release_callback(self, event):
+        """Handle the release of the mouse button.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        self.handle.color = self.default_color
+
+    @abc.abstractmethod
+    def _update_handle_position(self):
+        """Update the position of the track and handle actors."""
+        pass
+
+    def _get_actors(self):
+        """Get the actors composing this UI component.
+
+        Returns
+        -------
+        list
+            Empty list, as child UI components are added directly when adding parent.
+        """
+        return []
+
+    def format_text(self):
+        """Return formatted text to display along the slider.
+
+        Returns
+        -------
+        str
+            The formatted text.
+        """
+        if callable(self.text_template):
+            return self.text_template(self)
+
+        context = {"value": self.value, "ratio": self.ratio}
+        if hasattr(self, "angle"):
+            context["angle"] = np.rad2deg(self.angle)
+        return self.text_template.format(**context)
+
+    def _setup(self):
+        """Set up the common slider components."""
+        if self.shape == "disk":
+            self.handle = Disk2D(
+                outer_radius=self._handle_outer_radius,
+                inner_radius=self._handle_inner_radius,
+            )
+        elif self.shape == "square":
+            self.handle = Rectangle2D(size=(self._handle_side, self._handle_side))
+        else:
+            raise ValueError("shape must be 'disk' or 'square'")
+
+        self.handle.z_order = self.z_order + 1
+
+        self.text = TextBlock2D(
+            justification="center",
+            vertical_justification="middle",
+            dynamic_bbox=True,
+            font_size=self._font_size,
+        )
+        self.text.z_order = self.z_order + 2
+
+        self._children.extend([self.handle, self.text])

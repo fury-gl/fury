@@ -50,6 +50,38 @@ def faces_from_sphere_vertices(vertices):
         return faces
 
 
+def _normalize_geom_param(param, n_centers, param_name="parameter"):
+    """Normalize a geometry parameter to an array of length n_centers.
+
+    Accepts a scalar or array-like. A scalar or single-element value is
+    broadcast to all centers. An array of length ``n_centers`` is returned
+    as-is. Any other length raises ``ValueError``.
+
+    Parameters
+    ----------
+    param : float or array-like
+        The geometry parameter value(s).
+    n_centers : int
+        Number of primitive instances (centers).
+    param_name : str, optional
+        Name used in error messages.
+
+    Returns
+    -------
+    ndarray, shape (n_centers,)
+        The parameter broadcast to length ``n_centers``.
+    """
+    arr = np.atleast_1d(np.asarray(param, dtype=np.float64)).ravel()
+    if arr.size == 1:
+        return np.full(n_centers, arr[0])
+    if arr.size == n_centers:
+        return arr
+    raise ValueError(
+        f"{param_name} must be a scalar or an array of length {n_centers} "
+        f"(got length {arr.size})."
+    )
+
+
 @warn_on_args_to_kwargs()
 def repeat_primitive_function(
     func, centers, *, func_args=None, directions=(1, 0, 0), colors=(1, 0, 0), scales=1

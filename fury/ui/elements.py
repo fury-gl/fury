@@ -7,7 +7,7 @@ __all__ = [
     "TextBox2D",
     #     "LineSlider2D",
     #     "LineDoubleSlider2D",
-    #     "RingSlider2D",
+    "RingSlider2D",
     #     "RangeSlider",
     #     "Checkbox",
     #     "Option",
@@ -18,7 +18,7 @@ __all__ = [
     #     "FileMenu2D",
     #     "DrawShape",
     #     "DrawPanel",
-    #     "PlaybackPanel",
+    "PlaybackPanel",
     #     "Card2D",
     #     "SpinBox",
 ]
@@ -29,13 +29,25 @@ from string import printable
 import numpy as np
 
 from fury.actor import create_mesh
+from fury.data import read_viz_icons
 from fury.io import load_image_texture
 from fury.lib import (
     plane_geometry,
 )
 from fury.material import _create_mesh_material
+from fury.ui.containers import Panel2D
 from fury.ui.context import UIContext
-from fury.ui.core import UI, Anchor, Button2D, Disk2D, Rectangle2D, TextBlock2D
+from fury.ui.core import (
+    UI,
+    Anchor,
+    Button2D,
+    Disk2D,
+    Rectangle2D,
+    Slider2D,
+    TextBlock2D,
+)
+
+TWO_PI = 2.0 * np.pi
 
 
 class TexturedButton2D(Button2D):
@@ -49,22 +61,15 @@ class TexturedButton2D(Button2D):
         Absolute coordinates (x, y) for placement.
     size : (int, int)
         Width and height in pixels.
+    is_toggle : bool, optional
+        If True, the button behaves as a toggle switch.
     """
 
-    def __init__(self, states, position=(0, 0), size=(30, 30)):
-        """Initialize the textured button instance.
+    def __init__(self, states, position=(0, 0), size=(30, 30), is_toggle=False):
+        """Initialize the textured button instance."""
 
-        Parameters
-        ----------
-        states : dict
-            A mapping of state names to image file paths.
-        position : (float, float)
-            Absolute coordinates (x, y) for placement.
-        size : (int, int)
-            Width and height in pixels.
-        """
         self.texture_map = self._load_textures(states)
-        super().__init__(position=position, size=size)
+        super().__init__(position=position, size=size, is_toggle=is_toggle)
 
     def _load_textures(self, states):
         """Load image files into PyGfx textures.
@@ -125,27 +130,21 @@ class TextButton2D(Button2D):
         Width and height in pixels for the button background.
     font_size : int
         Size of the text font.
+    is_toggle : bool, optional
+        If True, the button behaves as a toggle switch.
     """
 
     def __init__(
-        self, label, states=None, position=(0, 0), size=(100, 40), font_size=25
+        self,
+        label,
+        states=None,
+        position=(0, 0),
+        size=(100, 40),
+        font_size=25,
+        is_toggle=False,
     ):
-        """Initialize the text button instance.
+        """Initialize the text button instance."""
 
-        Parameters
-        ----------
-        label : str
-            The default text to display on the button.
-        states : dict
-            Configuration for visual states. Supports mapping keys to RGB
-            tuples or dictionaries containing 'text' and 'color' keys.
-        position : (float, float)
-            Absolute coordinates (x, y) for placement.
-        size : (int, int)
-            Width and height in pixels for the button background.
-        font_size : int
-            Size of the text font.
-        """
         self.default_label = label
         self.font_size = font_size
 
@@ -156,7 +155,7 @@ class TextButton2D(Button2D):
             "disabled": (0.2, 0.2, 0.2),
         }
 
-        super().__init__(position=position, size=size)
+        super().__init__(position=position, size=size, is_toggle=is_toggle)
 
     def _setup(self):
         """Set up the internal TextBlock2D component.
@@ -199,7 +198,7 @@ class TextButton2D(Button2D):
             self.child.message = target_text
 
 
-class LineSlider2D(UI):
+class LineSlider2D(Slider2D):
     """A 2D Line Slider component.
 
     Parameters
@@ -252,73 +251,31 @@ class LineSlider2D(UI):
         shape="disk",
         z_order=0,
     ):
-        """Initialize the slider instance.
+        """Initialize the slider instance."""
 
-        Parameters
-        ----------
-        position : (float, float), optional
-            Absolute coordinates (x, y) for placement.
-        initial_value : float, optional
-            The starting value of the slider.
-        min_value : float, optional
-            The minimum value of the slider range.
-        max_value : float, optional
-            The maximum value of the slider range.
-        length : int, optional
-            The length of the slider track in pixels.
-        line_width : int, optional
-            The thickness of the slider track.
-        inner_radius : int, optional
-            The inner radius for disk-shaped handles (for rings).
-        outer_radius : int, optional
-            The outer radius for disk-shaped handles.
-        handle_side : int, optional
-            The side length for square-shaped handles.
-        font_size : int, optional
-            The font size for the value label.
-        orientation : str, optional
-            The slider orientation: "horizontal" or "vertical".
-        text_template : str, optional
-            A formatting string for the label. Supports {value} and {ratio}.
-        shape : str, optional
-            The handle shape: "disk" or "square".
-        z_order : int, optional
-            The stacking priority. The handle is assigned z_order + 1.
-        """
-        self._ratio = 0
-        self._value = 0
-
-        self.shape = shape
         self.orientation = orientation.lower().strip()
-        self.default_color = (1, 1, 1)
-        self.active_color = (0, 0, 1)
-
         self._length = length
         self._line_width = line_width
-        self._inner_radius = inner_radius
-        self._outer_radius = outer_radius
-        self._handle_side = handle_side
-        self._font_size = font_size
-
-        self.min_value = min_value
-        self.max_value = max_value
-        self.text_template = text_template
 
         super(LineSlider2D, self).__init__(
             position=position,
-            x_anchor=Anchor.LEFT,
-            y_anchor=Anchor.TOP,
+            initial_value=initial_value,
+            min_value=min_value,
+            max_value=max_value,
+            handle_inner_radius=inner_radius,
+            handle_outer_radius=outer_radius,
+            handle_side=handle_side,
+            font_size=font_size,
+            text_template=text_template,
+            shape=shape,
             z_order=z_order,
         )
-
-        self.on_change = lambda ui: None
-        self.on_value_changed = lambda ui: None
-        self.on_moving_slider = lambda ui: None
 
         self.value = initial_value
 
     def _setup(self):
         """Set up the internal actors."""
+        super(LineSlider2D, self)._setup()
         track_size = (
             (self._length, self._line_width)
             if self.orientation == "horizontal"
@@ -326,19 +283,9 @@ class LineSlider2D(UI):
         )
         self.track = Rectangle2D(size=track_size)
         self.track.color = (1, 0, 0)
+        self.track.z_order = self.z_order
 
-        if self.shape == "disk":
-            self.handle = Disk2D(
-                outer_radius=self._outer_radius, inner_radius=self._inner_radius
-            )
-        elif self.shape == "square":
-            self.handle = Rectangle2D(size=(self._handle_side, self._handle_side))
         self.handle.color = self.default_color
-        self.handle.z_order = self.z_order + 1
-
-        self.text = TextBlock2D(
-            text=self.text_template, font_size=self._font_size, dynamic_bbox=True
-        )
 
         self.track.on_left_mouse_button_pressed = self.track_click_callback
         self.track.on_left_mouse_button_dragged = self.handle_move_callback
@@ -347,15 +294,18 @@ class LineSlider2D(UI):
         self.handle.on_left_mouse_button_dragged = self.handle_move_callback
         self.handle.on_left_mouse_button_released = self.handle_release_callback
 
+        self._children.extend([self.track, self.handle, self.text])
+
     def _get_actors(self):
         """Get the actors composing this UI component.
 
         Returns
         -------
         list
-            List of actors from the track, handle, and text elements.
+            Empty list as this UI uses other UI elements as children
+            instead of direct actors.
         """
-        return self.track.actors + self.handle.actors + self.text.actors
+        return []
 
     def _get_size(self):
         """Calculate the total bounding box size of the slider.
@@ -385,6 +335,7 @@ class LineSlider2D(UI):
 
     def _update_handle_position(self):
         """Calculate specific coordinates for the handle and text label."""
+
         track_origin = self.track.get_position(
             x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP
         )
@@ -406,70 +357,7 @@ class LineSlider2D(UI):
         )
         self.text.set_position(text_pos, x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
 
-        self.text.message = self.text_template.format(
-            value=self.value, ratio=self.ratio
-        )
-
-    @property
-    def value(self):
-        """Get the current numeric value of the slider.
-
-        Returns
-        -------
-        float
-            The slider value.
-        """
-        return self._value
-
-    @value.setter
-    def value(self, val):
-        """Set the slider numeric value.
-
-        Parameters
-        ----------
-        val : float
-            New numeric value. Will be clamped to [min_value, max_value].
-        """
-        val = np.clip(val, self.min_value, self.max_value)
-        self._value = val
-        range_val = self.max_value - self.min_value
-        self._ratio = (val - self.min_value) / range_val if range_val != 0 else 0
-        self._update_handle_position()
-        self.on_value_changed(self)
-
-    @property
-    def ratio(self):
-        """Get the current normalized ratio (0 to 1).
-
-        Returns
-        -------
-        float
-            The slider ratio.
-        """
-        return self._ratio
-
-    @ratio.setter
-    def ratio(self, r):
-        """Set the slider ratio.
-
-        Parameters
-        ----------
-        r : float
-            New ratio value. Will be clamped to [0, 1].
-        """
-        self._ratio = np.clip(r, 0, 1)
-        self._value = self.min_value + self._ratio * (self.max_value - self.min_value)
-        self._update_handle_position()
-
-    def track_click_callback(self, event):
-        """Handle mouse click events on the slider track.
-
-        Parameters
-        ----------
-        event : PointerEvent
-            The PyGfx pointer event.
-        """
-        self.handle_move_callback(event)
+        self.text.message = self.format_text()
 
     def handle_move_callback(self, event):
         """Handle mouse drag events to update the slider state.
@@ -499,17 +387,392 @@ class LineSlider2D(UI):
         self.ratio = new_ratio
 
         self.on_moving_slider(self)
-        self.on_change(self)
 
-    def handle_release_callback(self, event):
-        """Handle the release of the mouse button.
+
+class PlaybackPanel(UI):
+    """A playback controller designed for FURY v2.
+
+    Parameters
+    ----------
+    loop : bool, optional
+        If True, the playback starts in looping mode.
+    position : (float, float), optional
+        Absolute coordinates (x, y) for placement.
+    width : int, optional
+        The total width of the playback panel in pixels.
+    z_order : int, optional
+        The stacking priority of the panel.
+    """
+
+    def __init__(self, *, loop=False, position=(0, 0), width=900, z_order=0):
+        """Initialize the playback panel instance.
+
+        Parameters
+        ----------
+        loop : bool, optional
+            If True, the playback starts in looping mode.
+        position : (float, float), optional
+            Absolute coordinates (x, y) for placement.
+        width : int, optional
+            The total width of the playback panel in pixels.
+        z_order : int, optional
+            The stacking priority of the panel.
+        """
+        self._drag_offset = None
+
+        self._width = width
+        self._playing = False
+        self._loop = None
+
+        self.on_play_pause_toggle = lambda state: None
+        self.on_play = lambda: None
+        self.on_pause = lambda: None
+        self.on_stop = lambda: None
+        self.on_loop_toggle = lambda is_looping: None
+        self.on_progress_bar_changed = lambda x: None
+        self.on_speed_changed = lambda x: None
+
+        super(PlaybackPanel, self).__init__(position=position, z_order=z_order)
+
+        self.loop() if loop else self.play_once()
+        self.current_time = 0
+        self.speed = 1.0
+
+    def _setup(self):
+        """Set up internal components including buttons, slider, and text labels."""
+        self.panel = Panel2D(
+            size=(220, 45),
+            color=(1, 1, 1),
+            has_border=True,
+            border_color=(0, 0.3, 0),
+            border_width=2,
+        )
+
+        self.time_text = TextBlock2D(
+            text="00:00.00",
+            font_size=16,
+            color=(1, 1, 1),
+            justification="left",
+            vertical_justification="middle",
+            dynamic_bbox=True,
+        )
+        self.speed_text = TextBlock2D(
+            text="1x",
+            font_size=21,
+            color=(0.2, 0.2, 0.2),
+            bold=True,
+            justification="center",
+            vertical_justification="middle",
+            dynamic_bbox=True,
+        )
+
+        icon_play_pause = {
+            "default": read_viz_icons(fname="play3.png"),
+            "pressed": read_viz_icons(fname="pause2.png"),
+        }
+        icon_loop = {
+            "default": read_viz_icons(fname="checkmark.png"),
+            "pressed": read_viz_icons(fname="infinite.png"),
+        }
+
+        self._play_pause_btn = TexturedButton2D(
+            states=icon_play_pause, size=(25, 25), is_toggle=True
+        )
+        self._stop_btn = TexturedButton2D(
+            states={"default": read_viz_icons(fname="stop2.png")}, size=(25, 25)
+        )
+        self._loop_btn = TexturedButton2D(
+            states=icon_loop, size=(25, 25), is_toggle=True
+        )
+        self._speed_up_btn = TexturedButton2D(
+            states={"default": read_viz_icons(fname="plus.png")}, size=(15, 15)
+        )
+        self._slow_down_btn = TexturedButton2D(
+            states={"default": read_viz_icons(fname="minus.png")}, size=(15, 15)
+        )
+
+        self._progress_bar = LineSlider2D(
+            initial_value=0,
+            length=self._width - 330,
+            line_width=9,
+            text_template="",
+            shape="disk",
+            outer_radius=10,
+        )
+        self._progress_bar.track.color = (1, 0, 0)
+
+        self.panel.add_element(self._play_pause_btn, (10, 10))
+        self.panel.add_element(self._stop_btn, (45, 10))
+        self.panel.add_element(self._loop_btn, (80, 10))
+        self.panel.add_element(self._slow_down_btn, (125, 15))
+        self.panel.add_element(self.speed_text, (157, 15), anchor="center")
+        self.panel.add_element(self._speed_up_btn, (195, 15))
+
+        self._play_pause_btn.on_clicked = self._play_pause_callback
+        self._stop_btn.on_clicked = lambda e: self.stop()
+        self._loop_btn.on_clicked = self._loop_callback
+        self._speed_up_btn.on_clicked = self._speed_up_callback
+        self._slow_down_btn.on_clicked = self._slow_down_callback
+        self._progress_bar.on_moving_slider = self._on_progress_change
+
+        self.panel.on_left_mouse_button_pressed = self.left_button_pressed
+        self.panel.on_left_mouse_button_dragged = self.left_button_dragged
+
+        self.panel.background.on_left_mouse_button_pressed = self.left_button_pressed
+        self.panel.background.on_left_mouse_button_dragged = self.left_button_dragged
+
+    def _update_actors_position(self):
+        """Update internal actor positions."""
+        pos = self.get_position(x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP)
+
+        self.panel.set_position(pos + (5, 5))
+
+        pbar_length = max(self._width - 330, 10.0)
+        self._progress_bar._length = pbar_length
+
+        self._progress_bar.set_position(
+            (pos[0] + 240, pos[1] + 27), x_anchor=Anchor.LEFT, y_anchor=Anchor.CENTER
+        )
+
+        self.time_text.set_position(
+            (pos[0] + 250 + pbar_length, pos[1] + 27),
+            x_anchor=Anchor.LEFT,
+            y_anchor=Anchor.CENTER,
+        )
+
+        self._children.extend([self.panel, self._progress_bar, self.time_text])
+
+    def _get_actors(self):
+        """Get the actors composing this UI component.
+
+        Returns
+        -------
+        list
+            Empty list as this UI uses other UI elements as children
+            instead of direct actors.
+        """
+        return []
+
+    def _get_size(self):
+        """Get the total width and height of the playback panel.
+
+        Returns
+        -------
+        numpy.ndarray
+            The (width, height) in pixels.
+        """
+        return np.array([self._width, 55])
+
+    def _play_pause_callback(self, event):
+        """Handle toggle logic between play and pause states.
 
         Parameters
         ----------
         event : PointerEvent
             The PyGfx pointer event.
         """
-        self.handle.color = self.default_color
+        self._playing = not self._playing
+        self.play() if self._playing else self.pause()
+        self.on_play_pause_toggle(self._playing)
+
+    def _loop_callback(self, event):
+        """Handle toggle logic for the looping state.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        self._loop = not self._loop
+        self.loop() if self._loop else self.play_once()
+        self.on_loop_toggle(self._loop)
+
+    def _speed_up_callback(self, event):
+        """Increment the playback speed.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        inc = 10 ** np.floor(np.log10(self.speed))
+        self.speed = round(self.speed + inc, 13)
+        self.on_speed_changed(self._speed)
+
+    def _slow_down_callback(self, event):
+        """Decrement the playback speed.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        safe_speed = max(self.speed - self.speed / 10, 0.01)
+        dec = 10 ** np.floor(np.log10(safe_speed))
+        self.speed = round(self.speed - dec, 13)
+        self.on_speed_changed(self._speed)
+
+    def _on_progress_change(self, slider):
+        """Update time tracking based on slider movement.
+
+        Parameters
+        ----------
+        slider : LineSlider2D
+            The slider component instance.
+        """
+        self.on_progress_bar_changed(slider.value)
+        self.current_time = slider.value
+
+    def play(self):
+        """Set the controller to playing state."""
+        self._playing = True
+        self._play_pause_btn.toggled = True
+        self.on_play()
+
+    def pause(self):
+        """Set the controller to paused state."""
+        self._playing = False
+        self._play_pause_btn.toggled = False
+        self.on_pause()
+
+    def stop(self):
+        """Stop the playback and reset the timer."""
+        self._playing = False
+        self.current_time = 0
+        self._play_pause_btn.toggled = False
+        self.on_stop()
+
+    def loop(self):
+        """Enable looping mode."""
+        self._loop = True
+        self._loop_btn.toggled = True
+
+    def play_once(self):
+        """Disable looping mode."""
+        self._loop = False
+        self._loop_btn.toggled = False
+
+    @property
+    def current_time(self):
+        """Get the current playback time.
+
+        Returns
+        -------
+        float
+            Current time in seconds.
+        """
+        return self._progress_bar.value
+
+    @current_time.setter
+    def current_time(self, t):
+        """Set the current playback time.
+
+        Parameters
+        ----------
+        t : float
+            New time in seconds.
+        """
+        self._progress_bar.value = t
+        self.current_time_str = t
+
+    @property
+    def final_time(self):
+        """Get the total duration of the playback.
+
+        Returns
+        -------
+        float
+            Total duration in seconds.
+        """
+        return self._progress_bar.max_value
+
+    @final_time.setter
+    def final_time(self, t):
+        """Set the total duration of the playback.
+
+        Parameters
+        ----------
+        t : float
+            New total duration.
+        """
+        self._progress_bar.max_value = t
+
+    @property
+    def current_time_str(self):
+        """Get the formatted string representation of current time.
+
+        Returns
+        -------
+        str
+            Formatted time string.
+        """
+        return self.time_text.message
+
+    @current_time_str.setter
+    def current_time_str(self, t):
+        """Update the time label string based on seconds.
+
+        Parameters
+        ----------
+        t : float
+            Time in seconds.
+        """
+        t = np.clip(t, 0, self.final_time)
+        m, s = divmod(t, 60)
+        if self.final_time < 3600:
+            t_str = f"{int(m):02d}:{s:05.2f}"
+        else:
+            h, m = divmod(m, 60)
+            t_str = f"{int(h):02d}:{int(m):02d}:{s:02d}"
+        self.time_text.message = t_str
+
+    @property
+    def speed(self):
+        """Get the current playback speed.
+
+        Returns
+        -------
+        float
+            Playback speed multiplier.
+        """
+        return self._speed
+
+    @speed.setter
+    def speed(self, val):
+        """Set the playback speed multiplier.
+
+        Parameters
+        ----------
+        val : float
+            New speed value.
+        """
+        self._speed = max(val, 0.01)
+        speed_str = f"{self._speed}".strip("0").rstrip(".") + "x"
+        self.speed_text.message = speed_str if speed_str and speed_str != "." else "0"
+
+    def left_button_pressed(self, event):
+        """Handle left mouse button press event for PlaybackPanel.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
+        click_pos = np.array([event.x, event.y])
+        self._drag_offset = click_pos - self.get_position()
+
+    def left_button_dragged(self, event):
+        """Handle left mouse button drag event for PlaybackPanel.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
+        if self._drag_offset is not None:
+            click_position = np.array([event.x, event.y])
+            new_position = click_position - self._drag_offset
+            self.set_position(new_position)
 
 
 class TextBox2D(UI):
@@ -1555,290 +1818,230 @@ class TextBox2D(UI):
 #         i_ren.force_render()
 
 
-# class RingSlider2D(UI):
-#     """A disk slider.
+class RingSlider2D(Slider2D):
+    """A disk slider.
 
-#     A disk moves along the boundary of a ring.
-#     Goes from 0-360 degrees.
+    A disk moves along the boundary of a ring.
+    Goes from 0-360 degrees.
 
-#     Attributes
-#     ----------
-#     mid_track_radius: float
-#         Distance from the center of the slider to the middle of the track.
-#     previous_value: float
-#         Value of Rotation of the actor before the current value.
-#     track : :class:`Disk2D`
-#         The circle on which the slider's handle moves.
-#     handle : :class:`Disk2D`
-#         The moving part of the slider.
-#     text : :class:`TextBlock2D`
-#         The text that shows percentage.
-#     default_color : (float, float, float)
-#         Color of the handle when in unpressed state.
-#     active_color : (float, float, float)
-#         Color of the handle when it is pressed.
+    Parameters
+    ----------
+    center : (float, float), optional
+        Position (x, y) of the slider's center.
+    initial_value : float, optional
+        Initial value of the slider.
+    min_value : float, optional
+        Minimum value of the slider.
+    max_value : float, optional
+        Maximum value of the slider.
+    slider_inner_radius : int, optional
+        Inner radius of the base disk.
+    slider_outer_radius : int, optional
+        Outer radius of the base disk.
+    handle_inner_radius : int, optional
+        Inner radius of the slider's handle.
+    handle_outer_radius : int, optional
+        Outer radius of the slider's handle.
+    handle_side : int, optional
+        The side length of the square handle when shape="square".
+    font_size : int, optional
+        Size of the text to display alongside the slider (pt).
+    text_template : str or callable, optional
+        If str, text template can contain one or multiple of the
+        replacement fields: `{value:}`, `{ratio:}`, `{angle:}`.
+        If callable, this instance of `:class:RingSlider2D` will be
+        passed as argument to the text template function.
+    shape : str, optional
+        The handle shape. Supported values are "disk" and "square".
+    z_order : int, optional
+            Stacking priority of the slider. The handle and text
+            are placed above the track.
 
-#     """
+    Attributes
+    ----------
+    track : :class:`Disk2D`
+        The circle on which the slider's handle moves.
+    handle : :class:`Disk2D`
+        The moving part of the slider.
+    text : :class:`TextBlock2D`
+        The text that shows percentage.
+    default_color : (float, float, float)
+        Color of the handle when in unpressed state.
+    active_color : (float, float, float)
+        Color of the handle when it is pressed.
+    """
 
-#     @warn_on_args_to_kwargs()
-#     def __init__(
-#         self,
-#         *,
-#         center=(0, 0),
-#         initial_value=180,
-#         min_value=0,
-#         max_value=360,
-#         slider_inner_radius=40,
-#         slider_outer_radius=44,
-#         handle_inner_radius=0,
-#         handle_outer_radius=10,
-#         font_size=16,
-#         text_template="{ratio:.0%}",
-#     ):
-#         """Init this UI element.
+    def __init__(
+        self,
+        *,
+        center=(0, 0),
+        initial_value=0,
+        min_value=0,
+        max_value=360,
+        slider_inner_radius=40,
+        slider_outer_radius=44,
+        handle_inner_radius=0,
+        handle_outer_radius=10,
+        handle_side=20,
+        font_size=16,
+        text_template="{ratio:.0%}",
+        shape="disk",
+        z_order=0,
+    ):
+        """Init this UI element.
 
-#         Parameters
-#         ----------
-#         center : (float, float)
-#             Position (x, y) of the slider's center.
-#         initial_value : float
-#             Initial value of the slider.
-#         min_value : float
-#             Minimum value of the slider.
-#         max_value : float
-#             Maximum value of the slider.
-#         slider_inner_radius : int
-#             Inner radius of the base disk.
-#         slider_outer_radius : int
-#             Outer radius of the base disk.
-#         handle_outer_radius : int
-#             Outer radius of the slider's handle.
-#         handle_inner_radius : int
-#             Inner radius of the slider's handle.
-#         font_size : int
-#             Size of the text to display alongside the slider (pt).
-#         text_template : str, callable
-#             If str, text template can contain one or multiple of the
-#             replacement fields: `{value:}`, `{ratio:}`, `{angle:}`.
-#             If callable, this instance of `:class:RingSlider2D` will be
-#             passed as argument to the text template function.
+        Parameters
+        ----------
+        center : (float, float), optional
+            Position (x, y) of the slider's center.
+        initial_value : float, optional
+            Initial value of the slider.
+        min_value : float, optional
+            Minimum value of the slider.
+        max_value : float, optional
+            Maximum value of the slider.
+        slider_inner_radius : int, optional
+            Inner radius of the base disk.
+        slider_outer_radius : int, optional
+            Outer radius of the base disk.
+        handle_inner_radius : int, optional
+            Inner radius of the slider's handle.
+        handle_outer_radius : int, optional
+            Outer radius of the slider's handle.
+        handle_side : int, optional
+            The side length of the square handle when shape="square".
+        font_size : int, optional
+            Size of the text to display alongside the slider (pt).
+        text_template : str or callable, optional
+            If str, text template can contain one or multiple of the
+            replacement fields: `{value:}`, `{ratio:}`, `{angle:}`.
+            If callable, this instance of `:class:RingSlider2D` will be
+            passed as argument to the text template function.
+        shape : str, optional
+            The handle shape. Supported values are "disk" and "square".
+        z_order : int, optional
+            Stacking priority of the slider. The handle and text
+            are placed above the track.
+        """
+        self._track_inner_radius = slider_inner_radius
+        self._track_outer_radius = slider_outer_radius
+        self._angle = 0.0
 
-#         """
-#         self.default_color = (1, 1, 1)
-#         self.active_color = (0, 0, 1)
-#         super(RingSlider2D, self).__init__()
+        super(RingSlider2D, self).__init__(
+            position=center,
+            initial_value=initial_value,
+            min_value=min_value,
+            max_value=max_value,
+            handle_inner_radius=handle_inner_radius,
+            handle_outer_radius=handle_outer_radius,
+            handle_side=handle_side,
+            font_size=font_size,
+            text_template=text_template,
+            shape=shape,
+            z_order=z_order,
+        )
 
-#         self.track.inner_radius = slider_inner_radius
-#         self.track.outer_radius = slider_outer_radius
-#         self.handle.inner_radius = handle_inner_radius
-#         self.handle.outer_radius = handle_outer_radius
-#         self.center = center
+        self.value = initial_value
 
-#         self.min_value = min_value
-#         self.max_value = max_value
-#         self.text.font_size = font_size
-#         self.text_template = text_template
+    def _setup(self):
+        """Setup this UI component.
 
-#         # Offer some standard hooks to the user.
-#         self.on_change = lambda ui: None
-#         self.on_value_changed = lambda ui: None
-#         self.on_moving_slider = lambda ui: None
+        Create the slider's circle (Disk2D), the handle (Disk2D) and
+        the text (TextBlock2D).
+        """
+        super(RingSlider2D, self)._setup()
+        self.track = Disk2D(
+            outer_radius=self._track_outer_radius,
+            inner_radius=self._track_inner_radius,
+        )
+        self.track.color = (1, 0, 0)
+        self.track.z_order = self.z_order
 
-#         self._value = initial_value
-#         self.value = initial_value
-#         self._previous_value = initial_value
-#         self._angle = 0
-#         self._ratio = self.angle / TWO_PI
+        self.handle.color = self.default_color
 
-#     def _setup(self):
-#         """Setup this UI component.
+        self.track.on_left_mouse_button_pressed = self.track_click_callback
+        self.track.on_left_mouse_button_dragged = self.handle_move_callback
+        self.track.on_left_mouse_button_released = self.handle_release_callback
 
-#         Create the slider's circle (Disk2D), the handle (Disk2D) and
-#         the text (TextBlock2D).
+        self.handle.on_left_mouse_button_dragged = self.handle_move_callback
+        self.handle.on_left_mouse_button_released = self.handle_release_callback
 
-#         """
-#         # Slider's track.
-#         self.track = Disk2D(outer_radius=1)
-#         self.track.color = (1, 0, 0)
+        self._children.append(self.track)
 
-#         # Slider's handle.
-#         self.handle = Disk2D(outer_radius=1)
-#         self.handle.color = self.default_color
+    def _get_size(self):
+        """Get the size of this UI component.
 
-#         # Slider Text
-#         self.text = TextBlock2D(
-#                               justification="center", vertical_justification="middle")
+        Returns
+        -------
+        ndarray
+            The size of the component.
+        """
+        diameter = 2 * (self._track_outer_radius + self._handle_outer_radius)
+        return np.array([diameter, diameter])
 
-#         # Add default events listener for this UI component.
-#         self.track.on_left_mouse_button_pressed = self.track_click_callback
-#         self.track.on_left_mouse_button_dragged = self.handle_move_callback
-#         self.track.on_left_mouse_button_released = self.handle_release_callback
-#         self.handle.on_left_mouse_button_dragged = self.handle_move_callback
-#         self.handle.on_left_mouse_button_released = self.handle_release_callback
+    def _update_actors_position(self):
+        """Update the position of the internal actors."""
+        center = self.get_position(x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
+        self.track.set_position(center, x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
+        self._update_handle_position()
 
-#     def _get_actors(self):
-#         """Get the actors composing this UI component."""
-#         return self.track.actors + self.handle.actors + self.text.actors
+    @property
+    def mid_track_radius(self):
+        """Return the distance from the center of the slider to the track middle.
 
-#     def _add_to_scene(self, scene):
-#         """Add all subcomponents or VTK props that compose this UI component.
+        Returns
+        -------
+        float
+            The mid track radius.
+        """
+        return (self.track.inner_radius + self.track.outer_radius) / 2.0
 
-#         Parameters
-#         ----------
-#         scene : scene
+    def _update_handle_position(self):
+        """Place the handle and the text according to the current angle / ratio."""
 
-#         """
-#         self.track.add_to_scene(scene)
-#         self.handle.add_to_scene(scene)
-#         self.text.add_to_scene(scene)
+        center = self.track.get_position(x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
+        angle = self.angle
+        x = self.mid_track_radius * np.sin(angle) + center[0]
+        y = center[1] - self.mid_track_radius * np.cos(angle)
+        self.handle.set_position((x, y), x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
 
-#     def _get_size(self):
-#         return self.track.size + self.handle.size
+        self.text.message = self.format_text()
+        self.text.set_position(center, x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
 
-#     def _set_position(self, coords):
-#         """Set the lower-left corner position of this UI component.
+    @property
+    def angle(self):
+        """Return Angle (in rad) the handle makes with the y-axis.
 
-#         Parameters
-#         ----------
-#         coords: (float, float)
-#             Absolute pixel coordinates (x, y).
+        Returns
+        -------
+        float
+            The angle.
+        """
+        angle = self.ratio * TWO_PI
+        if np.isclose(angle, TWO_PI):
+            angle = 0.0
+        return angle
 
-#         """
-#         self.track.position = coords + self.handle.size / 2.0
-#         self.handle.position += coords - self.position
-#         # Position the text in the center of the slider's track.
-#         self.text.position = coords + self.size / 2.0
+    def handle_move_callback(self, event):
+        """Handle mouse drag events to update the slider state.
 
-#     @property
-#     def mid_track_radius(self):
-#         return (self.track.inner_radius + self.track.outer_radius) / 2.0
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        self.handle.color = self.active_color
+        center = self.get_position(x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
+        x, y = event.x - center[0], center[1] - event.y
+        angle = np.arctan2(x, y) % TWO_PI
+        ratio = angle / TWO_PI
+        if np.isclose(ratio, 1.0):
+            ratio = 0.0
+            angle = 0.0
 
-#     @property
-#     def value(self):
-#         return self._value
-
-#     @value.setter
-#     def value(self, value):
-#         value_range = self.max_value - self.min_value
-#         self.ratio = (value - self.min_value) / value_range if value_range else 0
-#         self.on_value_changed(self)
-
-#     @property
-#     def previous_value(self):
-#         return self._previous_value
-
-#     @property
-#     def ratio(self):
-#         return self._ratio
-
-#     @ratio.setter
-#     def ratio(self, ratio):
-#         self.angle = ratio * TWO_PI
-
-#     @property
-#     def angle(self):
-#         """Return Angle (in rad) the handle makes with x-axis."""
-#         return self._angle
-
-#     @angle.setter
-#     def angle(self, angle):
-#         self._angle = angle % TWO_PI  # Wraparound
-#         self.update()
-
-#     def format_text(self):
-#         """Return formatted text to display along the slider."""
-#         if callable(self.text_template):
-#             return self.text_template(self)
-
-#         return self.text_template.format(
-#             ratio=self.ratio, value=self.value, angle=np.rad2deg(self.angle)
-#         )
-
-#     def update(self):
-#         """Update the slider."""
-#         # Compute the ratio determined by the position of the slider disk.
-#         self._ratio = self.angle / TWO_PI
-
-#         # Compute the selected value considering min_value and max_value.
-#         value_range = self.max_value - self.min_value
-#         self._previous_value = self.value
-#         self._value = self.min_value + self.ratio * value_range
-
-#         # Update text disk actor.
-#         x = self.mid_track_radius * np.cos(self.angle) + self.center[0]
-#         y = self.mid_track_radius * np.sin(self.angle) + self.center[1]
-#         self.handle.center = (x, y)
-
-#         # Update text.
-#         text = self.format_text()
-#         self.text.message = text
-
-#         self.on_change(self)  # Call hook.
-
-#     def move_handle(self, click_position):
-#         """Move the slider's handle.
-
-#         Parameters
-#         ----------
-#         click_position: (float, float)
-#             Position of the mouse click.
-
-#         """
-#         x, y = np.array(click_position) - self.center
-#         angle = np.arctan2(y, x)
-#         if angle < 0:
-#             angle += TWO_PI
-
-#         self.angle = angle
-
-#     def track_click_callback(self, i_ren, _obj, _slider):
-#         """Update disk position and grab the focus.
-
-#         Parameters
-#         ----------
-#         i_ren : :class:`CustomInteractorStyle`
-#         obj : :class:`vtkActor`
-#             The picked actor
-#         _slider : :class:`RingSlider2D`
-
-#         """
-#         click_position = i_ren.event.position
-#         self.move_handle(click_position=click_position)
-#         self.on_moving_slider(self)
-#         i_ren.force_render()
-#         i_ren.event.abort()  # Stop propagating the event.
-
-#     def handle_move_callback(self, i_ren, _obj, _slider):
-#         """Move the slider's handle.
-
-#         Parameters
-#         ----------
-#         i_ren : :class:`CustomInteractorStyle`
-#         obj : :class:`vtkActor`
-#             The picked actor
-#         _slider : :class:`RingSlider2D`
-
-#         """
-#         click_position = i_ren.event.position
-#         self.handle.color = self.active_color
-#         self.move_handle(click_position=click_position)
-#         self.on_moving_slider(self)
-#         i_ren.force_render()
-#         i_ren.event.abort()  # Stop propagating the event.
-
-#     def handle_release_callback(self, i_ren, _obj, _slider):
-#         """Change color when handle is released.
-
-#         Parameters
-#         ----------
-#         i_ren : :class:`CustomInteractorStyle`
-#         vtkactor : :class:`vtkActor`
-#             The picked actor
-#         _slider : :class:`RingSlider2D`
-
-#         """
-#         self.handle.color = self.default_color
-#         i_ren.force_render()
+        self._angle = angle
+        self.ratio = ratio
+        self.on_moving_slider(self)
 
 
 # class RangeSlider(UI):
@@ -4031,367 +4234,6 @@ class TextBox2D(UI):
 #         mouse_position = self.clamp_mouse_position(i_ren.event.position)
 #         self.handle_mouse_drag(mouse_position)
 #         i_ren.force_render()
-
-
-# class PlaybackPanel(UI):
-#     """A playback controller that can do essential functionalities.
-#     such as play, pause, stop, and seek.
-#     """
-
-#     @warn_on_args_to_kwargs()
-#     def __init__(self, *, loop=False, position=(0, 0), width=None):
-#         self._width = width if width is not None else 900
-#         self._auto_width = width is None
-#         self._position = position
-#         super(PlaybackPanel, self).__init__(position=position)
-#         self._playing = False
-#         self._loop = None
-#         self.loop() if loop else self.play_once()
-#         self._speed = 1
-#         # callback functions
-#         self.on_play_pause_toggle = lambda state: None
-#         self.on_play = lambda: None
-#         self.on_pause = lambda: None
-#         self.on_stop = lambda: None
-#         self.on_loop_toggle = lambda is_looping: None
-#         self.on_progress_bar_changed = lambda x: None
-#         self.on_speed_up = lambda x: None
-#         self.on_slow_down = lambda x: None
-#         self.on_speed_changed = lambda x: None
-#         self._set_position(position)
-
-#     def _setup(self):
-#         """Setup this Panel component."""
-#         self.time_text = TextBlock2D()
-#         self.speed_text = TextBlock2D(
-#             text="1",
-#             font_size=21,
-#             color=(0.2, 0.2, 0.2),
-#             bold=True,
-#             justification="center",
-#             vertical_justification="middle",
-#         )
-
-#         self.panel = Panel2D(
-#             size=(190, 30),
-#             color=(1, 1, 1),
-#             align="right",
-#             has_border=True,
-#             border_color=(0, 0.3, 0),
-#             border_width=2,
-#         )
-
-#         play_pause_icons = [
-#             ("play", read_viz_icons(fname="play3.png")),
-#             ("pause", read_viz_icons(fname="pause2.png")),
-#         ]
-
-#         loop_icons = [
-#             ("once", read_viz_icons(fname="checkmark.png")),
-#             ("loop", read_viz_icons(fname="infinite.png")),
-#         ]
-
-#         self._play_pause_btn = Button2D(icon_fnames=play_pause_icons)
-
-#         self._loop_btn = Button2D(icon_fnames=loop_icons)
-
-#         self._stop_btn = Button2D(
-#             icon_fnames=[("stop", read_viz_icons(fname="stop2.png"))]
-#         )
-
-#         self._speed_up_btn = Button2D(
-#             icon_fnames=[("plus", read_viz_icons(fname="plus.png"))], size=(15, 15)
-#         )
-
-#         self._slow_down_btn = Button2D(
-#             icon_fnames=[("minus", read_viz_icons(fname="minus.png"))], size=(15, 15)
-#         )
-
-#         self._progress_bar = LineSlider2D(
-#             initial_value=0,
-#             orientation="horizontal",
-#             min_value=0,
-#             max_value=100,
-#             text_alignment="top",
-#             length=590,
-#             text_template="",
-#             line_width=9,
-#         )
-
-#         start = 0.04
-#         w = 0.2
-#         self.panel.add_element(self._play_pause_btn, (start, 0.04))
-#         self.panel.add_element(self._stop_btn, (start + w, 0.04))
-#         self.panel.add_element(self._loop_btn, (start + 2 * w, 0.04))
-#         self.panel.add_element(self._slow_down_btn, (start + 0.63, 0.3))
-#         self.panel.add_element(self.speed_text, (start + 0.78, 0.45))
-#         self.panel.add_element(self._speed_up_btn, (start + 0.86, 0.3))
-
-#         def play_pause_toggle(i_ren, _obj, _button):
-#             self._playing = not self._playing
-#             if self._playing:
-#                 self.play()
-#             else:
-#                 self.pause()
-#             self.on_play_pause_toggle(self._playing)
-#             i_ren.force_render()
-
-#         def stop(i_ren, _obj, _button):
-#             self.stop()
-#             i_ren.force_render()
-
-#         def speed_up(i_ren, _obj, _button):
-#             inc = 10 ** np.floor(np.log10(self.speed))
-#             self.speed = round(self.speed + inc, 13)
-#             self.on_speed_up(self._speed)
-#             self.on_speed_changed(self._speed)
-#             i_ren.force_render()
-
-#         def slow_down(i_ren, _obj, _button):
-#             dec = 10 ** np.floor(np.log10(self.speed - self.speed / 10))
-#             self.speed = round(self.speed - dec, 13)
-#             self.on_slow_down(self._speed)
-#             self.on_speed_changed(self._speed)
-#             i_ren.force_render()
-
-#         def loop_toggle(i_ren, _obj, _button):
-#             self._loop = not self._loop
-#             if self._loop:
-#                 self.loop()
-#             else:
-#                 self.play_once()
-#             self.on_loop_toggle(self._loop)
-#             i_ren.force_render()
-
-#         # using the adapters created above
-#         self._play_pause_btn.on_left_mouse_button_pressed = play_pause_toggle
-#         self._stop_btn.on_left_mouse_button_pressed = stop
-#         self._loop_btn.on_left_mouse_button_pressed = loop_toggle
-#         self._speed_up_btn.on_left_mouse_button_pressed = speed_up
-#         self._slow_down_btn.on_left_mouse_button_pressed = slow_down
-
-#         def on_progress_change(slider):
-#             t = slider.value
-#             self.on_progress_bar_changed(t)
-#             self.current_time = t
-
-#         self._progress_bar.on_moving_slider = on_progress_change
-#         self.current_time = 0
-
-#     def play(self):
-#         """Play the playback"""
-#         self._playing = True
-#         self._play_pause_btn.set_icon_by_name("pause")
-#         self.on_play()
-
-#     def stop(self):
-#         """Stop the playback"""
-#         self._playing = False
-#         self._play_pause_btn.set_icon_by_name("play")
-#         self.on_stop()
-
-#     def pause(self):
-#         """Pause the playback"""
-#         self._playing = False
-#         self._play_pause_btn.set_icon_by_name("play")
-#         self.on_pause()
-
-#     def loop(self):
-#         """Set repeating mode to loop."""
-#         self._loop = True
-#         self._loop_btn.set_icon_by_name("loop")
-
-#     def play_once(self):
-#         """Set repeating mode to repeat once."""
-#         self._loop = False
-#         self._loop_btn.set_icon_by_name("once")
-
-#     @property
-#     def final_time(self):
-#         """Set final progress slider time value.
-
-#         Returns
-#         -------
-#         float
-#             Final time for the progress slider.
-
-#         """
-#         return self._progress_bar.max_value
-
-#     @final_time.setter
-#     def final_time(self, t):
-#         """Set final progress slider time value.
-
-#         Parameters
-#         ----------
-#         t: float
-#             Final time for the progress slider.
-
-#         """
-#         self._progress_bar.max_value = t
-
-#     @property
-#     def current_time(self):
-#         """Get current time of the progress slider.
-
-#         Returns
-#         -------
-#         float
-#             Progress slider current value.
-
-#         """
-#         return self._progress_bar.value
-
-#     @current_time.setter
-#     def current_time(self, t):
-#         """Set progress slider value.
-
-#         Parameters
-#         ----------
-#         t: float
-#             Current time to be set.
-
-#         """
-#         self._progress_bar.value = t
-#         self.current_time_str = t
-
-#     @property
-#     def current_time_str(self):
-#         """Returns current time as a string.
-
-#         Returns
-#         -------
-#         str
-#             Current time formatted as a string in the form:`HH:MM:SS`.
-
-#         """
-#         return self.time_text.message
-
-#     @current_time_str.setter
-#     def current_time_str(self, t):
-#         """Set time counter.
-
-#         Parameters
-#         ----------
-#         t: float
-#             Time to be set in the time_text counter.
-
-#         Notes
-#         -----
-#         This should only be used when the `current_value` is not being set
-#         since setting`current_value` automatically sets this property as well.
-
-#         """
-#         t = np.clip(t, 0, self.final_time)
-#         if self.final_time < 3600:
-#             m, s = divmod(t, 60)
-#             t_str = r"%02d:%05.2f" % (m, s)
-#         else:
-#             m, s = divmod(t, 60)
-#             h, m = divmod(m, 60)
-#             t_str = r"%02d:%02d:%02d" % (h, m, s)
-#         self.time_text.message = t_str
-
-#     @property
-#     def speed(self):
-#         """Returns current speed.
-
-#         Returns
-#         -------
-#         str
-#             Current time formatted as a string in the form:`HH:MM:SS`.
-
-#         """
-#         return self._speed
-
-#     @speed.setter
-#     def speed(self, speed):
-#         """Set time counter.
-
-#         Parameters
-#         ----------
-#         speed: float
-#             Speed value to be set in the speed_text counter.
-
-#         """
-#         if speed <= 0:
-#             speed = 0.01
-#         self._speed = speed
-#         speed_str = f"{speed}".strip("0").rstrip(".")
-#         self.speed_text.font_size = 21 if 0.01 <= speed < 100 else 14
-#         self.speed_text.message = speed_str
-
-#     def show(self):
-#         [act.SetVisibility(1) for act in self._get_actors()]
-
-#     def hide(self):
-#         [act.SetVisibility(0) for act in self._get_actors()]
-
-#     def _get_actors(self):
-#         """Get the actors composing this UI component."""
-#         return self.panel.actors + self._progress_bar.actors + self.time_text.actors
-
-#     def _add_to_scene(self, _scene):
-#         """Add all subcomponents or VTK props that compose this UI component.
-
-#         Parameters
-#         ----------
-#         _scene : scene
-
-#         """
-
-#         def resize_cbk(caller, ev):
-#             if self._auto_width:
-#                 width = _scene.GetSize()[0]
-#                 if width == self.width:
-#                     return
-#                 self._width = width
-#                 self._set_position(self.position)
-#                 self._progress_bar.value = self._progress_bar.value
-
-#         _scene.AddObserver(Command.StartEvent, resize_cbk)
-#         self.panel.add_to_scene(_scene)
-#         self._progress_bar.add_to_scene(_scene)
-#         self.time_text.add_to_scene(_scene)
-
-#     @property
-#     def width(self):
-#         """Return the width of the PlaybackPanel
-
-#         Returns
-#         -------
-#         float
-#             The width of the PlaybackPanel.
-
-#         """
-#         return self._width
-
-#     @width.setter
-#     def width(self, width):
-#         """Set width of the PlaybackPanel.
-
-#         Parameters
-#         ----------
-#         width: float
-#             The width of the whole panel.
-#             If set to None, The width will be the same as the window's width.
-
-#         """
-#         self._width = width if width is not None else 900
-#         self._auto_width = width is None
-#         self._set_position(self.position)
-
-#     def _set_position(self, _coords):
-#         x, y = self.position
-#         width = self.width
-#         self.panel.position = (x + 5, y + 5)
-#         progress_length = max(width - 310 - x, 1.0)
-#         self._progress_bar.track.width = progress_length
-#         self._progress_bar.center = (x + 215 + progress_length / 2, y + 20)
-#         self.time_text.position = (x + 225 + progress_length, y + 10)
-
-#     def _get_size(self):
-#         return self.panel.size + self._progress_bar.size + self.time_text.size
 
 
 # class Card2D(UI):

@@ -6,6 +6,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation as Rot
 
 from fury.actor import set_opacity
+from fury.colormap import normalize_colors
 from fury.geometry import (
     buffer_to_geometry,
     line_buffer_separator,
@@ -355,6 +356,7 @@ def actor_from_primitive(
     smooth=False,
     enable_picking=True,
     repeat_primitive=True,
+    have_tiled_verts=False,
     wireframe=False,
     wireframe_thickness=1.0,
 ):
@@ -369,7 +371,9 @@ def actor_from_primitive(
     centers : ndarray, shape (N, 3)
         Primitive positions.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
         The size of the primitive in each dimension. If a single value is provided,
         the same size will be used for all primitives.
@@ -388,6 +392,9 @@ def actor_from_primitive(
     repeat_primitive : bool, optional
         Whether to repeat the primitive for each center. If False,
         only one instance of the primitive is created at the first center.
+    have_tiled_verts : bool, optional
+        If True, vertices are already tiled (one set per center) and should
+        not be duplicated again inside ``repeat_primitive``.
     wireframe : bool, optional
         Whether to render the mesh as a wireframe.
     wireframe_thickness : float, optional
@@ -399,6 +406,10 @@ def actor_from_primitive(
         A mesh actor containing the generated primitive, with the specified
         material and properties.
     """
+    if repeat_primitive:
+        colors = normalize_colors(colors, n_points=len(centers))
+    else:
+        colors = normalize_colors(colors)
 
     if repeat_primitive:
         res = fp.repeat_primitive(
@@ -408,6 +419,7 @@ def actor_from_primitive(
             directions=directions,
             colors=colors,
             scales=scales,
+            have_tiled_verts=have_tiled_verts,
         )
         big_vertices, big_faces, big_colors, _ = res
 
@@ -479,18 +491,24 @@ def arrow(
     directions : ndarray, shape (N, 3) or tuple (3,), optional
         The orientation vector of the arrow.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B, and A should be in the range [0, 1].
-    height : float, optional
-        The total height of the arrow, including the shaft and tip.
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
+    height : float or ndarray, shape (N,), optional
+        The total height of the arrow, including the shaft and tip. A single
+        value applies to all arrows, while an array specifies a value per arrow.
     resolution : int, optional
         The number of divisions along the arrow's circular cross-sections.
         Higher values produce smoother arrows.
-    tip_length : float, optional
-        The length of the arrowhead tip relative to the total height.
-    tip_radius : float, optional
-        The radius of the arrowhead tip.
-    shaft_radius : float, optional
-        The radius of the arrow shaft.
+    tip_length : float or ndarray, shape (N,), optional
+        The length of the arrowhead tip relative to the total height. A single
+        value applies to all arrows, while an array specifies a value per arrow.
+    tip_radius : float or ndarray, shape (N,), optional
+        The radius of the arrowhead tip. A single value applies to all arrows,
+        while an array specifies a value per arrow.
+    shaft_radius : float or ndarray, shape (N,), optional
+        The radius of the arrow shaft. A single value applies to all arrows,
+        while an array specifies a value per arrow.
     scales : ndarray, shape (N, 3) or tuple (3,) or float, optional
         The size of the arrow in each dimension. If a single value is
         provided, the same size will be used for all arrows.
@@ -522,13 +540,57 @@ def arrow(
     >>> show_manager.start()
     """
 
-    vertices, faces = fp.prim_arrow(
-        height=height,
-        resolution=resolution,
-        tip_length=tip_length,
-        tip_radius=tip_radius,
-        shaft_radius=shaft_radius,
+    n_centers = len(centers)
+    height_arr = fp._normalize_geom_param(height, n_centers, "height")
+    tip_length_arr = fp._normalize_geom_param(tip_length, n_centers, "tip_length")
+    tip_radius_arr = fp._normalize_geom_param(tip_radius, n_centers, "tip_radius")
+    shaft_radius_arr = fp._normalize_geom_param(shaft_radius, n_centers, "shaft_radius")
+
+    all_uniform = (
+        np.all(height_arr == height_arr[0])
+        and np.all(tip_length_arr == tip_length_arr[0])
+        and np.all(tip_radius_arr == tip_radius_arr[0])
+        and np.all(shaft_radius_arr == shaft_radius_arr[0])
     )
+
+    if all_uniform:
+        vertices, faces = fp.prim_arrow(
+            height=height_arr[0],
+            resolution=resolution,
+            tip_length=tip_length_arr[0],
+            tip_radius=tip_radius_arr[0],
+            shaft_radius=shaft_radius_arr[0],
+        )
+        return actor_from_primitive(
+            vertices,
+            faces,
+            centers=centers,
+            colors=colors,
+            scales=scales,
+            directions=directions,
+            opacity=opacity,
+            material=material,
+            enable_picking=enable_picking,
+        )
+
+    _, faces = fp.prim_arrow(
+        height=height_arr[0],
+        resolution=resolution,
+        tip_length=tip_length_arr[0],
+        tip_radius=tip_radius_arr[0],
+        shaft_radius=shaft_radius_arr[0],
+    )
+    all_verts = [
+        fp.prim_arrow(
+            height=height_arr[i],
+            resolution=resolution,
+            tip_length=tip_length_arr[i],
+            tip_radius=tip_radius_arr[i],
+            shaft_radius=shaft_radius_arr[i],
+        )[0]
+        for i in range(n_centers)
+    ]
+    vertices = np.concatenate(all_verts)
     return actor_from_primitive(
         vertices,
         faces,
@@ -539,6 +601,7 @@ def arrow(
         opacity=opacity,
         material=material,
         enable_picking=enable_picking,
+        have_tiled_verts=True,
     )
 
 
@@ -746,7 +809,9 @@ def line(
     lines : list of ndarray of shape (P, 3) or ndarray of shape (N, P, 3)
         Lines points.
     colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
+        RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
+        or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
+        [0, 255] and normalized internally.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
     material : str, optional
@@ -773,6 +838,10 @@ def line(
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
+    if colors is not None:
+        colors = normalize_colors(colors)
+        if colors.ndim == 2 and len(colors) == 1:
+            colors = colors[0]
 
     lines_positions, lines_colors = line_buffer_separator(lines, color=colors)
 

@@ -291,6 +291,70 @@ def test_actor_from_primitive_transparency_visual(sphere_prim):
     scene.remove(transparent)
 
 
+def test_arrow_per_instance_geometry():
+    """Test arrow actor with per-instance geometry parameters."""
+    centers = np.array([[0, 0, 0], [2, 0, 0], [4, 0, 0]])
+    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+
+    # Per-instance height, tip_length, tip_radius, shaft_radius
+    heights = np.array([1.0, 1.5, 2.0])
+    tip_lengths = np.array([0.3, 0.4, 0.5])
+    tip_radii = np.array([0.08, 0.1, 0.12])
+    shaft_radii = np.array([0.02, 0.03, 0.04])
+    arrow_actor = actor.arrow(
+        centers=centers,
+        colors=colors,
+        height=heights,
+        tip_length=tip_lengths,
+        tip_radius=tip_radii,
+        shaft_radius=shaft_radii,
+    )
+    assert arrow_actor.prim_count == 3
+
+    # Verify geometry varies: per-instance vertex height extents differ
+    verts = arrow_actor.geometry.positions.view
+    n_verts_per = len(verts) // 3
+    y_extents = []
+    for i in range(3):
+        chunk = verts[i * n_verts_per : (i + 1) * n_verts_per] - centers[i]
+        y_extents.append(chunk[:, 0].max() - chunk[:, 0].min())
+    # Larger heights should yield larger extents
+    assert y_extents[0] < y_extents[1] < y_extents[2]
+
+    # Scalar (backward compat)
+    arrow_actor_scalar = actor.arrow(centers=centers, colors=colors, height=1.0)
+    assert arrow_actor_scalar.prim_count == 3
+
+    # Wrong-size array raises ValueError
+    with pytest.raises(ValueError, match="height"):
+        actor.arrow(
+            centers=centers,
+            colors=colors,
+            height=np.array([1.0, 1.5]),
+        )
+
+    with pytest.raises(ValueError, match="tip_length"):
+        actor.arrow(
+            centers=centers,
+            colors=colors,
+            tip_length=np.array([0.3, 0.4]),
+        )
+
+    with pytest.raises(ValueError, match="tip_radius"):
+        actor.arrow(
+            centers=centers,
+            colors=colors,
+            tip_radius=np.array([0.08, 0.1]),
+        )
+
+    with pytest.raises(ValueError, match="shaft_radius"):
+        actor.arrow(
+            centers=centers,
+            colors=colors,
+            shaft_radius=np.array([0.02, 0.03]),
+        )
+
+
 def test_create_axes_helper_structure():
     helper = create_axes_helper()
 
@@ -326,3 +390,31 @@ def test_create_axes_helper_axis_vector_order():
     )
 
     np.testing.assert_array_equal(axis_vectors, expected)
+
+
+def test_actor_accepts_255_colors():
+    """Colors in [0, 255] produce same result as [0, 1]."""
+    centers = np.array([[0, 0, 0]])
+    a1 = actor.arrow(centers=centers, colors=(255, 0, 0))
+    a2 = actor.arrow(centers=centers, colors=(1.0, 0.0, 0.0))
+    np.testing.assert_array_almost_equal(
+        a1.geometry.colors.view, a2.geometry.colors.view
+    )
+
+
+def test_actor_accepts_hex_colors():
+    """Hex color strings produce same result as [0, 1]."""
+    centers = np.array([[0, 0, 0]])
+    a1 = actor.arrow(centers=centers, colors="#FF0000")
+    a2 = actor.arrow(centers=centers, colors=(1.0, 0.0, 0.0))
+    np.testing.assert_array_almost_equal(
+        a1.geometry.colors.view, a2.geometry.colors.view
+    )
+
+
+def test_actor_accepts_255_array_colors():
+    """Array of [0, 255] colors works for multiple centers."""
+    centers = np.array([[0, 0, 0], [1, 0, 0], [2, 0, 0]])
+    colors_255 = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
+    a = actor.arrow(centers=centers, colors=colors_255)
+    assert a.prim_count == 3

@@ -231,6 +231,116 @@ def test_line_slider_2d_visibility_propagation():
         assert actor.visible is True
 
 
+def test_playback_panel_functional_init():
+    """Test PlaybackPanel initialization and default states."""
+    panel_width = 800
+    playback = ui.PlaybackPanel(width=panel_width, loop=True)
+
+    npt.assert_equal(playback._width, panel_width)
+    npt.assert_equal(playback._get_size(), np.array([panel_width, 55]))
+
+    assert playback._loop is True
+    assert playback._playing is False
+    npt.assert_equal(playback.speed, 1.0)
+    npt.assert_equal(playback.current_time, 0)
+    assert playback.current_time_str == "00:00.00"
+
+
+def test_playback_panel_state_commands():
+    """Test programmatic play, pause, stop, and loop commands."""
+    playback = ui.PlaybackPanel()
+
+    playback.play()
+    assert playback._playing is True
+    assert playback._play_pause_btn.toggled is True
+
+    playback.pause()
+    assert playback._playing is False
+    assert playback._play_pause_btn.toggled is False
+
+    playback.current_time = 50
+    playback.play()
+    playback.stop()
+    assert playback._playing is False
+    npt.assert_equal(playback.current_time, 0)
+
+    playback.play_once()
+    assert playback._loop is False
+    assert playback._loop_btn.toggled is False
+
+    playback.loop()
+    assert playback._loop is True
+    assert playback._loop_btn.toggled is True
+
+
+def test_playback_panel_time_logic():
+    """Test time formatting and slider synchronization."""
+    playback = ui.PlaybackPanel()
+    playback.final_time = 125  # 2 minutes, 5 seconds
+
+    playback.current_time = 65.5
+    npt.assert_equal(playback._progress_bar.value, 65.5)
+
+    assert playback.current_time_str == "01:05.50"
+
+    playback.final_time = 4000
+    playback.current_time = 3661  # 1h, 1m, 1s
+    assert playback.current_time_str == "01:01:01"
+
+
+def test_playback_panel_speed_logic():
+    """Test speed adjustment logic and string display."""
+    playback = ui.PlaybackPanel()
+
+    playback.speed = 2.0
+    npt.assert_equal(playback.speed, 2.0)
+    assert playback.speed_text.message == "2x"
+
+    playback.speed = -1.0
+    npt.assert_equal(playback.speed, 0.01)
+
+    playback.speed = 1.500
+    assert playback.speed_text.message == "1.5x"
+
+
+def test_playback_panel_callback_logic():
+    """Test that UI actions trigger the associated programmatic hooks."""
+    playback = ui.PlaybackPanel()
+
+    results = {"played": False, "speed": 0}
+
+    def on_play():
+        results["played"] = True
+
+    def on_speed(val):
+        results["speed"] = val
+
+    playback.on_play = on_play
+    playback.on_speed_changed = on_speed
+
+    playback.play()
+    assert results["played"] is True
+
+    playback.speed = 4.0
+    playback.on_speed_changed(playback.speed)
+    npt.assert_equal(results["speed"], 4.0)
+
+
+def test_playback_panel_layout_and_visibility():
+    """Test visibility propagation and sub-component layout."""
+    playback = ui.PlaybackPanel()
+
+    assert playback.panel in playback._children
+    assert playback._progress_bar in playback._children
+
+    playback.set_visibility(False)
+    assert playback.panel.actors[0].visible is False
+    assert playback._progress_bar.track.actor.visible is False
+
+    playback.set_visibility(True)
+    assert playback.panel.actors[0].visible is True
+
+
 def test_textbox_initialization():
     """Test property assignment and initial state."""
     tb = ui.TextBox2D(width=10, height=3, text="Hello")
@@ -757,93 +867,145 @@ def test_textbox_static_background():
 #     assert_equal(changed, value_changed + slider_moved)
 
 
-# def test_ui_ring_slider_2d(recording=False):
-#     filename = "test_ui_ring_slider_2d"
-#     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-#     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+def test_ring_slider_2d_functional_initialization():
+    """Test property assignment and initial state calculation."""
+    slider = ui.RingSlider2D(
+        initial_value=90,
+        min_value=0,
+        max_value=360,
+        slider_inner_radius=40,
+        slider_outer_radius=50,
+        handle_outer_radius=12,
+    )
 
-#     ring_slider_2d_test = ui.RingSlider2D()
-#     ring_slider_2d_test.center = (300, 300)
-#     ring_slider_2d_test.value = 90
+    npt.assert_equal(slider.value, 90)
+    npt.assert_almost_equal(slider.ratio, 90 / 360)
+    npt.assert_equal(slider.min_value, 0)
+    npt.assert_equal(slider.max_value, 360)
 
-#     # Assign the counter callback to every possible event.
-#     event_counter = EventCounter()
-#     event_counter.monitor(ring_slider_2d_test)
-
-#     current_size = (600, 600)
-#     show_manager = window.ShowManager(size=current_size, title="FURY Ring Slider")
-
-#     show_manager.scene.add(ring_slider_2d_test)
-
-#     if recording:
-#         # Record the following events
-#         # 1. Left Click on the handle and hold it
-#         # 2. Move to the left the handle and make 1.5 tour
-#         # 3. Release the handle
-#         # 4. Left Click on the handle and hold it
-#         # 5. Move to the right the handle and make 1 tour
-#         # 6. Release the handle
-#         show_manager.record_events_to_file(recording_filename)
-#         print(list(event_counter.events_counts.items()))
-#         event_counter.save(expected_events_counts_filename)
-
-#     else:
-#         show_manager.play_events_from_file(recording_filename)
-#         expected = EventCounter.load(expected_events_counts_filename)
-#         event_counter.check_counts(expected)
+    assert isinstance(slider.handle, ui.Disk2D)
+    npt.assert_equal(slider.handle.outer_radius, 12)
+    npt.assert_equal(slider.track.inner_radius, 40)
+    npt.assert_equal(slider.track.outer_radius, 50)
 
 
-# def test_ui_2d_ring_slider_hooks(recording=False):
-#     global changed, value_changed, slider_moved
+def test_ring_slider_2d_programmatic_clamping():
+    """Verify that the value/ratio setters strictly enforce bounds."""
+    slider = ui.RingSlider2D(min_value=0, max_value=180, initial_value=90)
 
-#     filename = "test_ui_ring_slider_2d_hooks"
-#     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-#     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+    slider.value = 300
+    npt.assert_equal(slider.value, 180)
+    npt.assert_equal(slider.ratio, 1.0)
 
-#     ring_slider_2d = ui.RingSlider2D(center=(300, 300))
+    slider.value = -50
+    npt.assert_equal(slider.value, 0)
+    npt.assert_equal(slider.ratio, 0.0)
 
-#     event_counter = EventCounter()
-#     event_counter.monitor(ring_slider_2d)
+    slider.ratio = 2.0
+    npt.assert_equal(slider.ratio, 1.0)
+    npt.assert_equal(slider.value, 180)
 
-#     show_manager = window.ShowManager(size=(600, 600), title="FURY Ring Slider hooks")
+    slider.ratio = -1.0
+    npt.assert_equal(slider.ratio, 0.0)
+    npt.assert_equal(slider.value, 0)
 
-#     # counters for the ring slider changes
-#     changed = value_changed = slider_moved = 0
 
-#     def on_ring_slider_change(slider):
-#         global changed
-#         changed += 1
+def test_ring_slider_2d_synchronization():
+    """Test if changing ratio updates value and vice versa."""
+    slider = ui.RingSlider2D(min_value=100, max_value=200)
 
-#     def on_ring_slider_moved(slider):
-#         global slider_moved
-#         slider_moved += 1
+    slider.ratio = 0.5
+    npt.assert_equal(slider.value, 150)
 
-#     def on_ring_slider_value_changed(slider):
-#         global value_changed
-#         value_changed += 1
+    slider.value = 110
+    npt.assert_almost_equal(slider.ratio, 0.1)
 
-#     ring_slider_2d.on_change = on_ring_slider_change
-#     ring_slider_2d.on_moving_slider = on_ring_slider_moved
-#     ring_slider_2d.on_value_changed = on_ring_slider_value_changed
 
-#     for i in range(360, -1, -1):
-#         ring_slider_2d.value = i
+def test_ring_slider_2d_layout_logic():
+    """Verify programmatic size and handle movement logic."""
+    slider = ui.RingSlider2D(
+        slider_inner_radius=40,
+        slider_outer_radius=60,
+    )
 
-#     show_manager.scene.add(ring_slider_2d)
+    size = slider._get_size()
 
-#     if recording:
-#         show_manager.record_events_to_file(recording_filename)
-#         event_counter.save(expected_events_counts_filename)
+    expected_diameter = 2 * (60 + slider.handle.outer_radius)
+    npt.assert_equal(size[0], expected_diameter)
+    npt.assert_equal(size[1], expected_diameter)
 
-#     else:
-#         show_manager.play_events_from_file(recording_filename)
-#         expected = EventCounter.load(expected_events_counts_filename)
-#         event_counter.check_counts(expected)
+    slider.ratio = 0.0
+    pos_start = slider.handle.get_position().copy()
 
-#     assert_greater(changed, 0)
-#     assert_greater(value_changed, 0)
-#     assert_greater(slider_moved, 0)
-#     assert_equal(changed, value_changed + slider_moved)
+    slider.ratio = 0.5
+    pos_mid = slider.handle.get_position().copy()
+
+    slider.ratio = 0.75
+    pos_end = slider.handle.get_position().copy()
+
+    assert not np.allclose(pos_start, pos_mid)
+    assert not np.allclose(pos_start, pos_end)
+
+
+def test_ring_slider_2d_text_formatting():
+    """Test the template system for programmatic text updates."""
+    custom_template = "Angle: {angle:.0f}"
+    slider = ui.RingSlider2D(initial_value=90, text_template=custom_template)
+
+    assert slider.text.message == "Angle: 90"
+
+    slider.value = 180
+    assert slider.text.message == "Angle: 180"
+
+
+def test_ring_slider_2d_callback_logic():
+    """Test that setting values triggers the correct programmatic hooks."""
+    slider = ui.RingSlider2D(initial_value=0)
+
+    hooks_triggered = {"value_changed": False}
+
+    def v_callback(u):
+        hooks_triggered["value_changed"] = True
+
+    slider.on_value_changed = v_callback
+
+    slider.value = 180
+    assert hooks_triggered["value_changed"] is True
+
+
+def test_ui_2d_ring_slider_hooks():
+    """Test that programmatic value updates trigger correct hooks."""
+
+    slider = ui.RingSlider2D(center=(300, 300))
+
+    changed = 0
+    value_changed = 0
+    slider_moved = 0
+
+    def on_change(s):
+        nonlocal changed
+        changed += 1
+
+    def on_moving(s):
+        nonlocal slider_moved
+        slider_moved += 1
+
+    def on_value_changed(s):
+        nonlocal value_changed
+        value_changed += 1
+
+    slider.on_change = on_change
+    slider.on_moving_slider = on_moving
+    slider.on_value_changed = on_value_changed
+
+    for i in range(360, -1, -1):
+        slider.value = i
+
+    assert changed > 0
+    assert value_changed > 0
+    assert slider_moved == 0
+
+    assert changed == value_changed
 
 
 # def test_ui_range_slider(interactive=False):

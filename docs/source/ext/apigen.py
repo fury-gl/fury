@@ -230,6 +230,31 @@ class ApiDocWriter:
         patterns = "(?:{0})".format("|".join(self.object_skip_patterns))
         pat = re.compile(patterns)
 
+        # Prefer __all__ for lazy-loaded modules.
+        if hasattr(mod, "__all__") and mod.__all__:
+            import inspect
+
+            functions, classes = [], []
+            for name in mod.__all__:
+                if name.startswith("_") or pat.search(name):
+                    continue
+                try:
+                    obj = getattr(mod, name)
+                except Exception:
+                    continue
+                # Skip root-package re-exports.
+                is_imported = (
+                    getattr(obj, "__module__", None) and obj.__module__ != mod.__name__
+                )
+                if is_imported and uri == self.package_name:
+                    continue
+                if inspect.isclass(obj):
+                    classes.append(name)
+                elif callable(obj):
+                    functions.append(name)
+            return functions, classes
+
+        # Fallback for modules without __all__.
         with open(mod.__file__, encoding="utf-8") as fi:
             node = ast.parse(fi.read())
 
@@ -237,7 +262,7 @@ class ApiDocWriter:
         classes = []
         for n in node.body:
             if not hasattr(n, "name"):
-                if not isinstance(n, ast.Assign):
+                if not isinstance(n, (ast.Assign, ast.AnnAssign)):
                     continue
 
             if isinstance(n, ast.ClassDef):
@@ -248,15 +273,36 @@ class ApiDocWriter:
                 if n.name.startswith("_") or pat.search(n.name):
                     continue
                 functions.append(n.name)
-            # Specific condition for vtk and fury
+            elif isinstance(n, ast.AnnAssign):
+                # Include TypeAlias exports.
+                name = getattr(n.target, "id", "")
+                if name and not name.startswith("_") and not pat.search(name):
+                    classes.append(name)
             elif isinstance(n, ast.Assign):
                 try:
+                    name = getattr(n.targets[0], "id", "")
+                    if not name or name.startswith("_") or pat.search(name):
+                        continue
+
                     if isinstance(n.value, ast.Call):
-                        if isinstance(n.targets[0], ast.Tuple):
-                            continue
-                        functions.append(n.targets[0].id)
-                    elif hasattr(n.value, "attr") and n.value.attr.startswith("vtk"):
-                        classes.append(n.targets[0].id)
+                        fid = getattr(
+                            n.value.func, "id", getattr(n.value.func, "attr", "")
+                        )
+                        if (
+                            fid
+                            not in {
+                                "array",
+                                "asarray",
+                                "rand",
+                                "inv",
+                                "compile",
+                                "pjoin",
+                            }
+                            and name != "UIContext"
+                        ):
+                            functions.append(name)
+                    elif getattr(n.value, "attr", "").startswith("vtk"):
+                        classes.append(name)
                 except Exception:
                     print(mod.__file__)
                     print(n.lineno)
