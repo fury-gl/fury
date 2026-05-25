@@ -252,7 +252,8 @@ def test_create_image_material():
 def test_VectorFieldThinLineMaterial_initialization():
     """
     Test VectorFieldThinLineMaterial initialization with valid
-    cross_section."""
+    cross_section.
+    """
     cross_section = [1, 2, 3]
     material = VectorFieldThinLineMaterial(cross_section)
     assert np.array_equal(material.cross_section, cross_section)
@@ -262,7 +263,8 @@ def test_VectorFieldThinLineMaterial_initialization():
 def test_VectorFieldThinLineMaterial_cross_section_property():
     """
     Test VectorFieldThinLineMaterial cross_section property getter and
-    setter."""
+    setter.
+    """
     cross_section = [1, 2, 3]
     material = VectorFieldThinLineMaterial(cross_section)
 
@@ -315,7 +317,8 @@ def test_VectorFieldThinLineMaterial_uniform_buffer_update():
 def test_VectorFieldLineMaterial_inheritance():
     """
     Test VectorFieldLineMaterial inherits properly from
-    VectorFieldThinLineMaterial."""
+    VectorFieldThinLineMaterial.
+    """
     cross_section = [1, 2, 3]
     material = VectorFieldLineMaterial(cross_section)
 
@@ -328,7 +331,8 @@ def test_VectorFieldLineMaterial_inheritance():
 def test_VectorFieldArrowMaterial_inheritance():
     """
     Test VectorFieldArrowMaterial inherits properly from
-    VectorFieldThinLineMaterial."""
+    VectorFieldThinLineMaterial.
+    """
     cross_section = [1, 2, 3]
     material = VectorFieldArrowMaterial(cross_section)
 
@@ -619,7 +623,8 @@ def test_StreamlinesMaterial_custom_initialization():
 def test_StreamlinesMaterial_inheritance():
     """
     StreamlinesMaterial: Test that it properly inherits from
-    LineMaterial."""
+    LineMaterial.
+    """
     material = StreamlinesMaterial()
 
     # Test that it inherits LineMaterial properties
@@ -661,7 +666,8 @@ def test_StreamlinesMaterial_with_kwargs():
 def test_StreamlinesMaterial_outline_thickness_property():
     """
     StreamlinesMaterial: Test outline_thickness property getter and
-    setter."""
+    setter.
+    """
     material = StreamlinesMaterial()
 
     # Test default value
@@ -784,7 +790,8 @@ def test_StreamlineBakedMaterial_defaults_and_properties():
 def test_StreamtubeBakedMaterial_defaults():
     """
     _StreamtubeBakedMaterial: Test default initialization populates
-    uniforms."""
+    uniforms.
+    """
     mat = _StreamtubeBakedMaterial()
 
     assert isinstance(mat, material.MeshPhongMaterial)

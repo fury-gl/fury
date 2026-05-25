@@ -17,7 +17,8 @@ from fury.utils import (
 def test_generate_planar_uvs_basic_projections():
     """
     Test generate_planar_uvs with all three projection axes using simple
-    geometry."""
+    geometry.
+    """
     vertices = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])
 
     # XY projection
@@ -174,7 +175,8 @@ def test_lmax_n_coeffs_inverse_relationship_standard():
 def test_lmax_n_coeffs_inverse_relationship_descoteaux07():
     """
     Test that get_lmax and get_n_coeffs are inverse for descoteaux07
-    basis."""
+    basis.
+    """
     test_lmax_values = [0, 1, 2, 3, 4, 5, 6, 8, 10]
 
     for l_max in test_lmax_values:
@@ -203,7 +205,8 @@ def test_n_coeffs_lmax_inverse_relationship_standard():
 def test_n_coeffs_lmax_inverse_relationship_descoteaux07():
     """
     Test that get_n_coeffs and get_lmax are inverse for descoteaux07
-    basis."""
+    basis.
+    """
     # Test with known valid n_coeffs values for descoteaux07 basis
     test_n_coeffs_values = [1, 6, 15, 28, 45, 66, 91, 120, 153]
 
@@ -219,7 +222,8 @@ def test_n_coeffs_lmax_inverse_relationship_descoteaux07():
 def test_both_functions_consistency():
     """
     Test consistency between both functions with various input
-    combinations."""
+    combinations.
+    """
     # Test that both functions handle basis_type parameter consistently
     l_max = 4
 
@@ -387,7 +391,8 @@ def test_extract_surface_voxels_basic_and_missing_label():
 def test_face_generation_basic_axes_and_signs():
     """
     Test face_generation for simple coords with positive and negative
-    signs."""
+    signs.
+    """
     coords = np.array([[0, 0, 0]], dtype=int)
 
     # Positive X face (axis=0, sign=+1)
@@ -571,7 +576,8 @@ def test_voxel_mesh_by_object_spacing():
 def test_voxel_mesh_by_object_axis_ordering():
     """
     Ensure voxel coordinates are interpreted as (x, y, z) without swapping
-    axes."""
+    axes.
+    """
     volume = np.zeros((2, 3, 4), dtype=np.uint8)
     volume[1, 2, 3] = 1  # voxel at x=1, y=2, z=3
 

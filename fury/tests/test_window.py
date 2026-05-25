@@ -108,7 +108,8 @@ def test_get_scene_center_uses_bounding_box():
 def test_get_scene_center_defaults_to_camera_direction():
     """
     Fallback should use camera position and forward vector when bbox is
-    missing."""
+    missing.
+    """
     renderer = Renderer(OffscreenCanvas())
     screen = create_screen(renderer)
     expected = screen.camera.world.position + screen.camera.world.forward
@@ -136,7 +137,8 @@ def test_get_scene_center_defaults_to_camera_direction():
 def test_reference_up_for_axis(axis, expected):
     """
     Reference up vector should switch near the poles to avoid gimbal
-    lock."""
+    lock.
+    """
     np.testing.assert_array_equal(_reference_up_for_axis(axis), expected)
 
 
@@ -154,7 +156,8 @@ def test_set_camera_from_axis_updates_camera_and_controller_target():
 def test_show_axes_gizmo_click_callback_invoked_with_axis_direction():
     """
     Custom click callbacks should receive the clicked axis direction
-    vector."""
+    vector.
+    """
     bbox = [[0, 0, 800.0, 800.0]]
     show_m = ShowManager(window_type="offscreen", screen_config=bbox)
     captured_axes = []
@@ -423,7 +426,8 @@ def test_show_manager_set_enable_events():
 def test_show_manager_update_camera(sample_actor):
     """
     Test updating the camera to face the target and show the size if empty
-    scene."""
+    scene.
+    """
     scene = Scene()
     show_m = ShowManager(scene=scene, window_type="offscreen")
     update_camera(show_m.screens[0].camera, None, None)
@@ -692,7 +696,8 @@ def test_show_manager_enable_imgui_idempotent():
 def test_show_manager_set_imgui_render_callback_only_when_enabled():
     """
     set_imgui_render_callback should only wire callback once ImGui is
-    enabled."""
+    enabled.
+    """
     show_m = ShowManager(window_type="offscreen")
 
     def dummy_callback():

@@ -160,7 +160,8 @@ class VectorFieldShader(LineShader):
     def __init__(self, wobject):
         """
         Initialize the VectorFieldShader with the given vector field
-        object."""
+        object.
+        """
         super().__init__(wobject)
         self["num_vectors"] = wobject.vectors_per_voxel
         self["data_shape"] = wobject.field_shape
@@ -413,7 +414,8 @@ class VectorFieldArrowShader(VectorFieldShader):
     def __init__(self, wobject):
         """
         Initialize the VectorFieldArrowShader with the given vector field
-        object."""
+        object.
+        """
         super().__init__(wobject)
         self["line_type"] = "arrow"
 
@@ -433,7 +435,8 @@ class SphGlyphComputeShader(BaseShader):
     def __init__(self, wobject):
         """
         Initialize SphGlyphComputeShader with the given spherical glyph
-        object."""
+        object.
+        """
         super().__init__(wobject)
         self["n_coeffs"] = wobject.n_coeff
         self["vertices_per_glyph"] = wobject.vertices_per_glyph

@@ -281,7 +281,8 @@ def test_max_voxels_per_chunk(max_buffer_size, max_workgroups, expected):
 def test_vector_field_cross_section_world_bounds_with_chunk_offset():
     """
     Cross section clamps in world space when the actor has a local X
-    offset."""
+    offset.
+    """
     field = np.random.rand(5, 5, 5, 3)
     vf = actor.VectorField(field)
     vf.local.position = [10.0, 0.0, 0.0]
@@ -292,7 +293,8 @@ def test_vector_field_cross_section_world_bounds_with_chunk_offset():
 def test_vector_field_chunks_when_exceeding_device_limits():
     """
     Large fields are split into several actors along X with contiguous
-    offsets."""
+    offsets.
+    """
     device = gfx_wgpu.get_shared().device
     max_voxels = _max_voxels_per_chunk(
         max_buffer_size=device.limits.get(

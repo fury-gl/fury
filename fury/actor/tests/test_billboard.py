@@ -20,7 +20,8 @@ from fury.material import BillboardSphereMaterial
 def test_basic_billboard(interactive: bool = False):
     """
     Test billboard creation, geometry, rendering, and camera facing
-    behavior."""
+    behavior.
+    """
     # Test creation and geometry setup
     centers = [[0, 0, 0], [1, 2, 3], [-2, 0.5, 4]]
     colors = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]

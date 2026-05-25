@@ -222,7 +222,8 @@ def test_line_slider_2d_callback_logic():
 def test_line_slider_2d_visibility_propagation():
     """
     Test if setting visibility on the parent propagates to sub-
-    components."""
+    components.
+    """
     slider = ui.LineSlider2D()
 
     slider.set_visibility(False)

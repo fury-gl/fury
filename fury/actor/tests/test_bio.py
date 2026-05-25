@@ -15,7 +15,8 @@ from fury.lib import AffineTransform
 def test_volume_slicer_comprehensive():
     """
     Test all major functionality of volume_slicer in one comprehensive
-    test."""
+    test.
+    """
     # Create test data - a simple 10x10x10 volume with gradient values
     data = np.random.rand(10, 10, 10)
     for i in range(10):
@@ -184,7 +185,8 @@ def test_contour_from_roi(affine):
 def test_contour_from_label(colors, opacities):
     """
     Test contour_from_label with various color and opacity
-    configurations."""
+    configurations.
+    """
     data = np.zeros((5, 5, 5), dtype=int)
     data[1, 1, 1] = 1
     if colors is None or colors.shape[0] == 2:

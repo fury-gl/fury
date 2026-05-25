@@ -23,7 +23,8 @@ def test_panel2d_initialization_default():
 def test_panel2d_initialization_with_border():
     """
     Test Panel2D initialization ensures border elements are created and
-    sized."""
+    sized.
+    """
     panel = ui.Panel2D(size=(300, 150), has_border=True, border_width=10)
 
     assert panel.has_border is True
@@ -117,7 +118,8 @@ def test_panel2d_add_remove_element():
 def test_panel2d_no_border_actors_and_scene():
     """
     Test Panel2D without borders can return actors and be added to a
-    scene."""
+    scene.
+    """
     panel = ui.Panel2D(size=(200, 200))
 
     # _get_actors should work without borders
@@ -146,7 +148,8 @@ def test_panel2d_no_border_actors_and_scene():
 def test_panel2d_z_ordering():
     """
     Test that internal Z-ordering is set correctly by
-    _update_actors_position."""
+    _update_actors_position.
+    """
     panel = ui.Panel2D(size=(100, 100), has_border=True, border_width=1)
 
     custom_element = ui.Rectangle2D(size=(5, 5))
@@ -164,7 +167,8 @@ def test_panel2d_visual_snapshot(
 ):
     """
     Visual test for Panel2D: Verifies composite rendering and color
-    checks."""
+    checks.
+    """
     panel_size = (300, 150)
     panel_pos = (100, 100)
 
