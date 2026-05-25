@@ -149,7 +149,6 @@ def contour_from_volume(data, *, color=(1, 0, 0), opacity=0.5, material="phong")
     Group
         A group of actors containing the generated contours from the volume data.
     """
-
     if color is None or len(color) != 3:
         raise ValueError("Color must be a tuple of three values (R, G, B).")
 

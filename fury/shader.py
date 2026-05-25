@@ -158,7 +158,9 @@ class VectorFieldShader(LineShader):
     """
 
     def __init__(self, wobject):
-        """Initialize the VectorFieldShader with the given vector field object."""
+        """
+        Initialize the VectorFieldShader with the given vector field
+        object."""
         super().__init__(wobject)
         self["num_vectors"] = wobject.vectors_per_voxel
         self["data_shape"] = wobject.field_shape
@@ -409,7 +411,9 @@ class VectorFieldArrowShader(VectorFieldShader):
     """
 
     def __init__(self, wobject):
-        """Initialize the VectorFieldArrowShader with the given vector field object."""
+        """
+        Initialize the VectorFieldArrowShader with the given vector field
+        object."""
         super().__init__(wobject)
         self["line_type"] = "arrow"
 
@@ -427,7 +431,9 @@ class SphGlyphComputeShader(BaseShader):
     type = "compute"
 
     def __init__(self, wobject):
-        """Initialize SphGlyphComputeShader with the given spherical glyph object."""
+        """
+        Initialize SphGlyphComputeShader with the given spherical glyph
+        object."""
         super().__init__(wobject)
         self["n_coeffs"] = wobject.n_coeff
         self["vertices_per_glyph"] = wobject.vertices_per_glyph
@@ -460,7 +466,8 @@ class SphGlyphComputeShader(BaseShader):
 
     def get_pipeline_info(self, _wobject, _shared):
         """
-        Get pipeline information for the spherical harmonic glyph compute shader.
+        Get pipeline information for the spherical harmonic glyph compute
+        shader.
 
         Parameters
         ----------
@@ -709,7 +716,6 @@ class _StreamtubeBakingShader(BaseShader):
 
     def __init__(self, wobject):
         """Initialise the compute shader state for the provided mesh."""
-
         super().__init__(wobject)
         if not hasattr(wobject, "_needs_gpu_update"):
             wobject._needs_gpu_update = True
@@ -766,7 +772,6 @@ class _StreamtubeBakingShader(BaseShader):
         dict
             Empty dictionary since no extra pipeline state is required.
         """
-
         return {}
 
     def get_bindings(self, wobject, _shared, _scene):
@@ -787,7 +792,6 @@ class _StreamtubeBakingShader(BaseShader):
         dict
             Mapping of bind group to :class:`Binding` definitions.
         """
-
         geometry = wobject.geometry
 
         self["n_lines"] = wobject.n_lines
@@ -879,7 +883,6 @@ class _StreamtubeBakingShader(BaseShader):
         str
             WGSL shader source for compute dispatch.
         """
-
         return load_wgsl("streamtube_compute.wgsl", package_name="fury.wgsl")
 
 
@@ -959,7 +962,6 @@ class BillboardSphereShader(MeshShader):
 
     def __init__(self, wobject):
         """Initialize the shader with billboard impostor metadata."""
-
         super().__init__(wobject)
         self["billboard_count"] = getattr(wobject, "billboard_count", 1)
         self["lighting"] = "phong"
@@ -973,5 +975,4 @@ class BillboardSphereShader(MeshShader):
         str
             WGSL source file as a string.
         """
-
         return load_wgsl("billboard_sphere_render.wgsl", package_name="fury.wgsl")

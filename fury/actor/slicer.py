@@ -86,7 +86,6 @@ def data_slicer(
     Group
         An actor containing the generated slice with the specified properties.
     """
-
     if value_range is None:
         value_range = (np.min(data), np.max(data))
 
@@ -642,7 +641,6 @@ class SphGlyph(Mesh):
         shininess=50,
     ):
         """Visualize a spherical harmonic glyph with different features."""
-
         super().__init__()
 
         if not isinstance(coeffs, np.ndarray):

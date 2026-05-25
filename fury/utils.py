@@ -2,10 +2,10 @@
 Utility functions for 3D graphics and visualization.
 
 This module contains various utility functions for 3D graphics and
-visualization, including trilinear interpolation, affine transformations,
-normal calculations, and grid generation. These functions are designed
-to work with numpy arrays and are useful for manipulating 3D data
-structures, such as meshes and point clouds.
+visualization, including trilinear interpolation, affine
+transformations, normal calculations, and grid generation. These
+functions are designed to work with numpy arrays and are useful for
+manipulating 3D data structures, such as meshes and point clouds.
 """
 
 import logging
@@ -423,7 +423,6 @@ def generate_planar_uvs(vertices, *, axis="xy"):
     ndarray
         Array of UV coordinates, shape (N, 2), where N is the number of vertices.
     """
-
     if axis not in ("xy", "xz", "yz"):
         raise ValueError("axis must be one of 'xy', 'xz', or 'yz'.")
 
@@ -477,7 +476,6 @@ def create_sh_basis_matrix(vertices, l_max):
     ndarray, shape (N, (l_max + 1) ** 2)
         Matrix of spherical harmonic basis functions evaluated at the vertices.
     """
-
     if (
         not isinstance(vertices, np.ndarray)
         or vertices.ndim != 2
@@ -535,7 +533,6 @@ def get_lmax(n_coeffs, *, basis_type="standard"):
     int
         The maximum spherical harmonic degree (l_max).
     """
-
     if not isinstance(n_coeffs, int) or n_coeffs < 1:
         raise ValueError("n_coeffs must be a non-zero, positive integer.")
 
@@ -565,7 +562,6 @@ def get_n_coeffs(l_max, *, basis_type="standard"):
     int
         The number of spherical harmonic coefficients.
     """
-
     if not isinstance(l_max, int) or l_max < 0:
         raise ValueError("l_max must be a non-negative integer.")
 
@@ -597,7 +593,6 @@ def get_transformed_cube_bounds(affine_matrix, vertex1, vertex2):
         A list containing the min and max ranges of the transformed cube in the format
         [[min_x, min_y, min_z], [max_x, max_y, max_z]].
     """
-
     if len(vertex1) != 3 or len(vertex2) != 3:
         raise ValueError("vertex1 and vertex2 must be 3D coordinates.")
     if not isinstance(affine_matrix, np.ndarray) or affine_matrix.shape != (4, 4):
@@ -651,7 +646,6 @@ def extract_surface_voxels(volume, label_value, *, structuring_element=None):
         surface_coords has shape (N, 3) ordered as (x, y, z). Returns None when
         the label does not have exposed voxels.
     """
-
     if structuring_element is None:
         structuring_element = generate_binary_structure(rank=3, connectivity=1)
 
@@ -754,7 +748,6 @@ def voxel_mesh_by_object(
         A dictionary where keys are object labels and values are dictionaries
         with 'verts' and 'faces' of the generated meshes.
     """
-
     if not isinstance(volume, np.ndarray) or volume.ndim != 3:
         raise ValueError("volume must be a 3D numpy array.")
 

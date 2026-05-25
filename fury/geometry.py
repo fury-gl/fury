@@ -54,7 +54,6 @@ def line_buffer_separator(line_vertices, color=None):
     colors : array_like, optional
         The colors buffer with NaN separators (if color is provided).
     """
-
     total_vertices = sum(len(segment) for segment in line_vertices)
     total_size = total_vertices + len(line_vertices) - 1
 

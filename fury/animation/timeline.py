@@ -119,8 +119,9 @@ class Timeline:
         """
         Play the animation.
 
-        Start playing the timeline from the current timestamp. If the current timestamp
-        is at the end of the timeline, it will reset to the beginning.
+        Start playing the timeline from the current timestamp. If the
+        current timestamp is at the end of the timeline, it will reset
+        to the beginning.
         """
         if not self.playing:
             if self.current_timestamp >= self.duration:

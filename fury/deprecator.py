@@ -35,7 +35,8 @@ class ArgsDeprecationWarning(DeprecationWarning):
     """
     Warning for args deprecation.
 
-    Warning raised when a function or method argument has changed or removed.
+    Warning raised when a function or method argument has changed or
+    removed.
     """
 
     pass

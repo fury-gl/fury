@@ -39,7 +39,7 @@ def get_default_cubes(
     scales=DEFAULT_SCALES,
 ):
     """
-    Provides cube actors with default parameters
+    Provides cube actors with default parameters.
 
     Parameters
     ----------
@@ -51,7 +51,6 @@ def get_default_cubes(
         RGB or RGBA (for opacity)
     scales: list of 2 floats
         Cube Sizes
-
     """
     cube_first_center, cube_second_center = centers
     cube_first_direction, cube_second_direction = directions
@@ -77,7 +76,7 @@ def get_default_cubes(
 
 def get_default_panels(sizes=None, colors=None):
     """
-    Provides Panels with default parameters
+    Provides Panels with default parameters.
 
     Parameters
     ----------
@@ -85,7 +84,6 @@ def get_default_panels(sizes=None, colors=None):
         Sizes of the two panels
     colors: ndarray ndarray (2,3) or (2, 4)
         RGB or RGBA (for opacity)
-
     """
     if sizes is None:
         sizes = [(100, 100), (200, 200)]

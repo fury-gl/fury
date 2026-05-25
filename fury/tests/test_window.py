@@ -106,7 +106,9 @@ def test_get_scene_center_uses_bounding_box():
 
 
 def test_get_scene_center_defaults_to_camera_direction():
-    """Fallback should use camera position and forward vector when bbox is missing."""
+    """
+    Fallback should use camera position and forward vector when bbox is
+    missing."""
     renderer = Renderer(OffscreenCanvas())
     screen = create_screen(renderer)
     expected = screen.camera.world.position + screen.camera.world.forward
@@ -132,7 +134,9 @@ def test_get_scene_center_defaults_to_camera_direction():
     ],
 )
 def test_reference_up_for_axis(axis, expected):
-    """Reference up vector should switch near the poles to avoid gimbal lock."""
+    """
+    Reference up vector should switch near the poles to avoid gimbal
+    lock."""
     np.testing.assert_array_equal(_reference_up_for_axis(axis), expected)
 
 
@@ -148,8 +152,9 @@ def test_set_camera_from_axis_updates_camera_and_controller_target():
 
 
 def test_show_axes_gizmo_click_callback_invoked_with_axis_direction():
-    """Custom click callbacks should receive the clicked axis direction vector."""
-
+    """
+    Custom click callbacks should receive the clicked axis direction
+    vector."""
     bbox = [[0, 0, 800.0, 800.0]]
     show_m = ShowManager(window_type="offscreen", screen_config=bbox)
     captured_axes = []
@@ -168,7 +173,6 @@ def test_show_axes_gizmo_click_callback_invoked_with_axis_direction():
 
 def test_show_axes_gizmo_defaults_to_noop_click_callback_when_invalid():
     """Non-callable click callbacks should fall back to a no-op function."""
-
     bbox = [[0, 0, 800.0, 800.0]]
     show_m = ShowManager(window_type="offscreen", screen_config=bbox)
     invalid_callback = "not a function"
@@ -184,7 +188,11 @@ def test_show_axes_gizmo_defaults_to_noop_click_callback_when_invalid():
 
 
 def test_scene_clear(sample_actor, sample_ui_actor):
-    """Test clearing the scene. Should only remove the actors."""
+    """
+    Test clearing the scene.
+
+    Should only remove the actors.
+    """
     scene = Scene()
     scene.add(sample_actor)
     scene.add(sample_ui_actor)
@@ -413,7 +421,9 @@ def test_show_manager_set_enable_events():
 
 
 def test_show_manager_update_camera(sample_actor):
-    """Test updating the camera to face the target and show the size if empty scene."""
+    """
+    Test updating the camera to face the target and show the size if empty
+    scene."""
     scene = Scene()
     show_m = ShowManager(scene=scene, window_type="offscreen")
     update_camera(show_m.screens[0].camera, None, None)
@@ -501,7 +511,6 @@ def test_show_manager_with_empty_config():
 
 def test_display_default(sample_actor):
     """Test the display function with default parameters."""
-
     with patch("fury.window.ShowManager") as mock_show_manager:
         show([sample_actor])
         mock_show_manager.assert_called_once()
@@ -509,7 +518,6 @@ def test_display_default(sample_actor):
 
 def test_add_remove_ui_to_from_scene(sample_actor):
     """Test add/remove UI hierarchy to/from scene."""
-
     parent = Rectangle2D()
     child_1, child_2, child_3 = (
         Rectangle2D(),
@@ -608,7 +616,6 @@ def test_add_remove_ui_to_from_scene(sample_actor):
 
 def test_add_to_scene(sample_actor, sample_ui_actor):
     """Test add/remove elements to/from scene."""
-
     scene = Scene()
 
     sample_gfx_scene = GfxScene()
@@ -647,7 +654,6 @@ def test_show_manager_fps_display():
 @pytest.mark.skipif(not have_imgui_bundle, reason="Needs Imgui Bundle")
 def test_show_manager_enable_imgui_creates_renderer():
     """ImGui should be disabled by default and created on enable_imgui()."""
-
     show_m = ShowManager(window_type="offscreen")
 
     assert show_m._imgui is None
@@ -659,7 +665,6 @@ def test_show_manager_enable_imgui_creates_renderer():
 @pytest.mark.skipif(not have_imgui_bundle, reason="Needs Imgui Bundle")
 def test_show_manager_disable_imgui_clears_renderer():
     """disable_imgui() should clear the _imgui reference."""
-
     show_m = ShowManager(window_type="offscreen")
 
     show_m.enable_imgui()
@@ -672,7 +677,6 @@ def test_show_manager_disable_imgui_clears_renderer():
 @pytest.mark.skipif(not have_imgui_bundle, reason="Needs Imgui Bundle")
 def test_show_manager_enable_imgui_idempotent():
     """Calling enable_imgui() twice should keep the same renderer instance."""
-
     show_m = ShowManager(window_type="offscreen")
 
     show_m.enable_imgui()
@@ -686,8 +690,9 @@ def test_show_manager_enable_imgui_idempotent():
 
 @pytest.mark.skipif(not have_imgui_bundle, reason="Needs Imgui Bundle")
 def test_show_manager_set_imgui_render_callback_only_when_enabled():
-    """set_imgui_render_callback should only wire callback once ImGui is enabled."""
-
+    """
+    set_imgui_render_callback should only wire callback once ImGui is
+    enabled."""
     show_m = ShowManager(window_type="offscreen")
 
     def dummy_callback():

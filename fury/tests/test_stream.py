@@ -668,10 +668,8 @@ def test_circular_queue():
 
 def test_queue_and_webserver():
     """
-    Check if the correct
-    event ids and the data are stored in the
-    correct positions
-    """
+    Check if the correct event ids and the data are stored in the correct
+    positions."""
     max_size = 3
     dimension = _CQUEUE.dimension
     use_raw_array = True

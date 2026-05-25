@@ -123,8 +123,9 @@ class Animation:
         """
         Update motion path visualization actor.
 
-        Creates or updates the motion path visualization actor that represents the
-        animation path. The resolution of the path is determined by motion_path_res.
+        Creates or updates the motion path visualization actor that
+        represents the animation path. The resolution of the path is
+        determined by motion_path_res.
         """
         res = self._motion_path_res
         tl = self
@@ -306,7 +307,8 @@ class Animation:
 
     def is_inside_scene_at(self, timestamp):
         """
-        Check if the Animation is set to be inside the scene at a specific timestamp.
+        Check if the Animation is set to be inside the scene at a specific
+        timestamp.
 
         Parameters
         ----------
@@ -1038,7 +1040,8 @@ class Animation:
 
     def add_static_actor(self, actor):
         """
-        Add static actor(s) which will not be controlled/animated by the Animation.
+        Add static actor(s) which will not be controlled/animated by the
+        Animation.
 
         All static actors will be added to the scene when the Animation is added to the
         scene.

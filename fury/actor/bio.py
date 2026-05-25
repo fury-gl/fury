@@ -58,7 +58,6 @@ def volume_slicer(
     Group
         An actor containing the generated slice with the specified properties.
     """
-
     obj = data_slicer(
         data,
         value_range=value_range,
@@ -174,7 +173,6 @@ def contour_from_roi(
     Group
         A group of actors containing the generated contours of ROI from the volume data.
     """
-
     contours = contour_from_volume(
         data, color=color, opacity=opacity, material=material
     )
@@ -210,7 +208,6 @@ def contour_from_label(data, *, affine=None, colors=None, opacities=None):
         A group of actors containing the generated contours for each label in the volume
         data.
     """
-
     unique_roi_id = np.delete(np.unique(data), 0)
 
     nb_surfaces = len(unique_roi_id)

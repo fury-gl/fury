@@ -73,7 +73,6 @@ class Actor:
             Scale factors along the x, y, and z axes. If a single float
             is provided, uniform scaling is applied.
         """
-
         if isinstance(scales, (int, float)):
             scales = (scales, scales, scales)
         elif not isinstance(scales, (list, tuple, np.ndarray)):
@@ -97,7 +96,6 @@ class Actor:
         matrix : ndarray, shape (4, 4)
             Transformation matrix to be applied to the actor.
         """
-
         if not isinstance(matrix, np.ndarray):
             raise ValueError("Transformation matrix must be a numpy array.")
         elif matrix.shape != (4, 4):
@@ -147,7 +145,6 @@ class Actor:
         ndarray
             Quaternion representing the rotation.
         """
-
         return Rot.from_euler("xyz", rotation).as_quat()
 
 

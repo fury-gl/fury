@@ -127,8 +127,8 @@ class UI(object, metaclass=abc.ABCMeta):
         """
         Set up this UI component.
 
-        This is where you should create all your needed actors and sub UI
-        components.
+        This is where you should create all your needed actors and sub
+        UI components.
         """
         msg = "Subclasses of UI must implement `_setup(self)`."
         raise NotImplementedError(msg)
@@ -224,7 +224,8 @@ class UI(object, metaclass=abc.ABCMeta):
         y_anchor=Anchor.TOP,
     ):
         """
-        Get the position of this UI component according to the specified anchor.
+        Get the position of this UI component according to the specified
+        anchor.
 
         Parameters
         ----------
@@ -240,7 +241,6 @@ class UI(object, metaclass=abc.ABCMeta):
         (float, float)
             The (x, y) pixel coordinates of the specified anchor point.
         """
-
         ANCHOR_TO_MULTIPLIER = get_anchor_to_multiplier()
 
         self.perform_position_validation(x_anchor=x_anchor, y_anchor=y_anchor)
@@ -531,7 +531,8 @@ class UI(object, metaclass=abc.ABCMeta):
         Parameters
         ----------
         event : PointerEvent
-            The PyGfx pointer event object."""
+            The PyGfx pointer event object.
+        """
         UIContext.hot_ui = self
         self.on_hover(event)
 
@@ -542,7 +543,8 @@ class UI(object, metaclass=abc.ABCMeta):
         Parameters
         ----------
         event : PointerEvent
-            The PyGfx pointer event object."""
+            The PyGfx pointer event object.
+        """
         if UIContext.hot_ui is self:
             UIContext.hot_ui = None
         self.on_dishover(event)
@@ -568,7 +570,6 @@ class Rectangle2D(UI):
         self, *, size=(100, 100), position=(0, 0), color=(1, 1, 1), opacity=1.0
     ):
         """Initialize a rectangle."""
-
         super(Rectangle2D, self).__init__(position=position)
         self.color = color
         self.opacity = opacity
@@ -1438,7 +1439,6 @@ class Button2D(UI):
 
     def __init__(self, position=(0, 0), size=(30, 30), is_toggle=False):
         """Initialize the button instance."""
-
         self._dims = size
         self.child = None
         self.is_toggle = is_toggle

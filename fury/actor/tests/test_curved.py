@@ -224,7 +224,9 @@ def test_streamtube_gpu_invalid_inputs():
 
 
 def test_streamtube_buffer_helpers_and_split_ratio():
-    """Buffer estimation and ratio-based splitting with device buffer limits."""
+    """
+    Buffer estimation and ratio-based splitting with device buffer
+    limits."""
 
     def _make_lines(lengths):
         return [np.zeros((ln, 3), dtype=np.float32) for ln in lengths]

@@ -648,8 +648,8 @@ class VectorFieldLineMaterial(VectorFieldThinLineMaterial):
     """
     Material for VectorFieldActor.
 
-    This class provides a way to distinguish the usage of right shader for
-    creating a vector field.
+    This class provides a way to distinguish the usage of right shader
+    for creating a vector field.
     """
 
 
@@ -657,8 +657,8 @@ class VectorFieldArrowMaterial(VectorFieldThinLineMaterial):
     """
     Material for VectorFieldActor.
 
-    This class provides a way to distinguish the usage of right shader for
-    creating a vector field.
+    This class provides a way to distinguish the usage of right shader
+    for creating a vector field.
     """
 
 
@@ -1232,6 +1232,5 @@ class BillboardSphereMaterial(MeshPhongMaterial):
             Keyword arguments propagated to
             :class:`~fury.material.MeshPhongMaterial`.
         """
-
         material_kwargs.setdefault("flat_shading", False)
         super().__init__(**material_kwargs)

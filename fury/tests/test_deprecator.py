@@ -96,13 +96,13 @@ def test_deprecate_with_version():
         pass
 
     def func_doc(_i):
-        """A docstring"""
+        """A docstring."""
 
     def func_doc_long(_i, _j):
-        """A docstring\n\n   Some text"""
+        """A docstring\n\n   Some text."""
 
     class CustomError(Exception):
-        """Custom error class for testing expired deprecation errors"""
+        """Custom error class for testing expired deprecation errors."""
 
     my_mod = sys.modules[__name__]
     dec = deprecate_with_version

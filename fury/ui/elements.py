@@ -65,7 +65,6 @@ class TexturedButton2D(Button2D):
 
     def __init__(self, states, position=(0, 0), size=(30, 30), is_toggle=False):
         """Initialize the textured button instance."""
-
         self.texture_map = self._load_textures(states)
         super().__init__(position=position, size=size, is_toggle=is_toggle)
 
@@ -144,7 +143,6 @@ class TextButton2D(Button2D):
         is_toggle=False,
     ):
         """Initialize the text button instance."""
-
         self.default_label = label
         self.font_size = font_size
 
@@ -161,7 +159,8 @@ class TextButton2D(Button2D):
         """
         Set up the internal TextBlock2D component.
 
-        Initializes the child text block with the default label and font settings.
+        Initializes the child text block with the default label and font
+        settings.
         """
         self.child = TextBlock2D(
             text=self.default_label,
@@ -254,7 +253,6 @@ class LineSlider2D(Slider2D):
         z_order=0,
     ):
         """Initialize the slider instance."""
-
         self.orientation = orientation.lower().strip()
         self._length = length
         self._line_width = line_width
@@ -339,7 +337,6 @@ class LineSlider2D(Slider2D):
 
     def _update_handle_position(self):
         """Calculate specific coordinates for the handle and text label."""
-
         track_origin = self.track.get_position(
             x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP
         )
@@ -446,7 +443,9 @@ class PlaybackPanel(UI):
         self.speed = 1.0
 
     def _setup(self):
-        """Set up internal components including buttons, slider, and text labels."""
+        """
+        Set up internal components including buttons, slider, and text
+        labels."""
         self.panel = Panel2D(
             size=(220, 45),
             color=(1, 1, 1),
@@ -1881,8 +1880,8 @@ class RingSlider2D(Slider2D):
         """
         Setup this UI component.
 
-        Create the slider's circle (Disk2D), the handle (Disk2D) and
-        the text (TextBlock2D).
+        Create the slider's circle (Disk2D), the handle (Disk2D) and the
+        text (TextBlock2D).
         """
         super(RingSlider2D, self)._setup()
         self.track = Disk2D(
@@ -1934,8 +1933,9 @@ class RingSlider2D(Slider2D):
         return (self.track.inner_radius + self.track.outer_radius) / 2.0
 
     def _update_handle_position(self):
-        """Place the handle and the text according to the current angle / ratio."""
-
+        """
+        Place the handle and the text according to the current angle /
+        ratio."""
         center = self.track.get_position(x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
         angle = self.angle
         x = self.mid_track_radius * np.sin(angle) + center[0]

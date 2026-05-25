@@ -1447,7 +1447,6 @@ def _create_streamtube_baked(
     Mesh
         A pygfx mesh containing GPU-generated streamtube geometry and material.
     """
-
     if material != "phong":
         raise ValueError("GPU streamtubes currently support material='phong' only.")
 

@@ -58,7 +58,6 @@ def _create_billboard_actor(
         Configured billboard world object containing geometry, material and
         metadata about the generated billboards.
     """
-
     centers = np.asarray(centers, dtype=np.float32)
     if centers.ndim == 1:
         centers = centers.reshape(1, 3)
@@ -318,7 +317,6 @@ def billboard_sphere(
     Billboard
         Billboard actor configured to simulate spheres using impostor quads.
     """
-
     sizes = np.asarray(radii, dtype=np.float32) * 2.0
     obj = _create_billboard_actor(
         centers,

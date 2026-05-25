@@ -961,7 +961,6 @@ class LineProjection(Points):
         """
         Initialize the line projection object.
 
-
         Raises
         ------
         ValueError
@@ -1184,7 +1183,6 @@ def line_projection(
     LineProjection
         The created line projection object.
     """
-
     if isinstance(plane, str):
         if plane.upper() == "XY":
             plane = (0, 0, -1, 0)

@@ -245,7 +245,6 @@ def get_anchor_to_multiplier():
     dict
         A dictionary mapping `Anchor` string values to float multipliers.
     """
-
     return {
         Anchor.LEFT.value: 0.0,
         Anchor.RIGHT.value: 1.0,

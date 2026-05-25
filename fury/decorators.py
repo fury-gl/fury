@@ -1,8 +1,8 @@
 """
 Decorators for FURY tests and functions.
 
-This module provides decorators to handle doctests, parameter validation, and
-keyword-only arguments enforcement.
+This module provides decorators to handle doctests, parameter
+validation, and keyword-only arguments enforcement.
 """
 
 from functools import wraps

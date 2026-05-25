@@ -141,7 +141,6 @@ def load_image_as_wgpu_texture_view(filename, device):
     wgpu.GPUTextureView
         Loaded image as wgpu Texture view.
     """
-
     image = np.asarray(load_image(filename), dtype=np.uint8)
 
     if image.ndim == 2:

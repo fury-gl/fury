@@ -18,7 +18,9 @@ from fury.material import BillboardSphereMaterial
 
 
 def test_basic_billboard(interactive: bool = False):
-    """Test billboard creation, geometry, rendering, and camera facing behavior."""
+    """
+    Test billboard creation, geometry, rendering, and camera facing
+    behavior."""
     # Test creation and geometry setup
     centers = [[0, 0, 0], [1, 2, 3], [-2, 0.5, 4]]
     colors = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]
@@ -143,7 +145,6 @@ def test_rectangular_billboards():
 
 def test_billboard_sphere(interactive: bool = False):
     """Test sphere actor hybrid implementation with impostor mode."""
-
     centers = np.array([[0, 0, 0], [1, 1, 1], [2, -1, 0.5]], dtype=np.float32)
     colors = np.array(
         [

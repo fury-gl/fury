@@ -72,8 +72,8 @@ class Panel2D(UI):
         """
         Set up this UI component.
 
-        Create the background (Rectangle2D) of the panel and initialize the
-        border elements (Rectangle2D).
+        Create the background (Rectangle2D) of the panel and initialize
+        the border elements (Rectangle2D).
         """
         self._elements = []
         self.element_offsets = []
@@ -409,7 +409,6 @@ class Panel2D(UI):
             A list containing the color (RGB tuple) of the left, right, top, and bottom
             borders, respectively.
         """
-
         if not self.has_border:
             logging.warning("Border is not present, border color is not available.")
             return []
@@ -449,7 +448,6 @@ class Panel2D(UI):
             A list containing the width (for left/right) and height (for top/bottom)
             of the borders.
         """
-
         if not self.has_border:
             logging.warning("Border is not present, border width is not available.")
             return []

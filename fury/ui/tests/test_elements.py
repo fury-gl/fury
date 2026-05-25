@@ -220,7 +220,9 @@ def test_line_slider_2d_callback_logic():
 
 
 def test_line_slider_2d_visibility_propagation():
-    """Test if setting visibility on the parent propagates to sub-components."""
+    """
+    Test if setting visibility on the parent propagates to sub-
+    components."""
     slider = ui.LineSlider2D()
 
     slider.set_visibility(False)
@@ -817,7 +819,6 @@ def test_ring_slider_2d_callback_logic():
 
 def test_ui_2d_ring_slider_hooks():
     """Test that programmatic value updates trigger correct hooks."""
-
     slider = ui.RingSlider2D(center=(300, 300))
 
     changed = 0
