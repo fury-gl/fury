@@ -1,0 +1,18 @@
+Week 0: Community Bonding Period
+================================
+
+.. post:: May 25, 2026
+   :author: Medha Bhardwaj
+   :tags: google
+   :category: gsoc
+
+GSoC 2026: Community Bonding Period
+-----------------------------------
+
+Hello Everyone!
+
+I'm incredibly happy to share that I've been selected for Google Summer of Code 2026 under FURY! This summer, I'll be working on *Optimizing FURY's Documentation Pipeline and Website Architecture*, a project focused on improving the overall documentation workflow and enhancing the experience for both contributors and users. Being able to contribute to a project like FURY through GSoC is something I'm genuinely excited about, and I'm looking forward to the learning and collaboration ahead.
+
+The community bonding period has already been an amazing start to this journey. I attended the welcome meeting with mentors and fellow contributors, where we discussed ideas, expectations, and the goals we want to achieve over the summer. It was inspiring to interact with so many passionate people from different backgrounds, all connected by the shared enthusiasm for open source. These conversations not only helped shape the roadmap for the months ahead but also made me even more excited to learn, collaborate, and grow throughout this experience.
+
+Stay tuned for updates on my GSoC journey as I share my progress, challenges, and everything I learn along the way. I'm truly grateful for the opportunity to be a part of such an inspiring community, and I can't wait to contribute and make the most of this experience.
