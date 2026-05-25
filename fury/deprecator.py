@@ -1,4 +1,5 @@
-"""Function for recording and reporting deprecations.
+"""
+Function for recording and reporting deprecations.
 
 Notes
 -----
@@ -20,7 +21,8 @@ _LEADING_WHITE = re.compile(r"^(\s*)")
 
 
 class ExpiredDeprecationError(RuntimeError):
-    """Error for expired deprecation.
+    """
+    Error for expired deprecation.
 
     Error raised when a called function or method has passed out of its
     deprecation period.
@@ -30,7 +32,8 @@ class ExpiredDeprecationError(RuntimeError):
 
 
 class ArgsDeprecationWarning(DeprecationWarning):
-    """Warning for args deprecation.
+    """
+    Warning for args deprecation.
 
     Warning raised when a function or method argument has changed or removed.
     """
@@ -39,7 +42,8 @@ class ArgsDeprecationWarning(DeprecationWarning):
 
 
 def _ensure_cr(text):
-    """Remove trailing whitespace and add carriage return.
+    """
+    Remove trailing whitespace and add carriage return.
 
     Parameters
     ----------
@@ -55,7 +59,8 @@ def _ensure_cr(text):
 
 
 def _add_dep_doc(old_doc, dep_doc):
-    """Add deprecation message ``dep_doc`` to docstring in ``old_doc``.
+    """
+    Add deprecation message ``dep_doc`` to docstring in ``old_doc``.
 
     Parameters
     ----------
@@ -93,7 +98,8 @@ def _add_dep_doc(old_doc, dep_doc):
 
 
 def cmp_pkg_version(version_str, pkg_version_str=__version__):
-    """Compare ``version_str`` to current package version.
+    """
+    Compare ``version_str`` to current package version.
 
     Parameters
     ----------
@@ -129,7 +135,8 @@ def cmp_pkg_version(version_str, pkg_version_str=__version__):
 
 
 def is_bad_version(version_str, version_comparator=cmp_pkg_version):
-    """Return True if `version_str` is too high.
+    """
+    Return True if `version_str` is too high.
 
     Parameters
     ----------
@@ -154,7 +161,8 @@ def deprecate_with_version(
     warn_class=DeprecationWarning,
     error_class=ExpiredDeprecationError,
 ):
-    """Return decorator function for deprecation warning or error.
+    """
+    Return decorator function for deprecation warning or error.
 
     The decorated function or method will:
 
@@ -204,7 +212,8 @@ def deprecate_with_version(
     message = "\n".join(messages)
 
     def deprecator(func):
-        """Decorator function for deprecation.
+        """
+        Decorator function for deprecation.
 
         Parameters
         ----------
@@ -219,7 +228,8 @@ def deprecate_with_version(
 
         @functools.wraps(func)
         def deprecated_func(*args, **kwargs):
-            """Wrapper function for deprecation.
+            """
+            Wrapper function for deprecation.
 
             Parameters
             ----------
@@ -255,7 +265,8 @@ def deprecated_params(
     error_class=ExpiredDeprecationError,
     alternative="",
 ):
-    """Deprecate a renamed or removed function argument.
+    """
+    Deprecate a renamed or removed function argument.
 
     The decorator assumes that the argument with the ``old_name`` was removed
     from the function signature and the ``new_name`` replaced it at the
@@ -375,7 +386,8 @@ def deprecated_params(
         arg_in_kwargs = [arg_in_kwargs]
 
     def deprecator(function):
-        """Decorator function for deprecation.
+        """
+        Decorator function for deprecation.
 
         Parameters
         ----------
@@ -425,7 +437,8 @@ def deprecated_params(
 
         @functools.wraps(function)
         def wrapper(*args, **kwargs):
-            """Wrapper function for deprecation.
+            """
+            Wrapper function for deprecation.
 
             Parameters
             ----------

@@ -23,7 +23,8 @@ gfx_version = gfx.__version__
 
 
 def get_info(verbose=False):
-    """Return dict describing the context of this package.
+    """
+    Return dict describing the context of this package.
 
     Parameters
     ----------
@@ -67,7 +68,8 @@ def get_info(verbose=False):
 
 
 def enable_warnings(warnings_origin=None):
-    """Enable global warnings.
+    """
+    Enable global warnings.
 
     Parameters
     ----------
@@ -81,7 +83,8 @@ def enable_warnings(warnings_origin=None):
 
 
 def disable_warnings(warnings_origin=None):
-    """Disable global warnings.
+    """
+    Disable global warnings.
 
     Parameters
     ----------

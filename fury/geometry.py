@@ -8,7 +8,8 @@ from fury.lib import (
 
 
 def buffer_to_geometry(positions, **kwargs):
-    """Convert a buffer to a geometry object.
+    """
+    Convert a buffer to a geometry object.
 
     Parameters
     ----------
@@ -113,7 +114,8 @@ def line_buffer_separator(line_vertices, color=None):
 
 
 def rotate_vector(v, axis, angle):
-    """Rotate a vector `v` around an axis `axis` by an angle `angle`.
+    """
+    Rotate a vector `v` around an axis `axis` by an angle `angle`.
 
     Parameters
     ----------
@@ -140,7 +142,8 @@ def rotate_vector(v, axis, angle):
 
 
 def prune_colinear(arr, colinear_threshold=0.9999):
-    """Prune colinear points from the array.
+    """
+    Prune colinear points from the array.
 
     Parameters
     ----------
@@ -171,7 +174,8 @@ def prune_colinear(arr, colinear_threshold=0.9999):
 
 
 def axes_for_dir(d, prev_x=None):
-    """Compute the axes for a given direction vector.
+    """
+    Compute the axes for a given direction vector.
 
     Parameters
     ----------

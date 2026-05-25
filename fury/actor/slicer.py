@@ -55,7 +55,8 @@ def data_slicer(
     alpha_mode="auto",
     depth_write=False,
 ):
-    """Visualize a 3D volume data as a slice.
+    """
+    Visualize a 3D volume data as a slice.
 
     Parameters
     ----------
@@ -142,7 +143,8 @@ def data_slicer(
 
 
 class VectorField(WorldObject, Actor):
-    """Class to visualize a vector field.
+    """
+    Class to visualize a vector field.
 
     Parameters
     ----------
@@ -238,7 +240,8 @@ class VectorField(WorldObject, Actor):
             self.cross_section = cross_section
 
     def get_bounding_box(self):
-        """Get the bounding box of the vector field.
+        """
+        Get the bounding box of the vector field.
 
         Returns
         -------
@@ -253,7 +256,8 @@ class VectorField(WorldObject, Actor):
 
     @property
     def cross_section(self):
-        """Get the cross section of the vector field.
+        """
+        Get the cross section of the vector field.
 
         Returns
         -------
@@ -264,7 +268,8 @@ class VectorField(WorldObject, Actor):
 
     @cross_section.setter
     def cross_section(self, value):
-        """Set the cross section of the vector field.
+        """
+        Set the cross section of the vector field.
 
         Parameters
         ----------
@@ -291,7 +296,8 @@ class VectorField(WorldObject, Actor):
 
     @property
     def visibility(self):
-        """Get the visibility of the vector field.
+        """
+        Get the visibility of the vector field.
 
         Returns
         -------
@@ -303,7 +309,8 @@ class VectorField(WorldObject, Actor):
 
     @visibility.setter
     def visibility(self, value):
-        """Set the visibility of the vector field.
+        """
+        Set the visibility of the vector field.
 
         Parameters
         ----------
@@ -317,7 +324,8 @@ class VectorField(WorldObject, Actor):
 
 
 def _max_voxels_per_chunk(*, max_buffer_size, max_workgroups):
-    """Compute the maximum number of voxels that fit in one VectorField chunk.
+    """
+    Compute the maximum number of voxels that fit in one VectorField chunk.
 
     Two independent device limits constrain how large a single VectorField
     actor may be:
@@ -357,7 +365,8 @@ def _create_chunked_vector_field(
     actor_params,
     chunk_actor_postprocess=None,
 ):
-    """Create a VectorField group, chunking when required by device limits.
+    """
+    Create a VectorField group, chunking when required by device limits.
 
     Parameters
     ----------
@@ -432,7 +441,8 @@ def vector_field(
     opacity=1.0,
     thickness=1.0,
 ):
-    """Visualize a vector field with different features.
+    """
+    Visualize a vector field with different features.
 
     Parameters
     ----------
@@ -483,7 +493,8 @@ def vector_field_slicer(
     thickness=1.0,
     visibility=(True, True, True),
 ):
-    """Visualize a vector field with different features.
+    """
+    Visualize a vector field with different features.
 
     Parameters
     ----------
@@ -542,7 +553,8 @@ def vector_field_slicer(
 
 @register_wgpu_render_function(VectorField, VectorFieldThinLineMaterial)
 def register_vector_field_thin_shaders(wobject):
-    """Register PeaksActor shaders.
+    """
+    Register PeaksActor shaders.
 
     Parameters
     ----------
@@ -561,7 +573,8 @@ def register_vector_field_thin_shaders(wobject):
 
 @register_wgpu_render_function(VectorField, VectorFieldLineMaterial)
 def register_vector_field_shaders(wobject):
-    """Register PeaksActor shaders.
+    """
+    Register PeaksActor shaders.
 
     Parameters
     ----------
@@ -580,7 +593,8 @@ def register_vector_field_shaders(wobject):
 
 @register_wgpu_render_function(VectorField, VectorFieldArrowMaterial)
 def register_vector_field_arrow_shaders(wobject):
-    """Register PeaksActor shaders.
+    """
+    Register PeaksActor shaders.
 
     Parameters
     ----------
@@ -598,7 +612,8 @@ def register_vector_field_arrow_shaders(wobject):
 
 
 class SphGlyph(Mesh):
-    """Visualize a spherical harmonic glyph with different features.
+    """
+    Visualize a spherical harmonic glyph with different features.
 
     Parameters
     ----------
@@ -706,7 +721,8 @@ class SphGlyph(Mesh):
 
     @property
     def l_max(self):
-        """Get the maximum degree of the spherical harmonics.
+        """
+        Get the maximum degree of the spherical harmonics.
 
         Returns
         -------
@@ -717,7 +733,8 @@ class SphGlyph(Mesh):
 
     @l_max.setter
     def l_max(self, value):
-        """Set the maximum degree of the spherical harmonics.
+        """
+        Set the maximum degree of the spherical harmonics.
 
         Parameters
         ----------
@@ -736,7 +753,8 @@ class SphGlyph(Mesh):
 
     @property
     def scale(self):
-        """Get the scale of the spherical glyph.
+        """
+        Get the scale of the spherical glyph.
 
         Returns
         -------
@@ -747,7 +765,8 @@ class SphGlyph(Mesh):
 
     @scale.setter
     def scale(self, value):
-        """Set the scale of the spherical glyph.
+        """
+        Set the scale of the spherical glyph.
 
         Parameters
         ----------
@@ -760,7 +779,8 @@ class SphGlyph(Mesh):
 def sph_glyph(
     coeffs, *, sphere=None, basis_type="standard", color_type="sign", shininess=50
 ):
-    """Visualize a spherical harmonic glyph with different features.
+    """
+    Visualize a spherical harmonic glyph with different features.
 
     Parameters
     ----------
@@ -843,7 +863,8 @@ def sph_glyph(
 
 @register_wgpu_render_function(SphGlyph, SphGlyphMaterial)
 def register_glyph_shaders(wobject):
-    """Register Glyph shaders.
+    """
+    Register Glyph shaders.
 
     Parameters
     ----------

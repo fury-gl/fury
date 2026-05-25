@@ -22,7 +22,8 @@ header = [
 
 
 def generate_requirement_file(name, req_list):
-    """Write a single requirements file with the shared header.
+    """
+    Write a single requirements file with the shared header.
 
     Parameters
     ----------
@@ -36,7 +37,8 @@ def generate_requirement_file(name, req_list):
 
 
 def deduplicate(items):
-    """Preserve order while removing duplicate strings.
+    """
+    Preserve order while removing duplicate strings.
 
     Parameters
     ----------
@@ -63,7 +65,8 @@ def expand_project_extras(
     project_name,
     optional_dependencies,
 ):
-    """Expand references such as `project[extra1,extra2]` using pyproject extras.
+    """
+    Expand references such as `project[extra1,extra2]` using pyproject extras.
 
     Extras are resolved recursively and deduplicated while preserving order. If an
     unknown extra is referenced we raise a ValueError to surface the issue early.
@@ -92,7 +95,8 @@ def expand_project_extras(
     memo = {}
 
     def find_project_extras(requirement):
-        """Return extras list if the requirement references the local project.
+        """
+        Return extras list if the requirement references the local project.
 
         Parameters
         ----------
@@ -135,7 +139,8 @@ def expand_project_extras(
         return extras
 
     def expand_extra(extra, stack):
-        """Recursively resolve a single extra name.
+        """
+        Recursively resolve a single extra name.
 
         Parameters
         ----------
@@ -171,7 +176,8 @@ def expand_project_extras(
         return memo[extra]
 
     def expand_requirement(req_str, stack):
-        """Expand a requirement that may reference local extras.
+        """
+        Expand a requirement that may reference local extras.
 
         Parameters
         ----------

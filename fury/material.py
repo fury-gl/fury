@@ -19,7 +19,8 @@ from fury.lib import (
 
 
 def validate_opacity(opacity):
-    """Ensure opacity is between 0 and 1.
+    """
+    Ensure opacity is between 0 and 1.
 
     Parameters
     ----------
@@ -44,7 +45,8 @@ def validate_opacity(opacity):
 
 
 def validate_color(color, opacity, mode):
-    """Validate and modify color based on opacity and mode.
+    """
+    Validate and modify color based on opacity and mode.
 
     Parameters
     ----------
@@ -95,7 +97,8 @@ def _create_mesh_material(
     alpha_mode="blend",
     depth_write=True,
 ):
-    """Create a mesh material.
+    """
+    Create a mesh material.
 
     Parameters
     ----------
@@ -339,7 +342,8 @@ def _create_points_material(
     alpha_mode="blend",
     depth_write=True,
 ):
-    """Create a points material.
+    """
+    Create a points material.
 
     Parameters
     ----------
@@ -424,7 +428,8 @@ def _create_text_material(
     alpha_mode="blend",
     depth_write=True,
 ):
-    """Create a text material.
+    """
+    Create a text material.
 
     Parameters
     ----------
@@ -525,7 +530,8 @@ def _create_image_material(
 
 
 class VectorFieldThinLineMaterial(LineMaterial):
-    """Material for VectorFieldActor.
+    """
+    Material for VectorFieldActor.
 
     Parameters
     ----------
@@ -545,7 +551,8 @@ class VectorFieldThinLineMaterial(LineMaterial):
     )
 
     def __init__(self, cross_section, *, visibility=None, **kwargs):
-        """Initialize the VectorFieldMaterial.
+        """
+        Initialize the VectorFieldMaterial.
 
         Parameters
         ----------
@@ -564,7 +571,8 @@ class VectorFieldThinLineMaterial(LineMaterial):
 
     @property
     def visibility(self):
-        """Get the visibility of the vector field in each dimension.
+        """
+        Get the visibility of the vector field in each dimension.
 
         Returns
         -------
@@ -578,7 +586,8 @@ class VectorFieldThinLineMaterial(LineMaterial):
 
     @visibility.setter
     def visibility(self, visibility):
-        """Set the visibility of the vector field in each dimension.
+        """
+        Set the visibility of the vector field in each dimension.
 
         Parameters
         ----------
@@ -606,7 +615,8 @@ class VectorFieldThinLineMaterial(LineMaterial):
 
     @property
     def cross_section(self):
-        """Get the cross section of the vector field.
+        """
+        Get the cross section of the vector field.
 
         Returns
         -------
@@ -617,7 +627,8 @@ class VectorFieldThinLineMaterial(LineMaterial):
 
     @cross_section.setter
     def cross_section(self, cross_section):
-        """Set the cross section of the vector field.
+        """
+        Set the cross section of the vector field.
 
         Parameters
         ----------
@@ -634,7 +645,8 @@ class VectorFieldThinLineMaterial(LineMaterial):
 
 
 class VectorFieldLineMaterial(VectorFieldThinLineMaterial):
-    """Material for VectorFieldActor.
+    """
+    Material for VectorFieldActor.
 
     This class provides a way to distinguish the usage of right shader for
     creating a vector field.
@@ -642,7 +654,8 @@ class VectorFieldLineMaterial(VectorFieldThinLineMaterial):
 
 
 class VectorFieldArrowMaterial(VectorFieldThinLineMaterial):
-    """Material for VectorFieldActor.
+    """
+    Material for VectorFieldActor.
 
     This class provides a way to distinguish the usage of right shader for
     creating a vector field.
@@ -650,7 +663,8 @@ class VectorFieldArrowMaterial(VectorFieldThinLineMaterial):
 
 
 class SphGlyphMaterial(MeshPhongMaterial):
-    """Initialize the Spherical Glyph Material.
+    """
+    Initialize the Spherical Glyph Material.
 
     Parameters
     ----------
@@ -683,7 +697,8 @@ class SphGlyphMaterial(MeshPhongMaterial):
         specular="#494949",
         **kwargs,
     ):
-        """Initialize the Spherical Glyph Material.
+        """
+        Initialize the Spherical Glyph Material.
 
         Parameters
         ----------
@@ -708,7 +723,8 @@ class SphGlyphMaterial(MeshPhongMaterial):
 
     @property
     def n_coeffs(self):
-        """Get the maximum number of spherical harmonic coefficients.
+        """
+        Get the maximum number of spherical harmonic coefficients.
 
         Returns
         -------
@@ -719,7 +735,8 @@ class SphGlyphMaterial(MeshPhongMaterial):
 
     @n_coeffs.setter
     def n_coeffs(self, value):
-        """Set the maximum number of spherical harmonic coefficients.
+        """
+        Set the maximum number of spherical harmonic coefficients.
 
         Parameters
         ----------
@@ -733,7 +750,8 @@ class SphGlyphMaterial(MeshPhongMaterial):
 
     @property
     def scale(self):
-        """Get the scale factor.
+        """
+        Get the scale factor.
 
         Returns
         -------
@@ -744,7 +762,8 @@ class SphGlyphMaterial(MeshPhongMaterial):
 
     @scale.setter
     def scale(self, value):
-        """Set the scale factor.
+        """
+        Set the scale factor.
 
         Parameters
         ----------
@@ -758,7 +777,8 @@ class SphGlyphMaterial(MeshPhongMaterial):
 
 
 class StreamlinesMaterial(LineMaterial):
-    """Initialize the Streamlines Material.
+    """
+    Initialize the Streamlines Material.
 
     Parameters
     ----------
@@ -792,7 +812,8 @@ class StreamlinesMaterial(LineMaterial):
         roi_dim=(0, 0, 0),
         **kwargs,
     ):
-        """Initialize the Streamline Material.
+        """
+        Initialize the Streamline Material.
 
         Parameters
         ----------
@@ -817,7 +838,8 @@ class StreamlinesMaterial(LineMaterial):
 
     @property
     def outline_thickness(self):
-        """Get the outline thickness.
+        """
+        Get the outline thickness.
 
         Returns
         -------
@@ -828,7 +850,8 @@ class StreamlinesMaterial(LineMaterial):
 
     @outline_thickness.setter
     def outline_thickness(self, value):
-        """Set the outline thickness.
+        """
+        Set the outline thickness.
 
         Parameters
         ----------
@@ -840,7 +863,8 @@ class StreamlinesMaterial(LineMaterial):
 
     @property
     def outline_color(self):
-        """Get the outline color.
+        """
+        Get the outline color.
 
         Returns
         -------
@@ -851,7 +875,8 @@ class StreamlinesMaterial(LineMaterial):
 
     @outline_color.setter
     def outline_color(self, value):
-        """Set the outline color.
+        """
+        Set the outline color.
 
         Parameters
         ----------
@@ -866,7 +891,8 @@ class StreamlinesMaterial(LineMaterial):
 
     @property
     def roi_enabled(self):
-        """Return True when ROI-based culling is active.
+        """
+        Return True when ROI-based culling is active.
 
         Returns
         -------
@@ -877,7 +903,8 @@ class StreamlinesMaterial(LineMaterial):
 
     @roi_enabled.setter
     def roi_enabled(self, value):
-        """Enable/disable ROI-based culling.
+        """
+        Enable/disable ROI-based culling.
 
         Parameters
         ----------
@@ -889,7 +916,8 @@ class StreamlinesMaterial(LineMaterial):
 
     @property
     def roi_dim(self):
-        """ROI grid dimensions as (nx, ny, nz).
+        """
+        ROI grid dimensions as (nx, ny, nz).
 
         Returns
         -------
@@ -900,7 +928,8 @@ class StreamlinesMaterial(LineMaterial):
 
     @roi_dim.setter
     def roi_dim(self, value):
-        """Set the ROI grid dimensions.
+        """
+        Set the ROI grid dimensions.
 
         Parameters
         ----------
@@ -920,7 +949,8 @@ class StreamlinesMaterial(LineMaterial):
 
 
 class _StreamlineBakedMaterial(StreamlinesMaterial):
-    """Initialize the internal baked streamline material.
+    """
+    Initialize the internal baked streamline material.
 
     Parameters
     ----------
@@ -931,7 +961,8 @@ class _StreamlineBakedMaterial(StreamlinesMaterial):
     """
 
     def __init__(self, *, auto_detach=True, **kwargs):
-        """Initialize the internal baked streamline material.
+        """
+        Initialize the internal baked streamline material.
 
         Parameters
         ----------
@@ -945,7 +976,8 @@ class _StreamlineBakedMaterial(StreamlinesMaterial):
 
 
 class BillboardMaterial(MeshBasicMaterial):
-    """Billboard material for creating quads that always face the camera.
+    """
+    Billboard material for creating quads that always face the camera.
 
     This material is designed to work with the BillboardShader to create
     rectangles that automatically rotate to face the camera while maintaining
@@ -959,7 +991,8 @@ class BillboardMaterial(MeshBasicMaterial):
     """
 
     def __init__(self, **kwargs):
-        """Initialize the material and forward arguments to the base class.
+        """
+        Initialize the material and forward arguments to the base class.
 
         Parameters
         ----------
@@ -970,7 +1003,8 @@ class BillboardMaterial(MeshBasicMaterial):
 
 
 class StreamtubeMaterial(MeshPhongMaterial):
-    """Material for GPU-generated streamtubes.
+    """
+    Material for GPU-generated streamtubes.
 
     Parameters
     ----------
@@ -979,7 +1013,8 @@ class StreamtubeMaterial(MeshPhongMaterial):
     """
 
     def __init__(self, **kwargs):
-        """Initialise the material with MeshPhongMaterial keyword arguments.
+        """
+        Initialise the material with MeshPhongMaterial keyword arguments.
 
         Parameters
         ----------
@@ -990,7 +1025,8 @@ class StreamtubeMaterial(MeshPhongMaterial):
 
 
 class _StreamtubeBakedMaterial(MeshPhongMaterial):
-    """Internal material for compute-shader-based streamtubes with auto-baking.
+    """
+    Internal material for compute-shader-based streamtubes with auto-baking.
 
     This material is used internally by the streamtube actor when GPU compute
     shaders are available. Users should not instantiate this directly; instead
@@ -1033,7 +1069,8 @@ class _StreamtubeBakedMaterial(MeshPhongMaterial):
         auto_detach=True,
         **kwargs,
     ):
-        """Initialise uniforms controlling the compute-driven streamtube.
+        """
+        Initialise uniforms controlling the compute-driven streamtube.
 
         Parameters
         ----------
@@ -1057,7 +1094,8 @@ class _StreamtubeBakedMaterial(MeshPhongMaterial):
 
     @property
     def radius(self):
-        """Get the tube radius used by the compute shader.
+        """
+        Get the tube radius used by the compute shader.
 
         Returns
         -------
@@ -1068,7 +1106,8 @@ class _StreamtubeBakedMaterial(MeshPhongMaterial):
 
     @radius.setter
     def radius(self, value):
-        """Set the tube radius used in the compute shader.
+        """
+        Set the tube radius used in the compute shader.
 
         Parameters
         ----------
@@ -1080,7 +1119,8 @@ class _StreamtubeBakedMaterial(MeshPhongMaterial):
 
     @property
     def segments(self):
-        """Get the number of radial segments per tube.
+        """
+        Get the number of radial segments per tube.
 
         Returns
         -------
@@ -1091,7 +1131,8 @@ class _StreamtubeBakedMaterial(MeshPhongMaterial):
 
     @segments.setter
     def segments(self, value):
-        """Set the number of radial segments per tube.
+        """
+        Set the number of radial segments per tube.
 
         Parameters
         ----------
@@ -1103,7 +1144,8 @@ class _StreamtubeBakedMaterial(MeshPhongMaterial):
 
     @property
     def end_caps(self):
-        """Check whether end caps are rendered.
+        """
+        Check whether end caps are rendered.
 
         Returns
         -------
@@ -1114,7 +1156,8 @@ class _StreamtubeBakedMaterial(MeshPhongMaterial):
 
     @end_caps.setter
     def end_caps(self, value):
-        """Enable or disable end caps on the tubes.
+        """
+        Enable or disable end caps on the tubes.
 
         Parameters
         ----------
@@ -1126,7 +1169,8 @@ class _StreamtubeBakedMaterial(MeshPhongMaterial):
 
     @property
     def line_count(self):
-        """Get the number of lines processed by the compute shader.
+        """
+        Get the number of lines processed by the compute shader.
 
         Returns
         -------
@@ -1137,7 +1181,8 @@ class _StreamtubeBakedMaterial(MeshPhongMaterial):
 
     @line_count.setter
     def line_count(self, value):
-        """Update the number of lines handled by the compute shader.
+        """
+        Update the number of lines handled by the compute shader.
 
         Parameters
         ----------
@@ -1148,7 +1193,8 @@ class _StreamtubeBakedMaterial(MeshPhongMaterial):
         self.uniform_buffer.update_full()
 
     def _setup_compute_shader(self, line_count, max_line_length, tube_segments):
-        """Record metadata used by the GPU compute pass.
+        """
+        Record metadata used by the GPU compute pass.
 
         Parameters
         ----------
@@ -1166,7 +1212,8 @@ class _StreamtubeBakedMaterial(MeshPhongMaterial):
 
 
 class BillboardSphereMaterial(MeshPhongMaterial):
-    """Phong-lit material for billboard-based impostor spheres.
+    """
+    Phong-lit material for billboard-based impostor spheres.
 
     Parameters
     ----------
@@ -1176,7 +1223,8 @@ class BillboardSphereMaterial(MeshPhongMaterial):
     """
 
     def __init__(self, **material_kwargs):
-        """Initialize the sphere impostor material.
+        """
+        Initialize the sphere impostor material.
 
         Parameters
         ----------

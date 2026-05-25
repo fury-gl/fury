@@ -38,7 +38,8 @@ def get_default_cubes(
     colors=DEFAULT_COLORS,
     scales=DEFAULT_SCALES,
 ):
-    """Provides cube actors with default parameters
+    """
+    Provides cube actors with default parameters
 
     Parameters
     ----------
@@ -75,7 +76,8 @@ def get_default_cubes(
 
 
 def get_default_panels(sizes=None, colors=None):
-    """Provides Panels with default parameters
+    """
+    Provides Panels with default parameters
 
     Parameters
     ----------

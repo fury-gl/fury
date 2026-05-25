@@ -17,7 +17,8 @@ def box(
     wireframe=False,
     wireframe_thickness=1.0,
 ):
-    """Create one or many boxes with different features.
+    """
+    Create one or many boxes with different features.
 
     Parameters
     ----------
@@ -94,7 +95,8 @@ def frustum(
     wireframe=False,
     wireframe_thickness=1.0,
 ):
-    """Create one or many frustums with different features.
+    """
+    Create one or many frustums with different features.
 
     Parameters
     ----------
@@ -168,7 +170,8 @@ def tetrahedron(
     wireframe=False,
     wireframe_thickness=1.0,
 ):
-    """Create one or many tetrahedrons with different features.
+    """
+    Create one or many tetrahedrons with different features.
 
     Parameters
     ----------
@@ -242,7 +245,8 @@ def icosahedron(
     wireframe=False,
     wireframe_thickness=1.0,
 ):
-    """Create one or many icosahedrons with different features.
+    """
+    Create one or many icosahedrons with different features.
 
     Parameters
     ----------
@@ -316,7 +320,8 @@ def rhombicuboctahedron(
     wireframe=False,
     wireframe_thickness=1.0,
 ):
-    """Create one or many rhombicuboctahedrons with different features.
+    """
+    Create one or many rhombicuboctahedrons with different features.
 
     Parameters
     ----------
@@ -391,7 +396,8 @@ def triangularprism(
     wireframe=False,
     wireframe_thickness=1.0,
 ):
-    """Create one or many triangular prisms with different features.
+    """
+    Create one or many triangular prisms with different features.
 
     Parameters
     ----------
@@ -465,7 +471,8 @@ def pentagonalprism(
     wireframe=False,
     wireframe_thickness=1.0,
 ):
-    """Create one or many pentagonal prisms with different features.
+    """
+    Create one or many pentagonal prisms with different features.
 
     Parameters
     ----------
@@ -539,7 +546,8 @@ def octagonalprism(
     wireframe=False,
     wireframe_thickness=1.0,
 ):
-    """Create one or many octagonal prisms with different features.
+    """
+    Create one or many octagonal prisms with different features.
 
     Parameters
     ----------
@@ -614,7 +622,8 @@ def superquadric(
     wireframe=False,
     wireframe_thickness=1.0,
 ):
-    """Create one or many superquadrics with different features.
+    """
+    Create one or many superquadrics with different features.
 
     Parameters
     ----------

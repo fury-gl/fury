@@ -32,7 +32,8 @@ class Actor:
     """Base Actor class for making APIs user-friendly."""
 
     def rotate(self, rotation):
-        """Rotate the actor by the given rotation.
+        """
+        Rotate the actor by the given rotation.
 
         Parameters
         ----------
@@ -47,7 +48,8 @@ class Actor:
         rotate(quaternion, actor=self)
 
     def translate(self, translation):
-        """Translate the actor by the given translation vector.
+        """
+        Translate the actor by the given translation vector.
 
         Parameters
         ----------
@@ -62,7 +64,8 @@ class Actor:
         translate(translation, actor=self)
 
     def scale(self, scales):
-        """Scale the actor by the given scale factors.
+        """
+        Scale the actor by the given scale factors.
 
         Parameters
         ----------
@@ -84,7 +87,8 @@ class Actor:
         scale(scales, actor=self)
 
     def transform(self, matrix):
-        """Apply a transformation matrix to the actor.
+        """
+        Apply a transformation matrix to the actor.
 
         This transformation replaces any existing transformations.
 
@@ -102,7 +106,8 @@ class Actor:
 
     @property
     def opacity(self):
-        """Get the opacity of the actor.
+        """
+        Get the opacity of the actor.
 
         Returns
         -------
@@ -117,7 +122,8 @@ class Actor:
 
     @opacity.setter
     def opacity(self, opacity):
-        """Set the opacity of the actor.
+        """
+        Set the opacity of the actor.
 
         Parameters
         ----------
@@ -128,7 +134,8 @@ class Actor:
 
     @staticmethod
     def _euler_to_quaternion(rotation):
-        """Convert XYZ Euler angles (radians) to a quaternion.
+        """
+        Convert XYZ Euler angles (radians) to a quaternion.
 
         Parameters
         ----------
@@ -173,7 +180,8 @@ class Group(gfx.Group, Actor):
 
 
 def create_mesh(geometry, material):
-    """Create a mesh object.
+    """
+    Create a mesh object.
 
     Parameters
     ----------
@@ -226,7 +234,8 @@ def create_line(geometry, material):
 
 
 def create_point(geometry, material):
-    """Create a point object.
+    """
+    Create a point object.
 
     Parameters
     ----------
@@ -263,7 +272,8 @@ def create_point(geometry, material):
 
 
 def create_text(text, material, **kwargs):
-    """Create a text object.
+    """
+    Create a text object.
 
     Parameters
     ----------
@@ -299,7 +309,8 @@ def create_text(text, material, **kwargs):
 
 
 def create_image(image_input, material, **kwargs):
-    """Create an image object.
+    """
+    Create an image object.
 
     Parameters
     ----------
@@ -360,7 +371,8 @@ def actor_from_primitive(
     wireframe=False,
     wireframe_thickness=1.0,
 ):
-    """Build an actor from a primitive.
+    """
+    Build an actor from a primitive.
 
     Parameters
     ----------
@@ -482,7 +494,8 @@ def arrow(
     material="phong",
     enable_picking=True,
 ):
-    """Create one or many arrows with different features.
+    """
+    Create one or many arrows with different features.
 
     Parameters
     ----------
@@ -613,7 +626,8 @@ def axes(
     color_z=(0.0, 0.0, 1.0),
     opacity=1.0,
 ):
-    """Create coordinate system axes using colored arrows.
+    """
+    Create coordinate system axes using colored arrows.
 
     The axes are represented as arrows with different colors:
     red = X-axis, green = Y-axis, blue = Z-axis.
@@ -666,7 +680,8 @@ def create_axes_helper(
     endpoint_disk_radius=0.33,
     label_font_size=0.4,
 ):
-    """Create actors composing a UI axes helper.
+    """
+    Create actors composing a UI axes helper.
 
     This returns the helper group and related actor lists so callers can
     attach callbacks and place it in scene-specific coordinate systems.

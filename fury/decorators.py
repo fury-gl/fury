@@ -1,4 +1,5 @@
-"""Decorators for FURY tests and functions.
+"""
+Decorators for FURY tests and functions.
 
 This module provides decorators to handle doctests, parameter validation, and
 keyword-only arguments enforcement.
@@ -23,7 +24,8 @@ SKIP_RE = re.compile(r"(\s*>>>.*?)(\s*)#\s*skip\s+if\s+(.*)$")
 
 
 def doctest_skip_parser(func):
-    """Replace custom skip test markup in doctests.
+    """
+    Replace custom skip test markup in doctests.
 
     Parameters
     ----------
@@ -74,7 +76,8 @@ def warn_on_args_to_kwargs(
     from_version="0.11.0",
     until_version="0.14.0",
 ):
-    """Enforce keyword-only arguments.
+    """
+    Enforce keyword-only arguments.
 
     Parameters
     ----------
@@ -112,7 +115,8 @@ def warn_on_args_to_kwargs(
     """  # noqa: E501
 
     def decorator(func):
-        """Enforce keyword-only arguments in a function.
+        """
+        Enforce keyword-only arguments in a function.
 
         Parameters
         ----------
@@ -127,7 +131,8 @@ def warn_on_args_to_kwargs(
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-            """Handle function arguments and enforce keyword-only arguments.
+            """
+            Handle function arguments and enforce keyword-only arguments.
 
             Parameters
             ----------

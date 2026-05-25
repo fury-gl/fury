@@ -8,14 +8,10 @@ from fury.ui.core import UI, Anchor, Rectangle2D
 
 
 class Panel2D(UI):
-    """A 2D UI Panel.
+    """
+    A 2D UI Panel.
 
     Can contain one or more UI elements.
-
-    Attributes
-    ----------
-    alignment : [left, right]
-        Alignment of the panel with respect to the overall screen.
 
     Parameters
     ----------
@@ -35,6 +31,11 @@ class Panel2D(UI):
         Width of the border.
     has_border : bool, optional
         If the panel should have borders.
+
+    Attributes
+    ----------
+    alignment : [left, right]
+        Alignment of the panel with respect to the overall screen.
     """
 
     def __init__(
@@ -68,7 +69,8 @@ class Panel2D(UI):
         self._drag_offset = None
 
     def _setup(self):
-        """Set up this UI component.
+        """
+        Set up this UI component.
 
         Create the background (Rectangle2D) of the panel and initialize the
         border elements (Rectangle2D).
@@ -104,7 +106,8 @@ class Panel2D(UI):
         self.background.on_left_mouse_button_dragged = self.left_button_dragged
 
     def _get_actors(self):
-        """Get actors composing this UI component.
+        """
+        Get actors composing this UI component.
 
         Returns
         -------
@@ -121,7 +124,8 @@ class Panel2D(UI):
         return actors
 
     def _get_size(self):
-        """Get the actual size of the panel.
+        """
+        Get the actual size of the panel.
 
         Returns
         -------
@@ -131,7 +135,8 @@ class Panel2D(UI):
         return self.background.size
 
     def resize(self, size):
-        """Set the panel size.
+        """
+        Set the panel size.
 
         Parameters
         ----------
@@ -174,7 +179,8 @@ class Panel2D(UI):
             element.set_position(coords + offset)
 
     def set_visibility(self, visibility):
-        """Set visibility of this UI component.
+        """
+        Set visibility of this UI component.
 
         Parameters
         ----------
@@ -187,7 +193,8 @@ class Panel2D(UI):
 
     @property
     def color(self):
-        """Get the background color of the panel.
+        """
+        Get the background color of the panel.
 
         Returns
         -------
@@ -198,7 +205,8 @@ class Panel2D(UI):
 
     @color.setter
     def color(self, color):
-        """Set the background color of the panel.
+        """
+        Set the background color of the panel.
 
         Parameters
         ----------
@@ -209,7 +217,8 @@ class Panel2D(UI):
 
     @property
     def opacity(self):
-        """Get the opacity of the panel.
+        """
+        Get the opacity of the panel.
 
         Returns
         -------
@@ -220,7 +229,8 @@ class Panel2D(UI):
 
     @opacity.setter
     def opacity(self, opacity):
-        """Set the opacity of the panel.
+        """
+        Set the opacity of the panel.
 
         Parameters
         ----------
@@ -230,7 +240,8 @@ class Panel2D(UI):
         self.background.opacity = opacity
 
     def add_element(self, element, coords, *, anchor="position", _is_internal=False):
-        """Add a UI component to the panel.
+        """
+        Add a UI component to the panel.
 
         The coordinates represent an offset from the lower left corner of the
         panel.
@@ -286,7 +297,8 @@ class Panel2D(UI):
         self.element_offsets.append((element, offset))
 
     def remove_element(self, element):
-        """Remove a UI component from the panel.
+        """
+        Remove a UI component from the panel.
 
         Parameters
         ----------
@@ -305,7 +317,8 @@ class Panel2D(UI):
             self._children.remove(element)
 
     def update_element(self, element, coords, *, anchor="position"):
-        """Update the position of a UI component in the panel.
+        """
+        Update the position of a UI component in the panel.
 
         Parameters
         ----------
@@ -330,7 +343,8 @@ class Panel2D(UI):
         self.add_element(element, coords, anchor=anchor)
 
     def left_button_pressed(self, event):
-        """Handle left mouse button press event for panel.
+        """
+        Handle left mouse button press event for panel.
 
         Parameters
         ----------
@@ -341,7 +355,8 @@ class Panel2D(UI):
         self._drag_offset = click_pos - self.get_position()
 
     def left_button_dragged(self, event):
-        """Handle left mouse button drag event for panel movement.
+        """
+        Handle left mouse button drag event for panel movement.
 
         Parameters
         ----------
@@ -354,7 +369,8 @@ class Panel2D(UI):
             self.set_position(new_position)
 
     def re_align(self, window_size_change):
-        """Re-organise the elements in case the window size is changed.
+        """
+        Re-organise the elements in case the window size is changed.
 
         Parameters
         ----------
@@ -384,7 +400,8 @@ class Panel2D(UI):
 
     @property
     def border_color(self):
-        """Get the current color of all four borders.
+        """
+        Get the current color of all four borders.
 
         Returns
         -------
@@ -400,7 +417,8 @@ class Panel2D(UI):
 
     @border_color.setter
     def border_color(self, side_color):
-        """Set the color of a specific border.
+        """
+        Set the color of a specific border.
 
         Parameters
         ----------
@@ -422,7 +440,8 @@ class Panel2D(UI):
 
     @property
     def border_width(self):
-        """Get the current width/height of the borders.
+        """
+        Get the current width/height of the borders.
 
         Returns
         -------
@@ -448,7 +467,8 @@ class Panel2D(UI):
 
     @border_width.setter
     def border_width(self, side_width):
-        """Set the width of a specific border.
+        """
+        Set the width of a specific border.
 
         Parameters
         ----------

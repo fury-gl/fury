@@ -25,7 +25,8 @@ def volume_slicer(
     alpha_mode="auto",
     depth_write=False,
 ):
-    """Visualize a 3D volume data as a slice.
+    """
+    Visualize a 3D volume data as a slice.
 
     Parameters
     ----------
@@ -89,7 +90,8 @@ def peaks_slicer(
     thickness=1.0,
     visibility=(True, True, True),
 ):
-    """Visualize peaks as lines in 3D space.
+    """
+    Visualize peaks as lines in 3D space.
 
     Parameters
     ----------
@@ -150,7 +152,8 @@ def peaks_slicer(
 def contour_from_roi(
     data, *, affine=None, color=(1, 0, 0), opacity=0.5, material="phong"
 ):
-    """Generate surface actor from a binary ROI.
+    """
+    Generate surface actor from a binary ROI.
 
     Parameters
     ----------
@@ -183,7 +186,8 @@ def contour_from_roi(
 
 
 def contour_from_label(data, *, affine=None, colors=None, opacities=None):
-    """Generate surface actor from a labeled volume.
+    """
+    Generate surface actor from a labeled volume.
 
     Parameters
     ----------

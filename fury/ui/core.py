@@ -17,10 +17,26 @@ from fury.ui.helpers import UI_Z_RANGE, Anchor, get_anchor_to_multiplier
 
 
 class UI(object, metaclass=abc.ABCMeta):
-    """An umbrella class for all UI elements.
+    """
+    An umbrella class for all UI elements.
 
     While adding UI elements to the scene, we go over all the sub-elements
     that come with it and add those to the scene automatically.
+
+    Parameters
+    ----------
+    position : (float, float)
+        Absolute pixel coordinates `(x, y)` which, in combination with
+        `x_anchor` and `y_anchor`, define the initial placement of this
+        UI component.
+    x_anchor : str, optional
+        Define the horizontal anchor point for `position`. Can be "LEFT",
+        "CENTER", or "RIGHT".
+    y_anchor : str, optional
+        Define the vertical anchor point for `position`. Can be "BOTTOM",
+        "CENTER", or "TOP".
+    z_order : int, optional
+        The initial Z-order of the UI component.
 
     Attributes
     ----------
@@ -67,21 +83,6 @@ class UI(object, metaclass=abc.ABCMeta):
         Callback function for when dragging using the middle mouse button.
     on_key_press: function
         Callback function for when a keyboard key is pressed.
-
-    Parameters
-    ----------
-    position : (float, float)
-        Absolute pixel coordinates `(x, y)` which, in combination with
-        `x_anchor` and `y_anchor`, define the initial placement of this
-        UI component.
-    x_anchor : str, optional
-        Define the horizontal anchor point for `position`. Can be "LEFT",
-        "CENTER", or "RIGHT".
-    y_anchor : str, optional
-        Define the vertical anchor point for `position`. Can be "BOTTOM",
-        "CENTER", or "TOP".
-    z_order : int, optional
-        The initial Z-order of the UI component.
     """
 
     def __init__(
@@ -123,7 +124,8 @@ class UI(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def _setup(self):
-        """Set up this UI component.
+        """
+        Set up this UI component.
 
         This is where you should create all your needed actors and sub UI
         components.
@@ -139,7 +141,8 @@ class UI(object, metaclass=abc.ABCMeta):
 
     @property
     def actors(self):
-        """Get actors composing this UI component.
+        """
+        Get actors composing this UI component.
 
         Returns
         -------
@@ -149,7 +152,8 @@ class UI(object, metaclass=abc.ABCMeta):
         return self._get_actors()
 
     def perform_position_validation(self, x_anchor, y_anchor):
-        """Perform validation checks for anchor string and the 'size' property.
+        """
+        Perform validation checks for anchor string and the 'size' property.
 
         Parameters
         ----------
@@ -173,7 +177,8 @@ class UI(object, metaclass=abc.ABCMeta):
             )
 
     def set_actor_position(self, actor, center_position, z_order):
-        """Set the position of the PyGfx actor.
+        """
+        Set the position of the PyGfx actor.
 
         Parameters
         ----------
@@ -192,7 +197,8 @@ class UI(object, metaclass=abc.ABCMeta):
         actor.local.z = np.interp(z_order, UIContext.z_order_bounds, UI_Z_RANGE)
 
     def set_position(self, coords, x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP):
-        """Position this UI component according to the specified anchor.
+        """
+        Position this UI component according to the specified anchor.
 
         Parameters
         ----------
@@ -217,7 +223,8 @@ class UI(object, metaclass=abc.ABCMeta):
         x_anchor=Anchor.LEFT,
         y_anchor=Anchor.TOP,
     ):
-        """Get the position of this UI component according to the specified anchor.
+        """
+        Get the position of this UI component according to the specified anchor.
 
         Parameters
         ----------
@@ -258,7 +265,8 @@ class UI(object, metaclass=abc.ABCMeta):
 
     @property
     def z_order(self):
-        """Get the Z-order of this UI element.
+        """
+        Get the Z-order of this UI element.
 
         Returns
         -------
@@ -269,7 +277,8 @@ class UI(object, metaclass=abc.ABCMeta):
 
     @z_order.setter
     def z_order(self, z_order):
-        """Set the Z-order of this UI element.
+        """
+        Set the Z-order of this UI element.
 
         Parameters
         ----------
@@ -297,7 +306,8 @@ class UI(object, metaclass=abc.ABCMeta):
 
     @property
     def size(self):
-        """Get width and height of this UI component.
+        """
+        Get width and height of this UI component.
 
         Returns
         -------
@@ -308,7 +318,8 @@ class UI(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def _get_size(self):
-        """Get the actual size of the UI component.
+        """
+        Get the actual size of the UI component.
 
         Returns
         -------
@@ -319,7 +330,8 @@ class UI(object, metaclass=abc.ABCMeta):
         raise NotImplementedError(msg)
 
     def set_visibility(self, visibility):
-        """Set visibility of this UI component.
+        """
+        Set visibility of this UI component.
 
         Parameters
         ----------
@@ -333,7 +345,8 @@ class UI(object, metaclass=abc.ABCMeta):
             child.set_visibility(visibility)
 
     def handle_events(self, actor):
-        """Attach event handlers to the UI object.
+        """
+        Attach event handlers to the UI object.
 
         Parameters
         ----------
@@ -348,7 +361,8 @@ class UI(object, metaclass=abc.ABCMeta):
         actor.add_event_handler(self.pointer_leave_callback, EventType.POINTER_LEAVE)
 
     def mouse_button_down_callback(self, event):
-        """Handle mouse button press event.
+        """
+        Handle mouse button press event.
 
         Parameters
         ----------
@@ -363,7 +377,8 @@ class UI(object, metaclass=abc.ABCMeta):
             self.middle_button_click_callback(event)
 
     def mouse_button_up_callback(self, event):
-        """Handle mouse button release event.
+        """
+        Handle mouse button release event.
 
         Parameters
         ----------
@@ -378,7 +393,8 @@ class UI(object, metaclass=abc.ABCMeta):
             self.middle_button_release_callback(event)
 
     def left_button_click_callback(self, event):
-        """Handle left mouse button press event.
+        """
+        Handle left mouse button press event.
 
         Parameters
         ----------
@@ -399,7 +415,8 @@ class UI(object, metaclass=abc.ABCMeta):
         self.on_left_mouse_button_pressed(event)
 
     def left_button_release_callback(self, event):
-        """Handle left mouse button release event.
+        """
+        Handle left mouse button release event.
 
         Parameters
         ----------
@@ -412,7 +429,8 @@ class UI(object, metaclass=abc.ABCMeta):
         self.on_left_mouse_button_released(event)
 
     def right_button_click_callback(self, event):
-        """Handle right mouse button press event.
+        """
+        Handle right mouse button press event.
 
         Parameters
         ----------
@@ -423,7 +441,8 @@ class UI(object, metaclass=abc.ABCMeta):
         self.on_right_mouse_button_pressed(event)
 
     def right_button_release_callback(self, event):
-        """Handle right mouse button release event.
+        """
+        Handle right mouse button release event.
 
         Parameters
         ----------
@@ -436,7 +455,8 @@ class UI(object, metaclass=abc.ABCMeta):
         self.on_right_mouse_button_released(event)
 
     def middle_button_click_callback(self, event):
-        """Handle middle mouse button press event.
+        """
+        Handle middle mouse button press event.
 
         Parameters
         ----------
@@ -447,7 +467,8 @@ class UI(object, metaclass=abc.ABCMeta):
         self.on_middle_mouse_button_pressed(event)
 
     def middle_button_release_callback(self, event):
-        """Handle middle mouse button release event.
+        """
+        Handle middle mouse button release event.
 
         Parameters
         ----------
@@ -460,7 +481,8 @@ class UI(object, metaclass=abc.ABCMeta):
         self.on_middle_mouse_button_released(event)
 
     def mouse_move_callback(self, event):
-        """Handle mouse move event.
+        """
+        Handle mouse move event.
 
         Parameters
         ----------
@@ -492,7 +514,8 @@ class UI(object, metaclass=abc.ABCMeta):
             self.on_middle_mouse_button_dragged(event)
 
     def key_press_callback(self, event):
-        """Handle key press event.
+        """
+        Handle key press event.
 
         Parameters
         ----------
@@ -502,7 +525,8 @@ class UI(object, metaclass=abc.ABCMeta):
         self.on_key_press(event)
 
     def pointer_enter_callback(self, event):
-        """Handle pointer enter event.
+        """
+        Handle pointer enter event.
 
         Parameters
         ----------
@@ -512,7 +536,8 @@ class UI(object, metaclass=abc.ABCMeta):
         self.on_hover(event)
 
     def pointer_leave_callback(self, event):
-        """Handle pointer leave event.
+        """
+        Handle pointer leave event.
 
         Parameters
         ----------
@@ -524,7 +549,8 @@ class UI(object, metaclass=abc.ABCMeta):
 
 
 class Rectangle2D(UI):
-    """A 2D rectangle sub-classed from UI.
+    """
+    A 2D rectangle sub-classed from UI.
 
     Parameters
     ----------
@@ -549,7 +575,8 @@ class Rectangle2D(UI):
         self.resize(size)
 
     def _setup(self):
-        """Set up this UI component.
+        """
+        Set up this UI component.
 
         Create the plane actor used internally.
         """
@@ -560,7 +587,8 @@ class Rectangle2D(UI):
         self.handle_events(self.actor)
 
     def _get_actors(self):
-        """Get the actors composing this UI component.
+        """
+        Get the actors composing this UI component.
 
         Returns
         -------
@@ -570,7 +598,8 @@ class Rectangle2D(UI):
         return [self.actor]
 
     def _get_size(self):
-        """Get the current size of the rectangle actor.
+        """
+        Get the current size of the rectangle actor.
 
         Returns
         -------
@@ -584,7 +613,8 @@ class Rectangle2D(UI):
 
     @property
     def width(self):
-        """Get the current width of the rectangle.
+        """
+        Get the current width of the rectangle.
 
         Returns
         -------
@@ -595,7 +625,8 @@ class Rectangle2D(UI):
 
     @width.setter
     def width(self, width):
-        """Set the width of the rectangle.
+        """
+        Set the width of the rectangle.
 
         Parameters
         ----------
@@ -606,7 +637,8 @@ class Rectangle2D(UI):
 
     @property
     def height(self):
-        """Get the current height of the rectangle.
+        """
+        Get the current height of the rectangle.
 
         Returns
         -------
@@ -617,7 +649,8 @@ class Rectangle2D(UI):
 
     @height.setter
     def height(self, height):
-        """Set the height of the rectangle.
+        """
+        Set the height of the rectangle.
 
         Parameters
         ----------
@@ -627,7 +660,8 @@ class Rectangle2D(UI):
         self.resize((self.width, height))
 
     def resize(self, size):
-        """Set the rectangle size.
+        """
+        Set the rectangle size.
 
         Parameters
         ----------
@@ -647,7 +681,8 @@ class Rectangle2D(UI):
 
     @property
     def color(self):
-        """Get the rectangle color.
+        """
+        Get the rectangle color.
 
         Returns
         -------
@@ -658,7 +693,8 @@ class Rectangle2D(UI):
 
     @color.setter
     def color(self, color):
-        """Set the rectangle color.
+        """
+        Set the rectangle color.
 
         Parameters
         ----------
@@ -669,7 +705,8 @@ class Rectangle2D(UI):
 
     @property
     def opacity(self):
-        """Get the rectangle opacity.
+        """
+        Get the rectangle opacity.
 
         Returns
         -------
@@ -680,7 +717,8 @@ class Rectangle2D(UI):
 
     @opacity.setter
     def opacity(self, opacity):
-        """Set the rectangle opacity.
+        """
+        Set the rectangle opacity.
 
         Parameters
         ----------
@@ -691,7 +729,8 @@ class Rectangle2D(UI):
 
 
 class Disk2D(UI):
-    """A 2D disk UI component.
+    """
+    A 2D disk UI component.
 
     Parameters
     ----------
@@ -729,7 +768,8 @@ class Disk2D(UI):
         self.opacity = opacity
 
     def _setup(self):
-        """Set up this UI component.
+        """
+        Set up this UI component.
 
         Create the disk actor used internally.
         """
@@ -743,7 +783,8 @@ class Disk2D(UI):
         self.handle_events(self.actor)
 
     def _get_actors(self):
-        """Get the actors composing this UI component.
+        """
+        Get the actors composing this UI component.
 
         Returns
         -------
@@ -753,7 +794,8 @@ class Disk2D(UI):
         return [self.actor]
 
     def _get_size(self):
-        """Get the current size of the disk.
+        """
+        Get the current size of the disk.
 
         Returns
         -------
@@ -772,7 +814,8 @@ class Disk2D(UI):
 
     @property
     def color(self):
-        """Get the color of this UI component.
+        """
+        Get the color of this UI component.
 
         Returns
         -------
@@ -783,7 +826,8 @@ class Disk2D(UI):
 
     @color.setter
     def color(self, color):
-        """Set the color of this UI component.
+        """
+        Set the color of this UI component.
 
         Parameters
         ----------
@@ -794,7 +838,8 @@ class Disk2D(UI):
 
     @property
     def opacity(self):
-        """Get the opacity of this UI component.
+        """
+        Get the opacity of this UI component.
 
         Returns
         -------
@@ -805,7 +850,8 @@ class Disk2D(UI):
 
     @opacity.setter
     def opacity(self, opacity):
-        """Set the opacity of this UI component.
+        """
+        Set the opacity of this UI component.
 
         Parameters
         ----------
@@ -816,7 +862,8 @@ class Disk2D(UI):
 
     @property
     def outer_radius(self):
-        """Get the outer radius of the disk.
+        """
+        Get the outer radius of the disk.
 
         Returns
         -------
@@ -827,7 +874,8 @@ class Disk2D(UI):
 
     @outer_radius.setter
     def outer_radius(self, radius):
-        """Set the outer radius of the disk.
+        """
+        Set the outer radius of the disk.
 
         Parameters
         ----------
@@ -845,7 +893,8 @@ class Disk2D(UI):
 
     @property
     def inner_radius(self):
-        """Get the inner radius of the disk.
+        """
+        Get the inner radius of the disk.
 
         Returns
         -------
@@ -856,7 +905,8 @@ class Disk2D(UI):
 
     @inner_radius.setter
     def inner_radius(self, radius):
-        """Set the inner radius of the disk.
+        """
+        Set the inner radius of the disk.
 
         Parameters
         ----------
@@ -874,7 +924,8 @@ class Disk2D(UI):
 
 
 class TextBlock2D(UI):
-    """A 2D text component with optional background.
+    """
+    A 2D text component with optional background.
 
     Parameters
     ----------
@@ -955,7 +1006,8 @@ class TextBlock2D(UI):
         self.handle_events(self.actor)
 
     def resize(self, size):
-        """Resize the TextBlock2D bounding box.
+        """
+        Resize the TextBlock2D bounding box.
 
         Parameters
         ----------
@@ -979,7 +1031,8 @@ class TextBlock2D(UI):
                 self.update_alignment()
 
     def _get_actors(self):
-        """Get the actors composing this UI component.
+        """
+        Get the actors composing this UI component.
 
         Returns
         -------
@@ -989,7 +1042,8 @@ class TextBlock2D(UI):
         return [self.actor]
 
     def get_formatted_text(self, text):
-        """Format the given text with markdown syntax for bold/italic styles.
+        """
+        Format the given text with markdown syntax for bold/italic styles.
 
         Parameters
         ----------
@@ -1014,7 +1068,8 @@ class TextBlock2D(UI):
 
     @property
     def message(self):
-        """Get the current text message.
+        """
+        Get the current text message.
 
         Returns
         -------
@@ -1025,7 +1080,8 @@ class TextBlock2D(UI):
 
     @message.setter
     def message(self, text):
-        """Set the text message.
+        """
+        Set the text message.
 
         Parameters
         ----------
@@ -1039,7 +1095,8 @@ class TextBlock2D(UI):
 
     @property
     def font_size(self):
-        """Get text font size.
+        """
+        Get text font size.
 
         Returns
         -------
@@ -1050,7 +1107,8 @@ class TextBlock2D(UI):
 
     @font_size.setter
     def font_size(self, size):
-        """Set text font size.
+        """
+        Set text font size.
 
         Parameters
         ----------
@@ -1063,7 +1121,8 @@ class TextBlock2D(UI):
 
     @property
     def font_family(self):
-        """Get font family.
+        """
+        Get font family.
 
         Returns
         -------
@@ -1074,7 +1133,8 @@ class TextBlock2D(UI):
 
     @font_family.setter
     def font_family(self, family="Arial"):
-        """Set font family.
+        """
+        Set font family.
 
         Parameters
         ----------
@@ -1087,7 +1147,8 @@ class TextBlock2D(UI):
 
     @property
     def justification(self):
-        """Get text justification.
+        """
+        Get text justification.
 
         Returns
         -------
@@ -1098,7 +1159,8 @@ class TextBlock2D(UI):
 
     @justification.setter
     def justification(self, justification):
-        """Justify text.
+        """
+        Justify text.
 
         Parameters
         ----------
@@ -1110,7 +1172,8 @@ class TextBlock2D(UI):
 
     @property
     def vertical_justification(self):
-        """Get text vertical justification.
+        """
+        Get text vertical justification.
 
         Returns
         -------
@@ -1121,7 +1184,8 @@ class TextBlock2D(UI):
 
     @vertical_justification.setter
     def vertical_justification(self, vertical_justification):
-        """Justify text vertically.
+        """
+        Justify text vertically.
 
         Parameters
         ----------
@@ -1133,7 +1197,8 @@ class TextBlock2D(UI):
 
     @property
     def bold(self):
-        """Return whether the text is bold.
+        """
+        Return whether the text is bold.
 
         Returns
         -------
@@ -1144,7 +1209,8 @@ class TextBlock2D(UI):
 
     @bold.setter
     def bold(self, flag):
-        """Bold/un-bold text.
+        """
+        Bold/un-bold text.
 
         Parameters
         ----------
@@ -1155,7 +1221,8 @@ class TextBlock2D(UI):
 
     @property
     def italic(self):
-        """Return whether the text is italicised.
+        """
+        Return whether the text is italicised.
 
         Returns
         -------
@@ -1166,7 +1233,8 @@ class TextBlock2D(UI):
 
     @italic.setter
     def italic(self, flag):
-        """Italicise/un-italicise text.
+        """
+        Italicise/un-italicise text.
 
         Parameters
         ----------
@@ -1177,7 +1245,8 @@ class TextBlock2D(UI):
 
     @property
     def color(self):
-        """Get text color.
+        """
+        Get text color.
 
         Returns
         -------
@@ -1188,7 +1257,8 @@ class TextBlock2D(UI):
 
     @color.setter
     def color(self, color):
-        """Set text color.
+        """
+        Set text color.
 
         Parameters
         ----------
@@ -1201,7 +1271,8 @@ class TextBlock2D(UI):
 
     @property
     def background_color(self):
-        """Get the background color.
+        """
+        Get the background color.
 
         Returns
         -------
@@ -1215,7 +1286,8 @@ class TextBlock2D(UI):
 
     @background_color.setter
     def background_color(self, color):
-        """Set the background color.
+        """
+        Set the background color.
 
         Parameters
         ----------
@@ -1234,7 +1306,8 @@ class TextBlock2D(UI):
 
     @property
     def dynamic_bbox(self):
-        """Check if the bounding box is dynamic.
+        """
+        Check if the bounding box is dynamic.
 
         Returns
         -------
@@ -1245,7 +1318,8 @@ class TextBlock2D(UI):
 
     @dynamic_bbox.setter
     def dynamic_bbox(self, flag):
-        """Set the dynamic bounding box state.
+        """
+        Set the dynamic bounding box state.
 
         Parameters
         ----------
@@ -1291,7 +1365,8 @@ class TextBlock2D(UI):
         self.set_actor_position(self.actor, updated_text_position, self.z_order)
 
     def update_bounding_box(self, *, size=None):
-        """Update the text bounding box and background.
+        """
+        Update the text bounding box and background.
 
         Parameters
         ----------
@@ -1319,7 +1394,8 @@ class TextBlock2D(UI):
         self.update_bounding_box()
 
     def get_text_actor_size(self):
-        """Get the rendered size of the text actor.
+        """
+        Get the rendered size of the text actor.
 
         Returns
         -------
@@ -1332,7 +1408,8 @@ class TextBlock2D(UI):
         )
 
     def _get_size(self):
-        """Get the size of the text block.
+        """
+        Get the size of the text block.
 
         Returns
         -------
@@ -1346,7 +1423,8 @@ class TextBlock2D(UI):
 
 
 class Button2D(UI):
-    """Base class for interactive 2D Buttons.
+    """
+    Base class for interactive 2D Buttons.
 
     Parameters
     ----------
@@ -1384,7 +1462,8 @@ class Button2D(UI):
 
     @property
     def enabled(self):
-        """Check if the button is enabled.
+        """
+        Check if the button is enabled.
 
         Returns
         -------
@@ -1395,7 +1474,8 @@ class Button2D(UI):
 
     @enabled.setter
     def enabled(self, value):
-        """Set the button enabled state.
+        """
+        Set the button enabled state.
 
         Parameters
         ----------
@@ -1411,7 +1491,8 @@ class Button2D(UI):
 
     @property
     def toggled(self):
-        """Check if the button is toggled.
+        """
+        Check if the button is toggled.
 
         Returns
         -------
@@ -1422,7 +1503,8 @@ class Button2D(UI):
 
     @toggled.setter
     def toggled(self, value):
-        """Set the button's toggled state.
+        """
+        Set the button's toggled state.
 
         Parameters
         ----------
@@ -1433,7 +1515,8 @@ class Button2D(UI):
         self.update_visual_state()
 
     def _handle_hover(self, event):
-        """Handle the hover on the button area.
+        """
+        Handle the hover on the button area.
 
         Parameters
         ----------
@@ -1446,7 +1529,8 @@ class Button2D(UI):
         self.update_visual_state()
 
     def _handle_dishover(self, event):
-        """Handle the dishover on the button area.
+        """
+        Handle the dishover on the button area.
 
         Parameters
         ----------
@@ -1460,7 +1544,8 @@ class Button2D(UI):
         self.update_visual_state()
 
     def _handle_down(self, event):
-        """Handle the pointer being pressed down.
+        """
+        Handle the pointer being pressed down.
 
         Parameters
         ----------
@@ -1473,7 +1558,8 @@ class Button2D(UI):
         self.update_visual_state()
 
     def _handle_up(self, event):
-        """Handle the pointer being released.
+        """
+        Handle the pointer being released.
 
         Triggers a click action if the release occurs while the button
         is in a pressed state.
@@ -1501,7 +1587,8 @@ class Button2D(UI):
         self.update_visual_state()
 
     def resolve_state_key(self, available_keys):
-        """Determine the current visual state key based on priority.
+        """
+        Determine the current visual state key based on priority.
 
         The priority order is:
         1. 'disabled' (if not enabled)
@@ -1537,7 +1624,8 @@ class Button2D(UI):
         pass
 
     def _get_size(self):
-        """Get the current size of the button.
+        """
+        Get the current size of the button.
 
         Returns
         -------
@@ -1549,7 +1637,8 @@ class Button2D(UI):
         return self._dims
 
     def resize(self, size):
-        """Resize the button and its child components.
+        """
+        Resize the button and its child components.
 
         Parameters
         ----------
@@ -1574,7 +1663,8 @@ class Button2D(UI):
                 self.set_actor_position(self.child, pos, self.z_order)
 
     def _get_actors(self):
-        """Get the actors composing this UI component.
+        """
+        Get the actors composing this UI component.
 
         Returns
         -------
@@ -1590,7 +1680,8 @@ class Button2D(UI):
 
 
 class Slider2D(UI):
-    """Base class for interactive 2D Sliders.
+    """
+    Base class for interactive 2D Sliders.
 
     Parameters
     ----------
@@ -1633,7 +1724,8 @@ class Slider2D(UI):
         shape="disk",
         z_order=0,
     ):
-        """Initialize the 2D slider.
+        """
+        Initialize the 2D slider.
 
         Parameters
         ----------
@@ -1687,7 +1779,8 @@ class Slider2D(UI):
 
     @property
     def value(self):
-        """Get the current numeric value of the slider.
+        """
+        Get the current numeric value of the slider.
 
         Returns
         -------
@@ -1698,7 +1791,8 @@ class Slider2D(UI):
 
     @value.setter
     def value(self, val):
-        """Set the slider numeric value.
+        """
+        Set the slider numeric value.
 
         Parameters
         ----------
@@ -1715,7 +1809,8 @@ class Slider2D(UI):
 
     @property
     def ratio(self):
-        """Get the current normalized ratio (0 to 1).
+        """
+        Get the current normalized ratio (0 to 1).
 
         Returns
         -------
@@ -1726,7 +1821,8 @@ class Slider2D(UI):
 
     @ratio.setter
     def ratio(self, r):
-        """Set the slider ratio.
+        """
+        Set the slider ratio.
 
         Parameters
         ----------
@@ -1740,7 +1836,8 @@ class Slider2D(UI):
 
     @property
     def min_value(self):
-        """Get the minimum value of the slider.
+        """
+        Get the minimum value of the slider.
 
         Returns
         -------
@@ -1751,7 +1848,8 @@ class Slider2D(UI):
 
     @min_value.setter
     def min_value(self, val):
-        """Set the minimum value of the slider.
+        """
+        Set the minimum value of the slider.
 
         Parameters
         ----------
@@ -1763,7 +1861,8 @@ class Slider2D(UI):
 
     @property
     def max_value(self):
-        """Get the maximum value of the slider.
+        """
+        Get the maximum value of the slider.
 
         Returns
         -------
@@ -1774,7 +1873,8 @@ class Slider2D(UI):
 
     @max_value.setter
     def max_value(self, val):
-        """Set the maximum value of the slider.
+        """
+        Set the maximum value of the slider.
 
         Parameters
         ----------
@@ -1785,7 +1885,8 @@ class Slider2D(UI):
         self.value = self._value
 
     def track_click_callback(self, event):
-        """Handle mouse click events on the slider track.
+        """
+        Handle mouse click events on the slider track.
 
         Parameters
         ----------
@@ -1796,7 +1897,8 @@ class Slider2D(UI):
 
     @abc.abstractmethod
     def handle_move_callback(self, event):
-        """Handle mouse drag events to update the slider state.
+        """
+        Handle mouse drag events to update the slider state.
 
         Parameters
         ----------
@@ -1806,7 +1908,8 @@ class Slider2D(UI):
         pass
 
     def handle_release_callback(self, event):
-        """Handle the release of the mouse button.
+        """
+        Handle the release of the mouse button.
 
         Parameters
         ----------
@@ -1821,7 +1924,8 @@ class Slider2D(UI):
         pass
 
     def _get_actors(self):
-        """Get the actors composing this UI component.
+        """
+        Get the actors composing this UI component.
 
         Returns
         -------
@@ -1831,7 +1935,8 @@ class Slider2D(UI):
         return []
 
     def format_text(self):
-        """Return formatted text to display along the slider.
+        """
+        Return formatted text to display along the slider.
 
         Returns
         -------

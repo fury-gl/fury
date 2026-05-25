@@ -48,7 +48,8 @@ TWO_PI = 2.0 * np.pi
 
 
 class TexturedButton2D(Button2D):
-    """A button component that swaps textures based on interaction state.
+    """
+    A button component that swaps textures based on interaction state.
 
     Parameters
     ----------
@@ -69,7 +70,8 @@ class TexturedButton2D(Button2D):
         super().__init__(position=position, size=size, is_toggle=is_toggle)
 
     def _load_textures(self, states):
-        """Load image files into PyGfx textures.
+        """
+        Load image files into PyGfx textures.
 
         Parameters
         ----------
@@ -112,7 +114,8 @@ class TexturedButton2D(Button2D):
 
 
 class TextButton2D(Button2D):
-    """A button component that updates text and color based on state.
+    """
+    A button component that updates text and color based on state.
 
     Parameters
     ----------
@@ -155,7 +158,8 @@ class TextButton2D(Button2D):
         super().__init__(position=position, size=size, is_toggle=is_toggle)
 
     def _setup(self):
-        """Set up the internal TextBlock2D component.
+        """
+        Set up the internal TextBlock2D component.
 
         Initializes the child text block with the default label and font settings.
         """
@@ -196,7 +200,8 @@ class TextButton2D(Button2D):
 
 
 class LineSlider2D(Slider2D):
-    """A 2D Line Slider component.
+    """
+    A 2D Line Slider component.
 
     Parameters
     ----------
@@ -294,7 +299,8 @@ class LineSlider2D(Slider2D):
         self._children.extend([self.track, self.handle, self.text])
 
     def _get_actors(self):
-        """Get the actors composing this UI component.
+        """
+        Get the actors composing this UI component.
 
         Returns
         -------
@@ -305,7 +311,8 @@ class LineSlider2D(Slider2D):
         return []
 
     def _get_size(self):
-        """Calculate the total bounding box size of the slider.
+        """
+        Calculate the total bounding box size of the slider.
 
         Returns
         -------
@@ -357,7 +364,8 @@ class LineSlider2D(Slider2D):
         self.text.message = self.format_text()
 
     def handle_move_callback(self, event):
-        """Handle mouse drag events to update the slider state.
+        """
+        Handle mouse drag events to update the slider state.
 
         Parameters
         ----------
@@ -387,7 +395,8 @@ class LineSlider2D(Slider2D):
 
 
 class PlaybackPanel(UI):
-    """A playback controller designed for FURY v2.
+    """
+    A playback controller designed for FURY v2.
 
     Parameters
     ----------
@@ -402,7 +411,8 @@ class PlaybackPanel(UI):
     """
 
     def __init__(self, *, loop=False, position=(0, 0), width=900, z_order=0):
-        """Initialize the playback panel instance.
+        """
+        Initialize the playback panel instance.
 
         Parameters
         ----------
@@ -540,7 +550,8 @@ class PlaybackPanel(UI):
         self._children.extend([self.panel, self._progress_bar, self.time_text])
 
     def _get_actors(self):
-        """Get the actors composing this UI component.
+        """
+        Get the actors composing this UI component.
 
         Returns
         -------
@@ -551,7 +562,8 @@ class PlaybackPanel(UI):
         return []
 
     def _get_size(self):
-        """Get the total width and height of the playback panel.
+        """
+        Get the total width and height of the playback panel.
 
         Returns
         -------
@@ -561,7 +573,8 @@ class PlaybackPanel(UI):
         return np.array([self._width, 55])
 
     def _play_pause_callback(self, event):
-        """Handle toggle logic between play and pause states.
+        """
+        Handle toggle logic between play and pause states.
 
         Parameters
         ----------
@@ -573,7 +586,8 @@ class PlaybackPanel(UI):
         self.on_play_pause_toggle(self._playing)
 
     def _loop_callback(self, event):
-        """Handle toggle logic for the looping state.
+        """
+        Handle toggle logic for the looping state.
 
         Parameters
         ----------
@@ -585,7 +599,8 @@ class PlaybackPanel(UI):
         self.on_loop_toggle(self._loop)
 
     def _speed_up_callback(self, event):
-        """Increment the playback speed.
+        """
+        Increment the playback speed.
 
         Parameters
         ----------
@@ -597,7 +612,8 @@ class PlaybackPanel(UI):
         self.on_speed_changed(self._speed)
 
     def _slow_down_callback(self, event):
-        """Decrement the playback speed.
+        """
+        Decrement the playback speed.
 
         Parameters
         ----------
@@ -610,7 +626,8 @@ class PlaybackPanel(UI):
         self.on_speed_changed(self._speed)
 
     def _on_progress_change(self, slider):
-        """Update time tracking based on slider movement.
+        """
+        Update time tracking based on slider movement.
 
         Parameters
         ----------
@@ -651,7 +668,8 @@ class PlaybackPanel(UI):
 
     @property
     def current_time(self):
-        """Get the current playback time.
+        """
+        Get the current playback time.
 
         Returns
         -------
@@ -662,7 +680,8 @@ class PlaybackPanel(UI):
 
     @current_time.setter
     def current_time(self, t):
-        """Set the current playback time.
+        """
+        Set the current playback time.
 
         Parameters
         ----------
@@ -674,7 +693,8 @@ class PlaybackPanel(UI):
 
     @property
     def final_time(self):
-        """Get the total duration of the playback.
+        """
+        Get the total duration of the playback.
 
         Returns
         -------
@@ -685,7 +705,8 @@ class PlaybackPanel(UI):
 
     @final_time.setter
     def final_time(self, t):
-        """Set the total duration of the playback.
+        """
+        Set the total duration of the playback.
 
         Parameters
         ----------
@@ -696,7 +717,8 @@ class PlaybackPanel(UI):
 
     @property
     def current_time_str(self):
-        """Get the formatted string representation of current time.
+        """
+        Get the formatted string representation of current time.
 
         Returns
         -------
@@ -707,7 +729,8 @@ class PlaybackPanel(UI):
 
     @current_time_str.setter
     def current_time_str(self, t):
-        """Update the time label string based on seconds.
+        """
+        Update the time label string based on seconds.
 
         Parameters
         ----------
@@ -725,7 +748,8 @@ class PlaybackPanel(UI):
 
     @property
     def speed(self):
-        """Get the current playback speed.
+        """
+        Get the current playback speed.
 
         Returns
         -------
@@ -736,7 +760,8 @@ class PlaybackPanel(UI):
 
     @speed.setter
     def speed(self, val):
-        """Set the playback speed multiplier.
+        """
+        Set the playback speed multiplier.
 
         Parameters
         ----------
@@ -748,7 +773,8 @@ class PlaybackPanel(UI):
         self.speed_text.message = speed_str if speed_str and speed_str != "." else "0"
 
     def left_button_pressed(self, event):
-        """Handle left mouse button press event for PlaybackPanel.
+        """
+        Handle left mouse button press event for PlaybackPanel.
 
         Parameters
         ----------
@@ -759,7 +785,8 @@ class PlaybackPanel(UI):
         self._drag_offset = click_pos - self.get_position()
 
     def left_button_dragged(self, event):
-        """Handle left mouse button drag event for PlaybackPanel.
+        """
+        Handle left mouse button drag event for PlaybackPanel.
 
         Parameters
         ----------
@@ -1724,7 +1751,8 @@ class PlaybackPanel(UI):
 
 
 class RingSlider2D(Slider2D):
-    """A disk slider.
+    """
+    A disk slider.
 
     A disk moves along the boundary of a ring.
     Goes from 0-360 degrees.
@@ -1793,7 +1821,8 @@ class RingSlider2D(Slider2D):
         shape="disk",
         z_order=0,
     ):
-        """Init this UI element.
+        """
+        Init this UI element.
 
         Parameters
         ----------
@@ -1849,7 +1878,8 @@ class RingSlider2D(Slider2D):
         self.value = initial_value
 
     def _setup(self):
-        """Setup this UI component.
+        """
+        Setup this UI component.
 
         Create the slider's circle (Disk2D), the handle (Disk2D) and
         the text (TextBlock2D).
@@ -1874,7 +1904,8 @@ class RingSlider2D(Slider2D):
         self._children.append(self.track)
 
     def _get_size(self):
-        """Get the size of this UI component.
+        """
+        Get the size of this UI component.
 
         Returns
         -------
@@ -1892,7 +1923,8 @@ class RingSlider2D(Slider2D):
 
     @property
     def mid_track_radius(self):
-        """Return the distance from the center of the slider to the track middle.
+        """
+        Return the distance from the center of the slider to the track middle.
 
         Returns
         -------
@@ -1915,7 +1947,8 @@ class RingSlider2D(Slider2D):
 
     @property
     def angle(self):
-        """Return Angle (in rad) the handle makes with the y-axis.
+        """
+        Return Angle (in rad) the handle makes with the y-axis.
 
         Returns
         -------
@@ -1928,7 +1961,8 @@ class RingSlider2D(Slider2D):
         return angle
 
     def handle_move_callback(self, event):
-        """Handle mouse drag events to update the slider state.
+        """
+        Handle mouse drag events to update the slider state.
 
         Parameters
         ----------

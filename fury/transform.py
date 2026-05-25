@@ -40,7 +40,8 @@ _TUPLE2AXES = {v: k for k, v in _AXES2TUPLE.items()}
 
 
 def euler_matrix(ai, aj, ak, *, axes="sxyz"):
-    """Return homogeneous rotation matrix from Euler angles and axis sequence.
+    """
+    Return homogeneous rotation matrix from Euler angles and axis sequence.
 
     Parameters
     ----------
@@ -122,7 +123,8 @@ def euler_matrix(ai, aj, ak, *, axes="sxyz"):
 
 
 def sphere2cart(r, theta, phi):
-    """Convert spherical coordinates to Cartesian coordinates.
+    """
+    Convert spherical coordinates to Cartesian coordinates.
 
     Parameters
     ----------
@@ -178,7 +180,8 @@ def sphere2cart(r, theta, phi):
 
 
 def cart2sphere(x, y, z):
-    r"""Convert Cartesian coordinates to spherical coordinates.
+    r"""
+    Convert Cartesian coordinates to spherical coordinates.
 
     Parameters
     ----------
@@ -218,7 +221,8 @@ def cart2sphere(x, y, z):
 
 
 def _apply_actor_transform(matrix, actor, transfomation_type):
-    """Apply a transformation matrix to an actor based on the given mode.
+    """
+    Apply a transformation matrix to an actor based on the given mode.
 
     Parameters
     ----------
@@ -249,7 +253,8 @@ def _apply_actor_transform(matrix, actor, transfomation_type):
 
 
 def translate(translation, *, actor=None, transfomation_type="relative"):
-    """Create a transformation matrix for translation.
+    """
+    Create a transformation matrix for translation.
 
     Parameters
     ----------
@@ -297,7 +302,8 @@ def translate(translation, *, actor=None, transfomation_type="relative"):
 
 
 def rotate(quat, *, actor=None, transfomation_type="relative"):
-    """Create a transformation matrix for rotation using quaternion.
+    """
+    Create a transformation matrix for rotation using quaternion.
 
     Parameters
     ----------
@@ -343,7 +349,8 @@ def rotate(quat, *, actor=None, transfomation_type="relative"):
 
 
 def scale(scales, *, actor=None, transfomation_type="relative"):
-    """Create a transformation matrix for scaling.
+    """
+    Create a transformation matrix for scaling.
 
     Parameters
     ----------
@@ -386,7 +393,8 @@ def scale(scales, *, actor=None, transfomation_type="relative"):
 
 
 def apply_transformation(vertices, transformation):
-    """Apply transformation matrix to vertices.
+    """
+    Apply transformation matrix to vertices.
 
     Parameters
     ----------
@@ -418,7 +426,8 @@ def apply_transformation(vertices, transformation):
 
 
 def transform_from_matrix(matrix):
-    """Decompose transformation matrix into components.
+    """
+    Decompose transformation matrix into components.
 
     Parameters
     ----------

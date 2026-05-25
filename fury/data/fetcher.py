@@ -59,7 +59,8 @@ _last_line_length = 0
 
 
 def update_progressbar(progress, total_length):
-    """Show progressbar.
+    """
+    Show progressbar.
 
     Takes a number between 0 and 1 to indicate progress from 0 to 100%.
     """
@@ -118,7 +119,8 @@ def _already_there_msg(folder):
 
 
 def _get_file_sha(filename):
-    """Generate SHA checksum for the entire file in blocks of 256.
+    """
+    Generate SHA checksum for the entire file in blocks of 256.
 
     Parameters
     ----------
@@ -140,7 +142,8 @@ def _get_file_sha(filename):
 
 @warn_on_args_to_kwargs()
 def check_sha(filename, *, stored_sha256=None):
-    """Check the generated sha checksum.
+    """
+    Check the generated sha checksum.
 
     Parameters
     ----------
@@ -183,7 +186,8 @@ def _get_file_data(fname, url):
 
 @warn_on_args_to_kwargs()
 def fetch_data(files, folder, *, data_size=None):
-    """Download files to folder and checks their sha checksums.
+    """
+    Download files to folder and checks their sha checksums.
 
     Parameters
     ----------
@@ -243,7 +247,8 @@ def _make_fetcher(
     msg=None,
     unzip=False,
 ):
-    """Create a new fetcher.
+    """
+    Create a new fetcher.
 
     Parameters
     ----------
@@ -314,7 +319,8 @@ def _make_fetcher(
 
 
 async def _request(session, url):
-    """Get the request data as json.
+    """
+    Get the request data as json.
 
     Parameters
     ----------
@@ -338,7 +344,8 @@ async def _request(session, url):
 
 @warn_on_args_to_kwargs()
 async def _download(session, url, filename, *, size=None):
-    """Download file from url.
+    """
+    Download file from url.
 
     Parameters
     ----------
@@ -366,7 +373,8 @@ async def _download(session, url, filename, *, size=None):
 
 
 async def _fetch_gltf(name, mode):
-    """Fetch glTF samples.
+    """
+    Fetch glTF samples.
 
     Parameters
     ----------
@@ -426,7 +434,8 @@ async def _fetch_gltf(name, mode):
 
 @warn_on_args_to_kwargs()
 def fetch_gltf(*, name=None, mode="glTF"):
-    """Download glTF samples from Khronos Group Github.
+    """
+    Download glTF samples from Khronos Group Github.
 
     Parameters
     ----------
@@ -692,7 +701,8 @@ fetch_viz_textures = _make_fetcher(
 
 @warn_on_args_to_kwargs()
 def read_viz_cubemap(name, *, suffix_type=1, ext=".jpg"):
-    """Read specific cube map with specific suffix type and extension.
+    """
+    Read specific cube map with specific suffix type and extension.
 
     Parameters
     ----------
@@ -735,7 +745,8 @@ def read_viz_cubemap(name, *, suffix_type=1, ext=".jpg"):
 
 @warn_on_args_to_kwargs()
 def read_viz_icons(*, style="icomoon", fname="infinity.png"):
-    """Read specific icon from specific style.
+    """
+    Read specific icon from specific style.
 
     Parameters
     ----------
@@ -761,7 +772,8 @@ def read_viz_icons(*, style="icomoon", fname="infinity.png"):
 
 
 def read_viz_models(fname):
-    """Read specific model.
+    """
+    Read specific model.
 
     Parameters
     ----------
@@ -780,7 +792,8 @@ def read_viz_models(fname):
 
 
 def read_viz_textures(fname):
-    """Read specific texture.
+    """
+    Read specific texture.
 
     Parameters
     ----------
@@ -799,7 +812,8 @@ def read_viz_textures(fname):
 
 
 def read_viz_dmri(fname):
-    """Read specific dMRI image.
+    """
+    Read specific dMRI image.
 
     Parameters
     ----------
@@ -819,7 +833,8 @@ def read_viz_dmri(fname):
 
 @warn_on_args_to_kwargs()
 def read_viz_gltf(fname, *, mode="glTF"):
-    """Read specific gltf sample.
+    """
+    Read specific gltf sample.
 
     Parameters
     ----------
@@ -851,7 +866,8 @@ def read_viz_gltf(fname, *, mode="glTF"):
 
 
 def list_gltf_sample_models():
-    """Return all model name from the glTF-samples repository.
+    """
+    Return all model name from the glTF-samples repository.
 
     Returns
     -------

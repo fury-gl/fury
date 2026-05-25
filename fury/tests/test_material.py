@@ -309,7 +309,8 @@ def test_VectorFieldThinLineMaterial_uniform_buffer_update():
 
 
 def test_VectorFieldLineMaterial_inheritance():
-    """Test VectorFieldLineMaterial inherits properly from
+    """
+    Test VectorFieldLineMaterial inherits properly from
     VectorFieldThinLineMaterial.
     """
     cross_section = [1, 2, 3]
@@ -322,7 +323,8 @@ def test_VectorFieldLineMaterial_inheritance():
 
 
 def test_VectorFieldArrowMaterial_inheritance():
-    """Test VectorFieldArrowMaterial inherits properly from
+    """
+    Test VectorFieldArrowMaterial inherits properly from
     VectorFieldThinLineMaterial.
     """
     cross_section = [1, 2, 3]

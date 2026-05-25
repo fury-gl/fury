@@ -20,7 +20,8 @@ UI_Z_RANGE = np.array([0.9, 0.1])
 
 
 def clip_overflow(textblock, width, *, side="right"):
-    """Clip overflowing text of TextBlock2D with respect to width.
+    """
+    Clip overflowing text of TextBlock2D with respect to width.
 
     Parameters
     ----------
@@ -50,7 +51,8 @@ def clip_overflow(textblock, width, *, side="right"):
 
 
 def wrap_overflow(textblock, wrap_width, *, side="right"):
-    """Wrap overflowing text of TextBlock2D with respect to width.
+    """
+    Wrap overflowing text of TextBlock2D with respect to width.
 
     Parameters
     ----------
@@ -93,7 +95,8 @@ def wrap_overflow(textblock, wrap_width, *, side="right"):
 
 
 def check_overflow(textblock, width, *, overflow_postfix="", side="right"):
-    """Check if the text is overflowing.
+    """
+    Check if the text is overflowing.
 
     Parameters
     ----------
@@ -146,7 +149,8 @@ def check_overflow(textblock, width, *, overflow_postfix="", side="right"):
 
 
 def cal_bounding_box_2d(vertices):
-    """Calculate the min, max position and the size of the bounding box.
+    """
+    Calculate the min, max position and the size of the bounding box.
 
     Parameters
     ----------
@@ -197,7 +201,8 @@ def cal_bounding_box_2d(vertices):
 
 
 def rotate_2d(vertices, angle):
-    """Rotate the given vertices by an angle.
+    """
+    Rotate the given vertices by an angle.
 
     Parameters
     ----------
@@ -232,7 +237,8 @@ def rotate_2d(vertices, angle):
 
 
 def get_anchor_to_multiplier():
-    """Return a dictionary of anchor multipliers for the UI.
+    """
+    Return a dictionary of anchor multipliers for the UI.
 
     Returns
     -------

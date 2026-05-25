@@ -47,7 +47,8 @@ def square(
     wireframe=False,
     wireframe_thickness=1.0,
 ):
-    """Create one or many squares with different features.
+    """
+    Create one or many squares with different features.
 
     Parameters
     ----------
@@ -122,7 +123,8 @@ def star(
     wireframe=False,
     wireframe_thickness=1.0,
 ):
-    """Create one or many stars with different features.
+    """
+    Create one or many stars with different features.
 
     Parameters
     ----------
@@ -200,7 +202,8 @@ def disk(
     wireframe=False,
     wireframe_thickness=1.0,
 ):
-    """Visualize one or many disks with different features.
+    """
+    Visualize one or many disks with different features.
 
     Parameters
     ----------
@@ -306,7 +309,8 @@ def triangle(
     wireframe=False,
     wireframe_thickness=1.0,
 ):
-    """Create one or many triangles with different features.
+    """
+    Create one or many triangles with different features.
 
     Parameters
     ----------
@@ -379,7 +383,8 @@ def point(
     opacity=1.0,
     enable_picking=True,
 ):
-    """Create one or many points with different features.
+    """
+    Create one or many points with different features.
 
     Parameters
     ----------
@@ -452,7 +457,8 @@ def marker(
     opacity=1.0,
     enable_picking=True,
 ):
-    """Create one or many markers with different features.
+    """
+    Create one or many markers with different features.
 
     Parameters
     ----------
@@ -531,7 +537,8 @@ def text(
     outline_thickness=0.0,
     opacity=1.0,
 ):
-    """Create text with different features.
+    """
+    Create text with different features.
 
     Parameters
     ----------
@@ -792,7 +799,8 @@ def ring(
     material="phong",
     enable_picking=True,
 ):
-    """Create one or many rings with different features.
+    """
+    Create one or many rings with different features.
 
     Parameters
     ----------
@@ -902,7 +910,8 @@ def ring(
 
 
 class LineProjection(Points):
-    """Initialize the line projection object.
+    """
+    Initialize the line projection object.
 
     Parameters
     ----------
@@ -949,7 +958,8 @@ class LineProjection(Points):
         opacity=1.0,
         lift=0.0,
     ):
-        """Initialize the line projection object.
+        """
+        Initialize the line projection object.
 
 
         Raises
@@ -1059,7 +1069,8 @@ class LineProjection(Points):
 
     @property
     def plane(self):
-        """Get the plane equation.
+        """
+        Get the plane equation.
 
         Returns
         -------
@@ -1070,7 +1081,8 @@ class LineProjection(Points):
 
     @plane.setter
     def plane(self, value):
-        """Set the plane equation.
+        """
+        Set the plane equation.
 
         Parameters
         ----------
@@ -1092,7 +1104,8 @@ class LineProjection(Points):
 
     @property
     def lift(self):
-        """Get the lift value to avoid z-fighting.
+        """
+        Get the lift value to avoid z-fighting.
 
         Returns
         -------
@@ -1103,7 +1116,8 @@ class LineProjection(Points):
 
     @lift.setter
     def lift(self, value):
-        """Set the lift value to avoid z-fighting.
+        """
+        Set the lift value to avoid z-fighting.
 
         Parameters
         ----------
@@ -1134,7 +1148,8 @@ def line_projection(
     opacity=1.0,
     lift=0.0,
 ):
-    """Initialize the line projection object.
+    """
+    Initialize the line projection object.
 
     This projection is best visualized when the plane normal
     is aligned with the camera view direction.
@@ -1197,7 +1212,8 @@ def line_projection(
 
 @register_wgpu_render_function(LineProjection, PointsMaterial)
 def register_render_line_projection(wobject):
-    """Register the line projection render function.
+    """
+    Register the line projection render function.
 
     Parameters
     ----------

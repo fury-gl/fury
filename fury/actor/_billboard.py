@@ -1,4 +1,5 @@
-"""Billboard actor module.
+"""
+Billboard actor module.
 
 Minimal isolated implementation of billboard support to reduce diffs in
 existing planar actor module. Provides a Mesh-based world object and a
@@ -28,7 +29,8 @@ def _create_billboard_actor(
     material_cls,
     material_kwargs=None,
 ):
-    """Build a ``Billboard`` instance from broadcasted inputs.
+    """
+    Build a ``Billboard`` instance from broadcasted inputs.
 
     Parameters
     ----------
@@ -118,7 +120,8 @@ def _create_billboard_actor(
 
 
 class Billboard(Mesh):
-    """World object representing one or more billboards.
+    """
+    World object representing one or more billboards.
 
     Geometry buffers are duplicated per 6 vertices (two triangles) per
     billboard; the vertex shader reconstructs the quad via ``vertex_index``
@@ -143,7 +146,8 @@ class Billboard(Mesh):
         self._billboard_sizes = np.empty((0, 2), dtype=np.float32)
 
     def get_bounding_box(self):
-        """Compute the axis-aligned bounding box including billboard visual size.
+        """
+        Compute the axis-aligned bounding box including billboard visual size.
 
         Returns
         -------
@@ -174,7 +178,8 @@ class Billboard(Mesh):
 
     @property
     def billboard_count(self):
-        """Get the number of billboards in this actor.
+        """
+        Get the number of billboards in this actor.
 
         Returns
         -------
@@ -185,7 +190,8 @@ class Billboard(Mesh):
 
     @billboard_count.setter
     def billboard_count(self, value):
-        """Set the number of billboards in this actor.
+        """
+        Set the number of billboards in this actor.
 
         Parameters
         ----------
@@ -196,7 +202,8 @@ class Billboard(Mesh):
 
     @property
     def billboard_centers(self):
-        """Get the billboard center positions.
+        """
+        Get the billboard center positions.
 
         Returns
         -------
@@ -207,7 +214,8 @@ class Billboard(Mesh):
 
     @billboard_centers.setter
     def billboard_centers(self, value):
-        """Set the billboard center positions.
+        """
+        Set the billboard center positions.
 
         Parameters
         ----------
@@ -218,7 +226,8 @@ class Billboard(Mesh):
 
     @property
     def billboard_sizes(self):
-        """Get the billboard width/height pairs.
+        """
+        Get the billboard width/height pairs.
 
         Returns
         -------
@@ -229,7 +238,8 @@ class Billboard(Mesh):
 
     @billboard_sizes.setter
     def billboard_sizes(self, value):
-        """Set the billboard width/height pairs.
+        """
+        Set the billboard width/height pairs.
 
         Parameters
         ----------
@@ -247,7 +257,8 @@ def billboard(
     opacity=None,
     enable_picking=True,
 ):
-    """Create a billboard world object.
+    """
+    Create a billboard world object.
 
     Parameters
     ----------
@@ -286,7 +297,8 @@ def billboard_sphere(
     opacity=None,
     enable_picking=True,
 ):
-    """Create a billboard impostor sphere world object.
+    """
+    Create a billboard impostor sphere world object.
 
     Parameters
     ----------
@@ -323,7 +335,8 @@ def billboard_sphere(
 
 @register_wgpu_render_function(Billboard, BillboardMaterial)
 def register_billboard_render_function(wobject):
-    """Build the render pipeline for ``Billboard`` instances.
+    """
+    Build the render pipeline for ``Billboard`` instances.
 
     Parameters
     ----------
@@ -340,7 +353,8 @@ def register_billboard_render_function(wobject):
 
 @register_wgpu_render_function(Billboard, BillboardSphereMaterial)
 def register_billboard_sphere_render_function(wobject):
-    """Register the pipeline for billboard-based sphere impostors.
+    """
+    Register the pipeline for billboard-based sphere impostors.
 
     Parameters
     ----------

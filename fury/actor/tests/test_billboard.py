@@ -1,4 +1,5 @@
-"""Tests for billboard actor.
+"""
+Tests for billboard actor.
 
 Simple tests for billboard creation and basic rendering functionality.
 """

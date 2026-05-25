@@ -37,7 +37,8 @@ pytest.skip(allow_module_level=True)
 
 @pytest.fixture
 def loop():
-    """Use this fixture to get the event loop.
+    """
+    Use this fixture to get the event loop.
 
     References
     ----------
@@ -666,7 +667,8 @@ def test_circular_queue():
 
 
 def test_queue_and_webserver():
-    """Check if the correct
+    """
+    Check if the correct
     event ids and the data are stored in the
     correct positions
     """
