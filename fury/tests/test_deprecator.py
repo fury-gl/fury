@@ -119,7 +119,7 @@ def test_deprecate_with_version():
         warnings.simplefilter("always")
         npt.assert_equal(func(1), None)
         npt.assert_equal(len(w), 1)
-    npt.assert_equal(func.__doc__, "A docstring\n\nfoo\n")
+    npt.assert_equal(func.__doc__, "A docstring.\n\nfoo\n")
     func = dec("foo")(func_doc_long)
     with clear_and_catch_warnings(record=True, modules=[my_mod]) as w:
         warnings.simplefilter("always")
