@@ -1210,9 +1210,10 @@ class TextBox2D(UI):
     def edit_mode(self):
         """Turn on edit mode."""
         if self.init:
-            self._message = ""
+            if self._message == "Enter Text":
+                self._message = ""
             self.init = False
-            self.caret_pos = 0
+            self.caret_pos = len(self._message)
         self._has_focus = True
         self.render_text()
 

@@ -116,6 +116,7 @@ class UI(object, metaclass=abc.ABCMeta):
         self.on_middle_mouse_double_clicked = lambda event: None
         self.on_middle_mouse_button_dragged = lambda event: None
         self.on_key_press = lambda event: None
+        self.on_key_release = lambda event: None
         self.on_hover = lambda event: None
         self.on_dishover = lambda event: None
         self.on_focus = lambda event: None
@@ -344,7 +345,8 @@ class UI(object, metaclass=abc.ABCMeta):
         actor.add_event_handler(self.mouse_button_down_callback, EventType.POINTER_DOWN)
         actor.add_event_handler(self.mouse_button_up_callback, EventType.POINTER_UP)
         actor.add_event_handler(self.mouse_move_callback, EventType.POINTER_DRAG)
-        actor.add_event_handler(self.key_press_callback, EventType.KEY_UP)
+        actor.add_event_handler(self.key_press_callback, EventType.KEY_DOWN)
+        actor.add_event_handler(self.key_release_callback, EventType.KEY_UP)
         actor.add_event_handler(self.pointer_enter_callback, EventType.POINTER_ENTER)
         actor.add_event_handler(self.pointer_leave_callback, EventType.POINTER_LEAVE)
         actor.add_event_handler(self.wheel_callback, EventType.WHEEL)
@@ -505,6 +507,19 @@ class UI(object, metaclass=abc.ABCMeta):
             UIContext.active_ui.on_key_press(event)
         else:
             self.on_key_press(event)
+
+    def key_release_callback(self, event):
+        """Handle key release event.
+
+        Parameters
+        ----------
+        event : KeyboardEvent
+            The PyGfx keyboard event object.
+        """
+        if UIContext.active_ui is not None:
+            UIContext.active_ui.on_key_release(event)
+        else:
+            self.on_key_release(event)
 
     def wheel_callback(self, event):
         """Handle wheel event.
