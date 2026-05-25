@@ -943,6 +943,7 @@ class TextBox2D(UI):
         self.caret_pos = len(self._message) if not self.init else 0
 
         self.text.on_left_mouse_button_pressed = self.left_button_press
+        self.text.on_blur = self.blur_textbox
         self.text.on_key_press = self.key_press
         self.text.on_key_release = self.key_release
         self.text.on_wheel = self.wheel_scroll
@@ -1222,6 +1223,19 @@ class TextBox2D(UI):
         self._has_focus = True
         self.render_text()
 
+    def blur_textbox(self, event=None):
+        """Handle blur event for textbox.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The pointer event.
+        """
+        if self._has_focus:
+            self._has_focus = False
+            self.render_text(show_caret=False)
+            self.off_focus(self)
+
     def left_button_press(self, event):
         """Handle left button press for textbox.
 
@@ -1230,7 +1244,11 @@ class TextBox2D(UI):
         event : PointerEvent
             The pointer event.
         """
-        self.edit_mode()
+        if self._has_focus:
+            UIContext.active_ui = None
+            self.blur_textbox(event)
+        else:
+            self.edit_mode()
 
     def _cancel_repeat(self):
         """Cancel any active key repeat timer."""
