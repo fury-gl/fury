@@ -25,6 +25,7 @@ __all__ = [
 
 
 from string import printable
+from threading import Timer
 
 from string import printable
 from PIL import UnidentifiedImageError
@@ -920,6 +921,10 @@ class TextBox2D(UI):
         self.init = True
         self._has_focus = False
 
+        self._repeat_timer = None
+        self._repeat_key = None
+        self._repeat_key_char = None
+
         self.off_focus = lambda ui: None
 
         super(TextBox2D, self).__init__(
@@ -939,7 +944,7 @@ class TextBox2D(UI):
         italic_factor = 1.1 if self._italic else 1.0
 
         bg_width = (
-            int(self._width * self._font_size * 0.7 * bold_factor * italic_factor) + 20
+            int(self._width * self._font_size * 0.5 * bold_factor * italic_factor) + 10
         )
         bg_height = int(self._height * self._font_size * 1.5) + 10
 
@@ -956,7 +961,6 @@ class TextBox2D(UI):
         self.text.bold = self._bold
         self.text.italic = self._italic
         self.text.shadow = self._shadow
-        self.text.padding = 10
         self.text.background_color = (1, 1, 1)
 
         self._children.append(self.text)
@@ -966,7 +970,9 @@ class TextBox2D(UI):
         self.caret_pos = len(self._message) if not self.init else 0
 
         self.text.on_left_mouse_button_pressed = self.left_button_press
+        self.text.on_blur = self.blur_textbox
         self.text.on_key_press = self.key_press
+        self.text.on_key_release = self.key_release
         self.text.on_wheel = self.wheel_scroll
 
     def _update_height(self):
@@ -1244,6 +1250,19 @@ class TextBox2D(UI):
         self._has_focus = True
         self.render_text()
 
+    def blur_textbox(self, event=None):
+        """Handle blur event for textbox.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The pointer event.
+        """
+        if self._has_focus:
+            self._has_focus = False
+            self.render_text(show_caret=False)
+            self.off_focus(self)
+
     def left_button_press(self, event):
         """Handle left button press for textbox.
 
@@ -1252,10 +1271,42 @@ class TextBox2D(UI):
         event : PointerEvent
             The pointer event.
         """
-        self.edit_mode()
+        if self._has_focus:
+            UIContext.active_ui = None
+            self.blur_textbox(event)
+        else:
+            self.edit_mode()
+
+    def _cancel_repeat(self):
+        """Cancel any active key repeat timer."""
+        if self._repeat_timer is not None:
+            self._repeat_timer.cancel()
+            self._repeat_timer = None
+        self._repeat_key = None
+        self._repeat_key_char = None
+
+    def _do_repeat(self):
+        """Execute one repeat of the held key and schedule the next."""
+        if self._repeat_key is None:
+            return
+        key = self._repeat_key
+        key_char = self._repeat_key_char
+        is_done = self.handle_character(key, key_char)
+        if is_done:
+            self._cancel_repeat()
+            self._has_focus = False
+            self.off_focus(self)
+            return
+        self._repeat_timer = Timer(0.05, self._do_repeat)
+        self._repeat_timer.daemon = True
+        self._repeat_timer.start()
 
     def key_press(self, event):
         """Handle Key press for textbox.
+
+        Processes the key action immediately and starts a repeat timer
+        so holding a key repeats the action (the rendercanvas Qt backend
+        filters auto-repeat at the OS level).
 
         Parameters
         ----------
@@ -1264,10 +1315,33 @@ class TextBox2D(UI):
         """
         key = event.key
         key_char = key if key and len(key) == 1 else ""
+
+        self._cancel_repeat()
+
         is_done = self.handle_character(key, key_char)
         if is_done:
             self._has_focus = False
             self.off_focus(self)
+            return
+
+        self._repeat_key = key
+        self._repeat_key_char = key_char
+        self._repeat_timer = Timer(0.5, self._do_repeat)
+        self._repeat_timer.daemon = True
+        self._repeat_timer.start()
+
+    def key_release(self, event):
+        """Handle Key release for textbox.
+
+        Cancels the key repeat timer when the key is released.
+
+        Parameters
+        ----------
+        event : KeyboardEvent
+            The keyboard event.
+        """
+        if event.key == self._repeat_key:
+            self._cancel_repeat()
 
     def wheel_scroll(self, event):
         """Handle mouse wheel event for textbox.

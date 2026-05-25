@@ -500,23 +500,18 @@ def test_textbox_static_background():
     width, height, font_size = 10, 2, 18
     tb = ui.TextBox2D(width=width, height=height, font_size=font_size, text="Hi")
 
-    # The internal TextBlock2D should NOT be dynamic
     assert tb.text.dynamic_bbox is False
 
-    # Record the initial background size
     initial_bg_size = tb.text.background.size
 
-    # Background size should be based on width/height/font_size, not text length
-    expected_w = int(width * font_size * 0.7) + 20
+    expected_w = int(width * font_size * 0.5) + 10
     expected_h = int(height * font_size * 1.5) + 10
     npt.assert_equal(initial_bg_size, (expected_w, expected_h))
 
-    # Add a lot of text — background should NOT change
     tb.set_message("A" * 50)
     tb.render_text(show_caret=False)
     npt.assert_equal(tb.text.background.size, initial_bg_size)
 
-    # Clear text — background should still NOT change
     tb.set_message("")
     tb.render_text(show_caret=False)
     npt.assert_equal(tb.text.background.size, initial_bg_size)

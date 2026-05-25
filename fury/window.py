@@ -714,7 +714,9 @@ class ShowManager:
             EventType.POINTER_UP,
             EventType.POINTER_MOVE,
         )
-        self.renderer.add_event_handler(self._global_key_handler, EventType.KEY_UP)
+        self.renderer.add_event_handler(
+            self._global_key_handler, EventType.KEY_DOWN, EventType.KEY_UP
+        )
 
         self._total_screens = 0
         self._screen_config = screen_config
@@ -796,8 +798,11 @@ class ShowManager:
             The PyGfx keyboard event object.
         """
         if UIContext.active_ui:
-            UIContext.active_ui.on_key_press(event)
-            
+            if event.type == EventType.KEY_DOWN:
+                UIContext.active_ui.on_key_press(event)
+            elif event.type == EventType.KEY_UP:
+                UIContext.active_ui.on_key_release(event)
+
     def _screen_setup(self, scene, camera, controller, camera_light):
         """
         Prepare scene, camera, controller, and light lists for screen creation.
