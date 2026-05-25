@@ -25,6 +25,7 @@ __all__ = [
 
 
 from string import printable
+from threading import Timer
 
 import numpy as np
 
@@ -893,6 +894,10 @@ class TextBox2D(UI):
         self.init = True
         self._has_focus = False
 
+        self._repeat_timer = None
+        self._repeat_key = None
+        self._repeat_key_char = None
+
         self.off_focus = lambda ui: None
 
         super(TextBox2D, self).__init__(
@@ -940,6 +945,7 @@ class TextBox2D(UI):
 
         self.text.on_left_mouse_button_pressed = self.left_button_press
         self.text.on_key_press = self.key_press
+        self.text.on_key_release = self.key_release
         self.text.on_wheel = self.wheel_scroll
 
     def _update_height(self):
@@ -1227,8 +1233,37 @@ class TextBox2D(UI):
         """
         self.edit_mode()
 
+    def _cancel_repeat(self):
+        """Cancel any active key repeat timer."""
+        if self._repeat_timer is not None:
+            self._repeat_timer.cancel()
+            self._repeat_timer = None
+        self._repeat_key = None
+        self._repeat_key_char = None
+
+    def _do_repeat(self):
+        """Execute one repeat of the held key and schedule the next."""
+        if self._repeat_key is None:
+            return
+        key = self._repeat_key
+        key_char = self._repeat_key_char
+        is_done = self.handle_character(key, key_char)
+        if is_done:
+            self._cancel_repeat()
+            self._has_focus = False
+            self.off_focus(self)
+            return
+        # Schedule next repeat at faster interval
+        self._repeat_timer = Timer(0.05, self._do_repeat)
+        self._repeat_timer.daemon = True
+        self._repeat_timer.start()
+
     def key_press(self, event):
         """Handle Key press for textbox.
+
+        Processes the key action immediately and starts a repeat timer
+        so holding a key repeats the action (the rendercanvas Qt backend
+        filters auto-repeat at the OS level).
 
         Parameters
         ----------
@@ -1237,10 +1272,37 @@ class TextBox2D(UI):
         """
         key = event.key
         key_char = key if key and len(key) == 1 else ""
+
+        # Cancel any previous repeat (e.g. switching keys)
+        self._cancel_repeat()
+
+        # Process the key immediately
         is_done = self.handle_character(key, key_char)
         if is_done:
             self._has_focus = False
             self.off_focus(self)
+            return
+
+        # Start repeat timer for this key (initial delay before repeat)
+        self._repeat_key = key
+        self._repeat_key_char = key_char
+        self._repeat_timer = Timer(0.5, self._do_repeat)
+        self._repeat_timer.daemon = True
+        self._repeat_timer.start()
+
+    def key_release(self, event):
+        """Handle Key release for textbox.
+
+        Cancels the key repeat timer when the key is released.
+
+        Parameters
+        ----------
+        event : KeyboardEvent
+            The keyboard event.
+        """
+        # Only cancel if the released key matches the repeating key
+        if event.key == self._repeat_key:
+            self._cancel_repeat()
 
     def wheel_scroll(self, event):
         """Handle mouse wheel event for textbox.
