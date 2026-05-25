@@ -917,7 +917,7 @@ class TextBox2D(UI):
         italic_factor = 1.1 if self._italic else 1.0
 
         bg_width = (
-            int(self._width * self._font_size * 0.7 * bold_factor * italic_factor) + 20
+            int(self._width * self._font_size * 0.5 * bold_factor * italic_factor) + 10
         )
         bg_height = int(self._height * self._font_size * 1.5) + 10
 
@@ -934,7 +934,6 @@ class TextBox2D(UI):
         self.text.bold = self._bold
         self.text.italic = self._italic
         self.text.shadow = self._shadow
-        self.text.padding = 10
         self.text.background_color = (1, 1, 1)
 
         self._children.append(self.text)
@@ -1253,7 +1252,6 @@ class TextBox2D(UI):
             self._has_focus = False
             self.off_focus(self)
             return
-        # Schedule next repeat at faster interval
         self._repeat_timer = Timer(0.05, self._do_repeat)
         self._repeat_timer.daemon = True
         self._repeat_timer.start()
@@ -1273,17 +1271,14 @@ class TextBox2D(UI):
         key = event.key
         key_char = key if key and len(key) == 1 else ""
 
-        # Cancel any previous repeat (e.g. switching keys)
         self._cancel_repeat()
 
-        # Process the key immediately
         is_done = self.handle_character(key, key_char)
         if is_done:
             self._has_focus = False
             self.off_focus(self)
             return
 
-        # Start repeat timer for this key (initial delay before repeat)
         self._repeat_key = key
         self._repeat_key_char = key_char
         self._repeat_timer = Timer(0.5, self._do_repeat)
@@ -1300,7 +1295,6 @@ class TextBox2D(UI):
         event : KeyboardEvent
             The keyboard event.
         """
-        # Only cancel if the released key matches the repeating key
         if event.key == self._repeat_key:
             self._cancel_repeat()
 

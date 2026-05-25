@@ -958,7 +958,6 @@ class TextBlock2D(UI):
         self._message = text
         self._dynamic_bbox = dynamic_bbox
         self._bg_size = size
-        self._padding = 5
         self._shadow = False
 
         self._last_rendered_size = (0, 0)
@@ -987,8 +986,6 @@ class TextBlock2D(UI):
         self._children.append(self.background)
         self.handle_events(self.actor)
 
-        # Forward background callbacks directly to this TextBlock2D so that
-        # clicks and hovers on the background behave as if they hit the text.
         self.background.on_left_mouse_button_pressed = lambda event: (
             self.on_left_mouse_button_pressed(event)
         )
@@ -1290,29 +1287,6 @@ class TextBlock2D(UI):
         self._shadow = flag
 
     @property
-    def padding(self):
-        """Return the text padding.
-
-        Returns
-        -------
-        int
-            Text padding in pixels.
-        """
-        return self._padding
-
-    @padding.setter
-    def padding(self, value):
-        """Set text padding.
-
-        Parameters
-        ----------
-        value : int
-            Padding in pixels.
-        """
-        self._padding = value
-        self.update_alignment()
-
-    @property
     def color(self):
         """Get text color.
 
@@ -1399,7 +1373,7 @@ class TextBlock2D(UI):
         if self.justification.lower() == "left":
             self.actor.text_align = "left"
             x_anchor = "left"
-            updated_text_position[0] = self.boundingbox[0] + self.padding
+            updated_text_position[0] = self.boundingbox[0]
         elif self.justification.lower() == "center":
             self.actor.text_align = "center"
             x_anchor = "center"
@@ -1409,14 +1383,14 @@ class TextBlock2D(UI):
         elif self.justification.lower() == "right":
             self.actor.text_align = "right"
             x_anchor = "right"
-            updated_text_position[0] = self.boundingbox[2] - self.padding
+            updated_text_position[0] = self.boundingbox[2]
         else:
             msg = "Text can only be justified left, center and right."
             raise ValueError(msg)
 
         if self.vertical_justification.lower() == "top":
             y_anchor = "top"
-            updated_text_position[1] = self.boundingbox[1] + self.padding
+            updated_text_position[1] = self.boundingbox[1]
         elif self.vertical_justification.lower() == "middle":
             y_anchor = "middle"
             updated_text_position[1] = (
@@ -1424,7 +1398,7 @@ class TextBlock2D(UI):
             )
         elif self.vertical_justification.lower() == "bottom":
             y_anchor = "bottom"
-            updated_text_position[1] = self.boundingbox[3] - self.padding
+            updated_text_position[1] = self.boundingbox[3]
         else:
             msg = "Vertical justification must be: top, middle or bottom."
             raise ValueError(msg)
