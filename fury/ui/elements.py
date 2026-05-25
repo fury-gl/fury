@@ -444,8 +444,8 @@ class PlaybackPanel(UI):
 
     def _setup(self):
         """
-        Set up internal components including buttons, slider, and text
-        labels."""
+        Set up internal components including buttons, slider, and text labels.
+        """
         self.panel = Panel2D(
             size=(220, 45),
             color=(1, 1, 1),
@@ -1934,8 +1934,8 @@ class RingSlider2D(Slider2D):
 
     def _update_handle_position(self):
         """
-        Place the handle and the text according to the current angle /
-        ratio."""
+        Place the handle and the text according to the current angle / ratio.
+        """
         center = self.track.get_position(x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
         angle = self.angle
         x = self.mid_track_radius * np.sin(angle) + center[0]

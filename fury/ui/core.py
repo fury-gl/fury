@@ -224,8 +224,7 @@ class UI(object, metaclass=abc.ABCMeta):
         y_anchor=Anchor.TOP,
     ):
         """
-        Get the position of this UI component according to the specified
-        anchor.
+        Get the position of this UI component according to the specified anchor.
 
         Parameters
         ----------

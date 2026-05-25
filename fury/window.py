@@ -756,8 +756,7 @@ class ShowManager:
 
     def _toggle_screen_controllers(self, disable):
         """
-        Toggle the enabled state for controllers across multiple screen
-        viewports.
+        Toggle the enabled state for controllers across multiple screen viewports.
 
         Parameters
         ----------
@@ -1478,8 +1477,8 @@ class ShowManager:
 
     def close(self):
         """
-        Close the rendering window and terminate the application if
-        necessary."""
+        Close the rendering window and terminate the application if necessary.
+        """
         self.window.close()
 
 

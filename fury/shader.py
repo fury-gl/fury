@@ -466,8 +466,7 @@ class SphGlyphComputeShader(BaseShader):
 
     def get_pipeline_info(self, _wobject, _shared):
         """
-        Get pipeline information for the spherical harmonic glyph compute
-        shader.
+        Get pipeline information for the spherical harmonic glyph compute shader.
 
         Parameters
         ----------
