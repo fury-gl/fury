@@ -11,7 +11,7 @@ __all__ = [
     "TexturedButton2D",
     "TextButton2D",
     "LineSlider2D",
-    #     "TextBox2D",
+    "TextBox2D",
     #     "LineDoubleSlider2D",
     "RingSlider2D",
     #     "RangeSlider",
@@ -53,6 +53,7 @@ from .elements import (
     LineSlider2D,
     PlaybackPanel,
     RingSlider2D,
+    TextBox2D,
     TextButton2D,
     TexturedButton2D,
 )

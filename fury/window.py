@@ -6,7 +6,6 @@ for handling scenes, cameras, controllers, and rendering
 multiple screens.
 """
 
-import asyncio
 from dataclasses import dataclass
 from functools import reduce
 import logging
@@ -672,13 +671,13 @@ class ShowManager:
             EventType.RESIZE,
         )
         self.renderer.add_event_handler(
-            self._set_key_long_press_event, EventType.KEY_DOWN, EventType.KEY_UP
-        )
-        self.renderer.add_event_handler(
             self._register_drag,
             EventType.POINTER_DOWN,
             EventType.POINTER_UP,
             EventType.POINTER_MOVE,
+        )
+        self.renderer.add_event_handler(
+            self._global_key_handler, EventType.KEY_DOWN, EventType.KEY_UP
         )
 
         self._total_screens = 0
@@ -696,7 +695,6 @@ class ShowManager:
             self.enable_imgui(imgui_draw_function=imgui_draw_function)
 
         self.enable_events = enable_events
-        self._key_long_press = None
         self._on_resize = lambda _size: None
         self._resize(self._size)
 
@@ -745,6 +743,24 @@ class ShowManager:
             self._toggle_screen_controllers(disable=False)
         elif event.type == EventType.POINTER_MOVE and self._is_dragging:
             self._handle_drag(event)
+
+    def _global_key_handler(self, event):
+        """Forward global key events to the active UI element.
+
+        This renderer-level handler ensures that key events reach the
+        currently focused UI component (e.g. an active TextBox2D)
+        regardless of pointer position.
+
+        Parameters
+        ----------
+        event : KeyboardEvent
+            The PyGfx keyboard event object.
+        """
+        if UIContext.active_ui:
+            if event.type == EventType.KEY_DOWN:
+                UIContext.active_ui.on_key_press(event)
+            elif event.type == EventType.KEY_UP:
+                UIContext.active_ui.on_key_release(event)
 
     def _screen_setup(self, scene, camera, controller, camera_light):
         """Prepare scene, camera, controller, and light lists for screen creation.
@@ -871,34 +887,6 @@ class ShowManager:
         )
         reposition_ui(self.screens)
         self.render()
-
-    async def _handle_key_long_press(self, event):
-        """Handle long press events for key inputs.
-
-        Parameters
-        ----------
-        event : KeyEvent
-            The PyGfx key event object."""
-
-        if self._key_long_press is not None:
-            await asyncio.sleep(0.05)
-            self.renderer.dispatch_event(event)
-
-    def _set_key_long_press_event(self, event):
-        """Handle long press events for key inputs.
-
-        Parameters
-        ----------
-        event : KeyEvent
-            The PyGfx key event object."""
-
-        if event.type == EventType.KEY_DOWN:
-            self._key_long_press = asyncio.create_task(
-                self._handle_key_long_press(event)
-            )
-        elif self._key_long_press is not None:
-            self._key_long_press.cancel()
-            self._key_long_press = None
 
     def _on_repeat_callback(self, func, time, name, *args):
         """Internal method to handle the timing and execution of callbacks.
