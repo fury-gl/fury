@@ -9,7 +9,8 @@ class UIContextClass:
     _instance = None
 
     def __new__(cls):
-        """Handle instance creation for the UI context singleton.
+        """
+        Handle instance creation for the UI context singleton.
 
         Returns
         -------
@@ -34,7 +35,8 @@ class UIContextClass:
 
     @property
     def hot_ui(self):
-        """Get the currently hot UI element.
+        """
+        Get the currently hot UI element.
 
         Returns
         -------
@@ -45,7 +47,8 @@ class UIContextClass:
 
     @hot_ui.setter
     def hot_ui(self, element):
-        """Set the currently hot UI element.
+        """
+        Set the currently hot UI element.
 
         Parameters
         ----------
@@ -56,7 +59,8 @@ class UIContextClass:
 
     @property
     def active_ui(self):
-        """Get the currently active UI element.
+        """
+        Get the currently active UI element.
 
         Returns
         -------
@@ -67,7 +71,8 @@ class UIContextClass:
 
     @active_ui.setter
     def active_ui(self, element):
-        """Set the currently active UI element.
+        """
+        Set the currently active UI element.
 
         Parameters
         ----------
@@ -78,7 +83,8 @@ class UIContextClass:
 
     @property
     def canvas_size(self):
-        """Get the current size of the rendering canvas in pixels.
+        """
+        Get the current size of the rendering canvas in pixels.
 
         Returns
         -------
@@ -89,7 +95,8 @@ class UIContextClass:
 
     @canvas_size.setter
     def canvas_size(self, size):
-        """Set the current size of the rendering canvas in pixels.
+        """
+        Set the current size of the rendering canvas in pixels.
 
         Parameters
         ----------
@@ -102,7 +109,8 @@ class UIContextClass:
 
     @property
     def z_order_bounds(self):
-        """Get the minimum and maximum Z-order values in the UI.
+        """
+        Get the minimum and maximum Z-order values in the UI.
 
         Returns
         -------
@@ -113,7 +121,8 @@ class UIContextClass:
 
     @z_order_bounds.setter
     def z_order_bounds(self, z_order):
-        """Update the minimum or maximum active Z-order values in the UI.
+        """
+        Update the minimum or maximum active Z-order values in the UI.
 
         Parameters
         ----------

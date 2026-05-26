@@ -59,7 +59,8 @@ _last_line_length = 0
 
 
 def update_progressbar(progress, total_length):
-    """Show progressbar.
+    """
+    Show progressbar.
 
     Takes a number between 0 and 1 to indicate progress from 0 to 100%.
     """
@@ -118,7 +119,8 @@ def _already_there_msg(folder):
 
 
 def _get_file_sha(filename):
-    """Generate SHA checksum for the entire file in blocks of 256.
+    """
+    Generate SHA checksum for the entire file in blocks of 256.
 
     Parameters
     ----------
@@ -129,7 +131,6 @@ def _get_file_sha(filename):
     -------
     sha256_data : str
         The computed sha hash from the input file
-
     """
     sha256_data = sha256()
     with open(filename, "rb") as f:
@@ -140,7 +141,8 @@ def _get_file_sha(filename):
 
 @warn_on_args_to_kwargs()
 def check_sha(filename, *, stored_sha256=None):
-    """Check the generated sha checksum.
+    """
+    Check the generated sha checksum.
 
     Parameters
     ----------
@@ -149,7 +151,6 @@ def check_sha(filename, *, stored_sha256=None):
     stored_sha256 : str, optional
         Used to verify the generated SHA checksum.
         Default: None, checking is skipped
-
     """
     if stored_sha256 is not None:
         computed_sha256 = _get_file_sha(filename)
@@ -183,7 +184,8 @@ def _get_file_data(fname, url):
 
 @warn_on_args_to_kwargs()
 def fetch_data(files, folder, *, data_size=None):
-    """Download files to folder and checks their sha checksums.
+    """
+    Download files to folder and checks their sha checksums.
 
     Parameters
     ----------
@@ -204,7 +206,6 @@ def fetch_data(files, folder, *, data_size=None):
 
         Raises if the sha checksum of the file does not match the expected
         value. The downloaded file is not deleted when this error is raised.
-
     """
     if not os.path.exists(folder):
         print("Creating new folder %s" % (folder))
@@ -243,7 +244,8 @@ def _make_fetcher(
     msg=None,
     unzip=False,
 ):
-    """Create a new fetcher.
+    """
+    Create a new fetcher.
 
     Parameters
     ----------
@@ -278,7 +280,6 @@ def _make_fetcher(
     fetcher : function
         A function that, when called, fetches data according to the designated
         inputs
-
     """
 
     def fetcher():
@@ -314,7 +315,8 @@ def _make_fetcher(
 
 
 async def _request(session, url):
-    """Get the request data as json.
+    """
+    Get the request data as json.
 
     Parameters
     ----------
@@ -327,8 +329,8 @@ async def _request(session, url):
     -------
     response : dictionary
         The response of url request.
-
     """
+
     async with session.get(url) as response:
         if not response.status == 200:
             raise aiohttp.InvalidURL(url)
@@ -338,7 +340,8 @@ async def _request(session, url):
 
 @warn_on_args_to_kwargs()
 async def _download(session, url, filename, *, size=None):
-    """Download file from url.
+    """
+    Download file from url.
 
     Parameters
     ----------
@@ -366,7 +369,8 @@ async def _download(session, url, filename, *, size=None):
 
 
 async def _fetch_gltf(name, mode):
-    """Fetch glTF samples.
+    """
+    Fetch glTF samples.
 
     Parameters
     ----------
@@ -383,7 +387,6 @@ async def _fetch_gltf(name, mode):
         list of fetched all file names.
     folder : str
         Path to the fetched files.
-
     """
     if name is None:
         name = ["BoxTextured", "Duck", "CesiumMilkTruck", "CesiumMan"]
@@ -426,7 +429,8 @@ async def _fetch_gltf(name, mode):
 
 @warn_on_args_to_kwargs()
 def fetch_gltf(*, name=None, mode="glTF"):
-    """Download glTF samples from Khronos Group Github.
+    """
+    Download glTF samples from Khronos Group Github.
 
     Parameters
     ----------
@@ -445,7 +449,6 @@ def fetch_gltf(*, name=None, mode="glTF"):
     -------
     filenames : tuple
         tuple of feteched filenames (list) and folder (str) path.
-
     """
     if platform.system().lower() == "windows":
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -692,7 +695,8 @@ fetch_viz_textures = _make_fetcher(
 
 @warn_on_args_to_kwargs()
 def read_viz_cubemap(name, *, suffix_type=1, ext=".jpg"):
-    """Read specific cube map with specific suffix type and extension.
+    """
+    Read specific cube map with specific suffix type and extension.
 
     Parameters
     ----------
@@ -710,7 +714,6 @@ def read_viz_cubemap(name, *, suffix_type=1, ext=".jpg"):
     -------
     list of paths : list
         List with the complete paths of the skybox textures.
-
     """
     # Set of commonly used cube map naming conventions and its associated
     # indexing number. For a correct creation and display of the skybox,
@@ -735,7 +738,8 @@ def read_viz_cubemap(name, *, suffix_type=1, ext=".jpg"):
 
 @warn_on_args_to_kwargs()
 def read_viz_icons(*, style="icomoon", fname="infinity.png"):
-    """Read specific icon from specific style.
+    """
+    Read specific icon from specific style.
 
     Parameters
     ----------
@@ -749,7 +753,6 @@ def read_viz_icons(*, style="icomoon", fname="infinity.png"):
     -------
     path : str
         Complete path of icon.
-
     """
     if not os.path.isdir(pjoin(fury_home, "icons", style)):
         if style == "icomoon":
@@ -761,7 +764,8 @@ def read_viz_icons(*, style="icomoon", fname="infinity.png"):
 
 
 def read_viz_models(fname):
-    """Read specific model.
+    """
+    Read specific model.
 
     Parameters
     ----------
@@ -773,14 +777,14 @@ def read_viz_models(fname):
     -------
     path : str
         Complete path of models.
-
     """
     folder = pjoin(fury_home, "models")
     return pjoin(folder, fname)
 
 
 def read_viz_textures(fname):
-    """Read specific texture.
+    """
+    Read specific texture.
 
     Parameters
     ----------
@@ -792,14 +796,14 @@ def read_viz_textures(fname):
     -------
     path : str
         Complete path of textures.
-
     """
     folder = pjoin(fury_home, "textures")
     return pjoin(folder, fname)
 
 
 def read_viz_dmri(fname):
-    """Read specific dMRI image.
+    """
+    Read specific dMRI image.
 
     Parameters
     ----------
@@ -811,7 +815,6 @@ def read_viz_dmri(fname):
     -------
     path : str
         Complete path of dMRI image.
-
     """
     folder = pjoin(fury_home, "dmri")
     return pjoin(folder, fname)
@@ -819,7 +822,8 @@ def read_viz_dmri(fname):
 
 @warn_on_args_to_kwargs()
 def read_viz_gltf(fname, *, mode="glTF"):
-    """Read specific gltf sample.
+    """
+    Read specific gltf sample.
 
     Parameters
     ----------
@@ -835,7 +839,6 @@ def read_viz_gltf(fname, *, mode="glTF"):
     -------
     path : str
         Complete path of models.
-
     """
     folder = pjoin(fury_home, "glTF")
     model = pjoin(folder, fname)
@@ -851,14 +854,14 @@ def read_viz_gltf(fname, *, mode="glTF"):
 
 
 def list_gltf_sample_models():
-    """Return all model name from the glTF-samples repository.
+    """
+    Return all model name from the glTF-samples repository.
 
     Returns
     -------
     model_names : list
         Lists the name of glTF sample from
         https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0
-
     """
     DATA_DIR = pjoin(dirname(__file__), "files")
     with open(pjoin(DATA_DIR, "KhronosGltfSamples.json"), "r") as f:

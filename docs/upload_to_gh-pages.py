@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-"""Script to commit the doc build outputs into the github-pages repo.
+"""
+Script to commit the doc build outputs into the github-pages repo.
 
 Use:
   upload_to_gh-pages.py
@@ -44,7 +45,8 @@ def sh(cmd):
 
 
 def sh2(cmd):
-    """Execute command in a subshell, return stdout.
+    """
+    Execute command in a subshell, return stdout.
 
     Stderr is unbuffered from the subshell.x
     """
@@ -59,7 +61,8 @@ def sh2(cmd):
 
 
 def sh3(cmd):
-    """Execute command in a subshell, return stdout, stderr.
+    """
+    Execute command in a subshell, return stdout, stderr.
 
     If anything appears in stderr, print it out to sys.stderr
     """

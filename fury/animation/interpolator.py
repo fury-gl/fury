@@ -17,7 +17,8 @@ from fury.colormap import hsv2rgb, lab2rgb, rgb2hsv, rgb2lab, rgb2xyz, xyz2rgb
 
 
 def spline_interpolator(keyframes, degree):
-    """Create N-th degree spline interpolator for keyframes.
+    """
+    Create N-th degree spline interpolator for keyframes.
 
     This is a general n-th degree spline interpolator to be used for any shape
     of keyframes data.
@@ -57,7 +58,8 @@ def spline_interpolator(keyframes, degree):
     tck = splprep(values.T, k=degree, full_output=1, s=0)[0][0]
 
     def interpolate(t):
-        """Interpolate value at time t.
+        """
+        Interpolate value at time t.
 
         Parameters
         ----------
@@ -81,7 +83,8 @@ def spline_interpolator(keyframes, degree):
 
 
 def cubic_spline_interpolator(keyframes):
-    """Create cubic spline interpolator for keyframes.
+    """
+    Create cubic spline interpolator for keyframes.
 
     This is a general cubic spline interpolator to be used for any shape of
     keyframes data.
@@ -106,7 +109,8 @@ def cubic_spline_interpolator(keyframes):
 
 
 def step_interpolator(keyframes):
-    """Create step interpolator for keyframes.
+    """
+    Create step interpolator for keyframes.
 
     This is a simple step interpolator to be used for any shape of
     keyframes data.
@@ -125,7 +129,8 @@ def step_interpolator(keyframes):
     timestamps = get_timestamps_from_keyframes(keyframes)
 
     def interpolate(t):
-        """Interpolate value at time t.
+        """
+        Interpolate value at time t.
 
         Parameters
         ----------
@@ -144,7 +149,8 @@ def step_interpolator(keyframes):
 
 
 def linear_interpolator(keyframes):
-    """Create linear interpolator for keyframes.
+    """
+    Create linear interpolator for keyframes.
 
     This is a general linear interpolator to be used for any shape of
     keyframes data.
@@ -164,7 +170,8 @@ def linear_interpolator(keyframes):
     is_single = len(keyframes) == 1
 
     def interpolate(t):
-        """Interpolate value at time t.
+        """
+        Interpolate value at time t.
 
         Parameters
         ----------
@@ -189,7 +196,8 @@ def linear_interpolator(keyframes):
 
 
 def cubic_bezier_interpolator(keyframes):
-    """Create cubic Bézier interpolator for keyframes.
+    """
+    Create cubic Bézier interpolator for keyframes.
 
     This is a general cubic Bézier interpolator to be used for any shape of
     keyframes data.
@@ -222,7 +230,8 @@ def cubic_bezier_interpolator(keyframes):
             kf_ts["out_cp"] = kf_ts.get("value")
 
     def interpolate(t):
-        """Interpolate value at time t.
+        """
+        Interpolate value at time t.
 
         Parameters
         ----------
@@ -255,7 +264,8 @@ def cubic_bezier_interpolator(keyframes):
 
 
 def slerp(keyframes):
-    """Create spherical based rotation keyframes interpolator.
+    """
+    Create spherical based rotation keyframes interpolator.
 
     A rotation interpolator to be used for rotation keyframes.
 
@@ -288,7 +298,8 @@ def slerp(keyframes):
     max_t = timestamps[-1]
 
     def interpolate(t):
-        """Interpolate rotation value at time t.
+        """
+        Interpolate rotation value at time t.
 
         Parameters
         ----------
@@ -309,7 +320,8 @@ def slerp(keyframes):
 
 
 def color_interpolator(keyframes, rgb2space, space2rgb):
-    """Create custom-space color interpolator.
+    """
+    Create custom-space color interpolator.
 
     Interpolate values linearly inside a custom color space.
 
@@ -337,7 +349,8 @@ def color_interpolator(keyframes, rgb2space, space2rgb):
         space_keyframes[ts] = rgb2space(keyframe.get("value"))
 
     def interpolate(t):
-        """Interpolate color value at time t.
+        """
+        Interpolate color value at time t.
 
         Parameters
         ----------
@@ -363,7 +376,8 @@ def color_interpolator(keyframes, rgb2space, space2rgb):
 
 
 def hsv_color_interpolator(keyframes):
-    """Create HSV interpolator for color keyframes.
+    """
+    Create HSV interpolator for color keyframes.
 
     Parameters
     ----------
@@ -384,7 +398,8 @@ def hsv_color_interpolator(keyframes):
 
 
 def lab_color_interpolator(keyframes):
-    """Create LAB interpolator for color keyframes.
+    """
+    Create LAB interpolator for color keyframes.
 
     Parameters
     ----------
@@ -405,7 +420,8 @@ def lab_color_interpolator(keyframes):
 
 
 def xyz_color_interpolator(keyframes):
-    """Create XYZ interpolator for color keyframes.
+    """
+    Create XYZ interpolator for color keyframes.
 
     Parameters
     ----------
@@ -426,7 +442,8 @@ def xyz_color_interpolator(keyframes):
 
 
 def tan_cubic_spline_interpolator(keyframes):
-    """Create cubic spline interpolator for keyframes using tangents.
+    """
+    Create cubic spline interpolator for keyframes using tangents.
 
     glTF contains additional tangent information for the cubic spline
     interpolator.
@@ -453,7 +470,8 @@ def tan_cubic_spline_interpolator(keyframes):
             data["out_tangent"] = np.zeros_like(value)
 
     def interpolate(t):
-        """Interpolate value at time t.
+        """
+        Interpolate value at time t.
 
         Parameters
         ----------

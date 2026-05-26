@@ -18,7 +18,8 @@ PlaybackPanel = None
 
 
 class Timeline:
-    """Keyframe animation Timeline.
+    """
+    Keyframe animation Timeline.
 
     Timeline is responsible for handling the playback of keyframes animations.
     It has multiple playback options which makes it easy to control the playback,
@@ -81,7 +82,8 @@ class Timeline:
             self.add_animation(animations)
 
     def update_duration(self):
-        """Update and return the duration of the Timeline.
+        """
+        Update and return the duration of the Timeline.
 
         Calculate the duration based on either a fixed length or the maximum
         duration of all animations controlled by this Timeline.
@@ -103,7 +105,8 @@ class Timeline:
 
     @property
     def duration(self):
-        """Return the duration of the Timeline.
+        """
+        Return the duration of the Timeline.
 
         Returns
         -------
@@ -113,10 +116,12 @@ class Timeline:
         return self._duration
 
     def play(self):
-        """Play the animation.
+        """
+        Play the animation.
 
-        Start playing the timeline from the current timestamp. If the current timestamp
-        is at the end of the timeline, it will reset to the beginning.
+        Start playing the timeline from the current timestamp. If the
+        current timestamp is at the end of the timeline, it will reset
+        to the beginning.
         """
         if not self.playing:
             if self.current_timestamp >= self.duration:
@@ -127,7 +132,8 @@ class Timeline:
             self._playing = True
 
     def pause(self):
-        """Pause the animation.
+        """
+        Pause the animation.
 
         Freeze the animation at its current timestamp.
         """
@@ -135,7 +141,8 @@ class Timeline:
         self._playing = False
 
     def stop(self):
-        """Stop the animation.
+        """
+        Stop the animation.
 
         Reset the timeline to the beginning and stop playback.
         """
@@ -144,7 +151,8 @@ class Timeline:
         self.update(force=True)
 
     def restart(self):
-        """Restart the animation.
+        """
+        Restart the animation.
 
         Reset the timeline to the beginning and start playing.
         """
@@ -154,7 +162,8 @@ class Timeline:
 
     @property
     def current_timestamp(self):
-        """Get current timestamp of the Timeline.
+        """
+        Get current timestamp of the Timeline.
 
         Returns
         -------
@@ -169,7 +178,8 @@ class Timeline:
 
     @current_timestamp.setter
     def current_timestamp(self, timestamp):
-        """Set the current timestamp of the Timeline.
+        """
+        Set the current timestamp of the Timeline.
 
         Parameters
         ----------
@@ -179,7 +189,8 @@ class Timeline:
         self.seek(timestamp)
 
     def seek(self, timestamp):
-        """Set the current timestamp of the Timeline.
+        """
+        Set the current timestamp of the Timeline.
 
         Parameters
         ----------
@@ -199,7 +210,8 @@ class Timeline:
             self.update(force=True)
 
     def seek_percent(self, percent):
-        """Seek to a percentage of the Timeline's duration.
+        """
+        Seek to a percentage of the Timeline's duration.
 
         Parameters
         ----------
@@ -211,7 +223,8 @@ class Timeline:
 
     @property
     def playing(self):
-        """Return whether the Timeline is playing.
+        """
+        Return whether the Timeline is playing.
 
         Returns
         -------
@@ -222,7 +235,8 @@ class Timeline:
 
     @property
     def stopped(self):
-        """Return whether the Timeline is stopped.
+        """
+        Return whether the Timeline is stopped.
 
         Returns
         -------
@@ -234,7 +248,8 @@ class Timeline:
 
     @property
     def paused(self):
-        """Return whether the Timeline is paused.
+        """
+        Return whether the Timeline is paused.
 
         Returns
         -------
@@ -246,7 +261,8 @@ class Timeline:
 
     @property
     def speed(self):
-        """Return the speed of the timeline's playback.
+        """
+        Return the speed of the timeline's playback.
 
         Returns
         -------
@@ -257,7 +273,8 @@ class Timeline:
 
     @speed.setter
     def speed(self, speed):
-        """Set the speed of the timeline's playback.
+        """
+        Set the speed of the timeline's playback.
 
         Parameters
         ----------
@@ -274,7 +291,8 @@ class Timeline:
 
     @property
     def loop(self):
-        """Return the loop setting of the timeline.
+        """
+        Return the loop setting of the timeline.
 
         Returns
         -------
@@ -285,7 +303,8 @@ class Timeline:
 
     @loop.setter
     def loop(self, loop):
-        """Set the timeline's playback to loop or play once.
+        """
+        Set the timeline's playback to loop or play once.
 
         Parameters
         ----------
@@ -297,7 +316,8 @@ class Timeline:
 
     @property
     def has_playback_panel(self):
-        """Return whether the Timeline has a playback panel.
+        """
+        Return whether the Timeline has a playback panel.
 
         Returns
         -------
@@ -319,7 +339,8 @@ class Timeline:
         max_peels=4,
         show_panel=False,
     ):
-        """Record the animation to a file or return frames.
+        """
+        Record the animation to a file or return frames.
 
         Parameters
         ----------
@@ -445,7 +466,8 @@ class Timeline:
         return frames
 
     def add_animation(self, animation):
-        """Add Animation or list of Animations to the Timeline.
+        """
+        Add Animation or list of Animations to the Timeline.
 
         Parameters
         ----------
@@ -469,7 +491,8 @@ class Timeline:
 
     @property
     def animations(self) -> "list[Animation]":
-        """Return all animations controlled by this Timeline.
+        """
+        Return all animations controlled by this Timeline.
 
         Returns
         -------
@@ -480,7 +503,8 @@ class Timeline:
 
     @warn_on_args_to_kwargs()
     def update(self, *, force=False):
-        """Update the timeline and all controlled animations.
+        """
+        Update the timeline and all controlled animations.
 
         Updates the Timeline and all animations it controls. Also updates the
         playback panel if one exists.
@@ -508,7 +532,8 @@ class Timeline:
             [anim.update_animation(time=time) for anim in self._animations]
 
     def add_to_scene(self, scene):
-        """Add Timeline and all of its Animations to the scene.
+        """
+        Add Timeline and all of its Animations to the scene.
 
         Parameters
         ----------
@@ -521,7 +546,8 @@ class Timeline:
         [animation.add_to_scene(scene) for animation in self._animations]
 
     def remove_from_scene(self, scene):
-        """Remove Timeline and all of its Animations from the scene.
+        """
+        Remove Timeline and all of its Animations from the scene.
 
         Parameters
         ----------

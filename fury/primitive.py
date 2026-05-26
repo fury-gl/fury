@@ -1,4 +1,5 @@
-"""Module dedicated for basic primitives.
+"""
+Module dedicated for basic primitives.
 
 This module provides functions to create basic geometric primitives like
 spheres, boxes, cylinders, etc. that can be used for visualization.
@@ -30,7 +31,8 @@ SPHERE_FILES = {
 
 
 def faces_from_sphere_vertices(vertices):
-    """Triangulate a set of vertices on the sphere.
+    """
+    Triangulate a set of vertices on the sphere.
 
     Parameters
     ----------
@@ -51,7 +53,8 @@ def faces_from_sphere_vertices(vertices):
 
 
 def _normalize_geom_param(param, n_centers, param_name="parameter"):
-    """Normalize a geometry parameter to an array of length n_centers.
+    """
+    Normalize a geometry parameter to an array of length n_centers.
 
     Accepts a scalar or array-like. A scalar or single-element value is
     broadcast to all centers. An array of length ``n_centers`` is returned
@@ -86,7 +89,8 @@ def _normalize_geom_param(param, n_centers, param_name="parameter"):
 def repeat_primitive_function(
     func, centers, *, func_args=None, directions=(1, 0, 0), colors=(1, 0, 0), scales=1
 ):
-    """Repeat vertices and triangles of a specific primitive function.
+    """
+    Repeat vertices and triangles of a specific primitive function.
 
     It could be seen as a glyph. The primitive function should generate and
     return vertices and faces.
@@ -151,7 +155,8 @@ def repeat_primitive(
     scales=1,
     have_tiled_verts=False,
 ):
-    """Repeat vertices and triangles of a specific primitive shape.
+    """
+    Repeat vertices and triangles of a specific primitive shape.
 
     It could be seen as a glyph.
 
@@ -212,7 +217,8 @@ def repeat_primitive(
     ).reshape((big_triangles.shape[0], 1))
 
     def normalize_input(arr, *, arr_name=""):
-        """Normalize input array for colors and directions.
+        """
+        Normalize input array for colors and directions.
 
         Parameters
         ----------
@@ -286,7 +292,8 @@ def repeat_primitive(
 
 
 def prim_square():
-    """Return vertices and triangles for a square geometry.
+    """
+    Return vertices and triangles for a square geometry.
 
     Returns
     -------
@@ -303,7 +310,8 @@ def prim_square():
 
 
 def prim_box(detailed=True):
-    """Return vertices and triangles for a box geometry.
+    """
+    Return vertices and triangles for a box geometry.
 
     Parameters
     ----------
@@ -411,7 +419,8 @@ def prim_box(detailed=True):
 
 @warn_on_args_to_kwargs()
 def prim_sphere(*, name="symmetric362", gen_faces=False, phi=None, theta=None):
-    """Provide vertices and triangles of the spheres.
+    """
+    Provide vertices and triangles of the spheres.
 
     Parameters
     ----------
@@ -488,7 +497,8 @@ def prim_sphere(*, name="symmetric362", gen_faces=False, phi=None, theta=None):
 
 
 def prim_superquadric(roundness=(1, 1), sphere_name="symmetric362"):
-    """Provide vertices and triangles of a superquadric.
+    """
+    Provide vertices and triangles of a superquadric.
 
     Parameters
     ----------
@@ -522,7 +532,8 @@ def prim_superquadric(roundness=(1, 1), sphere_name="symmetric362"):
     """
 
     def _fexp(x, p):
-        """Return a different kind of exponentiation.
+        """
+        Return a different kind of exponentiation.
 
         Parameters
         ----------
@@ -553,7 +564,8 @@ def prim_superquadric(roundness=(1, 1), sphere_name="symmetric362"):
 
 
 def prim_tetrahedron():
-    """Return vertices and triangles for a tetrahedron.
+    """
+    Return vertices and triangles for a tetrahedron.
 
     This shape has a side length of two units.
 
@@ -574,7 +586,8 @@ def prim_tetrahedron():
 
 
 def prim_icosahedron():
-    """Return vertices and triangles for an icosahedron.
+    """
+    Return vertices and triangles for an icosahedron.
 
     Returns
     -------
@@ -632,7 +645,8 @@ def prim_icosahedron():
 
 
 def prim_rhombicuboctahedron():
-    """Return vertices and triangles for a rhombicuboctahedron.
+    """
+    Return vertices and triangles for a rhombicuboctahedron.
 
     Returns
     -------
@@ -728,7 +742,8 @@ def prim_rhombicuboctahedron():
 
 
 def prim_star(*, dim=2):
-    """Return vertices and triangles for a 5-pointed star (2D or 3D).
+    """
+    Return vertices and triangles for a 5-pointed star (2D or 3D).
 
     Parameters
     ----------
@@ -787,7 +802,8 @@ def prim_star(*, dim=2):
 
 
 def prim_triangularprism():
-    """Return vertices and triangle for a regular triangular prism.
+    """
+    Return vertices and triangle for a regular triangular prism.
 
     Returns
     -------
@@ -826,7 +842,8 @@ def prim_triangularprism():
 
 
 def prim_pentagonalprism():
-    """Return vertices and triangles for a pentagonal prism.
+    """
+    Return vertices and triangles for a pentagonal prism.
 
     Returns
     -------
@@ -881,7 +898,8 @@ def prim_pentagonalprism():
 
 
 def prim_octagonalprism():
-    """Return vertices and triangle for an octagonal prism.
+    """
+    Return vertices and triangle for an octagonal prism.
 
     Returns
     -------
@@ -953,7 +971,8 @@ def prim_octagonalprism():
 
 
 def prim_frustum():
-    """Return vertices and triangles for a square frustum prism.
+    """
+    Return vertices and triangles for a square frustum prism.
 
     Returns
     -------
@@ -998,7 +1017,8 @@ def prim_frustum():
 
 @warn_on_args_to_kwargs()
 def prim_cylinder(*, radius=0.5, height=1, sectors=36, capped=True):
-    """Return vertices and triangles for a cylinder.
+    """
+    Return vertices and triangles for a cylinder.
 
     Parameters
     ----------
@@ -1139,7 +1159,8 @@ def prim_arrow(
     tip_radius=0.1,
     shaft_radius=0.03,
 ):
-    """Return vertices and triangles for arrow geometry.
+    """
+    Return vertices and triangles for arrow geometry.
 
     Parameters
     ----------
@@ -1226,7 +1247,8 @@ def prim_arrow(
 
 
 def prim_cone(*, radius=0.5, height=1, sectors=10):
-    """Return vertices and triangles of a cone.
+    """
+    Return vertices and triangles of a cone.
 
     Parameters
     ----------
@@ -1295,7 +1317,8 @@ def prim_cone(*, radius=0.5, height=1, sectors=10):
 
 
 def prim_disk(*, radius=0.5, sectors=36):
-    """Return vertices and triangles for a disk.
+    """
+    Return vertices and triangles for a disk.
 
     Parameters
     ----------
@@ -1343,7 +1366,8 @@ def prim_disk(*, radius=0.5, sectors=36):
 
 
 def prim_triangle():
-    """Return vertices and triangles for a triangle geometry.
+    """
+    Return vertices and triangles for a triangle geometry.
 
     Returns
     -------
@@ -1360,7 +1384,8 @@ def prim_triangle():
 def prim_ring(
     *, inner_radius=0.5, outer_radius=1, radial_segments=1, circumferential_segments=32
 ):
-    """Return vertices and triangles for a ring geometry.
+    """
+    Return vertices and triangles for a ring geometry.
 
     Parameters
     ----------

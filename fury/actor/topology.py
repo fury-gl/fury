@@ -24,7 +24,8 @@ def surface(
     normals=None,
     opacity=1.0,
 ):
-    """Create a surface mesh actor from vertices and faces.
+    """
+    Create a surface mesh actor from vertices and faces.
 
     Parameters
     ----------
@@ -128,7 +129,8 @@ def surface(
 
 
 def contour_from_volume(data, *, color=(1, 0, 0), opacity=0.5, material="phong"):
-    """Generate surface actor from a binary ROI.
+    """
+    Generate surface actor from a binary ROI.
 
     Parameters
     ----------
@@ -147,7 +149,6 @@ def contour_from_volume(data, *, color=(1, 0, 0), opacity=0.5, material="phong")
     Group
         A group of actors containing the generated contours from the volume data.
     """
-
     if color is None or len(color) != 3:
         raise ValueError("Color must be a tuple of three values (R, G, B).")
 

@@ -1,10 +1,11 @@
-"""Utility functions for 3D graphics and visualization.
+"""
+Utility functions for 3D graphics and visualization.
 
 This module contains various utility functions for 3D graphics and
-visualization, including trilinear interpolation, affine transformations,
-normal calculations, and grid generation. These functions are designed
-to work with numpy arrays and are useful for manipulating 3D data
-structures, such as meshes and point clouds.
+visualization, including trilinear interpolation, affine
+transformations, normal calculations, and grid generation. These
+functions are designed to work with numpy arrays and are useful for
+manipulating 3D data structures, such as meshes and point clouds.
 """
 
 import logging
@@ -47,7 +48,8 @@ _FACE_SIGNS = np.array([1, -1, 1, -1, 1, -1], dtype=np.int8)
 
 
 def map_coordinates_3d_4d(input_array, indices):
-    """Evaluate input_array at the given indices using trilinear interpolation.
+    """
+    Evaluate input_array at the given indices using trilinear interpolation.
 
     Uses trilinear interpolation to sample values from a 3D or 4D array at
     specified coordinates.
@@ -88,7 +90,8 @@ def map_coordinates_3d_4d(input_array, indices):
 
 
 def apply_affine(aff, pts):
-    """Apply affine matrix `aff` to points `pts`.
+    """
+    Apply affine matrix `aff` to points `pts`.
 
     Returns result of application of `aff` to the *right* of `pts`. The
     coordinate dimension of `pts` should be the last.
@@ -153,7 +156,8 @@ def apply_affine(aff, pts):
 
 
 def asbytes(s):
-    """Convert string to bytes using latin1 encoding.
+    """
+    Convert string to bytes using latin1 encoding.
 
     Parameters
     ----------
@@ -171,7 +175,8 @@ def asbytes(s):
 
 
 def get_grid_cells_position(shapes, *, aspect_ratio=16 / 9.0, dim=None):
-    """Construct a XY-grid based on the cells content shape.
+    """
+    Construct a XY-grid based on the cells content shape.
 
     Generate coordinates for a grid of cells with specified content shapes.
     The grid follows a row-major order with the top left corner at (0,0,0).
@@ -224,7 +229,8 @@ def get_grid_cells_position(shapes, *, aspect_ratio=16 / 9.0, dim=None):
 
 
 def normalize_v3(arr):
-    """Normalize a numpy array of 3 component vectors in-place.
+    """
+    Normalize a numpy array of 3 component vectors in-place.
 
     Parameters
     ----------
@@ -249,7 +255,8 @@ def normalize_v3(arr):
 
 
 def normals_from_v_f(vertices, faces):
-    """Calculate vertex normals from vertices and faces.
+    """
+    Calculate vertex normals from vertices and faces.
 
     Compute surface normals for each vertex based on the faces that include it.
 
@@ -282,7 +289,8 @@ def normals_from_v_f(vertices, faces):
 
 
 def tangents_from_direction_of_anisotropy(normals, direction):
-    """Calculate tangents from normals and a direction of anisotropy.
+    """
+    Calculate tangents from normals and a direction of anisotropy.
 
     Parameters
     ----------
@@ -308,7 +316,8 @@ def tangents_from_direction_of_anisotropy(normals, direction):
 
 
 def triangle_order(vertices, face):
-    """Determine the winding order of a given triangle face.
+    """
+    Determine the winding order of a given triangle face.
 
     Parameters
     ----------
@@ -344,7 +353,8 @@ def triangle_order(vertices, face):
 
 
 def change_vertices_order(triangle):
-    """Change the vertices order of a given triangle.
+    """
+    Change the vertices order of a given triangle.
 
     Parameters
     ----------
@@ -364,7 +374,8 @@ def change_vertices_order(triangle):
 
 
 def fix_winding_order(vertices, triangles, *, clockwise=False):
-    """Return triangles with a fixed winding order.
+    """
+    Return triangles with a fixed winding order.
 
     Parameters
     ----------
@@ -397,7 +408,8 @@ def fix_winding_order(vertices, triangles, *, clockwise=False):
 
 
 def generate_planar_uvs(vertices, *, axis="xy"):
-    """Generate UVs by projecting vertices onto a plane.
+    """
+    Generate UVs by projecting vertices onto a plane.
 
     Parameters
     ----------
@@ -411,7 +423,6 @@ def generate_planar_uvs(vertices, *, axis="xy"):
     ndarray
         Array of UV coordinates, shape (N, 2), where N is the number of vertices.
     """
-
     if axis not in ("xy", "xz", "yz"):
         raise ValueError("axis must be one of 'xy', 'xz', or 'yz'.")
 
@@ -450,7 +461,8 @@ def generate_planar_uvs(vertices, *, axis="xy"):
 
 
 def create_sh_basis_matrix(vertices, l_max):
-    """Create a SH basis matrix for real spherical harmonics.
+    """
+    Create a SH basis matrix for real spherical harmonics.
 
     Parameters
     ----------
@@ -464,7 +476,6 @@ def create_sh_basis_matrix(vertices, l_max):
     ndarray, shape (N, (l_max + 1) ** 2)
         Matrix of spherical harmonic basis functions evaluated at the vertices.
     """
-
     if (
         not isinstance(vertices, np.ndarray)
         or vertices.ndim != 2
@@ -506,7 +517,8 @@ def create_sh_basis_matrix(vertices, l_max):
 
 
 def get_lmax(n_coeffs, *, basis_type="standard"):
-    """Get the maximum degree (l_max) from the number of coefficients.
+    """
+    Get the maximum degree (l_max) from the number of coefficients.
 
     Parameters
     ----------
@@ -521,7 +533,6 @@ def get_lmax(n_coeffs, *, basis_type="standard"):
     int
         The maximum spherical harmonic degree (l_max).
     """
-
     if not isinstance(n_coeffs, int) or n_coeffs < 1:
         raise ValueError("n_coeffs must be a non-zero, positive integer.")
 
@@ -535,7 +546,8 @@ def get_lmax(n_coeffs, *, basis_type="standard"):
 
 
 def get_n_coeffs(l_max, *, basis_type="standard"):
-    """Get the number of spherical harmonic coefficients from the maximum degree.
+    """
+    Get the number of spherical harmonic coefficients from the maximum degree.
 
     Parameters
     ----------
@@ -550,7 +562,6 @@ def get_n_coeffs(l_max, *, basis_type="standard"):
     int
         The number of spherical harmonic coefficients.
     """
-
     if not isinstance(l_max, int) or l_max < 0:
         raise ValueError("l_max must be a non-negative integer.")
 
@@ -564,7 +575,8 @@ def get_n_coeffs(l_max, *, basis_type="standard"):
 
 
 def get_transformed_cube_bounds(affine_matrix, vertex1, vertex2):
-    """Get the min and max ranges of a transformed cube.
+    """
+    Get the min and max ranges of a transformed cube.
 
     Parameters
     ----------
@@ -581,7 +593,6 @@ def get_transformed_cube_bounds(affine_matrix, vertex1, vertex2):
         A list containing the min and max ranges of the transformed cube in the format
         [[min_x, min_y, min_z], [max_x, max_y, max_z]].
     """
-
     if len(vertex1) != 3 or len(vertex2) != 3:
         raise ValueError("vertex1 and vertex2 must be 3D coordinates.")
     if not isinstance(affine_matrix, np.ndarray) or affine_matrix.shape != (4, 4):
@@ -614,7 +625,8 @@ def get_transformed_cube_bounds(affine_matrix, vertex1, vertex2):
 
 
 def extract_surface_voxels(volume, label_value, *, structuring_element=None):
-    """Extract boundary voxel coordinates for a label within a volume.
+    """
+    Extract boundary voxel coordinates for a label within a volume.
 
     Parameters
     ----------
@@ -634,7 +646,6 @@ def extract_surface_voxels(volume, label_value, *, structuring_element=None):
         surface_coords has shape (N, 3) ordered as (x, y, z). Returns None when
         the label does not have exposed voxels.
     """
-
     if structuring_element is None:
         structuring_element = generate_binary_structure(rank=3, connectivity=1)
 
@@ -657,7 +668,8 @@ def extract_surface_voxels(volume, label_value, *, structuring_element=None):
 
 
 def face_generation(coords, axis, sign):
-    """Generate voxel face corners for scalar or vector inputs.
+    """
+    Generate voxel face corners for scalar or vector inputs.
 
     Parameters
     ----------
@@ -716,7 +728,8 @@ def face_generation(coords, axis, sign):
 def voxel_mesh_by_object(
     volume, *, connectivity=1, spacing=(1.0, 1.0, 1.0), triangulate=False
 ):
-    """Build a watertight mesh from a 3D volume where objects are volume > 0.
+    """
+    Build a watertight mesh from a 3D volume where objects are volume > 0.
 
     Parameters
     ----------
@@ -735,7 +748,6 @@ def voxel_mesh_by_object(
         A dictionary where keys are object labels and values are dictionaries
         with 'verts' and 'faces' of the generated meshes.
     """
-
     if not isinstance(volume, np.ndarray) or volume.ndim != 3:
         raise ValueError("volume must be a 3D numpy array.")
 

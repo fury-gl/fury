@@ -1,4 +1,5 @@
-"""Attempt to generate templates for module reference with Sphinx.
+"""
+Attempt to generate templates for module reference with Sphinx.
 
 To include extension modules, first identify them as valid in the
 ``_uri2path`` method, then handle them in the ``_parse_module_with_import``
@@ -28,7 +29,8 @@ DEBUG = True
 
 
 class ApiDocWriter:
-    """Class for automatic detection and parsing of API docs
+    """
+    Class for automatic detection and parsing of API docs
     to Sphinx-parsable reST format.
     """
 
@@ -44,7 +46,8 @@ class ApiDocWriter:
         object_skip_patterns=None,
         other_defines=True,
     ):
-        r"""Initialize package for parsing.
+        r"""
+        Initialize package for parsing.
 
         Parameters
         ----------
@@ -97,7 +100,8 @@ class ApiDocWriter:
         return self._package_name
 
     def set_package_name(self, package_name):
-        """Set package_name.
+        """
+        Set package_name.
 
         >>> docwriter = ApiDocWriter('sphinx')
         >>> import sphinx
@@ -130,7 +134,8 @@ class ApiDocWriter:
 
     @staticmethod
     def _get_object_name(line):
-        """Get second token in line.
+        """
+        Get second token in line.
 
         >>> docwriter = ApiDocWriter('sphinx')
         >>> docwriter._get_object_name("  def func():  ")
@@ -147,7 +152,8 @@ class ApiDocWriter:
         return name.rstrip(":")
 
     def _uri2path(self, uri):
-        """Convert uri to absolute filepath.
+        """
+        Convert uri to absolute filepath.
 
         Parameters
         ----------
@@ -210,7 +216,8 @@ class ApiDocWriter:
         return functions, classes
 
     def _parse_module_with_import(self, uri):
-        """Look for functions and classes in an importable module.
+        """
+        Look for functions and classes in an importable module.
 
         Parameters
         ----------
@@ -332,7 +339,8 @@ class ApiDocWriter:
         return functions, classes
 
     def generate_api_doc(self, uri):
-        """Make autodoc documentation template string for a module.
+        """
+        Make autodoc documentation template string for a module.
 
         Parameters
         ----------
@@ -402,7 +410,8 @@ class ApiDocWriter:
         return head, body
 
     def _survives_exclude(self, matchstr, match_type):
-        r"""Return True if *matchstr* does not match patterns.
+        r"""
+        Return True if *matchstr* does not match patterns.
 
         ``self.package_name`` removed from front of string if present
 
@@ -444,7 +453,8 @@ class ApiDocWriter:
         return True
 
     def discover_modules(self):
-        r"""Return module sequence discovered from ``self.package_name``.
+        r"""
+        Return module sequence discovered from ``self.package_name``.
 
         Parameters
         ----------
@@ -531,7 +541,8 @@ class ApiDocWriter:
         self.written_modules = written_modules
 
     def write_api_docs(self, outdir):
-        """Generate API reST files.
+        """
+        Generate API reST files.
 
         Parameters
         ----------
@@ -555,7 +566,8 @@ class ApiDocWriter:
         self.write_modules_api(modules, outdir)
 
     def write_index(self, outdir, froot="gen", relative_to=None):
-        """Make a reST API index file from written files.
+        """
+        Make a reST API index file from written files.
 
         Parameters
         ----------

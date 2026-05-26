@@ -13,7 +13,10 @@ from fury.lib import AffineTransform
 
 
 def test_volume_slicer_comprehensive():
-    """Test all major functionality of volume_slicer in one comprehensive test."""
+    """
+    Test all major functionality of volume_slicer in one comprehensive
+    test.
+    """
     # Create test data - a simple 10x10x10 volume with gradient values
     data = np.random.rand(10, 10, 10)
     for i in range(10):
@@ -66,7 +69,7 @@ def test_volume_slicer_comprehensive():
 
 
 def test_peaks_slicer_basic_functionality():
-    """Test basic functionality with minimal required inputs"""
+    """Test basic functionality with minimal required inputs."""
     peak_dirs = np.random.rand(5, 5, 5, 3)  # 3D vector field
     result = peaks_slicer(peak_dirs)
 
@@ -81,7 +84,7 @@ def test_peaks_slicer_basic_functionality():
 
 
 def test_peaks_slicer_with_affine_transform():
-    """Test with affine transformation"""
+    """Test with affine transformation."""
     peak_dirs = np.random.rand(3, 3, 3, 3)
     affine = np.eye(4)
     affine[:3, 3] = [10, 20, 30]  # Translation
@@ -98,7 +101,7 @@ def test_peaks_slicer_with_affine_transform():
 
 
 def test_peaks_slicer_invalid_peak_dirs_shape():
-    """Test with invalid peak directions shape"""
+    """Test with invalid peak directions shape."""
     with pytest.raises(ValueError):
         peaks_slicer(np.random.rand(3, 3))  # Not enough dimensions
 
@@ -107,7 +110,7 @@ def test_peaks_slicer_invalid_peak_dirs_shape():
 
 
 def test_peaks_slicer_peak_values():
-    """Test different peak_values configurations"""
+    """Test different peak_values configurations."""
     peak_dirs = np.random.rand(2, 2, 2, 3)
 
     # Test single float value
@@ -121,7 +124,7 @@ def test_peaks_slicer_peak_values():
 
 
 def test_peaks_slicer_actor_types():
-    """Test different actor_type options"""
+    """Test different actor_type options."""
     peak_dirs = np.random.rand(2, 2, 2, 3)
 
     result_thin = peaks_slicer(peak_dirs, actor_type="thin_line")
@@ -146,7 +149,7 @@ def test_peaks_slicer_visual_properties():
 
 
 def test_peaks_slicer_cross_section():
-    """Test cross_section parameter"""
+    """Test cross_section parameter."""
     peak_dirs = np.random.rand(2, 2, 2, 3)
 
     result_default = peaks_slicer(peak_dirs)
@@ -180,7 +183,10 @@ def test_contour_from_roi(affine):
     ],
 )
 def test_contour_from_label(colors, opacities):
-    """Test contour_from_label with various color and opacity configurations."""
+    """
+    Test contour_from_label with various color and opacity
+    configurations.
+    """
     data = np.zeros((5, 5, 5), dtype=int)
     data[1, 1, 1] = 1
     if colors is None or colors.shape[0] == 2:

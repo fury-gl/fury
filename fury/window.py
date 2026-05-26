@@ -1,9 +1,9 @@
-"""FURY window module.
+"""
+FURY window module.
 
-This module provides functionality for creating and managing
-rendering windows using PyGfx. It includes classes and functions
-for handling scenes, cameras, controllers, and rendering
-multiple screens.
+This module provides functionality for creating and managing rendering
+windows using PyGfx. It includes classes and functions for handling
+scenes, cameras, controllers, and rendering multiple screens.
 """
 
 import asyncio
@@ -53,7 +53,8 @@ from fury.ui import UI, UIContext
 
 
 class Scene(GfxGroup):
-    """Scene class to hold the actors in the scene.
+    """
+    Scene class to hold the actors in the scene.
 
     Data Structure to arrange the logical and spatial representation of the
     actors in the graphical scene. It is a subclass of PyGfx Scene class.
@@ -80,11 +81,11 @@ class Scene(GfxGroup):
         skybox=None,
         lights=None,
     ):
-        """Arrange the logical and spatial representation of actors.
+        """
+        Arrange the logical and spatial representation of actors.
 
-        This class acts as a scene graph container, managing actors, background,
-        and lighting for rendering.
-
+        This class acts as a scene graph container, managing actors,
+        background, and lighting for rendering.
         """
         super().__init__()
 
@@ -113,7 +114,8 @@ class Scene(GfxGroup):
         self.add(*self.lights)
 
     def _skybox(self, cube_map):
-        """Create a skybox background actor from a cubemap texture.
+        """
+        Create a skybox background actor from a cubemap texture.
 
         Parameters
         ----------
@@ -123,24 +125,28 @@ class Scene(GfxGroup):
         Returns
         -------
         Background
-            A PyGfx Background object configured with the skybox material."""
+            A PyGfx Background object configured with the skybox material.
+        """
         return Background(
             geometry=None, material=BackgroundSkyboxMaterial(map=cube_map)
         )
 
     @property
     def background(self):
-        """Get the background color of the scene.
+        """
+        Get the background color of the scene.
 
         Returns
         -------
         tuple
-            The current background color as an (R, G, B, A) tuple."""
+            The current background color as an (R, G, B, A) tuple.
+        """
         return self._bg_color
 
     @background.setter
     def background(self, value):
-        """Set the background color of the scene.
+        """
+        Set the background color of the scene.
 
         This replaces the current background actor (color or skybox)
         with a new uniform color background.
@@ -148,14 +154,16 @@ class Scene(GfxGroup):
         Parameters
         ----------
         value : tuple
-            The desired background color as an (R, G, B, A) tuple."""
+            The desired background color as an (R, G, B, A) tuple.
+        """
         self.remove(self._bg_actor)
         self._bg_color = value
         self._bg_actor = Background.from_color(value)
         self.add(self._bg_actor)
 
     def set_skybox(self, cube_map):
-        """Set a skybox as the scene background using a cubemap texture.
+        """
+        Set a skybox as the scene background using a cubemap texture.
 
         This replaces the current background actor (color or skybox)
         with a new skybox background.
@@ -163,7 +171,8 @@ class Scene(GfxGroup):
         Parameters
         ----------
         cube_map : Texture
-            A PyGfx Texture object (cubemap) for the skybox."""
+            A PyGfx Texture object (cubemap) for the skybox.
+        """
         self.remove(self._bg_actor)
         self._bg_actor = self._skybox(cube_map)
         self.add(self._bg_actor)
@@ -179,7 +188,8 @@ class Scene(GfxGroup):
         self.ui_scene.add(self.ui_camera)
 
     def add(self, *objects):
-        """Add actors or UI elements to the scene.
+        """
+        Add actors or UI elements to the scene.
 
         Parameters
         ----------
@@ -196,7 +206,8 @@ class Scene(GfxGroup):
                 self.main_scene.add(obj)
 
     def remove(self, *objects):
-        """Remove actors or UI elements from the scene.
+        """
+        Remove actors or UI elements from the scene.
 
         Parameters
         ----------
@@ -216,10 +227,12 @@ class Scene(GfxGroup):
 
 @dataclass
 class Screen:
-    """Define an independent viewport within the window.
+    """
+    Define an independent viewport within the window.
 
     Holds a scene graph, camera, and controller for rendering actors
-    within a specific rectangular area of the window."""
+    within a specific rectangular area of the window.
+    """
 
     viewport: Viewport
     scene: Scene
@@ -228,47 +241,56 @@ class Screen:
 
     @property
     def size(self):
-        """Get the size of the screen viewport.
+        """
+        Get the size of the screen viewport.
 
         Returns
         -------
         tuple
-            The width and height (w, h) of the viewport in pixels."""
+            The width and height (w, h) of the viewport in pixels.
+        """
         return self.viewport.rect[2:]
 
     @property
     def position(self):
-        """Get the position of the screen viewport within the window.
+        """
+        Get the position of the screen viewport within the window.
 
         Returns
         -------
         tuple
-            The x and y coordinates (x, y) of the viewport's top-left corner."""
+            The x and y coordinates (x, y) of the viewport's top-left corner.
+        """
         return self.viewport.rect[:2]
 
     @property
     def bounding_box(self):
-        """Get the bounding box of the screen viewport within the window.
+        """
+        Get the bounding box of the screen viewport within the window.
 
         Returns
         -------
         tuple
-            The position and size (x, y, w, h) of the viewport."""
+            The position and size (x, y, w, h) of the viewport.
+        """
         return self.viewport.rect
 
     @bounding_box.setter
     def bounding_box(self, value):
-        """Set the bounding box of the screen viewport within the window.
+        """
+        Set the bounding box of the screen viewport within the window.
 
         Parameters
         ----------
         value : tuple
-            The desired position and size (x, y, w, h) for the viewport."""
+            The desired position and size (x, y, w, h) for the viewport.
+        """
         self.viewport.rect = value
 
 
 def add_ui_to_scene(ui_scene, ui_obj):
-    """Recursively traverse and add UI hierarchy to the UI scene.
+    """
+    Recursively traverse and add UI hierarchy to the UI scene.
 
     Parameters
     ----------
@@ -285,7 +307,8 @@ def add_ui_to_scene(ui_scene, ui_obj):
 
 
 def remove_ui_from_scene(ui_scene, ui_obj):
-    """Recursively traverse and remove UI hierarchy from the UI scene.
+    """
+    Recursively traverse and remove UI hierarchy from the UI scene.
 
     Parameters
     ----------
@@ -304,7 +327,8 @@ def remove_ui_from_scene(ui_scene, ui_obj):
 def create_screen(
     renderer, *, rect=None, scene=None, camera=None, controller=None, camera_light=True
 ):
-    """Compose a Screen object with viewport, scene, camera, and controller.
+    """
+    Compose a Screen object with viewport, scene, camera, and controller.
 
     Parameters
     ----------
@@ -328,7 +352,8 @@ def create_screen(
     Returns
     -------
     Screen
-        A configured Screen object ready for rendering."""
+        A configured Screen object ready for rendering.
+    """
     vp = Viewport(renderer, rect)
     if scene is None:
         scene = Scene()
@@ -348,7 +373,8 @@ def create_screen(
 
 
 def update_camera(camera, size, target):
-    """Update the camera's view to encompass the target object or scene.
+    """
+    Update the camera's view to encompass the target object or scene.
 
     If the target is a non-empty scene or another object, the camera adjusts
     to show it. If the target is an empty scene, the camera's aspect ratio
@@ -361,7 +387,8 @@ def update_camera(camera, size, target):
     size : tuple
         The size (width, height) of the viewport, used if the target is empty.
     target : Object or Scene
-        The PyGfx object or scene the camera should focus on."""
+        The PyGfx object or scene the camera should focus on.
+    """
     if isinstance(target, Scene):
         target = target.main_scene
 
@@ -375,7 +402,8 @@ def update_camera(camera, size, target):
 
 
 def _get_scene_center(camera, scene):
-    """Center of scene using the bounding box.
+    """
+    Center of scene using the bounding box.
 
     Parameters
     ----------
@@ -400,7 +428,8 @@ def _get_scene_center(camera, scene):
 
 
 def _reference_up_for_axis(axis_dir):
-    """Reference up position based on the axis direction.
+    """
+    Reference up position based on the axis direction.
 
     The reference up needs change to handle the camera alignment close to the fixed
     reference up.
@@ -423,7 +452,8 @@ def _reference_up_for_axis(axis_dir):
 
 
 def set_camera_from_axis(screen, axis_direction):
-    """Set camera based on the axis direction proposed.
+    """
+    Set camera based on the axis direction proposed.
 
     This method will preserves the distance it actually had from the center of the
     scene. It will only move the camera to the new angle based on the direction.
@@ -462,21 +492,24 @@ def set_camera_from_axis(screen, axis_direction):
 
 
 def update_viewports(screens, screen_bbs):
-    """Update the bounding boxes and cameras of multiple screens.
+    """
+    Update the bounding boxes and cameras of multiple screens.
 
     Parameters
     ----------
     screens : list of Screen
         The list of Screen objects to update.
     screen_bbs : list of tuple
-        A list of bounding boxes (x, y, w, h), one for each screen in `screens`."""
+        A list of bounding boxes (x, y, w, h), one for each screen in `screens`.
+    """
     for screen, screen_bb in zip(screens, screen_bbs, strict=False):
         screen.bounding_box = screen_bb
         update_camera(screen.camera, screen.size, screen.scene)
 
 
 def render_screens(renderer, screens, stats=None, is_dirty=False):
-    """Render multiple screens within a single renderer update cycle.
+    """
+    Render multiple screens within a single renderer update cycle.
 
     Parameters
     ----------
@@ -487,7 +520,8 @@ def render_screens(renderer, screens, stats=None, is_dirty=False):
     stats : Stats, optional
         Stats helper to display FPS overlay.
     is_dirty : bool, optional
-        If True, triggers layout recalculations for UI elements."""
+        If True, triggers layout recalculations for UI elements.
+    """
     if stats is not None:
         stats.start()
 
@@ -510,14 +544,14 @@ def render_screens(renderer, screens, stats=None, is_dirty=False):
 
 
 def reposition_ui(screens):
-    """Update the positions of all UI elements across multiple screens.
+    """
+    Update the positions of all UI elements across multiple screens.
 
     Parameters
     ----------
     screens : list of Screen
         The list of Screen objects containing UI elements to reposition.
     """
-
     for screen in screens:
         scene_root = screen.scene
         for child in scene_root.ui_elements:
@@ -525,7 +559,8 @@ def reposition_ui(screens):
 
 
 def calculate_screen_sizes(screens, size):
-    """Calculate screen bounding boxes based on a layout configuration.
+    """
+    Calculate screen bounding boxes based on a layout configuration.
 
     The `screens` list defines vertical sections, and each element within
     specifies the number of horizontal sections in that vertical column.
@@ -546,7 +581,8 @@ def calculate_screen_sizes(screens, size):
     Returns
     -------
     list of tuple
-        A list of calculated bounding boxes (x, y, w, h) for each screen."""
+        A list of calculated bounding boxes (x, y, w, h) for each screen.
+    """
     if screens is None or not screens:
         return [(0, 0, *size)]
 
@@ -580,7 +616,8 @@ def calculate_screen_sizes(screens, size):
 
 
 class ShowManager:
-    """Show manager for the rendering window.
+    """
+    Show manager for the rendering window.
 
     It manages the rendering of the scene(s) in the window. It also handles the
     events from the window and the controller.
@@ -645,10 +682,11 @@ class ShowManager:
         imgui=False,
         imgui_draw_function=None,
     ):
-        """Manage the rendering window, scenes, and interactions.
+        """
+        Manage the rendering window, scenes, and interactions.
 
-        Handles window creation, screen layout, rendering loop, and event handling.
-
+        Handles window creation, screen layout, rendering loop, and
+        event handling.
         """
         self._size = size
         self._title = title
@@ -701,7 +739,8 @@ class ShowManager:
         self._resize(self._size)
 
     def _handle_drag(self, event):
-        """Handle drag events for pointer interactions.
+        """
+        Handle drag events for pointer interactions.
 
         Parameters
         ----------
@@ -716,7 +755,8 @@ class ShowManager:
         self.renderer.dispatch_event(drag_event)
 
     def _toggle_screen_controllers(self, disable):
-        """Toggle the enabled state for controllers across multiple screen viewports.
+        """
+        Toggle the enabled state for controllers across multiple screen viewports.
 
         Parameters
         ----------
@@ -727,7 +767,8 @@ class ShowManager:
             screen.controller.enabled = not disable
 
     def _register_drag(self, event):
-        """Register drag events for pointer interactions.
+        """
+        Register drag events for pointer interactions.
 
         Parameters
         ----------
@@ -747,7 +788,8 @@ class ShowManager:
             self._handle_drag(event)
 
     def _screen_setup(self, scene, camera, controller, camera_light):
-        """Prepare scene, camera, controller, and light lists for screen creation.
+        """
+        Prepare scene, camera, controller, and light lists for screen creation.
 
         Ensures that lists match the total number of screens required.
 
@@ -760,7 +802,8 @@ class ShowManager:
         controller : Controller or list of Controller or None
             Input controller configuration.
         camera_light : bool or list of bool
-            Input camera light configuration."""
+            Input camera light configuration.
+        """
         self._scene = scene
         if not isinstance(scene, list):
             self._scene = [scene] * self._total_screens
@@ -778,7 +821,8 @@ class ShowManager:
             self._camera_light = [camera_light] * self._total_screens
 
     def _setup_window(self, window_type):
-        """Initialize the appropriate canvas window based on the type.
+        """
+        Initialize the appropriate canvas window based on the type.
 
         Parameters
         ----------
@@ -794,7 +838,8 @@ class ShowManager:
         Raises
         ------
         ValueError
-            If an invalid `window_type` is provided."""
+            If an invalid `window_type` is provided.
+        """
         window_type = window_type.lower()
 
         if window_type not in ["default", "glfw", "qt", "jupyter", "offscreen"]:
@@ -836,12 +881,14 @@ class ShowManager:
             self._total_screens = len(self._screen_config)
 
     def _create_screens(self):
-        """Create all Screen objects based on the prepared configurations.
+        """
+        Create all Screen objects based on the prepared configurations.
 
         Returns
         -------
         list of Screen
-            The list of created Screen objects."""
+            The list of created Screen objects.
+        """
         screens = []
         for i in range(self._total_screens):
             screens.append(
@@ -856,7 +903,8 @@ class ShowManager:
         return screens
 
     def _resize(self, size):
-        """Handle window resize events by updating viewports and re-rendering.
+        """
+        Handle window resize events by updating viewports and re-rendering.
 
         Parameters
         ----------
@@ -873,25 +921,27 @@ class ShowManager:
         self.render()
 
     async def _handle_key_long_press(self, event):
-        """Handle long press events for key inputs.
+        """
+        Handle long press events for key inputs.
 
         Parameters
         ----------
         event : KeyEvent
-            The PyGfx key event object."""
-
+            The PyGfx key event object.
+        """
         if self._key_long_press is not None:
             await asyncio.sleep(0.05)
             self.renderer.dispatch_event(event)
 
     def _set_key_long_press_event(self, event):
-        """Handle long press events for key inputs.
+        """
+        Handle long press events for key inputs.
 
         Parameters
         ----------
         event : KeyEvent
-            The PyGfx key event object."""
-
+            The PyGfx key event object.
+        """
         if event.type == EventType.KEY_DOWN:
             self._key_long_press = asyncio.create_task(
                 self._handle_key_long_press(event)
@@ -901,7 +951,8 @@ class ShowManager:
             self._key_long_press = None
 
     def _on_repeat_callback(self, func, time, name, *args):
-        """Internal method to handle the timing and execution of callbacks.
+        """
+        Internal method to handle the timing and execution of callbacks.
 
         Parameters
         ----------
@@ -926,7 +977,8 @@ class ShowManager:
         func(*args[3:])
 
     def register_callback(self, func, time, repeat, name, *args):
-        """Register a callback function to be called after a time interval.
+        """
+        Register a callback function to be called after a time interval.
 
         Parameters
         ----------
@@ -964,7 +1016,8 @@ class ShowManager:
                 call_later(time, func, *args)
 
     def cancel_callback(self, name):
-        """Cancel a registered callback by its name.
+        """
+        Cancel a registered callback by its name.
 
         Parameters
         ----------
@@ -975,7 +1028,8 @@ class ShowManager:
             del self._callbacks[name]
 
     def resize_callback(self, func):
-        """Set a callback function to be called on window resize events.
+        """
+        Set a callback function to be called on window resize events.
 
         Parameters
         ----------
@@ -990,7 +1044,8 @@ class ShowManager:
         self._on_resize = lambda _size: None
 
     def enable_imgui(self, *, imgui_draw_function=None):
-        """Enable ImGui UI rendering support.
+        """
+        Enable ImGui UI rendering support.
 
         Parameters
         ----------
@@ -1012,7 +1067,8 @@ class ShowManager:
             logging.warning("ImGui is not enabled for this ShowManager.")
 
     def set_imgui_render_callback(self, imgui_draw_function):
-        """Set the ImGui rendering callback function.
+        """
+        Set the ImGui rendering callback function.
 
         Parameters
         ----------
@@ -1038,7 +1094,8 @@ class ShowManager:
         labels=None,
         click_callback=None,
     ):
-        """Add an axes helper to the first screen for orientation reference.
+        """
+        Add an axes helper to the first screen for orientation reference.
 
         Parameters
         ----------
@@ -1063,7 +1120,6 @@ class ShowManager:
             should accept a single argument, which will be the axis direction vector
             corresponding to the clicked axis.
         """
-
         if screen is None:
             logging.warning("Screen index is None. Defaulting to screen 0.")
             screen = 0
@@ -1113,7 +1169,8 @@ class ShowManager:
         ]
 
         def _axes_pick_pointer_down(event):
-            """Camera alignment callback for axes helper disk and label clicks.
+            """
+            Camera alignment callback for axes helper disk and label clicks.
 
             Parameters
             ----------
@@ -1209,104 +1266,124 @@ class ShowManager:
 
     @property
     def app(self):
-        """Get the associated QApplication instance, if any.
+        """
+        Get the associated QApplication instance, if any.
 
         Returns
         -------
         QApplication or None
-            The QApplication instance if the window type is 'qt', otherwise None."""
+            The QApplication instance if the window type is 'qt', otherwise None.
+        """
         return self._qt_app
 
     @property
     def title(self):
-        """Get the current window title.
+        """
+        Get the current window title.
 
         Returns
         -------
         str
-            The text displayed in the window's title bar."""
+            The text displayed in the window's title bar.
+        """
         return self._title
 
     @title.setter
     def title(self, value):
-        """Set the window title.
+        """
+        Set the window title.
 
         Parameters
         ----------
         value : str
-            The desired text for the window's title bar."""
+            The desired text for the window's title bar.
+        """
         self._title = value
         self.window.set_title(self._title)
 
     @property
     def pixel_ratio(self):
-        """Get the current pixel ratio of the renderer.
+        """
+        Get the current pixel ratio of the renderer.
 
         Returns
         -------
         float
-            The ratio between render buffer and display buffer pixels."""
+            The ratio between render buffer and display buffer pixels.
+        """
         return self.renderer.pixel_ratio
 
     @pixel_ratio.setter
     def pixel_ratio(self, value):
-        """Set the pixel ratio of the renderer.
+        """
+        Set the pixel ratio of the renderer.
 
         Parameters
         ----------
         value : float
-            The desired pixel ratio."""
+            The desired pixel ratio.
+        """
         self.renderer.pixel_ratio = value
 
     @property
     def size(self):
-        """Get the current size of the window.
+        """
+        Get the current size of the window.
 
         Returns
         -------
         tuple
-            The current (width, height) of the window in logical pixels."""
+            The current (width, height) of the window in logical pixels.
+        """
         return self._size
 
     @property
     def callbacks(self):
-        """Get the registered callbacks.
+        """
+        Get the registered callbacks.
 
         This only returns the callbacks that are set to repeat.
 
         Returns
         -------
         dict
-            A dictionary of registered callbacks with their names as keys."""
+            A dictionary of registered callbacks with their names as keys.
+        """
         return self._callbacks
 
     @property
     def imgui(self):
-        """Get the ImGui UI renderer if enabled.
+        """
+        Get the ImGui UI renderer if enabled.
 
         Returns
         -------
         UIRenderer or None
-            The UIRenderer instance if ImGui is enabled, otherwise None."""
+            The UIRenderer instance if ImGui is enabled, otherwise None.
+        """
         return self._imgui
 
     @property
     def device(self):
-        """Get the underlying GPU device from the renderer.
+        """
+        Get the underlying GPU device from the renderer.
 
         Returns
         -------
         wgpu.GPUDevice
-            The GPU device used by the renderer for rendering operations."""
+            The GPU device used by the renderer for rendering operations.
+        """
         return self.renderer.device
 
     def set_enable_events(self, value):
-        """Enable or disable mouse and keyboard interactions for all screens.
+        """
+        Enable or disable mouse and keyboard interactions for all screens.
 
         Parameters
         ----------
         value : bool
-            Set to True to enable events, False to disable them."""
+            Set to True to enable events, False to disable them.
+        """
         self.enable_events = value
         if value:
             self.renderer.enable_events()
@@ -1316,19 +1393,22 @@ class ShowManager:
             s.controller.enabled = value
 
     def get_fps(self):
-        """Get the current FPS from the stats overlay if available.
+        """
+        Get the current FPS from the stats overlay if available.
 
         Returns
         -------
         int or None
             The current FPS value, or None if stats are not initialized or
-            FPS has not been computed yet."""
+            FPS has not been computed yet.
+        """
         if self._stats is not None:
             return getattr(self._stats, "_fps", None)
         return None
 
     def snapshot(self, fname):
-        """Save a snapshot of the current rendered content to a file.
+        """
+        Save a snapshot of the current rendered content to a file.
 
         The window must have been rendered at least once before calling this.
 
@@ -1369,10 +1449,12 @@ class ShowManager:
         self.window.request_draw(self._draw_function)
 
     def start(self):
-        """Start the rendering event loop and display the window.
+        """
+        Start the rendering event loop and display the window.
 
-        This call blocks until the window is closed, unless running in an
-        offscreen or specific environment (like FURY_OFFSCREEN)."""
+        This call blocks until the window is closed, unless running in
+        an offscreen or specific environment (like FURY_OFFSCREEN).
+        """
         self.render()
         if "FURY_OFFSCREEN" in os.environ and os.environ["FURY_OFFSCREEN"].lower() in [
             "true",
@@ -1394,7 +1476,9 @@ class ShowManager:
             display_jupyter_widget(self.window)
 
     def close(self):
-        """Close the rendering window and terminate the application if necessary."""
+        """
+        Close the rendering window and terminate the application if necessary.
+        """
         self.window.close()
 
 
@@ -1406,7 +1490,8 @@ def snapshot(
     actors=None,
     return_array=False,
 ):
-    """Take a snapshot using an offscreen window.
+    """
+    Take a snapshot using an offscreen window.
 
     Creates a temporary offscreen ShowManager, renders the scene(s),
     saves the image, and optionally returns the image data.
@@ -1431,7 +1516,8 @@ def snapshot(
     -------
     ndarray or None
         If `return_array` is True, returns the RGBA image data as a NumPy array.
-        Otherwise, returns None."""
+        Otherwise, returns None.
+    """
     if actors is not None:
         scene = Scene()
         scene.add(*actors)
@@ -1448,7 +1534,8 @@ def snapshot(
 
 
 def analyze_snapshot(im, *, colors=None, find_objects=True, strel=None):
-    """Analyze snapshot from memory or file.
+    """
+    Analyze snapshot from memory or file.
 
     Parameters
     ----------
@@ -1481,7 +1568,8 @@ def analyze_snapshot(im, *, colors=None, find_objects=True, strel=None):
         colors_found = False
 
         def __str__(self):
-            """String method for printing.
+            """
+            String method for printing.
 
             Returns
             -------
@@ -1522,7 +1610,8 @@ def analyze_snapshot(im, *, colors=None, find_objects=True, strel=None):
 
 
 def show(actors, *, window_type="default"):
-    """Display one or more actors in a new window quickly.
+    """
+    Display one or more actors in a new window quickly.
 
     A convenience function to quickly visualize actors without manually
     setting up a Scene or ShowManager.
@@ -1533,7 +1622,8 @@ def show(actors, *, window_type="default"):
         The PyGfx actor(s) to display.
     window_type : str, optional
         The type of window canvas to create ('default', 'glfw', 'qt',
-        'jupyter', 'offscreen'). Defaults to 'default'."""
+        'jupyter', 'offscreen'). Defaults to 'default'.
+    """
     scene = Scene()
     scene.add(*actors)
     show_m = ShowManager(scene=scene, window_type=window_type)

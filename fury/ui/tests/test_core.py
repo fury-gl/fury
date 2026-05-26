@@ -12,6 +12,7 @@ from fury.ui.helpers import Anchor
 def test_rectangle2d_initialization_default():
     """
     Test Rectangle2D initialization with default parameters.
+
     Checks default size, color, opacity, and position.
     """
     rect = ui.Rectangle2D()
@@ -27,6 +28,7 @@ def test_rectangle2d_initialization_default():
 def test_rectangle2d_initialization_custom():
     """
     Test Rectangle2D initialization with custom parameters.
+
     Checks custom size, position, color, and opacity.
     """
     custom_size = (200, 100)
@@ -107,6 +109,7 @@ def test_rectangle2d_set_visibility():
 def test_disk2d_initialization_default():
     """
     Test Disk2D initialization with default parameters.
+
     Checks default center, color, opacity, and required outer_radius.
     """
     disk_ui = ui.Disk2D(outer_radius=10)
@@ -122,6 +125,7 @@ def test_disk2d_initialization_default():
 def test_disk2d_initialization_custom():
     """
     Test Disk2D initialization with custom parameters.
+
     Checks custom outer_radius, center, color, and opacity.
     """
     custom_radius = 25
@@ -299,6 +303,7 @@ def test_disk2d_visual_snapshot():
 def test_textblock2d_initialization_default():
     """
     Test TextBlock2D initialization with minimal valid parameters.
+
     Checks default font, color, alignment, and flags.
     """
     tb = ui.TextBlock2D(size=(200, 100))
@@ -467,9 +472,9 @@ def test_textblock2d_resize():
 def test_textblock2d_visual_snapshot():
     """
     Visual test for TextBlock2D.
+
     Checks if background renders correctly when enabled.
     """
-
     tb = ui.TextBlock2D(
         text="Visual Test",
         size=(200, 100),

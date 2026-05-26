@@ -55,7 +55,8 @@ cm, have_matplotlib, _ = optional_package("matplotlib.cm")
 
 
 def cc(na, nd):
-    """Calculate cosine component for Boy's surface.
+    """
+    Calculate cosine component for Boy's surface.
 
     Parameters
     ----------
@@ -73,7 +74,8 @@ def cc(na, nd):
 
 
 def ss(na, nd):
-    """Calculate sine component for Boy's surface.
+    """
+    Calculate sine component for Boy's surface.
 
     Parameters
     ----------
@@ -91,7 +93,8 @@ def ss(na, nd):
 
 
 def boys2rgb(v):
-    """Convert orientation vectors to RGB colors using Boy's Surface.
+    """
+    Convert orientation vectors to RGB colors using Boy's Surface.
 
     Maps a given field of undirected lines (line field) to rgb
     colors using Boy's Surface immersion of the real projective
@@ -240,7 +243,8 @@ def boys2rgb(v):
 
 
 def orient2rgb(v):
-    """Convert orientation vectors to RGB colors based on absolute values.
+    """
+    Convert orientation vectors to RGB colors based on absolute values.
 
     Parameters
     ----------
@@ -284,7 +288,8 @@ def orient2rgb(v):
 
 
 def line_colors(streamlines, *, cmap="rgb_standard"):
-    """Create colors for streamlines based on their orientation.
+    """
+    Create colors for streamlines based on their orientation.
 
     Parameters
     ----------
@@ -316,7 +321,8 @@ dipy_cmaps = None
 
 
 def get_cmap(name):
-    """Create a colormap callable similar to matplotlib.pyplot.get_cmap.
+    """
+    Create a colormap callable similar to matplotlib.pyplot.get_cmap.
 
     Parameters
     ----------
@@ -353,7 +359,8 @@ def get_cmap(name):
         return None
 
     def simple_cmap(v):
-        """Emulate matplotlib colormap callable.
+        """
+        Emulate matplotlib colormap callable.
 
         Parameters
         ----------
@@ -379,7 +386,8 @@ def get_cmap(name):
 
 
 def create_colormap(v, *, name="plasma", auto=True):
-    """Create colors from a specific colormap.
+    """
+    Create colors from a specific colormap.
 
     Creates an array of shape (N,3) where every row gives the corresponding
     r,g,b value. The colormaps used are similar to those of matplotlib.
@@ -440,7 +448,8 @@ def create_colormap(v, *, name="plasma", auto=True):
 
 
 def _lab_delta(x, y):
-    """Calculate CIELAB Delta E distance between colors.
+    """
+    Calculate CIELAB Delta E distance between colors.
 
     Parameters
     ----------
@@ -461,7 +470,8 @@ def _lab_delta(x, y):
 
 
 def _rgb_lab_delta(x, y):
-    """Calculate CIELAB Delta E distance between RGB colors.
+    """
+    Calculate CIELAB Delta E distance between RGB colors.
 
     Parameters
     ----------
@@ -481,7 +491,8 @@ def _rgb_lab_delta(x, y):
 
 
 def _rgb2xyz(rgb):
-    """Convert from RGB to XYZ color space.
+    """
+    Convert from RGB to XYZ color space.
 
     Parameters
     ----------
@@ -525,7 +536,8 @@ def _rgb2xyz(rgb):
 
 
 def _xyz2lab(xyz):
-    """Convert from XYZ to CIELAB color space.
+    """
+    Convert from XYZ to CIELAB color space.
 
     Parameters
     ----------
@@ -567,7 +579,8 @@ def _xyz2lab(xyz):
 
 
 def _lab2xyz(lab):
-    """Convert from CIELAB to XYZ color space.
+    """
+    Convert from CIELAB to XYZ color space.
 
     Parameters
     ----------
@@ -609,7 +622,8 @@ def _lab2xyz(lab):
 
 
 def _xyz2rgb(xyz):
-    """Convert from XYZ to RGB color space.
+    """
+    Convert from XYZ to RGB color space.
 
     Parameters
     ----------
@@ -652,7 +666,8 @@ def _xyz2rgb(xyz):
 
 
 def _rgb2lab(rgb):
-    """Convert from RGB to CIELAB color space.
+    """
+    Convert from RGB to CIELAB color space.
 
     Parameters
     ----------
@@ -669,7 +684,8 @@ def _rgb2lab(rgb):
 
 
 def _lab2rgb(lab):
-    """Convert from CIELAB to RGB color space.
+    """
+    Convert from CIELAB to RGB color space.
 
     Parameters
     ----------
@@ -686,7 +702,8 @@ def _lab2rgb(lab):
 
 
 def distinguishable_colormap(*, bg=(0, 0, 0), exclude=None, nb_colors=None):
-    """Generate colors that are maximally perceptually distinct.
+    """
+    Generate colors that are maximally perceptually distinct.
 
     This function generates a set of colors which are distinguishable
     by reference to the "Lab" color space, which more closely matches
@@ -716,18 +733,18 @@ def distinguishable_colormap(*, bg=(0, 0, 0), exclude=None, nb_colors=None):
         Otherwise, yields the next RGB color maximally perceptually
         distinct from previous ones.
 
-    Examples
-    --------
-    >>> from fury.colormap import distinguishable_colormap
-    >>> # Generate 5 colors
-    >>> _ = [c for i, c in zip(range(5), distinguishable_colormap())]
-
     Notes
     -----
     Code was initially in matlab and was rewritten in Python for dipy by
     the Dipy Team. Thank you Tim Holy for putting this online. Visit
     http://www.mathworks.com/matlabcentral/fileexchange/29702 for the
     original implementation (v1.2), 14 Dec 2010 (Updated 07 Feb 2011).
+
+    Examples
+    --------
+    >>> from fury.colormap import distinguishable_colormap
+    >>> # Generate 5 colors
+    >>> _ = [c for i, c in zip(range(5), distinguishable_colormap())]
     """
     if exclude is None:
         exclude = []
@@ -776,7 +793,8 @@ def distinguishable_colormap(*, bg=(0, 0, 0), exclude=None, nb_colors=None):
 
 
 def hex_to_rgb(color):
-    """Convert hexadecimal color code to RGB values.
+    """
+    Convert hexadecimal color code to RGB values.
 
     Parameters
     ----------
@@ -809,7 +827,8 @@ def hex_to_rgb(color):
 
 
 def normalize_colors(colors, n_points=None):
-    """Normalize colors to float32 arrays in [0, 1] range.
+    """
+    Normalize colors to float32 arrays in [0, 1] range.
 
     Accepts colors in multiple formats and converts them to a consistent
     float32 ndarray with values in [0, 1], suitable for the GPU pipeline.
@@ -837,7 +856,8 @@ def normalize_colors(colors, n_points=None):
     """
 
     def _tile_colors(colors):
-        """Tile a single color when a point count is requested.
+        """
+        Tile a single color when a point count is requested.
 
         Parameters
         ----------
@@ -893,7 +913,8 @@ def normalize_colors(colors, n_points=None):
 
 
 def rgb2hsv(rgb):
-    """Convert RGB color values to HSV color space.
+    """
+    Convert RGB color values to HSV color space.
 
     Parameters
     ----------
@@ -961,7 +982,8 @@ def rgb2hsv(rgb):
 
 
 def hsv2rgb(hsv):
-    """Convert HSV color values to RGB color space.
+    """
+    Convert HSV color values to RGB color space.
 
     Parameters
     ----------
@@ -1018,7 +1040,8 @@ rgb_from_xyz = linalg.inv(xyz_from_rgb)
 
 
 def xyz2rgb(xyz):
-    """Convert XYZ color values to RGB color space.
+    """
+    Convert XYZ color values to RGB color space.
 
     Parameters
     ----------
@@ -1047,7 +1070,8 @@ def xyz2rgb(xyz):
 
 
 def rgb2xyz(rgb):
-    """Convert RGB color values to XYZ color space.
+    """
+    Convert RGB color values to XYZ color space.
 
     Parameters
     ----------
@@ -1119,7 +1143,8 @@ illuminants = {
 
 
 def get_xyz_coords(illuminant, observer):
-    """Get the XYZ coordinates of the given illuminant and observer.
+    """
+    Get the XYZ coordinates of the given illuminant and observer.
 
     Parameters
     ----------
@@ -1153,7 +1178,8 @@ def get_xyz_coords(illuminant, observer):
 
 
 def xyz2lab(xyz, *, illuminant="D65", observer="2"):
-    """Convert XYZ color values to CIE-LAB color space.
+    """
+    Convert XYZ color values to CIE-LAB color space.
 
     Parameters
     ----------
@@ -1200,7 +1226,8 @@ def xyz2lab(xyz, *, illuminant="D65", observer="2"):
 
 
 def lab2xyz(lab, *, illuminant="D65", observer="2"):
-    """Convert CIE-LAB color values to XYZ color space.
+    """
+    Convert CIE-LAB color values to XYZ color space.
 
     Parameters
     ----------
@@ -1251,7 +1278,8 @@ def lab2xyz(lab, *, illuminant="D65", observer="2"):
 
 
 def rgb2lab(rgb, *, illuminant="D65", observer="2"):
-    """Convert from RGB color space to CIE-Lab color space.
+    """
+    Convert from RGB color space to CIE-Lab color space.
 
     Converts from the sRGB color space (IEC 61966-2-1:1999)
     to the CIE Lab colorspace under the given illuminant and observer.
@@ -1283,7 +1311,8 @@ def rgb2lab(rgb, *, illuminant="D65", observer="2"):
 
 
 def lab2rgb(lab, *, illuminant="D65", observer="2"):
-    """Convert from CIE-Lab color space to RGB color space.
+    """
+    Convert from CIE-Lab color space to RGB color space.
 
     Parameters
     ----------

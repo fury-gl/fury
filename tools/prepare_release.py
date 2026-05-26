@@ -1,4 +1,5 @@
-"""Script to automate the release preparation and execution steps for FURY.
+"""
+Script to automate the release preparation and execution steps for FURY.
 
 This script performs the following tasks:
 1. Checks the latest tag in the specified series.
@@ -22,7 +23,8 @@ from packaging.version import Version
 
 
 def run(cmd, *, check=True):
-    """Run a shell command and print it to the console.
+    """
+    Run a shell command and print it to the console.
 
     Parameters
     ----------
@@ -36,7 +38,8 @@ def run(cmd, *, check=True):
 
 
 def get_latest_tag_from_series(*, series=None):
-    """Get the latest tag from the specified series.
+    """
+    Get the latest tag from the specified series.
 
     Parameters
     ----------
@@ -83,7 +86,8 @@ def get_latest_tag_from_series(*, series=None):
 
 
 def update_authors(*, file_path="AUTHORS.rst"):
-    """Update the AUTHORS.rst file with unique authors from git log.
+    """
+    Update the AUTHORS.rst file with unique authors from git log.
 
     Parameters
     ----------
@@ -140,7 +144,8 @@ def update_release_history(
     file_path="docs/source/release-history.rst",
     notes_dir="docs/source/release_notes",
 ):
-    """Update the release-history.rst file with new release notes.
+    """
+    Update the release-history.rst file with new release notes.
 
     Parameters
     ----------
@@ -213,7 +218,8 @@ def check_license_year():
 def create_release_announcement(
     *, author="skoudoro", name="Serge Koudoro", version="0.11.0"
 ):
-    """Create a release announcement blog post.
+    """
+    Create a release announcement blog post.
 
     Parameters
     ----------
@@ -306,7 +312,8 @@ On behalf of the :ref:`FURY developers <community>`,
 
 
 def get_new_version(default_version):
-    """Prompt the user for a new version number.
+    """
+    Prompt the user for a new version number.
 
     Parameters
     ----------
@@ -335,7 +342,8 @@ def get_new_version(default_version):
 
 
 def is_powershell():
-    """Detect if the current shell is PowerShell or cmd.
+    """
+    Detect if the current shell is PowerShell or cmd.
 
     Returns
     -------

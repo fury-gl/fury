@@ -16,7 +16,8 @@ from fury.material import StreamlinesMaterial, _StreamlineBakedMaterial
 
 
 class VectorFieldComputeShader(BaseShader):
-    """Compute shader for vector field.
+    """
+    Compute shader for vector field.
 
     Parameters
     ----------
@@ -34,7 +35,8 @@ class VectorFieldComputeShader(BaseShader):
         self["workgroup_size"] = 64
 
     def get_render_info(self, wobject, _shared):
-        """Get render information for the vector field compute shader.
+        """
+        Get render information for the vector field compute shader.
 
         Parameters
         ----------
@@ -54,7 +56,8 @@ class VectorFieldComputeShader(BaseShader):
         }
 
     def get_pipeline_info(self, _wobject, _shared):
-        """Get pipeline information for the vector field compute shader.
+        """
+        Get pipeline information for the vector field compute shader.
 
         Parameters
         ----------
@@ -71,7 +74,8 @@ class VectorFieldComputeShader(BaseShader):
         return {}
 
     def get_bindings(self, wobject, _shared, _scene):
-        """Get the bindings for the vector field compute shader.
+        """
+        Get the bindings for the vector field compute shader.
 
         Parameters
         ----------
@@ -104,7 +108,8 @@ class VectorFieldComputeShader(BaseShader):
         return {0: bindings}
 
     def get_code(self):
-        """Get the WGSL code for the vector field compute shader.
+        """
+        Get the WGSL code for the vector field compute shader.
 
         Returns
         -------
@@ -115,7 +120,8 @@ class VectorFieldComputeShader(BaseShader):
 
 
 class VectorFieldThinShader(ThinLineSegmentShader):
-    """Shader for VectorFieldActor.
+    """
+    Shader for VectorFieldActor.
 
     Parameters
     ----------
@@ -130,7 +136,8 @@ class VectorFieldThinShader(ThinLineSegmentShader):
         self["data_shape"] = wobject.field_shape
 
     def get_code(self):
-        """Get the WGSL code for the vector field render shader.
+        """
+        Get the WGSL code for the vector field render shader.
 
         Returns
         -------
@@ -141,7 +148,8 @@ class VectorFieldThinShader(ThinLineSegmentShader):
 
 
 class VectorFieldShader(LineShader):
-    """Shader for VectorFieldActor.
+    """
+    Shader for VectorFieldActor.
 
     Parameters
     ----------
@@ -150,14 +158,18 @@ class VectorFieldShader(LineShader):
     """
 
     def __init__(self, wobject):
-        """Initialize the VectorFieldShader with the given vector field object."""
+        """
+        Initialize the VectorFieldShader with the given vector field
+        object.
+        """
         super().__init__(wobject)
         self["num_vectors"] = wobject.vectors_per_voxel
         self["data_shape"] = wobject.field_shape
         self["line_type"] = "segment"
 
     def get_code(self):
-        """Get the WGSL code for the vector field render shader.
+        """
+        Get the WGSL code for the vector field render shader.
 
         Returns
         -------
@@ -171,7 +183,8 @@ class StreamlinesShader(LineShader):
     """Shader for StreamlineActor."""
 
     def get_render_info(self, wobject, shared):
-        """Get render information for the streamline shader.
+        """
+        Get render information for the streamline shader.
 
         Parameters
         ----------
@@ -208,7 +221,8 @@ class StreamlinesShader(LineShader):
         return super().get_render_info(wobject, shared)
 
     def get_code(self):
-        """Get the WGSL code for the streamline render shader.
+        """
+        Get the WGSL code for the streamline render shader.
 
         Returns
         -------
@@ -219,7 +233,8 @@ class StreamlinesShader(LineShader):
 
 
 class _StreamlineBakingShader(BaseShader):
-    """Initialize the streamline baking compute shader.
+    """
+    Initialize the streamline baking compute shader.
 
     Parameters
     ----------
@@ -253,7 +268,8 @@ class _StreamlineBakingShader(BaseShader):
         )
 
     def get_render_info(self, wobject, _shared):
-        """Get render information for the streamline baking compute shader.
+        """
+        Get render information for the streamline baking compute shader.
 
         Parameters
         ----------
@@ -277,7 +293,8 @@ class _StreamlineBakingShader(BaseShader):
         return {"indices": (groups, 1, 1)}
 
     def get_pipeline_info(self, _wobject, _shared):
-        """Get pipeline information for the streamline baking compute shader.
+        """
+        Get pipeline information for the streamline baking compute shader.
 
         Parameters
         ----------
@@ -294,7 +311,8 @@ class _StreamlineBakingShader(BaseShader):
         return {}
 
     def get_bindings(self, wobject, _shared, _scene):
-        """Get the bindings for the streamline baking compute shader.
+        """
+        Get the bindings for the streamline baking compute shader.
 
         Parameters
         ----------
@@ -372,7 +390,8 @@ class _StreamlineBakingShader(BaseShader):
         return {0: bindings}
 
     def get_code(self):
-        """Get the WGSL code for the streamline baking compute shader.
+        """
+        Get the WGSL code for the streamline baking compute shader.
 
         Returns
         -------
@@ -383,7 +402,8 @@ class _StreamlineBakingShader(BaseShader):
 
 
 class VectorFieldArrowShader(VectorFieldShader):
-    """Shader for VectorFieldArrowActor.
+    """
+    Shader for VectorFieldArrowActor.
 
     Parameters
     ----------
@@ -392,13 +412,17 @@ class VectorFieldArrowShader(VectorFieldShader):
     """
 
     def __init__(self, wobject):
-        """Initialize the VectorFieldArrowShader with the given vector field object."""
+        """
+        Initialize the VectorFieldArrowShader with the given vector field
+        object.
+        """
         super().__init__(wobject)
         self["line_type"] = "arrow"
 
 
 class SphGlyphComputeShader(BaseShader):
-    """Compute shader for spherical harmonics glyph rendering.
+    """
+    Compute shader for spherical harmonics glyph rendering.
 
     Parameters
     ----------
@@ -409,7 +433,10 @@ class SphGlyphComputeShader(BaseShader):
     type = "compute"
 
     def __init__(self, wobject):
-        """Initialize SphGlyphComputeShader with the given spherical glyph object."""
+        """
+        Initialize SphGlyphComputeShader with the given spherical glyph
+        object.
+        """
         super().__init__(wobject)
         self["n_coeffs"] = wobject.n_coeff
         self["vertices_per_glyph"] = wobject.vertices_per_glyph
@@ -420,7 +447,8 @@ class SphGlyphComputeShader(BaseShader):
         self["color_type"] = wobject.color_type
 
     def get_render_info(self, wobject, _shared):
-        """Get the render information for the spherical glyph.
+        """
+        Get the render information for the spherical glyph.
 
         Parameters
         ----------
@@ -440,7 +468,8 @@ class SphGlyphComputeShader(BaseShader):
         }
 
     def get_pipeline_info(self, _wobject, _shared):
-        """Get pipeline information for the spherical harmonic glyph compute shader.
+        """
+        Get pipeline information for the spherical harmonic glyph compute shader.
 
         Parameters
         ----------
@@ -457,7 +486,8 @@ class SphGlyphComputeShader(BaseShader):
         return {}
 
     def get_bindings(self, wobject, _shared, _scene):
-        """Get the bindings for the spherical harmonic glyph compute shader.
+        """
+        Get the bindings for the spherical harmonic glyph compute shader.
 
         Parameters
         ----------
@@ -506,7 +536,8 @@ class SphGlyphComputeShader(BaseShader):
         }
 
     def get_code(self):
-        """Get the WGSL code for the spherical harmonic glyph compute shader.
+        """
+        Get the WGSL code for the spherical harmonic glyph compute shader.
 
         Returns
         -------
@@ -517,7 +548,8 @@ class SphGlyphComputeShader(BaseShader):
 
 
 class LineProjectionComputeShader(BaseShader):
-    """Initialize the line projection compute shader.
+    """
+    Initialize the line projection compute shader.
 
     Parameters
     ----------
@@ -534,7 +566,8 @@ class LineProjectionComputeShader(BaseShader):
         self["workgroup_size"] = 64
 
     def get_pipeline_info(self, _wobject, _shared):
-        """Get pipeline information for the shader.
+        """
+        Get pipeline information for the shader.
 
         Parameters
         ----------
@@ -551,7 +584,8 @@ class LineProjectionComputeShader(BaseShader):
         return {}
 
     def get_render_info(self, wobject, _shared):
-        """Get render information for the shader.
+        """
+        Get render information for the shader.
 
         Parameters
         ----------
@@ -571,7 +605,8 @@ class LineProjectionComputeShader(BaseShader):
         }
 
     def get_bindings(self, wobject, _shared, _scene):
-        """Get the bindings for the line projection compute shader.
+        """
+        Get the bindings for the line projection compute shader.
 
         Parameters
         ----------
@@ -620,7 +655,8 @@ class LineProjectionComputeShader(BaseShader):
         }
 
     def get_code(self):
-        """Get the WGSL code for the shader.
+        """
+        Get the WGSL code for the shader.
 
         Returns
         -------
@@ -631,7 +667,8 @@ class LineProjectionComputeShader(BaseShader):
 
 
 class BillboardShader(MeshShader):
-    """Shader for Billboard actor.
+    """
+    Shader for Billboard actor.
 
     Parameters
     ----------
@@ -648,7 +685,8 @@ class BillboardShader(MeshShader):
             self["billboard_count"] = 1
 
     def get_code(self):
-        """Get the WGSL code for the billboard render shader.
+        """
+        Get the WGSL code for the billboard render shader.
 
         Returns
         -------
@@ -659,7 +697,8 @@ class BillboardShader(MeshShader):
 
 
 class _StreamtubeBakingShader(BaseShader):
-    """Internal compute shader that generates streamtube geometry on the GPU.
+    """
+    Internal compute shader that generates streamtube geometry on the GPU.
 
     This shader is used internally by the streamtube actor when GPU compute
     shaders are available. Users should not instantiate this directly.
@@ -679,7 +718,6 @@ class _StreamtubeBakingShader(BaseShader):
 
     def __init__(self, wobject):
         """Initialise the compute shader state for the provided mesh."""
-
         super().__init__(wobject)
         if not hasattr(wobject, "_needs_gpu_update"):
             wobject._needs_gpu_update = True
@@ -696,7 +734,8 @@ class _StreamtubeBakingShader(BaseShader):
         )
 
     def get_render_info(self, wobject, _shared):
-        """Return the dispatch dimensions for the compute shader.
+        """
+        Return the dispatch dimensions for the compute shader.
 
         Parameters
         ----------
@@ -720,7 +759,8 @@ class _StreamtubeBakingShader(BaseShader):
         return {"indices": (groups, 1, 1)}
 
     def get_pipeline_info(self, _wobject, _shared):
-        """Return additional pipeline information.
+        """
+        Return additional pipeline information.
 
         Parameters
         ----------
@@ -734,11 +774,11 @@ class _StreamtubeBakingShader(BaseShader):
         dict
             Empty dictionary since no extra pipeline state is required.
         """
-
         return {}
 
     def get_bindings(self, wobject, _shared, _scene):
-        """Describe storage buffers used by the compute shader.
+        """
+        Describe storage buffers used by the compute shader.
 
         Parameters
         ----------
@@ -754,7 +794,6 @@ class _StreamtubeBakingShader(BaseShader):
         dict
             Mapping of bind group to :class:`Binding` definitions.
         """
-
         geometry = wobject.geometry
 
         self["n_lines"] = wobject.n_lines
@@ -838,19 +877,20 @@ class _StreamtubeBakingShader(BaseShader):
         return {0: bindings}
 
     def get_code(self):
-        """Load the WGSL source for the streamtube compute shader.
+        """
+        Load the WGSL source for the streamtube compute shader.
 
         Returns
         -------
         str
             WGSL shader source for compute dispatch.
         """
-
         return load_wgsl("streamtube_compute.wgsl", package_name="fury.wgsl")
 
 
 class _StreamtubeRenderShader(MeshPhongShader):
-    """Render shader wrapper that auto-detaches compute after first bake.
+    """
+    Render shader wrapper that auto-detaches compute after first bake.
 
     This shader is used internally by the streamtube actor to automatically
     swap from compute-based material to standard render-only material after
@@ -863,7 +903,8 @@ class _StreamtubeRenderShader(MeshPhongShader):
     """
 
     def get_render_info(self, wobject, shared):
-        """Get render info and auto-detach compute shader if baking is done.
+        """
+        Get render info and auto-detach compute shader if baking is done.
 
         Parameters
         ----------
@@ -912,7 +953,8 @@ class _StreamtubeRenderShader(MeshPhongShader):
 
 
 class BillboardSphereShader(MeshShader):
-    """Shader for billboard-based sphere impostors.
+    """
+    Shader for billboard-based sphere impostors.
 
     Parameters
     ----------
@@ -922,18 +964,17 @@ class BillboardSphereShader(MeshShader):
 
     def __init__(self, wobject):
         """Initialize the shader with billboard impostor metadata."""
-
         super().__init__(wobject)
         self["billboard_count"] = getattr(wobject, "billboard_count", 1)
         self["lighting"] = "phong"
 
     def get_code(self):
-        """Return the WGSL fragment/vertex code for the shader.
+        """
+        Return the WGSL fragment/vertex code for the shader.
 
         Returns
         -------
         str
             WGSL source file as a string.
         """
-
         return load_wgsl("billboard_sphere_render.wgsl", package_name="fury.wgsl")
