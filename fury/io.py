@@ -13,6 +13,7 @@ import numpy as np
 from fury.lib import Texture, wgpu
 
 # from fury.utils import set_input
+from fury.network.parser import parse_network, stringify_network
 
 
 def load_cube_map_texture(fnames, *, size=None, generate_mipmaps=True):
@@ -261,6 +262,53 @@ def save_image(
         save_kwargs["quality"] = compression_quality
 
     im.save(filename, **save_kwargs)
+
+
+def load_network(file_path, format=None):
+    """Load a network from a file.
+
+    Parameters
+    ----------
+    file_path : str
+        The path to the network file.
+    format : str, optional
+        The specific file format of the network file (e.g., 'json', 'gml').
+
+    Returns
+    -------
+    Network
+        The parsed network object.
+    """
+    if format is None:
+        _, ext = os.path.splitext(file_path)
+        format = ext.lstrip(".").lower()
+
+    with open(file_path, "r", encoding="utf-8") as f:
+        data = f.read()
+
+    return parse_network(data, format)
+
+
+def save_network(network, file_path, format=None):
+    """Save a network to a file.
+
+    Parameters
+    ----------
+    network : Network
+        The network object instance to be saved.
+    file_path : str
+        The destination path where the network file will be written.
+    format : str, optional
+        The specific export format of the network file.
+    """
+    if format is None:
+        _, ext = os.path.splitext(file_path)
+        format = ext.lstrip(".").lower()
+
+    data = stringify_network(network, format)
+
+    with open(file_path, "w", encoding="utf-8") as f:
+        f.write(data)
 
 
 # def load_polydata(file_name):
