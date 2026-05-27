@@ -295,12 +295,21 @@ def test_tab_ui_layout_and_invalid_index():
     tab_ui_bottom = ui.TabUI(
         position=(50, 50), size=(300, 300), nb_tabs=3, tab_bar_pos="bottom"
     )
+    tab_ui_left = ui.TabUI(
+        position=(50, 50), size=(300, 300), nb_tabs=3, tab_bar_pos="left"
+    )
+    tab_ui_right = ui.TabUI(
+        position=(50, 50), size=(300, 300), nb_tabs=3, tab_bar_pos="right"
+    )
     tab_ui_accordion = ui.TabUI(
         position=(50, 50),
         size=(300, 300),
         nb_tabs=3,
         startup_tab_id=1,
         tab_bar_pos="accordion",
+    )
+    tab_ui_invalid = ui.TabUI(
+        position=(50, 50), size=(300, 300), nb_tabs=3, tab_bar_pos="side"
     )
 
     npt.assert_equal(tab_ui_top.tabs[0].size, (100, 30))
@@ -311,6 +320,18 @@ def test_tab_ui_layout_and_invalid_index():
     npt.assert_array_equal(tab_ui_bottom.tabs[0].content_panel.get_position(), (50, 50))
     npt.assert_array_equal(tab_ui_bottom.tabs[0].get_position(), (50, 320))
 
+    npt.assert_equal(tab_ui_left.tabs[0].size, (30, 100))
+    npt.assert_equal(tab_ui_left.tabs[0].content_panel.size, (270, 300))
+    npt.assert_array_equal(tab_ui_left.tabs[0].get_position(), (50, 50))
+    npt.assert_array_equal(tab_ui_left.tabs[1].get_position(), (50, 150))
+    npt.assert_array_equal(tab_ui_left.tabs[0].content_panel.get_position(), (80, 50))
+
+    npt.assert_equal(tab_ui_right.tabs[0].size, (30, 100))
+    npt.assert_equal(tab_ui_right.tabs[0].content_panel.size, (270, 300))
+    npt.assert_array_equal(tab_ui_right.tabs[0].content_panel.get_position(), (50, 50))
+    npt.assert_array_equal(tab_ui_right.tabs[0].get_position(), (320, 50))
+    npt.assert_array_equal(tab_ui_right.tabs[1].get_position(), (320, 150))
+
     npt.assert_equal(tab_ui_accordion.tabs[0].size, (300, 30))
     npt.assert_equal(tab_ui_accordion.tabs[0].content_panel.size, (300, 210))
     npt.assert_array_equal(tab_ui_accordion.tabs[0].get_position(), (50, 50))
@@ -319,6 +340,12 @@ def test_tab_ui_layout_and_invalid_index():
         tab_ui_accordion.tabs[1].content_panel.get_position(), (50, 110)
     )
     npt.assert_array_equal(tab_ui_accordion.tabs[2].get_position(), (50, 320))
+
+    npt.assert_equal(tab_ui_invalid.tab_bar_pos, "top")
+    npt.assert_equal(tab_ui_invalid.tabs[0].size, (100, 30))
+    npt.assert_array_equal(
+        tab_ui_invalid.tabs[0].content_panel.get_position(), (50, 80)
+    )
 
     with npt.assert_raises(IndexError):
         tab_ui_top.add_element(3, ui.Rectangle2D(size=(10, 10)), (0.5, 0.5))

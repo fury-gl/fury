@@ -259,6 +259,69 @@ bottom_tab_ui.on_collapse = collapse_bottom_status
 
 
 ##############################################################################
+# The tab bar can also be vertical. In this mode the tab headers stack along
+# the left or right side of the widget and the content panel uses the remaining
+# horizontal space.
+
+vertical_tab_ui = TabUI(
+    position=(560, 500),
+    size=(340, 300),
+    nb_tabs=3,
+    startup_tab_id=0,
+    tab_bar_pos="left",
+    draggable=True,
+    active_color=(0.95, 0.95, 1.0),
+    inactive_color=(0.45, 0.48, 0.56),
+)
+
+vertical_tab_ui.tabs[0].title = "Left Side Tab 1"
+vertical_tab_ui.tabs[1].title = "Left Side Tab 2"
+vertical_tab_ui.tabs[2].title = "Left Side Tab 3"
+
+for tab in vertical_tab_ui.tabs:
+    tab.title_font_size = 14
+
+vertical_text = TextBlock2D(
+    text="This TabUI uses tab_bar_pos='left'.",
+    size=(250, 45),
+    color=(1, 1, 1),
+    font_size=15,
+)
+vertical_disk = Disk2D(outer_radius=42, color=(0.55, 0.35, 0.95))
+vertical_rect = Rectangle2D(size=(105, 75), color=(0.15, 0.8, 0.75))
+
+vertical_tab_ui.add_element(0, vertical_text, (35, 60))
+vertical_tab_ui.add_element(1, vertical_disk, (150, 120), anchor="center")
+vertical_tab_ui.add_element(2, vertical_rect, (105, 90))
+
+vertical_status = TextBlock2D(
+    text="Vertical active tab: Left Side Tab 1",
+    position=(560, 820),
+    size=(340, 35),
+    color=(1, 1, 1),
+    font_size=16,
+)
+
+
+def update_vertical_status(ui):
+    """Update status text after selecting a vertical tab."""
+    if ui.active_tab_idx is None:
+        vertical_status.message = "Vertical TabUI collapsed"
+    else:
+        title = ui.tabs[ui.active_tab_idx].title
+        vertical_status.message = f"Vertical active tab: {title}"
+
+
+def collapse_vertical_status(ui):
+    """Update status text after collapsing the vertical TabUI."""
+    vertical_status.message = "Vertical TabUI collapsed"
+
+
+vertical_tab_ui.on_change = update_vertical_status
+vertical_tab_ui.on_collapse = collapse_vertical_status
+
+
+##############################################################################
 # Now that all elements have been initialized, add them to the scene.
 
 scene.add(tab_ui)
@@ -267,6 +330,8 @@ scene.add(accordion_tab_ui)
 scene.add(accordion_status)
 scene.add(bottom_tab_ui)
 scene.add(bottom_status)
+scene.add(vertical_tab_ui)
+scene.add(vertical_status)
 
 
 ##############################################################################

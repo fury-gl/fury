@@ -775,12 +775,13 @@ class TabUI(UI):
     """A 2D container that switches between multiple content panels.
 
     ``TabUI`` creates tab headers and one content panel per tab. The tab bar can
-    be placed horizontally at the top or bottom. It can also use an accordion
-    layout where each tab title spans the width of the widget and the selected
-    tab expands below its title. A left click on a tab header selects that tab
-    and hides the other tab content panels. A second left click on the active
-    tab hides its content while keeping the tab selected. A right click
-    collapses the tab UI and clears the active tab.
+    be placed horizontally at the top or bottom, or vertically on the left or
+    right. It can also use an accordion layout where each tab title spans the
+    width of the widget and the selected tab expands below its title. A left
+    click on a tab header selects that tab and hides the other tab content
+    panels. A second left click on the active tab hides its content while
+    keeping the tab selected. A right click collapses the tab UI and clears the
+    active tab.
 
     Attributes
     ----------
@@ -817,7 +818,7 @@ class TabUI(UI):
     startup_tab_id : int, optional
         Index of the tab to show initially. If None, all content panels are
         hidden on startup.
-    tab_bar_pos : {'top', 'bottom', 'accordion'}, optional
+    tab_bar_pos : {'top', 'bottom', 'left', 'right', 'accordion'}, optional
         Position of the tab bar relative to the content panel. ``"accordion"``
         creates an accordion-style layout.
 
@@ -826,6 +827,8 @@ class TabUI(UI):
     ValueError
         If ``nb_tabs`` is less than 1.
     """
+
+    _VALID_TAB_BAR_POSITIONS = ["top", "bottom", "left", "right", "accordion"]
 
     def __init__(
         self,
@@ -852,6 +855,7 @@ class TabUI(UI):
         self.active_tab_idx = startup_tab_id
         self.collapsed = startup_tab_id is None
         self.tab_bar_pos = tab_bar_pos.lower()
+        self._validate_tab_bar_pos()
         self._drag_offset = None
         self._drag_start_position = None
         self._drag_moved = False
@@ -912,6 +916,16 @@ class TabUI(UI):
         if hasattr(self, "tabs"):
             self.update_tabs()
 
+    def _validate_tab_bar_pos(self):
+        """Fallback to the default layout when tab bar position is invalid."""
+        if self.tab_bar_pos in self._VALID_TAB_BAR_POSITIONS:
+            return
+
+        logging.warning(
+            "tab_bar_pos can only have value top/bottom/left/right/accordion"
+        )
+        self.tab_bar_pos = "top"
+
     def _update_sizes(self):
         """Update cached tab header and content panel sizes."""
         if self.tab_bar_pos == "accordion":
@@ -919,6 +933,13 @@ class TabUI(UI):
             content_height = self.parent_size[1] - tab_height * self.nb_tabs
             self.content_size = (self.parent_size[0], content_height)
             self.tab_panel_size = (self.parent_size[0], tab_height)
+        elif self.tab_bar_pos in ["left", "right"]:
+            tab_width = int(0.1 * self.parent_size[0])
+            self.content_size = (
+                self.parent_size[0] - tab_width,
+                self.parent_size[1],
+            )
+            self.tab_panel_size = (tab_width, self.parent_size[1] // self.nb_tabs)
         else:
             tab_height = int(0.1 * self.parent_size[1])
             self.content_size = (self.parent_size[0], self.parent_size[1] - tab_height)
@@ -944,9 +965,9 @@ class TabUI(UI):
         size, and event callbacks. If ``tab_bar_pos`` is invalid, it falls back
         to ``"top"`` and emits a warning.
         """
-        if self.tab_bar_pos not in ["top", "bottom", "accordion"]:
-            logging.warning("tab_bar_pos can only have value top/bottom/accordion")
-            self.tab_bar_pos = "top"
+        previous_tab_bar_pos = self.tab_bar_pos
+        self._validate_tab_bar_pos()
+        if self.tab_bar_pos != previous_tab_bar_pos:
             self._update_sizes()
 
         vertical_offset = 0
@@ -961,6 +982,14 @@ class TabUI(UI):
             elif self.tab_bar_pos == "bottom":
                 tab_x = idx * self.tab_panel_size[0]
                 tab_pos = (tab_x, self.content_size[1])
+                content_pos = (0, 0)
+            elif self.tab_bar_pos == "left":
+                tab_y = idx * self.tab_panel_size[1]
+                tab_pos = (0, tab_y)
+                content_pos = (self.tab_panel_size[0], 0)
+            elif self.tab_bar_pos == "right":
+                tab_y = idx * self.tab_panel_size[1]
+                tab_pos = (self.content_size[0], tab_y)
                 content_pos = (0, 0)
             else:
                 tab_pos = (0, vertical_offset)
