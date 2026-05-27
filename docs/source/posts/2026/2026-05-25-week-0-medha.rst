@@ -1,0 +1,39 @@
+Week 0: Community Bonding Period
+================================
+
+.. post:: May 25, 2026
+   :author: Medha Bhardwaj
+   :tags: google
+   :category: gsoc
+
+Hello everyone!
+
+I'm Medha Bhardwaj, and I'm incredibly happy to share that I have been selected for Google Summer of Code 2026 with `FURY <https://fury.gl/>`_. This summer, I will be working on *Optimizing FURY's Documentation Pipeline and Website Architecture*, a project aimed at improving the documentation workflow and enhancing the experience for both contributors and users.
+
+About Me
+~~~~~~~~
+
+I am a Computer Science student with a minor in Business. I started contributing to `PyBaMM <https://www.pybamm.org/>`_, and since then, open source has become an important part of my learning journey and growth as a developer.
+
+I am also actively involved with the FOSS Wing at my college as a senior member, where I help students take their first steps into open source and project contributions.
+
+This eventually led me to participate in `Google Summer of Code 2025 <https://summerofcode.withgoogle.com/archive/2025/projects/3t9McTvW>`_ with `PyBaMM <https://www.pybamm.org/>`_ under `NumFOCUS <https://numfocus.org/>`_. It was a really rewarding experience that enhanced my technical skills and also taught me how to collaborate and communicate effectively while working within a team.
+
+After GSoC, while exploring other projects, I came across `FURY <https://fury.gl/>`_. What initially drew me in was how creative and interactive the project felt. I started contributing to the project, became more involved with the community over time, and I'm grateful that this eventually led to me being selected for Google Summer of Code 2026 with FURY.
+
+Community Bonding Period
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The community bonding period has already been an amazing start to the summer. I had the opportunity to meet my mentors and  `Tomás <https://github.com/TomasGuija>`_, who is a fellow GSoC contributor at `DIPY <https://dipy.org/>`_. It was inspiring to interact with so many passionate people from different backgrounds, all connected by a shared enthusiasm for open source.
+
+We also talked about expectations for the summer, communication practices, project timelines, and the overall flow of the coding period. One thing I really appreciated was how direct and open the communication was from the very beginning. The mentors were very clear about what they expected from us and how the project would progress, giving me a clear understanding of what I am expected to do and how I can contribute effectively.
+
+It was also very reassuring to see how welcoming and collaborative the community is. Even before the coding period officially begins, the atmosphere already feels incredibly motivating and supportive, and I am really looking forward to learning and contributing over the next few months.
+
+Connect with Me
+---------------
+
+- GitHub: `medha-14 <https://github.com/medha-14>`_
+- LinkedIn: `Medha Bhardwaj <https://www.linkedin.com/in/medhabhardwaj/>`_
+
+Stay tuned for updates on my GSoC journey as I share my progress, challenges, and everything I learn along the way!
