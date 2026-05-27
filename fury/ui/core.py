@@ -1042,7 +1042,8 @@ class TextBlock2D(UI):
         return [self.actor]
 
     def set_visibility(self, visibility):
-        """Set visibility of this text block.
+        """
+        Set visibility of this text block.
 
         Parameters
         ----------

@@ -500,15 +500,6 @@ class TabPanel2D(UI):
     ``content_panel``. The content panel visibility is controlled by
     :class:`TabUI`.
 
-    Attributes
-    ----------
-    panel : :class:`Panel2D`
-        Header panel used as the clickable tab background.
-    content_panel : :class:`Panel2D`
-        Panel that stores the UI elements displayed when this tab is active.
-    text_block : :class:`TextBlock2D`
-        Text component used to render the tab title.
-
     Parameters
     ----------
     position : (float, float), optional
@@ -520,9 +511,23 @@ class TabPanel2D(UI):
         Initial text displayed in the tab header.
     color : (float, float, float), optional
         RGB color of the tab header background. Values must be in [0, 1].
+    content_size : (int, int), optional
+        Width and height in pixels of the content panel. If None, ``size`` is
+        used.
+    content_visible : bool, optional
+        Initial visibility of the content panel.
     content_panel : :class:`Panel2D`, optional
         Panel used to store content for this tab. If None, a new panel with
-        ``size`` is created.
+        ``content_size`` is created.
+
+    Attributes
+    ----------
+    panel : :class:`Panel2D`
+        Header panel used as the clickable tab background.
+    content_panel : :class:`Panel2D`
+        Panel that stores the UI elements displayed when this tab is active.
+    text_block : :class:`TextBlock2D`
+        Text component used to render the tab title.
     """
 
     def __init__(
@@ -532,10 +537,13 @@ class TabPanel2D(UI):
         size=(100, 100),
         title="New Tab",
         color=(0.5, 0.5, 0.5),
+        content_size=None,
+        content_visible=False,
         content_panel=None,
     ):
         """Initialize the tab panel."""
-        self.content_panel = content_panel or Panel2D(size=size)
+        self.content_panel = content_panel or Panel2D(size=content_size or size)
+        self.content_panel.set_visibility(content_visible)
         self.panel_size = size
         self._text_size = size
 
@@ -564,9 +572,9 @@ class TabPanel2D(UI):
         Returns
         -------
         list
-            Actors from the tab header and content panel.
+            Empty list because child UI elements own the actors.
         """
-        return self.panel.actors + self.content_panel.actors
+        return []
 
     def _get_size(self):
         """
@@ -797,12 +805,38 @@ class TabUI(UI):
     A 2D container that switches between multiple content panels.
 
     ``TabUI`` creates tab headers and one content panel per tab. The tab bar can
-    be placed horizontally at the top or bottom. It can also use an accordion
-    layout where each tab title spans the width of the widget and the selected
-    tab expands below its title. A left click on a tab header selects that tab
-    and hides the other tab content panels. A second left click on the active
-    tab hides its content while keeping the tab selected. A right click
-    collapses the tab UI and clears the active tab.
+    be placed horizontally at the top or bottom, or vertically on the left or
+    right. It can also use an accordion layout where each tab title spans the
+    width of the widget and the selected tab expands below its title. A left
+    click on a tab header selects that tab and hides the other tab content
+    panels. A second left click on the active tab hides its content while
+    keeping the tab selected. A right click collapses the tab UI and clears the
+    active tab.
+
+    Parameters
+    ----------
+    position : (float, float), optional
+        Absolute coordinates `(x, y)` of the upper-left corner of the tab UI.
+    size : (int, int), optional
+        Width and height in pixels of the full tab UI.
+    tab_titles : list of str, optional
+        Titles used to create tabs during initialization. If None, one tab with
+        the default title is created.
+    active_color : (float, float, float), optional
+        RGB color of the active tab header. Values must be in [0, 1].
+    inactive_color : (float, float, float), optional
+        RGB color of inactive tab headers. Values must be in [0, 1].
+    font_size : int, optional
+        Font size used by tab titles.
+    draggable : bool, optional
+        If True, the tab UI can be dragged from tab headers or content panel
+        backgrounds.
+    startup_tab_id : int, optional
+        Index of the tab to show initially. If None, all content panels are
+        hidden on startup.
+    tab_bar_pos : {'top', 'bottom', 'left', 'right', 'accordion'}, optional
+        Position of the tab bar relative to the content panel. ``"accordion"``
+        creates an accordion-style layout.
 
     Attributes
     ----------
@@ -821,59 +855,49 @@ class TabUI(UI):
         Callback invoked after the tab UI is collapsed. The callback receives
         this ``TabUI`` instance.
 
-    Parameters
-    ----------
-    position : (float, float), optional
-        Absolute coordinates `(x, y)` of the upper-left corner of the tab UI.
-    size : (int, int), optional
-        Width and height in pixels of the full tab UI.
-    nb_tabs : int, optional
-        Number of tabs to create.
-    active_color : (float, float, float), optional
-        RGB color of the active tab header. Values must be in [0, 1].
-    inactive_color : (float, float, float), optional
-        RGB color of inactive tab headers. Values must be in [0, 1].
-    draggable : bool, optional
-        If True, the tab UI can be dragged from tab headers or content panel
-        backgrounds.
-    startup_tab_id : int, optional
-        Index of the tab to show initially. If None, all content panels are
-        hidden on startup.
-    tab_bar_pos : {'top', 'bottom', 'accordion'}, optional
-        Position of the tab bar relative to the content panel. ``"accordion"``
-        creates an accordion-style layout.
-
     Raises
     ------
     ValueError
-        If ``nb_tabs`` is less than 1.
+        If ``tab_titles`` is empty or is not a list of strings.
     """
+
+    _VALID_TAB_BAR_POSITIONS = ["top", "bottom", "left", "right", "accordion"]
 
     def __init__(
         self,
         *,
         position=(0, 0),
         size=(100, 100),
-        nb_tabs=1,
+        tab_titles=None,
         active_color=(1, 1, 1),
         inactive_color=(0.5, 0.5, 0.5),
+        font_size=18,
         draggable=False,
         startup_tab_id=None,
         tab_bar_pos="top",
     ):
         """Initialize the tab UI."""
-        if nb_tabs < 1:
-            raise ValueError("TabUI requires at least one tab.")
+        if tab_titles is not None:
+            if not isinstance(tab_titles, list) or not all(
+                isinstance(title, str) for title in tab_titles
+            ):
+                raise ValueError("tab_titles must be a list of strings.")
+            if len(tab_titles) < 1:
+                raise ValueError("TabUI requires at least one tab title.")
+        else:
+            tab_titles = ["New Tab"]
 
         self.tabs = []
-        self.nb_tabs = nb_tabs
+        self.tab_titles = tab_titles
         self.parent_size = size
         self.draggable = draggable
         self.active_color = active_color
         self.inactive_color = inactive_color
+        self.font_size = font_size
         self.active_tab_idx = startup_tab_id
         self.collapsed = startup_tab_id is None
         self.tab_bar_pos = tab_bar_pos.lower()
+        self._validate_tab_bar_pos()
         self._drag_offset = None
         self._drag_start_position = None
         self._drag_moved = False
@@ -889,14 +913,15 @@ class TabUI(UI):
         self.on_collapse = lambda ui: None
 
         self._update_sizes()
-        for _ in range(self.nb_tabs):
-            content_panel = Panel2D(size=self.content_size)
-            content_panel.set_visibility(False)
+        for title in self.tab_titles:
             tab_panel = TabPanel2D(
                 size=self.tab_panel_size,
+                title=title,
                 color=self.inactive_color,
-                content_panel=content_panel,
+                content_size=self.content_size,
+                content_visible=False,
             )
+            tab_panel.title_font_size = self.font_size
             self.tabs.append(tab_panel)
             self._children.append(tab_panel)
 
@@ -912,12 +937,9 @@ class TabUI(UI):
         Returns
         -------
         list
-            Actors from the transparent parent panel and all tab panels.
+            Empty list because child UI elements own the actors.
         """
-        actors = self.parent_panel.actors
-        for tab_panel in self.tabs:
-            actors += tab_panel.actors
-        return actors
+        return []
 
     def _get_size(self):
         """
@@ -936,6 +958,16 @@ class TabUI(UI):
         if hasattr(self, "tabs"):
             self.update_tabs()
 
+    def _validate_tab_bar_pos(self):
+        """Fallback to the default layout when tab bar position is invalid."""
+        if self.tab_bar_pos in self._VALID_TAB_BAR_POSITIONS:
+            return
+
+        logging.warning(
+            "tab_bar_pos can only have value top/bottom/left/right/accordion"
+        )
+        self.tab_bar_pos = "top"
+
     def _update_sizes(self):
         """Update cached tab header and content panel sizes."""
         if self.tab_bar_pos == "accordion":
@@ -943,6 +975,13 @@ class TabUI(UI):
             content_height = self.parent_size[1] - tab_height * self.nb_tabs
             self.content_size = (self.parent_size[0], content_height)
             self.tab_panel_size = (self.parent_size[0], tab_height)
+        elif self.tab_bar_pos in ["left", "right"]:
+            tab_width = int(0.1 * self.parent_size[0])
+            self.content_size = (
+                self.parent_size[0] - tab_width,
+                self.parent_size[1],
+            )
+            self.tab_panel_size = (tab_width, self.parent_size[1] // self.nb_tabs)
         else:
             tab_height = int(0.1 * self.parent_size[1])
             self.content_size = (self.parent_size[0], self.parent_size[1] - tab_height)
@@ -970,9 +1009,9 @@ class TabUI(UI):
         size, and event callbacks. If ``tab_bar_pos`` is invalid, it falls back
         to ``"top"`` and emits a warning.
         """
-        if self.tab_bar_pos not in ["top", "bottom", "accordion"]:
-            logging.warning("tab_bar_pos can only have value top/bottom/accordion")
-            self.tab_bar_pos = "top"
+        previous_tab_bar_pos = self.tab_bar_pos
+        self._validate_tab_bar_pos()
+        if self.tab_bar_pos != previous_tab_bar_pos:
             self._update_sizes()
 
         vertical_offset = 0
@@ -987,6 +1026,14 @@ class TabUI(UI):
             elif self.tab_bar_pos == "bottom":
                 tab_x = idx * self.tab_panel_size[0]
                 tab_pos = (tab_x, self.content_size[1])
+                content_pos = (0, 0)
+            elif self.tab_bar_pos == "left":
+                tab_y = idx * self.tab_panel_size[1]
+                tab_pos = (0, tab_y)
+                content_pos = (self.tab_panel_size[0], 0)
+            elif self.tab_bar_pos == "right":
+                tab_y = idx * self.tab_panel_size[1]
+                tab_pos = (self.content_size[0], tab_y)
                 content_pos = (0, 0)
             else:
                 tab_pos = (0, vertical_offset)
@@ -1257,6 +1304,18 @@ class TabUI(UI):
                 > self._drag_threshold
             )
         self.set_position(click_pos - self._drag_offset)
+
+    @property
+    def nb_tabs(self):
+        """
+        Get the number of tabs in this tab UI.
+
+        Returns
+        -------
+        int
+            Number of tabs in this tab UI.
+        """
+        return len(self.tab_titles)
 
 
 # class TabPanel2D(UI):
