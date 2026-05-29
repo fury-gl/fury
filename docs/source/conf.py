@@ -49,7 +49,6 @@ extensions = [
     "IPython.sphinxext.ipython_console_highlighting",
     "matplotlib.sphinxext.plot_directive",
     "sphinx_copybutton",
-    "ext.prepare_gallery",
     "sphinx_gallery.gen_gallery",
     "ext.build_modref_templates",
     "ext.github",
@@ -328,9 +327,15 @@ sc = ImageFileScraper()
 sphinx_gallery_conf = {
     "doc_module": ("fury",),
     # path to your examples scripts
-    "examples_dirs": ["../examples_revamped"],
+    "examples_dirs": ["../examples"],
     # path where to save gallery generated examples
     "gallery_dirs": ["auto_examples"],
+    # Explicit ordering of gallery subsections
+    "subsection_order": [
+        "../examples/introductory",
+        "../examples/demos",
+        "../examples/ui",
+    ],
     "image_scrapers": (sc),
     "backreferences_dir": "api",
     "reference_url": {
