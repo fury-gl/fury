@@ -8,7 +8,8 @@ from fury import actor, window
 
 
 def random_png(width, height):
-    """Generates a random RGB PNG image.
+    """
+    Generates a random RGB PNG image.
 
     Parameters
     ----------

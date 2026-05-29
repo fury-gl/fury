@@ -274,7 +274,6 @@ def test_apply_affine_to_actor_invalid_affine():
 
 def test_apply_affine_to_group_valid_input(group_slicer):
     """Test apply_affine_to_group with valid inputs."""
-
     # Store original transforms
     original_transforms = [(c.local, c.world) for c in group_slicer.children]
 

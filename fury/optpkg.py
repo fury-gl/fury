@@ -13,7 +13,8 @@ else:
 
 
 class TripWireError(AttributeError):
-    """Exception if trying to use TripWire object.
+    """
+    Exception if trying to use TripWire object.
 
     This exception is raised when attempting to use a TripWire object,
     which is typically a proxy for a module that could not be imported.
@@ -21,7 +22,8 @@ class TripWireError(AttributeError):
 
 
 def is_tripwire(obj):
-    """Return True if `obj` appears to be a TripWire object.
+    """
+    Return True if `obj` appears to be a TripWire object.
 
     Parameters
     ----------
@@ -50,7 +52,8 @@ def is_tripwire(obj):
 
 
 class TripWire:
-    """Class raising error if used.
+    """
+    Class raising error if used.
 
     Standard use is to proxy modules that we could not import.
 
@@ -73,7 +76,8 @@ class TripWire:
     """
 
     def __init__(self, msg):
-        """Initialize TripWire with error message.
+        """
+        Initialize TripWire with error message.
 
         Parameters
         ----------
@@ -83,7 +87,8 @@ class TripWire:
         self._msg = msg
 
     def __getattr__(self, attr_name):
-        """Raise informative error accessing attributes.
+        """
+        Raise informative error accessing attributes.
 
         Parameters
         ----------
@@ -103,7 +108,8 @@ class TripWire:
         raise TripWireError(self._msg)
 
     def __call__(self, *args, **kwargs):
-        """Raise informative error while calling.
+        """
+        Raise informative error while calling.
 
         Parameters
         ----------
@@ -126,7 +132,8 @@ class TripWire:
 
 
 def optional_package(name, *, trip_msg=None, min_version=None):
-    """Return package-like thing and module setup for package `name`.
+    """
+    Return package-like thing and module setup for package `name`.
 
     Parameters
     ----------

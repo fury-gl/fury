@@ -20,7 +20,7 @@ pytest.skip(allow_module_level=True)
 
 
 def test_frame_rate_and_anti_aliasing():
-    """Testing frame rate with/out anti-aliasing"""
+    """Testing frame rate with/out anti-aliasing."""
     length_ = 200
     multi_samples = 32
     max_peels = 8

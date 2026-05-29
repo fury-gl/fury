@@ -16,7 +16,8 @@ from fury.lib import Texture, wgpu
 
 
 def load_cube_map_texture(fnames, *, size=None, generate_mipmaps=True):
-    """Load a cube map texture from a list of images.
+    """
+    Load a cube map texture from a list of images.
 
     Parameters
     ----------
@@ -49,7 +50,8 @@ def load_cube_map_texture(fnames, *, size=None, generate_mipmaps=True):
 
 
 def load_image_texture(fname, *, size=None, generate_mipmaps=True):
-    """Load an image texture from a file or URL.
+    """
+    Load an image texture from a file or URL.
 
     Parameters
     ----------
@@ -74,7 +76,8 @@ def load_image_texture(fname, *, size=None, generate_mipmaps=True):
 
 
 def load_image(filename):
-    """Load an image from a file or URL.
+    """
+    Load an image from a file or URL.
 
     Parameters
     ----------
@@ -123,7 +126,8 @@ def load_image(filename):
 
 
 def load_image_as_wgpu_texture_view(filename, device):
-    """Load an image from a file or URL as a wgpu Texture view.
+    """
+    Load an image from a file or URL as a wgpu Texture view.
 
     Parameters
     ----------
@@ -137,7 +141,6 @@ def load_image_as_wgpu_texture_view(filename, device):
     wgpu.GPUTextureView
         Loaded image as wgpu Texture view.
     """
-
     image = np.asarray(load_image(filename), dtype=np.uint8)
 
     if image.ndim == 2:
@@ -205,7 +208,8 @@ def save_image(
     compression_type="deflation",
     dpi=(72, 72),
 ):
-    """Save a 2D or 3D image to a file.
+    """
+    Save a 2D or 3D image to a file.
 
     Parameters
     ----------

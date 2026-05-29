@@ -21,7 +21,8 @@ from fury.animation.interpolator import (  # noqa F401
 
 
 class Animation:
-    """Create and manage keyframe animations for Fury actors.
+    """
+    Create and manage keyframe animations for Fury actors.
 
     Animation is responsible for handling keyframe animations for a single actor
     or a group of actors. It provides control over multiple attributes and
@@ -69,7 +70,8 @@ class Animation:
             self.add_actor(actors)
 
     def update_duration(self):
-        """Update and return the duration of the Animation.
+        """
+        Update and return the duration of the Animation.
 
         Update the animation duration based on the length parameter or the maximum
         timestamp of all keyframes and child animations.
@@ -91,7 +93,8 @@ class Animation:
 
     @property
     def duration(self):
-        """Return the duration of the animation.
+        """
+        Return the duration of the animation.
 
         Returns
         -------
@@ -102,7 +105,8 @@ class Animation:
 
     @property
     def current_timestamp(self):
-        """Return the current time of the animation.
+        """
+        Return the current time of the animation.
 
         Returns
         -------
@@ -116,10 +120,12 @@ class Animation:
         return self._current_timestamp
 
     def update_motion_path(self):
-        """Update motion path visualization actor.
+        """
+        Update motion path visualization actor.
 
-        Creates or updates the motion path visualization actor that represents the
-        animation path. The resolution of the path is determined by motion_path_res.
+        Creates or updates the motion path visualization actor that
+        represents the animation path. The resolution of the path is
+        determined by motion_path_res.
         """
         res = self._motion_path_res
         tl = self
@@ -159,7 +165,8 @@ class Animation:
         #     self._motion_path_actor = mpa
 
     def _get_data(self):
-        """Get animation data.
+        """
+        Get animation data.
 
         Returns
         -------
@@ -169,7 +176,8 @@ class Animation:
         return self._data
 
     def _get_attribute_data(self, attrib):
-        """Get animation data for a specific attribute.
+        """
+        Get animation data for a specific attribute.
 
         Parameters
         ----------
@@ -196,7 +204,8 @@ class Animation:
         return data.get(attrib)
 
     def get_keyframes(self, *, attrib=None):
-        """Get keyframes for a specific or all attributes.
+        """
+        Get keyframes for a specific or all attributes.
 
         Parameters
         ----------
@@ -220,7 +229,8 @@ class Animation:
     def set_keyframe(
         self, attrib, timestamp, value, *, update_interpolator=True, **kwargs
     ):
-        """Set a keyframe for a certain attribute.
+        """
+        Set a keyframe for a certain attribute.
 
         Parameters
         ----------
@@ -269,7 +279,8 @@ class Animation:
         self.update_motion_path()
 
     def set_keyframes(self, attrib, keyframes):
-        """Set multiple keyframes for a certain attribute.
+        """
+        Set multiple keyframes for a certain attribute.
 
         Parameters
         ----------
@@ -295,7 +306,8 @@ class Animation:
                 self.set_keyframe(attrib, t, keyframe)
 
     def is_inside_scene_at(self, timestamp):
-        """Check if the Animation is set to be inside the scene at a specific timestamp.
+        """
+        Check if the Animation is set to be inside the scene at a specific timestamp.
 
         Parameters
         ----------
@@ -325,7 +337,8 @@ class Animation:
         return in_scene
 
     def add_to_scene_at(self, timestamp):
-        """Set timestamp for adding Animation to scene event.
+        """
+        Set timestamp for adding Animation to scene event.
 
         Parameters
         ----------
@@ -339,7 +352,8 @@ class Animation:
             self.set_keyframe("in_scene", timestamp, True)
 
     def remove_from_scene_at(self, timestamp):
-        """Set timestamp for removing Animation from scene event.
+        """
+        Set timestamp for removing Animation from scene event.
 
         Parameters
         ----------
@@ -353,7 +367,8 @@ class Animation:
             self.set_keyframe("in_scene", timestamp, False)
 
     def _handle_scene_event(self, timestamp):
-        """Handle adding/removing actors from scene at a specific timestamp.
+        """
+        Handle adding/removing actors from scene at a specific timestamp.
 
         Parameters
         ----------
@@ -370,7 +385,8 @@ class Animation:
                 self._added_to_scene = False
 
     def set_interpolator(self, attrib, interpolator, *, is_evaluator=False, **kwargs):
-        """Set keyframes interpolator for a certain property.
+        """
+        Set keyframes interpolator for a certain property.
 
         Parameters
         ----------
@@ -426,7 +442,8 @@ class Animation:
         self.update_motion_path()
 
     def is_interpolatable(self, attrib):
-        """Check whether a property is interpolatable.
+        """
+        Check whether a property is interpolatable.
 
         Parameters
         ----------
@@ -447,7 +464,8 @@ class Animation:
         return bool(data.get(attrib, {}).get("interpolator", {}).get("func"))
 
     def set_position_interpolator(self, interpolator, *, is_evaluator=False, **kwargs):
-        """Set the position interpolator.
+        """
+        Set the position interpolator.
 
         Parameters
         ----------
@@ -468,7 +486,8 @@ class Animation:
         )
 
     def set_scale_interpolator(self, interpolator, *, is_evaluator=False):
-        """Set the scale interpolator.
+        """
+        Set the scale interpolator.
 
         Parameters
         ----------
@@ -486,7 +505,8 @@ class Animation:
         self.set_interpolator("scale", interpolator, is_evaluator=is_evaluator)
 
     def set_rotation_interpolator(self, interpolator, *, is_evaluator=False):
-        """Set the rotation interpolator.
+        """
+        Set the rotation interpolator.
 
         Parameters
         ----------
@@ -504,7 +524,8 @@ class Animation:
         self.set_interpolator("rotation", interpolator, is_evaluator=is_evaluator)
 
     def set_color_interpolator(self, interpolator, *, is_evaluator=False):
-        """Set the color interpolator.
+        """
+        Set the color interpolator.
 
         Parameters
         ----------
@@ -522,7 +543,8 @@ class Animation:
         self.set_interpolator("color", interpolator, is_evaluator=is_evaluator)
 
     def set_opacity_interpolator(self, interpolator, *, is_evaluator=False):
-        """Set the opacity interpolator.
+        """
+        Set the opacity interpolator.
 
         Parameters
         ----------
@@ -540,7 +562,8 @@ class Animation:
         self.set_interpolator("opacity", interpolator, is_evaluator=is_evaluator)
 
     def get_value(self, attrib, timestamp):
-        """Return the value of an attribute at any given timestamp.
+        """
+        Return the value of an attribute at any given timestamp.
 
         Parameters
         ----------
@@ -560,7 +583,8 @@ class Animation:
         return value
 
     def get_current_value(self, attrib):
-        """Return the value of an attribute at current time.
+        """
+        Return the value of an attribute at current time.
 
         Parameters
         ----------
@@ -579,7 +603,8 @@ class Animation:
         )
 
     def set_position(self, timestamp, position, **kwargs):
-        """Set a position keyframe at a specific timestamp.
+        """
+        Set a position keyframe at a specific timestamp.
 
         Parameters
         ----------
@@ -602,7 +627,8 @@ class Animation:
         self.set_keyframe("position", timestamp, position, **kwargs)
 
     def set_position_keyframes(self, keyframes):
-        """Set a dict of position keyframes at once.
+        """
+        Set a dict of position keyframes at once.
 
         Parameters
         ----------
@@ -619,7 +645,8 @@ class Animation:
         self.set_keyframes("position", keyframes)
 
     def set_rotation(self, timestamp, rotation, **kwargs):
-        """Set a rotation keyframe at a specific timestamp.
+        """
+        Set a rotation keyframe at a specific timestamp.
 
         Parameters
         ----------
@@ -655,7 +682,8 @@ class Animation:
             )
 
     def set_rotation_as_vector(self, timestamp, vector, **kwargs):
-        """Set a rotation keyframe at a specific timestamp.
+        """
+        Set a rotation keyframe at a specific timestamp.
 
         Parameters
         ----------
@@ -670,7 +698,8 @@ class Animation:
         self.set_keyframe("rotation", timestamp, quat, **kwargs)
 
     def set_scale(self, timestamp, scalar, **kwargs):
-        """Set a scale keyframe at a specific timestamp.
+        """
+        Set a scale keyframe at a specific timestamp.
 
         Parameters
         ----------
@@ -684,7 +713,8 @@ class Animation:
         self.set_keyframe("scale", timestamp, scalar, **kwargs)
 
     def set_scale_keyframes(self, keyframes):
-        """Set a dict of scale keyframes at once.
+        """
+        Set a dict of scale keyframes at once.
 
         Parameters
         ----------
@@ -701,7 +731,8 @@ class Animation:
         self.set_keyframes("scale", keyframes)
 
     def set_color(self, timestamp, color, **kwargs):
-        """Set color keyframe at a specific timestamp.
+        """
+        Set color keyframe at a specific timestamp.
 
         Parameters
         ----------
@@ -715,7 +746,8 @@ class Animation:
         self.set_keyframe("color", timestamp, color, **kwargs)
 
     def set_color_keyframes(self, keyframes):
-        """Set a dict of color keyframes at once.
+        """
+        Set a dict of color keyframes at once.
 
         Parameters
         ----------
@@ -733,7 +765,8 @@ class Animation:
         self.set_keyframes("color", keyframes)
 
     def set_opacity(self, timestamp, opacity, **kwargs):
-        """Set opacity keyframe at a specific timestamp.
+        """
+        Set opacity keyframe at a specific timestamp.
 
         Parameters
         ----------
@@ -747,7 +780,8 @@ class Animation:
         self.set_keyframe("opacity", timestamp, opacity, **kwargs)
 
     def set_opacity_keyframes(self, keyframes):
-        """Set a dict of opacity keyframes at once.
+        """
+        Set a dict of opacity keyframes at once.
 
         Parameters
         ----------
@@ -768,7 +802,8 @@ class Animation:
         self.set_keyframes("opacity", keyframes)
 
     def get_position(self, t):
-        """Return the interpolated position.
+        """
+        Return the interpolated position.
 
         Parameters
         ----------
@@ -783,7 +818,8 @@ class Animation:
         return self.get_value("position", t)
 
     def get_rotation(self, t, as_quat=False):
-        """Return the interpolated rotation.
+        """
+        Return the interpolated rotation.
 
         Parameters
         ----------
@@ -812,7 +848,8 @@ class Animation:
         ).as_quat()
 
     def get_scale(self, t):
-        """Return the interpolated scale.
+        """
+        Return the interpolated scale.
 
         Parameters
         ----------
@@ -827,7 +864,8 @@ class Animation:
         return self.get_value("scale", t)
 
     def get_color(self, t):
-        """Return the interpolated color.
+        """
+        Return the interpolated color.
 
         Parameters
         ----------
@@ -842,7 +880,8 @@ class Animation:
         return self.get_value("color", t)
 
     def get_opacity(self, t):
-        """Return the opacity value.
+        """
+        Return the opacity value.
 
         Parameters
         ----------
@@ -857,7 +896,8 @@ class Animation:
         return self.get_value("opacity", t)
 
     def add(self, item):
-        """Add an item to the Animation.
+        """
+        Add an item to the Animation.
 
         This item can be an Actor, Animation, list of Actors, or a list of
         Animations.
@@ -879,7 +919,8 @@ class Animation:
             raise ValueError(f"Object of type {type(item)} can't be animated")
 
     def add_child_animation(self, animation):
-        """Add child Animation or list of Animations.
+        """
+        Add child Animation or list of Animations.
 
         Parameters
         ----------
@@ -896,7 +937,8 @@ class Animation:
         self.update_duration()
 
     def add_actor(self, actor, *, static=False):
-        """Add an actor or list of actors to the Animation.
+        """
+        Add an actor or list of actors to the Animation.
 
         Parameters
         ----------
@@ -920,7 +962,8 @@ class Animation:
 
     @property
     def timeline(self):
-        """Return the Timeline handling the current animation.
+        """
+        Return the Timeline handling the current animation.
 
         Returns
         -------
@@ -932,7 +975,8 @@ class Animation:
 
     @timeline.setter
     def timeline(self, timeline):
-        """Assign the Timeline responsible for handling the Animation.
+        """
+        Assign the Timeline responsible for handling the Animation.
 
         Parameters
         ----------
@@ -947,7 +991,8 @@ class Animation:
 
     @property
     def parent_animation(self):
-        """Return the hierarchical parent Animation for current Animation.
+        """
+        Return the hierarchical parent Animation for current Animation.
 
         Returns
         -------
@@ -958,7 +1003,8 @@ class Animation:
 
     @parent_animation.setter
     def parent_animation(self, parent_animation):
-        """Assign a parent Animation for the current Animation.
+        """
+        Assign a parent Animation for the current Animation.
 
         Parameters
         ----------
@@ -969,7 +1015,8 @@ class Animation:
 
     @property
     def actors(self):
-        """Return a list of actors.
+        """
+        Return a list of actors.
 
         Returns
         -------
@@ -980,7 +1027,8 @@ class Animation:
 
     @property
     def child_animations(self) -> "list[Animation]":
-        """Return a list of child Animations.
+        """
+        Return a list of child Animations.
 
         Returns
         -------
@@ -990,7 +1038,8 @@ class Animation:
         return self._animations
 
     def add_static_actor(self, actor):
-        """Add static actor(s) which will not be controlled/animated by the Animation.
+        """
+        Add static actor(s) which will not be controlled/animated by the Animation.
 
         All static actors will be added to the scene when the Animation is added to the
         scene.
@@ -1004,7 +1053,8 @@ class Animation:
 
     @property
     def static_actors(self):
-        """Return a list of static actors.
+        """
+        Return a list of static actors.
 
         Returns
         -------
@@ -1018,7 +1068,8 @@ class Animation:
         self._animations.clear()
 
     def remove_actor(self, actor):
-        """Remove an actor from the Animation.
+        """
+        Remove an actor from the Animation.
 
         Parameters
         ----------
@@ -1033,7 +1084,8 @@ class Animation:
 
     @property
     def loop(self):
-        """Get loop condition of the current animation.
+        """
+        Get loop condition of the current animation.
 
         Returns
         -------
@@ -1044,7 +1096,8 @@ class Animation:
 
     @loop.setter
     def loop(self, loop):
-        """Set the animation to loop or play once.
+        """
+        Set the animation to loop or play once.
 
         Parameters
         ----------
@@ -1055,7 +1108,8 @@ class Animation:
         self._loop = loop
 
     def add_update_callback(self, callback, prop=None):
-        """Add a function to be called each time animation is updated.
+        """
+        Add a function to be called each time animation is updated.
 
         Add a callback function that will be invoked whenever the animation is updated.
         The function must accept only one argument which is the current value
@@ -1080,7 +1134,8 @@ class Animation:
         attrib.get("callbacks", []).append(callback)
 
     def update_animation(self, *, time=None):
-        """Update the animation.
+        """
+        Update the animation.
 
         Update the animation at a certain time. This will make sure all
         attributes are calculated and set to the actors at that given time.
@@ -1158,7 +1213,8 @@ class Animation:
             self._scene.reset_clipping_range()
 
     def add_to_scene(self, scene):
-        """Add this Animation, its actors and sub Animations to the scene.
+        """
+        Add this Animation, its actors and sub Animations to the scene.
 
         Parameters
         ----------
@@ -1177,7 +1233,8 @@ class Animation:
         self.update_animation(time=0)
 
     def remove_from_scene(self, scene):
-        """Remove Animation, its actors and sub Animations from the scene.
+        """
+        Remove Animation, its actors and sub Animations from the scene.
 
         Parameters
         ----------
@@ -1194,7 +1251,8 @@ class Animation:
 
 
 class CameraAnimation(Animation):
-    """Camera keyframe animation class.
+    """
+    Camera keyframe animation class.
 
     This is used for animating a single camera using a set of keyframes.
 
@@ -1229,7 +1287,8 @@ class CameraAnimation(Animation):
         self._camera = camera
 
     def set_focal(self, timestamp, position, **kwargs):
-        """Set camera's focal position keyframe.
+        """
+        Set camera's focal position keyframe.
 
         Parameters
         ----------
@@ -1251,7 +1310,8 @@ class CameraAnimation(Animation):
         self.set_keyframe("focal", timestamp, position, **kwargs)
 
     def set_view_up(self, timestamp, direction, **kwargs):
-        """Set the camera view-up direction keyframe.
+        """
+        Set the camera view-up direction keyframe.
 
         Parameters
         ----------
@@ -1273,7 +1333,8 @@ class CameraAnimation(Animation):
         self.set_keyframe("view_up", timestamp, direction, **kwargs)
 
     def set_focal_keyframes(self, keyframes):
-        """Set multiple camera focal position keyframes at once.
+        """
+        Set multiple camera focal position keyframes at once.
 
         Parameters
         ----------
@@ -1290,7 +1351,8 @@ class CameraAnimation(Animation):
         self.set_keyframes("focal", keyframes)
 
     def set_view_up_keyframes(self, keyframes):
-        """Set multiple camera view up direction keyframes.
+        """
+        Set multiple camera view up direction keyframes.
 
         Parameters
         ----------
@@ -1307,7 +1369,8 @@ class CameraAnimation(Animation):
         self.set_keyframes("view_up", keyframes)
 
     def get_focal(self, t):
-        """Return the interpolated camera's focal position.
+        """
+        Return the interpolated camera's focal position.
 
         Parameters
         ----------
@@ -1327,7 +1390,8 @@ class CameraAnimation(Animation):
         return self.get_value("focal", t)
 
     def get_view_up(self, t):
-        """Return the interpolated camera's view-up directional vector.
+        """
+        Return the interpolated camera's view-up directional vector.
 
         Parameters
         ----------
@@ -1347,7 +1411,8 @@ class CameraAnimation(Animation):
         return self.get_value("view_up", t)
 
     def set_focal_interpolator(self, interpolator, *, is_evaluator=False):
-        """Set the camera focal position interpolator.
+        """
+        Set the camera focal position interpolator.
 
         Parameters
         ----------
@@ -1361,7 +1426,8 @@ class CameraAnimation(Animation):
         self.set_interpolator("focal", interpolator, is_evaluator=is_evaluator)
 
     def set_view_up_interpolator(self, interpolator, *, is_evaluator=False):
-        """Set the camera up-view vector animation interpolator.
+        """
+        Set the camera up-view vector animation interpolator.
 
         Parameters
         ----------
@@ -1375,7 +1441,8 @@ class CameraAnimation(Animation):
         self.set_interpolator("view_up", interpolator, is_evaluator=is_evaluator)
 
     def update_animation(self, *, time=None):
-        """Update the camera animation.
+        """
+        Update the camera animation.
 
         Parameters
         ----------

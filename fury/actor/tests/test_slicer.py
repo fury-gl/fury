@@ -60,7 +60,7 @@ def test_invalid_4d_data_with_incorrect_color_channel():
 
 
 def test_opacity_validation():
-    """Test opacity validation raises errors for out-of-bounds values"""
+    """Test opacity validation raises errors for out-of-bounds values."""
     data = np.random.rand(10, 20, 30)
 
     # Test valid values
@@ -279,7 +279,10 @@ def test_max_voxels_per_chunk(max_buffer_size, max_workgroups, expected):
 
 
 def test_vector_field_cross_section_world_bounds_with_chunk_offset():
-    """Cross section clamps in world space when the actor has a local X offset."""
+    """
+    Cross section clamps in world space when the actor has a local X
+    offset.
+    """
     field = np.random.rand(5, 5, 5, 3)
     vf = actor.VectorField(field)
     vf.local.position = [10.0, 0.0, 0.0]
@@ -288,7 +291,10 @@ def test_vector_field_cross_section_world_bounds_with_chunk_offset():
 
 
 def test_vector_field_chunks_when_exceeding_device_limits():
-    """Large fields are split into several actors along X with contiguous offsets."""
+    """
+    Large fields are split into several actors along X with contiguous
+    offsets.
+    """
     device = gfx_wgpu.get_shared().device
     max_voxels = _max_voxels_per_chunk(
         max_buffer_size=device.limits.get(

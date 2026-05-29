@@ -327,7 +327,10 @@ def test_streamline_shader_get_code():
 
 
 def test_streamline_baking_shader_updates_and_origin():
-    """_StreamlineBakingShader dispatch respects needs_gpu_update and roi_origin."""
+    """
+    _StreamlineBakingShader dispatch respects needs_gpu_update and
+    roi_origin.
+    """
     lines = [
         np.array([[0, 0, 0], [1, 0, 0]], dtype=np.float32),
         np.array([[0, 1, 0], [1, 1, 0]], dtype=np.float32),
@@ -444,7 +447,10 @@ def test_LineProjectionComputeShader_with_different_line_configurations():
 
 
 def test_LineProjectionComputeShader_with_custom_parameters():
-    """Test LineProjectionComputeShader with LineProjection custom parameters."""
+    """
+    Test LineProjectionComputeShader with LineProjection custom
+    parameters.
+    """
     lines = [
         np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2]]),
         np.array([[3, 3, 3], [4, 4, 4]]),
@@ -466,7 +472,10 @@ def test_LineProjectionComputeShader_with_custom_parameters():
 
 
 def test_LineProjectionComputeShader_inheritance():
-    """Test LineProjectionComputeShader inheritance and base class functionality."""
+    """
+    Test LineProjectionComputeShader inheritance and base class
+    functionality.
+    """
     lines = [np.array([[0, 0, 0], [1, 1, 1]])]
     wobject = LineProjection(lines)
     shader = LineProjectionComputeShader(wobject)

@@ -40,7 +40,8 @@ GH_TOKEN = os.environ.get("GH_TOKEN", "")
 # Functions
 # ----------------------------------------------------------------------------
 def _get_http_status(response):
-    """Return an HTTP status code from a urlopen()-like response.
+    """
+    Return an HTTP status code from a urlopen()-like response.
 
     Parameters
     ----------
@@ -183,7 +184,8 @@ def get_tags(project="fury-gl/fury"):
 
 
 def fetch_basic_stats(project="fury-gl/fury"):
-    """Fetch the basic stats.
+    """
+    Fetch the basic stats.
 
     Returns
     -------
@@ -218,7 +220,8 @@ def fetch_basic_stats(project="fury-gl/fury"):
 
 
 def fetch_contributor_stats(project="fury-gl/fury"):
-    """Fetch stats of contributors.
+    """
+    Fetch stats of contributors.
 
     Returns
     -------
@@ -312,7 +315,8 @@ def fetch_contributor_stats(project="fury-gl/fury"):
 
 
 def cumulative_contributors(project="fury-gl/fury", show=True):
-    """Calculate the cumulative number of contributors over time.
+    """
+    Calculate the cumulative number of contributors over time.
 
     Parameters
     ----------
@@ -411,7 +415,8 @@ def is_pull_request(issue):
 
 
 def issues_closed_since(period=LAST_RELEASE, project="fury-gl/fury", pulls=False):
-    """Get all issues closed since a particular point in time.
+    """
+    Get all issues closed since a particular point in time.
 
     period can either be a datetime object, or a timedelta object. In the
     latter case, it is used as a time before the present.
@@ -455,7 +460,8 @@ def report(issues, show_urls=False):
 
 
 def get_all_versions(ignore="", project="fury-gl/fury"):
-    """Return all releases version.
+    """
+    Return all releases version.
 
     Parameters
     ----------

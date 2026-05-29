@@ -11,7 +11,8 @@ from fury.io import load_image
 def matplotlib_figure_to_numpy(
     fig, *, dpi=100, fname=None, flip_up_down=True, transparent=False
 ):
-    """Convert a Matplotlib figure to a 3D numpy array with RGBA channels.
+    """
+    Convert a Matplotlib figure to a 3D numpy array with RGBA channels.
 
     Parameters
     ----------

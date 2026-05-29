@@ -14,7 +14,8 @@ from fury.material import validate_opacity
 
 
 def set_group_visibility(group, visibility):
-    """Set the visibility of a group of actors.
+    """
+    Set the visibility of a group of actors.
 
     Parameters
     ----------
@@ -42,7 +43,8 @@ def set_group_visibility(group, visibility):
 
 
 def set_group_opacity(group, opacity):
-    """Set the opacity of the group of actors.
+    """
+    Set the opacity of the group of actors.
 
     Parameters
     ----------
@@ -62,7 +64,8 @@ def set_group_opacity(group, opacity):
 
 
 def set_opacity(actor, opacity):
-    """Set the opacity of an actor.
+    """
+    Set the opacity of an actor.
 
     Parameters
     ----------
@@ -84,7 +87,8 @@ def set_opacity(actor, opacity):
 
 
 def validate_slices_group(group):
-    """Validate the slices in a group.
+    """
+    Validate the slices in a group.
 
     Parameters
     ----------
@@ -131,7 +135,8 @@ def validate_slices_group(group):
 
 
 def get_slices(group):
-    """Get the current positions of the slices.
+    """
+    Get the current positions of the slices.
 
     Parameters
     ----------
@@ -156,7 +161,8 @@ def get_slices(group):
 
 
 def show_slices(group, position):
-    """Show the slices at the specified position.
+    """
+    Show the slices at the specified position.
 
     Added with a small offset to avoid boundary issues.
 
@@ -184,7 +190,8 @@ def show_slices(group, position):
 
 
 def apply_affine_to_group(group, affine):
-    """Apply a transformation to all actors in a group.
+    """
+    Apply a transformation to all actors in a group.
 
     Parameters
     ----------
@@ -204,7 +211,8 @@ def apply_affine_to_group(group, affine):
 
 
 def apply_affine_to_actor(actor, affine):
-    """Apply a transformation to an actor.
+    """
+    Apply a transformation to an actor.
 
     Parameters
     ----------
@@ -228,7 +236,8 @@ def apply_affine_to_actor(actor, affine):
 
 
 def read_buffer(buffer, *, sync_cpu=True):
-    """Read the contents of a wgpu buffer into a NumPy array.
+    """
+    Read the contents of a wgpu buffer into a NumPy array.
 
     Parameters
     ----------

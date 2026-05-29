@@ -15,7 +15,10 @@ from fury.utils import (
 
 
 def test_generate_planar_uvs_basic_projections():
-    """Test generate_planar_uvs with all three projection axes using simple geometry"""
+    """
+    Test generate_planar_uvs with all three projection axes using simple
+    geometry.
+    """
     vertices = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])
 
     # XY projection
@@ -32,7 +35,7 @@ def test_generate_planar_uvs_basic_projections():
 
 
 def test_generate_planar_uvs_edge_cases():
-    """Test generate_planar_uvs with various edge cases"""
+    """Test generate_planar_uvs with various edge cases."""
     # All vertices same position
     with pytest.raises(ValueError):
         same_verts = np.array([[1.0, 1.0, 1.0]] * 3)
@@ -59,7 +62,7 @@ def test_generate_planar_uvs_edge_cases():
 
 
 def test_generate_planar_uvs_input_validation():
-    """Test generate_planar_uvs input validation and error cases"""
+    """Test generate_planar_uvs input validation and error cases."""
     # Invalid axis
     with pytest.raises(ValueError, match="axis must be one of 'xy', 'xz', or 'yz'."):
         generate_planar_uvs(np.array([[1, 2, 3]]), axis="invalid")
@@ -80,7 +83,7 @@ def test_generate_planar_uvs_input_validation():
 
 
 def test_generate_planar_uvs_numerical_stability():
-    """Test generate_planar_uvs with numerical edge cases"""
+    """Test generate_planar_uvs with numerical edge cases."""
     # Very small range
     small_range = np.array([[1.0, 2.0, 3.0], [1.0 + 1e-10, 2.0 + 1e-10, 3.0 + 1e-10]])
     result = generate_planar_uvs(small_range, axis="xy")
@@ -170,7 +173,10 @@ def test_lmax_n_coeffs_inverse_relationship_standard():
 
 
 def test_lmax_n_coeffs_inverse_relationship_descoteaux07():
-    """Test that get_lmax and get_n_coeffs are inverse for descoteaux07 basis."""
+    """
+    Test that get_lmax and get_n_coeffs are inverse for descoteaux07
+    basis.
+    """
     test_lmax_values = [0, 1, 2, 3, 4, 5, 6, 8, 10]
 
     for l_max in test_lmax_values:
@@ -197,7 +203,10 @@ def test_n_coeffs_lmax_inverse_relationship_standard():
 
 
 def test_n_coeffs_lmax_inverse_relationship_descoteaux07():
-    """Test that get_n_coeffs and get_lmax are inverse for descoteaux07 basis."""
+    """
+    Test that get_n_coeffs and get_lmax are inverse for descoteaux07
+    basis.
+    """
     # Test with known valid n_coeffs values for descoteaux07 basis
     test_n_coeffs_values = [1, 6, 15, 28, 45, 66, 91, 120, 153]
 
@@ -211,7 +220,10 @@ def test_n_coeffs_lmax_inverse_relationship_descoteaux07():
 
 
 def test_both_functions_consistency():
-    """Test consistency between both functions with various input combinations."""
+    """
+    Test consistency between both functions with various input
+    combinations.
+    """
     # Test that both functions handle basis_type parameter consistently
     l_max = 4
 
@@ -276,7 +288,7 @@ def test_create_sh_basis_matrix_known_values():
 
 
 def test_get_transformed_cube_bounds_valid_input():
-    """Test function with valid inputs returns correct bounds"""
+    """Test function with valid inputs returns correct bounds."""
     affine_matrix = np.eye(4)
     vertex1 = np.array([1, 2, 3])
     vertex2 = np.array([4, 5, 6])
@@ -289,7 +301,7 @@ def test_get_transformed_cube_bounds_valid_input():
 
 
 def test_get_transformed_cube_bounds_invalid_vertex_dimensions():
-    """Test function raises ValueError for non-3D vertices"""
+    """Test function raises ValueError for non-3D vertices."""
     affine_matrix = np.eye(4)
 
     with pytest.raises(ValueError, match="must be 3D coordinates"):
@@ -304,7 +316,7 @@ def test_get_transformed_cube_bounds_invalid_vertex_dimensions():
 
 
 def test_get_transformed_cube_bounds_invalid_matrix_shape():
-    """Test function raises ValueError for non-4x4 matrix"""
+    """Test function raises ValueError for non-4x4 matrix."""
     vertex1 = np.array([1, 2, 3])
     vertex2 = np.array([4, 5, 6])
 
@@ -316,7 +328,7 @@ def test_get_transformed_cube_bounds_invalid_matrix_shape():
 
 
 def test_get_transformed_cube_bounds_translation():
-    """Test function correctly handles translation"""
+    """Test function correctly handles translation."""
     affine_matrix = np.array(
         [[1, 0, 0, 10], [0, 1, 0, 20], [0, 0, 1, 30], [0, 0, 0, 1]]
     )
@@ -331,7 +343,7 @@ def test_get_transformed_cube_bounds_translation():
 
 
 def test_get_transformed_cube_bounds_scaling():
-    """Test function correctly handles scaling"""
+    """Test function correctly handles scaling."""
     affine_matrix = np.array([[2, 0, 0, 0], [0, 3, 0, 0], [0, 0, 4, 0], [0, 0, 0, 1]])
     vertex1 = np.array([1, 1, 1])
     vertex2 = np.array([2, 2, 2])
@@ -344,7 +356,7 @@ def test_get_transformed_cube_bounds_scaling():
 
 
 def test_get_transformed_cube_bounds_degenerate_case():
-    """Test function handles single-point cube correctly"""
+    """Test function handles single-point cube correctly."""
     affine_matrix = np.eye(4)
     vertex1 = np.array([5, 5, 5])
     vertex2 = np.array([5, 5, 5])
@@ -358,7 +370,6 @@ def test_get_transformed_cube_bounds_degenerate_case():
 
 def test_extract_surface_voxels_basic_and_missing_label():
     """Test extract_surface_voxels for existing and missing labels."""
-
     volume = np.zeros((3, 3, 3), dtype=np.uint8)
     volume[1, 1, 1] = 1
 
@@ -378,8 +389,10 @@ def test_extract_surface_voxels_basic_and_missing_label():
 
 
 def test_face_generation_basic_axes_and_signs():
-    """Test face_generation for simple coords with positive and negative signs."""
-
+    """
+    Test face_generation for simple coords with positive and negative
+    signs.
+    """
     coords = np.array([[0, 0, 0]], dtype=int)
 
     # Positive X face (axis=0, sign=+1)
@@ -399,7 +412,6 @@ def test_face_generation_basic_axes_and_signs():
 
 def test_face_generation_broadcasting_and_invalid_coords():
     """Test face_generation broadcasting behavior and input validation."""
-
     # Broadcasting over multiple coordinates and axes
     coords = np.array([[0, 0, 0], [1, 1, 1]], dtype=int)
     axes = np.array([0, 1], dtype=int)
@@ -562,7 +574,10 @@ def test_voxel_mesh_by_object_spacing():
 
 
 def test_voxel_mesh_by_object_axis_ordering():
-    """Ensure voxel coordinates are interpreted as (x, y, z) without swapping axes."""
+    """
+    Ensure voxel coordinates are interpreted as (x, y, z) without swapping
+    axes.
+    """
     volume = np.zeros((2, 3, 4), dtype=np.uint8)
     volume[1, 2, 3] = 1  # voxel at x=1, y=2, z=3
 

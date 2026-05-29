@@ -4,7 +4,8 @@ import numpy as np
 
 
 def get_previous_timestamp(timestamps, current_time, *, include_last=False):
-    """Return the maximum previous timestamp of a given time.
+    """
+    Return the maximum previous timestamp of a given time.
 
     Parameters
     ----------
@@ -28,7 +29,8 @@ def get_previous_timestamp(timestamps, current_time, *, include_last=False):
 
 
 def get_next_timestamp(timestamps, current_time, *, include_first=False):
-    """Return the minimum next timestamp of a given time.
+    """
+    Return the minimum next timestamp of a given time.
 
     Parameters
     ----------
@@ -52,7 +54,8 @@ def get_next_timestamp(timestamps, current_time, *, include_first=False):
 
 
 def get_timestamps_from_keyframes(keyframes):
-    """Return a sorted array of timestamps given dict of keyframes.
+    """
+    Return a sorted array of timestamps given dict of keyframes.
 
     Parameters
     ----------
@@ -68,7 +71,8 @@ def get_timestamps_from_keyframes(keyframes):
 
 
 def get_values_from_keyframes(keyframes):
-    """Return an array of keyframes values sorted using timestamps.
+    """
+    Return an array of keyframes values sorted using timestamps.
 
     Parameters
     ----------
@@ -86,7 +90,8 @@ def get_values_from_keyframes(keyframes):
 
 
 def get_time_tau(t, t0, t1):
-    """Return a capped time tau between 0 and 1.
+    """
+    Return a capped time tau between 0 and 1.
 
     Parameters
     ----------
@@ -106,7 +111,8 @@ def get_time_tau(t, t0, t1):
 
 
 def lerp(v0, v1, t0, t1, t):
-    """Return a linearly interpolated value.
+    """
+    Return a linearly interpolated value.
 
     Parameters
     ----------
@@ -134,7 +140,8 @@ def lerp(v0, v1, t0, t1, t):
 
 
 def euclidean_distances(points):
-    """Return a list of euclidean distances of a list of points or values.
+    """
+    Return a list of euclidean distances of a list of points or values.
 
     Parameters
     ----------

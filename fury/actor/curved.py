@@ -58,7 +58,8 @@ def sphere(
     wireframe_thickness=1.0,
     impostor=True,
 ):
-    """Create one or many spheres with different colors and radii.
+    """
+    Create one or many spheres with different colors and radii.
 
     Parameters
     ----------
@@ -320,7 +321,8 @@ def cylinder(
     wireframe=False,
     wireframe_thickness=1.0,
 ):
-    """Create one or many cylinders with different features.
+    """
+    Create one or many cylinders with different features.
 
     Parameters
     ----------
@@ -445,7 +447,8 @@ def cone(
     wireframe=False,
     wireframe_thickness=1.0,
 ):
-    """Create one or many cones with different features.
+    """
+    Create one or many cones with different features.
 
     Parameters
     ----------
@@ -586,7 +589,8 @@ class Streamlines(Line):
 
     @staticmethod
     def _compute_line_metadata(positions, *, line_lengths=None, line_offsets=None):
-        """Infer per-line lengths and offsets from a flattened buffer with NaNs.
+        """
+        Infer per-line lengths and offsets from a flattened buffer with NaNs.
 
         Parameters
         ----------
@@ -631,7 +635,8 @@ class Streamlines(Line):
 
     @staticmethod
     def _validate_roi_mask(mask):
-        """Validate and extract the mask.
+        """
+        Validate and extract the mask.
 
         Parameters
         ----------
@@ -779,7 +784,8 @@ class Streamlines(Line):
 
     @property
     def roi_mask(self):
-        """Get the ROI mask.
+        """
+        Get the ROI mask.
 
         Returns
         -------
@@ -792,7 +798,8 @@ class Streamlines(Line):
 
     @roi_mask.setter
     def roi_mask(self, mask):
-        """Set the ROI mask.
+        """
+        Set the ROI mask.
 
         Parameters
         ----------
@@ -827,7 +834,8 @@ class Streamlines(Line):
 
     @property
     def roi_origin(self):
-        """Get the ROI origin.
+        """
+        Get the ROI origin.
 
         Returns
         -------
@@ -838,7 +846,8 @@ class Streamlines(Line):
 
     @roi_origin.setter
     def roi_origin(self, origin):
-        """Set the ROI origin (world-space position of voxel (0, 0, 0)).
+        """
+        Set the ROI origin (world-space position of voxel (0, 0, 0)).
 
         Parameters
         ----------
@@ -900,7 +909,8 @@ class Streamlines(Line):
         )
 
     def _resolve_roi_origin(self, origin):
-        """Validate and resolve ROI origin from user input.
+        """
+        Validate and resolve ROI origin from user input.
 
         Parameters
         ----------
@@ -920,7 +930,8 @@ class Streamlines(Line):
         return origin
 
     def filtered_streamlines(self):
-        """Get the currently filtered line ids after ROI baking.
+        """
+        Get the currently filtered line ids after ROI baking.
 
         Returns
         -------
@@ -956,7 +967,8 @@ def streamlines(
     roi_origin=None,
     enable_picking=True,
 ):
-    """Create a streamline representation.
+    """
+    Create a streamline representation.
 
     Parameters
     ----------
@@ -1021,7 +1033,8 @@ def streamlines(
 
 @register_wgpu_render_function(Streamlines, StreamlinesMaterial)
 def _register_render_streamline(wobject):
-    """Register the streamline render function.
+    """
+    Register the streamline render function.
 
     Parameters
     ----------
@@ -1038,7 +1051,8 @@ def _register_render_streamline(wobject):
 
 @register_wgpu_render_function(Streamlines, _StreamlineBakedMaterial)
 def _register_streamline_baking_shaders(wobject):
-    """Register the streamline baking shaders.
+    """
+    Register the streamline baking shaders.
 
     Parameters
     ----------
@@ -1092,7 +1106,8 @@ def compute_tangents(points):
 
 @njit(cache=True)
 def parallel_transport_frames(tangents):
-    """Generate a continuous coordinate frame along a curve defined by tangents.
+    """
+    Generate a continuous coordinate frame along a curve defined by tangents.
 
     This is a continuous, non-twisting coordinate frame (normal, binormal)
     along a curve defined by tangents using parallel transport.
@@ -1162,7 +1177,8 @@ def parallel_transport_frames(tangents):
 
 @njit(cache=True)
 def generate_tube_geometry(points, number_of_sides, radius, end_caps):
-    """Generate vertices and triangles for a single tube.
+    """
+    Generate vertices and triangles for a single tube.
 
     This function is Core Numba-optimized function to generate vertices and triangles
     for a single tube.
@@ -1241,7 +1257,8 @@ def generate_tube_geometry(points, number_of_sides, radius, end_caps):
 def _estimate_streamtube_buffer_size(
     line_lengths, segments, end_caps, color_components
 ):
-    """Estimate total buffer usage for streamtube geometry.
+    """
+    Estimate total buffer usage for streamtube geometry.
 
     Parameters
     ----------
@@ -1308,7 +1325,8 @@ def _estimate_streamtube_buffer_size(
 def _split_streamtube_lines(
     lines, *, segments, end_caps, color_components, max_buffer_size
 ):
-    """Split lines into batches derived from total/available buffer ratio.
+    """
+    Split lines into batches derived from total/available buffer ratio.
 
     Parameters
     ----------
@@ -1381,7 +1399,8 @@ def _create_streamtube_baked(
     flat_shading=False,
     material="phong",
 ):
-    """Internal: Create streamtube geometry on the GPU using compute shaders.
+    """
+    Internal: Create streamtube geometry on the GPU using compute shaders.
 
     This function is used internally by streamtube() and should not be
     called directly by users.
@@ -1428,7 +1447,6 @@ def _create_streamtube_baked(
     Mesh
         A pygfx mesh containing GPU-generated streamtube geometry and material.
     """
-
     if material != "phong":
         raise ValueError("GPU streamtubes currently support material='phong' only.")
 
@@ -1680,7 +1698,8 @@ def _create_streamtube_baked(
 
 
 def _streamtube_geometry_task(points, segments, radius, end_caps):
-    """Generate tube geometry for a single line on the CPU backend.
+    """
+    Generate tube geometry for a single line on the CPU backend.
 
     Parameters
     ----------
@@ -1703,7 +1722,8 @@ def _streamtube_geometry_task(points, segments, radius, end_caps):
 
 
 def _slice_colors_for_lines(colors, start_idx, end_idx):
-    """Slice per-line color arrays to match a subset of lines.
+    """
+    Slice per-line color arrays to match a subset of lines.
 
     Parameters
     ----------
@@ -1729,7 +1749,8 @@ def _slice_colors_for_lines(colors, start_idx, end_idx):
 
 
 def _resolve_color_components_for_streamtube(colors, backend):
-    """Infer the color channel count used for streamtube buffers.
+    """
+    Infer the color channel count used for streamtube buffers.
 
     Parameters
     ----------
@@ -1781,7 +1802,8 @@ def _create_streamtube_cpu(
     material,
     enable_picking,
 ):
-    """Create a streamtube actor using CPU-based geometry generation.
+    """
+    Create a streamtube actor using CPU-based geometry generation.
 
     Parameters
     ----------
@@ -1894,7 +1916,8 @@ def _create_streamtube_actor(
     material,
     enable_picking,
 ):
-    """Create a single streamtube actor for the requested backend.
+    """
+    Create a single streamtube actor for the requested backend.
 
     Parameters
     ----------
@@ -2082,7 +2105,8 @@ def streamtube(
 
 @register_wgpu_render_function(Mesh, _StreamtubeBakedMaterial)
 def _register_streamtube_baking_shaders(wobject):
-    """Internal: Create compute and render shaders for GPU streamtubes.
+    """
+    Internal: Create compute and render shaders for GPU streamtubes.
 
     This function is called automatically by the render system and should not
     be invoked directly by users.

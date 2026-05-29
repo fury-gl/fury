@@ -16,7 +16,8 @@ import scipy  # type: ignore
 
 @contextmanager
 def captured_output():
-    """Capture stdout and stderr from print or logging.
+    """
+    Capture stdout and stderr from print or logging.
 
     This context manager temporarily replaces sys.stdout and sys.stderr
     to capture printed output and return it for testing.
@@ -47,7 +48,8 @@ def captured_output():
 
 
 def assert_operator(value1, value2, *, msg="", op=operator.eq):
-    """Check boolean statement using the given operator.
+    """
+    Check boolean statement using the given operator.
 
     Compares two values using the provided operator and raises
     an AssertionError if the comparison is false.
@@ -92,7 +94,8 @@ assert_equal = partial(assert_operator, op=operator.eq)
 
 
 def assert_arrays_equal(arrays1, arrays2):
-    """Check that all arrays in arrays1 equal the corresponding arrays in arrays2.
+    """
+    Check that all arrays in arrays1 equal the corresponding arrays in arrays2.
 
     Parameters
     ----------
@@ -111,7 +114,8 @@ def assert_arrays_equal(arrays1, arrays2):
 
 
 class EventCounter:
-    """Count and record UI events for testing.
+    """
+    Count and record UI events for testing.
 
     This class provides functionality to count event occurrences for UI testing
     and verification. It can record counts, save them to a file, and compare them
@@ -143,7 +147,8 @@ class EventCounter:
         self.events_counts = dict.fromkeys(events_names, 0)
 
     def count(self, i_ren, _obj, _element):
-        """Count events occurrences.
+        """
+        Count events occurrences.
 
         Parameters
         ----------
@@ -157,7 +162,8 @@ class EventCounter:
         self.events_counts[i_ren.event.name] += 1
 
     def monitor(self, ui_component):
-        """Add callbacks to monitor events on a UI component.
+        """
+        Add callbacks to monitor events on a UI component.
 
         Parameters
         ----------
@@ -169,7 +175,8 @@ class EventCounter:
                 ui_component.add_callback(obj_actor, event, self.count)
 
     def save(self, filename):
-        """Save event counts to a JSON file.
+        """
+        Save event counts to a JSON file.
 
         Parameters
         ----------
@@ -181,7 +188,8 @@ class EventCounter:
 
     @classmethod
     def load(cls, filename):
-        """Load event counts from a JSON file.
+        """
+        Load event counts from a JSON file.
 
         Parameters
         ----------
@@ -200,7 +208,8 @@ class EventCounter:
         return event_counter
 
     def check_counts(self, expected):
-        """Compare current event counts with expected counts.
+        """
+        Compare current event counts with expected counts.
 
         Parameters
         ----------
@@ -230,7 +239,8 @@ class EventCounter:
 
 
 class clear_and_catch_warnings(warnings.catch_warnings):
-    """Context manager that resets warning registry for catching warnings.
+    """
+    Context manager that resets warning registry for catching warnings.
 
     Warnings can be slippery, because whenever a warning is triggered, Python
     adds a ``__warningregistry__`` member to the *calling* module. This makes
@@ -279,7 +289,8 @@ class clear_and_catch_warnings(warnings.catch_warnings):
         super(clear_and_catch_warnings, self).__init__(record=record)
 
     def __enter__(self):
-        """Clear warning registry for given modules.
+        """
+        Clear warning registry for given modules.
 
         Returns
         -------
@@ -294,7 +305,8 @@ class clear_and_catch_warnings(warnings.catch_warnings):
         return super(clear_and_catch_warnings, self).__enter__()
 
     def __exit__(self, *exc_info):
-        """Restore warning registry to its previous state.
+        """
+        Restore warning registry to its previous state.
 
         Parameters
         ----------
@@ -310,7 +322,8 @@ class clear_and_catch_warnings(warnings.catch_warnings):
 
 
 def setup_test():
-    """Set numpy print options to "legacy" for new versions of numpy.
+    """
+    Set numpy print options to "legacy" for new versions of numpy.
 
     Configure numpy print options to maintain compatibility with older versions.
     If imported into a file, nosetest will run this before any doctests.
@@ -336,7 +349,8 @@ def setup_test():
 
 
 def check_for_warnings(warn_printed, w_msg):
-    """Check for specific warnings in the warning registry.
+    """
+    Check for specific warnings in the warning registry.
 
     Parameters
     ----------

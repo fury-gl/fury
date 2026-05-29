@@ -15,7 +15,8 @@ COMMIT_HASH = "$Format:%h$"
 
 
 def pkg_commit_hash(pkg_path: str | None = None) -> tuple[str, str]:
-    """Get short form of commit hash.
+    """
+    Get short form of commit hash.
 
     In this file is a variable called COMMIT_HASH. This contains a substitution
     pattern that may have been filled by the execution of ``git archive``.

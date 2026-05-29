@@ -16,6 +16,8 @@ select = [
   "W",
   "B",
   "I",
+  "D213", # Multi-line docstring summary should start at the second line (GL01)
+  "D209", # Multi-line docstring closing quotes should be on a separate line (GL02)
 ]
 ignore = [
   "C901",

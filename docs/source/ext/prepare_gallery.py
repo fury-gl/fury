@@ -124,7 +124,8 @@ def prepare_gallery(app=None):
 
 
 def setup(app):
-    """Install the plugin.
+    """
+    Install the plugin.
 
     Parameters
     ----------
