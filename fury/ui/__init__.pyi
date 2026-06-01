@@ -12,9 +12,9 @@ __all__ = [
     "TextButton2D",
     "LineSlider2D",
     #     "TextBox2D",
-    #     "LineDoubleSlider2D",
+    "LineDoubleSlider2D",
     "RingSlider2D",
-    #     "RangeSlider",
+    # "RangeSlider",
     #     "Checkbox",
     #     "Option",
     #     "RadioButton",
@@ -51,6 +51,7 @@ from .context import UIContext
 from .core import UI, Anchor, Disk2D, Rectangle2D, TextBlock2D
 from .elements import (
     Card2D,
+    LineDoubleSlider2D,
     LineSlider2D,
     PlaybackPanel,
     RingSlider2D,
