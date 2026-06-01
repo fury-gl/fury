@@ -4,18 +4,18 @@ UI Sliders
 ==========
 """
 
-from fury.ui import LineSlider2D, RingSlider2D
+from fury.ui import LineSlider2D, RingSlider2D, LineDoubleSlider2D, RangeSlider
 from fury.window import Scene, ShowManager
 
 scene = Scene()
 
 # Horizontal Line Slider
 line_slider_h = LineSlider2D(
-    position=(50, 200),
+    position=(100, 350),
     initial_value=70,
     min_value=0,
     max_value=100,
-    length=300,
+    length=400,
     orientation="horizontal",
     shape="disk",
     text_template="Horizontal: {value:.1f}",
@@ -23,11 +23,11 @@ line_slider_h = LineSlider2D(
 
 # Vertical Line Slider
 line_slider_v = LineSlider2D(
-    position=(500, 100),
+    position=(650, 200),
     initial_value=30,
     min_value=0,
     max_value=100,
-    length=300,
+    length=400,
     orientation="vertical",
     shape="square",
     text_template="Vertical: {value:.1f}",
@@ -35,7 +35,7 @@ line_slider_v = LineSlider2D(
 
 # Ring Slider
 ring_slider = RingSlider2D(
-    center=(200, 400),
+    center=(300, 550),
     initial_value=0,
     min_value=0,
     max_value=360,
@@ -48,6 +48,32 @@ ring_slider = RingSlider2D(
 scene.add(line_slider_h)
 scene.add(line_slider_v)
 scene.add(ring_slider)
+
+# Line Double Slider
+line_double_slider = LineDoubleSlider2D(
+    position=(100, 250),
+    initial_values=(20, 80),
+    min_value=0,
+    max_value=100,
+    length=400,
+    orientation="horizontal",
+    shape="square",
+    text_template="Double: {value:.1f}",
+)
+
+# Range Slider
+range_slider = RangeSlider(
+    range_slider_center=(100, 150),
+    value_slider_center=(100, 80),
+    length=400,
+    min_value=0,
+    max_value=100,
+    orientation="horizontal",
+    shape="disk",
+)
+
+scene.add(line_double_slider)
+scene.add(range_slider)
 
 current_size = (800, 700)
 show_manager = ShowManager(
