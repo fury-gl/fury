@@ -1216,6 +1216,10 @@ class LineDoubleSlider2D(UI):
         self.default_color = (1, 1, 1)
         self.active_color = (0, 0, 1)
 
+        if min_value >= max_value:
+            raise ValueError(
+                f"min_value ({min_value}) must be less than max_value ({max_value})."
+            )
         self._min_value = min_value
         self._max_value = max_value
         self.text_template = text_template
@@ -1230,11 +1234,9 @@ class LineDoubleSlider2D(UI):
         self.on_value_changed = lambda ui: None
         self.on_moving_slider = lambda ui: None
 
-        self._values = list(initial_values)
+        self._values = [np.clip(v, min_value, max_value) for v in initial_values]
         range_val = max_value - min_value
-        self._ratios = [
-            (v - min_value) / range_val if range_val != 0 else 0 for v in self._values
-        ]
+        self._ratios = [(v - min_value) / range_val for v in self._values]
 
         self.track = None
         self.handles = []
@@ -1509,6 +1511,10 @@ class LineDoubleSlider2D(UI):
         val : float
             The minimum value.
         """
+        if val >= self._max_value:
+            raise ValueError(
+                f"min_value ({val}) must be less than max_value ({self._max_value})."
+            )
         self._min_value = val
 
     @property
@@ -1533,6 +1539,10 @@ class LineDoubleSlider2D(UI):
         val : float
             The maximum value.
         """
+        if val <= self._min_value:
+            raise ValueError(
+                f"max_value ({val}) must be greater than min_value ({self._min_value})."
+            )
         self._max_value = val
 
     @property
@@ -1557,8 +1567,11 @@ class LineDoubleSlider2D(UI):
         val : float
             The new value.
         """
+        val = np.clip(val, self.min_value, self.max_value)
         self._values[0] = val
-        self._ratios[0] = (val - self.min_value) / (self.max_value - self.min_value)
+        range_val = self.max_value - self.min_value
+        self._ratios[0] = (val - self.min_value) / range_val if range_val != 0 else 0
+        self.on_moving_slider(self)
         self._update_actors_position()
 
     @property
@@ -1583,8 +1596,11 @@ class LineDoubleSlider2D(UI):
         val : float
             The new value.
         """
+        val = np.clip(val, self.min_value, self.max_value)
         self._values[1] = val
-        self._ratios[1] = (val - self.min_value) / (self.max_value - self.min_value)
+        range_val = self.max_value - self.min_value
+        self._ratios[1] = (val - self.min_value) / range_val if range_val != 0 else 0
+        self.on_moving_slider(self)
         self._update_actors_position()
 
 
@@ -1957,8 +1973,12 @@ class RangeSlider(UI):
         numpy.ndarray
             The width and height of the component.
         """
-        w = max(self.range_slider.size[0], self.value_slider.size[0])
-        h = max(self.range_slider.size[1], self.value_slider.size[1])
+        if self.orientation == "horizontal":
+            w = max(self.range_slider.size[0], self.value_slider.size[0])
+            h = self.range_slider.size[1] + self.value_slider.size[1]
+        else:
+            w = self.range_slider.size[0] + self.value_slider.size[0]
+            h = max(self.range_slider.size[1], self.value_slider.size[1])
         return np.array([w, h])
 
     def _update_actors_position(self):

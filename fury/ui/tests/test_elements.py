@@ -871,6 +871,376 @@ def test_ui_2d_ring_slider_hooks():
     assert changed == value_changed
 
 
+def test_line_double_slider_2d_initialization():
+    """Test property assignment and initial state for LineDoubleSlider2D."""
+    slider = ui.LineDoubleSlider2D(
+        initial_values=(20, 80),
+        min_value=0,
+        max_value=100,
+        length=200,
+        line_width=5,
+        outer_radius=12,
+        shape="disk",
+    )
+
+    npt.assert_equal(slider.left_disk_value, 20)
+    npt.assert_equal(slider.right_disk_value, 80)
+    npt.assert_equal(slider.min_value, 0)
+    npt.assert_equal(slider.max_value, 100)
+
+    assert isinstance(slider.track, ui.Rectangle2D)
+    assert len(slider.handles) == 2
+    assert isinstance(slider.handles[0], ui.Disk2D)
+    assert isinstance(slider.handles[1], ui.Disk2D)
+    assert len(slider.texts) == 2
+
+
+def test_line_double_slider_2d_square_handles():
+    """Test LineDoubleSlider2D with square handles."""
+    slider = ui.LineDoubleSlider2D(
+        shape="square",
+        handle_side=15,
+        min_value=0,
+        max_value=100,
+        initial_values=(30, 70),
+    )
+
+    assert isinstance(slider.handles[0], ui.Rectangle2D)
+    assert isinstance(slider.handles[1], ui.Rectangle2D)
+    npt.assert_equal(slider.handles[0].size, (15, 15))
+    npt.assert_equal(slider.handles[1].size, (15, 15))
+
+
+def test_line_double_slider_2d_invalid_shape():
+    """Test that an invalid shape raises ValueError."""
+    with npt.assert_raises(ValueError):
+        ui.LineDoubleSlider2D(shape="triangle")
+
+
+def test_line_double_slider_2d_programmatic_value_setting():
+    """Test setting left_disk_value and right_disk_value programmatically."""
+    slider = ui.LineDoubleSlider2D(min_value=0, max_value=100, initial_values=(0, 100))
+
+    slider.left_disk_value = 25
+    npt.assert_equal(slider.left_disk_value, 25)
+
+    slider.right_disk_value = 75
+    npt.assert_equal(slider.right_disk_value, 75)
+
+
+def test_line_double_slider_2d_ratio_sync():
+    """Test that ratios stay in sync with values."""
+    slider = ui.LineDoubleSlider2D(min_value=0, max_value=200, initial_values=(0, 200))
+
+    slider.left_disk_value = 100
+    npt.assert_almost_equal(slider._ratios[0], 0.5)
+
+    slider.right_disk_value = 150
+    npt.assert_almost_equal(slider._ratios[1], 0.75)
+
+
+def test_line_double_slider_2d_initial_order_swap():
+    """Test that initial_values with left > right respects the constraint."""
+    slider = ui.LineDoubleSlider2D(
+        min_value=0,
+        max_value=100,
+        initial_values=(70, 30),
+    )
+
+    npt.assert_equal(slider._values[0], 70)
+    npt.assert_equal(slider._values[1], 30)
+
+
+def test_line_double_slider_2d_layout_horizontal():
+    """Test size calculation for horizontal orientation."""
+    slider = ui.LineDoubleSlider2D(
+        orientation="horizontal",
+        length=300,
+        line_width=5,
+    )
+
+    size = slider._get_size()
+    npt.assert_equal(size[0], 300)
+    assert size[1] >= 5
+
+
+def test_line_double_slider_2d_layout_vertical():
+    """Test size calculation for vertical orientation."""
+    slider = ui.LineDoubleSlider2D(
+        orientation="vertical",
+        length=300,
+        line_width=5,
+    )
+
+    size = slider._get_size()
+    assert size[0] >= 5
+    npt.assert_equal(size[1], 300)
+
+
+def test_line_double_slider_2d_handle_positions_change():
+    """Verify that handle positions change when values are updated."""
+    slider = ui.LineDoubleSlider2D(
+        min_value=0,
+        max_value=100,
+        initial_values=(10, 90),
+        length=200,
+    )
+
+    slider.left_disk_value = 10
+    left_pos_initial = slider.handles[0].get_position().copy()
+
+    slider.left_disk_value = 50
+    left_pos_moved = slider.handles[0].get_position().copy()
+
+    assert not np.allclose(left_pos_initial, left_pos_moved)
+
+
+def test_line_double_slider_2d_text_formatting():
+    """Test the template system for text updates."""
+    slider = ui.LineDoubleSlider2D(
+        initial_values=(25, 75),
+        min_value=0,
+        max_value=100,
+        text_template="{value:.0f}",
+    )
+
+    text_left = slider.format_text(0)
+    text_right = slider.format_text(1)
+    assert text_left == "25"
+    assert text_right == "75"
+
+    slider.left_disk_value = 50
+    assert slider.format_text(0) == "50"
+
+
+def test_line_double_slider_2d_callable_text_template():
+    """Test callable text template for LineDoubleSlider2D."""
+
+    def custom(s, idx):
+        return f"H{idx}:{s._values[idx]:.0f}"
+
+    slider = ui.LineDoubleSlider2D(
+        initial_values=(10, 90),
+        text_template=custom,
+    )
+
+    assert slider.format_text(0) == "H0:10"
+    assert slider.format_text(1) == "H1:90"
+
+
+def test_line_double_slider_2d_hooks():
+    """Test that programmatic value updates trigger correct hooks."""
+    slider = ui.LineDoubleSlider2D(
+        min_value=0,
+        max_value=100,
+        initial_values=(0, 100),
+    )
+
+    on_change_count = 0
+    on_value_changed_count = 0
+    on_moving_count = 0
+
+    def on_change(s):
+        nonlocal on_change_count
+        on_change_count += 1
+
+    def on_value_changed(s):
+        nonlocal on_value_changed_count
+        on_value_changed_count += 1
+
+    def on_moving(s):
+        nonlocal on_moving_count
+        on_moving_count += 1
+
+    slider.on_change = on_change
+    slider.on_value_changed = on_value_changed
+    slider.on_moving_slider = on_moving
+
+    for i in range(0, 51):
+        slider.left_disk_value = i
+        slider.right_disk_value = 100 - i
+
+    assert slider.left_disk_value == 50
+    assert slider.right_disk_value == 50
+
+    assert on_moving_count == 102
+
+
+def test_line_double_slider_2d_min_max_properties():
+    """Test min_value and max_value getters and setters."""
+    slider = ui.LineDoubleSlider2D(min_value=10, max_value=50)
+
+    npt.assert_equal(slider.min_value, 10)
+    npt.assert_equal(slider.max_value, 50)
+
+    slider.min_value = 0
+    npt.assert_equal(slider.min_value, 0)
+
+    slider.max_value = 200
+    npt.assert_equal(slider.max_value, 200)
+
+
+def test_range_slider_initialization():
+    """Test RangeSlider default initialization."""
+    rs = ui.RangeSlider()
+
+    assert rs.range_slider is not None
+    assert rs.value_slider is not None
+
+    assert isinstance(rs.range_slider, ui.LineDoubleSlider2D)
+    assert isinstance(rs.value_slider, ui.LineSlider2D)
+
+    npt.assert_equal(rs.min_value, 0)
+    npt.assert_equal(rs.max_value, 100)
+
+
+def test_range_slider_custom_params():
+    """Test RangeSlider with custom parameters."""
+    rs = ui.RangeSlider(
+        min_value=10,
+        max_value=200,
+        length=400,
+        shape="square",
+        handle_side=15,
+        orientation="horizontal",
+    )
+
+    npt.assert_equal(rs.min_value, 10)
+    npt.assert_equal(rs.max_value, 200)
+    npt.assert_equal(rs.length, 400)
+    npt.assert_equal(rs.shape, "square")
+
+    expected_mid = (10 + 200) / 2
+    npt.assert_almost_equal(rs.value_slider.value, expected_mid)
+
+
+def test_range_slider_vertical():
+    """Test RangeSlider with vertical orientation."""
+    rs = ui.RangeSlider(orientation="vertical")
+
+    npt.assert_equal(rs.orientation, "vertical")
+
+
+def test_range_slider_subcomponent_structure():
+    """Test that the RangeSlider composes a LineDoubleSlider2D and LineSlider2D."""
+    rs = ui.RangeSlider(shape="disk")
+
+    assert len(rs.range_slider.handles) == 2
+
+    assert rs.value_slider.handle is not None
+
+
+def test_range_slider_range_slider_callback():
+    """Test that setting range slider values auto-updates value slider bounds."""
+    rs = ui.RangeSlider(min_value=0, max_value=100)
+
+    rs.range_slider.left_disk_value = 20
+    rs.range_slider.right_disk_value = 80
+
+    npt.assert_equal(rs.value_slider.min_value, 20)
+    npt.assert_equal(rs.value_slider.max_value, 80)
+
+
+def test_range_slider_value_clamping_after_range_change():
+    """Test that the value slider clamps its value after range change."""
+    rs = ui.RangeSlider(min_value=0, max_value=100)
+
+    rs.value_slider.value = 90
+
+    rs.range_slider.left_disk_value = 20
+    rs.range_slider.right_disk_value = 60
+
+    assert rs.value_slider.value <= 60
+
+
+def test_range_slider_size():
+    """Test RangeSlider size computation."""
+    rs = ui.RangeSlider(length=200)
+
+    size = rs._get_size()
+    assert size[0] > 0
+    assert size[1] > 0
+
+
+def test_range_slider_text_templates():
+    """Test that custom precision templates are applied."""
+    rs = ui.RangeSlider(
+        range_precision=2,
+        value_precision=3,
+    )
+
+    assert "{value:.2f}" == rs.range_slider_text_template
+    assert "{value:.3f}" == rs.value_slider_text_template
+
+
+def test_line_double_slider_2d_min_max_validation():
+    """Test that min/max setters raise ValueError on invalid values."""
+    slider = ui.LineDoubleSlider2D(min_value=0, max_value=100)
+
+    with npt.assert_raises(ValueError):
+        slider.min_value = 100
+
+    with npt.assert_raises(ValueError):
+        slider.min_value = 150
+
+    with npt.assert_raises(ValueError):
+        slider.max_value = 0
+
+    with npt.assert_raises(ValueError):
+        slider.max_value = -10
+
+
+def test_line_double_slider_2d_value_clamping():
+    """Test that disk value setters clamp to [min_value, max_value]."""
+    slider = ui.LineDoubleSlider2D(min_value=0, max_value=100, initial_values=(0, 100))
+
+    slider.left_disk_value = -50
+    npt.assert_equal(slider.left_disk_value, 0)
+
+    slider.left_disk_value = 200
+    npt.assert_equal(slider.left_disk_value, 100)
+
+    slider.right_disk_value = -50
+    npt.assert_equal(slider.right_disk_value, 0)
+
+    slider.right_disk_value = 200
+    npt.assert_equal(slider.right_disk_value, 100)
+
+
+def test_line_double_slider_2d_initial_values_clamping():
+    """Test that out-of-range initial_values are clamped."""
+    slider = ui.LineDoubleSlider2D(
+        min_value=10, max_value=90, initial_values=(-50, 200)
+    )
+
+    npt.assert_equal(slider.left_disk_value, 10)
+    npt.assert_equal(slider.right_disk_value, 90)
+    npt.assert_almost_equal(slider._ratios[0], 0.0)
+    npt.assert_almost_equal(slider._ratios[1], 1.0)
+
+
+def test_range_slider_size_horizontal():
+    """Test that horizontal RangeSlider adds heights of sub-sliders."""
+    rs = ui.RangeSlider(length=200, orientation="horizontal")
+
+    size = rs._get_size()
+    expected_h = rs.range_slider.size[1] + rs.value_slider.size[1]
+    expected_w = max(rs.range_slider.size[0], rs.value_slider.size[0])
+    npt.assert_equal(size[0], expected_w)
+    npt.assert_equal(size[1], expected_h)
+
+
+def test_range_slider_size_vertical():
+    """Test that vertical RangeSlider adds widths of sub-sliders."""
+    rs = ui.RangeSlider(length=200, orientation="vertical")
+
+    size = rs._get_size()
+    expected_w = rs.range_slider.size[0] + rs.value_slider.size[0]
+    expected_h = max(rs.range_slider.size[1], rs.value_slider.size[1])
+    npt.assert_equal(size[0], expected_w)
+    npt.assert_equal(size[1], expected_h)
+
+
 # def test_ui_range_slider(interactive=False):
 #     range_slider_test_horizontal = ui.RangeSlider(shape="square")
 #     range_slider_test_vertical = ui.RangeSlider(shape="square", orientation="vertical")  # noqa: E501
