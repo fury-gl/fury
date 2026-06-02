@@ -42,11 +42,11 @@ def test_textured_button_state_updates():
     button = ui.TexturedButton2D(states=states, size=(40, 40))
 
     button.update_visual_state()
-    initial_tex = button.child.material.map
+    initial_tex = button.child.actor.material.map
 
     button.is_hovered = True
     button.update_visual_state()
-    hover_tex = button.child.material.map
+    hover_tex = button.child.actor.material.map
 
     assert initial_tex != hover_tex
 
