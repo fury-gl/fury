@@ -1001,7 +1001,7 @@ class Panel2D(UI):
 #         i_ren.force_render()
 
 
-class ImageContainer2D(UI):
+class ImageContainer2D(Rectangle2D):
     """
     A 2D container to hold an image.
 
@@ -1040,9 +1040,8 @@ class ImageContainer2D(UI):
 
         """
         self._img_path = img_path
-        self._size = np.array(size, dtype=float)
 
-        super(ImageContainer2D, self).__init__(position=position)
+        super(ImageContainer2D, self).__init__(size=size, position=position)
 
         if isinstance(img_path, np.ndarray):
             self.img = img_path
@@ -1050,71 +1049,6 @@ class ImageContainer2D(UI):
             self.img = load_image(img_path)
 
         self.set_img(self.img)
-        self.resize(size)
-
-    def _setup(self):
-        """
-        Setup this UI Component.
-
-        Create the PyGfx mesh actor used internally.
-        """
-        from fury.actor.core import create_mesh
-        from fury.lib import plane_geometry
-        from fury.material import _create_mesh_material
-
-        geo = plane_geometry(width=1, height=1)
-        mat = _create_mesh_material(
-            material="basic", alpha_mode="auto", mode="auto", color=(1.0, 1.0, 1.0, 1.0)
-        )
-        self.actor = create_mesh(geometry=geo, material=mat)
-
-        self.handle_events(self.actor)
-
-    def _get_actors(self):
-        """
-        Return the actors that compose this UI component.
-
-        Returns
-        -------
-        list
-            List of actors composing this UI component.
-        """
-        return [self.actor]
-
-    def _get_size(self):
-        """
-        Return the current size of the image container.
-
-        Returns
-        -------
-        ndarray
-            The (width, height) of the image in pixels.
-        """
-        return self._size
-
-    def _update_actors_position(self):
-        """Update the position of the internal actor."""
-        center = self.get_position(x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
-        self.set_actor_position(self.actor, center, self.z_order)
-
-    def resize(self, size):
-        """
-        Resize the image.
-
-        Parameters
-        ----------
-        size : (float, float)
-            Image size (width, height) in pixels.
-        """
-        from fury.lib import plane_geometry
-
-        self._size = np.array(size, dtype=float)
-
-        if tuple(self._size) == (0, 0):
-            self._size = np.array([1, 1], dtype=float)
-
-        self.actor.geometry = plane_geometry(width=self._size[0], height=self._size[1])
-        self._update_actors_position()
 
     def scale(self, factor):
         """
@@ -1153,7 +1087,7 @@ class ImageContainer2D(UI):
         self.actor.material.map = Texture(img_float, dim=2)
         self.actor.material.needs_update = True
 
-        self.resize(self._size)
+        self.resize(self.size)
 
 
 # # class GridUI(UI):
