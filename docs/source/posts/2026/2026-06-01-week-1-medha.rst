@@ -1,0 +1,69 @@
+Week 1: Fixing Doc Build Warnings and Introducing RingSlider
+=============================================================
+
+.. post:: June 1, 2026
+   :author: Medha Bhardwaj
+   :tags: google
+   :category: gsoc
+
+The first week of the coding period has been a productive start. This week, I primarily worked on two contributions:
+
+- Fixing documentation build warnings across the FURY codebase.
+- Completing the migration of the ``RingSlider2D`` to the new PyGfx implementation.
+
+Both of these pull requests were successfully merged during the week.
+
+Overview
+--------
+
+This week, I worked on the following pull requests:
+
+- Fix documentation build warnings (`#1164 <https://github.com/fury-gl/fury/pull/1164>`_)
+- Port ``RingSlider2D`` to v2 architecture (`#1121 <https://github.com/fury-gl/fury/pull/1121>`_)
+
+Fixing Documentation Build Warnings
+------------------------------------
+
+I opened this pull request during the community bonding period and continued refining the changes and discussing them with maintainers during the first week of the coding period.
+
+While building the documentation locally using::
+
+   make -C . clean && make -C . html-no-examples
+
+I encountered dozens of warnings. Most of them originated from ``.rst`` files, while a few were related to attributes that were intended to be private but were not documented as such.
+
+I went through the warnings individually, updating documentation where necessary and removing outdated or redundant content. Since many of the warnings were repetitive, this was a good opportunity to become more familiar with the project's documentation structure and conventions. After review and discussion, the pull request was merged successfully.
+
+Working on RingSlider2D and PyGfx Migration
+--------------------------------------------
+
+I also continued work on ``RingSlider2D`` and its migration to the new PyGfx implementation.
+
+Most of the work this week involved fixing bugs, polishing the implementation, and ensuring that the slider behaved correctly. Through testing and feedback, I identified a number of smaller issues that needed to be addressed before the feature was ready to be merged.
+
+After making the necessary fixes and final refinements, the pull request was merged successfully.
+
+What I Learned
+--------------
+
+Beyond the code itself, this week helped me better understand some of the development practices followed within FURY.
+
+One thing that stood out was the importance of maintaining a clean repository history. Through reviews and discussions, I learned how presenting work in a smaller number of meaningful commits makes changes easier to review, understand, and track in the future. It is a simple practice, but one that has a significant impact on project maintenance in the long term.
+
+Overall, it was encouraging to start the coding period by gaining a deeper understanding of both the codebase and the contribution workflow.
+
+Next Week
+---------
+
+Next week, I plan to work on the following tasks:
+
+- Enable the version switcher on the FURY website.
+- Address review comments and complete the ``TextBox2D`` PyGfx implementation pull request.
+- Better understand the FURY documentation workflow.
+- Explore Sphinx Gallery and understand how it can be used to improve the documentation workflow.
+
+Connect with Me
+---------------
+
+- GitHub: `medha-14 <https://github.com/medha-14>`_
+- LinkedIn: `Medha Bhardwaj <https://www.linkedin.com/in/medhabhardwaj/>`_
