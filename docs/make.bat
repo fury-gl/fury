@@ -52,6 +52,14 @@ if "%1" == "html-no-examples" (
 	exit /B
 )
 
+if "%1" == "serve" (
+	:serve
+	echo Serving docs at http://localhost:8000 ...
+	python -m webbrowser http://localhost:8000
+	python -m http.server 8000 --directory "%BUILDDIR%\html"
+	exit /B
+)
+
 
 %SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS%
 goto end
