@@ -1460,8 +1460,38 @@ class ShowManager:
             "true",
             "1",
         ]:
-            self._draw_function()
-            self.snapshot(f"{self._title}.png")
+            frames = []
+            if self._callbacks:
+                max_frames = 300
+                env_max_frames = os.environ.get("FURY_OFFSCREEN_MAX_FRAMES")
+                if env_max_frames and env_max_frames.isdigit():
+                    max_frames = int(env_max_frames)
+
+                for _ in range(max_frames):
+                    if not self._callbacks:
+                        break
+
+                    for _name, cb_info in list(self._callbacks.items()):
+                        func, cb_time, repeat, args = cb_info
+                        func(*args)
+
+                    self._draw_function()
+                    arr = np.asarray(self.renderer.snapshot())
+                    frames.append(image_from_array(arr))
+
+            if frames:
+                gif_name = f"{self._title.replace(' ', '_')}.gif"
+                frames[0].save(
+                    gif_name,
+                    append_images=frames[1:],
+                    save_all=True,
+                    duration=30,
+                    loop=0,
+                )
+            else:
+                self._draw_function()
+                self.snapshot(f"{self._title}.png")
+
             self.window.close()
             return
 
