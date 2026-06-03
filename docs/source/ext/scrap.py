@@ -19,7 +19,7 @@ class ImageFileScraper:
         # Iterate through files, copy them to the SG output directory
         image_names = []
         image_path_iterator = block_vars["image_path_iterator"]
-        for path_orig in image_files:
+        for path_orig in sorted(image_files):
             # If we already know about this image and it hasn't been modified
             # since starting, then skip it
             mod_time = os.stat(path_orig).st_mtime
@@ -32,6 +32,10 @@ class ImageFileScraper:
                 continue
             # Else, we assume the image has just been modified and is displayed
             path_new = next(image_path_iterator)
+            orig_ext = os.path.splitext(path_orig)[1].lower()
+            new_ext = os.path.splitext(path_new)[1].lower()
+            if orig_ext != new_ext:
+                path_new = os.path.splitext(path_new)[0] + orig_ext
             self.embedded_images[path_orig] = mod_time
             image_names.append(path_new)
             shutil.copyfile(path_orig, path_new)
