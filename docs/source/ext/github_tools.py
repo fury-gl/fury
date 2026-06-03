@@ -112,10 +112,7 @@ def parse_link_header(headers):
     link_s = headers.get("link", "")
     urls = element_pat.findall(link_s)
     rels = rel_pat.findall(link_s)
-    d = {}
-    for rel, url in zip(rels, urls, strict=False):
-        d[rel] = url
-    return d
+    return dict(zip(rels, urls, strict=False))
 
 
 def get_json_from_url(url):
@@ -482,12 +479,21 @@ def get_all_versions(ignore="", project="fury-gl/fury"):
     l_version = [t["name"] for t in tags]
 
     if ignore.lower() in ["micro", "minor"]:
-        l_version = list({re.sub(r"(\d+)$", "x", v) for v in l_version})
+        l_version = {re.sub(r"(\d+)$", "x", v) for v in l_version}
 
     if ignore.lower() == "minor":
-        l_version = list({re.sub(r"\.(\d+)\.", ".x.", v) for v in l_version})
+        l_version = {re.sub(r"\.(\d+)\.", ".x.", v) for v in l_version}
 
-    return l_version
+    def sort_key(v):
+        # Strip non-standard suffixes (e.g. 'v0.7.1-zenodo' -> '0.7.1') before parsing
+        clean_v = v.replace("x", "0").lstrip("v").split("-")[0]
+        try:
+            return parse(clean_v)
+        except Exception:
+            print(f"Skipping unparsable version tag: {v}", file=sys.stderr)
+            return parse("0.0.0")
+
+    return sorted(l_version, key=sort_key, reverse=True)
 
 
 def version_compare(current_version, version_number, op="eq", all_versions=None):
@@ -524,8 +530,8 @@ def version_compare(current_version, version_number, op="eq", all_versions=None)
         all_versions = all_versions or get_all_versions()
         if not all_versions:
             return False
-        last_version = sorted(all_versions)[0]
-        last_version = p.search(last_version)
+
+        last_version = p.search(all_versions[0])
         if (
             parse(last_version.group()) == parse(ref.group())
             and "post" not in version_number
