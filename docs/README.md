@@ -45,3 +45,13 @@ To generate the documentation without running the examples:
 $ make clean
 $ make html-no-examples
 ```
+
+### Serve the Documentation Locally
+
+To view the generated documentation and test features like the version switcher (which require a local server to bypass CORS policies), run:
+
+```bash
+$ make serve
+```
+
+This will start an HTTP server at `http://localhost:8000` and open it in your default web browser. Press `Ctrl+C` to stop the server.

@@ -28,6 +28,11 @@ with updating pydata-theme, I had to change some styles because dark mode was in
   color: var(--colorPrimaryDark);
 }
 
+/* version-switcher button text must be white to show against the dark navbar background. */
+.version-switcher__button {
+  color: white !important;
+}
+
 /* For mobile version color handling */
 @media screen and (max-width: 960px) {
   .navbar-nav li a {

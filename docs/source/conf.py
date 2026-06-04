@@ -166,9 +166,8 @@ json_url = "https://fury.gl/latest/_static/versions_switcher.json"
 
 if "dev" in release:
     version_match = "latest"
-    # We want to keep the relative reference if we are in dev mode
-    # but we want the whole url if we are effectively in a released version
-    json_url = "/_static/versions_switcher.json"
+    # Use a relative path in dev; serve locally with `make serve` to avoid CORS issues.
+    json_url = "_static/versions_switcher.json"
 else:
     version_match = "v" + release
 # Theme options are theme-specific and customize the look and feel of a theme
@@ -178,12 +177,14 @@ else:
 # html_theme_options = {}
 
 # Log:3/3/24 ~ footer_items is deprecated, using new keys for footer.
+# Log:5/24/26 ~ added version-switcher to navbar_end; switcher reads json_url set above.
 html_theme_options = {
     "navigation_depth": 1,
     "navigation_with_keys": True,
     #   "logo_link": 'index.html',
     "navbar_start": ["custom-title.html"],
     "navbar_center": ["custom-navbar.html"],
+    "navbar_end": ["theme-switcher", "version-switcher", "navbar-icon-links"],
     "footer_start": ["custom-footer.html"],
     "footer_center": "",
     "footer_end": "",

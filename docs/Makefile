@@ -33,6 +33,11 @@ html-no-examples:
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
+serve:
+	@echo "Serving docs at http://localhost:8000 ..."
+	@python -m webbrowser http://localhost:8000 &
+	@python -m http.server 8000 --directory "$(BUILDDIR)/html"
+
 upload:
 	python upload_to_gh-pages.py
 
