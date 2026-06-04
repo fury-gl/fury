@@ -6,6 +6,7 @@ import numpy.testing as npt
 
 from fury import ui, window
 from fury.data import fetch_viz_icons, read_viz_icons
+from fury.lib import KeyboardEvent
 from fury.ui.helpers import Anchor
 
 
@@ -443,19 +444,19 @@ def test_textbox_keypress_add_character():
 
 
 def test_textbox_return_triggers_off_focus():
-    """Pressing Return should trigger off_focus callback."""
+    """Pressing Return should trigger on_blur callback."""
     tb = ui.TextBox2D(width=5, height=1, text="Start")
 
     called = {"off": False}
 
-    def off_cb(widget):
+    def off_cb(event):
         called["off"] = True
 
-    tb.off_focus = off_cb
+    tb.on_blur = off_cb
 
     tb.edit_mode()
-
-    tb.handle_character("Return", "")
+    mock_event = KeyboardEvent(type="key_down", key="Return", modifiers=[])
+    tb.key_press(mock_event)
 
     assert called["off"] is True
     assert tb._has_focus is False
@@ -504,7 +505,7 @@ def test_textbox_static_background():
 
     initial_bg_size = tb.text.background.size
 
-    expected_w = int(width * font_size * 0.5) + 10
+    expected_w = int(width * font_size * 0.5)
     expected_h = int(height * font_size * 1.5) + 10
     npt.assert_equal(initial_bg_size, (expected_w, expected_h))
 
@@ -515,6 +516,331 @@ def test_textbox_static_background():
     tb.set_message("")
     tb.render_text(show_caret=False)
     npt.assert_equal(tb.text.background.size, initial_bg_size)
+
+
+def test_textbox_shift_uppercase():
+    """Shift modifier should produce uppercase letters."""
+    tb = ui.TextBox2D(width=10, height=1, text="")
+    tb.edit_mode()
+
+    tb.handle_character("a", "a", ["Shift"])
+    tb.handle_character("b", "b", ["Shift"])
+
+    assert tb._message == "AB"
+
+
+def test_textbox_capslock_uppercase():
+    """CapsLock modifier should produce uppercase letters."""
+    tb = ui.TextBox2D(width=10, height=1, text="")
+    tb.edit_mode()
+
+    tb.handle_character("a", "a", ["CapsLock"])
+    tb.handle_character("b", "b", ["CapsLock"])
+
+    assert tb._message == "AB"
+
+
+def test_textbox_shift_and_capslock_lowercase():
+    """Shift + CapsLock together should produce lowercase letters."""
+    tb = ui.TextBox2D(width=10, height=1, text="")
+    tb.edit_mode()
+
+    tb.handle_character("a", "a", ["Shift", "CapsLock"])
+    tb.handle_character("b", "b", ["Shift", "CapsLock"])
+
+    assert tb._message == "ab"
+
+
+def test_textbox_shift_symbols():
+    """Shift should map number keys to their symbol equivalents."""
+    tb = ui.TextBox2D(width=20, height=1, text="")
+    tb.edit_mode()
+
+    tb.handle_character("1", "1", ["Shift"])
+    tb.handle_character("2", "2", ["Shift"])
+    tb.handle_character("9", "9", ["Shift"])
+    tb.handle_character("-", "-", ["Shift"])
+    tb.handle_character(";", ";", ["Shift"])
+
+    assert tb._message == "!@(_:"
+
+
+def test_textbox_shift_enter_newline():
+    """Shift+Enter should insert a newline instead of exiting."""
+    tb = ui.TextBox2D(width=10, height=3, text="")
+    tb.edit_mode()
+
+    tb.handle_character("a", "a")
+    result = tb.handle_character("Return", "", ["Shift"])
+
+    assert result is False
+    assert "\n" in tb._message
+    assert tb._has_focus is True
+
+
+def test_textbox_enter_exits_edit():
+    """Enter without Shift should exit edit mode."""
+    tb = ui.TextBox2D(width=10, height=1, text="")
+    tb.edit_mode()
+
+    called = {"off": False}
+    tb.on_blur = lambda event: called.update({"off": True})
+
+    mock_event = KeyboardEvent(type="key_down", key="Return", modifiers=[])
+    tb.key_press(mock_event)
+
+    assert tb._has_focus is False
+    assert called["off"] is True
+
+
+def test_textbox_width_set_text_newline_aware():
+    """width_set_text should respect existing newlines."""
+    tb = ui.TextBox2D(width=5, height=3, text="")
+
+    result = tb.width_set_text("ab\ncd")
+    assert result == "ab\ncd"
+
+    result = tb.width_set_text("abcdefgh")
+    assert result == "abcde\nfgh"
+
+
+def test_textbox_width_set_text_empty_lines():
+    """width_set_text should preserve empty lines."""
+    tb = ui.TextBox2D(width=5, height=3, text="")
+
+    result = tb.width_set_text("a\n\nb")
+    assert result == "a\n\nb"
+
+
+def test_textbox_render_text_overflow_clamp():
+    """render_text should clamp output to self._height lines."""
+    tb = ui.TextBox2D(width=5, height=2, text="")
+    tb.edit_mode()
+
+    for ch in "abcdefghijklmno":
+        tb.add_character(ch)
+    tb.render_text(show_caret=False)
+
+    line_count = tb.text.message.count("\n") + 1
+    assert line_count <= tb._height
+
+
+def test_textbox_render_text_placeholder():
+    """Empty textbox should show placeholder text."""
+    tb = ui.TextBox2D(width=20, height=1, text="")
+    tb.edit_mode()
+    tb._message = ""
+    tb.caret_pos = 0
+    tb.render_text(show_caret=False)
+
+    assert "Enter Text" in tb.text.message
+
+
+def test_textbox_edit_mode_clears_init():
+    """edit_mode should set init to False and enable focus."""
+    tb = ui.TextBox2D(width=10, height=1, text="Hello")
+
+    assert tb.init is True
+    tb.edit_mode()
+    assert tb.init is False
+    assert tb._has_focus is True
+    assert tb.caret_pos == len("Hello")
+
+
+def test_textbox_edit_mode_clears_default_text():
+    """edit_mode should clear 'Enter Text' default message."""
+    tb = ui.TextBox2D(width=10, height=1, text="Enter Text")
+    tb.edit_mode()
+
+    assert tb._message == ""
+    assert tb.caret_pos == 0
+
+
+def test_textbox_blur():
+    """blur_textbox should disable focus and trigger on_blur."""
+    tb = ui.TextBox2D(width=10, height=1, text="test")
+
+    called = {"off": False}
+    tb.on_blur = lambda event: called.update({"off": True})
+
+    tb.edit_mode()
+    assert tb._has_focus is True
+
+    tb.blur_textbox(None)
+    assert tb._has_focus is False
+    assert called["off"] is True
+
+
+def test_textbox_blur_when_not_focused():
+    """blur_textbox should be a no-op when not focused."""
+    tb = ui.TextBox2D(width=10, height=1, text="test")
+
+    called = {"off": False}
+    tb.off_focus = lambda widget: called.update({"off": True})
+
+    tb.blur_textbox()
+    assert called["off"] is False
+
+
+def test_textbox_move_up_down_multiline():
+    """Up/down keys should move caret by one row in multiline box."""
+    tb = ui.TextBox2D(width=5, height=3, text="")
+    tb.edit_mode()
+
+    for ch in "abcdefghij":
+        tb.add_character(ch)
+
+    tb.move_up()
+    assert tb.caret_pos == 5
+
+    tb.move_up()
+    assert tb.caret_pos == 0
+
+    tb.move_up()
+    assert tb.caret_pos == 0
+
+    tb.move_down()
+    assert tb.caret_pos == 5
+
+
+def test_textbox_move_up_down_singleline():
+    """Up/down in single-line box should go to start/end."""
+    tb = ui.TextBox2D(width=10, height=1, text="")
+    tb.edit_mode()
+
+    for ch in "hello":
+        tb.add_character(ch)
+
+    assert tb.caret_pos == 5
+
+    tb.move_up()
+    assert tb.caret_pos == 0
+
+    tb.move_down()
+    assert tb.caret_pos == 5
+
+
+def test_textbox_backspace():
+    """Backspace key should remove the character before the caret."""
+    tb = ui.TextBox2D(width=10, height=1, text="")
+    tb.edit_mode()
+
+    tb.handle_character("a", "a")
+    tb.handle_character("b", "b")
+    tb.handle_character("c", "c")
+
+    tb.handle_character("Backspace", "")
+
+    assert tb._message == "ab"
+
+
+def test_textbox_backspace_at_start():
+    """Backspace at position 0 should be a no-op."""
+    tb = ui.TextBox2D(width=10, height=1, text="")
+    tb.edit_mode()
+    tb._message = "abc"
+    tb.caret_pos = 0
+
+    tb.remove_character()
+    assert tb._message == "abc"
+    assert tb.caret_pos == 0
+
+
+def test_textbox_arrow_keys():
+    """Arrow keys should move the caret via handle_character."""
+    tb = ui.TextBox2D(width=10, height=1, text="")
+    tb.edit_mode()
+
+    for ch in "abcd":
+        tb.add_character(ch)
+
+    assert tb.caret_pos == 4
+
+    tb.handle_character("ArrowLeft", "")
+    assert tb.caret_pos == 3
+
+    tb.handle_character("ArrowRight", "")
+    assert tb.caret_pos == 4
+
+    tb.handle_character("left", "")
+    assert tb.caret_pos == 3
+
+    tb.handle_character("right", "")
+    assert tb.caret_pos == 4
+
+
+def test_textbox_space_character():
+    """The 'space' key should insert a space character."""
+    tb = ui.TextBox2D(width=10, height=1, text="")
+    tb.edit_mode()
+
+    tb.add_character("a")
+    tb.add_character("space")
+    tb.add_character("b")
+
+    assert tb._message == "a b"
+
+
+def test_textbox_showable_text_caret_marker():
+    """showable_text with caret should include '_' marker."""
+    tb = ui.TextBox2D(width=10, height=1, text="")
+    tb.set_message("abc")
+    tb.caret_pos = 1
+
+    text_with = tb.showable_text(show_caret=True)
+    text_without = tb.showable_text(show_caret=False)
+
+    assert "_" in text_with
+    assert "_" not in text_without
+
+
+def test_textbox_showable_text_window_slice():
+    """showable_text should only return the windowed portion."""
+    tb = ui.TextBox2D(width=3, height=1, text="")
+    tb.set_message("abcdef")
+
+    text = tb.showable_text(show_caret=False)
+    clean_text = text.replace("\x00", "")
+    assert len(clean_text) <= tb._width * tb._height
+
+
+def test_textbox_left_button_toggle():
+    """Clicking should toggle between edit and blur."""
+    tb = ui.TextBox2D(width=10, height=1, text="test")
+
+    called = {"off": False}
+    tb.on_blur = lambda event: called.update({"off": True})
+
+    tb.left_button_press(None)
+    assert tb._has_focus is True
+
+    tb.left_button_press(None)
+    assert tb._has_focus is False
+    assert called["off"] is True
+
+
+def test_textbox_multichar_key_ignored():
+    """Multi-character keys (like 'Shift') should not add text."""
+    tb = ui.TextBox2D(width=10, height=1, text="")
+    tb.edit_mode()
+
+    tb.add_character("Shift")
+    assert tb._message == ""
+
+    tb.add_character("Control")
+    assert tb._message == ""
+
+
+def test_textbox_handle_character_returns_false():
+    """handle_character should return False for non-exit keys."""
+    tb = ui.TextBox2D(width=10, height=1, text="")
+    tb.edit_mode()
+
+    result = tb.handle_character("a", "a")
+    assert result is False
+
+    result = tb.handle_character("Backspace", "")
+    assert result is False
 
 
 # def test_ui_textbox(recording=False):
@@ -2245,7 +2571,7 @@ def test_listbox_2d_visibility_and_scrollbar():
     values_many = [f"Item {i}" for i in range(50)]
 
     listbox_few = ui.ListBox2D(values=values_few, size=(100, 300))
-    npt.assert_equal(listbox_few.scroll_bar.height, 0)
+    npt.assert_equal(listbox_few.scroll_bar.height, 1)
     npt.assert_equal(listbox_few.scroll_bar.actors[0].visible, False)
 
     listbox_many = ui.ListBox2D(values=values_many, size=(100, 300))

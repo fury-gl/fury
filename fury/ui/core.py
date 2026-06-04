@@ -120,8 +120,6 @@ class UI(object, metaclass=abc.ABCMeta):
         self.on_key_release = lambda event: None
         self.on_hover = lambda event: None
         self.on_dishover = lambda event: None
-        self.on_pointer_enter = lambda event: None
-        self.on_pointer_leave = lambda event: None
         self.on_focus = lambda event: None
         self.on_blur = lambda event: None
         self.on_wheel = lambda event: None
@@ -571,7 +569,7 @@ class UI(object, metaclass=abc.ABCMeta):
             The PyGfx pointer event object.
         """
         UIContext.hot_ui = self
-        self.on_pointer_enter(event)
+        self.on_hover(event)
 
     def pointer_leave_callback(self, event):
         """
@@ -584,7 +582,7 @@ class UI(object, metaclass=abc.ABCMeta):
         """
         if UIContext.hot_ui is self:
             UIContext.hot_ui = None
-        self.on_pointer_leave(event)
+        self.on_dishover(event)
 
 
 class Rectangle2D(UI):
@@ -1039,7 +1037,9 @@ class TextBlock2D(UI):
 
     def _setup(self):
         """Set up this UI component."""
-        self.actor = Text(markdown=self._message, screen_space=True, anchor="top-left")
+        self.actor = Text(
+            markdown=self._message, screen_space=True, anchor="middle-center"
+        )
         self.background = Rectangle2D()
         self._children.append(self.background)
         self.handle_events(self.actor)
@@ -1050,7 +1050,7 @@ class TextBlock2D(UI):
         self.background.on_key_press = lambda event: self.on_key_press(event)
         self.background.on_key_release = lambda event: self.on_key_release(event)
 
-        def _bg_pointer_enter(event):
+        def _bg_hover(event):
             """
             Redirect hot_ui to this TextBlock2D on background hover.
 
@@ -1060,10 +1060,9 @@ class TextBlock2D(UI):
                 The PyGfx pointer event object.
             """
             UIContext.hot_ui = self
-            self.on_pointer_enter(event)
             self.on_hover(event)
 
-        def _bg_pointer_leave(event):
+        def _bg_dishover(event):
             """
             Clear hot_ui on background pointer-leave.
 
@@ -1074,13 +1073,10 @@ class TextBlock2D(UI):
             """
             if UIContext.hot_ui is self:
                 UIContext.hot_ui = None
-            self.on_pointer_leave(event)
             self.on_dishover(event)
 
-        self.background.on_pointer_enter = _bg_pointer_enter
-        self.background.on_pointer_leave = _bg_pointer_leave
-        self.background.on_hover = _bg_pointer_enter
-        self.background.on_dishover = _bg_pointer_leave
+        self.background.on_hover = _bg_hover
+        self.background.on_dishover = _bg_dishover
         self.background.on_wheel = lambda event: self.on_wheel(event)
 
     def resize(self, size):
@@ -1476,40 +1472,35 @@ class TextBlock2D(UI):
     def update_alignment(self):
         """Update the text actor alignment within the bounding box."""
         updated_text_position = [0, 0]
+        text_actor_size = self.get_text_actor_size()
+
         if self.justification.lower() == "left":
             self.actor.text_align = "left"
-            x_anchor = "left"
-            updated_text_position[0] = self.boundingbox[0]
+            updated_text_position[0] = self.boundingbox[0] + text_actor_size[0] // 2
         elif self.justification.lower() == "center":
             self.actor.text_align = "center"
-            x_anchor = "center"
             updated_text_position[0] = (
                 self.boundingbox[0] + (self.boundingbox[2] - self.boundingbox[0]) // 2
             )
         elif self.justification.lower() == "right":
             self.actor.text_align = "right"
-            x_anchor = "right"
-            updated_text_position[0] = self.boundingbox[2]
+            updated_text_position[0] = self.boundingbox[2] - text_actor_size[0] // 2
         else:
             msg = "Text can only be justified left, center and right."
             raise ValueError(msg)
 
         if self.vertical_justification.lower() == "top":
-            y_anchor = "top"
-            updated_text_position[1] = self.boundingbox[1]
+            updated_text_position[1] = self.boundingbox[1] + text_actor_size[1] // 2
         elif self.vertical_justification.lower() == "middle":
-            y_anchor = "middle"
             updated_text_position[1] = (
                 self.boundingbox[1] + (self.boundingbox[3] - self.boundingbox[1]) // 2
             )
         elif self.vertical_justification.lower() == "bottom":
-            y_anchor = "bottom"
-            updated_text_position[1] = self.boundingbox[3]
+            updated_text_position[1] = self.boundingbox[3] - text_actor_size[1] // 2
         else:
             msg = "Vertical justification must be: top, middle or bottom."
             raise ValueError(msg)
 
-        self.actor.anchor = f"{y_anchor}-{x_anchor}"
         self.set_actor_position(self.actor, updated_text_position, self.z_order)
 
     def update_bounding_box(self, *, size=None):

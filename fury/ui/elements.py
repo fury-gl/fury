@@ -25,23 +25,15 @@ __all__ = [
 
 
 from string import printable
-from threading import Timer
+import textwrap
 
-from string import printable
 from PIL import UnidentifiedImageError
 import numpy as np
 
 from fury.colormap import normalize_colors
 from fury.data import read_viz_icons
 from fury.io import get_extension, load_image, load_image_texture
-from fury.ui.context import UIContext
 from fury.ui.containers import ImageContainer2D, Panel2D
-from fury.lib import (
-    call_later,
-    plane_geometry,
-)
-from fury.material import _create_mesh_material
-from fury.ui.containers import Panel2D, ImageContainer2D
 from fury.ui.context import UIContext
 from fury.ui.core import (
     UI,
@@ -55,6 +47,10 @@ from fury.ui.core import (
 from fury.ui.helpers import clip_overflow
 
 TWO_PI = 2.0 * np.pi
+
+LOWERS = r"`1234567890-=[]\;',./"
+UPPERS = r'~!@#$%^&*()_+{}|:"<>?'
+SHIFT_TRANS = str.maketrans(LOWERS, UPPERS)
 
 
 class TexturedButton2D(Button2D):
@@ -930,15 +926,8 @@ class TextBox2D(UI):
         self.init = True
         self._has_focus = False
 
-        self._repeat_timer = None
-        self._repeat_key = None
-        self._repeat_key_char = None
-        self._repeat_modifiers = []
-
         self._shift_pressed = False
         self._caps_lock_on = False
-
-        self.off_focus = lambda ui: None
 
         super(TextBox2D, self).__init__(
             position=position,
@@ -957,8 +946,8 @@ class TextBox2D(UI):
         bold_factor = 1.25 if self._bold else 1.0
         italic_factor = 1.1 if self._italic else 1.0
 
-        bg_width = (
-            int(self._width * self._font_size * 0.5 * bold_factor * italic_factor) + 10
+        bg_width = int(
+            self._width * self._font_size * 0.5 * bold_factor * italic_factor
         )
         bg_height = int(self._height * self._font_size * 1.5) + 10
 
@@ -1066,8 +1055,17 @@ class TextBox2D(UI):
             if not line:
                 formatted_lines.append("")
                 continue
-            for i in range(0, len(line), self._width):
-                formatted_lines.append(line[i : i + self._width])
+            wrapped = textwrap.wrap(
+                line,
+                width=self._width,
+                drop_whitespace=False,
+                replace_whitespace=False,
+                break_long_words=True,
+            )
+            if not wrapped:
+                formatted_lines.append("")
+            else:
+                formatted_lines.extend(wrapped)
         return "\n".join(formatted_lines)
 
     def handle_character(self, key, key_char, modifiers=None):
@@ -1100,7 +1098,7 @@ class TextBox2D(UI):
                 self.render_text(show_caret=False)
                 self._has_focus = False
                 UIContext.active_ui = None
-                self.off_focus(self)
+                self.on_blur(None)
                 return True
 
         if key_char != "":
@@ -1108,31 +1106,7 @@ class TextBox2D(UI):
             is_caps = "CapsLock" in modifiers
 
             if is_shift:
-                shift_map = {
-                    "`": "~",
-                    "1": "!",
-                    "2": "@",
-                    "3": "#",
-                    "4": "$",
-                    "5": "%",
-                    "6": "^",
-                    "7": "&",
-                    "8": "*",
-                    "9": "(",
-                    "0": ")",
-                    "-": "_",
-                    "=": "+",
-                    "[": "{",
-                    "]": "}",
-                    "\\": "|",
-                    ";": ":",
-                    "'": '"',
-                    ",": "<",
-                    ".": ">",
-                    "/": "?",
-                }
-                if key_char in shift_map:
-                    key_char = shift_map[key_char]
+                key_char = key_char.translate(SHIFT_TRANS)
 
             if key_char.isalpha() and len(key_char) == 1:
                 if is_shift != is_caps:
@@ -1286,13 +1260,13 @@ class TextBox2D(UI):
         str
             The visible portion of the text.
         """
-        if show_caret:
-            ret_text = (
-                self._message[: self.caret_pos] + "_" + self._message[self.caret_pos :]
-            )
-        else:
-            ret_text = self._message
-        ret_text = ret_text[self.window_left : self.window_right + 1]
+        ret_text = self._message[self.window_left : self.window_right + 1]
+
+        rel_caret = self.caret_pos - self.window_left
+        if 0 <= rel_caret <= len(ret_text):
+            marker = "\x00_" if show_caret else "\x00"
+            ret_text = ret_text[:rel_caret] + marker + ret_text[rel_caret:]
+
         return ret_text
 
     def render_text(self, *, show_caret=True):
@@ -1305,9 +1279,31 @@ class TextBox2D(UI):
             Whether or not to show the caret.
         """
         text = self.showable_text(show_caret)
-        if text == "":
-            text = "Enter Text"
-        self.text.message = self.width_set_text(text)
+        if text == "" or text == "\x00":
+            text = "\x00Enter Text"
+
+        formatted = self.width_set_text(text)
+
+        lines = formatted.split("\n")
+        if len(lines) > self._height:
+            caret_line = 0
+            for i, line in enumerate(lines):
+                if "\x00" in line:
+                    caret_line = i
+                    break
+
+            start_line = max(0, caret_line - self._height + 1)
+            end_line = start_line + self._height
+            if end_line > len(lines):
+                end_line = len(lines)
+                start_line = max(0, end_line - self._height)
+
+            lines = lines[start_line:end_line]
+            formatted = "\n".join(lines)
+
+        formatted = formatted.replace("\x00", "")
+        self.text.message = formatted
+        self.text.update_alignment()
 
     def edit_mode(self):
         """Turn on edit mode."""
@@ -1332,7 +1328,7 @@ class TextBox2D(UI):
         if self._has_focus:
             self._has_focus = False
             self.render_text(show_caret=False)
-            self.off_focus(self)
+            self.on_blur(event)
 
     def left_button_press(self, event):
         """
@@ -1349,51 +1345,9 @@ class TextBox2D(UI):
         else:
             self.edit_mode()
 
-    def _cancel_repeat(self):
-        """Cancel any active key repeat timer."""
-        if self._repeat_timer is not None:
-            self._repeat_timer.cancel()
-            self._repeat_timer = None
-        self._repeat_key = None
-        self._repeat_key_char = None
-        self._repeat_modifiers = []
-
-    def _do_repeat(self):
-        """Execute one repeat of the held key and schedule the next."""
-        if self._repeat_key is None:
-            return
-        call_later(0, self._do_repeat_main_thread)
-
-    def _do_repeat_main_thread(self):
-        """
-        Handle the repeated key action on the main thread.
-
-        PyGfx objects must only be modified from the main
-        thread, so the Timer thread delegates here via
-        ``call_later``.
-        """
-        if self._repeat_key is None:
-            return
-        key = self._repeat_key
-        key_char = self._repeat_key_char
-        modifiers = getattr(self, "_repeat_modifiers", [])
-        is_done = self.handle_character(key, key_char, modifiers)
-        if is_done:
-            self._cancel_repeat()
-            self._has_focus = False
-            self.off_focus(self)
-            return
-        self._repeat_timer = Timer(0.05, self._do_repeat)
-        self._repeat_timer.daemon = True
-        self._repeat_timer.start()
-
     def key_press(self, event):
         """
         Handle Key press for textbox.
-
-        Processes the key action immediately and starts a repeat timer
-        so holding a key repeats the action (the rendercanvas Qt backend
-        filters auto-repeat at the OS level).
 
         Parameters
         ----------
@@ -1414,26 +1368,17 @@ class TextBox2D(UI):
         if self._caps_lock_on and "CapsLock" not in modifiers:
             modifiers.append("CapsLock")
 
-        self._cancel_repeat()
-
         is_done = self.handle_character(key, key_char, modifiers)
         if is_done:
             self._has_focus = False
-            self.off_focus(self)
+            UIContext.active_ui = None
+            self.render_text(show_caret=False)
+            self.on_blur(event)
             return
-
-        self._repeat_key = key
-        self._repeat_key_char = key_char
-        self._repeat_modifiers = modifiers
-        self._repeat_timer = Timer(0.5, self._do_repeat)
-        self._repeat_timer.daemon = True
-        self._repeat_timer.start()
 
     def key_release(self, event):
         """
         Handle Key release for textbox.
-
-        Cancels the key repeat timer when the key is released.
 
         Parameters
         ----------
@@ -1443,9 +1388,6 @@ class TextBox2D(UI):
         key = getattr(event, "key", None)
         if key == "Shift":
             self._shift_pressed = False
-
-        if key == self._repeat_key:
-            self._cancel_repeat()
 
     def wheel_scroll(self, event):
         """
@@ -1461,7 +1403,6 @@ class TextBox2D(UI):
         elif event.dy < 0:
             self.move_up()
         self.render_text()
-
 
 
 class LineDoubleSlider2D(UI):

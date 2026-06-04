@@ -6,7 +6,6 @@ windows using PyGfx. It includes classes and functions for handling
 scenes, cameras, controllers, and rendering multiple screens.
 """
 
-import asyncio
 from dataclasses import dataclass
 from functools import reduce
 import logging
@@ -716,7 +715,9 @@ class ShowManager:
             EventType.POINTER_MOVE,
         )
         self.renderer.add_event_handler(
-            self._global_key_handler, EventType.KEY_DOWN, EventType.KEY_UP
+            self._handle_key_event,
+            EventType.KEY_DOWN,
+            EventType.KEY_UP,
         )
 
         self._total_screens = 0
@@ -767,7 +768,7 @@ class ShowManager:
 
     def _register_drag(self, event):
         """
-        Register drag events for pointer interactions.
+        Handle global pointer events (drag) at the renderer level.
 
         Parameters
         ----------
@@ -786,24 +787,49 @@ class ShowManager:
         elif event.type == EventType.POINTER_MOVE and self._is_dragging:
             self._handle_drag(event)
 
-    def _global_key_handler(self, event):
+    def _handle_key_event(self, event):
         """
-        Forward global key events to the active UI element.
-
-        This renderer-level handler ensures that key events reach the
-        currently focused UI component (e.g. an active TextBox2D)
-        regardless of pointer position.
+        Handle global keyboard events at the renderer level.
 
         Parameters
         ----------
         event : KeyboardEvent
             The PyGfx keyboard event object.
         """
-        if UIContext.active_ui:
-            if event.type == EventType.KEY_DOWN:
-                UIContext.active_ui.on_key_press(event)
-            elif event.type == EventType.KEY_UP:
-                UIContext.active_ui.on_key_release(event)
+        if not UIContext.active_ui:
+            return
+
+        if event.type == EventType.KEY_DOWN:
+            UIContext.active_ui.on_key_press(event)
+
+            self._repeat_key_event = event
+            call_later(0.6, self._do_key_repeat, event)
+
+        elif event.type == EventType.KEY_UP:
+            UIContext.active_ui.on_key_release(event)
+            repeat_event = getattr(self, "_repeat_key_event", None)
+            if repeat_event and repeat_event.key == event.key:
+                self._repeat_key_event = None
+
+    def _do_key_repeat(self, target_event):
+        """
+        Timer callback to repeatedly dispatch a held key.
+
+        Parameters
+        ----------
+        target_event : Event
+            The specific key down event that triggered this repeating timer.
+        """
+        if getattr(self, "_repeat_key_event", None) is not target_event:
+            return
+
+        if not UIContext.active_ui:
+            self._repeat_key_event = None
+            return
+
+        UIContext.active_ui.on_key_press(target_event)
+
+        call_later(0.05, self._do_key_repeat, target_event)
 
     def _screen_setup(self, scene, camera, controller, camera_light):
         """
@@ -937,42 +963,6 @@ class ShowManager:
         )
         reposition_ui(self.screens)
         self.render()
-
-    async def _handle_key_long_press(self, event):
-        """
-        Handle long press events for key inputs.
-
-        Parameters
-        ----------
-        event : KeyEvent
-            The PyGfx key event object.
-        """
-        if self._key_long_press is not None:
-            await asyncio.sleep(0.05)
-            self.renderer.dispatch_event(event)
-
-    def _set_key_long_press_event(self, event):
-        """
-        Handle long press events for key inputs.
-
-        Parameters
-        ----------
-        event : KeyEvent
-            The PyGfx key event object.
-        """
-        if event.type == EventType.KEY_DOWN:
-            if self._key_long_press is not None:
-                return
-            try:
-                loop = asyncio.get_running_loop()
-                self._key_long_press = loop.create_task(
-                    self._handle_key_long_press(event)
-                )
-            except RuntimeError:
-                pass
-        elif self._key_long_press is not None:
-            self._key_long_press.cancel()
-            self._key_long_press = None
 
     def _on_repeat_callback(self, func, time, name, *args):
         """

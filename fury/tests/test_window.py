@@ -776,7 +776,7 @@ def test_show_manager_toggle_screen_controllers():
 
 
 def test_show_manager_register_drag():
-    """Test registering drag events."""
+    """Test pointer event handling for drag interactions."""
     show_m = ShowManager(window_type="offscreen")
 
     event_down = PointerEvent(x=0, y=0, type=EventType.POINTER_DOWN, target="target1")
