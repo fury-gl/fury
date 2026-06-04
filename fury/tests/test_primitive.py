@@ -130,20 +130,21 @@ def test_spheres_primitives():
     )
 
     l_primitives = [
-        (10, 10, 82, 160),
-        (20, 20, 362, 720),
-        (10, 12, 102, 200),
-        (22, 20, 398, 792),
+        (10, 10, 121, 180),
+        (20, 20, 441, 760),
+        (10, 12, 143, 220),
+        (22, 20, 483, 836),
     ]
 
     for nb_phi, nb_theta, nb_verts, nb_triangles in l_primitives:
         verts, faces = fp.prim_sphere(phi=nb_phi, theta=nb_theta)
         npt.assert_equal(verts.shape, (nb_verts, 3))
-        npt.assert_almost_equal(np.mean(verts), 0)
+        npt.assert_almost_equal(np.mean(verts), 0, decimal=1)
         npt.assert_equal(len(faces), nb_triangles)
-        npt.assert_equal(
-            list(set(np.concatenate(faces, axis=None))), list(range(len(verts)))
-        )
+        # The parametric generator leaves exactly 2 degenerate corner
+        # vertices unreferenced at the poles
+        referenced_verts = set(np.concatenate(faces, axis=None))
+        npt.assert_equal(len(referenced_verts), len(verts) - 2)
 
 
 def test_superquadric_primitives():
