@@ -26,14 +26,9 @@ __all__ = [
 
 import numpy as np
 
-from fury.actor import create_mesh
 from fury.data import read_viz_icons
 from fury.io import load_image_texture
-from fury.lib import (
-    plane_geometry,
-)
-from fury.material import _create_mesh_material
-from fury.ui.containers import Panel2D
+from fury.ui.containers import ImageContainer2D, Panel2D
 from fury.ui.core import (
     UI,
     Anchor,
@@ -89,10 +84,9 @@ class TexturedButton2D(Button2D):
 
     def _setup(self):
         """Set up the internal mesh actor."""
-        geo = plane_geometry(width=1, height=1)
-        mat = _create_mesh_material(material="basic")
-        self.child = create_mesh(geometry=geo, material=mat)
-        self.handle_events(self.child)
+        dummy_img = np.zeros((1, 1, 4), dtype=np.uint8)
+        self.child = ImageContainer2D(img_path=dummy_img, size=self._dims)
+        self.handle_events(self.child.actor)
 
     def update_visual_state(self):
         """Update the mesh texture based on the current button state."""
@@ -103,13 +97,12 @@ class TexturedButton2D(Button2D):
         if key:
             tex = self.texture_map[key]
 
-            self.child.material = _create_mesh_material(
-                material="basic", texture=tex, mode="auto"
-            )
-            self.child.material.color = np.array([1.0, 1.0, 1.0, 1.0])
+            self.child.actor.material.map = tex
+            self.child.actor.material.needs_update = True
+            self.child.color = (1.0, 1.0, 1.0)
         else:
             tint = 0.5 if self.is_pressed else (0.8 if self.is_hovered else 1.0)
-            self.child.material.color = np.array([tint, tint, tint, 1.0])
+            self.child.color = (tint, tint, tint)
 
 
 class TextButton2D(Button2D):

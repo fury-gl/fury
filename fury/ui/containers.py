@@ -4,6 +4,8 @@ import logging
 
 import numpy as np
 
+from fury.io import load_image
+from fury.lib import Texture
 from fury.ui.core import UI, Anchor, Rectangle2D
 
 
@@ -999,159 +1001,93 @@ class Panel2D(UI):
 #         i_ren.force_render()
 
 
-# # class ImageContainer2D(UI):
-# #     """A 2D container to hold an image.
+class ImageContainer2D(Rectangle2D):
+    """
+    A 2D container to hold an image.
 
-# #     Currently Supports:
-# #     - png and jpg/jpeg images
+    Currently Supports:
+    - png and jpg/jpeg images
 
-# #     Attributes
-# #     ----------
-# #     size: (float, float)
-# #         Image size (width, height) in pixels.
-# #     img : ImageData
-# #         The image loaded from the specified path.
+    Parameters
+    ----------
+    img_path : str
+        URL or local path of the image.
+    position : (float, float), optional
+        Absolute coordinates (x, y) of the lower-left corner of the image.
+    size : (int, int), optional
+        Width and height in pixels of the image.
 
-# #     """
+    Attributes
+    ----------
+    size : (float, float)
+        Image size (width, height) in pixels.
+    img : ndarray
+        The image loaded from the specified path as a NumPy array.
+    """
 
-# #     @warn_on_args_to_kwargs()
-# #     def __init__(self, img_path, *, position=(0, 0), size=(100, 100)):
-# #         """Init class instance.
+    def __init__(self, img_path, *, position=(0, 0), size=(100, 100)):
+        """
+        Init class instance.
 
-# #         Parameters
-# #         ----------
-# #         img_path : string
-# #             URL or local path of the image
-# #         position : (float, float), optional
-# #             Absolute coordinates (x, y) of the lower-left corner of the image.
-# #         size : (int, int), optional
-# #             Width and height in pixels of the image.
+        Parameters
+        ----------
+        img_path : str or ndarray
+            URL, local path of the image, or a NumPy array containing image data.
+        position : (float, float), optional
+            Absolute coordinates (x, y) of the lower-left corner of the image.
+        size : (int, int), optional
+            Width and height in pixels of the image.
 
-# #         """
-# #         super(ImageContainer2D, self).__init__(position=position)
-# #         self.img = load_image(img_path, as_vtktype=True)
-# #         self.set_img(self.img)
-# #         self.resize(size)
+        """
+        self._img_path = img_path
 
-# #     def _get_size(self):
-# #         lower_left_corner = self.texture_points.GetPoint(0)
-# #         upper_right_corner = self.texture_points.GetPoint(2)
-# #         size = np.array(upper_right_corner) - np.array(lower_left_corner)
-# #         return abs(size[:2])
+        super(ImageContainer2D, self).__init__(size=size, position=position)
 
-# #     def _setup(self):
-# #         """Setup this UI Component.
+        if isinstance(img_path, np.ndarray):
+            self.img = img_path
+        else:
+            self.img = load_image(img_path)
 
-# #         Return an image as a 2D actor with a specific position.
+        self.set_img(self.img)
 
-# #         Returns
-# #         -------
-# #         :class:`vtkTexturedActor2D`
+    def scale(self, factor):
+        """
+        Scale the image.
 
-# #         """
-# #         self.texture_polydata = PolyData()
-# #         self.texture_points = Points()
-# #         self.texture_points.SetNumberOfPoints(4)
+        Parameters
+        ----------
+        factor : (float, float)
+            Scaling factor (width, height) in pixels.
+        """
+        self.resize(self.size * factor)
 
-# #         polys = CellArray()
-# #         polys.InsertNextCell(4)
-# #         polys.InsertCellPoint(0)
-# #         polys.InsertCellPoint(1)
-# #         polys.InsertCellPoint(2)
-# #         polys.InsertCellPoint(3)
-# #         self.texture_polydata.SetPolys(polys)
+    def set_img(self, img):
+        """
+        Modify the image displayed by this container.
 
-# #         tc = FloatArray()
-# #         tc.SetNumberOfComponents(2)
-# #         tc.SetNumberOfTuples(4)
-# #         tc.InsertComponent(0, 0, 0.0)
-# #         tc.InsertComponent(0, 1, 0.0)
-# #         tc.InsertComponent(1, 0, 1.0)
-# #         tc.InsertComponent(1, 1, 0.0)
-# #         tc.InsertComponent(2, 0, 1.0)
-# #         tc.InsertComponent(2, 1, 1.0)
-# #         tc.InsertComponent(3, 0, 0.0)
-# #         tc.InsertComponent(3, 1, 1.0)
-# #         self.texture_polydata.GetPointData().SetTCoords(tc)
+        Parameters
+        ----------
+        img : ndarray
+            Image data as a NumPy array. Supports grayscale (H, W),
+            RGB (H, W, 3), and RGBA (H, W, 4) formats.
+        """
+        self.img = img
 
-# #         texture_mapper = PolyDataMapper2D()
-# #         texture_mapper = set_input(texture_mapper, self.texture_polydata)
+        img_float = img.astype(np.float32)
 
-# #         image = TexturedActor2D()
-# #         image.SetMapper(texture_mapper)
+        if img_float.max() > 1.0:
+            img_float = img_float / 255.0
 
-# #         self.texture = Texture()
-# #         image.SetTexture(self.texture)
+        if img_float.ndim == 3 and img_float.shape[2] == 1:
+            img_float = img_float[:, :, 0]
+        elif img_float.ndim == 3 and img_float.shape[2] == 3:
+            alpha = np.ones((*img_float.shape[:2], 1), dtype=np.float32)
+            img_float = np.concatenate([img_float, alpha], axis=-1)
 
-# #         image_property = Property2D()
-# #         image_property.SetOpacity(1.0)
-# #         image.SetProperty(image_property)
-# #         self.actor = image
+        self.actor.material.map = Texture(img_float, dim=2)
+        self.actor.material.needs_update = True
 
-# #         # Add default events listener to the VTK actor.
-# #         self.handle_events(self.actor)
-
-# #     def _get_actors(self):
-# #         """Return the actors that compose this UI component."""
-# #         return [self.actor]
-
-# #     def _add_to_scene(self, scene):
-# #         """Add all subcomponents or VTK props that compose this UI component.
-
-# #         Parameters
-# #         ----------
-# #         scene : scene
-
-# #         """
-# #         scene.add(self.actor)
-
-# #     def resize(self, size):
-# #         """Resize the image.
-
-# #         Parameters
-# #         ----------
-# #         size : (float, float)
-# #             image size (width, height) in pixels.
-
-# #         """
-# #         # Update actor.
-# #         self.texture_points.SetPoint(0, 0, 0, 0.0)
-# #         self.texture_points.SetPoint(1, size[0], 0, 0.0)
-# #         self.texture_points.SetPoint(2, size[0], size[1], 0.0)
-# #         self.texture_points.SetPoint(3, 0, size[1], 0.0)
-# #         self.texture_polydata.SetPoints(self.texture_points)
-
-# #     def _set_position(self, coords):
-# #         """Set the lower-left corner position of this UI component.
-
-# #         Parameters
-# #         ----------
-# #         coords: (float, float)
-# #             Absolute pixel coordinates (x, y).
-
-# #         """
-# #         self.actor.SetPosition(*coords)
-
-# #     def scale(self, factor):
-# #         """Scale the image.
-
-# #         Parameters
-# #         ----------
-# #         factor : (float, float)
-# #             Scaling factor (width, height) in pixels.
-
-# #         """
-# #         self.resize(self.size * factor)
-
-# #     def set_img(self, img):
-# #         """Modify the image used by the vtkTexturedActor2D.
-
-# #         Parameters
-# #         ----------
-# #         img : imageData
-
-# #         """
-# #         self.texture = set_input(self.texture, img)
+        self.resize(self.size)
 
 
 # # class GridUI(UI):

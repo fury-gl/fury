@@ -581,7 +581,7 @@ class Rectangle2D(UI):
         Create the plane actor used internally.
         """
         geo = plane_geometry(width=1, height=1)
-        mat = _create_mesh_material(material="basic", alpha_mode="auto")
+        mat = _create_mesh_material(material="basic", alpha_mode="auto", mode="auto")
         self.actor = create_mesh(geometry=geo, material=mat)
 
         self.handle_events(self.actor)
