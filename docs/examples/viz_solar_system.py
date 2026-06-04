@@ -28,63 +28,63 @@ scene = window.Scene()
 planets_data = [
     {
         "filename": "8k_mercury.jpg",
-        "position": 7,
+        "position": 8,
         "earth_days": 58.0,
-        "scale": (0.4, 0.4, 0.4),
+        "scale": (0.3, 0.3, 0.3),
     },
     {
         "filename": "8k_venus_surface.jpg",
-        "position": 9,
+        "position": 10,
         "earth_days": 243.0,
-        "scale": (0.6, 0.6, 0.6),
+        "scale": (0.76, 0.76, 0.76),
     },
     {
         "filename": "1_earth_8k.jpg",
-        "position": 11,
+        "position": 12,
         "earth_days": 1.0,
-        "scale": (0.4, 0.4, 0.4),
-    },
-    {
-        "filename": "8k_mars.jpg",
-        "position": 13,
-        "earth_days": 1.03,
         "scale": (0.8, 0.8, 0.8),
     },
     {
+        "filename": "8k_mars.jpg",
+        "position": 14,
+        "earth_days": 1.03,
+        "scale": (0.42, 0.42, 0.42),
+    },
+    {
         "filename": "jupiter.jpg",
-        "position": 16,
+        "position": 20,
         "earth_days": 0.41,
-        "scale": (2.0, 2.0, 2.0),
+        "scale": (2.5, 2.5, 2.5),
     },
     {
         "filename": "8k_saturn.jpg",
-        "position": 19,
+        "position": 28,
         "earth_days": 0.45,
-        "scale": (2.0, 2.0, 2.0),
+        "scale": (2.1, 2.1, 2.1),
     },
     {
         "filename": "8k_saturn_ring_alpha.png",
-        "position": 19,
+        "position": 28,
         "earth_days": 0.45,
-        "scale": (3.0, 0.5, 3.0),
+        "scale": (3.15, 0.5, 3.15),
     },
     {
         "filename": "2k_uranus.jpg",
-        "position": 22,
+        "position": 38,
         "earth_days": 0.72,
-        "scale": (1.0, 1.0, 1.0),
+        "scale": (1.3, 1.3, 1.3),
     },
     {
         "filename": "2k_neptune.jpg",
-        "position": 25,
+        "position": 49,
         "earth_days": 0.67,
-        "scale": (1.0, 1.0, 1.0),
+        "scale": (1.25, 1.25, 1.25),
     },
     {
         "filename": "8k_sun.jpg",
         "position": 0,
         "earth_days": 27.0,
-        "scale": (5.0, 5.0, 5.0),
+        "scale": (6.0, 6.0, 6.0),
     },
 ]
 
@@ -109,7 +109,7 @@ def make_textured_sphere(planet_file, scale, position=None):
     # longitude u: [-pi, pi] -> [0, 1]
     # latitude v: [-pi/2, pi/2] -> [0, 1]
     u = np.arctan2(x, z) / (2.0 * np.pi) + 0.5
-    v = np.arcsin(y) / np.pi + 0.5
+    v = 0.5 - np.arcsin(y) / np.pi
     uvs = np.column_stack((u, v))
 
     planet_actor = actor.surface(verts, faces, texture=planet_file, texture_coords=uvs)
@@ -184,15 +184,16 @@ r_planets = [
 ]
 
 
-def calculate_path(r_planet, c):
+def calculate_path(r_planet):
     planet_track = []
-    for i in range(int(c)):
-        x, z = get_orbital_position(r_planet, float(i))
+    orbit_period = get_orbit_period(r_planet)
+    for t in np.linspace(0.0, orbit_period, 200):
+        x, z = get_orbital_position(r_planet, t)
         planet_track.append([x, 0.0, z])
     return planet_track
 
 
-planet_tracks = [calculate_path(rplanet, rplanet * 85) for rplanet in r_planets]
+planet_tracks = [calculate_path(rplanet) for rplanet in r_planets]
 
 
 orbit_actor = actor.line(planet_tracks, colors=(1.0, 1.0, 1.0))
@@ -214,9 +215,8 @@ def update_planet_transforms(p_info, t):
 
     if p_info["is_sun"]:
         angle_axial = (50.0 / p_info["earth_days"]) * t
-        R_init = Rot.from_euler("x", 90.0, degrees=True)
         R_axial = Rot.from_euler("y", angle_axial, degrees=True)
-        actor_obj.local.rotation = (R_axial * R_init).as_quat()
+        actor_obj.local.rotation = R_axial.as_quat()
         actor_obj.local.position = [0.0, 0.0, 0.0]
     else:
         x, z = get_orbital_position(p_info["radius"], t)
@@ -226,9 +226,8 @@ def update_planet_transforms(p_info, t):
             pass
         else:
             angle_axial = (50.0 / p_info["earth_days"]) * t
-            R_init = Rot.from_euler("x", 90.0, degrees=True)
             R_axial = Rot.from_euler("y", angle_axial, degrees=True)
-            actor_obj.local.rotation = (R_axial * R_init).as_quat()
+            actor_obj.local.rotation = R_axial.as_quat()
 
 
 def on_progress_changed(t):
@@ -273,7 +272,7 @@ if __name__ == "__main__":
     )
 
     camera = showm.screens[0].camera
-    camera.local.position = (-20.0, 60.0, 100.0)
+    camera.local.position = (-30.0, 90.0, 150.0)
     camera.look_at((0.0, 0.0, 0.0))
 
     showm.register_callback(update_playback_logic, 0.01, True, "PlaybackSync", showm)

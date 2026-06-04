@@ -31,72 +31,72 @@ scene = window.Scene(background=(0.01, 0.01, 0.02))
 planets_data = [
     {
         "filename": "8k_mercury.jpg",
-        "position": 7,
+        "position": 8,
         "earth_days": 58.0,
-        "scale": (0.4, 0.4, 0.4),
+        "scale": (0.3, 0.3, 0.3),
         "trail_color": (0.6, 0.6, 0.6),  # Gray
     },
     {
         "filename": "8k_venus_surface.jpg",
-        "position": 9,
+        "position": 10,
         "earth_days": 243.0,
-        "scale": (0.6, 0.6, 0.6),
+        "scale": (0.76, 0.76, 0.76),
         "trail_color": (0.8, 0.6, 0.4),  # Bronze
     },
     {
         "filename": "1_earth_8k.jpg",
-        "position": 11,
+        "position": 12,
         "earth_days": 1.0,
-        "scale": (0.4, 0.4, 0.4),
+        "scale": (0.8, 0.8, 0.8),
         "trail_color": (0.2, 0.6, 1.0),  # Sky blue
     },
     {
         "filename": "8k_mars.jpg",
-        "position": 13,
+        "position": 14,
         "earth_days": 1.03,
-        "scale": (0.8, 0.8, 0.8),
+        "scale": (0.42, 0.42, 0.42),
         "trail_color": (0.9, 0.3, 0.2),  # Red
     },
     {
         "filename": "jupiter.jpg",
-        "position": 16,
+        "position": 20,
         "earth_days": 0.41,
-        "scale": (2.0, 2.0, 2.0),
+        "scale": (2.5, 2.5, 2.5),
         "trail_color": (0.8, 0.5, 0.3),  # Brownish orange
     },
     {
         "filename": "8k_saturn.jpg",
-        "position": 19,
+        "position": 28,
         "earth_days": 0.45,
-        "scale": (2.0, 2.0, 2.0),
+        "scale": (2.1, 2.1, 2.1),
         "trail_color": (0.9, 0.8, 0.5),  # Yellow
     },
     {
         "filename": "8k_saturn_ring_alpha.png",
-        "position": 19,
+        "position": 28,
         "earth_days": 0.45,
-        "scale": (3.0, 0.5, 3.0),
+        "scale": (3.15, 0.5, 3.15),
         "trail_color": (0.9, 0.8, 0.5),
     },
     {
         "filename": "2k_uranus.jpg",
-        "position": 22,
+        "position": 38,
         "earth_days": 0.72,
-        "scale": (1.0, 1.0, 1.0),
+        "scale": (1.3, 1.3, 1.3),
         "trail_color": (0.4, 0.8, 0.8),  # Cyan
     },
     {
         "filename": "2k_neptune.jpg",
-        "position": 25,
+        "position": 49,
         "earth_days": 0.67,
-        "scale": (1.0, 1.0, 1.0),
+        "scale": (1.25, 1.25, 1.25),
         "trail_color": (0.2, 0.4, 0.9),  # Deep blue
     },
     {
         "filename": "8k_sun.jpg",
         "position": 0,
         "earth_days": 27.0,
-        "scale": (5.0, 5.0, 5.0),
+        "scale": (6.0, 6.0, 6.0),
         "trail_color": (1.0, 0.7, 0.1),  # Glowing gold/orange
     },
 ]
@@ -120,7 +120,7 @@ def make_textured_sphere(planet_file, scale, position=None):
 
     # Mercator texture projection
     u = np.arctan2(x, z) / (2.0 * np.pi) + 0.5
-    v = np.arcsin(y) / np.pi + 0.5
+    v = 0.5 - np.arcsin(y) / np.pi
     uvs = np.column_stack((u, v))
 
     planet_actor = actor.surface(verts, faces, texture=planet_file, texture_coords=uvs)
@@ -187,6 +187,9 @@ else:
 p_hat = p_vec / np.linalg.norm(p_vec)
 q_hat = np.cross(u_hat, p_hat)
 
+R_align_mat = np.column_stack((p_hat, u_hat, -q_hat))
+R_align = Rot.from_matrix(R_align_mat)
+
 
 def get_orbit_period(radius):
     if radius == 0.0:
@@ -224,9 +227,8 @@ def update_planet_transforms(p_info, t):
 
     if p_info["is_sun"]:
         angle_axial = (50.0 / p_info["earth_days"]) * t
-        R_init = Rot.from_euler("x", 90.0, degrees=True)
         R_axial = Rot.from_euler("y", angle_axial, degrees=True)
-        actor_obj.local.rotation = (R_axial * R_init).as_quat()
+        actor_obj.local.rotation = (R_align * R_axial).as_quat()
         actor_obj.local.position = get_relative_position(p_info, t)
     else:
         pos = get_relative_position(p_info, t)
@@ -234,11 +236,10 @@ def update_planet_transforms(p_info, t):
 
         if not p_info["is_ring"]:
             angle_axial = (50.0 / p_info["earth_days"]) * t
-            R_init = Rot.from_euler("x", 90.0, degrees=True)
             R_axial = Rot.from_euler("y", angle_axial, degrees=True)
-            actor_obj.local.rotation = (R_axial * R_init).as_quat()
+            actor_obj.local.rotation = (R_align * R_axial).as_quat()
         else:
-            pass
+            actor_obj.local.rotation = R_align.as_quat()
 
 
 def update_helical_trails(t):
@@ -255,7 +256,7 @@ def update_helical_trails(t):
     all_tracks = []
     all_colors = []
 
-    trail_length = 600.0
+    trail_length = 1000.0
     start_t = max(0.0, t - trail_length)
 
     if t <= 1.0:
@@ -294,7 +295,7 @@ hud_text = TextBlock2D(
 scene.add(hud_text)
 
 playback_ui = PlaybackPanel(position=(50, 50), width=700, loop=True)
-playback_ui.final_time = 1000000.0
+playback_ui.final_time = 10000.0
 scene.add(playback_ui)
 
 ##############################################################################
@@ -305,7 +306,7 @@ showm = window.ShowManager(
 )
 
 camera = showm.screens[0].camera
-camera.local.position = np.array([-20.0, 50.0, 95.0])
+camera.local.position = np.array([-30.0, 75.0, 142.5])
 camera.look_at((0.0, 0.0, 0.0))
 
 ##############################################################################
@@ -330,11 +331,11 @@ def handle_key_event(event):
     elif event.key.lower() == "c":
         if state["camera_mode"] == "cinematic":
             state["camera_mode"] = "top_down"
-            camera.local.position = u_vec * 100.0
+            camera.local.position = u_vec * 150.0
             camera.look_at((0.0, 0.0, 0.0))
         else:
             state["camera_mode"] = "cinematic"
-            camera.local.position = np.array([-20.0, 50.0, 95.0])
+            camera.local.position = np.array([-30.0, 75.0, 142.5])
             camera.look_at((0.0, 0.0, 0.0))
 
         controller = showm.screens[0].controller
@@ -345,9 +346,9 @@ def handle_key_event(event):
 
     elif event.key.lower() == "r":
         if state["camera_mode"] == "cinematic":
-            camera.local.position = np.array([-20.0, 50.0, 95.0])
+            camera.local.position = np.array([-30.0, 75.0, 142.5])
         else:
-            camera.local.position = u_vec * 100.0
+            camera.local.position = u_vec * 150.0
 
         camera.look_at((0.0, 0.0, 0.0))
 
