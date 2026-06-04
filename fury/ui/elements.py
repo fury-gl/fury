@@ -36,6 +36,13 @@ from fury.data import read_viz_icons
 from fury.io import get_extension, load_image, load_image_texture
 from fury.ui.context import UIContext
 from fury.ui.containers import ImageContainer2D, Panel2D
+from fury.lib import (
+    call_later,
+    plane_geometry,
+)
+from fury.material import _create_mesh_material
+from fury.ui.containers import Panel2D, ImageContainer2D
+from fury.ui.context import UIContext
 from fury.ui.core import (
     UI,
     Anchor,
@@ -804,7 +811,8 @@ class PlaybackPanel(UI):
 
 
 class TextBox2D(UI):
-    """An editable 2D text box that behaves as a UI component.
+    """
+    An editable 2D text box that behaves as a UI component.
 
     Currently supports:
     - Basic text editing.
@@ -873,7 +881,8 @@ class TextBox2D(UI):
         shadow=False,
         z_order=0,
     ):
-        """Init this UI element.
+        """
+        Init this UI element.
 
         Parameters
         ----------
@@ -924,6 +933,10 @@ class TextBox2D(UI):
         self._repeat_timer = None
         self._repeat_key = None
         self._repeat_key_char = None
+        self._repeat_modifiers = []
+
+        self._shift_pressed = False
+        self._caps_lock_on = False
 
         self.off_focus = lambda ui: None
 
@@ -935,7 +948,8 @@ class TextBox2D(UI):
         )
 
     def _setup(self):
-        """Setup this UI component.
+        """
+        Setup this UI component.
 
         Create the TextBlock2D component used for the textbox.
         Uses dynamic_bbox so the bounding box adapts as the user types.
@@ -976,14 +990,16 @@ class TextBox2D(UI):
         self.text.on_wheel = self.wheel_scroll
 
     def _update_height(self):
-        """Update the window boundaries of the textbox.
+        """
+        Update the window boundaries of the textbox.
 
         In static mode, the background height remains constant.
         """
         self.window_right = self.window_left + self._width * self._height - 1
 
     def _get_actors(self):
-        """Get the actors composing this UI component.
+        """
+        Get the actors composing this UI component.
 
         Returns
         -------
@@ -996,7 +1012,8 @@ class TextBox2D(UI):
         return actors
 
     def _get_size(self):
-        """Return the size of the textbox.
+        """
+        Return the size of the textbox.
 
         Returns
         -------
@@ -1014,7 +1031,8 @@ class TextBox2D(UI):
         self.render_text(show_caret=False)
 
     def set_message(self, message):
-        """Set custom text to textbox.
+        """
+        Set custom text to textbox.
 
         Parameters
         ----------
@@ -1029,7 +1047,8 @@ class TextBox2D(UI):
         self.render_text(show_caret=False)
 
     def width_set_text(self, text):
-        """Add newlines to text where necessary, needed for multi-line text boxes.
+        """
+        Add newlines to text where necessary, needed for multi-line text boxes.
 
         Parameters
         ----------
@@ -1041,15 +1060,19 @@ class TextBox2D(UI):
         str
             A multi-line formatted text.
         """
-        multi_line_text = ""
-        for i, t in enumerate(text):
-            multi_line_text += t
-            if (i + 1) % self._width == 0:
-                multi_line_text += "\n"
-        return multi_line_text.rstrip("\n")
+        lines = text.split("\n")
+        formatted_lines = []
+        for line in lines:
+            if not line:
+                formatted_lines.append("")
+                continue
+            for i in range(0, len(line), self._width):
+                formatted_lines.append(line[i : i + self._width])
+        return "\n".join(formatted_lines)
 
-    def handle_character(self, key, key_char):
-        """Handle button events.
+    def handle_character(self, key, key_char, modifiers=None):
+        """
+        Handle button events.
 
         # TODO: Need to handle all kinds of characters like !, +, etc.
 
@@ -1059,23 +1082,66 @@ class TextBox2D(UI):
             The key identifier.
         key_char : str
             The character representation of the key.
+        modifiers : tuple, optional
+            The active keyboard modifiers.
 
         Returns
         -------
         bool
             True if editing is finished, otherwise False.
         """
+        modifiers = modifiers or []
         k = key.lower() if isinstance(key, str) else None
 
         if k in ("enter", "return"):
-            self.render_text(show_caret=False)
-            self._has_focus = False
-            UIContext.active_ui = None
-            self.off_focus(self)
-            return True
+            if "Shift" in modifiers:
+                self.add_character("\n")
+            else:
+                self.render_text(show_caret=False)
+                self._has_focus = False
+                UIContext.active_ui = None
+                self.off_focus(self)
+                return True
 
-        if key_char != "" and key_char in printable:
-            self.add_character(key_char)
+        if key_char != "":
+            is_shift = "Shift" in modifiers
+            is_caps = "CapsLock" in modifiers
+
+            if is_shift:
+                shift_map = {
+                    "`": "~",
+                    "1": "!",
+                    "2": "@",
+                    "3": "#",
+                    "4": "$",
+                    "5": "%",
+                    "6": "^",
+                    "7": "&",
+                    "8": "*",
+                    "9": "(",
+                    "0": ")",
+                    "-": "_",
+                    "=": "+",
+                    "[": "{",
+                    "]": "}",
+                    "\\": "|",
+                    ";": ":",
+                    "'": '"',
+                    ",": "<",
+                    ".": ">",
+                    "/": "?",
+                }
+                if key_char in shift_map:
+                    key_char = shift_map[key_char]
+
+            if key_char.isalpha() and len(key_char) == 1:
+                if is_shift != is_caps:
+                    key_char = key_char.upper()
+                elif is_shift and is_caps:
+                    key_char = key_char.lower()
+
+            if key_char in printable:
+                self.add_character(key_char)
 
         if k == "backspace":
             self.remove_character()
@@ -1150,7 +1216,8 @@ class TextBox2D(UI):
         self._update_height()
 
     def add_character(self, character):
-        """Insert a character into the text and moves window and caret.
+        """
+        Insert a character into the text and moves window and caret.
 
         Parameters
         ----------
@@ -1206,7 +1273,8 @@ class TextBox2D(UI):
         self._adjust_window()
 
     def showable_text(self, show_caret):
-        """Chop out text to be shown on the screen.
+        """
+        Chop out text to be shown on the screen.
 
         Parameters
         ----------
@@ -1228,7 +1296,8 @@ class TextBox2D(UI):
         return ret_text
 
     def render_text(self, *, show_caret=True):
-        """Render text after processing.
+        """
+        Render text after processing.
 
         Parameters
         ----------
@@ -1248,10 +1317,12 @@ class TextBox2D(UI):
             self.init = False
             self.caret_pos = len(self._message)
         self._has_focus = True
+        UIContext.active_ui = self.text
         self.render_text()
 
     def blur_textbox(self, event=None):
-        """Handle blur event for textbox.
+        """
+        Handle blur event for textbox.
 
         Parameters
         ----------
@@ -1264,7 +1335,8 @@ class TextBox2D(UI):
             self.off_focus(self)
 
     def left_button_press(self, event):
-        """Handle left button press for textbox.
+        """
+        Handle left button press for textbox.
 
         Parameters
         ----------
@@ -1284,14 +1356,28 @@ class TextBox2D(UI):
             self._repeat_timer = None
         self._repeat_key = None
         self._repeat_key_char = None
+        self._repeat_modifiers = []
 
     def _do_repeat(self):
         """Execute one repeat of the held key and schedule the next."""
         if self._repeat_key is None:
             return
+        call_later(0, self._do_repeat_main_thread)
+
+    def _do_repeat_main_thread(self):
+        """
+        Handle the repeated key action on the main thread.
+
+        PyGfx objects must only be modified from the main
+        thread, so the Timer thread delegates here via
+        ``call_later``.
+        """
+        if self._repeat_key is None:
+            return
         key = self._repeat_key
         key_char = self._repeat_key_char
-        is_done = self.handle_character(key, key_char)
+        modifiers = getattr(self, "_repeat_modifiers", [])
+        is_done = self.handle_character(key, key_char, modifiers)
         if is_done:
             self._cancel_repeat()
             self._has_focus = False
@@ -1302,7 +1388,8 @@ class TextBox2D(UI):
         self._repeat_timer.start()
 
     def key_press(self, event):
-        """Handle Key press for textbox.
+        """
+        Handle Key press for textbox.
 
         Processes the key action immediately and starts a repeat timer
         so holding a key repeats the action (the rendercanvas Qt backend
@@ -1314,11 +1401,22 @@ class TextBox2D(UI):
             The keyboard event.
         """
         key = event.key
+
+        if key == "Shift":
+            self._shift_pressed = True
+        elif key == "CapsLock":
+            self._caps_lock_on = not self._caps_lock_on
+
         key_char = key if key and len(key) == 1 else ""
+        modifiers = list(getattr(event, "modifiers", []))
+        if self._shift_pressed and "Shift" not in modifiers:
+            modifiers.append("Shift")
+        if self._caps_lock_on and "CapsLock" not in modifiers:
+            modifiers.append("CapsLock")
 
         self._cancel_repeat()
 
-        is_done = self.handle_character(key, key_char)
+        is_done = self.handle_character(key, key_char, modifiers)
         if is_done:
             self._has_focus = False
             self.off_focus(self)
@@ -1326,12 +1424,14 @@ class TextBox2D(UI):
 
         self._repeat_key = key
         self._repeat_key_char = key_char
+        self._repeat_modifiers = modifiers
         self._repeat_timer = Timer(0.5, self._do_repeat)
         self._repeat_timer.daemon = True
         self._repeat_timer.start()
 
     def key_release(self, event):
-        """Handle Key release for textbox.
+        """
+        Handle Key release for textbox.
 
         Cancels the key repeat timer when the key is released.
 
@@ -1340,11 +1440,16 @@ class TextBox2D(UI):
         event : KeyboardEvent
             The keyboard event.
         """
-        if event.key == self._repeat_key:
+        key = getattr(event, "key", None)
+        if key == "Shift":
+            self._shift_pressed = False
+
+        if key == self._repeat_key:
             self._cancel_repeat()
 
     def wheel_scroll(self, event):
-        """Handle mouse wheel event for textbox.
+        """
+        Handle mouse wheel event for textbox.
 
         Parameters
         ----------

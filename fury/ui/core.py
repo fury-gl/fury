@@ -120,6 +120,8 @@ class UI(object, metaclass=abc.ABCMeta):
         self.on_key_release = lambda event: None
         self.on_hover = lambda event: None
         self.on_dishover = lambda event: None
+        self.on_pointer_enter = lambda event: None
+        self.on_pointer_leave = lambda event: None
         self.on_focus = lambda event: None
         self.on_blur = lambda event: None
         self.on_wheel = lambda event: None
@@ -396,7 +398,8 @@ class UI(object, metaclass=abc.ABCMeta):
             self.middle_button_release_callback(event)
 
     def left_button_click_callback(self, event):
-        """Handle left mouse button press event.
+        """
+        Handle left mouse button press event.
 
         Parameters
         ----------
@@ -410,8 +413,10 @@ class UI(object, metaclass=abc.ABCMeta):
                 UIContext.active_ui is not None
                 and UIContext.active_ui is not UIContext.hot_ui
             ):
+                UIContext.active_ui.on_blur(event)
                 UIContext.active_ui = None
             UIContext.active_ui = UIContext.hot_ui
+            UIContext.active_ui.on_focus(event)
 
         self.on_left_mouse_button_pressed(event)
 
@@ -529,7 +534,8 @@ class UI(object, metaclass=abc.ABCMeta):
             self.on_key_press(event)
 
     def key_release_callback(self, event):
-        """Handle key release event.
+        """
+        Handle key release event.
 
         Parameters
         ----------
@@ -542,7 +548,8 @@ class UI(object, metaclass=abc.ABCMeta):
             self.on_key_release(event)
 
     def wheel_callback(self, event):
-        """Handle wheel event.
+        """
+        Handle wheel event.
 
         Parameters
         ----------
@@ -555,7 +562,8 @@ class UI(object, metaclass=abc.ABCMeta):
             self.on_wheel(event)
 
     def pointer_enter_callback(self, event):
-        """Handle pointer enter event.
+        """
+        Handle pointer enter event.
 
         Parameters
         ----------
@@ -566,7 +574,8 @@ class UI(object, metaclass=abc.ABCMeta):
         self.on_pointer_enter(event)
 
     def pointer_leave_callback(self, event):
-        """Handle pointer leave event.
+        """
+        Handle pointer leave event.
 
         Parameters
         ----------
@@ -1038,9 +1047,12 @@ class TextBlock2D(UI):
         self.background.on_left_mouse_button_pressed = lambda event: (
             self.on_left_mouse_button_pressed(event)
         )
+        self.background.on_key_press = lambda event: self.on_key_press(event)
+        self.background.on_key_release = lambda event: self.on_key_release(event)
 
-        def _bg_hover(event):
-            """Redirect hot_ui to this TextBlock2D on background hover.
+        def _bg_pointer_enter(event):
+            """
+            Redirect hot_ui to this TextBlock2D on background hover.
 
             Parameters
             ----------
@@ -1048,10 +1060,12 @@ class TextBlock2D(UI):
                 The PyGfx pointer event object.
             """
             UIContext.hot_ui = self
+            self.on_pointer_enter(event)
             self.on_hover(event)
 
-        def _bg_dishover(event):
-            """Clear hot_ui on background pointer-leave.
+        def _bg_pointer_leave(event):
+            """
+            Clear hot_ui on background pointer-leave.
 
             Parameters
             ----------
@@ -1060,10 +1074,13 @@ class TextBlock2D(UI):
             """
             if UIContext.hot_ui is self:
                 UIContext.hot_ui = None
+            self.on_pointer_leave(event)
             self.on_dishover(event)
 
-        self.background.on_hover = _bg_hover
-        self.background.on_dishover = _bg_dishover
+        self.background.on_pointer_enter = _bg_pointer_enter
+        self.background.on_pointer_leave = _bg_pointer_leave
+        self.background.on_hover = _bg_pointer_enter
+        self.background.on_dishover = _bg_pointer_leave
         self.background.on_wheel = lambda event: self.on_wheel(event)
 
     def resize(self, size):
@@ -1134,7 +1151,8 @@ class TextBlock2D(UI):
             return text
 
         def _wrap_word(word):
-            """Wrap a single word with the appropriate markdown markers.
+            """
+            Wrap a single word with the appropriate markdown markers.
 
             Parameters
             ----------
@@ -1346,7 +1364,8 @@ class TextBlock2D(UI):
 
     @property
     def shadow(self):
-        """Return whether the text has a shadow.
+        """
+        Return whether the text has a shadow.
 
         Returns
         -------
@@ -1357,7 +1376,8 @@ class TextBlock2D(UI):
 
     @shadow.setter
     def shadow(self, flag):
-        """Set text shadow.
+        """
+        Set text shadow.
 
         Parameters
         ----------

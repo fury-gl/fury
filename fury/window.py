@@ -6,6 +6,7 @@ windows using PyGfx. It includes classes and functions for handling
 scenes, cameras, controllers, and rendering multiple screens.
 """
 
+import asyncio
 from dataclasses import dataclass
 from functools import reduce
 import logging
@@ -786,7 +787,8 @@ class ShowManager:
             self._handle_drag(event)
 
     def _global_key_handler(self, event):
-        """Forward global key events to the active UI element.
+        """
+        Forward global key events to the active UI element.
 
         This renderer-level handler ensures that key events reach the
         currently focused UI component (e.g. an active TextBox2D)
