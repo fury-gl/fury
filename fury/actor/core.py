@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """Core actor functionality for FURY."""
 
-from PIL import Image as PILImage
 import numpy as np
 from scipy.spatial.transform import Rotation as Rot
 
@@ -11,6 +10,7 @@ from fury.geometry import (
     buffer_to_geometry,
     line_buffer_separator,
 )
+from fury.io import load_image
 from fury.lib import (
     Geometry,
     ImageBasicMaterial,
@@ -337,7 +337,7 @@ def create_image(image_input, material, **kwargs):
         If the array has an unsupported number of dimensions or channels.
     """
     if isinstance(image_input, str):
-        image = np.array(PILImage.open(image_input)).astype(np.float32)
+        image = np.flipud(np.array(load_image(image_input)).astype(np.float32))
     elif isinstance(image_input, np.ndarray):
         if image_input.ndim not in (2, 3):
             raise ValueError("image_input must be a 2D or 3D NumPy array.")
