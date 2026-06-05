@@ -7,17 +7,12 @@ from warnings import warn
 import numpy as np
 from scipy.spatial import transform
 
-from fury import utils
-
-# from fury.actor import line
-from fury.animation.interpolator import (  # noqa F401
+from fury.animation.helpers import compose_transform_matrix
+from fury.animation.interpolator import (
     linear_interpolator,
     slerp,
-    spline_interpolator,
     step_interpolator,
 )
-
-# from fury.lib import Actor, Camera, Transform
 
 
 class Animation:
@@ -144,10 +139,6 @@ class Animation:
             [lines.append(self.get_position(t).tolist()) for t in ts]
             if self.is_interpolatable("color"):
                 [colors.append(self.get_color(t)) for t in ts]
-            elif len(self._actors) >= 1:
-                colors = sum([i.vcolors[0] / 255 for i in self._actors]) / len(
-                    self._actors
-                )
             else:
                 colors = [1, 1, 1]
 
@@ -381,7 +372,7 @@ class Animation:
                 self._scene.add(*self._actors)
                 self._added_to_scene = True
             elif not should_be_in_scene and self._added_to_scene:
-                self._scene.rm(*self._actors)
+                self._scene.remove(*self._actors)
                 self._added_to_scene = False
 
     def set_interpolator(self, attrib, interpolator, *, is_evaluator=False, **kwargs):
@@ -904,17 +895,17 @@ class Animation:
 
         Parameters
         ----------
-        item : Animation, vtkActor, list[Animation], or list[vtkActor]
+        item : Animation, Actor, list[Animation], or list[Actor]
             Actor/s to be animated by the Animation.
         """
         if isinstance(item, list):
             for a in item:
                 self.add(a)
             return
-        # elif isinstance(item, Actor):
-        #     self.add_actor(item)
         elif isinstance(item, Animation):
             self.add_child_animation(item)
+        elif hasattr(item, "local"):
+            self.add_actor(item)
         else:
             raise ValueError(f"Object of type {type(item)} can't be animated")
 
@@ -942,7 +933,7 @@ class Animation:
 
         Parameters
         ----------
-        actor : vtkActor or list(vtkActor)
+        actor : Actor or list(Actor)
             Actor/s to be animated by the Animation.
         static : bool
             Indicated whether the actor should be animated and controlled by
@@ -957,7 +948,6 @@ class Animation:
                 self._static_actors.append(actor)
         else:
             if actor not in self._actors:
-                actor.vcolors = utils.colors_from_actor(actor)
                 self._actors.append(actor)
 
     @property
@@ -1073,7 +1063,7 @@ class Animation:
 
         Parameters
         ----------
-        actor : vtkActor
+        actor : Actor
             Actor to be removed from the Animation.
         """
         self._actors.remove(actor)
@@ -1146,10 +1136,8 @@ class Animation:
             The time to update animation at. If None, the animation will play
             without adding it to a Timeline.
         """
-        has_handler = True
         if time is None:
             time = perf_counter() - self._start_time
-            has_handler = False
 
         # handling in/out of scene events
         in_scene = self.is_inside_scene_at(time)
@@ -1160,42 +1148,61 @@ class Animation:
                 time = time % self.duration
             elif time > self.duration:
                 time = self.duration
-        if isinstance(self._parent_animation, Animation):
-            self._transform.DeepCopy(self._parent_animation._transform)
-        else:
-            self._transform.Identity()
+        parent_matrix = None
+        if (
+            isinstance(self._parent_animation, Animation)
+            and self._parent_animation._actors
+        ):
+            parent_matrix = self._parent_animation._actors[0].local.matrix
 
         self._current_timestamp = time
 
         # actors properties
         if in_scene:
+            position = None
+            rotation_quat = None
+            scale_factors = None
+
             if self.is_interpolatable("position"):
                 position = self.get_position(time)
-                self._transform.Translate(*position)
+
+            if self.is_interpolatable("rotation"):
+                rotation_quat = self.get_rotation(time, as_quat=True)
+
+            if self.is_interpolatable("scale"):
+                scale_factors = self.get_scale(time)
+
+            if (
+                position is not None
+                or rotation_quat is not None
+                or scale_factors is not None
+            ):
+                transform_matrix = compose_transform_matrix(
+                    position=position,
+                    rotation_quat=rotation_quat,
+                    scale_factors=scale_factors,
+                    parent_matrix=parent_matrix,
+                )
+                for actor in self.actors:
+                    actor.local.matrix = transform_matrix
 
             if self.is_interpolatable("opacity"):
                 opacity = self.get_opacity(time)
-                [act.GetProperty().SetOpacity(opacity) for act in self.actors]
-
-            if self.is_interpolatable("rotation"):
-                x, y, z = self.get_rotation(time)
-                # Rotate in the same order as VTK defaults.
-                self._transform.RotateZ(z)
-                self._transform.RotateX(x)
-                self._transform.RotateY(y)
-
-            if self.is_interpolatable("scale"):
-                scale = self.get_scale(time)
-                self._transform.Scale(*scale)
+                opacity_val = float(np.asarray(opacity).flatten()[0])
+                for actor in self.actors:
+                    if hasattr(actor, "material"):
+                        actor.material.opacity = opacity_val
 
             if self.is_interpolatable("color"):
                 color = self.get_color(time)
-                for act in self.actors:
-                    act.vcolors[:] = color * 255
-                    utils.update_actor(act)
-
-            # update actors' transformation matrix
-            [act.SetUserTransform(self._transform) for act in self.actors]
+                color = np.asarray(color).flatten()[:3]
+                for actor in self.actors:
+                    if hasattr(actor, "geometry") and hasattr(actor.geometry, "colors"):
+                        if actor.geometry.colors is not None:
+                            colors_data = actor.geometry.colors.data
+                            if colors_data.shape[-1] >= 3:
+                                colors_data[:, :3] = color
+                                actor.geometry.colors.update_range()
 
         for attrib in self._data:
             callbacks = self._data.get(attrib, {}).get("callbacks", [])
@@ -1209,9 +1216,6 @@ class Animation:
         # Also update all child Animations.
         [animation.update_animation(time=time) for animation in self._animations]
 
-        if self._scene and not has_handler:
-            self._scene.reset_clipping_range()
-
     def add_to_scene(self, scene):
         """
         Add this Animation, its actors and sub Animations to the scene.
@@ -1223,7 +1227,7 @@ class Animation:
         """
         [scene.add(actor) for actor in self._actors]
         [scene.add(static_act) for static_act in self._static_actors]
-        [scene.add(animation) for animation in self._animations]
+        [animation.add_to_scene(scene) for animation in self._animations]
 
         if self._motion_path_actor:
             scene.add(self._motion_path_actor)
@@ -1241,12 +1245,12 @@ class Animation:
         scene : fury.window.Scene
             The scene from which to remove the animation, actors, and sub-animations.
         """
-        [scene.rm(act) for act in self.actors]
-        [scene.rm(static_act) for static_act in self._static_actors]
+        [scene.remove(act) for act in self.actors]
+        [scene.remove(static_act) for static_act in self._static_actors]
         for anim in self.child_animations:
             anim.remove_from_scene(scene)
         if self._motion_path_actor:
-            scene.rm(self._motion_path_actor)
+            scene.remove(self._motion_path_actor)
         self._added_to_scene = False
 
 
