@@ -1014,7 +1014,7 @@ class TextBlock2D(UI):
         size : (int, int)
             The new (width, height) in pixels.
         """
-        self.actor.max_width = size[1]
+        self.actor.max_width = size[0]
         self.update_bounding_box(size=size)
 
     def update_layout(self):
@@ -1040,6 +1040,20 @@ class TextBlock2D(UI):
             List containing the text actor and background actors.
         """
         return [self.actor]
+
+    def set_visibility(self, visibility):
+        """
+        Set visibility of this text block.
+
+        Parameters
+        ----------
+        visibility : bool
+            If True, the text will be visible. The background is shown only
+            when this text block was created with a background color. If False,
+            both text and background are hidden.
+        """
+        self.actor.visible = visibility
+        self.background.set_visibility(visibility and self.have_bg)
 
     def get_formatted_text(self, text):
         """
