@@ -668,9 +668,10 @@ class Rectangle2D(UI):
         size : (float, float)
             Rectangle size (width, height) in pixels.
         """
-        if tuple(size) == (0, 0):
-            size = np.array([1, 1])
-        self.actor.geometry = plane_geometry(width=size[0], height=size[1])
+        w, h = size
+        w = w if w != 0 else 1
+        h = h if h != 0 else 1
+        self.actor.geometry = plane_geometry(width=w, height=h)
         self._update_actors_position()
 
     def _update_actors_position(self):
