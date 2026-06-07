@@ -1,9 +1,12 @@
 import logging
+import os
+from unittest import mock
 from unittest.mock import patch
 
 import numpy as np
 import pytest
 
+from fury import actor, window
 from fury.actor import sphere
 from fury.io import load_image
 from fury.lib import (
@@ -803,3 +806,40 @@ def test_show_manager_register_drag():
     assert show_m._drag_target is None
     for screen in show_m.screens:
         assert screen.controller.enabled is True
+
+
+def test_offscreen_animation_recording():
+
+    # Create a simple scene
+    scene = window.Scene()
+    scene.add(actor.axes(scale=(1, 1, 1)))
+
+    show_m = window.ShowManager(scene=scene, size=(200, 200), title="test_anim")
+
+    # to trigger animation logic
+    def dummy_callback():
+        pass
+
+    show_m.register_callback(dummy_callback, time=1.0, repeat=True, name="dummy")
+
+    # test 1: record animation is FALSE
+    with mock.patch.dict(
+        os.environ, {"FURY_OFFSCREEN": "1", "FURY_RECORD_ANIMATION": "0"}
+    ):
+        show_m.start()
+        assert os.path.exists("test_anim.png")
+        assert not os.path.exists("test_anim.gif")
+
+        os.remove("test_anim.png")
+
+    # test 2: record animation is TRUE
+    with mock.patch.dict(
+        os.environ, {"FURY_OFFSCREEN": "1", "FURY_RECORD_ANIMATION": "1"}
+    ):
+        show_m2 = window.ShowManager(scene=scene, size=(200, 200), title="test_anim")
+        show_m2.register_callback(dummy_callback, time=1.0, repeat=True, name="dummy")
+        show_m2.start()
+        assert os.path.exists("test_anim.gif")
+        assert not os.path.exists("test_anim.png")
+
+        os.remove("test_anim.gif")
