@@ -1461,7 +1461,11 @@ class ShowManager:
             "1",
         ]:
             frames = []
-            if self._callbacks:
+            record_animation = os.environ.get("FURY_RECORD_ANIMATION", "").lower() in [
+                "true",
+                "1",
+            ]
+            if self._callbacks and record_animation:
                 max_frames = 300
                 env_max_frames = os.environ.get("FURY_OFFSCREEN_MAX_FRAMES")
                 if env_max_frames and env_max_frames.isdigit():
