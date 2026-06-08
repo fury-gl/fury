@@ -13,6 +13,7 @@ from fury.animation.interpolator import (
     slerp,
     step_interpolator,
 )
+from fury.lib import WorldObject
 
 
 class Animation:
@@ -54,6 +55,7 @@ class Animation:
         self._duration = length if length else 0
         self._loop = loop
         self._current_timestamp = 0
+        self._current_transform = np.identity(4, dtype=np.float32)
         self._max_timestamp = 0
         self._added_to_scene = True
         self._motion_path_res = motion_path_res
@@ -904,7 +906,7 @@ class Animation:
             return
         elif isinstance(item, Animation):
             self.add_child_animation(item)
-        elif hasattr(item, "local"):
+        elif isinstance(item, WorldObject):
             self.add_actor(item)
         else:
             raise ValueError(f"Object of type {type(item)} can't be animated")
@@ -1149,11 +1151,8 @@ class Animation:
             elif time > self.duration:
                 time = self.duration
         parent_matrix = None
-        if (
-            isinstance(self._parent_animation, Animation)
-            and self._parent_animation._actors
-        ):
-            parent_matrix = self._parent_animation._actors[0].local.matrix
+        if isinstance(self._parent_animation, Animation):
+            parent_matrix = self._parent_animation._current_transform
 
         self._current_timestamp = time
 
@@ -1176,6 +1175,7 @@ class Animation:
                 position is not None
                 or rotation_quat is not None
                 or scale_factors is not None
+                or parent_matrix is not None
             ):
                 transform_matrix = compose_transform_matrix(
                     position=position,
@@ -1183,12 +1183,20 @@ class Animation:
                     scale_factors=scale_factors,
                     parent_matrix=parent_matrix,
                 )
+                self._current_transform = transform_matrix
                 for actor in self.actors:
                     actor.local.matrix = transform_matrix
 
             if self.is_interpolatable("opacity"):
                 opacity = self.get_opacity(time)
-                opacity_val = float(np.asarray(opacity).flatten()[0])
+                opacity_arr = np.asarray(opacity).flatten()
+                if opacity_arr.size != 1:
+                    warn(
+                        "Opacity animation expects a scalar value; using the "
+                        "first value from the interpolated opacity array.",
+                        stacklevel=2,
+                    )
+                opacity_val = float(opacity_arr[0])
                 for actor in self.actors:
                     if hasattr(actor, "material"):
                         actor.material.opacity = opacity_val

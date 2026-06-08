@@ -1,6 +1,7 @@
 import numpy as np
 import numpy.testing as npt
 import pytest
+from scipy.spatial import transform
 
 from fury.actor import box
 from fury.animation import Animation
@@ -121,6 +122,17 @@ def test_compose_transform_matrix():
     npt.assert_almost_equal(np.diag(matrix)[:3], np.array([2, 3, 4]))
 
 
+def test_compose_transform_matrix_with_parent_rotation():
+    parent = compose_transform_matrix(
+        rotation_quat=transform.Rotation.from_euler("z", 90, degrees=True).as_quat()
+    )
+    matrix = compose_transform_matrix(
+        position=np.array([1, 0, 0]), parent_matrix=parent
+    )
+
+    npt.assert_almost_equal(matrix[:3, 3], np.array([0, 1, 0]), decimal=6)
+
+
 def test_animation_update_applies_pygfx_actor_state(sample_actor):
     anim = Animation(actors=sample_actor)
 
@@ -181,12 +193,13 @@ def test_animation_child_animations_inherit_parent_transform(sample_actor):
     child = Animation(actors=child_actor)
 
     parent.set_position(0, np.array([1, 2, 3]))
+    parent.set_rotation(0, np.array([0, 0, 90]))
     child.set_position(0, np.array([4, 0, 0]))
     parent.add_child_animation(child)
 
     parent.update_animation(time=0)
 
-    npt.assert_almost_equal(child_actor.local.matrix[:3, 3], np.array([5, 2, 3]))
+    npt.assert_almost_equal(child_actor.local.matrix[:3, 3], np.array([1, 6, 3]))
 
 
 def test_animation_callbacks():
