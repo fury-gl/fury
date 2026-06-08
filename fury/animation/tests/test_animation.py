@@ -4,7 +4,7 @@ import pytest
 from scipy.spatial import transform
 
 from fury.actor import box
-from fury.animation import Animation
+from fury.animation import Animation, CameraAnimation
 from fury.animation.helpers import compose_transform_matrix
 from fury.animation.interpolator import (
     cubic_bezier_interpolator,
@@ -13,6 +13,7 @@ from fury.animation.interpolator import (
     spline_interpolator,
     step_interpolator,
 )
+from fury.lib import PerspectiveCamera
 
 
 @pytest.fixture
@@ -183,6 +184,8 @@ def test_animation_loop():
 
 
 def test_animation_child_animations_inherit_parent_transform(sample_actor):
+    from fury.actor import box
+
     parent_actor = sample_actor
     child_actor = box(
         np.array([[0, 0, 0]]),
@@ -216,3 +219,68 @@ def test_animation_callbacks():
     anim.update_animation(time=2)
 
     assert callback_values == [0, 1, 2]
+
+
+def test_camera_animation_position():
+    camera = PerspectiveCamera()
+    anim = CameraAnimation(camera=camera)
+
+    assert anim.camera is camera
+
+    anim.set_position(0, np.array([1, 2, 3]))
+    anim.set_position(2, np.array([3, 2, 1]))
+    anim.update_animation(time=1)
+
+    npt.assert_almost_equal(camera.local.position, np.array([2, 2, 2]))
+
+
+def test_camera_animation_focal_and_view_up():
+    camera = PerspectiveCamera()
+    anim = CameraAnimation(camera=camera)
+
+    anim.set_position(0, np.array([0, 0, 10]))
+    anim.set_focal(0, np.array([0, 0, 0]))
+    anim.set_focal(2, np.array([2, 0, 0]))
+    anim.set_view_up(0, np.array([0, 1, 0]))
+    anim.set_view_up(2, np.array([0, 0, 1]))
+
+    anim.update_animation(time=1)
+
+    npt.assert_almost_equal(camera.local.position, np.array([0, 0, 10]))
+    expected_up = np.array([0, 0.5, 0.5])
+    expected_up = expected_up / np.linalg.norm(expected_up)
+    npt.assert_almost_equal(camera.local.reference_up, expected_up)
+
+
+def test_camera_animation_rotation():
+    camera = PerspectiveCamera()
+    anim = CameraAnimation(camera=camera)
+
+    anim.set_position(0, np.array([1, 2, 3]))
+    anim.set_rotation(0, np.array([0, 0, 90]))
+    anim.update_animation(time=0)
+
+    expected = transform.Rotation.from_euler(
+        "zxy", np.array([90, 0, 0]), degrees=True
+    ).as_matrix()
+    npt.assert_almost_equal(camera.local.matrix[:3, :3], expected, decimal=6)
+    npt.assert_almost_equal(camera.local.matrix[:3, 3], np.array([1, 2, 3]))
+
+
+def test_camera_animation_without_camera_is_noop():
+    anim = CameraAnimation()
+
+    anim.set_position(0, np.array([1, 2, 3]))
+    anim.update_animation(time=0)
+
+    npt.assert_almost_equal(anim.current_timestamp, 0)
+
+
+def test_camera_animation_update_before_add_to_scene():
+    camera = PerspectiveCamera()
+    anim = CameraAnimation(camera=camera)
+
+    anim.set_position(0, np.array([1, 2, 3]))
+    anim.update_animation()
+
+    assert anim.current_timestamp < 1
