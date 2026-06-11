@@ -8,7 +8,6 @@ Week 2: Fixing Doc Build Warnings and Improving Documentation Pipeline
 
 The second week of the coding period was a highly productive start, and I was able to accomplish a lot of work that I am honestly proud of. This week, my primary focus was on improving the FURY documentation pipeline and fixing various build warnings.
 
-All of the related pull requests were successfully merged during the week.
 
 Overview
 --------
@@ -18,23 +17,23 @@ This week, I worked on the following pull requests:
 Documentation Improvements and Build Fixes
 ------------------------------------------
 
-- *Integrate Version Switcher, Add Local Docs Server, and Fix Version Redirection* (#1233 <https://github.com/fury-gl/fury/pull/1233>_)
-  This pull request focused on integrating a Version Switcher, adding a Local Docs Server, and fixing Version Redirection to improve the overall documentation navigation. Specifically, if a user is on a page and selects a different documentation version, they will now be properly redirected to that exact same page in the selected version. If the page does not exist in the older version, they are smoothly redirected to the `index.html` page instead.
+- *Integrate Version Switcher, Add Local Docs Server, and Fix Version Redirection* (`#1233 <https://github.com/fury-gl/fury/pull/1233>`_)
+  This pull request focused on integrating a Version Switcher, adding a Local Docs Server, and fixing Version Redirection to improve the overall documentation navigation. Specifically, if a user is on a page and selects a different documentation version, they will now be properly redirected to that exact same page in the selected version. If the page does not exist in the older version, they are smoothly redirected to the ``index.html`` page instead.
 
-- *Fix GL01 and address SS06 warnings* (#1237 <https://github.com/fury-gl/fury/pull/1237>_)
-  Here, I addressed and fixed the NumPy warnings that were previously suppressed as exceptions in the `pyproject.toml` file. I tackled these changes across several commits, utilizing automated tools to speed up the process:
+- *Fix GL01 and address SS06 warnings* (`#1237 <https://github.com/fury-gl/fury/pull/1237>`_)
+  Here, I addressed and fixed the NumPy warnings that were previously suppressed as exceptions in the ``pyproject.toml`` file. I tackled these changes across several commits, utilizing automated tools to speed up the process:
 
-  - *Removing TOML Exceptions:* First, I removed the `SA04, ``GL01, and ``GL02` exceptions from `pyproject.toml` so that these rules are actually checked going forward.
-  - *Automated GL01 Fixes:* I was able to fix most of the GL01 warnings automatically by running `ruff check --select D213 --fix .`, because D213 and GL01 check for the exact same docstring rules.
+  - *Removing TOML Exceptions:* First, I removed the ``SA04``, ``GL01``, and ``GL02`` exceptions from ``pyproject.toml`` so that these rules are actually checked going forward.
+  - *Automated GL01 Fixes:* I was able to fix most of the ``GL01`` warnings automatically by running ``ruff check --select D213 --fix .``, because ``D213`` and ``GL01`` check for the exact same docstring rules.
   - *Docformatter Edge Cases:* There were some edge cases that the automated tools couldn't catch, like single-line summaries and missing line breaks at the end of docstrings, so I went in and fixed those manually.
-  - *SS06 Warnings:* I also cleaned up the few lingering SS06 warnings across the codebase.
-  - *Reinforcing Rules with Ruff:* To make sure these issues don't come back, I set up Ruff to handle the GL01 and GL02 validations. This means the rules are now enforced automatically, and contributors won't have to worry about resolving them manually since Ruff takes care of it during the pre-commit hooks.
+  - *SS06 Warnings:* I also cleaned up the few lingering ``SS06`` warnings across the codebase.
+  - *Reinforcing Rules with Ruff:* To make sure these issues don't come back, I set up Ruff to handle the ``GL01`` and ``GL02`` validations. This means the rules are now enforced automatically, and contributors won't have to worry about resolving them manually since Ruff takes care of it during the pre-commit hooks.
 
-- *Enable strict documentation builds with warnings treated as errors* (#1244 <https://github.com/fury-gl/fury/pull/1244>_)
+- *Enable strict documentation builds with warnings treated as errors* (`#1244 <https://github.com/fury-gl/fury/pull/1244>`_)
   I configured the build system to treat warnings as errors. This ensures that any new warnings will automatically fail the CI/CD documentation build upon creating or updating a Pull Request.
 
-- *Update Gallery Examples and Handling* (#1238 <https://github.com/fury-gl/fury/pull/1238>_)
-  I will likely close this PR. Although the current approach to building the gallery is complex, it provides the ability to avoid duplicate examples by mentioning them in the `.toml` file.
+- *Update Gallery Examples and Handling* (`#1238 <https://github.com/fury-gl/fury/pull/1238>`_)
+  I will likely close this PR. Although the current approach to building the gallery is complex, it provides the ability to avoid duplicate examples by mentioning them in the ``.toml`` file.
 
 Understanding the Build Pipeline
 --------------------------------
@@ -62,5 +61,5 @@ Next week, I plan to work on the following tasks:
 Connect with Me
 ---------------
 
-- GitHub: medha-14 <https://github.com/medha-14>_
-- LinkedIn: Medha Bhardwaj <https://www.linkedin.com/in/medhabhardwaj/>_
+- GitHub: `medha-14 <https://github.com/medha-14>`_
+- LinkedIn: `Medha Bhardwaj <https://www.linkedin.com/in/medhabhardwaj/>`_
