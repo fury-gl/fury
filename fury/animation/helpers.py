@@ -26,30 +26,29 @@ def compose_transform_matrix(
     ndarray, shape (4, 4)
         The composed transformation matrix.
     """
-    matrix = np.identity(4, dtype=np.float32)
-
-    if parent_matrix is not None:
-        matrix = parent_matrix.copy()
+    local = np.identity(4, dtype=np.float32)
 
     if scale_factors is not None:
         scale_mat = np.identity(4, dtype=np.float32)
         scale_mat[0, 0] = scale_factors[0]
         scale_mat[1, 1] = scale_factors[1]
         scale_mat[2, 2] = scale_factors[2]
-        matrix = matrix @ scale_mat
+        local = local @ scale_mat
 
     if rotation_quat is not None:
         rot = transform.Rotation.from_quat(rotation_quat)
         rot_mat = np.identity(4, dtype=np.float32)
         rot_mat[:3, :3] = rot.as_matrix()
-        matrix = matrix @ rot_mat
+        local = rot_mat @ local
 
     if position is not None:
         trans_mat = np.identity(4, dtype=np.float32)
         trans_mat[:3, 3] = position
-        matrix = trans_mat @ matrix
+        local = trans_mat @ local
 
-    return matrix
+    if parent_matrix is not None:
+        return parent_matrix @ local
+    return local
 
 
 def get_previous_timestamp(timestamps, current_time, *, include_last=False):

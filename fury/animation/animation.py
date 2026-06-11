@@ -13,6 +13,7 @@ from fury.animation.interpolator import (
     slerp,
     step_interpolator,
 )
+from fury.lib import WorldObject
 
 
 class Animation:
@@ -49,11 +50,12 @@ class Animation:
         self._timeline = None
         self._parent_animation = None
         self._scene = None
-        self._start_time = 0
+        self._start_time = perf_counter()
         self._length = length
         self._duration = length if length else 0
         self._loop = loop
         self._current_timestamp = 0
+        self._current_transform = np.identity(4, dtype=np.float32)
         self._max_timestamp = 0
         self._added_to_scene = True
         self._motion_path_res = motion_path_res
@@ -904,7 +906,7 @@ class Animation:
             return
         elif isinstance(item, Animation):
             self.add_child_animation(item)
-        elif hasattr(item, "local"):
+        elif isinstance(item, WorldObject):
             self.add_actor(item)
         else:
             raise ValueError(f"Object of type {type(item)} can't be animated")
@@ -1149,11 +1151,8 @@ class Animation:
             elif time > self.duration:
                 time = self.duration
         parent_matrix = None
-        if (
-            isinstance(self._parent_animation, Animation)
-            and self._parent_animation._actors
-        ):
-            parent_matrix = self._parent_animation._actors[0].local.matrix
+        if isinstance(self._parent_animation, Animation):
+            parent_matrix = self._parent_animation._current_transform
 
         self._current_timestamp = time
 
@@ -1176,6 +1175,7 @@ class Animation:
                 position is not None
                 or rotation_quat is not None
                 or scale_factors is not None
+                or parent_matrix is not None
             ):
                 transform_matrix = compose_transform_matrix(
                     position=position,
@@ -1183,12 +1183,20 @@ class Animation:
                     scale_factors=scale_factors,
                     parent_matrix=parent_matrix,
                 )
+                self._current_transform = transform_matrix
                 for actor in self.actors:
                     actor.local.matrix = transform_matrix
 
             if self.is_interpolatable("opacity"):
                 opacity = self.get_opacity(time)
-                opacity_val = float(np.asarray(opacity).flatten()[0])
+                opacity_arr = np.asarray(opacity).flatten()
+                if opacity_arr.size != 1:
+                    warn(
+                        "Opacity animation expects a scalar value; using the "
+                        "first value from the interpolated opacity array.",
+                        stacklevel=2,
+                    )
+                opacity_val = float(opacity_arr[0])
                 for actor in self.actors:
                     if hasattr(actor, "material"):
                         actor.material.opacity = opacity_val
@@ -1275,8 +1283,6 @@ class CameraAnimation(Animation):
 
     Attributes
     ----------
-    camera : Camera
-        Camera being animated by the CameraAnimation.
     duration : float
         The duration of the animation in seconds.
     loop : bool
@@ -1288,6 +1294,30 @@ class CameraAnimation(Animation):
         super(CameraAnimation, self).__init__(
             length=length, loop=loop, motion_path_res=motion_path_res
         )
+        self._camera = camera
+
+    @property
+    def camera(self):
+        """
+        Return the camera being animated.
+
+        Returns
+        -------
+        Camera
+            The camera being animated by the CameraAnimation.
+        """
+        return self._camera
+
+    @camera.setter
+    def camera(self, camera):
+        """
+        Set the camera being animated.
+
+        Parameters
+        ----------
+        camera : Camera
+            The camera to be animated by the CameraAnimation.
+        """
         self._camera = camera
 
     def set_focal(self, timestamp, position, **kwargs):
@@ -1454,36 +1484,38 @@ class CameraAnimation(Animation):
             The time to update the camera animation at. If None, the animation
             will play.
         """
+        if time is None:
+            time = perf_counter() - self._start_time
+
+        if self.duration:
+            if self._loop and time > self.duration:
+                time = time % self.duration
+            elif time > self.duration:
+                time = self.duration
+
+        self._current_timestamp = time
+
         if self._camera is None:
-            if self._scene:
-                self._camera = self._scene.camera()
-                self.update_animation(tile=time)
-                return
-        else:
-            if self.is_interpolatable("rotation"):
-                pos = self._camera.GetPosition()
-                translation = np.identity(4)
-                translation[:3, 3] = pos
-                # camera axis is reverted
-                rot = -self.get_rotation(time, as_quat=True)
-                rot = transform.Rotation.from_quat(rot).as_matrix()
-                rot = np.array([[*rot[0], 0], [*rot[1], 0], [*rot[2], 0], [0, 0, 0, 1]])
-                rot = translation @ rot @ np.linalg.inv(translation)
-                self._camera.SetModelTransformMatrix(rot.flatten())
+            return
 
+        if self.is_interpolatable("position"):
+            cam_pos = self.get_position(time)
+            self._camera.local.position = tuple(cam_pos)
+
+        if self.is_interpolatable("view_up"):
+            cam_up = self.get_view_up(time)
+            self._camera.local.reference_up = tuple(cam_up)
+
+        if self.is_interpolatable("focal"):
+            cam_foc = self.get_focal(time)
+            self._camera.look_at(tuple(cam_foc))
+
+        if self.is_interpolatable("rotation"):
+            rot_quat = self.get_rotation(time, as_quat=True)
+            rot_mat = np.identity(4, dtype=np.float32)
+            rot_mat[:3, :3] = transform.Rotation.from_quat(rot_quat).as_matrix()
             if self.is_interpolatable("position"):
-                cam_pos = self.get_position(time)
-                self._camera.SetPosition(cam_pos)
+                rot_mat[:3, 3] = self.get_position(time)
+            self._camera.local.matrix = rot_mat
 
-            if self.is_interpolatable("focal"):
-                cam_foc = self.get_focal(time)
-                self._camera.SetFocalPoint(cam_foc)
-
-            if self.is_interpolatable("view_up"):
-                cam_up = self.get_view_up(time)
-                self._camera.SetViewUp(cam_up)
-            elif not self.is_interpolatable("view_up"):
-                # to preserve up-view as default after user interaction
-                self._camera.SetViewUp(0, 1, 0)
-            if self._scene:
-                self._scene.reset_clipping_range()
+        [callback(time) for callback in self._general_callbacks]
