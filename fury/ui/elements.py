@@ -2968,7 +2968,7 @@ class ListBox2D(UI):
         for _ in range(self.nb_slots):
             y -= self.slot_height
             item = ListBoxItem2D(
-                list_box=self,
+                on_select=self.select,
                 size=(self.slot_width, self.slot_height),
                 text_color=self.text_color,
                 selected_color=self.selected_color,
@@ -3223,8 +3223,8 @@ class ListBoxItem2D(UI):
 
     Parameters
     ----------
-    list_box : object
-        The ListBox2D object.
+    on_select : callable
+        Callback invoked when the item is clicked.
     size : (int, int)
         Size of the item.
     text_color : tuple of 3 floats, optional
@@ -3239,7 +3239,7 @@ class ListBoxItem2D(UI):
 
     def __init__(
         self,
-        list_box,
+        on_select,
         size,
         *,
         text_color=(1.0, 0.0, 0.0),
@@ -3252,8 +3252,8 @@ class ListBoxItem2D(UI):
 
         Parameters
         ----------
-        list_box : :class:`ListBox`
-            The ListBox reference this text belongs to.
+        on_select : callable
+            Callback invoked when the item is clicked.
         size : tuple of 2 ints
             The size of the listbox item.
         text_color : tuple of 3 floats
@@ -3265,7 +3265,7 @@ class ListBoxItem2D(UI):
         self._item_size = size
         super(ListBoxItem2D, self).__init__()
         self._element = None
-        self.list_box = list_box
+        self._on_select = on_select
         self.background.resize(size)
         self.background_opacity = background_opacity
         self.selected = False
@@ -3324,11 +3324,9 @@ class ListBoxItem2D(UI):
         self.background.set_position(coords)
         self.textblock.set_position(coords)
 
-        # PyGfx native left-alignment workaround
-        # Bypasses FURY's default update_alignment() math to prevent wobbling.
+        # left-alignment to prevent text unaligning during updates.
         self.textblock.actor.anchor = "middle-left"
         pos = self.textblock.actor.local.position
-        # Align perfectly to the left edge coordinate
         self.textblock.actor.local.position = (coords[0], pos[1], pos[2])
 
     def deselect(self):
@@ -3382,9 +3380,7 @@ class ListBoxItem2D(UI):
         modifiers = getattr(event, "modifiers", None) or ()
         multiselect = "Control" in modifiers
         range_select = "Shift" in modifiers
-        self.list_box.select(
-            item=self, multiselect=multiselect, range_select=range_select
-        )
+        self._on_select(item=self, multiselect=multiselect, range_select=range_select)
 
     def resize(self, size):
         """

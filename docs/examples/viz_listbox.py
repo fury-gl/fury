@@ -50,6 +50,7 @@ values = [
     "Spain",
     "Thailand",
     "United Kingdom",
+    "United States of America",
     "Venezuela",
     "Zimbabwe",
 ]
