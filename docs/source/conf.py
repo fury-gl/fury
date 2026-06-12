@@ -121,43 +121,7 @@ todo_include_todos = False
 
 # -- Options for HTML output ----------------------------------------------
 
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-#
-# html_theme = 'sphinx_material'
-# # Material theme options (see theme.conf for more information)
-# html_theme_options = {
-
-#     # Set the name of the project to appear in the navigation.
-#     'nav_title': 'FURY',
-
-#     # Set you GA account ID to enable tracking
-#     'google_analytics_account': 'UA-XXXXX',
-
-#     # Specify a base_url used to generate sitemap.xml. If not
-#     # specified, then no sitemap will be built.
-#     'base_url': 'https://fury.gl/latest',
-
-#     # Set the color and the accent color
-#     'theme_color': '#990000',
-#     'color_primary': 'red',
-#     'color_accent': 'red',
-
-#     # Set the repo location to get a badge with stats
-#     'repo_url': 'https://github.com/fury-gl/fury/',
-#     'repo_name': 'fury',
-
-#     # Visible levels of the global TOC; -1 means unlimited
-#     'globaltoc_depth': 2,
-#     # If False, expand all TOC entries
-#     'globaltoc_collapse': True,
-#     # If True, show hidden TOC entries
-#     'globaltoc_includehidden': True,
-#     # 'master_doc': False,
-#     "version_dropdown": True,
-#     "version_json": "_static/versions.json",
-# }
-
+# The theme to use for HTML and HTML Help pages.
 html_theme = "pydata_sphinx_theme"
 
 # Define the json_url for our version switcher.
@@ -176,16 +140,13 @@ else:
 #
 # html_theme_options = {}
 
-# Log:3/3/24 ~ footer_items is deprecated, using new keys for footer.
-# Log:5/24/26 ~ added version-switcher to navbar_end; switcher reads json_url set above.
 html_theme_options = {
     "navigation_depth": 1,
     "navigation_with_keys": True,
-    #   "logo_link": 'index.html',
-    "navbar_start": ["custom-title.html"],
-    "navbar_center": ["custom-navbar.html"],
+    "navbar_start": ["navbar-logo"],
+    "navbar_center": ["navbar-nav"],
     "navbar_end": ["theme-switcher", "version-switcher", "navbar-icon-links"],
-    "footer_start": ["custom-footer.html"],
+    "footer_start": ["copyright"],
     "footer_center": "",
     "footer_end": "",
     "switcher": {
@@ -194,14 +155,12 @@ html_theme_options = {
     },
 }
 
-html_additional_pages = {"video": "home-video-page.html", "index": "home.html"}
-
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-html_css_files = ["css/custom.css", "vendor/fonts.css"]
+# html_css_files = ["css/custom.css", "vendor/fonts.css"]
 
 # html_baseurl = os.environ.get("SPHINX_HTML_BASE_URL", "http://127.0.0.1:8000/")
 
@@ -209,66 +168,7 @@ html_logo = "_static/images/logo.svg"
 
 html_favicon = "_static/images/logo.ico"
 
-# Custom sidebar templates, must be a dictionary that maps document names
-# to template names.
-#
-# This is required for the alabaster theme
-# refs: http://alabaster.readthedocs.io/en/latest/installation.html#sidebars
-# html_sidebars = {
-#     '**': [
-#         'relations.html',  # needs 'show_related': True theme option to display
-#         'searchbox.html',
-#         'versions.html',
-#     ]
-# }
-
-# Log:3/3/24 ~ search-field is not necessary in sidebar anymore,
-# it is in the Navbar. Also with this update it can be easily accessed,
-# with the shortcut, which was not working previously.
-html_sidebars = {
-    # "**": ["search-field", 'globaltoc.html',"sidebar-nav-bs"]
-    # '**': ['search-field', 'globaltoc.html']
-    "**": ["globaltoc.html"]
-}
-
-# html_sidebars = {
-#     "**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"],
-# }
-# html_sidebars = {
-#     "introduction/**": [
-#         "logo-text.html",
-#         "globaltoc.html",
-#         "localtoc.html",
-#         "searchbox.html",
-#     ],
-#     "getting_started": [
-#         "logo-text.html",
-#         "globaltoc.html",
-#         "localtoc.html",
-#         "searchbox.html",
-#     ],
-#     "auto_examples/**": [
-#         "logo-text.html",
-#         "globaltoc.html",
-#         "localtoc.html",
-#         "searchbox.html",
-#     ],
-#     "auto_tutorials/**": [
-#         "logo-text.html",
-#         "globaltoc.html",
-#         "localtoc.html",
-#         "searchbox.html",
-#     ],
-#     "references/**": [
-#         "logo-text.html",
-#         "globaltoc.html",
-#         "localtoc.html",
-#         "searchbox.html",
-#     ],
-#     "blog": ["categories.html", "archives.html"],
-#     "blog/**": ["categories.html", "archives.html"],
-#     "posts/**": ["postcard.html"],
-# }
+html_sidebars = {"**": ["globaltoc.html"]}
 
 # ghissue config
 github_project_url = "https://github.com/fury-gl/fury"
