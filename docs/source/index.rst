@@ -1,5 +1,5 @@
 
-test
+Home Page
 
 .. toctree::
    :maxdepth: 2
