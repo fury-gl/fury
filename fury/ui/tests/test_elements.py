@@ -1819,3 +1819,101 @@ def test_ui_2d_ring_slider_hooks():
 #     spinbox.resize((450, 200))
 #     npt.assert_equal((315, 160), spinbox.textbox_size)
 #     npt.assert_equal((90, 60), spinbox.button_size)
+
+
+def test_ui_card2d_initialization():
+    """Test Card2D initialization and layout logic."""
+    fetch_viz_icons()
+    img_path = read_viz_icons(fname="play3.png")
+
+    card = ui.Card2D(
+        image_path=img_path,
+        title_text="Test Title",
+        body_text="Test Body",
+        size=(400, 400),
+        image_scale=0.5,
+        padding=10,
+        border_width=2,
+    )
+
+    npt.assert_equal(card.card_size, (400, 400))
+    npt.assert_equal(card.title, "Test Title")
+    npt.assert_equal(card.body, "Test Body")
+
+    assert isinstance(card.image, ui.ImageContainer2D)
+    assert isinstance(card.title_box, ui.TextBlock2D)
+    assert isinstance(card.body_box, ui.TextBlock2D)
+    assert isinstance(card.panel, ui.Panel2D)
+
+    img_w = max(400 - 2 * 2, 1)
+    img_h = max(int(0.5 * 400), 1)
+
+    npt.assert_equal(card._image_size, (img_w, img_h))
+    npt.assert_equal(card.image.size, (img_w, img_h))
+
+
+def test_ui_card2d_properties():
+    """Test Card2D getters and setters."""
+    fetch_viz_icons()
+    img_path = read_viz_icons(fname="play3.png")
+
+    card = ui.Card2D(
+        image_path=img_path,
+        title_text="Old Title",
+        body_text="Old Body",
+        bg_color=(1.0, 0.0, 0.0),
+        bg_opacity=0.5,
+    )
+
+    card.title = "New Title"
+    npt.assert_equal(card.title, "New Title")
+    npt.assert_equal(card.title_box.message, "New Title")
+
+    card.body = "New Body"
+    npt.assert_equal(card.body, "New Body")
+    npt.assert_equal(card.body_box.message, "New Body")
+
+    card.color = (0.0, 1.0, 0.0)
+    npt.assert_almost_equal(card.color, (0.0, 1.0, 0.0))
+
+    card.opacity = 0.8
+    npt.assert_almost_equal(card.opacity, 0.8)
+
+
+def test_ui_card2d_resize():
+    """Test Card2D resize propagates to internal components."""
+    fetch_viz_icons()
+    img_path = read_viz_icons(fname="play3.png")
+
+    card = ui.Card2D(image_path=img_path, size=(200, 200), border_width=0, padding=0)
+
+    new_size = (300, 400)
+    card.resize(new_size)
+
+    npt.assert_equal(card.card_size, new_size)
+    npt.assert_equal(card.panel.size, new_size)
+
+    npt.assert_equal(card.image.size, (300, 200))
+    npt.assert_equal(card._image_size, (300, 200))
+
+
+def test_ui_card2d_events():
+    """Test Card2D dragging events."""
+    fetch_viz_icons()
+    img_path = read_viz_icons(fname="play3.png")
+
+    card = ui.Card2D(image_path=img_path, position=(10, 10))
+
+    event_press = window.PointerEvent(
+        x=20, y=20, type=window.EventType.POINTER_DOWN, target="target"
+    )
+    card.left_button_pressed(event_press)
+
+    npt.assert_array_almost_equal(card._drag_offset, [10, 10])
+
+    event_drag = window.PointerEvent(
+        x=50, y=60, type=window.EventType.POINTER_MOVE, target="target"
+    )
+    card.left_button_dragged(event_drag)
+
+    npt.assert_array_almost_equal(card.get_position(), [40, 50])
