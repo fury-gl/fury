@@ -23,14 +23,13 @@ __all__ = [
     #     "SpinBox",
 ]
 
-import os
 
 from PIL import UnidentifiedImageError
 import numpy as np
 
 from fury.colormap import normalize_colors
 from fury.data import read_viz_icons
-from fury.io import load_image, load_image_texture
+from fury.io import get_extension, load_image, load_image_texture
 from fury.ui.containers import ImageContainer2D, Panel2D
 from fury.ui.core import (
     UI,
@@ -4251,10 +4250,8 @@ class Card2D(UI):
     ):
         """Initialize the Card2D instance."""
         self._drag_offset = None
-
         self.image_path = image_path
-        self._basename = os.path.basename(self.image_path)
-        self._extension = self._basename.split(".")[-1]
+        self._extension = get_extension(self.image_path)
         if self._extension not in ["jpg", "jpeg", "png"]:
             raise UnidentifiedImageError(
                 f"Image extension {self._extension} not supported"

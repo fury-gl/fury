@@ -17,6 +17,7 @@ import zipfile
 import aiohttp
 
 from fury.decorators import warn_on_args_to_kwargs
+from fury.io import get_extension
 
 # Set a user-writeable file-system location to put files:
 if "FURY_HOME" in os.environ:
@@ -292,15 +293,17 @@ def _make_fetcher(
             print(msg)
         if unzip:
             for f in local_fnames:
-                split_ext = os.path.splitext(f)
-                if split_ext[-1] == ".gz" or split_ext[-1] == ".bz2":
-                    if os.path.splitext(split_ext[0])[-1] == ".tar":
+                ext1 = get_extension(f)
+                if ext1 == "gz" or ext1 == "bz2":
+                    root1 = f[:-(len(ext1)+1)] if f.endswith(f".{ext1}") else f
+                    ext2 = get_extension(root1)
+                    if ext2 == "tar":
                         ar = tarfile.open(pjoin(folder, f))
                         ar.extractall(path=folder, filter="data")
                         ar.close()
                     else:
                         raise ValueError("File extension is not recognized")
-                elif split_ext[-1] == ".zip":
+                elif ext1 == "zip":
                     z = zipfile.ZipFile(pjoin(folder, f), "r")
                     z.extractall(folder, filter="data")
                     z.close()

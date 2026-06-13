@@ -96,7 +96,7 @@ def load_image(filename):
     if is_url:
         image_name = os.path.basename(filename)
 
-        if len(image_name.split(".")) < 2:
+        if not get_extension(image_name):
             raise OSError(f"{filename} is not a valid image URL")
 
         urlretrieve(filename, image_name)
@@ -231,9 +231,9 @@ def save_image(
     if isinstance(dpi, (float, int)):
         dpi = (dpi, dpi)
 
-    allowed_extensions = [".png", ".bmp", ".jpeg", ".jpg", ".tiff", ".tif"]
+    allowed_extensions = ["png", "bmp", "jpeg", "jpg", "tiff", "tif"]
 
-    extension = os.path.splitext(os.path.basename(filename).lower())[1]
+    extension = get_extension(filename).lower()
 
     if extension.lower() not in allowed_extensions:
         raise OSError(
@@ -244,7 +244,7 @@ def save_image(
 
     save_kwargs = {"dpi": dpi}
 
-    if extension in (".tiff", ".tif"):
+    if extension in ("tiff", "tif"):
         if compression_type is not None:
             compression_map = {
                 "lzw": "tiff_lzw",
@@ -261,6 +261,28 @@ def save_image(
         save_kwargs["quality"] = compression_quality
 
     im.save(filename, **save_kwargs)
+
+
+def get_extension(file_path):
+    """
+    Get the file extension.
+
+    Parameters
+    ----------
+    file_path : str
+        The path or name of the file.
+
+    Returns
+    -------
+    str
+        The file extension without the leading dot. Returns an empty string
+        if there is no extension.
+    """
+    root, ext = os.path.splitext(file_path)
+
+    if ext.startswith("."):
+        return ext[1:]
+    return ext
 
 
 # def load_polydata(file_name):

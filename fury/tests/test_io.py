@@ -10,6 +10,7 @@ import numpy.testing as npt
 # from fury.decorators import skip_osx
 from fury.data import fetch_viz_cubemaps, read_viz_cubemap
 from fury.io import (
+    get_extension,
     load_cube_map_texture,
     load_image,
     load_image_as_wgpu_texture_view,
@@ -24,6 +25,14 @@ from fury.io import (
 from fury.lib import Texture, wgpu
 from fury.testing import assert_greater
 from fury.window import ShowManager
+
+
+def test_get_extension():
+    npt.assert_equal(get_extension("image.png"), "png")
+    npt.assert_equal(get_extension("archive.tar.gz"), "gz")
+    npt.assert_equal(get_extension("/path/to/folder/file.jpg"), "jpg")
+    npt.assert_equal(get_extension(".hidden"), "")
+    npt.assert_equal(get_extension("noextension"), "")
 
 
 def test_load_cube_map_texture():

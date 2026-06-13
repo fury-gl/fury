@@ -1,6 +1,5 @@
 """Timeline class for keyframe animation."""
 
-import os
 from time import perf_counter
 
 from PIL import Image
@@ -9,6 +8,7 @@ import numpy as np
 from fury import window
 from fury.animation.animation import Animation
 from fury.decorators import warn_on_args_to_kwargs
+from fury.io import get_extension
 
 # from fury.lib import RenderWindow, WindowToImageFilter, numpy_support
 # from fury.ui.elements import PlaybackPanel
@@ -376,9 +376,9 @@ class Timeline:
         It's recommended to use 30 or 50 FPS when recording to a GIF file.
         To save as MP4, OpenCV must be installed.
         """
-        ext = os.path.splitext(fname)[-1]
+        ext = get_extension(fname)
 
-        mp4 = ext == ".mp4"
+        mp4 = ext == "mp4"
 
         if mp4:
             try:
