@@ -1153,600 +1153,456 @@ class PlaybackPanel(UI):
 
 #         i_ren.force_render()
 
-# class LineDoubleSlider2D(UI):
-#     """A 2D Line Slider with two sliding rings.
-
-#     Useful for setting min and max values for something.
-
-#     Currently supports:
-#     - Setting positions of both disks.
-
-#     Attributes
-#     ----------
-#     line_width : int
-#         Width of the line on which the disk will slide.
-#     length : int
-#         Length of the slider.
-#     track : :class:`vtkActor`
-#         The line on which the handles move.
-#     handles : [:class:`vtkActor`, :class:`vtkActor`]
-#         The moving slider disks.
-#     text : [:class:`TextBlock2D`, :class:`TextBlock2D`]
-#         The texts that show the values of the disks.
-#     shape : string
-#         Describes the shape of the handle.
-#         Currently supports 'disk' and 'square'.
-#     default_color : (float, float, float)
-#         Color of the handles when in unpressed state.
-#     active_color : (float, float, float)
-#         Color of the handles when they are pressed.
-
-#     """
-
-#     @warn_on_args_to_kwargs()
-#     def __init__(
-#         self,
-#         *,
-#         line_width=5,
-#         inner_radius=0,
-#         outer_radius=10,
-#         handle_side=20,
-#         center=(450, 300),
-#         length=200,
-#         initial_values=(0, 100),
-#         min_value=0,
-#         max_value=100,
-#         font_size=16,
-#         text_template="{value:.1f}",
-#         orientation="horizontal",
-#         shape="disk",
-#     ):
-#         """Init this UI element.
-
-#         Parameters
-#         ----------
-#         line_width : int
-#             Width of the line on which the disk will slide.
-#         inner_radius : int
-#             Inner radius of the handles (if disk).
-#         outer_radius : int
-#             Outer radius of the handles (if disk).
-#         handle_side : int
-#             Side length of the handles (if square).
-#         center : (float, float)
-#             Center of the slider.
-#         length : int
-#             Length of the slider.
-#         initial_values : (float, float)
-#             Initial values of the two handles.
-#         min_value : float
-#             Minimum value of the slider.
-#         max_value : float
-#             Maximum value of the slider.
-#         font_size : int
-#             Size of the text to display alongside the slider (pt).
-#         text_template : str, callable
-#             If str, text template can contain one or multiple of the
-#             replacement fields: `{value:}`, `{ratio:}`.
-#             If callable, this instance of `:class:LineDoubleSlider2D` will be
-#             passed as argument to the text template function.
-#         orientation : str
-#             horizontal or vertical
-#         shape : string
-#             Describes the shape of the handle.
-#             Currently supports 'disk' and 'square'.
-
-#         """
-#         self.shape = shape
-#         self.default_color = (1, 1, 1)
-#         self.active_color = (0, 0, 1)
-#         self.orientation = orientation.lower()
-#         super(LineDoubleSlider2D, self).__init__()
-
-#         if self.orientation == "horizontal":
-#             self.track.width = length
-#             self.track.height = line_width
-#         elif self.orientation == "vertical":
-#             self.track.width = line_width
-#             self.track.height = length
-#         else:
-#             raise ValueError("Unknown orientation")
-
-#         self.center = center
-#         if shape == "disk":
-#             self.handles[0].inner_radius = inner_radius
-#             self.handles[0].outer_radius = outer_radius
-#             self.handles[1].inner_radius = inner_radius
-#             self.handles[1].outer_radius = outer_radius
-#         elif shape == "square":
-#             self.handles[0].width = handle_side
-#             self.handles[0].height = handle_side
-#             self.handles[1].width = handle_side
-#             self.handles[1].height = handle_side
-
-#         self.min_value = min_value
-#         self.max_value = max_value
-#         self.text[0].font_size = font_size
-#         self.text[1].font_size = font_size
-#         self.text_template = text_template
-
-#         # Offer some standard hooks to the user.
-#         self.on_change = lambda ui: None
-#         self.on_value_changed = lambda ui: None
-#         self.on_moving_slider = lambda ui: None
-
-#         # Setting the handle positions will also update everything.
-#         self._values = [initial_values[0], initial_values[1]]
-#         self._ratio = [None, None]
-#         self.left_disk_value = initial_values[0]
-#         self.right_disk_value = initial_values[1]
-#         self.bottom_disk_value = initial_values[0]
-#         self.top_disk_value = initial_values[1]
-
-#     def _setup(self):
-#         """Setup this UI component.
-
-#         Create the slider's track (Rectangle2D), the handles (Disk2D) and
-#         the text (TextBlock2D).
-
-#         """
-#         # Slider's track
-#         self.track = Rectangle2D()
-#         self.track.color = (1, 0, 0)
-
-#         # Handles
-#         self.handles = []
-#         if self.shape == "disk":
-#             self.handles.append(Disk2D(outer_radius=1))
-#             self.handles.append(Disk2D(outer_radius=1))
-#         elif self.shape == "square":
-#             self.handles.append(Rectangle2D(size=(1, 1)))
-#             self.handles.append(Rectangle2D(size=(1, 1)))
-#         self.handles[0].color = self.default_color
-#         self.handles[1].color = self.default_color
-
-#         # Slider Text
-#         self.text = [
-#             TextBlock2D(justification="center", vertical_justification="top"),
-#             TextBlock2D(justification="center", vertical_justification="top"),
-#         ]
-
-#         # Add default events listener for this UI component.
-#         self.track.on_left_mouse_button_dragged = self.handle_move_callback
-#         self.handles[0].on_left_mouse_button_dragged = self.handle_move_callback
-#         self.handles[1].on_left_mouse_button_dragged = self.handle_move_callback
-#         self.handles[0].on_left_mouse_button_released = self.handle_release_callback
-#         self.handles[1].on_left_mouse_button_released = self.handle_release_callback
-
-#     def _get_actors(self):
-#         """Get the actors composing this UI component."""
-#         return (
-#             self.track.actors
-#             + self.handles[0].actors
-#             + self.handles[1].actors
-#             + self.text[0].actors
-#             + self.text[1].actors
-#         )
-
-#     def _add_to_scene(self, scene):
-#         """Add all subcomponents or VTK props that compose this UI component.
-
-#         Parameters
-#         ----------
-#         scene : scene
-
-#         """
-#         self.track.add_to_scene(scene)
-#         self.handles[0].add_to_scene(scene)
-#         self.handles[1].add_to_scene(scene)
-#         self.text[0].add_to_scene(scene)
-#         self.text[1].add_to_scene(scene)
-
-#     def _get_size(self):
-#         # Consider the handle's size when computing the slider's size.
-#         width = None
-#         height = None
-#         if self.orientation == "horizontal":
-#             width = self.track.width + self.handles[0].size[0]
-#             height = max(self.track.height, self.handles[0].size[1])
-#         else:
-#             width = max(self.track.width, self.handles[0].size[0])
-#             height = self.track.height + self.handles[0].size[1]
-
-#         return np.array([width, height])
-
-#     def _set_position(self, coords):
-#         """Set the lower-left corner position of this UI component.
-
-#         Parameters
-#         ----------
-#         coords: (float, float)
-#             Absolute pixel coordinates (x, y).
-
-#         """
-#         # Offset the slider line by the handle's radius.
-#         track_position = coords
-#         if self.orientation == "horizontal":
-#             # Offset the slider line height by half the slider line width.
-#             track_position[1] -= self.track.size[1] / 2.0
-#         else:
-#             # Offset the slider line width by half the slider line height.
-#             track_position[0] -= self.track.size[0] / 2.0
-
-#         self.track.position = track_position
-
-#         self.handles[0].position = self.handles[0].position.astype(float)
-#         self.handles[1].position = self.handles[1].position.astype(float)
-
-#         self.handles[0].position += coords - self.position
-#         self.handles[1].position += coords - self.position
-
-#         if self.orientation == "horizontal":
-#             # Position the text below the handles.
-#             self.text[0].position = (
-#                 self.handles[0].center[0],
-#                 self.handles[0].position[1] - 10,
-#             )
-#             self.text[1].position = (
-#                 self.handles[1].center[0],
-#                 self.handles[1].position[1] - 10,
-#             )
-#         else:
-#             # Position the text to the left of the handles.
-#             self.text[0].position = (
-#                 self.handles[0].center[0] - 35,
-#                 self.handles[0].position[1],
-#             )
-#             self.text[1].position = (
-#                 self.handles[1].center[0] - 35,
-#                 self.handles[1].position[1],
-#             )
-
-#     @property
-#     def bottom_y_position(self):
-#         return self.track.position[1]
-
-#     @property
-#     def top_y_position(self):
-#         return self.track.position[1] + self.track.size[1]
-
-#     @property
-#     def left_x_position(self):
-#         return self.track.position[0]
-
-#     @property
-#     def right_x_position(self):
-#         return self.track.position[0] + self.track.size[0]
-
-#     def value_to_ratio(self, value):
-#         """Convert the value of a disk to the ratio.
-
-#         Parameters
-#         ----------
-#         value : float
-
-#         """
-#         value_range = self.max_value - self.min_value
-#         return (value - self.min_value) / value_range if value_range else 0
-
-#     def ratio_to_coord(self, ratio):
-#         """Convert the ratio to the absolute coordinate.
-
-#         Parameters
-#         ----------
-#         ratio : float
-
-#         """
-#         if self.orientation == "horizontal":
-#             return self.left_x_position + ratio * self.track.width
-#         return self.bottom_y_position + ratio * self.track.height
-
-#     def coord_to_ratio(self, coord):
-#         """Convert the x coordinate of a disk to the ratio.
-
-#         Parameters
-#         ----------
-#         coord : float
-
-#         """
-#         if self.orientation == "horizontal":
-#             return (coord - self.left_x_position) / float(self.track.width)
-#         return (coord - self.bottom_y_position) / float(self.track.height)
-
-#     def ratio_to_value(self, ratio):
-#         """Convert the ratio to the value of the disk.
-
-#         Parameters
-#         ----------
-#         ratio : float
-
-#         """
-#         value_range = self.max_value - self.min_value
-#         return self.min_value + ratio * value_range
-
-#     def set_position(self, position, disk_number):
-#         """Set the disk's position.
-
-#         Parameters
-#         ----------
-#         position : (float, float)
-#             The absolute position of the disk (x, y).
-#         disk_number : int
-#             The index of disk being moved.
-
-#         """
-#         if self.orientation == "horizontal":
-#             x_position = position[0]
-
-#             if disk_number == 0 and x_position >= self.handles[1].center[0]:
-#                 x_position = self.ratio_to_coord(
-#                     self.value_to_ratio(self._values[1] - 1)
-#                 )
-
-#             if disk_number == 1 and x_position <= self.handles[0].center[0]:
-#                 x_position = self.ratio_to_coord(
-#                     self.value_to_ratio(self._values[0] + 1)
-#                 )
-
-#             x_position = max(x_position, self.left_x_position)
-#             x_position = min(x_position, self.right_x_position)
-
-#             self.handles[disk_number].center = (x_position, self.track.center[1])
-#         else:
-#             y_position = position[1]
-
-#             if disk_number == 0 and y_position >= self.handles[1].center[1]:
-#                 y_position = self.ratio_to_coord(
-#                     self.value_to_ratio(self._values[1] - 1)
-#                 )
-
-#             if disk_number == 1 and y_position <= self.handles[0].center[1]:
-#                 y_position = self.ratio_to_coord(
-#                     self.value_to_ratio(self._values[0] + 1)
-#                 )
-
-#             y_position = max(y_position, self.bottom_y_position)
-#             y_position = min(y_position, self.top_y_position)
-
-#             self.handles[disk_number].center = (self.track.center[0], y_position)
-#         self.update(disk_number)
-
-#     @property
-#     def bottom_disk_value(self):
-#         """Return the value of the bottom disk."""
-#         return self._values[0]
-
-#     @bottom_disk_value.setter
-#     def bottom_disk_value(self, bottom_disk_value):
-#         """Set the value of the bottom disk.
-
-#         Parameters
-#         ----------
-#         bottom_disk_value : float
-#             New value for the bottom disk.
-
-#         """
-#         self.bottom_disk_ratio = self.value_to_ratio(bottom_disk_value)
-
-#     @property
-#     def top_disk_value(self):
-#         """Return the value of the top disk."""
-#         return self._values[1]
-
-#     @top_disk_value.setter
-#     def top_disk_value(self, top_disk_value):
-#         """Set the value of the top disk.
-
-#         Parameters
-#         ----------
-#         top_disk_value : float
-#             New value for the top disk.
-
-#         """
-#         self.top_disk_ratio = self.value_to_ratio(top_disk_value)
-
-#     @property
-#     def left_disk_value(self):
-#         """Return the value of the left disk."""
-#         return self._values[0]
-
-#     @left_disk_value.setter
-#     def left_disk_value(self, left_disk_value):
-#         """Set the value of the left disk.
-
-#         Parameters
-#         ----------
-#         left_disk_value : float
-#             New value for the left disk.
-
-#         """
-#         self.left_disk_ratio = self.value_to_ratio(left_disk_value)
-#         self.on_value_changed(self)
-
-#     @property
-#     def right_disk_value(self):
-#         """Return the value of the right disk."""
-#         return self._values[1]
-
-#     @right_disk_value.setter
-#     def right_disk_value(self, right_disk_value):
-#         """Set the value of the right disk.
-
-#         Parameters
-#         ----------
-#         right_disk_value : float
-#             New value for the right disk.
-
-#         """
-#         self.right_disk_ratio = self.value_to_ratio(right_disk_value)
-#         self.on_value_changed(self)
-
-#     @property
-#     def bottom_disk_ratio(self):
-#         """Return the ratio of the bottom disk."""
-#         return self._ratio[0]
-
-#     @bottom_disk_ratio.setter
-#     def bottom_disk_ratio(self, bottom_disk_ratio):
-#         """Set the ratio of the bottom disk.
-
-#         Parameters
-#         ----------
-#         bottom_disk_ratio : float
-#             New ratio for the bottom disk.
-
-#         """
-#         position_x = self.ratio_to_coord(bottom_disk_ratio)
-#         position_y = self.ratio_to_coord(bottom_disk_ratio)
-#         self.set_position((position_x, position_y), 0)
-
-#     @property
-#     def top_disk_ratio(self):
-#         """Return the ratio of the top disk."""
-#         return self._ratio[1]
-
-#     @top_disk_ratio.setter
-#     def top_disk_ratio(self, top_disk_ratio):
-#         """Set the ratio of the top disk.
-
-#         Parameters
-#         ----------
-#         top_disk_ratio : float
-#             New ratio for the top disk.
-
-#         """
-#         position_x = self.ratio_to_coord(top_disk_ratio)
-#         position_y = self.ratio_to_coord(top_disk_ratio)
-#         self.set_position((position_x, position_y), 1)
-
-#     @property
-#     def left_disk_ratio(self):
-#         """Return the ratio of the left disk."""
-#         return self._ratio[0]
-
-#     @left_disk_ratio.setter
-#     def left_disk_ratio(self, left_disk_ratio):
-#         """Set the ratio of the left disk.
-
-#         Parameters
-#         ----------
-#         left_disk_ratio : float
-#             New ratio for the left disk.
-
-#         """
-#         position_x = self.ratio_to_coord(left_disk_ratio)
-#         position_y = self.ratio_to_coord(left_disk_ratio)
-#         self.set_position((position_x, position_y), 0)
-
-#     @property
-#     def right_disk_ratio(self):
-#         """Return the ratio of the right disk."""
-#         return self._ratio[1]
-
-#     @right_disk_ratio.setter
-#     def right_disk_ratio(self, right_disk_ratio):
-#         """Set the ratio of the right disk.
-
-#         Parameters
-#         ----------
-#         right_disk_ratio : float
-#             New ratio for the right disk.
-
-#         """
-#         position_x = self.ratio_to_coord(right_disk_ratio)
-#         position_y = self.ratio_to_coord(right_disk_ratio)
-#         self.set_position((position_x, position_y), 1)
-
-#     def format_text(self, disk_number):
-#         """Return formatted text to display along the slider.
-
-#         Parameters
-#         ----------
-#         disk_number : int
-#             Index of the disk.
-
-#         """
-#         if callable(self.text_template):
-#             return self.text_template(self)
-
-#         return self.text_template.format(value=self._values[disk_number])
-
-#     def update(self, disk_number):
-#         """Update the slider.
-
-#         Parameters
-#         ----------
-#         disk_number : int
-#             Index of the disk to be updated.
-
-#         """
-#         # Compute the ratio determined by the position of the slider disk.
-#         if self.orientation == "horizontal":
-#             self._ratio[disk_number] = self.coord_to_ratio(
-#                 self.handles[disk_number].center[0]
-#             )
-#         else:
-#             self._ratio[disk_number] = self.coord_to_ratio(
-#                 self.handles[disk_number].center[1]
-#             )
-
-#         # Compute the selected value considering min_value and max_value.
-#         self._values[disk_number] = self.ratio_to_value(self._ratio[disk_number])
-
-#         # Update text.
-#         text = self.format_text(disk_number)
-#         self.text[disk_number].message = text
-
-#         if self.orientation == "horizontal":
-#             self.text[disk_number].position = (
-#                 self.handles[disk_number].center[0],
-#                 self.text[disk_number].position[1],
-#             )
-#         else:
-#             self.text[disk_number].position = (
-#                 self.text[disk_number].position[0],
-#                 self.handles[disk_number].center[1],
-#             )
-#         self.on_change(self)
-
-#     def handle_move_callback(self, i_ren, vtkactor, _slider):
-#         """Handle movement.
-
-#         Parameters
-#         ----------
-#         i_ren : :class:`CustomInteractorStyle`
-#         vtkactor : :class:`vtkActor`
-#             The picked actor
-#         _slider : :class:`LineDoubleSlider2D`
-
-#         """
-#         position = i_ren.event.position
-#         if vtkactor == self.handles[0].actors[0]:
-#             self.set_position(position, 0)
-#             self.handles[0].color = self.active_color
-#         elif vtkactor == self.handles[1].actors[0]:
-#             self.set_position(position, 1)
-#             self.handles[1].color = self.active_color
-#         self.on_moving_slider(self)
-#         i_ren.force_render()
-#         i_ren.event.abort()  # Stop propagating the event.
-
-#     def handle_release_callback(self, i_ren, vtkactor, _slider):
-#         """Change color when handle is released.
-
-#         Parameters
-#         ----------
-#         i_ren : :class:`CustomInteractorStyle`
-#         vtkactor : :class:`vtkActor`
-#             The picked actor
-#         _slider : :class:`LineDoubleSlider2D`
-
-#         """
-#         if vtkactor == self.handles[0].actors[0]:
-#             self.handles[0].color = self.default_color
-#         elif vtkactor == self.handles[1].actors[0]:
-#             self.handles[1].color = self.default_color
-#         i_ren.force_render()
+
+class LineDoubleSlider2D(UI):
+    """
+    A 2D Line Slider with two sliding handles.
+
+    Useful for setting min and max values for something.
+
+    Parameters
+    ----------
+    position : (float, float), optional
+        Absolute coordinates (x, y) of the lower-left corner of the slider.
+    initial_values : (float, float), optional
+        Initial values for the left and right handles respectively.
+    min_value : float, optional
+        Minimum value for the slider.
+    max_value : float, optional
+        Maximum value for the slider.
+    length : int, optional
+        Length of the slider track in pixels.
+    line_width : int, optional
+        Width of the line on which the handles will slide.
+    inner_radius : int, optional
+        Inner radius of the handles (when shape is 'disk').
+    outer_radius : int, optional
+        Outer radius of the handles (when shape is 'disk').
+    handle_side : int, optional
+        Length of the square handles (when shape is 'square').
+    font_size : int, optional
+        Size of the text font displaying the values.
+    text_template : str or callable, optional
+        Template for the text displaying the values. Can use {value} and {ratio}.
+    orientation : str, optional
+        Orientation of the slider ('horizontal' or 'vertical').
+    shape : str, optional
+        Shape of the handles ('disk' or 'square').
+    z_order : int, optional
+        Stacking order of the slider.
+    """
+
+    def __init__(
+        self,
+        *,
+        position=(0, 0),
+        initial_values=(0, 100),
+        min_value=0,
+        max_value=100,
+        length=200,
+        line_width=5,
+        inner_radius=0,
+        outer_radius=10,
+        handle_side=20,
+        font_size=16,
+        text_template="{value:.1f}",
+        orientation="horizontal",
+        shape="disk",
+        z_order=0,
+    ):
+        self.orientation = orientation.lower().strip()
+        self._length = length
+        self._line_width = line_width
+
+        self.default_color = (1, 1, 1)
+        self.active_color = (0, 0, 1)
+
+        if min_value >= max_value:
+            raise ValueError(
+                f"min_value ({min_value}) must be less than max_value ({max_value})."
+            )
+        self._min_value = min_value
+        self._max_value = max_value
+        self.text_template = text_template
+
+        self._handle_inner_radius = inner_radius
+        self._handle_outer_radius = outer_radius
+        self._handle_side = handle_side
+        self._font_size = font_size
+        self.shape = shape
+
+        self.on_change = lambda ui: None
+        self.on_value_changed = lambda ui: None
+        self.on_moving_slider = lambda ui: None
+
+        self._values = [np.clip(v, min_value, max_value) for v in initial_values]
+        range_val = max_value - min_value
+        self._ratios = [(v - min_value) / range_val for v in self._values]
+
+        self.track = None
+        self.handles = []
+        self.texts = []
+        super(LineDoubleSlider2D, self).__init__(position=position, z_order=z_order)
+
+    def _setup(self):
+        """Set up the internal actors for the slider."""
+        track_size = (
+            (self._length, self._line_width)
+            if self.orientation == "horizontal"
+            else (self._line_width, self._length)
+        )
+        self.track = Rectangle2D(size=track_size)
+        self.track.color = (1, 0, 0)
+        self.track.z_order = self.z_order
+
+        for _ in range(2):
+            if self.shape == "disk":
+                handle = Disk2D(
+                    outer_radius=self._handle_outer_radius,
+                    inner_radius=self._handle_inner_radius,
+                )
+            elif self.shape == "square":
+                handle = Rectangle2D(size=(self._handle_side, self._handle_side))
+            else:
+                raise ValueError("shape must be 'disk' or 'square'")
+
+            handle.color = self.default_color
+            handle.z_order = self.z_order + 1
+            self.handles.append(handle)
+
+            text = TextBlock2D(
+                justification="center",
+                vertical_justification="middle",
+                dynamic_bbox=True,
+                font_size=self._font_size,
+            )
+            text.z_order = self.z_order + 2
+            self.texts.append(text)
+
+        self.track.on_left_mouse_button_pressed = self.track_click_callback
+        self.track.on_left_mouse_button_dragged = self.handle_move_callback
+        self.track.on_left_mouse_button_released = self.handle_release_callback
+
+        self.handles[0].on_left_mouse_button_pressed = lambda e: self.handle_down(0)
+        self.handles[1].on_left_mouse_button_pressed = lambda e: self.handle_down(1)
+
+        self.handles[0].on_left_mouse_button_dragged = lambda e: (
+            self.handle_move_callback(e, 0)
+        )
+        self.handles[1].on_left_mouse_button_dragged = lambda e: (
+            self.handle_move_callback(e, 1)
+        )
+
+        self.handles[0].on_left_mouse_button_released = lambda e: (
+            self.handle_release_callback(e, 0)
+        )
+        self.handles[1].on_left_mouse_button_released = lambda e: (
+            self.handle_release_callback(e, 1)
+        )
+
+        self._active_handle = None
+
+        self._children.extend(
+            [self.track, self.handles[0], self.handles[1], self.texts[0], self.texts[1]]
+        )
+
+    def handle_down(self, idx):
+        """
+        Mark the specific handle as active.
+
+        Parameters
+        ----------
+        idx : int
+            Index of the handle (0 for left/bottom, 1 for right/top).
+        """
+        self._active_handle = idx
+
+    def _get_actors(self):
+        """
+        Get the actors composing this UI component.
+
+        Returns
+        -------
+        list
+            Empty list since FURY UI components act as children.
+        """
+        return []
+
+    def _get_size(self):
+        """
+        Get the total size of the component.
+
+        Returns
+        -------
+        numpy.ndarray
+            The width and height of the component.
+        """
+        if self.orientation == "horizontal":
+            width = self._length
+            height = max(self._line_width, self.handles[0].size[1])
+        else:
+            width = max(self._line_width, self.handles[0].size[0])
+            height = self._length
+        return np.array([width, height])
+
+    def _update_actors_position(self):
+        """Update the position of the track and handle actors."""
+        pos = self.get_position(x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP)
+        self.track.set_position(
+            pos + self.size / 2, x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER
+        )
+        self._update_handle_positions()
+
+    def format_text(self, idx):
+        """
+        Format the text for a specific handle.
+
+        Parameters
+        ----------
+        idx : int
+            Index of the handle (0 for left/bottom, 1 for right/top).
+
+        Returns
+        -------
+        str
+            The formatted text.
+        """
+        if callable(self.text_template):
+            return self.text_template(self, idx)
+        context = {"value": self._values[idx], "ratio": self._ratios[idx]}
+        return self.text_template.format(**context)
+
+    def _update_handle_positions(self):
+        """Update the physical positions of the handles and text labels."""
+        track_origin = self.track.get_position(
+            x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP
+        )
+        for i in range(2):
+            if self.orientation == "horizontal":
+                offset = self._ratios[i] * self._length
+                handle_center = track_origin + np.array([offset, self._line_width / 2])
+                text_pos = handle_center + np.array(
+                    [0, -(self.handles[i].size[1] + self.texts[i].size[1] / 2)]
+                )
+            else:
+                offset = self._ratios[i] * self._length
+                handle_center = track_origin + np.array([self._line_width / 2, offset])
+                text_pos = handle_center + np.array(
+                    [self.handles[i].size[0] + self.texts[i].size[0] / 2, 0]
+                )
+
+            self.handles[i].set_position(
+                handle_center, x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER
+            )
+            self.texts[i].set_position(
+                text_pos, x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER
+            )
+            self.texts[i].message = self.format_text(i)
+
+    def track_click_callback(self, event):
+        """
+        Handle mouse click events on the slider track.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        left_x = self.track.get_position(x_anchor=Anchor.LEFT)[0]
+        bottom_y = self.track.get_position(y_anchor=Anchor.BOTTOM)[1]
+        top_y = self.track.get_position(y_anchor=Anchor.TOP)[1]
+
+        if self.orientation == "horizontal":
+            ratio = (event.x - left_x) / self._length
+        else:
+            total_dist = bottom_y - top_y
+            ratio = (event.y - top_y) / total_dist if total_dist != 0 else 0
+
+        dist0 = abs(ratio - self._ratios[0])
+        dist1 = abs(ratio - self._ratios[1])
+
+        idx = 0 if dist0 < dist1 else 1
+        self.handle_move_callback(event, idx)
+
+    def handle_move_callback(self, event, idx=None):
+        """
+        Handle mouse drag events to update the slider state.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        idx : int, optional
+            Index of the handle being moved. If None, uses the active handle.
+        """
+        if idx is None:
+            if self._active_handle is not None:
+                idx = self._active_handle
+            else:
+                return
+
+        self.handles[idx].color = self.active_color
+
+        left_x = self.track.get_position(x_anchor=Anchor.LEFT)[0]
+        bottom_y = self.track.get_position(y_anchor=Anchor.BOTTOM)[1]
+        top_y = self.track.get_position(y_anchor=Anchor.TOP)[1]
+
+        if self.orientation == "horizontal":
+            new_ratio = (event.x - left_x) / self._length
+        else:
+            total_dist = bottom_y - top_y
+            current_dist = event.y - top_y
+            if total_dist != 0:
+                new_ratio = current_dist / total_dist
+            else:
+                new_ratio = 0
+
+        new_ratio = np.clip(new_ratio, 0, 1)
+
+        if idx == 0 and new_ratio > self._ratios[1]:
+            new_ratio = self._ratios[1]
+        elif idx == 1 and new_ratio < self._ratios[0]:
+            new_ratio = self._ratios[0]
+
+        self._ratios[idx] = new_ratio
+        self._values[idx] = self.min_value + new_ratio * (
+            self.max_value - self.min_value
+        )
+
+        self.on_moving_slider(self)
+        self._update_actors_position()
+
+    def handle_release_callback(self, event, idx=None):
+        """
+        Handle the release of the mouse button.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        idx : int, optional
+            Index of the handle being released.
+        """
+        if idx is not None:
+            self.handles[idx].color = self.default_color
+        else:
+            self.handles[0].color = self.default_color
+            self.handles[1].color = self.default_color
+        self._active_handle = None
+
+    @property
+    def min_value(self):
+        """
+        Get the minimum value of the slider.
+
+        Returns
+        -------
+        float
+            The minimum value.
+        """
+        return self._min_value
+
+    @min_value.setter
+    def min_value(self, val):
+        """
+        Set the minimum value of the slider.
+
+        Parameters
+        ----------
+        val : float
+            The minimum value.
+        """
+        if val >= self._max_value:
+            raise ValueError(
+                f"min_value ({val}) must be less than max_value ({self._max_value})."
+            )
+        self._min_value = val
+
+    @property
+    def max_value(self):
+        """
+        Get the maximum value of the slider.
+
+        Returns
+        -------
+        float
+            The maximum value.
+        """
+        return self._max_value
+
+    @max_value.setter
+    def max_value(self, val):
+        """
+        Set the maximum value of the slider.
+
+        Parameters
+        ----------
+        val : float
+            The maximum value.
+        """
+        if val <= self._min_value:
+            raise ValueError(
+                f"max_value ({val}) must be greater than min_value ({self._min_value})."
+            )
+        self._max_value = val
+
+    @property
+    def left_disk_value(self):
+        """
+        Get the value of the left/bottom handle.
+
+        Returns
+        -------
+        float
+            The current value.
+        """
+        return self._values[0]
+
+    @left_disk_value.setter
+    def left_disk_value(self, val):
+        """
+        Set the value of the left/bottom handle.
+
+        Parameters
+        ----------
+        val : float
+            The new value.
+        """
+        val = np.clip(val, self.min_value, self.max_value)
+        self._values[0] = val
+        range_val = self.max_value - self.min_value
+        self._ratios[0] = (val - self.min_value) / range_val if range_val != 0 else 0
+        self.on_moving_slider(self)
+        self._update_actors_position()
+
+    @property
+    def right_disk_value(self):
+        """
+        Get the value of the right/top handle.
+
+        Returns
+        -------
+        float
+            The current value.
+        """
+        return self._values[1]
+
+    @right_disk_value.setter
+    def right_disk_value(self, val):
+        """
+        Set the value of the right/top handle.
+
+        Parameters
+        ----------
+        val : float
+            The new value.
+        """
+        val = np.clip(val, self.min_value, self.max_value)
+        self._values[1] = val
+        range_val = self.max_value - self.min_value
+        self._ratios[1] = (val - self.min_value) / range_val if range_val != 0 else 0
+        self.on_moving_slider(self)
+        self._update_actors_position()
 
 
 class RingSlider2D(Slider2D):
@@ -1983,183 +1839,165 @@ class RingSlider2D(Slider2D):
         self.on_moving_slider(self)
 
 
-# class RangeSlider(UI):
-#     """A set of a LineSlider2D and a LineDoubleSlider2D.
-#     The double slider is used to set the min and max value
-#     for the LineSlider2D
+class RangeSlider(UI):
+    """
+    A compound UI element containing a LineSlider2D and a LineDoubleSlider2D.
 
-#     Attributes
-#     ----------
-#     range_slider_center : (float, float)
-#         Center of the LineDoubleSlider2D object.
-#     value_slider_center : (float, float)
-#         Center of the LineSlider2D object.
-#     range_slider : :class:`LineDoubleSlider2D`
-#         The line slider which sets the min and max values
-#     value_slider : :class:`LineSlider2D`
-#         The line slider which sets the value
+    The double slider is used to set the minimum and maximum value bounds
+    for the single value slider.
 
-#     """
+    Parameters
+    ----------
+    line_width : int, optional
+        Width of the line on which the handles will slide.
+    inner_radius : int, optional
+        Inner radius of the handles (when shape is 'disk').
+    outer_radius : int, optional
+        Outer radius of the handles (when shape is 'disk').
+    handle_side : int, optional
+        Length of the square handles (when shape is 'square').
+    range_slider_center : (float, float), optional
+        Position of the LineDoubleSlider2D object.
+    value_slider_center : (float, float), optional
+        Position of the LineSlider2D object.
+    length : int, optional
+        Length of both sliders in pixels.
+    min_value : float, optional
+        Minimum value for the range slider.
+    max_value : float, optional
+        Maximum value for the range slider.
+    font_size : int, optional
+        Size of the text font displaying the values.
+    range_precision : int, optional
+        Number of decimal places to show on the range slider text.
+    orientation : str, optional
+        Orientation of the sliders ('horizontal' or 'vertical').
+    value_precision : int, optional
+        Number of decimal places to show on the value slider text.
+    shape : str, optional
+        Shape of the handles ('disk' or 'square').
+    """
 
-#     @warn_on_args_to_kwargs()
-#     def __init__(
-#         self,
-#         *,
-#         line_width=5,
-#         inner_radius=0,
-#         outer_radius=10,
-#         handle_side=20,
-#         range_slider_center=(450, 400),
-#         value_slider_center=(450, 300),
-#         length=200,
-#         min_value=0,
-#         max_value=100,
-#         font_size=16,
-#         range_precision=1,
-#         orientation="horizontal",
-#         value_precision=2,
-#         shape="disk",
-#     ):
-#         """Init this class instance.
+    def __init__(
+        self,
+        *,
+        line_width=5,
+        inner_radius=0,
+        outer_radius=10,
+        handle_side=20,
+        range_slider_center=(450, 400),
+        value_slider_center=(450, 300),
+        length=200,
+        min_value=0,
+        max_value=100,
+        font_size=16,
+        range_precision=1,
+        orientation="horizontal",
+        value_precision=2,
+        shape="disk",
+    ):
+        self.min_value = min_value
+        self.max_value = max_value
+        self.inner_radius = inner_radius
+        self.outer_radius = outer_radius
+        self.handle_side = handle_side
+        self.length = length
+        self.line_width = line_width
+        self.font_size = font_size
+        self.shape = shape
+        self.orientation = orientation.lower()
 
-#         Parameters
-#         ----------
-#         line_width : int
-#             Width of the slider tracks
-#         inner_radius : int
-#             Inner radius of the handles.
-#         outer_radius : int
-#             Outer radius of the handles.
-#         handle_side : int
-#             Side length of the handles (if square).
-#         range_slider_center : (float, float)
-#             Center of the LineDoubleSlider2D object.
-#         value_slider_center : (float, float)
-#             Center of the LineSlider2D object.
-#         length : int
-#             Length of the sliders.
-#         min_value : float
-#             Minimum value of the double slider.
-#         max_value : float
-#             Maximum value of the double slider.
-#         font_size : int
-#             Size of the text to display alongside the sliders (pt).
-#         range_precision : int
-#             Number of decimal places to show the min and max values set.
-#         orientation : str
-#             horizontal or vertical
-#         value_precision : int
-#             Number of decimal places to show the value set on slider.
-#         shape : string
-#             Describes the shape of the handle.
-#             Currently supports 'disk' and 'square'.
+        self.range_slider_text_template = "{value:." + str(range_precision) + "f}"
+        self.value_slider_text_template = "{value:." + str(value_precision) + "f}"
 
-#         """
-#         self.min_value = min_value
-#         self.max_value = max_value
-#         self.inner_radius = inner_radius
-#         self.outer_radius = outer_radius
-#         self.handle_side = handle_side
-#         self.length = length
-#         self.line_width = line_width
-#         self.font_size = font_size
-#         self.shape = shape
-#         self.orientation = orientation.lower()
+        self.range_slider_center = range_slider_center
+        self.value_slider_center = value_slider_center
 
-#         self.range_slider_text_template = "{value:." + str(range_precision) + "f}"
-#         self.value_slider_text_template = "{value:." + str(value_precision) + "f}"
+        pos_x = min(range_slider_center[0], value_slider_center[0])
+        pos_y = min(range_slider_center[1], value_slider_center[1])
+        super(RangeSlider, self).__init__(position=(pos_x, pos_y))
 
-#         self.range_slider_center = range_slider_center
-#         self.value_slider_center = value_slider_center
-#         super(RangeSlider, self).__init__()
+    def _setup(self):
+        """Setup the internal range and value sliders."""
+        self.range_slider = LineDoubleSlider2D(
+            line_width=self.line_width,
+            inner_radius=self.inner_radius,
+            outer_radius=self.outer_radius,
+            handle_side=self.handle_side,
+            position=self.range_slider_center,
+            length=self.length,
+            min_value=self.min_value,
+            max_value=self.max_value,
+            initial_values=(self.min_value, self.max_value),
+            font_size=self.font_size,
+            shape=self.shape,
+            orientation=self.orientation,
+            text_template=self.range_slider_text_template,
+        )
 
-#     def _setup(self):
-#         """Setup this UI component."""
-#         self.range_slider = LineDoubleSlider2D(
-#             line_width=self.line_width,
-#             inner_radius=self.inner_radius,
-#             outer_radius=self.outer_radius,
-#             handle_side=self.handle_side,
-#             center=self.range_slider_center,
-#             length=self.length,
-#             min_value=self.min_value,
-#             max_value=self.max_value,
-#             initial_values=(self.min_value, self.max_value),
-#             font_size=self.font_size,
-#             shape=self.shape,
-#             orientation=self.orientation,
-#             text_template=self.range_slider_text_template,
-#         )
+        self.value_slider = LineSlider2D(
+            line_width=self.line_width,
+            length=self.length,
+            inner_radius=self.inner_radius,
+            outer_radius=self.outer_radius,
+            handle_side=self.handle_side,
+            position=self.value_slider_center,
+            min_value=self.min_value,
+            max_value=self.max_value,
+            initial_value=(self.min_value + self.max_value) / 2,
+            font_size=self.font_size,
+            shape=self.shape,
+            orientation=self.orientation,
+            text_template=self.value_slider_text_template,
+        )
 
-#         self.value_slider = LineSlider2D(
-#             line_width=self.line_width,
-#             length=self.length,
-#             inner_radius=self.inner_radius,
-#             outer_radius=self.outer_radius,
-#             handle_side=self.handle_side,
-#             center=self.value_slider_center,
-#             min_value=self.min_value,
-#             max_value=self.max_value,
-#             initial_value=(self.min_value + self.max_value) / 2,
-#             font_size=self.font_size,
-#             shape=self.shape,
-#             orientation=self.orientation,
-#             text_template=self.value_slider_text_template,
-#         )
+        self.range_slider.on_moving_slider = self.range_slider_handle_move_callback
+        self._children.extend([self.range_slider, self.value_slider])
 
-#         # Add default events listener for this UI component.
-#         self.range_slider.handles[
-#             0
-#         ].on_left_mouse_button_dragged = self.range_slider_handle_move_callback
-#         self.range_slider.handles[
-#             1
-#         ].on_left_mouse_button_dragged = self.range_slider_handle_move_callback
+    def _get_actors(self):
+        """
+        Get the actors composing this UI component.
 
-#     def _get_actors(self):
-#         """Get the actors composing this UI component."""
-#         return self.range_slider.actors + self.value_slider.actors
+        Returns
+        -------
+        list
+            Empty list since FURY UI components act as children.
+        """
+        return []
 
-#     def _add_to_scene(self, scene):
-#         """Add all subcomponents or VTK props that compose this UI component.
+    def _get_size(self):
+        """
+        Get the total size of the component.
 
-#         Parameters
-#         ----------
-#         scene : scene
+        Returns
+        -------
+        numpy.ndarray
+            The width and height of the component.
+        """
+        if self.orientation == "horizontal":
+            w = max(self.range_slider.size[0], self.value_slider.size[0])
+            h = self.range_slider.size[1] + self.value_slider.size[1]
+        else:
+            w = self.range_slider.size[0] + self.value_slider.size[0]
+            h = max(self.range_slider.size[1], self.value_slider.size[1])
+        return np.array([w, h])
 
-#         """
-#         self.range_slider.add_to_scene(scene)
-#         self.value_slider.add_to_scene(scene)
+    def _update_actors_position(self):
+        """Update the position of the internal sliders."""
+        self.range_slider.set_position(self.range_slider_center)
+        self.value_slider.set_position(self.value_slider_center)
 
-#     def _get_size(self):
-#         return self.range_slider.size + self.value_slider.size
+    def range_slider_handle_move_callback(self, ui):
+        """
+        Handle updates to the range bounds.
 
-#     def _set_position(self, coords):
-#         pass
-
-#     def range_slider_handle_move_callback(self, i_ren, obj, _slider):
-#         """Update range_slider's handles.
-
-#         Parameters
-#         ----------
-#         i_ren : :class:`CustomInteractorStyle`
-#         obj : :class:`vtkActor`
-#             The picked actor
-#         _slider : :class:`RangeSlider`
-
-#         """
-#         position = i_ren.event.position
-#         if obj == self.range_slider.handles[0].actors[0]:
-#             self.range_slider.handles[0].color = self.range_slider.active_color
-#             self.range_slider.set_position(position, 0)
-#             self.value_slider.min_value = self.range_slider.left_disk_value
-#             self.value_slider.update()
-#         elif obj == self.range_slider.handles[1].actors[0]:
-#             self.range_slider.handles[1].color = self.range_slider.active_color
-#             self.range_slider.set_position(position, 1)
-#             self.value_slider.max_value = self.range_slider.right_disk_value
-#             self.value_slider.update()
-#         i_ren.force_render()
-#         i_ren.event.abort()  # Stop propagating the event.
+        Parameters
+        ----------
+        ui : UI
+            The UI component triggering the callback.
+        """
+        self.value_slider.min_value = self.range_slider.left_disk_value
+        self.value_slider.max_value = self.range_slider.right_disk_value
 
 
 # class Option(UI):
