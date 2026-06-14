@@ -30,13 +30,19 @@ readme = "file: _demos.rst"
 position = 4
 enable = true
 files = [
+    "viz_animated_surfaces.py",
+    "viz_fractals.py",
+    "viz_helical_motion.py",
+    "viz_tesseract.py",
     "viz_slicer.py",
     "viz_skybox.py",
+    "viz_emwave_animation.py",
     "viz_vector_field.py",
     "viz_spherical_harmonics.py",
     "viz_line_projections.py",
     "viz_streamlines_roi.py",
     "viz_contour.py",
+    "viz_brownian_motion.py",
 
 ]
 
