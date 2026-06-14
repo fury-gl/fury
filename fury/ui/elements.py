@@ -13,8 +13,8 @@ __all__ = [
     #     "Option",
     #     "RadioButton",
     #     "ComboBox2D",
-    #     "ListBox2D",
-    #     "ListBoxItem2D",
+    "ListBox2D",
+    "ListBoxItem2D",
     #     "FileMenu2D",
     #     "DrawShape",
     #     "DrawPanel",
@@ -40,6 +40,7 @@ from fury.ui.core import (
     Slider2D,
     TextBlock2D,
 )
+from fury.ui.helpers import clip_overflow
 
 TWO_PI = 2.0 * np.pi
 
@@ -2830,566 +2831,567 @@ class RingSlider2D(Slider2D):
 #         i_ren.force_render()
 
 
-# class ListBox2D(UI):
-#     """UI component that allows the user to select items from a list.
-
-#     Attributes
-#     ----------
-#     on_change: function
-#         Callback function for when the selected items have changed.
-
-#     """
-
-#     @warn_on_args_to_kwargs()
-#     def __init__(
-#         self,
-#         values,
-#         *,
-#         position=(0, 0),
-#         size=(100, 300),
-#         multiselection=True,
-#         reverse_scrolling=False,
-#         font_size=20,
-#         line_spacing=1.4,
-#         text_color=(0.2, 0.2, 0.2),
-#         selected_color=(0.9, 0.6, 0.6),
-#         unselected_color=(0.6, 0.6, 0.6),
-#         scroll_bar_active_color=(0.6, 0.2, 0.2),
-#         scroll_bar_inactive_color=(0.9, 0.0, 0.0),
-#         background_opacity=1.0,
-#     ):
-#         """Init class instance.
-
-#         Parameters
-#         ----------
-#         values: list of objects
-#             Values used to populate this listbox. Objects must be castable
-#             to string.
-#         position : (float, float)
-#             Absolute coordinates (x, y) of the lower-left corner of this
-#             UI component.
-#         size : (int, int)
-#             Width and height in pixels of this UI component.
-#         multiselection: {True, False}
-#             Whether multiple values can be selected at once.
-#         reverse_scrolling: {True, False}
-#             If True, scrolling up will move the list of files down.
-#         font_size: int
-#             The font size in pixels.
-#         line_spacing: float
-#             Distance between listbox's items in pixels.
-#         text_color : tuple of 3 floats
-#         selected_color : tuple of 3 floats
-#         unselected_color : tuple of 3 floats
-#         scroll_bar_active_color : tuple of 3 floats
-#         scroll_bar_inactive_color : tuple of 3 floats
-#         background_opacity : float
-
-#         """
-#         self.view_offset = 0
-#         self.slots = []
-#         self.selected = []
-
-#         self.panel_size = size
-#         self.font_size = font_size
-#         self.line_spacing = line_spacing
-#         self.slot_height = int(self.font_size * self.line_spacing)
-
-#         self.text_color = text_color
-#         self.selected_color = selected_color
-#         self.unselected_color = unselected_color
-#         self.background_opacity = background_opacity
-
-#         # self.panel.resize(size)
-#         self.values = values
-#         self.multiselection = multiselection
-#         self.last_selection_idx = 0
-#         self.reverse_scrolling = reverse_scrolling
-#         super(ListBox2D, self).__init__()
-
-#         denom = len(self.values) - self.nb_slots
-#         if not denom:
-#             denom += 1
-#         self.scroll_step_size = (
-#             self.slot_height * self.nb_slots - self.scroll_bar.height
-#         ) / denom
-
-#         self.scroll_bar_active_color = scroll_bar_active_color
-#         self.scroll_bar_inactive_color = scroll_bar_inactive_color
-#         self.scroll_bar.color = self.scroll_bar_inactive_color
-#         self.scroll_bar.opacity = self.background_opacity
-
-#         self.position = position
-#         self.scroll_init_position = 0
-#         self.update()
-
-#         # Offer some standard hooks to the user.
-#         self.on_change = lambda: None
-
-#     def _setup(self):
-#         """Setup this UI component.
-
-#         Create the ListBox (Panel2D) filled with empty slots (ListBoxItem2D).
-#         """
-#         self.margin = 10
-#         size = self.panel_size
-#         font_size = self.font_size
-#         # Calculating the number of slots.
-#         self.nb_slots = int((size[1] - 2 * self.margin) // self.slot_height)
-
-#         # This panel facilitates adding slots at the right position.
-#         self.panel = Panel2D(size=size, color=(1, 1, 1))
-
-#         # Add a scroll bar
-#         scroll_bar_height = (
-#             self.nb_slots * (size[1] - 2 * self.margin) / len(self.values)
-#         )
-#         self.scroll_bar = Rectangle2D(size=(int(size[0] / 20), scroll_bar_height))
-#         if len(self.values) <= self.nb_slots:
-#             self.scroll_bar.set_visibility(False)
-#             self.scroll_bar.height = 0
-#         self.panel.add_element(
-#             self.scroll_bar, size - self.scroll_bar.size - self.margin
-#         )
-
-#         # Initialisation of empty text actors
-#         self.slot_width = (
-#             size[0] - self.scroll_bar.size[0] - 2 * self.margin - self.margin
-#         )
-#         x = self.margin
-#         y = size[1] - self.margin
-#         for _ in range(self.nb_slots):
-#             y -= self.slot_height
-#             item = ListBoxItem2D(
-#                 list_box=self,
-#                 size=(self.slot_width, self.slot_height),
-#                 text_color=self.text_color,
-#                 selected_color=self.selected_color,
-#                 unselected_color=self.unselected_color,
-#                 background_opacity=self.background_opacity,
-#             )
-#             item.textblock.font_size = font_size
-#             self.slots.append(item)
-#             self.panel.add_element(item, (x, y + self.margin))
-
-#         # Add default events listener for this UI component.
-#         self.scroll_bar.on_left_mouse_button_pressed = self.scroll_click_callback
-#         self.scroll_bar.on_left_mouse_button_released = self.scroll_release_callback
-#         self.scroll_bar.on_left_mouse_button_dragged = self.scroll_drag_callback
-
-#         # Handle mouse wheel events on the panel.
-#         up_event = "MouseWheelForwardEvent"
-#         down_event = "MouseWheelBackwardEvent"
-#         if self.reverse_scrolling:
-#             up_event, down_event = down_event, up_event  # Swap events
-
-#         self.add_callback(
-#             self.panel.background.actor, up_event, self.up_button_callback
-#         )
-#         self.add_callback(
-#             self.panel.background.actor, down_event, self.down_button_callback
-#         )
-
-#         # Handle mouse wheel events on the slots.
-#         for slot in self.slots:
-#             self.add_callback(
-#                 slot.background.actor, up_event, self.up_button_callback
-#            )
-#             self.add_callback(
-#                 slot.background.actor, down_event, self.down_button_callback
-#             )
-#             self.add_callback(slot.textblock.actor, up_event, self.up_button_callback)
-#             self.add_callback(
-#                 slot.textblock.actor, down_event, self.down_button_callback
-#             )
-
-#     def resize(self, size):
-#         pass
-
-#     def _get_actors(self):
-#         """Get the actors composing this UI component."""
-#         return self.panel.actors
-
-#     def _add_to_scene(self, scene):
-#         """Add all subcomponents or VTK props that compose this UI component.
-
-#         Parameters
-#         ----------
-#         scene : scene
-
-#         """
-#         self.panel.add_to_scene(scene)
-#         for slot in self.slots:
-#             clip_overflow(slot.textblock, self.slot_width)
-
-#     def _get_size(self):
-#         return self.panel.size
-
-#     def _set_position(self, coords):
-#         """Position the lower-left corner of this UI component.
-
-#         Parameters
-#         ----------
-#         coords: (float, float)
-#             Absolute pixel coordinates (x, y).
-
-#         """
-#         self.panel.position = coords
-
-#     def up_button_callback(self, i_ren, _obj, _list_box):
-#         """Pressing up button scrolls up in the combo box.
-
-#         Parameters
-#         ----------
-#         i_ren: :class:`CustomInteractorStyle`
-#         obj: :class:`vtkActor`
-#             The picked actor
-#         _list_box: :class:`ListBox2D`
-
-#         """
-#         if self.view_offset > 0:
-#             self.view_offset -= 1
-#             self.update()
-#             scroll_bar_idx = self.panel._elements.index(self.scroll_bar)
-#             self.scroll_bar.center = (
-#                 self.scroll_bar.center[0],
-#                 self.scroll_bar.center[1] + self.scroll_step_size,
-#             )
-#             self.panel.element_offsets[scroll_bar_idx] = (
-#                 self.scroll_bar,
-#                 (self.scroll_bar.position - self.panel.position),
-#             )
-
-#         i_ren.force_render()
-#         i_ren.event.abort()  # Stop propagating the event.
-
-#     def down_button_callback(self, i_ren, _obj, _list_box):
-#         """Pressing down button scrolls down in the combo box.
-
-#         Parameters
-#         ----------
-#         i_ren: :class:`CustomInteractorStyle`
-#         obj: :class:`vtkActor`
-#             The picked actor
-#         _list_box: :class:`ListBox2D`
-
-#         """
-#         view_end = self.view_offset + self.nb_slots
-#         if view_end < len(self.values):
-#             self.view_offset += 1
-#             self.update()
-#             scroll_bar_idx = self.panel._elements.index(self.scroll_bar)
-#             self.scroll_bar.center = (
-#                 self.scroll_bar.center[0],
-#                 self.scroll_bar.center[1] - self.scroll_step_size,
-#             )
-#             self.panel.element_offsets[scroll_bar_idx] = (
-#                 self.scroll_bar,
-#                 (self.scroll_bar.position - self.panel.position),
-#             )
-
-#         i_ren.force_render()
-#         i_ren.event.abort()  # Stop propagating the event.
-
-#     def scroll_click_callback(self, i_ren, _obj, _rect_obj):
-#         """Callback to change the color of the bar when it is clicked.
-
-#         Parameters
-#         ----------
-#         i_ren: :class:`CustomInteractorStyle`
-#         obj: :class:`vtkActor`
-#             The picked actor
-#         _rect_obj: :class:`Rectangle2D`
-
-#         """
-#         self.scroll_bar.color = self.scroll_bar_active_color
-#         self.scroll_init_position = i_ren.event.position[1]
-#         i_ren.force_render()
-#         i_ren.event.abort()
-
-#     def scroll_release_callback(self, i_ren, _obj, _rect_obj):
-#         """Callback to change the color of the bar when it is released.
-
-#         Parameters
-#         ----------
-#         i_ren: :class:`CustomInteractorStyle`
-#         obj: :class:`vtkActor`
-#             The picked actor
-#         rect_obj: :class:`Rectangle2D`
-
-#         """
-#         self.scroll_bar.color = self.scroll_bar_inactive_color
-#         i_ren.force_render()
-
-#     def scroll_drag_callback(self, i_ren, _obj, _rect_obj):
-#         """Drag scroll bar in the combo box.
-
-#         Parameters
-#         ----------
-#         i_ren: :class:`CustomInteractorStyle`
-#         obj: :class:`vtkActor`
-#             The picked actor
-#         rect_obj: :class:`Rectangle2D`
-
-#         """
-#         position = i_ren.event.position
-#         offset = int(
-#                   (position[1] - self.scroll_init_position) / self.scroll_step_size)
-#         if offset > 0 and self.view_offset > 0:
-#             offset = min(offset, self.view_offset)
-
-#         elif offset < 0 and (self.view_offset + self.nb_slots < len(self.values)):
-#             offset = min(-offset, len(self.values) - self.nb_slots - self.view_offset)
-#             offset = -offset
-#         else:
-#             return
-
-#         self.view_offset -= offset
-#         self.update()
-#         scroll_bar_idx = self.panel._elements.index(self.scroll_bar)
-#         self.scroll_bar.center = (
-#             self.scroll_bar.center[0],
-#             self.scroll_bar.center[1] + offset * self.scroll_step_size,
-#         )
-
-#         self.scroll_init_position += offset * self.scroll_step_size
-
-#         self.panel.element_offsets[scroll_bar_idx] = (
-#             self.scroll_bar,
-#             (self.scroll_bar.position - self.panel.position),
-#         )
-#         i_ren.force_render()
-#         i_ren.event.abort()
-
-#     def update(self):
-#         """Refresh listbox's content."""
-#         view_start = self.view_offset
-#         view_end = view_start + self.nb_slots
-#         values_to_show = self.values[view_start:view_end]
-
-#         # Populate slots according to the view.
-#         for i, choice in enumerate(values_to_show):
-#             slot = self.slots[i]
-#             slot.element = choice
-#             if slot.textblock.scene is not None:
-#                 clip_overflow(slot.textblock, self.slot_width)
-#             slot.set_visibility(True)
-#             if slot.size[1] != self.slot_height:
-#                 slot.resize((self.slot_width, self.slot_height))
-#             if slot.element in self.selected:
-#                 slot.select()
-#             else:
-#                 slot.deselect()
-
-#         # Flush remaining slots.
-#         for slot in self.slots[len(values_to_show) :]:
-#             slot.element = None
-#             slot.set_visibility(False)
-#             slot.resize((self.slot_width, 0))
-#             slot.deselect()
-
-#     def update_scrollbar(self):
-#         """Change the scroll-bar height when the values
-#         in the listbox change
-#         """
-#         self.scroll_bar.set_visibility(True)
-
-#         self.scroll_bar.height = (
-#             self.nb_slots * (self.panel_size[1] - 2 * self.margin) / len(self.values)
-#         )
-
-#         self.scroll_step_size = (
-#             self.slot_height * self.nb_slots - self.scroll_bar.height
-#         ) / (len(self.values) - self.nb_slots)
-
-#         self.panel.update_element(
-#             self.scroll_bar, self.panel_size - self.scroll_bar.size - self.margin
-#         )
-
-#         if len(self.values) <= self.nb_slots:
-#             self.scroll_bar.set_visibility(False)
-#             self.scroll_bar.height = 0
-
-#     def clear_selection(self):
-#         del self.selected[:]
-
-#     @warn_on_args_to_kwargs()
-#     def select(self, item, *, multiselect=False, range_select=False):
-#         """Select the item.
-
-#         Parameters
-#         ----------
-#         item: ListBoxItem2D's object
-#             Item to select.
-#         multiselect: {True, False}
-#             If True and multiselection is allowed, the item is added to the
-#             selection.
-#             Otherwise, the selection will only contain the provided item unless
-#             range_select is True.
-#         range_select: {True, False}
-#             If True and multiselection is allowed, all items between the last
-#             selected item and the current one will be added to the selection.
-#             Otherwise, the selection will only contain the provided item unless
-#             multi_select is True.
-
-#         """
-#         selection_idx = self.values.index(item.element)
-#         if self.multiselection and range_select:
-#             self.clear_selection()
-#             step = 1 if selection_idx >= self.last_selection_idx else -1
-#             for i in range(self.last_selection_idx, selection_idx + step, step):
-#                 self.selected.append(self.values[i])
-
-#         elif self.multiselection and multiselect:
-#             if item.element in self.selected:
-#                 self.selected.remove(item.element)
-#             else:
-#                 self.selected.append(item.element)
-#             self.last_selection_idx = selection_idx
-
-#         else:
-#             self.clear_selection()
-#             self.selected.append(item.element)
-#             self.last_selection_idx = selection_idx
-
-#         self.on_change()  # Call hook.
-#         self.update()
-
-
-# class ListBoxItem2D(UI):
-#     """The text displayed in a listbox."""
-
-#     @warn_on_args_to_kwargs()
-#     def __init__(
-#         self,
-#         list_box,
-#         size,
-#         *,
-#         text_color=(1.0, 0.0, 0.0),
-#         selected_color=(0.4, 0.4, 0.4),
-#         unselected_color=(0.9, 0.9, 0.9),
-#         background_opacity=1.0,
-#     ):
-#         """Init ListBox Item instance.
-
-#         Parameters
-#         ----------
-#         list_box : :class:`ListBox`
-#             The ListBox reference this text belongs to.
-#         size : tuple of 2 ints
-#             The size of the listbox item.
-#         text_color : tuple of 3 floats
-#         unselected_color : tuple of 3 floats
-#         selected_color : tuple of 3 floats
-#         background_opacity : float
-
-#         """
-#         super(ListBoxItem2D, self).__init__()
-#         self._element = None
-#         self.list_box = list_box
-#         self.background.resize(size)
-#         self.background_opacity = background_opacity
-#         self.selected = False
-#         self.text_color = text_color
-#         self.textblock.color = self.text_color
-#         self.selected_color = selected_color
-#         self.unselected_color = unselected_color
-#         self.background.opacity = self.background_opacity
-#         self.deselect()
-
-#     def _setup(self):
-#         """Setup this UI component.
-
-#         Create the ListBoxItem2D with its background (Rectangle2D) and its
-#         label (TextBlock2D).
-#         """
-#         self.background = Rectangle2D()
-#         self.textblock = TextBlock2D(
-#             justification="left", vertical_justification="middle"
-#         )
-
-#         # Add default events listener for this UI component.
-#         self.add_callback(
-#             self.textblock.actor, "LeftButtonPressEvent", self.left_button_clicked
-#         )
-#         self.add_callback(
-#             self.background.actor, "LeftButtonPressEvent", self.left_button_clicked
-#         )
-
-#     def _get_actors(self):
-#         """Get the actors composing this UI component."""
-#         return self.background.actors + self.textblock.actors
-
-#     def _add_to_scene(self, scene):
-#         """Add all subcomponents or VTK props that compose this UI component.
-
-#         Parameters
-#         ----------
-#         scene : scene
-
-#         """
-#         self.background.add_to_scene(scene)
-#         self.textblock.add_to_scene(scene)
-
-#     def _get_size(self):
-#         return self.background.size
-
-#     def _set_position(self, coords):
-#         """Set the lower-left corner position of this UI component.
-
-#         Parameters
-#         ----------
-#         coords: (float, float)
-#             Absolute pixel coordinates (x, y).
-
-#         """
-#         self.textblock.position = coords
-#         # Center background underneath the text.
-#         position = coords
-#         self.background.position = (
-#             position[0],
-#             position[1] - self.background.size[1] / 2.0,
-#         )
-
-#     def deselect(self):
-#         self.background.color = self.unselected_color
-#         self.textblock.bold = False
-#         self.selected = False
-
-#     def select(self):
-#         self.textblock.bold = True
-#         self.background.color = self.selected_color
-#         self.selected = True
-
-#     @property
-#     def element(self):
-#         return self._element
-
-#     @element.setter
-#     def element(self, element):
-#         self._element = element
-#         self.textblock.message = "" if self._element is None else str(element)
-
-#     def left_button_clicked(self, i_ren, _obj, _list_box_item):
-#         """Handle left click for this UI element.
-
-#         Parameters
-#         ----------
-#         i_ren: :class:`CustomInteractorStyle`
-#         obj: :class:`vtkActor`
-#             The picked actor
-#         _list_box_item: :class:`ListBoxItem2D`
-
-#         """
-#         multiselect = i_ren.event.ctrl_key
-#         range_select = i_ren.event.shift_key
-#         self.list_box.select(
-#             item=self, multiselect=multiselect, range_select=range_select
-#         )
-#         i_ren.force_render()
-
-#     def resize(self, size):
-#         self.background.resize(size)
+class ListBox2D(UI):
+    """
+    UI component that allows the user to select items from a list.
+
+    Parameters
+    ----------
+    values : list of objects
+        Values used to populate this listbox. Objects must be castable
+        to string.
+    position : (float, float), optional
+        Absolute coordinates (x, y) of the lower-left corner of this
+        UI component.
+    size : (int, int), optional
+        Width and height in pixels of this UI component.
+    multiselection : bool, optional
+        Whether multiple values can be selected at once.
+    reverse_scrolling : bool, optional
+        If True, scrolling up will move the list of files down.
+    font_size : int, optional
+        The font size in pixels.
+    line_spacing : float, optional
+        Distance between listbox's items in pixels.
+    text_color : tuple of 3 floats, optional
+        Color of the text.
+    selected_color : tuple of 3 floats, optional
+        Background color of selected item.
+    unselected_color : tuple of 3 floats, optional
+        Background color of unselected item.
+    scroll_bar_active_color : tuple of 3 floats, optional
+        Color of active scroll bar.
+    scroll_bar_inactive_color : tuple of 3 floats, optional
+        Color of inactive scroll bar.
+    background_opacity : float, optional
+        Opacity of the background.
+
+    Attributes
+    ----------
+    on_change : function
+        Callback function for when the selected items have changed.
+    """
+
+    def __init__(
+        self,
+        values,
+        *,
+        position=(0, 0),
+        size=(100, 300),
+        multiselection=True,
+        reverse_scrolling=False,
+        font_size=20,
+        line_spacing=1.4,
+        text_color=(0.2, 0.2, 0.2),
+        selected_color=(0.9, 0.6, 0.6),
+        unselected_color=(0.6, 0.6, 0.6),
+        scroll_bar_active_color=(0.6, 0.2, 0.2),
+        scroll_bar_inactive_color=(0.9, 0.0, 0.0),
+        background_opacity=1.0,
+    ):
+        """Init class instance."""
+        self.view_offset = 0
+        self.slots = []
+        self.selected = []
+
+        self.panel_size = np.array(size, dtype=int)
+        self.font_size = font_size
+        self.line_spacing = line_spacing
+        self.slot_height = int(self.font_size * self.line_spacing)
+
+        self.text_color = text_color
+        self.selected_color = selected_color
+        self.unselected_color = unselected_color
+        self.background_opacity = background_opacity
+
+        self.values = values
+        self.multiselection = multiselection
+        self.last_selection_idx = 0
+        self.reverse_scrolling = reverse_scrolling
+        super(ListBox2D, self).__init__()
+
+        denom = len(self.values) - self.nb_slots
+        if not denom:
+            denom += 1
+        self.scroll_step_size = (
+            self.slot_height * self.nb_slots - self.scroll_bar.height
+        ) / denom
+
+        self.scroll_bar_active_color = scroll_bar_active_color
+        self.scroll_bar_inactive_color = scroll_bar_inactive_color
+        self.scroll_bar.color = self.scroll_bar_inactive_color
+        self.scroll_bar.opacity = self.background_opacity
+
+        self.position = position
+        self.scroll_init_position = 0
+        self.update()
+
+        # Offer some standard hooks to the user.
+        self.on_change = lambda: None
+
+    def _setup(self):
+        """
+        Setup this UI component.
+
+        Create the ListBox (Panel2D) filled with empty slots (ListBoxItem2D).
+        """
+        self.margin = 10
+        size = self.panel_size
+        font_size = self.font_size
+        # Calculating the number of slots.
+        self.nb_slots = int((size[1] - 2 * self.margin) // self.slot_height)
+
+        # This panel facilitates adding slots at the right position.
+        self.panel = Panel2D(size=size, color=(1, 1, 1))
+
+        # Add a scroll bar
+        scroll_bar_height = int(
+            self.nb_slots * (size[1] - 2 * self.margin) / len(self.values)
+        )
+        self.scroll_bar = Rectangle2D(size=(int(size[0] / 20), scroll_bar_height))
+        if len(self.values) <= self.nb_slots:
+            self.scroll_bar.set_visibility(False)
+            self.scroll_bar.height = 0
+
+        scroll_bar_x = int(size[0] - self.scroll_bar.size[0] - self.margin)
+        scroll_bar_y = int(size[1] - self.scroll_bar.size[1] - self.margin)
+        self._scroll_bar_top_y = scroll_bar_y
+        self._scroll_bar_x = scroll_bar_x
+        self.panel.add_element(self.scroll_bar, (scroll_bar_x, scroll_bar_y))
+
+        # Initialisation of empty text actors
+        self.slot_width = int(
+            size[0] - self.scroll_bar.size[0] - 2 * self.margin - self.margin
+        )
+        x = self.margin
+        y = int(size[1] - self.margin)
+        for _ in range(self.nb_slots):
+            y -= self.slot_height
+            item = ListBoxItem2D(
+                on_select=self.select,
+                size=(self.slot_width, self.slot_height),
+                text_color=self.text_color,
+                selected_color=self.selected_color,
+                unselected_color=self.unselected_color,
+                background_opacity=self.background_opacity,
+            )
+            item.textblock.font_size = font_size
+            self.slots.append(item)
+            self.panel.add_element(item, (int(x), int(y + self.margin)))
+
+        # Add default events listener for this UI component.
+        self.scroll_bar.on_left_mouse_button_pressed = self.scroll_click_callback
+        self.scroll_bar.on_left_mouse_button_released = self.scroll_release_callback
+        self.scroll_bar.on_left_mouse_button_dragged = self.scroll_drag_callback
+
+        from fury.lib import EventType
+
+        self.panel.background.actor.add_event_handler(
+            self.wheel_callback, EventType.WHEEL
+        )
+
+        # Handle mouse wheel events on the slots.
+        for slot in self.slots:
+            slot.background.actor.add_event_handler(
+                self.wheel_callback, EventType.WHEEL
+            )
+            for text_actor in slot.textblock.actors:
+                text_actor.add_event_handler(self.wheel_callback, EventType.WHEEL)
+
+        self._children.extend([self.panel])
+
+    def resize(self, size):
+        """
+        Resize the component.
+
+        Parameters
+        ----------
+        size : (int, int)
+            Size to resize to.
+        """
+        pass
+
+    def _get_actors(self):
+        """
+        Get the actors composing this UI component.
+
+        Returns
+        -------
+        list
+            List of actors.
+        """
+        return []
+
+    def _get_size(self):
+        """
+        Get the dimensions of the component.
+
+        Returns
+        -------
+        (int, int)
+            Size.
+        """
+        return self.panel.size
+
+    def _update_actors_position(self):
+        """Position the lower-left corner of this UI component."""
+        self.panel.set_position(self.get_position())
+
+    def _update_scroll_bar_position(self):
+        """Update the scroll bar position in the panel based on view_offset."""
+        if len(self.values) <= self.nb_slots:
+            return
+
+        scroll_bar_y = int(
+            self._scroll_bar_top_y - self.view_offset * self.scroll_step_size
+        )
+        self.panel.update_element(self.scroll_bar, (self._scroll_bar_x, scroll_bar_y))
+
+    def wheel_callback(self, event):
+        """
+        Handle mouse wheel scroll events.
+
+        Parameters
+        ----------
+        event : object
+            The pygfx event.
+        """
+        dy = event.dy
+        if self.reverse_scrolling:
+            dy = -dy
+        if dy > 0:
+            self.scroll_down()
+        elif dy < 0:
+            self.scroll_up()
+
+    def scroll_up(self):
+        """Scroll up by one item."""
+        if self.view_offset > 0:
+            self.view_offset -= 1
+            self.update()
+            self._update_scroll_bar_position()
+
+    def scroll_down(self):
+        """Scroll down by one item."""
+        view_end = self.view_offset + self.nb_slots
+        if view_end < len(self.values):
+            self.view_offset += 1
+            self.update()
+            self._update_scroll_bar_position()
+
+    def scroll_click_callback(self, event):
+        """
+        Callback to change the color of the bar when it is clicked.
+
+        Parameters
+        ----------
+        event : object
+            The pygfx event.
+        """
+        self.scroll_bar.color = self.scroll_bar_active_color
+        self.scroll_init_position = event.y
+
+    def scroll_release_callback(self, event):
+        """
+        Callback to change the color of the bar when it is released.
+
+        Parameters
+        ----------
+        event : object
+            The pygfx event.
+        """
+        self.scroll_bar.color = self.scroll_bar_inactive_color
+
+    def scroll_drag_callback(self, event):
+        """
+        Drag scroll bar in the combo box.
+
+        Parameters
+        ----------
+        event : object
+            The pygfx event.
+        """
+        position_y = event.y
+        offset = int((position_y - self.scroll_init_position) / self.scroll_step_size)
+        if offset > 0 and self.view_offset > 0:
+            offset = min(offset, self.view_offset)
+        elif offset < 0 and (self.view_offset + self.nb_slots < len(self.values)):
+            offset = min(
+                -offset,
+                len(self.values) - self.nb_slots - self.view_offset,
+            )
+            offset = -offset
+        else:
+            return
+
+        self.view_offset -= offset
+        self.update()
+        self._update_scroll_bar_position()
+        self.scroll_init_position += offset * self.scroll_step_size
+
+    def update(self):
+        """Refresh listbox content."""
+        view_start = self.view_offset
+        view_end = view_start + self.nb_slots
+        values_to_show = self.values[view_start:view_end]
+
+        # Populate slots according to the view.
+        for i, choice in enumerate(values_to_show):
+            slot = self.slots[i]
+            slot.element = choice
+            clip_overflow(slot.textblock, self.slot_width)
+            slot.set_visibility(True)
+            if slot.size[1] != self.slot_height:
+                slot.resize((self.slot_width, self.slot_height))
+            if slot.element in self.selected:
+                slot.select()
+            else:
+                slot.deselect()
+
+        # Flush remaining slots.
+        for slot in self.slots[len(values_to_show) :]:
+            slot.element = None
+            slot.set_visibility(False)
+            slot.resize((self.slot_width, 0))
+            slot.deselect()
+
+    def update_scrollbar(self):
+        """Change the scroll-bar height when the values change."""
+        self.scroll_bar.set_visibility(True)
+
+        self.scroll_bar.height = int(
+            self.nb_slots * (self.panel_size[1] - 2 * self.margin) / len(self.values)
+        )
+
+        self.scroll_step_size = (
+            self.slot_height * self.nb_slots - self.scroll_bar.height
+        ) / (len(self.values) - self.nb_slots)
+
+        self._scroll_bar_top_y = int(
+            self.panel_size[1] - self.scroll_bar.size[1] - self.margin
+        )
+        self._update_scroll_bar_position()
+
+        if len(self.values) <= self.nb_slots:
+            self.scroll_bar.set_visibility(False)
+            self.scroll_bar.height = 0
+
+    def clear_selection(self):
+        """Clear all items from the current selection."""
+        del self.selected[:]
+
+    def select(self, item, *, multiselect=False, range_select=False):
+        """
+        Select the item.
+
+        Parameters
+        ----------
+        item : object
+            Item to select.
+        multiselect : bool, optional
+            If True and multiselection is allowed, the item is added to the selection.
+        range_select : bool, optional
+            If True and multiselection is allowed, all items between the
+            last selected item and the current one will be added.
+        """
+        selection_idx = self.values.index(item.element)
+        if self.multiselection and range_select:
+            self.clear_selection()
+            step = 1 if selection_idx >= self.last_selection_idx else -1
+            for i in range(self.last_selection_idx, selection_idx + step, step):
+                self.selected.append(self.values[i])
+
+        elif self.multiselection and multiselect:
+            if item.element in self.selected:
+                self.selected.remove(item.element)
+            else:
+                self.selected.append(item.element)
+            self.last_selection_idx = selection_idx
+
+        else:
+            self.clear_selection()
+            self.selected.append(item.element)
+            self.last_selection_idx = selection_idx
+
+        self.on_change()  # Call hook.
+        self.update()
+
+
+class ListBoxItem2D(UI):
+    """
+    The text displayed in a listbox.
+
+    Parameters
+    ----------
+    on_select : callable
+        Callback invoked when the item is clicked.
+    size : (int, int)
+        Size of the item.
+    text_color : tuple of 3 floats, optional
+        Text color.
+    selected_color : tuple of 3 floats, optional
+        Selected background color.
+    unselected_color : tuple of 3 floats, optional
+        Unselected background color.
+    background_opacity : float, optional
+        Opacity.
+    """
+
+    def __init__(
+        self,
+        on_select,
+        size,
+        *,
+        text_color=(1.0, 0.0, 0.0),
+        selected_color=(0.4, 0.4, 0.4),
+        unselected_color=(0.9, 0.9, 0.9),
+        background_opacity=1.0,
+    ):
+        """
+        Init ListBox Item instance.
+
+        Parameters
+        ----------
+        on_select : callable
+            Callback invoked when the item is clicked.
+        size : tuple of 2 ints
+            The size of the listbox item.
+        text_color : tuple of 3 floats
+        unselected_color : tuple of 3 floats
+        selected_color : tuple of 3 floats
+        background_opacity : float
+
+        """
+        self._item_size = size
+        super(ListBoxItem2D, self).__init__()
+        self._element = None
+        self._on_select = on_select
+        self.background.resize(size)
+        self.background_opacity = background_opacity
+        self.selected = False
+        self.text_color = text_color
+        self.textblock.color = self.text_color
+        self.selected_color = selected_color
+        self.unselected_color = unselected_color
+        self.background.opacity = self.background_opacity
+        self.deselect()
+
+    def _setup(self):
+        """
+        Setup this UI component.
+
+        Create the ListBoxItem2D with its background (Rectangle2D) and its
+        label (TextBlock2D).
+        """
+        self.background = Rectangle2D(size=self._item_size)
+        self.textblock = TextBlock2D(
+            size=self._item_size,
+            justification="left",
+            vertical_justification="middle",
+        )
+
+        # Add default events listener for this UI component.
+        self.textblock.on_left_mouse_button_clicked = self.left_button_clicked
+        self.background.on_left_mouse_button_clicked = self.left_button_clicked
+
+        self._children.extend([self.background, self.textblock])
+
+    def _get_actors(self):
+        """
+        Get the actors composing this UI component.
+
+        Returns
+        -------
+        list
+            List of actors.
+        """
+        return []
+
+    def _get_size(self):
+        """
+        Get the dimensions of the component.
+
+        Returns
+        -------
+        (int, int)
+            Size.
+        """
+        return self.background.size
+
+    def _update_actors_position(self):
+        """Set the lower-left corner position of this UI component."""
+        coords = self.get_position()
+        self.background.set_position(coords)
+        self.textblock.set_position(coords)
+
+        # left-alignment to prevent text unaligning during updates.
+        self.textblock.actor.anchor = "middle-left"
+        pos = self.textblock.actor.local.position
+        self.textblock.actor.local.position = (coords[0], pos[1], pos[2])
+
+    def deselect(self):
+        """Deselect the item and remove highlight."""
+        self.background.color = self.unselected_color
+        self.textblock.bold = False
+        self.textblock.message = self.textblock.message  # Force redraw
+        self.selected = False
+
+    def select(self):
+        """Select the item and highlight its background."""
+        self.textblock.bold = True
+        self.textblock.message = self.textblock.message  # Force redraw
+        self.background.color = self.selected_color
+        self.selected = True
+
+    @property
+    def element(self):
+        """
+        Get the stored element.
+
+        Returns
+        -------
+        object
+            Element.
+        """
+        return self._element
+
+    @element.setter
+    def element(self, element):
+        """
+        Set the element and update the text message.
+
+        Parameters
+        ----------
+        element : object
+            Element to set.
+        """
+        self._element = element
+        self.textblock.message = "" if self._element is None else str(element)
+
+    def left_button_clicked(self, event):
+        """
+        Handle left click for this UI element.
+
+        Parameters
+        ----------
+        event : object
+            The pygfx event.
+        """
+        modifiers = getattr(event, "modifiers", None) or ()
+        multiselect = "Control" in modifiers
+        range_select = "Shift" in modifiers
+        self._on_select(item=self, multiselect=multiselect, range_select=range_select)
+
+    def resize(self, size):
+        """
+        Resize the component.
+
+        Parameters
+        ----------
+        size : (int, int)
+            Size to resize to.
+        """
+        self.background.resize(size)
 
 
 # class FileMenu2D(UI):

@@ -606,6 +606,8 @@ class Rectangle2D(UI):
         (float, float)
             The current `(width, height)` of the rectangle in pixels.
         """
+        if hasattr(self, "_size"):
+            return self._size
         bounds = self.actor.get_bounding_box()
         minx, miny, minz = bounds[0]
         maxx, maxy, maxz = bounds[1]
@@ -668,9 +670,11 @@ class Rectangle2D(UI):
         size : (float, float)
             Rectangle size (width, height) in pixels.
         """
-        if tuple(size) == (0, 0):
-            size = np.array([1, 1])
-        self.actor.geometry = plane_geometry(width=size[0], height=size[1])
+        self._size = list(size)
+        w, h = size
+        w = w if w != 0 else 1
+        h = h if h != 0 else 1
+        self.actor.geometry = plane_geometry(width=w, height=h)
         self._update_actors_position()
 
     def _update_actors_position(self):

@@ -1223,132 +1223,6 @@ def test_ui_2d_ring_slider_hooks():
 #     )
 
 
-# @pytest.mark.skipif(
-#     True, reason="Need investigation. Incorrect number of event for each vtk version"
-# )
-# def test_ui_listbox_2d(interactive=False):
-#     filename = "test_ui_listbox_2d"
-#     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-#     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
-
-#     # Values that will be displayed by the listbox.
-#     values = list(range(1, 42 + 1))
-#     values.append("A Very Very Long Item To Test Text Overflow of List Box 2D")
-
-#     if interactive:
-#         listbox = ui.ListBox2D(
-#             values=values,
-#             size=(500, 500),
-#             multiselection=True,
-#             reverse_scrolling=False,
-#             background_opacity=0.3,
-#         )
-#         listbox.center = (300, 300)
-#         listbox.panel.opacity = 0.2
-
-#         show_manager = window.ShowManager(size=(600, 600), title="FURY ListBox")
-#         show_manager.scene.add(listbox)
-#         show_manager.start()
-
-#     # Recorded events:
-#     #  1. Click on 1
-#     #  2. Ctrl + click on 2,
-#     #  3. Ctrl + click on 2.
-#     #  4. Use scroll bar to scroll to the bottom.
-#     #  5. Click on "A Very Very Long Item...".
-#     #  6. Use scroll bar to scroll to the top.
-#     #  7. Click on 1
-#     #  8. Use mouse wheel to scroll down.
-#     #  9. Shift + click on "A Very Very Long Item...".
-#     # 10. Use mouse wheel to scroll back up.
-
-#     listbox = ui.ListBox2D(
-#         values=values, size=(500, 500), multiselection=True, reverse_scrolling=False
-#     )
-#     listbox.center = (300, 300)
-
-#     # We will collect the sequence of values that have been selected.
-#     selected_values = []
-
-#     def _on_change():
-#         selected_values.append(list(listbox.selected))
-
-#     # Set up a callback when selection changes.
-#     listbox.on_change = _on_change
-
-#     # Assign the counter callback to every possible event.
-#     event_counter = EventCounter()
-#     event_counter.monitor(listbox)
-
-#     show_manager = window.ShowManager(size=(600, 600), title="FURY ListBox")
-#     show_manager.scene.add(listbox)
-#     show_manager.play_events_from_file(recording_filename)
-#     expected = EventCounter.load(expected_events_counts_filename)
-#     event_counter.check_counts(expected)
-
-#     # Check if the right values were selected.
-#     expected = [
-#         [1],
-#         [1, 2],
-#         [1],
-#         [
-#             "A Very Very Long Item To \
-# Test Text Overflow of List Box 2D"
-#         ],
-#         [1],
-#         values,
-#     ]
-#     npt.assert_equal(len(selected_values), len(expected))
-#     assert_arrays_equal(selected_values, expected)
-
-#     # Test without multiselection enabled.
-#     listbox.multiselection = False
-#     del selected_values[:]  # Clear the list.
-#     show_manager.play_events_from_file(recording_filename)
-
-#     # Check if the right values were selected.
-#     expected = [
-#         [1],
-#         [2],
-#         [2],
-#         [
-#             "A Very Very Long Item To \
-# Test Text Overflow of List Box 2D"
-#         ],
-#         [1],
-#         [
-#             "A Very Very Long Item To Test \
-# Text Overflow of List Box 2D"
-#         ],
-#     ]
-#     npt.assert_equal(len(selected_values), len(expected))
-#     assert_arrays_equal(selected_values, expected)
-
-
-# def test_ui_listbox_2d_visibility():
-#     l1 = ui.ListBox2D(
-#         values=["Violet", "Indigo", "Blue", "Yellow"],
-#         position=(12, 10),
-#         size=(100, 100),
-#     )
-#     l2 = ui.ListBox2D(
-#         values=["Violet", "Indigo", "Blue", "Yellow"],
-#         position=(10, 10),
-#         size=(100, 300),
-#     )
-
-#     def assert_listbox(list_box, expected_scroll_bar_height):
-#         view_end = list_box.view_offset + list_box.nb_slots
-#         assert list_box.scroll_bar.height == expected_scroll_bar_height
-#         for slot in list_box.slots[view_end:]:
-#             assert slot.size[1] == list_box.slot_height
-
-#     assert_listbox(l1, 40.0)
-
-#     # Assert that for list 2 the slots and scrollbars aren't visible.
-#     assert_listbox(l2, 0)
-
-
 # def test_ui_file_menu_2d(interactive=False):
 #     filename = "test_ui_file_menu_2d"
 #     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
@@ -1819,6 +1693,91 @@ def test_ui_2d_ring_slider_hooks():
 #     spinbox.resize((450, 200))
 #     npt.assert_equal((315, 160), spinbox.textbox_size)
 #     npt.assert_equal((90, 60), spinbox.button_size)
+
+
+def test_listbox_2d_functional_initialization():
+    values = [
+        "Item 1",
+        "Item 2",
+        "A extremely long string that will trigger the clip overflow algorithm",
+    ]
+    listbox = ui.ListBox2D(
+        values=values, position=(0, 0), size=(200, 200), multiselection=True
+    )
+
+    npt.assert_equal(len(listbox.values), 3)
+    npt.assert_equal(listbox.size, [200, 200])
+    npt.assert_equal(len(listbox.slots), listbox.nb_slots)
+
+    npt.assert_equal(listbox.slots[0].element, "Item 1")
+    npt.assert_equal(listbox.slots[1].element, "Item 2")
+    npt.assert_equal(
+        listbox.slots[2].element,
+        "A extremely long string that will trigger the clip overflow algorithm",
+    )
+
+
+def test_listbox_2d_visibility_and_scrollbar():
+    values_few = ["Item 1", "Item 2"]
+    values_many = [f"Item {i}" for i in range(50)]
+
+    listbox_few = ui.ListBox2D(values=values_few, size=(100, 300))
+    npt.assert_equal(listbox_few.scroll_bar.height, 0)
+    npt.assert_equal(listbox_few.scroll_bar.actors[0].visible, False)
+
+    listbox_many = ui.ListBox2D(values=values_many, size=(100, 300))
+    npt.assert_equal(listbox_many.scroll_bar.actors[0].visible, True)
+    assert listbox_many.scroll_bar.height > 0
+
+
+def test_listbox_2d_selection_logic():
+    values = ["Item 1", "Item 2", "Item 3"]
+    listbox = ui.ListBox2D(values=values, size=(100, 300), multiselection=True)
+
+    callbacks_triggered = []
+
+    def on_change():
+        callbacks_triggered.append(list(listbox.selected))
+
+    listbox.on_change = on_change
+
+    listbox.select(listbox.slots[0])
+    npt.assert_equal(listbox.slots[0].selected, True)
+    npt.assert_equal(listbox.selected, ["Item 1"])
+    npt.assert_equal(callbacks_triggered[-1], ["Item 1"])
+
+    listbox.select(listbox.slots[1], multiselect=True)
+    npt.assert_equal(listbox.slots[1].selected, True)
+    npt.assert_equal(listbox.selected, ["Item 1", "Item 2"])
+
+    listbox.select(listbox.slots[2], multiselect=False)
+    npt.assert_equal(listbox.slots[0].selected, False)
+    npt.assert_equal(listbox.slots[1].selected, False)
+    npt.assert_equal(listbox.slots[2].selected, True)
+    npt.assert_equal(listbox.selected, ["Item 3"])
+
+
+def test_listbox_2d_scrolling_logic():
+    values = [f"Item {i}" for i in range(50)]
+    listbox = ui.ListBox2D(values=values, size=(100, 300))
+
+    npt.assert_equal(listbox.view_offset, 0)
+
+    for _ in range(5):
+        listbox.scroll_down()
+
+    npt.assert_equal(listbox.view_offset, 5)
+    npt.assert_equal(listbox.slots[0].element, "Item 5")
+
+    for _ in range(2):
+        listbox.scroll_up()
+
+    npt.assert_equal(listbox.view_offset, 3)
+
+    for _ in range(10):
+        listbox.scroll_up()
+
+    npt.assert_equal(listbox.view_offset, 0)
 
 
 def test_ui_card2d_initialization():

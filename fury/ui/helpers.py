@@ -127,21 +127,21 @@ def check_overflow(textblock, width, *, overflow_postfix="", side="right"):
     if side == "left":
         original_str = original_str[::-1]
 
-    if textblock.cal_size_from_message()[0] <= width:
+    if textblock.get_text_actor_size()[0] <= width:
         return 0
 
     while start_ptr < end_ptr:
         mid_ptr = (start_ptr + end_ptr) // 2
         textblock.message = original_str[:mid_ptr] + overflow_postfix
 
-        if textblock.cal_size_from_message()[0] < width:
+        if textblock.get_text_actor_size()[0] < width:
             start_ptr = mid_ptr
-        elif textblock.cal_size_from_message()[0] > width:
+        elif textblock.get_text_actor_size()[0] > width:
             end_ptr = mid_ptr
 
         if (
             mid_ptr == (start_ptr + end_ptr) // 2
-            or textblock.cal_size_from_message()[0] == width
+            or textblock.get_text_actor_size()[0] == width
         ):
             if side == "left":
                 textblock.message = textblock.message[::-1]
