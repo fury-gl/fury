@@ -1,0 +1,216 @@
+{% extends "layout.html" %}
+
+{% block extrahead %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@800;900&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+<div class="hero-container">
+    <div class="hero-grid">
+
+        <!-- Left Column: Content -->
+        <div class="hero-content">
+            <div class="hero-equation">
+                L<sub>o</sub>(x, &omega;<sub>o</sub>) = L<sub>e</sub>(x, &omega;<sub>o</sub>) + &int;<sub>&Omega;</sub> L<sub>i</sub>(x, &omega;<sub>i</sub>) f<sub>r</sub>(&omega;<sub>i</sub>, x, &omega;<sub>o</sub>) (&omega;<sub>i</sub> &middot; n) d&omega;<sub>i</sub>
+            </div>
+
+            <h1 class="hero-title">
+                Scientific<br>
+                visualization,<br>
+                <span class="fury-red">furiously fast.</span>
+            </h1>
+
+            <p class="hero-description">
+                FURY is a free, open source Python library for 3D scientific visualization and animation, built on the GPU through <strong>pygfx</strong> and WebGPU. NumPy arrays in, real-time renders out.
+            </p>
+
+            <div class="hero-actions">
+                <a href="{{ pathto('getting_started') }}" class="btn-primary">Get started</a>
+                <a href="{{ pathto('auto_examples/index') }}" class="btn-secondary">Browse the examples &rarr;</a>
+            </div>
+
+            <div class="install-blocks">
+                <div class="install-block" data-copy="pip install fury">
+                    <span><span class="install-prompt">$</span> pip install fury</span>
+                    <button class="install-copy-trigger" onclick="copyToClipboard(this)" title="Copy to clipboard" aria-label="Copy pip install command">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
+                </div>
+                <div class="install-block" data-copy="conda install -c conda-forge fury">
+                    <span><span class="install-prompt">$</span> conda install -c conda-forge fury</span>
+                    <button class="install-copy-trigger" onclick="copyToClipboard(this)" title="Copy to clipboard" aria-label="Copy conda install command">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Visuals -->
+        <div class="hero-visuals">
+
+            <!-- Horse Render Card -->
+            <div class="visual-card">
+                <img src="{{ pathto('_static/images/horse.gif', 1) }}" alt="FURY Horse Render">
+                <div class="visual-footer">
+                    <span><span class="visual-footer__dot">&bull;</span> custom shader demo &middot; rendered by FURY</span>
+                    <span>720 &times; 405</span>
+                </div>
+            </div>
+
+            <!-- Code Editor Block -->
+            <div class="code-editor">
+                <div class="code-header">
+                    <span>your_first_scene.py</span>
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <span>10 lines</span>
+                        <button class="code-copy-btn" data-copy-target="code-snippet-1" onclick="copyToClipboard(this)" title="Copy code"><i class="fa-regular fa-copy"></i></button>
+                    </div>
+                </div>
+                <div class="code-body" id="code-snippet-1">
+                    <span class="code-keyword">import</span> <span class="code-module">numpy</span> <span class="code-keyword">as</span> np<br>
+                    <span class="code-keyword">from</span> fury.actor <span class="code-keyword">import</span> <span class="code-module">sphere</span><br>
+                    <span class="code-keyword">from</span> fury.window <span class="code-keyword">import</span> <span class="code-module">show</span><br>
+                    <br>
+                    <span class="code-var">rng</span> = np.random.default_rng()<br>
+                    <span class="code-var">centers</span> = rng.uniform(<span class="code-number">-50</span>, <span class="code-number">50</span>, size=(<span class="code-number">1000</span>, <span class="code-number">3</span>))<br>
+                    <span class="code-var">colors</span> = rng.uniform(<span class="code-number">0</span>, <span class="code-number">1</span>, size=(<span class="code-number">1000</span>, <span class="code-number">3</span>))<br>
+                    <br>
+                    <span class="code-var">actor</span> = <span class="code-function">sphere</span>(centers, colors=colors, radii=<span class="code-number">1.5</span>)<br>
+                    <span class="code-function">show</span>(actors=[actor])
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="fury-features">
+    <div class="fury-features-grid">
+        <div class="fury-features__header">
+            <h2 class="fury-features__title">FURY in Action</h2>
+            <a href="{{ pathto('auto_examples/index') }}" class="fury-features__link">Browse all examples &rarr;</a>
+        </div>
+
+        <div class="fury-features__list">
+            <!-- Feature 1 -->
+            <div class="fury-feature-card">
+                <div class="fury-feature-card__visual">
+                    <div class="fury-feature-card__image-wrapper">
+                        <img src="{{ pathto('_static/images/horse.gif', 1) }}" alt="Shaders">
+                        <div class="fury-feature-card__caption">shader-deformed mesh, animated per frame</div>
+                    </div>
+                </div>
+                <div class="fury-feature-card__content">
+                    <h3 class="fury-feature-card__title">Shaders</h3>
+                    <p class="fury-feature-card__description">Shaders are simple programs that describe the traits of
+                        either a vertex or a pixel. Vertex shaders describe the attributes (position, texture
+                        coordinates, colors, etc.) of a vertex, while pixel shaders describe the traits (color, z-depth
+                        and alpha value) of a pixel.</p>
+                </div>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="fury-feature-card fury-feature-card--reverse">
+                <div class="fury-feature-card__content">
+                    <h3 class="fury-feature-card__title">Physically based rendering</h3>
+                    <p class="fury-feature-card__description">Physically based rendering (PBR) is a computer graphics
+                        approach that seeks to render images in a way that models the flow of light in the real world.
+                        Many PBR pipelines aim to achieve photorealism. This video demonstrates Anisotropic specular
+                        reflection in FURY.</p>
+                </div>
+                <div class="fury-feature-card__visual">
+                    <div class="fury-feature-card__image-wrapper">
+                        <img src="{{ pathto('_static/images/physical.gif', 1) }}" alt="Physically based rendering">
+                        <div class="fury-feature-card__caption">anisotropic specular reflection</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="fury-feature-card">
+                <div class="fury-feature-card__visual">
+                    <div class="fury-feature-card__image-wrapper">
+                        <img src="{{ pathto('_static/images/4.gif', 1) }}" alt="Large networks">
+                        <div class="fury-feature-card__caption">force-directed network, animated live</div>
+                    </div>
+                </div>
+                <div class="fury-feature-card__content">
+                    <h3 class="fury-feature-card__title">Large networks</h3>
+                    <p class="fury-feature-card__description">A large network can be visualized by presenting its
+                        interesting parts preferably combined with one or several 'maps' in a multiview display. The
+                        main view displays a selected part in details, while the 'maps' provide the user with
+                        information about the position of the part inside the network.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="fury-sciences">
+    <div class="fury-sciences-grid">
+        <div class="fury-sciences__header">
+            <div class="fury-sciences__title-col">
+                <h2 class="fury-sciences__title">Across the sciences</h2>
+            </div>
+            <div class="fury-sciences__desc-col">
+                <p class="fury-sciences__description">The same scene graph handles whatever your field throws at it. Pick a domain for a sample render.</p>
+            </div>
+        </div>
+
+        <div class="fury-sciences__content">
+            <div class="fury-sciences__tabs">
+                <button class="fury-sciences__tab active" data-target="engineering">
+                    <img src="{{ pathto('_static/images/sc-dom/engineering.svg', 1) }}" class="fury-sciences__tab-icon" alt="">
+                    <span>Engineering</span>
+                </button>
+                <button class="fury-sciences__tab" data-target="physics">
+                    <img src="{{ pathto('_static/images/sc-dom/physics.svg', 1) }}" class="fury-sciences__tab-icon" alt="">
+                    <span>Physics</span>
+                </button>
+                <button class="fury-sciences__tab" data-target="chemistry">
+                    <img src="{{ pathto('_static/images/sc-dom/chemistry.svg', 1) }}" class="fury-sciences__tab-icon" alt="">
+                    <span>Chemistry</span>
+                </button>
+                <button class="fury-sciences__tab" data-target="astronomy">
+                    <img src="{{ pathto('_static/images/sc-dom/astronomy.svg', 1) }}" class="fury-sciences__tab-icon" alt="">
+                    <span>Astronomy</span>
+                </button>
+                <button class="fury-sciences__tab" data-target="aerospace">
+                    <img src="{{ pathto('_static/images/sc-dom/aerospace.svg', 1) }}" class="fury-sciences__tab-icon" alt="">
+                    <span>Aerospace</span>
+                </button>
+                <button class="fury-sciences__tab" data-target="biology">
+                    <img src="{{ pathto('_static/images/sc-dom/biology.svg', 1) }}" class="fury-sciences__tab-icon" alt="">
+                    <span>Biology</span>
+                </button>
+                <button class="fury-sciences__tab" data-target="data-science">
+                    <img src="{{ pathto('_static/images/sc-dom/data-science.svg', 1) }}" class="fury-sciences__tab-icon" alt="">
+                    <span>Data science</span>
+                </button>
+                <button class="fury-sciences__tab" data-target="network-science">
+                    <img src="{{ pathto('_static/images/sc-dom/network.svg', 1) }}" class="fury-sciences__tab-icon" alt="">
+                    <span>Network science</span>
+                </button>
+                <button class="fury-sciences__tab" data-target="mathematics">
+                    <img src="{{ pathto('_static/images/sc-dom/maths.svg', 1) }}" class="fury-sciences__tab-icon" alt="">
+                    <span>Mathematics</span>
+                </button>
+            </div>
+
+            <div class="fury-sciences__display">
+                <div class="fury-sciences__image-wrapper">
+                    <img id="fury-sciences-img" src="{{ pathto('_static/images/sc-dom/popup/engineering.gif', 1) }}" alt="Engineering render">
+                </div>
+                <div class="fury-sciences__text">
+                    <h3 id="fury-sciences-title" class="fury-sciences__item-title">Engineering</h3>
+                    <p id="fury-sciences-desc" class="fury-sciences__item-desc">Robot-arm kinematics, assemblies and simulation output, animated as scene graphs.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ pathto('_static/js/homepage.js', 1) }}"></script>
+{% endblock %}
