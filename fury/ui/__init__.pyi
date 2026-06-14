@@ -25,7 +25,7 @@ __all__ = [
     #     "DrawShape",
     #     "DrawPanel",
     "PlaybackPanel",
-    #     "Card2D",
+    "Card2D",
     #     "SpinBox",
     "UI",
     #     "cal_bounding_box_2d",
@@ -50,6 +50,7 @@ from .containers import ImageContainer2D, Panel2D, TabPanel2D, TabUI
 from .context import UIContext
 from .core import UI, Anchor, Disk2D, Rectangle2D, TextBlock2D
 from .elements import (
+    Card2D,
     LineSlider2D,
     PlaybackPanel,
     RingSlider2D,
@@ -58,7 +59,6 @@ from .elements import (
 )
 
 # from .elements import (
-#     Card2D,
 #     Checkbox,
 #     ComboBox2D,
 #     DrawPanel,

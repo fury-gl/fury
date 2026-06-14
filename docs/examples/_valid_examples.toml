@@ -51,6 +51,7 @@ files = [
     "viz_button.py",
     "viz_playback_panel.py",
     "viz_tab_ui.py",
+    "viz_card.py",
 ]
 
 [animation]

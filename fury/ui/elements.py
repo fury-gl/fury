@@ -19,15 +19,17 @@ __all__ = [
     #     "DrawShape",
     #     "DrawPanel",
     "PlaybackPanel",
-    #     "Card2D",
+    "Card2D",
     #     "SpinBox",
 ]
 
 
+from PIL import UnidentifiedImageError
 import numpy as np
 
+from fury.colormap import normalize_colors
 from fury.data import read_viz_icons
-from fury.io import load_image_texture
+from fury.io import get_extension, load_image, load_image_texture
 from fury.ui.containers import ImageContainer2D, Panel2D
 from fury.ui.core import (
     UI,
@@ -4172,286 +4174,407 @@ class RingSlider2D(Slider2D):
 #         i_ren.force_render()
 
 
-# class Card2D(UI):
-#     """Card element to show image and related text
+class Card2D(UI):
+    """
+    A 2D card UI component that displays an image with title and body text.
 
-#     Attributes
-#     ----------
-#     image: :class: 'ImageContainer2D'
-#         Renders the image on the card.
-#     title_box: :class: 'TextBlock2D'
-#         Displays the title on card.
-#     body_box: :class: 'TextBLock2D'
-#         Displays the body text.
+    The card layout places the image at the top, followed by the title and
+    body text below. It can optionally be dragged around the scene.
 
-#     """
+    Parameters
+    ----------
+    image_path : str
+        Path to the image file. Supports png and jpg/jpeg images.
+    body_text : str, optional
+        Card body text.
+    draggable : bool, optional
+        If True, the card can be dragged with the mouse.
+    title_text : str, optional
+        Card title text.
+    padding : int, optional
+        Padding between image, title, and body in pixels.
+    position : (float, float), optional
+        Absolute coordinates (x, y) for placement.
+    size : (int, int), optional
+        Width and height in pixels of the card.
+    image_scale : float, optional
+        Fraction of the card height taken by the image (between 0 and 1).
+    bg_color : (float, float, float) or str, optional
+        Background color of the card. Can be RGB/RGBA array, or hex string.
+    bg_opacity : float, optional
+        Background opacity. Must be in [0, 1].
+    title_color : (float, float, float) or str, optional
+        Title text color. Can be RGB/RGBA array, or hex string.
+    body_color : (float, float, float) or str, optional
+        Body text color. Can be RGB/RGBA array, or hex string.
+    border_color : (float, float, float) or str, optional
+        Border color. Can be RGB/RGBA array, or hex string.
+    border_width : int, optional
+        Width of the border in pixels.
+    maintain_aspect : bool, optional
+        If True, the image is scaled to maintain its aspect ratio.
+    z_order : int, optional
+        The stacking priority of the card.
 
-#     @warn_on_args_to_kwargs()
-#     def __init__(
-#         self,
-#         image_path,
-#         *,
-#         body_text="",
-#         draggable=True,
-#         title_text="",
-#         padding=10,
-#         position=(0, 0),
-#         size=(400, 400),
-#         image_scale=0.5,
-#         bg_color=(0.5, 0.5, 0.5),
-#         bg_opacity=1,
-#         title_color=(0.0, 0.0, 0.0),
-#         body_color=(0.0, 0.0, 0.0),
-#         border_color=(1.0, 1.0, 1.0),
-#         border_width=0,
-#         maintain_aspect=False,
-#     ):
-#         """Parameters
-#         ----------
-#         image_path: str
-#             Path of the image, supports png and jpg/jpeg images
-#         body_text: str, optional
-#             Card body text
-#         draggable: Bool, optional
-#             If the card should be draggable
-#         title_text: str, optional
-#             Card title text
-#         padding: int, optional
-#             Padding between image, title, body
-#         position : (float, float), optional
-#             Absolute coordinates (x, y) of the lower-left corner of the
-#             UI component
-#         size : (int, int), optional
-#             Width and height of the pixels of this UI component.
-#         image_scale: float, optional
-#             fraction of size taken by the image (between 0 , 1)
-#         bg_color: (float, float, float), optional
-#             Background color of card
-#         bg_opacity: float, optional
-#             Background opacity
-#         title_color: (float, float, float), optional
-#             Title text color
-#         body_color: (float, float, float), optional
-#             Body text color
-#         border_color: (float, float, float), optional
-#             Border color
-#         border_width: int, optional
-#             Width of the border
-#         maintain_aspect: bool, optional
-#             If the image should be scaled to maintain aspect ratio
+    Attributes
+    ----------
+    image : :class:`ImageContainer2D`
+        Renders the image on the card.
+    title_box : :class:`TextBlock2D`
+        Displays the title on the card.
+    body_box : :class:`TextBlock2D`
+        Displays the body text on the card.
+    panel : :class:`Panel2D`
+        The background panel that holds all card elements.
+    """
 
-#         """
-#         self.image_path = image_path
-#         self._basename = os.path.basename(self.image_path)
-#         self._extension = self._basename.split(".")[-1]
-#         if self._extension not in ["jpg", "jpeg", "png"]:
-#             raise UnidentifiedImageError(
-#                 f"Image extension {self._extension} not supported"
-#             )
+    def __init__(
+        self,
+        image_path,
+        *,
+        body_text="",
+        draggable=True,
+        title_text="",
+        padding=10,
+        position=(0, 0),
+        size=(400, 400),
+        image_scale=0.5,
+        bg_color=(0.5, 0.5, 0.5),
+        bg_opacity=1,
+        title_color=(0.0, 0.0, 0.0),
+        body_color=(0.0, 0.0, 0.0),
+        border_color=(1.0, 1.0, 1.0),
+        border_width=0,
+        maintain_aspect=False,
+        z_order=0,
+    ):
+        """Initialize the Card2D instance."""
+        self._drag_offset = None
+        self.image_path = image_path
+        self._extension = get_extension(self.image_path)
+        if self._extension not in ["jpg", "jpeg", "png"]:
+            raise UnidentifiedImageError(
+                f"Image extension {self._extension} not supported"
+            )
 
-#         self.body_text = body_text
-#         self.title_text = title_text
-#         self.draggable = draggable
-#         self.card_size = size
-#         self.padding = padding
+        self.body_text = body_text
+        self.title_text = title_text
+        self.draggable = draggable
+        self.card_size = size
+        self.padding = padding
 
-#         self.title_color = [np.clip(value, 0, 1) for value in title_color]
-#         self.body_color = [np.clip(value, 0, 1) for value in body_color]
-#         self.bg_color = [np.clip(value, 0, 1) for value in bg_color]
-#         self.border_color = [np.clip(value, 0, 1) for value in border_color]
-#         self.bg_opacity = bg_opacity
+        self._title_color = normalize_colors(title_color)[0]
+        self._body_color = normalize_colors(body_color)[0]
+        self._bg_color = normalize_colors(bg_color)[0]
+        self._border_color = normalize_colors(border_color)[0]
+        self._bg_opacity = np.clip(bg_opacity, 0, 1)
 
-#         self.text_scale = np.clip(1 - image_scale, 0, 1)
-#         self.image_scale = np.clip(image_scale, 0, 1)
+        self.text_scale = np.clip(1 - image_scale, 0, 1)
+        self.image_scale = np.clip(image_scale, 0, 1)
 
-#         self.maintain_aspect = maintain_aspect
-#         if self.maintain_aspect:
-#             self._true_image_size = Image.open(urlopen(self.image_path)).size
+        self._image_data = load_image(self.image_path)
 
-#         self._image_size = (self.card_size[0], self.card_size[1] * self.image_scale)
+        self.maintain_aspect = maintain_aspect
+        if self.maintain_aspect:
+            self._true_image_size = self._image_data.shape[:2][::-1]
 
-#         self.border_width = border_width
-#         self.has_border = bool(border_width)
+        self.border_width = border_width
+        self.has_border = bool(border_width)
 
-#         super(Card2D, self).__init__()
-#         self.position = position
+        super(Card2D, self).__init__(position=position, z_order=z_order)
 
-#         if self.maintain_aspect:
-#             self._new_size = (
-#                 self._true_image_size[0],
-#                 self._true_image_size[1] // self.image_scale,
-#             )
-#             self.resize(self._new_size)
-#         else:
-#             self.resize(size)
+        if self.maintain_aspect:
+            self._new_size = (
+                self._true_image_size[0],
+                self._true_image_size[1] // self.image_scale,
+            )
+            self.resize(self._new_size)
+        else:
+            self.resize(size)
 
-#     def _setup(self):
-#         """Setup this UI component
-#         Create the image.
-#         Create the title and body.
-#         Create a Panel2D widget to hold image, title, body.
-#         """
-#         self.image = ImageContainer2D(img_path=self.image_path, size=self._image_size)
+    def _setup(self):
+        """
+        Set up this UI component.
 
-#         self.body_box = TextBlock2D(text=self.body_text, color=self.body_color)
+        Creates the image, title, body text, and a Panel2D to hold them.
+        """
+        self._image_size, _title_box_size, _body_box_size = self._calculate_sizes(
+            self.card_size
+        )
 
-#         self.title_box = TextBlock2D(
-#             text=self.title_text, bold=True, color=self.title_color
-#         )
+        self.image = ImageContainer2D(img_path=self._image_data, size=self._image_size)
 
-#         self.panel = Panel2D(
-#             self.card_size,
-#             color=self.bg_color,
-#             opacity=self.bg_opacity,
-#             border_color=self.border_color,
-#             border_width=self.border_width,
-#             has_border=self.has_border,
-#         )
+        self.body_box = TextBlock2D(
+            text=self.body_text, color=self._body_color, size=_body_box_size
+        )
 
-#         self.panel.add_element(self.image, (0.0, 0.0))
-#         self.panel.add_element(self.title_box, (0.0, 0.0))
-#         self.panel.add_element(self.body_box, (0.0, 0.0))
+        self.title_box = TextBlock2D(
+            text=self.title_text,
+            bold=True,
+            color=self._title_color,
+            size=_title_box_size,
+        )
 
-#         if self.draggable:
-#             self.panel.background.on_left_mouse_button_dragged = (
-#                 self.left_button_dragged
-#             )
-#             self.panel.background.on_left_mouse_button_pressed = (
-#                 self.left_button_pressed
-#             )
-#             self.image.on_left_mouse_button_dragged = self.left_button_dragged
-#             self.image.on_left_mouse_button_pressed = self.left_button_pressed
-#         else:
-#             self.panel.background.on_left_mouse_button_dragged = (
-#                 lambda i_ren, _obj, _comp: i_ren.force_render
-#             )
+        self.panel = Panel2D(
+            self.card_size,
+            color=self._bg_color,
+            opacity=self._bg_opacity,
+            border_color=self._border_color,
+            border_width=self.border_width,
+            has_border=self.has_border,
+        )
 
-#     def _get_actors(self):
-#         """Get the actors composing this UI component."""
-#         return self.panel.actors
+        self.panel.add_element(self.image, (0, 0))
+        self.panel.add_element(self.title_box, (0, 0))
+        self.panel.add_element(self.body_box, (0, 0))
 
-#     def _add_to_scene(self, _scene):
-#         """Add all subcomponents or VTK props that compose this UI component.
+        self._setup_drag_events()
+        self._children.append(self.panel)
 
-#         Parameters
-#         ----------
-#         scene : scene
+    def _setup_drag_events(self):
+        """Attach drag event handlers to all interactive card surfaces."""
+        if self.draggable:
+            drag_targets = [
+                self.panel.background,
+                self.image,
+                self.title_box,
+                self.body_box,
+            ]
+            if self.has_border:
+                drag_targets.extend(self.panel.borders.values())
 
-#         """
-#         self.panel.add_to_scene(_scene)
-#         if self.size[0] <= 200:
-#             clip_overflow(self.body_box, self.size[0] - 2 * self.padding)
-#         else:
-#             wrap_overflow(self.body_box, self.size[0] - 2 * self.padding)
+            for target in drag_targets:
+                target.on_left_mouse_button_dragged = self.left_button_dragged
+                target.on_left_mouse_button_pressed = self.left_button_pressed
+        else:
+            self.panel.background.on_left_mouse_button_dragged = lambda event: None
 
-#         wrap_overflow(self.title_box, self.size[0] - 2 * self.padding)
+    def _get_actors(self):
+        """
+        Get the actors composing this UI component.
 
-#     def _get_size(self):
-#         return self.panel.size
+        Returns
+        -------
+        list
+            Empty list as this UI uses other UI elements as children
+            instead of direct actors.
+        """
+        return []
 
-#     def resize(self, size):
-#         """Resize Card2D.
+    def _get_size(self):
+        """
+        Get the total size of the card.
 
-#         Parameters
-#         ----------
-#         size : (int, int)
-#             Card2D size(width, height) in pixels.
+        Returns
+        -------
+        (int, int)
+            Width and height in pixels.
+        """
+        return self.panel.size
 
-#         """
-#         _width, _height = size
-#         self.panel.resize(size)
+    def resize(self, size):
+        """
+        Resize the Card2D and reposition internal elements.
 
-#         self._image_size = (
-#             size[0] - int(self.border_width),
-#             int(self.image_scale * size[1]),
-#         )
+        Parameters
+        ----------
+        size : (int, int)
+            Card size (width, height) in pixels.
+        """
+        self.card_size = size
+        self.panel.resize(size)
 
-#         _title_box_size = (
-#             _width - 2 * self.padding,
-#             _height * 0.34 * self.text_scale / 2,
-#         )
+        self._image_size, _title_box_size, _body_box_size = self._calculate_sizes(size)
 
-#         _body_box_size = (_width - 2 * self.padding, _height * self.text_scale / 2)
+        bw = int(self.border_width)
+        img_h = self._image_size[1]
+        title_h = _title_box_size[1]
 
-#         _img_coords = (int(self.border_width), int(size[1] - self._image_size[1]))
+        _img_coords = (bw, bw)
+        _title_coords = (self.padding, img_h + self.padding + bw)
+        _body_coords = (
+            self.padding,
+            img_h + self.padding + title_h + self.padding + bw,
+        )
 
-#         _title_coords = (
-#             self.padding,
-#             int(_img_coords[1] - _title_box_size[1] - \
-#  self.padding + self.border_width),
-#         )
+        self.panel.update_element(self.image, _img_coords)
+        self.panel.update_element(self.title_box, _title_coords)
+        self.panel.update_element(self.body_box, _body_coords)
 
-#         _text_coords = (
-#             self.padding,
-#             int(
-#                 _title_coords[1] - _body_box_size[1] - \
-# self.padding + self.border_width
-#             ),
-#         )
+        self.image.resize(self._image_size)
+        self.title_box.resize(_title_box_size)
+        self.body_box.resize(_body_box_size)
 
-#         self.panel.update_element(self.image, _img_coords)
-#         self.panel.update_element(self.body_box, _text_coords)
-#         self.panel.update_element(self.title_box, _title_coords)
+    def _update_actors_position(self):
+        """Update the internal position of the UI element."""
+        self.panel.set_position(self.get_position())
 
-#         self.image.resize(self._image_size)
-#         self.title_box.resize(_title_box_size)
+    def update_layout(self):
+        """
+        Propagate layout updates to child text elements.
 
-#     def _set_position(self, _coords):
-#         """Position the lower-left corner of this UI component.
+        The render loop calls this method on top-level UI elements so
+        that :class:`TextBlock2D` children can re-align their text
+        actors once the actual bounding box is known after the first
+        render pass.
+        """
+        self.title_box.update_layout()
+        self.body_box.update_layout()
 
-#         Parameters
-#         ----------
-#         coords: (float, float)
-#             Absolute pixel coordinates (x, y).
+    @property
+    def color(self):
+        """
+        Get the background color of the card.
 
-#         """
-#         self.panel.position = _coords
+        Returns
+        -------
+        (float, float, float)
+            RGB color of the card background.
+        """
+        return self.panel.color
 
-#     @property
-#     def color(self):
-#         """Returns the background color of card."""
-#         return self.panel.color
+    @color.setter
+    def color(self, color):
+        """
+        Set the background color of the card.
 
-#     @color.setter
-#     def color(self, color):
-#         """Sets background color of card.
+        Parameters
+        ----------
+        color : (float, float, float) or str
+            RGB color. Values can be in [0, 1], [0, 255], or hex strings.
+        """
+        self.panel.color = normalize_colors(color)[0]
 
-#         Parameters
-#         ----------
-#         color : list of 3 floats.
+    @property
+    def body(self):
+        """
+        Get the body text of the card.
 
-#         """
-#         self.panel.color = color
+        Returns
+        -------
+        str
+            The body text.
+        """
+        return self.body_box.message
 
-#     @property
-#     def body(self):
-#         """Returns the body text of the card."""
-#         return self.body_box.message
+    @body.setter
+    def body(self, text):
+        """
+        Set the body text of the card.
 
-#     @body.setter
-#     def body(self, text):
-#         self.body_box.message = text
+        Parameters
+        ----------
+        text : str
+            The new body text.
+        """
+        self.body_box.message = text
 
-#     @property
-#     def title(self):
-#         """Returns the title text of the card"""
-#         return self.title_box.message
+    @property
+    def title(self):
+        """
+        Get the title text of the card.
 
-#     @title.setter
-#     def title(self, text):
-#         self.title_box.message = text
+        Returns
+        -------
+        str
+            The title text.
+        """
+        return self.title_box.message
 
-#     def left_button_pressed(self, i_ren, _obj, _sub_component):
-#         click_pos = np.array(i_ren.event.position)
-#         self._click_position = click_pos
-#         i_ren.event.abort()
+    @title.setter
+    def title(self, text):
+        """
+        Set the title text of the card.
 
-#     def left_button_dragged(self, i_ren, _obj, _sub_component):
-#         click_position = np.array(i_ren.event.position)
-#         change = click_position - self._click_position
-#         self.panel.position += change
-#         self._click_position = click_position
-#         i_ren.force_render()
+        Parameters
+        ----------
+        text : str
+            The new title text.
+        """
+        self.title_box.message = text
+
+    @property
+    def opacity(self):
+        """
+        Get the opacity of the card.
+
+        Returns
+        -------
+        float
+            The opacity of the card.
+        """
+        return self.panel.opacity
+
+    @opacity.setter
+    def opacity(self, value):
+        """
+        Set the opacity of the card.
+
+        Parameters
+        ----------
+        value : float
+            The new opacity of the card.
+        """
+        self.panel.opacity = np.clip(value, 0, 1)
+
+    def left_button_pressed(self, event):
+        """
+        Handle left mouse button press event for card dragging.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
+        click_pos = np.array([event.x, event.y])
+        self._drag_offset = click_pos - self.get_position()
+
+    def left_button_dragged(self, event):
+        """
+        Handle left mouse button drag event for card movement.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event object.
+        """
+        if self._drag_offset is not None:
+            click_position = np.array([event.x, event.y])
+            new_position = click_position - self._drag_offset
+            self.set_position(new_position)
+
+    def _calculate_sizes(self, size):
+        """
+        Calculate internal layout sizes based on the given card size.
+
+        Parameters
+        ----------
+        size : (int, int)
+            Card size (width, height) in pixels.
+
+        Returns
+        -------
+        tuple
+            Tuple of (image_size, title_box_size, body_box_size) where each
+            is a tuple of (width, height) in pixels.
+        """
+        _width, _height = size
+        bw = int(self.border_width)
+
+        img_w = max(_width - 2 * bw, 1)
+        img_h = max(int(self.image_scale * _height), 1)
+        image_size = (img_w, img_h)
+
+        text_area_w = max(_width - 2 * self.padding, 1)
+        remaining_h = max(_height - img_h - 3 * self.padding, 2)
+
+        title_h = max(int(remaining_h * 0.25), 1)
+        body_h = max(remaining_h - title_h - self.padding, 1)
+
+        title_box_size = (text_area_w, title_h)
+        body_box_size = (text_area_w, body_h)
+
+        return image_size, title_box_size, body_box_size
 
 
 # class SpinBox(UI):
