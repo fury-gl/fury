@@ -1,0 +1,90 @@
+{% extends "layout.html" %}
+
+{% block extrahead %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@800;900&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+<div class="hero-container">
+    <div class="hero-grid">
+
+        <!-- Left Column: Content -->
+        <div class="hero-content">
+            <div class="hero-equation">
+                L<sub>o</sub>(x, &omega;<sub>o</sub>) = L<sub>e</sub>(x, &omega;<sub>o</sub>) + &int;<sub>&Omega;</sub> L<sub>i</sub>(x, &omega;<sub>i</sub>) f<sub>r</sub>(&omega;<sub>i</sub>, x, &omega;<sub>o</sub>) (&omega;<sub>i</sub> &middot; n) d&omega;<sub>i</sub>
+            </div>
+
+            <h1 class="hero-title">
+                Scientific<br>
+                visualization,<br>
+                <span class="fury-red">furiously fast.</span>
+            </h1>
+
+            <p class="hero-description">
+                FURY is a free, open source Python library for 3D scientific visualization and animation, built on the GPU through <strong>pygfx</strong> and WebGPU. NumPy arrays in, real-time renders out.
+            </p>
+
+            <div class="hero-actions">
+                <a href="{{ pathto('getting_started') }}" class="btn-primary">Get started</a>
+                <a href="{{ pathto('auto_examples/index') }}" class="btn-secondary">Browse the examples &rarr;</a>
+            </div>
+
+            <div class="install-blocks">
+                <div class="install-block" data-copy="pip install fury">
+                    <span><span class="install-prompt">$</span> pip install fury</span>
+                    <button class="install-copy-trigger" onclick="copyToClipboard(this)" title="Copy to clipboard" aria-label="Copy pip install command">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
+                </div>
+                <div class="install-block" data-copy="conda install -c conda-forge fury">
+                    <span><span class="install-prompt">$</span> conda install -c conda-forge fury</span>
+                    <button class="install-copy-trigger" onclick="copyToClipboard(this)" title="Copy to clipboard" aria-label="Copy conda install command">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Visuals -->
+        <div class="hero-visuals">
+
+            <!-- Horse Render Card -->
+            <div class="visual-card">
+                <img src="{{ pathto('_static/images/horse.gif', 1) }}" alt="FURY Horse Render">
+                <div class="visual-footer">
+                    <span><span class="visual-footer__dot">&bull;</span> custom shader demo &middot; rendered by FURY</span>
+                    <span>720 &times; 405</span>
+                </div>
+            </div>
+
+            <!-- Code Editor Block -->
+            <div class="code-editor">
+                <div class="code-header">
+                    <span>your_first_scene.py</span>
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <span>10 lines</span>
+                        <button class="code-copy-btn" data-copy-target="code-snippet-1" onclick="copyToClipboard(this)" title="Copy code"><i class="fa-regular fa-copy"></i></button>
+                    </div>
+                </div>
+                <div class="code-body" id="code-snippet-1">
+                    <span class="code-keyword">import</span> <span class="code-module">numpy</span> <span class="code-keyword">as</span> np<br>
+                    <span class="code-keyword">from</span> fury.actor <span class="code-keyword">import</span> <span class="code-module">sphere</span><br>
+                    <span class="code-keyword">from</span> fury.window <span class="code-keyword">import</span> <span class="code-module">show</span><br>
+                    <br>
+                    <span class="code-var">rng</span> = np.random.default_rng()<br>
+                    <span class="code-var">centers</span> = rng.uniform(<span class="code-number">-50</span>, <span class="code-number">50</span>, size=(<span class="code-number">1000</span>, <span class="code-number">3</span>))<br>
+                    <span class="code-var">colors</span> = rng.uniform(<span class="code-number">0</span>, <span class="code-number">1</span>, size=(<span class="code-number">1000</span>, <span class="code-number">3</span>))<br>
+                    <br>
+                    <span class="code-var">actor</span> = <span class="code-function">sphere</span>(centers, colors=colors, radii=<span class="code-number">1.5</span>)<br>
+                    <span class="code-function">show</span>(actors=[actor])
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="{{ pathto('_static/js/homepage.js', 1) }}"></script>
+{% endblock %}
