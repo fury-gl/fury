@@ -144,8 +144,8 @@ html_theme_options = {
     "navigation_depth": 1,
     "navigation_with_keys": True,
     "navbar_start": ["navbar-logo"],
-    "navbar_center": ["navbar-nav"],
-    "navbar_end": ["theme-switcher", "version-switcher", "navbar-icon-links"],
+    "navbar_center": ["custom-navbar-nav.html"],
+    "navbar_end": ["navbar-icon-links", "theme-switcher"],
     "footer_start": ["copyright"],
     "footer_center": "",
     "footer_end": "",
@@ -153,6 +153,14 @@ html_theme_options = {
         "json_url": json_url,
         "version_match": version_match,
     },
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/fury-gl/fury",
+            "icon": "fa-brands fa-github",
+            "type": "fontawesome",
+        }
+    ],
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -160,7 +168,8 @@ html_theme_options = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-# html_css_files = ["css/custom.css", "vendor/fonts.css"]
+html_css_files = ["css/homepage.css"]
+html_additional_pages = {"index": "home.html"}
 
 # html_baseurl = os.environ.get("SPHINX_HTML_BASE_URL", "http://127.0.0.1:8000/")
 
