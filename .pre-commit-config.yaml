@@ -45,7 +45,7 @@ repos:
         args: ["fury"]
         pass_filenames: false
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.16
+    rev: v0.15.17
     hooks:
       # Run the linter
     -   id: ruff
@@ -53,7 +53,7 @@ repos:
       # Run the formatter
     -   id: ruff-format
 -   repo: https://github.com/numpy/numpydoc
-    rev: v1.10.0
+    rev: v1.11.0rc0
     hooks:
     -   id: numpydoc-validation
         exclude: |
