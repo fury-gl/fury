@@ -1,3 +1,31 @@
+
+/* --- SEARCH COMPONENT OVERRIDES --- */
+/* Force FURY theme colors for the search button in dark mode */
+html[data-theme="dark"] button.btn.search-button__button,
+html[data-theme="dark"] .bd-header .search-button__button {
+    color: #f8f8f8 !important;
+    border-color: rgba(255, 68, 68, 0.5) !important;
+    background-color: transparent !important;
+}
+
+html[data-theme="dark"] button.btn.search-button__button .search-button__default-text,
+html[data-theme="dark"] button.btn.search-button__button i {
+    color: #f8f8f8 !important;
+}
+
+html[data-theme="dark"] button.btn.search-button__button:hover,
+html[data-theme="dark"] .bd-header .search-button__button:hover {
+    border-color: #ff4444 !important;
+    background-color: rgba(255, 68, 68, 0.1) !important;
+}
+
+html[data-theme="dark"] button.btn.search-button__button .search-button__kbd-shortcut kbd,
+html[data-theme="dark"] .bd-header .search-button__kbd-shortcut {
+    color: #ff4444 !important;
+    border-color: rgba(255, 68, 68, 0.5) !important;
+    background-color: transparent !important;
+}
+
 /* --- LAYOUT RESETS --- */
 /* Allow full-width rendering for the homepage main content area */
 .bd-main .bd-content,
@@ -80,9 +108,17 @@
     letter-spacing: -0.03em;
 }
 
+html[data-theme="dark"] .hero-title {
+    color: #f8f8f8;
+}
+
 .hero-title .fury-red {
     color: #cc0000;
     display: block;
+}
+
+html[data-theme="dark"] .hero-title .fury-red {
+    color: #ff4444;
 }
 
 .hero-description {
@@ -285,6 +321,77 @@
     }
 }
 
+/* --- DARK MODE COMPONENT OVERRIDES --- */
+
+/* Deep dark background for the hero */
+html[data-theme="dark"] .hero-container {
+    background: #0d0808;
+    background-image:
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 4.5rem 100%;
+}
+
+/* Stronger, more vivid red radial glow for dark mode */
+html[data-theme="dark"] .hero-container::before {
+    background: radial-gradient(circle, rgba(230,0,0,0.35) 0%, rgba(230,0,0,0) 65%);
+    right: -5%;
+    top: -5%;
+    width: 900px;
+    height: 900px;
+}
+
+/* Equation color stays warm amber */
+html[data-theme="dark"] .hero-equation {
+    color: #b89a3a;
+}
+
+/* Title white in dark mode */
+html[data-theme="dark"] .hero-title {
+    color: #ffffff;
+}
+
+/* Slightly brighter red for "furiously fast." */
+html[data-theme="dark"] .hero-title .fury-red {
+    color: #ff1a1a;
+}
+
+/* Description text slightly muted white */
+html[data-theme="dark"] .hero-description {
+    color: #c0b8b8;
+}
+
+/* "Browse the examples" link */
+html[data-theme="dark"] .btn-secondary {
+    color: #e0d8d8 !important;
+}
+
+/* Install blocks: dark with a subtle border */
+html[data-theme="dark"] .install-block {
+    background: #1c1212;
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: none;
+}
+
+html[data-theme="dark"] .install-block .install-copy-trigger:hover {
+    color: #fff;
+}
+
+/* Visual card in dark mode */
+html[data-theme="dark"] .visual-card {
+    background: #150f0f;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+html[data-theme="dark"] .visual-footer {
+    color: #666;
+}
+
+/* Code editor stays dark, just a bit more contrast */
+html[data-theme="dark"] .code-editor {
+    background: #130e0e;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
 /* --- NAVIGATION BAR OVERRIDES --- */
 
 /* Shared navbar base */
@@ -313,6 +420,32 @@ html[data-theme="light"] .bd-header .btn.theme-switch-button,
 html[data-theme="light"] .bd-header .navbar-btn {
     color: #1a1a1a !important;
     border-color: rgba(0,0,0,0.15) !important;
+}
+
+/* Dark mode navbar */
+html[data-theme="dark"] .bd-header.navbar {
+    background-color: #0d0808 !important;
+}
+
+html[data-theme="dark"] .bd-header .navbar-brand,
+html[data-theme="dark"] .bd-header .nav-link,
+html[data-theme="dark"] .bd-header .bd-navbar-elements .nav-link {
+    color: #e8e0e0 !important;
+}
+
+html[data-theme="dark"] .bd-header .nav-link:hover {
+    color: #ff4444 !important;
+}
+
+html[data-theme="dark"] .bd-header .btn.theme-switch-button,
+html[data-theme="dark"] .bd-header .navbar-btn {
+    color: #e8e0e0 !important;
+    border-color: rgba(255,255,255,0.12) !important;
+}
+
+/* Logo text "FURY" */
+html[data-theme="dark"] .bd-header .navbar-brand .logo__title {
+    color: #ffffff !important;
 }
 
 html[data-theme="light"] .bd-header .navbar-brand .logo__title {
