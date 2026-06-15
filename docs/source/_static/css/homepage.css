@@ -77,7 +77,7 @@ html[data-theme="dark"] .bd-header .search-button__kbd-shortcut {
     gap: 4rem;
     max-width: 1440px;
     margin: 0 auto;
-    padding: 6rem 2rem;
+    padding: 6rem 2rem 2rem 2rem; /* Reduced bottom padding */
     align-items: flex-start;
 }
 
@@ -480,4 +480,168 @@ html[data-theme="light"] .bd-header .navbar-brand .logo__title {
 html[data-theme="dark"] .install-block__copy-button.is-copy-success,
 html[data-theme="dark"] .code-editor__copy-button.is-copy-success {
     color: #3fb950;
+}
+
+/* --- FEATURES COMPONENT --- */
+.fury-features {
+    width: 100%;
+    background: #faf5f2; /* Light mode only background */
+    color: #1c1919;
+    padding: 0 0 6rem 0; /* Removing top padding entirely to keep it flush, but using overflow to trap margins */
+    margin: 0;
+    overflow: hidden; /* Prevent any margin collapse from children */
+}
+
+.fury-features-grid {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.fury-features__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 3rem;
+    margin-top: 2rem; /* Reduced top margin to bring it closer to the hero section */
+}
+
+.fury-features__title {
+    font-size: 3.5rem;
+    font-family: "Barlow", "Arial Black", "Helvetica Neue", Arial, sans-serif;
+    font-weight: 900;
+    line-height: 1.1;
+    color: #1c1919;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.fury-features__link {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1c1919;
+    text-decoration: none;
+    transition: color 0.2s;
+    margin-bottom: 0.5rem;
+}
+
+.fury-features__link:hover {
+    color: #e60000;
+    text-decoration: underline;
+}
+
+.fury-features__list {
+    display: flex;
+    flex-direction: column;
+    gap: 6rem;
+}
+
+.fury-feature-card {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+}
+
+.fury-feature-card__visual {
+    width: 100%;
+}
+
+.fury-feature-card__image-wrapper {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 4px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+.fury-feature-card__image-wrapper img {
+    width: 100%;
+    border-radius: 6px;
+    display: block;
+    background: #000;
+}
+
+.fury-feature-card__caption {
+    font-family: monospace;
+    font-size: 0.75rem;
+    color: #666;
+    padding: 10px 8px 4px 8px;
+}
+
+.fury-feature-card__content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0 2rem;
+}
+
+.fury-feature-card__title {
+    font-size: 2rem;
+    font-weight: 800;
+    font-family: "Barlow", "Arial Black", "Helvetica Neue", Arial, sans-serif;
+    color: #1c1919;
+    margin: 0;
+}
+
+.fury-feature-card__description {
+    font-size: 1.1rem;
+    color: #555;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Responsive Features Section */
+@media (max-width: 992px) {
+    .fury-features__header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .fury-feature-card {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .fury-feature-card--reverse .fury-feature-card__visual {
+        order: -1;
+    }
+
+    .fury-feature-card__content {
+        padding: 0;
+    }
+}
+
+/* --- DARK MODE OVERRIDES FOR FEATURES --- */
+html[data-theme="dark"] .fury-features {
+    background: #0d0808;
+    background-image: linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 4.5rem 100%;
+}
+
+html[data-theme="dark"] .fury-features__title,
+html[data-theme="dark"] .fury-feature-card__title {
+    color: #ffffff;
+}
+
+html[data-theme="dark"] .fury-features__link {
+    color: #e0d8d8;
+}
+
+html[data-theme="dark"] .fury-features__link:hover {
+    color: #ff4444;
+}
+
+html[data-theme="dark"] .fury-feature-card__description {
+    color: #c0b8b8;
+}
+
+html[data-theme="dark"] .fury-feature-card__image-wrapper {
+    background: #150f0f;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+html[data-theme="dark"] .fury-feature-card__caption {
+    color: #888;
 }

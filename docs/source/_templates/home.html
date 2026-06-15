@@ -119,5 +119,58 @@
     </div>
 </div>
 
+<div class="fury-features">
+    <div class="fury-features-grid">
+        <div class="fury-features__header">
+            <h2 class="fury-features__title">Straight off the GPU</h2>
+            <a href="{{ pathto('auto_examples/index') }}" class="fury-features__link">Browse all examples &rarr;</a>
+        </div>
+
+        <div class="fury-features__list">
+            <!-- Feature 1 -->
+            <div class="fury-feature-card">
+                <div class="fury-feature-card__visual">
+                    <div class="fury-feature-card__image-wrapper">
+                        <img src="{{ pathto('_static/images/horse.gif', 1) }}" alt="Shader-driven animation">
+                        <div class="fury-feature-card__caption">shader-deformed mesh, animated per frame</div>
+                    </div>
+                </div>
+                <div class="fury-feature-card__content">
+                    <h3 class="fury-feature-card__title">Shader-driven animation</h3>
+                    <p class="fury-feature-card__description">The horse is a single mesh, deformed and shaded on the GPU every frame. Shader programs plug directly into FURY materials, so effects like this stay real-time as the geometry grows.</p>
+                </div>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="fury-feature-card fury-feature-card--reverse">
+                <div class="fury-feature-card__content">
+                    <h3 class="fury-feature-card__title">Physically based rendering</h3>
+                    <p class="fury-feature-card__description">PBR materials model how light actually behaves: roughness, metallicity, anisotropy. Renders cross from plot to photograph without leaving Python.</p>
+                </div>
+                <div class="fury-feature-card__visual">
+                    <div class="fury-feature-card__image-wrapper">
+                        <img src="{{ pathto('_static/images/physical.gif', 1) }}" alt="Physically based rendering">
+                        <div class="fury-feature-card__caption">anisotropic specular reflection</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="fury-feature-card">
+                <div class="fury-feature-card__visual">
+                    <div class="fury-feature-card__image-wrapper">
+                        <img src="{{ pathto('_static/images/4.gif', 1) }}" alt="Built for big data">
+                        <div class="fury-feature-card__caption">force-directed network, animated live</div>
+                    </div>
+                </div>
+                <div class="fury-feature-card__content">
+                    <h3 class="fury-feature-card__title">Built for big data</h3>
+                    <p class="fury-feature-card__description">A network with thousands of nodes and edges, laid out and animated live. Instanced GPU primitives keep interaction smooth at sizes where CPU plotting tools give up.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="{{ pathto('_static/js/homepage.js', 1) }}"></script>
 {% endblock %}
