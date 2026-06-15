@@ -978,3 +978,119 @@ class BillboardSphereShader(MeshShader):
             WGSL source file as a string.
         """
         return load_wgsl("billboard_sphere_render.wgsl", package_name="fury.wgsl")
+
+
+class NetworkComputeShader(BaseShader):
+    """
+    Compute Shader implementing Fruchterman-Reingold layout.
+
+    Parameters
+    ----------
+    wobject : ~fury.network.Network
+        The target network actor instance utilizing this shader.
+    """
+
+    type = "compute"
+
+    def __init__(self, wobject):
+        """
+        Initialize the compute shader instance.
+
+        Parameters
+        ----------
+        wobject : ~fury.network.Network
+            The target network actor instance utilizing this shader.
+        """
+        super().__init__(wobject)
+        self["workgroup_size"] = (64, 1, 1)
+        self["n_nodes"] = wobject.n_nodes
+
+    def get_render_info(self, wobject, _shared):
+        """
+        Get workgroup dispatch sizing metrics for the compute pipeline.
+
+        Parameters
+        ----------
+        wobject : ~fury.network.Network
+            The network object instance being simulated.
+        _shared : Any
+            Shared context pipeline references.
+
+        Returns
+        -------
+        dict
+            A dictionary containing workgroup dimension sizes.
+        """
+        n = int(ceil(wobject.n_nodes / 64))
+        return {
+            "indices": (n, 1, 1),
+        }
+
+    def get_bindings(self, wobject, _shared, _scene):
+        """
+        Define and structure pipeline data resources for compute stages.
+
+        Parameters
+        ----------
+        wobject : ~fury.network.Network
+            The network object instance providing buffer bindings.
+        _shared : Any
+            Shared context pipeline references.
+        _scene : Any
+            The scene object context.
+
+        Returns
+        -------
+        dict
+            A layout dictionary index mapping configured binding structures.
+        """
+        bindings = {
+            0: Binding(
+                "u_material",
+                "buffer/uniform",
+                wobject.material.uniform_buffer,
+                "COMPUTE",
+            ),
+            1: Binding(
+                "s_positions", "buffer/storage", wobject.geometry.positions, "COMPUTE"
+            ),
+            2: Binding(
+                "s_velocities", "buffer/storage", wobject.velocities_buffer, "COMPUTE"
+            ),
+            3: Binding("s_adj", "buffer/storage", wobject.adj_buffer, "COMPUTE"),
+            4: Binding(
+                "s_offsets", "buffer/storage", wobject.offsets_buffer, "COMPUTE"
+            ),
+            5: Binding("s_counts", "buffer/storage", wobject.counts_buffer, "COMPUTE"),
+        }
+        self.define_bindings(0, bindings)
+        return {0: bindings}
+
+    def get_pipeline_info(self, _wobject, _shared):
+        """
+        Return an empty pipeline structure map configuration.
+
+        Parameters
+        ----------
+        _wobject : ~fury.network.Network
+            The target network instance.
+        _shared : Any
+            Shared pipeline context metadata.
+
+        Returns
+        -------
+        dict
+            An empty dictionary.
+        """
+        return {}
+
+    def get_code(self):
+        """
+        Get the structural WGSL computer execution source block string.
+
+        Returns
+        -------
+        str
+            The layout compute kernel source code string.
+        """
+        return load_wgsl("network_compute.wgsl", package_name="fury.wgsl")

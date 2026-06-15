@@ -43,7 +43,7 @@ files = [
     "viz_streamlines_roi.py",
     "viz_contour.py",
     "viz_brownian_motion.py",
-
+    "viz_network.py",
 ]
 
 [ui]
