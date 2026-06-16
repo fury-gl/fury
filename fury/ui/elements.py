@@ -4,7 +4,7 @@ __all__ = [
     "TexturedButton2D",
     "TextButton2D",
     "LineSlider2D",
-    #     "TextBox2D",
+    "TextBox2D",
     #     "LineSlider2D",
     #     "LineDoubleSlider2D",
     "RingSlider2D",
@@ -24,6 +24,9 @@ __all__ = [
 ]
 
 
+from string import printable
+import textwrap
+
 from PIL import UnidentifiedImageError
 import numpy as np
 
@@ -31,6 +34,7 @@ from fury.colormap import normalize_colors
 from fury.data import read_viz_icons
 from fury.io import get_extension, load_image, load_image_texture
 from fury.ui.containers import ImageContainer2D, Panel2D
+from fury.ui.context import UIContext
 from fury.ui.core import (
     UI,
     Anchor,
@@ -43,6 +47,10 @@ from fury.ui.core import (
 from fury.ui.helpers import clip_overflow
 
 TWO_PI = 2.0 * np.pi
+
+LOWERS = r"`1234567890-=[]\;',./"
+UPPERS = r'~!@#$%^&*()_+{}|:"<>?'
+SHIFT_TRANS = str.maketrans(LOWERS, UPPERS)
 
 
 class TexturedButton2D(Button2D):
@@ -798,360 +806,603 @@ class PlaybackPanel(UI):
             self.set_position(new_position)
 
 
-# class TextBox2D(UI):
-#     """An editable 2D text box that behaves as a UI component.
+class TextBox2D(UI):
+    """
+    An editable 2D text box that behaves as a UI component.
 
-#     Currently supports:
-#     - Basic text editing.
-#     - Cursor movements.
-#     - Single and multi-line text boxes.
-#     - Pre text formatting (text needs to be formatted beforehand).
+    Currently supports:
+    - Basic text editing.
+    - Cursor movements.
+    - Single and multi-line text boxes.
+    - Pre text formatting (text needs to be formatted beforehand).
 
-#     Attributes
-#     ----------
-#     text : str
-#         The current text state.
-#     actor : :class:`vtkActor2d`
-#         The text actor.
-#     width : int
-#         The number of characters in a single line of text.
-#     height : int
-#         The number of lines in the textbox.
-#     window_left : int
-#         Left limit of visible text in the textbox.
-#     window_right : int
-#         Right limit of visible text in the textbox.
-#     caret_pos : int
-#         Position of the caret in the text.
-#     init : bool
-#         Flag which says whether the textbox has just been initialized.
+    Parameters
+    ----------
+    width : int
+        The number of characters in a single line of text.
+    height : int
+        The number of lines in the textbox.
+    text : str, optional
+        The initial text while building the actor.
+    position : (float, float), optional
+        (x, y) in pixels.
+    color : (float, float, float), optional
+        RGB values between 0 and 1.
+    font_size : int, optional
+        Size of the text font.
+    font_family : str, optional
+        Currently only supports Arial.
+    justification : str, optional
+        Left, right, or center.
+    bold : bool, optional
+        Makes text bold.
+    italic : bool, optional
+        Makes text italic.
+    shadow : bool, optional
+        Adds text shadow.
+    z_order : int, optional
+        Rendering order of the widget.
 
-#     """
+    Attributes
+    ----------
+    text : :class:`TextBlock2D`
+        The internal text UI component.
+    width : int
+        The number of characters in a single line of text.
+    height : int
+        The number of lines in the textbox.
+    window_left : int
+        Left limit of visible text in the textbox.
+    window_right : int
+        Right limit of visible text in the textbox.
+    caret_pos : int
+        Position of the caret in the text.
+    init : bool
+        Flag which says whether the textbox has just been initialized.
+    """
 
-#     @warn_on_args_to_kwargs()
-#     def __init__(
-#         self,
-#         width,
-#         height,
-#         *,
-#         text="Enter Text",
-#         position=(100, 10),
-#         color=(0, 0, 0),
-#         font_size=18,
-#         font_family="Arial",
-#         justification="left",
-#         bold=False,
-#         italic=False,
-#         shadow=False,
-#     ):
-#         """Init this UI element.
+    def __init__(
+        self,
+        width,
+        height,
+        *,
+        text="Enter Text",
+        position=(100, 10),
+        color=(0, 0, 0),
+        font_size=18,
+        font_family="Arial",
+        justification="left",
+        bold=False,
+        italic=False,
+        shadow=False,
+        z_order=0,
+    ):
+        """
+        Init this UI element.
 
-#         Parameters
-#         ----------
-#         width : int
-#             The number of characters in a single line of text.
-#         height : int
-#             The number of lines in the textbox.
-#         text : str
-#             The initial text while building the actor.
-#         position : (float, float)
-#             (x, y) in pixels.
-#         color : (float, float, float)
-#             RGB: Values must be between 0-1.
-#         font_size : int
-#             Size of the text font.
-#         font_family : str
-#             Currently only supports Arial.
-#         justification : str
-#             left, right or center.
-#         bold : bool
-#             Makes text bold.
-#         italic : bool
-#             Makes text italicised.
-#         shadow : bool
-#             Adds text shadow.
+        Parameters
+        ----------
+        width : int
+            The number of characters in a single line of text.
+        height : int
+            The number of lines in the textbox.
+        text : str, optional
+            The initial text while building the actor.
+        position : (float, float), optional
+            (x, y) in pixels.
+        color : (float, float, float), optional
+            RGB values between 0 and 1.
+        font_size : int, optional
+            Size of the text font.
+        font_family : str, optional
+            Currently only supports Arial.
+        justification : str, optional
+            Left, right, or center.
+        bold : bool, optional
+            Makes text bold.
+        italic : bool, optional
+            Makes text italic.
+        shadow : bool, optional
+            Adds text shadow.
+        z_order : int, optional
+            Rendering order of the widget.
+        """
+        self._width = width
+        self._height = height
+        self._max_height = height
+        self._message = text
+        self._color = color
+        self._font_size = font_size
+        self._font_family = font_family
+        self._justification = justification
+        self._bold = bold
+        self._italic = italic
+        self._shadow = shadow
+        self._z_order = z_order
 
-#         """
-#         super(TextBox2D, self).__init__(position=position)
+        self.window_left = 0
+        self.window_right = 0
+        self.caret_pos = 0
+        self.init = True
+        self._has_focus = False
 
-#         self.message = text
-#         self.text.message = text
-#         self.text.font_size = font_size
-#         self.text.font_family = font_family
-#         self.text.justification = justification
-#         self.text.bold = bold
-#         self.text.italic = italic
-#         self.text.shadow = shadow
-#         self.text.color = color
-#         self.text.background_color = (1, 1, 1)
+        self._shift_pressed = False
+        self._caps_lock_on = False
 
-#         self.width = width
-#         self.height = height
-#         self.window_left = 0
-#         self.window_right = 0
-#         self.caret_pos = 0
-#         self.init = True
+        super(TextBox2D, self).__init__(
+            position=position,
+            x_anchor=Anchor.LEFT,
+            y_anchor=Anchor.TOP,
+            z_order=z_order,
+        )
 
-#         self.off_focus = lambda ui: None
+    def _setup(self):
+        """
+        Setup this UI component.
 
-#     def _setup(self):
-#         """Setup this UI component.
+        Create the TextBlock2D component used for the textbox.
+        Uses dynamic_bbox so the bounding box adapts as the user types.
+        """
+        bold_factor = 1.25 if self._bold else 1.0
+        italic_factor = 1.1 if self._italic else 1.0
 
-#         Create the TextBlock2D component used for the textbox.
-#         """
-#         self.text = TextBlock2D(dynamic_bbox=True)
+        bg_width = int(
+            self._width * self._font_size * 0.5 * bold_factor * italic_factor
+        )
+        bg_height = int(self._height * self._font_size * 1.5) + 10
 
-#         # Add default events listener for this UI component.
-#         self.text.on_left_mouse_button_pressed = self.left_button_press
-#         self.text.on_key_press = self.key_press
+        self.text = TextBlock2D(
+            text=self._message,
+            font_size=self._font_size,
+            font_family=self._font_family,
+            justification=self._justification,
+            vertical_justification="middle",
+            dynamic_bbox=False,
+            size=(bg_width, bg_height),
+        )
+        self.text.color = self._color
+        self.text.bold = self._bold
+        self.text.italic = self._italic
+        self.text.shadow = self._shadow
+        self.text.background_color = (1, 1, 1)
 
-#     def _get_actors(self):
-#         """Get the actors composing this UI component."""
-#         return self.text.actors
+        self._children.append(self.text)
 
-#     def _add_to_scene(self, scene):
-#         """Add all subcomponents or VTK props that compose this UI component.
+        self.window_left = 0
+        self.window_right = self._width * self._height - 1
+        self.caret_pos = len(self._message) if not self.init else 0
 
-#         Parameters
-#         ----------
-#         scene : scene
+        self.text.on_left_mouse_button_pressed = self.left_button_press
+        self.text.on_blur = self.blur_textbox
+        self.text.on_key_press = self.key_press
+        self.text.on_key_release = self.key_release
+        self.text.on_wheel = self.wheel_scroll
 
-#         """
-#         self.text.add_to_scene(scene)
+    def _update_height(self):
+        """
+        Update the window boundaries of the textbox.
 
-#     def _set_position(self, coords):
-#         """Set the lower-left corner position of this UI component.
+        In static mode, the background height remains constant.
+        """
+        self.window_right = self.window_left + self._width * self._height - 1
 
-#         Parameters
-#         ----------
-#         coords: (float, float)
-#             Absolute pixel coordinates (x, y).
+    def _get_actors(self):
+        """
+        Get the actors composing this UI component.
 
-#         """
-#         self.text.position = coords
+        Returns
+        -------
+        list
+            List of actors from all child UI components.
+        """
+        actors = []
+        for child in self._children:
+            actors.extend(child.actors)
+        return actors
 
-#     def _get_size(self):
-#         return self.text.size
+    def _get_size(self):
+        """
+        Return the size of the textbox.
 
-#     def set_message(self, message):
-#         """Set custom text to textbox.
+        Returns
+        -------
+        tuple
+            Width and height of the text bounding box.
+        """
+        return self.text.size
 
-#         Parameters
-#         ----------
-#         message: str
-#             The custom message to be set.
+    def _update_actors_position(self):
+        """Update the position of the text actor (anchor-aware)."""
+        pos = self.get_position(x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP)
 
-#         """
-#         self.message = message
-#         self.text.message = message
-#         self.init = False
-#         self.window_right = len(self.message)
-#         self.window_left = 0
-#         self.caret_pos = self.window_right
+        self.text.set_position(pos, x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP)
 
-#     def width_set_text(self, text):
-#         """Add newlines to text where necessary.
+        self.render_text(show_caret=False)
 
-#         This is needed for multi-line text boxes.
+    def set_message(self, message):
+        """
+        Set custom text to textbox.
 
-#         Parameters
-#         ----------
-#         text : str
-#             The final text to be formatted.
+        Parameters
+        ----------
+        message : str
+            The custom message to be set.
+        """
+        self._message = message
+        self.init = False
+        self.window_left = 0
+        self.window_right = self._width * self._height - 1
+        self.caret_pos = len(self._message)
+        self.render_text(show_caret=False)
 
-#         Returns
-#         -------
-#         str
-#             A multi line formatted text.
+    def width_set_text(self, text):
+        """
+        Add newlines to text where necessary, needed for multi-line text boxes.
 
-#         """
-#         multi_line_text = ""
-#         for i, t in enumerate(text):
-#             multi_line_text += t
-#             if (i + 1) % self.width == 0:
-#                 multi_line_text += "\n"
-#         return multi_line_text.rstrip("\n")
+        Parameters
+        ----------
+        text : str
+            The final text to be formatted.
 
-#     def handle_character(self, key, key_char):
-#         """Handle button events.
+        Returns
+        -------
+        str
+            A multi-line formatted text.
+        """
+        lines = text.split("\n")
+        formatted_lines = []
+        for line in lines:
+            if not line:
+                formatted_lines.append("")
+                continue
+            wrapped = textwrap.wrap(
+                line,
+                width=self._width,
+                drop_whitespace=False,
+                replace_whitespace=False,
+                break_long_words=True,
+            )
+            if not wrapped:
+                formatted_lines.append("")
+            else:
+                formatted_lines.extend(wrapped)
+        return "\n".join(formatted_lines)
 
-#         # TODO: Need to handle all kinds of characters like !, +, etc.
+    def handle_character(self, key, key_char, modifiers=None):
+        """
+        Handle button events.
 
-#         Parameters
-#         ----------
-#         character : str
+        # TODO: Need to handle all kinds of characters like !, +, etc.
 
-#         """
-#         if key.lower() == "return":
-#             self.render_text(show_caret=False)
-#             self.off_focus(self)
-#             return True
-#         elif key_char != "" and key_char in printable:
-#             self.add_character(key_char)
-#         if key.lower() == "backspace":
-#             self.remove_character()
-#         elif key.lower() == "left":
-#             self.move_left()
-#         elif key.lower() == "right":
-#             self.move_right()
+        Parameters
+        ----------
+        key : str
+            The key identifier.
+        key_char : str
+            The character representation of the key.
+        modifiers : tuple, optional
+            The active keyboard modifiers.
 
-#         self.render_text()
-#         return False
+        Returns
+        -------
+        bool
+            True if editing is finished, otherwise False.
+        """
+        modifiers = modifiers or []
+        k = key.lower() if isinstance(key, str) else None
 
-#     def move_caret_right(self):
-#         """Move the caret towards right."""
-#         self.caret_pos = min(self.caret_pos + 1, len(self.message))
+        if k in ("enter", "return"):
+            if "Shift" in modifiers:
+                self.add_character("\n")
+            else:
+                self.render_text(show_caret=False)
+                self._has_focus = False
+                UIContext.active_ui = None
+                self.on_blur(None)
+                return True
 
-#     def move_caret_left(self):
-#         """Move the caret towards left."""
-#         self.caret_pos = max(self.caret_pos - 1, 0)
+        if key_char != "":
+            is_shift = "Shift" in modifiers
+            is_caps = "CapsLock" in modifiers
 
-#     def right_move_right(self):
-#         """Move right boundary of the text window right-wards."""
-#         if self.window_right <= len(self.message):
-#             self.window_right += 1
+            if is_shift:
+                key_char = key_char.translate(SHIFT_TRANS)
 
-#     def right_move_left(self):
-#         """Move right boundary of the text window left-wards."""
-#         if self.window_right > 0:
-#             self.window_right -= 1
+            if key_char.isalpha() and len(key_char) == 1:
+                if is_shift != is_caps:
+                    key_char = key_char.upper()
+                elif is_shift and is_caps:
+                    key_char = key_char.lower()
 
-#     def left_move_right(self):
-#         """Move left boundary of the text window right-wards."""
-#         if self.window_left <= len(self.message):
-#             self.window_left += 1
+            if key_char in printable:
+                self.add_character(key_char)
 
-#     def left_move_left(self):
-#         """Move left boundary of the text window left-wards."""
-#         if self.window_left > 0:
-#             self.window_left -= 1
+        if k == "backspace":
+            self.remove_character()
+        elif k in ("arrowleft", "left"):
+            self.move_left()
+        elif k in ("arrowright", "right"):
+            self.move_right()
+        elif k in ("arrowup", "up"):
+            self.move_up()
+        elif k in ("arrowdown", "down"):
+            self.move_down()
 
-#     def add_character(self, character):
-#         """Insert a character into the text and moves window and caret.
+        self.render_text()
+        return False
 
-#         Parameters
-#         ----------
-#         character : str
+    def move_caret_right(self):
+        """Move the caret towards right."""
+        self.caret_pos = min(self.caret_pos + 1, len(self._message))
 
-#         """
-#         if len(character) > 1 and character.lower() != "space":
-#             return
-#         if character.lower() == "space":
-#             character = " "
-#         self.message = (
-#
-#           self.message[: self.caret_pos] + character + self.message[self.caret_pos :]
-#         )
-#         self.move_caret_right()
-#         if self.window_right - self.window_left == self.height * self.width - 1:
-#             self.left_move_right()
-#         self.right_move_right()
+    def move_caret_left(self):
+        """Move the caret towards left."""
+        self.caret_pos = max(self.caret_pos - 1, 0)
 
-#     def remove_character(self):
-#         """Remove a character and moves window and caret accordingly."""
-#         if self.caret_pos == 0:
-#             return
-#         self.message = (
-#             self.message[: self.caret_pos - 1] + self.message[self.caret_pos :]
-#         )
-#         self.move_caret_left()
-#         if len(self.message) < self.height * self.width - 1:
-#             self.right_move_left()
-#         if self.window_right - self.window_left == self.height * self.width - 1:
-#             if self.window_left > 0:
-#                 self.left_move_left()
-#                 self.right_move_left()
+    def right_move_right(self):
+        """Move right boundary of the text window right-wards."""
+        if self.window_right <= len(self._message):
+            self.window_right += 1
 
-#     def move_left(self):
-#         """Handle left button press."""
-#         self.move_caret_left()
-#         if self.caret_pos == self.window_left - 1:
-#             if self.window_right - self.window_left == self.height * self.width - 1:
-#                 self.left_move_left()
-#                 self.right_move_left()
+    def right_move_left(self):
+        """Move right boundary of the text window left-wards."""
+        if self.window_right > 0:
+            self.window_right -= 1
 
-#     def move_right(self):
-#         """Handle right button press."""
-#         self.move_caret_right()
-#         if self.caret_pos == self.window_right + 1:
-#             if self.window_right - self.window_left == self.height * self.width - 1:
-#                 self.left_move_right()
-#                 self.right_move_right()
+    def left_move_right(self):
+        """Move left boundary of the text window right-wards."""
+        if self.window_left <= len(self._message):
+            self.window_left += 1
 
-#     def showable_text(self, show_caret):
-#         """Chop out text to be shown on the screen.
+    def left_move_left(self):
+        """Move left boundary of the text window left-wards."""
+        if self.window_left > 0:
+            self.window_left -= 1
 
-#         Parameters
-#         ----------
-#         show_caret : bool
-#             Whether or not to show the caret.
+    def _adjust_window(self):
+        """Adjust the window boundaries to ensure caret and text visibility."""
+        if self.caret_pos < self.window_left:
+            if self._height > 1:
+                self.window_left = (self.caret_pos // self._width) * self._width
+            else:
+                self.window_left = self.caret_pos
 
-#         """
-#         if show_caret:
-#             ret_text = (
-#                 self.message[: self.caret_pos] + "_" + self.message[self.caret_pos :]
-#             )
-#         else:
-#             ret_text = self.message
-#         ret_text = ret_text[self.window_left : self.window_right + 1]
-#         return ret_text
+        self._update_height()
+        if self.caret_pos > self.window_right:
+            if self._height > 1:
+                line_of_caret = self.caret_pos // self._width
+                self.window_left = max(
+                    0, (line_of_caret - self._height + 1) * self._width
+                )
+            else:
+                self.window_left = self.caret_pos - self._width + 1
 
-#     @warn_on_args_to_kwargs()
-#     def render_text(self, *, show_caret=True):
-#         """Render text after processing.
+        if self._height > 1:
+            max_window_left = max(
+                0, (len(self._message) // self._width - self._height + 1) * self._width
+            )
+        else:
+            max_window_left = max(0, len(self._message) - self._width + 1)
 
-#         Parameters
-#         ----------
-#         show_caret : bool
-#             Whether or not to show the caret.
+        if self.window_left > max_window_left:
+            self.window_left = max_window_left
 
-#         """
-#         text = self.showable_text(show_caret)
-#         if text == "":
-#             text = "Enter Text"
-#         self.text.message = self.width_set_text(text)
+        self._update_height()
 
-#     def edit_mode(self):
-#         """Turn on edit mode."""
-#         if self.init:
-#             self.message = ""
-#             self.init = False
-#             self.caret_pos = 0
-#         self.render_text()
+    def add_character(self, character):
+        """
+        Insert a character into the text and moves window and caret.
 
-#     def left_button_press(self, i_ren, _obj, _textbox_object):
-#         """Handle left button press for textbox.
+        Parameters
+        ----------
+        character : str
+                The character to be inserted.
+        """
+        if len(character) > 1 and character.lower() != "space":
+            return
+        if character.lower() == "space":
+            character = " "
+        self._message = (
+            self._message[: self.caret_pos]
+            + character
+            + self._message[self.caret_pos :]
+        )
+        self.move_caret_right()
+        self._adjust_window()
 
-#         Parameters
-#         ----------
-#         i_ren: :class:`CustomInteractorStyle`
-#         obj: :class:`vtkActor`
-#             The picked actor
-#         _textbox_object: :class:`TextBox2D`
+    def remove_character(self):
+        """Remove a character and moves window and caret accordingly."""
+        if self.caret_pos == 0:
+            return
+        self._message = (
+            self._message[: self.caret_pos - 1] + self._message[self.caret_pos :]
+        )
+        self.move_caret_left()
+        self._adjust_window()
 
-#         """
-#         i_ren.add_active_prop(self.text.actor)
-#         self.edit_mode()
-#         i_ren.force_render()
+    def move_left(self):
+        """Handle left button press."""
+        self.move_caret_left()
+        self._adjust_window()
 
-#     def key_press(self, i_ren, _obj, _textbox_object):
-#         """Handle Key press for textboxself.
+    def move_right(self):
+        """Handle right button press."""
+        self.move_caret_right()
+        self._adjust_window()
 
-#         Parameters
-#         ----------
-#         i_ren: :class:`CustomInteractorStyle`
-#         obj: :class:`vtkActor`
-#             The picked actor
-#         _textbox_object: :class:`TextBox2D`
+    def move_up(self):
+        """Handle up button press."""
+        if self._height > 1:
+            self.caret_pos = max(0, self.caret_pos - self._width)
+        else:
+            self.caret_pos = 0
+        self._adjust_window()
 
-#         """
-#         key = i_ren.event.key
-#         key_char = i_ren.event.key_char
-#         is_done = self.handle_character(key, key_char)
-#         if is_done:
-#             i_ren.remove_active_prop(self.text.actor)
+    def move_down(self):
+        """Handle down button press."""
+        if self._height > 1:
+            self.caret_pos = min(len(self._message), self.caret_pos + self._width)
+        else:
+            self.caret_pos = len(self._message)
+        self._adjust_window()
 
-#         i_ren.force_render()
+    def showable_text(self, show_caret):
+        """
+        Chop out text to be shown on the screen.
+
+        Parameters
+        ----------
+        show_caret : bool
+            Whether or not to show the caret.
+
+        Returns
+        -------
+        str
+            The visible portion of the text.
+        """
+        ret_text = self._message[self.window_left : self.window_right + 1]
+
+        rel_caret = self.caret_pos - self.window_left
+        if 0 <= rel_caret <= len(ret_text):
+            marker = "\x00_" if show_caret else "\x00"
+            ret_text = ret_text[:rel_caret] + marker + ret_text[rel_caret:]
+
+        return ret_text
+
+    def render_text(self, *, show_caret=True):
+        """
+        Render text after processing.
+
+        Parameters
+        ----------
+        show_caret : bool
+            Whether or not to show the caret.
+        """
+        text = self.showable_text(show_caret)
+        if text == "" or text == "\x00":
+            text = "\x00Enter Text"
+
+        formatted = self.width_set_text(text)
+
+        lines = formatted.split("\n")
+        if len(lines) > self._height:
+            caret_line = 0
+            for i, line in enumerate(lines):
+                if "\x00" in line:
+                    caret_line = i
+                    break
+
+            start_line = max(0, caret_line - self._height + 1)
+            end_line = start_line + self._height
+            if end_line > len(lines):
+                end_line = len(lines)
+                start_line = max(0, end_line - self._height)
+
+            lines = lines[start_line:end_line]
+            formatted = "\n".join(lines)
+
+        formatted = formatted.replace("\x00", "")
+        self.text.message = formatted
+        self.text.update_alignment()
+
+    def edit_mode(self):
+        """Turn on edit mode."""
+        if self.init:
+            if self._message == "Enter Text":
+                self._message = ""
+            self.init = False
+            self.caret_pos = len(self._message)
+        self._has_focus = True
+        UIContext.active_ui = self.text
+        self.render_text()
+
+    def blur_textbox(self, event=None):
+        """
+        Handle blur event for textbox.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The pointer event.
+        """
+        if self._has_focus:
+            self._has_focus = False
+            self.render_text(show_caret=False)
+            self.on_blur(event)
+
+    def left_button_press(self, event):
+        """
+        Handle left button press for textbox.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The pointer event.
+        """
+        if self._has_focus:
+            UIContext.active_ui = None
+            self.blur_textbox(event)
+        else:
+            self.edit_mode()
+
+    def key_press(self, event):
+        """
+        Handle Key press for textbox.
+
+        Parameters
+        ----------
+        event : KeyboardEvent
+            The keyboard event.
+        """
+        key = event.key
+
+        if key == "Shift":
+            self._shift_pressed = True
+        elif key == "CapsLock":
+            self._caps_lock_on = not self._caps_lock_on
+
+        key_char = key if key and len(key) == 1 else ""
+        modifiers = list(getattr(event, "modifiers", []))
+        if self._shift_pressed and "Shift" not in modifiers:
+            modifiers.append("Shift")
+        if self._caps_lock_on and "CapsLock" not in modifiers:
+            modifiers.append("CapsLock")
+
+        is_done = self.handle_character(key, key_char, modifiers)
+        if is_done:
+            self._has_focus = False
+            UIContext.active_ui = None
+            self.render_text(show_caret=False)
+            self.on_blur(event)
+            return
+
+    def key_release(self, event):
+        """
+        Handle Key release for textbox.
+
+        Parameters
+        ----------
+        event : KeyboardEvent
+            The keyboard event.
+        """
+        key = getattr(event, "key", None)
+        if key == "Shift":
+            self._shift_pressed = False
+
+    def wheel_scroll(self, event):
+        """
+        Handle mouse wheel event for textbox.
+
+        Parameters
+        ----------
+        event : WheelEvent
+            The wheel event.
+        """
+        if event.dy > 0:
+            self.move_down()
+        elif event.dy < 0:
+            self.move_up()
+        self.render_text()
 
 
 class LineDoubleSlider2D(UI):
