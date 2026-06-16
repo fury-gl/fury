@@ -730,7 +730,7 @@ html[data-theme="dark"] .fury-feature-card__caption {
     width: 28px;
     height: 28px;
     object-fit: contain;
-    
+
     /* Strip PyData Sphinx theme image defaults */
     background: transparent !important;
     border: none !important;
@@ -851,4 +851,301 @@ html[data-theme="dark"] .fury-sciences__image-wrapper {
     background: #150f0f;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
     border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* --- EXAMPLES COMPONENT --- */
+.fury-examples {
+    width: 100%;
+    background: #faf5f2; /* Light mode */
+    color: #1c1919;
+    padding: 6rem 0;
+    margin: 0;
+    overflow: hidden;
+}
+
+.fury-examples-grid {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.fury-examples__header {
+    margin-bottom: 3rem;
+}
+
+.fury-examples__title {
+    font-size: 3.5rem;
+    font-family: "Barlow", "Arial Black", "Helvetica Neue", Arial, sans-serif;
+    font-weight: 900;
+    line-height: 1.1;
+    color: #1c1919;
+    margin: 0 0 1rem 0;
+    letter-spacing: -0.02em;
+}
+
+.fury-examples__description {
+    font-size: 1.1rem;
+    color: #555;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.fury-examples__cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid rgba(0,0,0,0.1);
+    border-left: 1px solid rgba(0,0,0,0.1);
+}
+
+.fury-example-card {
+    padding: 1.5rem;
+    border-right: 1px solid rgba(0,0,0,0.1);
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    text-decoration: none;
+    transition: background 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.fury-example-card:hover {
+    background: rgba(0,0,0,0.02);
+    text-decoration: none;
+}
+
+.fury-example-card__script {
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: #e60000;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.fury-example-card__arrow {
+    font-size: 1rem;
+    color: #1c1919;
+}
+
+.fury-example-card:hover .fury-example-card__arrow {
+    color: #e60000;
+}
+
+.fury-example-card__title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    font-family: "Barlow", "Arial Black", "Helvetica Neue", Arial, sans-serif;
+    color: #1c1919;
+    margin: 0 0 0.5rem 0;
+}
+
+.fury-example-card__description {
+    font-size: 0.95rem;
+    color: #555;
+    line-height: 1.5;
+    margin: 0;
+}
+
+@media (max-width: 992px) {
+    .fury-examples__cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .fury-examples__cards {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* DARK MODE EXAMPLES */
+html[data-theme="dark"] .fury-examples {
+    background: #0d0808;
+    background-image: linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 4.5rem 100%;
+}
+
+html[data-theme="dark"] .fury-examples__title {
+    color: #ffffff;
+}
+
+html[data-theme="dark"] .fury-examples__description,
+html[data-theme="dark"] .fury-example-card__description {
+    color: #c0b8b8;
+}
+
+html[data-theme="dark"] .fury-examples__cards {
+    border-top: 1px solid rgba(255,255,255,0.08);
+    border-left: 1px solid rgba(255,255,255,0.08);
+}
+
+html[data-theme="dark"] .fury-example-card {
+    border-right: 1px solid rgba(255,255,255,0.08);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+html[data-theme="dark"] .fury-example-card:hover {
+    background: rgba(255,255,255,0.03);
+}
+
+html[data-theme="dark"] .fury-example-card__script {
+    color: #ff4444;
+}
+
+html[data-theme="dark"] .fury-example-card__arrow {
+    color: #e0d8d8;
+}
+
+html[data-theme="dark"] .fury-example-card:hover .fury-example-card__arrow {
+    color: #ff4444;
+}
+
+html[data-theme="dark"] .fury-example-card__title {
+    color: #ffffff;
+}
+
+/* --- CTA COMPONENT --- */
+.fury-cta {
+    width: 100%;
+    background: #af0000; /* deep red */
+    background-image: linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size: 4.5rem 100%;
+    color: #ffffff;
+    padding: 6rem 0;
+    margin: 0;
+    overflow: hidden;
+}
+
+.fury-cta-grid {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+}
+
+.fury-cta__content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.fury-cta__title {
+    font-size: 4rem;
+    font-family: "Barlow", "Arial Black", "Helvetica Neue", Arial, sans-serif;
+    font-weight: 900;
+    line-height: 1.05;
+    color: #ffffff;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.fury-cta__description {
+    font-size: 1.1rem;
+    color: rgba(255,255,255,0.9);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.fury-cta__actions {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.btn-cta-primary {
+    background-color: #ffffff;
+    color: #cc0000 !important;
+    padding: 0.8rem 1.5rem;
+    border-radius: 6px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-cta-primary:hover {
+    background-color: #f0f0f0;
+    text-decoration: none;
+}
+
+.btn-cta-secondary {
+    color: #ffffff !important;
+    font-weight: 600;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: color 0.2s;
+}
+
+.btn-cta-secondary:hover {
+    text-decoration: underline;
+}
+
+.fury-cta__terminals {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    justify-content: center;
+}
+
+.cta-install-block {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: none;
+    color: #f8f8f8;
+}
+
+.cta-install-block .install-prompt {
+    color: #ffcc00;
+}
+
+@media (max-width: 992px) {
+    .fury-cta-grid {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+    }
+}
+
+/* CTA Terminal Tabs */
+.fury-cta__tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding-bottom: 0.5rem;
+}
+
+.fury-cta__tab {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.35rem 0.85rem;
+    border-radius: 4px;
+    transition: all 0.2s;
+    font-family: monospace;
+}
+
+.fury-cta__tab:hover {
+    color: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.fury-cta__tab.active {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.fury-cta__terminal {
+    display: none;
+}
+
+.fury-cta__terminal.active {
+    display: block;
 }

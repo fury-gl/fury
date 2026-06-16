@@ -179,3 +179,34 @@ document.addEventListener("DOMContentLoaded", function() {
 
     startCarousel();
 });
+
+/**
+ * Handle tabs for the installation commands section.
+ */
+document.addEventListener("DOMContentLoaded", function() {
+    var terminalTabs = document.querySelectorAll(".fury-cta__tab");
+    if (!terminalTabs.length) return;
+
+    terminalTabs.forEach(function(tab) {
+        tab.addEventListener("click", function() {
+            var targetId = this.getAttribute("data-target");
+
+            // Remove active class from all tabs and contents
+            document.querySelectorAll(".fury-cta__tab").forEach(function(t) {
+                t.classList.remove("active");
+                t.setAttribute("aria-selected", "false");
+            });
+            document.querySelectorAll(".fury-cta__terminal").forEach(function(c) {
+                c.classList.remove("active");
+            });
+
+            // Add active class to clicked tab and corresponding content
+            this.classList.add("active");
+            this.setAttribute("aria-selected", "true");
+            var targetContent = document.getElementById(targetId);
+            if (targetContent) {
+                targetContent.classList.add("active");
+            }
+        });
+    });
+});
