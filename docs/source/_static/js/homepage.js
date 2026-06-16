@@ -91,7 +91,7 @@ document.addEventListener("DOMContentLoaded", function() {
     var currentIndex = 0;
     var intervalId = null;
     var delay = 2500; // 2.5 seconds delay
-    var carouselContainer = document.querySelector(".fury-sciences__content");
+    var carouselContainer = document.querySelector(".fury-sciences__tabs");
     var userInteracted = false;
 
     // --- Preload images for seamless transitions ---
