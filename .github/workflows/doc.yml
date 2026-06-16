@@ -50,7 +50,7 @@ jobs:
         cd docs
         make -C . html-no-examples SPHINXOPTS="-W --keep-going"
     - name: Deploy Devs
-      if: success() && github.ref == 'refs/heads/master'
+      if: success() && github.ref == 'refs/heads/master' && github.repository == 'fury-gl/fury'
       uses: JamesIves/github-pages-deploy-action@v4
       with:
         ssh-key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
