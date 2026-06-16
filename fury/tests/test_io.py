@@ -15,10 +15,12 @@ from fury.io import (
     load_image,
     load_image_as_wgpu_texture_view,
     load_image_texture,
+    load_network,
     # load_polydata,
     # load_sprite_sheet,
     # load_text,
     save_image,
+    save_network,
 )
 
 # save_polydata,
@@ -159,6 +161,50 @@ def test_load_image_as_wgpu_texture_view_uses_show_manager_device():
 
 #             npt.assert_equal(os.path.isfile(fname_path), True)
 #             assert_greater(os.stat(fname_path).st_size, 0)
+
+
+def test_save_and_load_network():
+    formats = ["gexf", "gml", "xnet"]
+    fname = "temp-network"
+
+    nodes_xyz = np.random.rand(10, 3).astype(np.float32)
+    edges_indices = np.array([[0, 1], [1, 2], [2, 3]], dtype=np.int32)
+    colors = np.random.rand(10, 4).astype(np.float32)
+    network_data = (nodes_xyz, edges_indices, colors)
+
+    for fmt in formats:
+        with InTemporaryDirectory() as odir:
+            fname_path = pjoin(odir, f"{fname}.{fmt}")
+
+            save_network(network_data, fname_path)
+
+            npt.assert_equal(os.path.isfile(fname_path), True)
+            assert_greater(os.stat(fname_path).st_size, 0)
+
+            out_data = load_network(fname_path)
+
+            npt.assert_array_almost_equal(network_data[0], out_data[0], decimal=4)
+            npt.assert_array_equal(network_data[1], out_data[1])
+            npt.assert_array_almost_equal(network_data[2], out_data[2], decimal=2)
+
+    # Test invalid format
+    with InTemporaryDirectory() as odir:
+        fname_path = pjoin(odir, f"{fname}.invalid")
+        npt.assert_raises(
+            ValueError,
+            save_network,
+            network_data,
+            fname_path,
+            format="invalid",
+        )
+        with open(fname_path, "w") as f:
+            f.write("invalid data")
+        npt.assert_raises(
+            ValueError,
+            load_network,
+            fname_path,
+            format="invalid",
+        )
 
 
 def test_save_load_image():
