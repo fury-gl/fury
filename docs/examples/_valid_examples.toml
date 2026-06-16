@@ -3,7 +3,6 @@ readme = """
 .. _ref_examples:
 
 Tutorials
-=========
 
 How to use widgets, ui, actor and windows module. Below some examples and apps to go in details.
 """
@@ -45,6 +44,11 @@ files = [
     "viz_brownian_motion.py",
     "viz_network.py",
     "viz_read_mesh.py",
+
+    "viz_solar_system.py",
+    "viz_helical_solar_system.py",
+    "viz_billboard_spheres.py",
+    "viz_streamtube.py",
 ]
 
 [ui]
@@ -59,6 +63,8 @@ files = [
     "viz_playback_panel.py",
     "viz_tab_ui.py",
     "viz_card.py",
+    "viz_image_container_2d.py",
+    "viz_textblock.py",
 ]
 
 [animation]

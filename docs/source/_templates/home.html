@@ -245,5 +245,133 @@
     </div>
 </div>
 
+<div class="fury-examples">
+    <div class="fury-examples-grid">
+        <div class="fury-examples__header">
+            <h2 class="fury-examples__title">Start from a working example</h2>
+            <p class="fury-examples__description">Every entry is a runnable script from the gallery, not pseudocode.</p>
+        </div>
+
+        <div class="fury-examples__cards">
+            <a href="{{ pathto('auto_examples/01_introductory/viz_show') }}" class="fury-example-card">
+                <div class="fury-example-card__script">viz_show.py <span class="fury-example-card__arrow">&nearr;</span></div>
+                <h3 class="fury-example-card__title">A complete first scene</h3>
+                <p class="fury-example-card__description">Colored spheres on screen in ten lines of Python.</p>
+            </a>
+            <a href="{{ pathto('auto_examples/04_demos/viz_streamlines_roi') }}" class="fury-example-card">
+                <div class="fury-example-card__script">viz_streamlines_roi.py <span class="fury-example-card__arrow">&nearr;</span></div>
+                <h3 class="fury-example-card__title">Tractography streamlines</h3>
+                <p class="fury-example-card__description">A streamline bundle filtered through a region-of-interest mask.</p>
+            </a>
+            <a href="{{ pathto('auto_examples/04_demos/viz_vector_field') }}" class="fury-example-card">
+                <div class="fury-example-card__script">viz_vector_field.py <span class="fury-example-card__arrow">&nearr;</span></div>
+                <h3 class="fury-example-card__title">Vector fields</h3>
+                <p class="fury-example-card__description">Diverging fields as arrows, lines and cross-section slices.</p>
+            </a>
+            <a href="{{ pathto('auto_examples/04_demos/viz_slicer') }}" class="fury-example-card">
+                <div class="fury-example-card__script">viz_slicer.py <span class="fury-example-card__arrow">&nearr;</span></div>
+                <h3 class="fury-example-card__title">Volume slicing</h3>
+                <p class="fury-example-card__description">Move through 3D image volumes plane by plane.</p>
+            </a>
+            <a href="{{ pathto('auto_examples/04_demos/viz_skybox') }}" class="fury-example-card">
+                <div class="fury-example-card__script">viz_skybox.py <span class="fury-example-card__arrow">&nearr;</span></div>
+                <h3 class="fury-example-card__title">Skybox environments</h3>
+                <p class="fury-example-card__description">Wrap a scene in a cube-map backdrop.</p>
+            </a>
+            <a href="{{ pathto('auto_examples/04_demos/viz_spherical_harmonics') }}" class="fury-example-card">
+                <div class="fury-example-card__script">viz_spherical_harmonics.py <span class="fury-example-card__arrow">&nearr;</span></div>
+                <h3 class="fury-example-card__title">Spherical harmonics</h3>
+                <p class="fury-example-card__description">Glyph fields for orientation distribution functions.</p>
+            </a>
+            <a href="{{ pathto('auto_examples/07_ui/viz_sliders') }}" class="fury-example-card">
+                <div class="fury-example-card__script">viz_sliders.py <span class="fury-example-card__arrow">&nearr;</span></div>
+                <h3 class="fury-example-card__title">Built-in UI</h3>
+                <p class="fury-example-card__description">Sliders, panels and buttons rendered inside the scene.</p>
+            </a>
+            <a href="{{ pathto('auto_examples/01_introductory/viz_integrate_with_qt') }}" class="fury-example-card">
+                <div class="fury-example-card__script">viz_integrate_with_qt.py <span class="fury-example-card__arrow">&nearr;</span></div>
+                <h3 class="fury-example-card__title">Qt integration</h3>
+                <p class="fury-example-card__description">Embed a FURY canvas inside a PySide6 desktop app.</p>
+            </a>
+            <a href="{{ pathto('auto_examples/04_demos/viz_contour') }}" class="fury-example-card">
+                <div class="fury-example-card__script">viz_contour.py <span class="fury-example-card__arrow">&nearr;</span></div>
+                <h3 class="fury-example-card__title">Contour surfaces</h3>
+                <p class="fury-example-card__description">Extract and visualize 3D volume surfaces as meshes.</p>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="fury-cta">
+    <div class="fury-cta-grid">
+        <div class="fury-cta__content">
+            <h2 class="fury-cta__title">One command<br>from your<br>first render.</h2>
+            <p class="fury-cta__description">Python 3.10 or newer, on Linux, macOS or Windows.<br>The GPU comes through WebGPU, so there is no driver ceremony.</p>
+            <div class="fury-cta__actions">
+                <a href="{{ pathto('getting_started') }}" class="btn-cta-primary">Get started</a>
+                <a href="{{ pathto('installation') }}" class="btn-cta-secondary">Installation guide &rarr;</a>
+            </div>
+        </div>
+        <div class="fury-cta__terminals">
+            <div class="fury-cta__tabs" role="tablist" aria-label="Installation commands">
+                <button class="fury-cta__tab active" data-target="terminal-pip" role="tab" aria-selected="true" aria-controls="terminal-pip">pip</button>
+                <button class="fury-cta__tab" data-target="terminal-conda" role="tab" aria-selected="false" aria-controls="terminal-conda">conda</button>
+                <button class="fury-cta__tab" data-target="terminal-uv" role="tab" aria-selected="false" aria-controls="terminal-uv">uv</button>
+            </div>
+
+            <div class="fury-cta__terminal active" id="terminal-pip" role="tabpanel">
+                <div class="install-block cta-install-block" data-copy="pip install fury">
+                    <span>
+                        <span class="install-prompt">$</span> pip install fury
+                    </span>
+                    <button
+                        class="install-block__copy-button"
+                        type="button"
+                        onclick="homepageCopyToClipboard(this)"
+                        aria-label="Copy pip install command to clipboard"
+                    >
+                        <span class="install-block__copy-label" aria-hidden="true"></span>
+                        <i class="fa-regular fa-copy" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="fury-cta__terminal" id="terminal-conda" role="tabpanel">
+                <div class="install-block cta-install-block" data-copy="conda install -c conda-forge fury">
+                    <span>
+                        <span class="install-prompt">$</span> conda install -c conda-forge fury
+                    </span>
+                    <button
+                        class="install-block__copy-button"
+                        type="button"
+                        onclick="homepageCopyToClipboard(this)"
+                        aria-label="Copy conda install command to clipboard"
+                    >
+                        <span class="install-block__copy-label" aria-hidden="true"></span>
+                        <i class="fa-regular fa-copy" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="fury-cta__terminal" id="terminal-uv" role="tabpanel">
+                <div class="install-block cta-install-block" data-copy="uv pip install fury">
+                    <span>
+                        <span class="install-prompt">$</span> uv pip install fury
+                    </span>
+                    <button
+                        class="install-block__copy-button"
+                        type="button"
+                        onclick="homepageCopyToClipboard(this)"
+                        aria-label="Copy uv install command to clipboard"
+                    >
+                        <span class="install-block__copy-label" aria-hidden="true"></span>
+                        <i class="fa-regular fa-copy" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="{{ pathto('_static/js/homepage.js', 1) }}"></script>
 {% endblock %}
