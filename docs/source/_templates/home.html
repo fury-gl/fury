@@ -122,7 +122,7 @@
 <div class="fury-features">
     <div class="fury-features-grid">
         <div class="fury-features__header">
-            <h2 class="fury-features__title">Straight off the GPU</h2>
+            <h2 class="fury-features__title">FURY in Action</h2>
             <a href="{{ pathto('auto_examples/index') }}" class="fury-features__link">Browse all examples &rarr;</a>
         </div>
 
@@ -131,13 +131,16 @@
             <div class="fury-feature-card">
                 <div class="fury-feature-card__visual">
                     <div class="fury-feature-card__image-wrapper">
-                        <img src="{{ pathto('_static/images/horse.gif', 1) }}" alt="Shader-driven animation">
+                        <img src="{{ pathto('_static/images/horse.gif', 1) }}" alt="Shaders">
                         <div class="fury-feature-card__caption">shader-deformed mesh, animated per frame</div>
                     </div>
                 </div>
                 <div class="fury-feature-card__content">
-                    <h3 class="fury-feature-card__title">Shader-driven animation</h3>
-                    <p class="fury-feature-card__description">The horse is a single mesh, deformed and shaded on the GPU every frame. Shader programs plug directly into FURY materials, so effects like this stay real-time as the geometry grows.</p>
+                    <h3 class="fury-feature-card__title">Shaders</h3>
+                    <p class="fury-feature-card__description">Shaders are simple programs that describe the traits of
+                        either a vertex or a pixel. Vertex shaders describe the attributes (position, texture
+                        coordinates, colors, etc.) of a vertex, while pixel shaders describe the traits (color, z-depth
+                        and alpha value) of a pixel.</p>
                 </div>
             </div>
 
@@ -145,7 +148,10 @@
             <div class="fury-feature-card fury-feature-card--reverse">
                 <div class="fury-feature-card__content">
                     <h3 class="fury-feature-card__title">Physically based rendering</h3>
-                    <p class="fury-feature-card__description">PBR materials model how light actually behaves: roughness, metallicity, anisotropy. Renders cross from plot to photograph without leaving Python.</p>
+                    <p class="fury-feature-card__description">Physically based rendering (PBR) is a computer graphics
+                        approach that seeks to render images in a way that models the flow of light in the real world.
+                        Many PBR pipelines aim to achieve photorealism. This video demonstrates Anisotropic specular
+                        reflection in FURY.</p>
                 </div>
                 <div class="fury-feature-card__visual">
                     <div class="fury-feature-card__image-wrapper">
@@ -159,13 +165,16 @@
             <div class="fury-feature-card">
                 <div class="fury-feature-card__visual">
                     <div class="fury-feature-card__image-wrapper">
-                        <img src="{{ pathto('_static/images/4.gif', 1) }}" alt="Built for big data">
+                        <img src="{{ pathto('_static/images/4.gif', 1) }}" alt="Large networks">
                         <div class="fury-feature-card__caption">force-directed network, animated live</div>
                     </div>
                 </div>
                 <div class="fury-feature-card__content">
-                    <h3 class="fury-feature-card__title">Built for big data</h3>
-                    <p class="fury-feature-card__description">A network with thousands of nodes and edges, laid out and animated live. Instanced GPU primitives keep interaction smooth at sizes where CPU plotting tools give up.</p>
+                    <h3 class="fury-feature-card__title">Large networks</h3>
+                    <p class="fury-feature-card__description">A large network can be visualized by presenting its
+                        interesting parts preferably combined with one or several 'maps' in a multiview display. The
+                        main view displays a selected part in details, while the 'maps' provide the user with
+                        information about the position of the part inside the network.</p>
                 </div>
             </div>
         </div>
