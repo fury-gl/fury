@@ -50,7 +50,6 @@ html[data-theme="dark"] .bd-header .search-button__kbd-shortcut {
 .hero-container {
     width: 100%;
     position: relative;
-    min-height: calc(100vh - 60px);
     overflow: hidden;
     background: #faf5f2;
     color: var(--pst-color-text);
