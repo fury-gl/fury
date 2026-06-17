@@ -181,5 +181,69 @@
     </div>
 </div>
 
+<div class="fury-sciences">
+    <div class="fury-sciences-grid">
+        <div class="fury-sciences__header">
+            <div class="fury-sciences__title-col">
+                <h2 class="fury-sciences__title">Across the sciences</h2>
+            </div>
+            <div class="fury-sciences__desc-col">
+                <p class="fury-sciences__description">The same scene graph handles whatever your field throws at it. Pick a domain for a sample render.</p>
+            </div>
+        </div>
+
+        <div class="fury-sciences__content">
+            <div class="fury-sciences__tabs">
+                <button class="fury-sciences__tab active" data-target="engineering">
+                    <img src="{{ pathto('_static/images/sc-dom/engineering.svg', 1) }}" class="fury-sciences__tab-icon" alt="">
+                    <span>Engineering</span>
+                </button>
+                <button class="fury-sciences__tab" data-target="physics">
+                    <img src="{{ pathto('_static/images/sc-dom/physics.svg', 1) }}" class="fury-sciences__tab-icon" alt="">
+                    <span>Physics</span>
+                </button>
+                <button class="fury-sciences__tab" data-target="chemistry">
+                    <img src="{{ pathto('_static/images/sc-dom/chemistry.svg', 1) }}" class="fury-sciences__tab-icon" alt="">
+                    <span>Chemistry</span>
+                </button>
+                <button class="fury-sciences__tab" data-target="astronomy">
+                    <img src="{{ pathto('_static/images/sc-dom/astronomy.svg', 1) }}" class="fury-sciences__tab-icon" alt="">
+                    <span>Astronomy</span>
+                </button>
+                <button class="fury-sciences__tab" data-target="aerospace">
+                    <img src="{{ pathto('_static/images/sc-dom/aerospace.svg', 1) }}" class="fury-sciences__tab-icon" alt="">
+                    <span>Aerospace</span>
+                </button>
+                <button class="fury-sciences__tab" data-target="biology">
+                    <img src="{{ pathto('_static/images/sc-dom/biology.svg', 1) }}" class="fury-sciences__tab-icon" alt="">
+                    <span>Biology</span>
+                </button>
+                <button class="fury-sciences__tab" data-target="data-science">
+                    <img src="{{ pathto('_static/images/sc-dom/data-science.svg', 1) }}" class="fury-sciences__tab-icon" alt="">
+                    <span>Data science</span>
+                </button>
+                <button class="fury-sciences__tab" data-target="network-science">
+                    <img src="{{ pathto('_static/images/sc-dom/network.svg', 1) }}" class="fury-sciences__tab-icon" alt="">
+                    <span>Network science</span>
+                </button>
+                <button class="fury-sciences__tab" data-target="mathematics">
+                    <img src="{{ pathto('_static/images/sc-dom/maths.svg', 1) }}" class="fury-sciences__tab-icon" alt="">
+                    <span>Mathematics</span>
+                </button>
+            </div>
+
+            <div class="fury-sciences__display">
+                <div class="fury-sciences__image-wrapper">
+                    <img id="fury-sciences-img" src="{{ pathto('_static/images/sc-dom/popup/engineering.gif', 1) }}" alt="Engineering render">
+                </div>
+                <div class="fury-sciences__text">
+                    <h3 id="fury-sciences-title" class="fury-sciences__item-title">Engineering</h3>
+                    <p id="fury-sciences-desc" class="fury-sciences__item-desc">Robot-arm kinematics, assemblies and simulation output, animated as scene graphs.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="{{ pathto('_static/js/homepage.js', 1) }}"></script>
 {% endblock %}

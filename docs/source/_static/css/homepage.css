@@ -645,3 +645,210 @@ html[data-theme="dark"] .fury-feature-card__image-wrapper {
 html[data-theme="dark"] .fury-feature-card__caption {
     color: #888;
 }
+
+/* --- SCIENCES COMPONENT --- */
+.fury-sciences {
+    width: 100%;
+    background: #faf5f2; /* Match the features/hero background exactly */
+    color: #1c1919;
+    padding: 6rem 0;
+    margin: 0;
+    overflow: hidden;
+}
+
+.fury-sciences-grid {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.fury-sciences__header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 4rem;
+    margin-bottom: 4rem;
+}
+
+.fury-sciences__title {
+    font-size: 3.5rem;
+    font-family: "Barlow", "Arial Black", "Helvetica Neue", Arial, sans-serif;
+    font-weight: 900;
+    line-height: 1.1;
+    color: #1c1919;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.fury-sciences__description {
+    font-size: 1.1rem;
+    color: #555;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.fury-sciences__content {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 4rem;
+}
+
+.fury-sciences__tabs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.fury-sciences__tab {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #555;
+    transition: all 0.2s;
+}
+
+.fury-sciences__tab:hover {
+    background: rgba(0,0,0,0.03);
+}
+
+.fury-sciences__tab.active {
+    background: #ffffff;
+    border: 1px solid rgba(230,0,0,0.3);
+    color: #1c1919;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.fury-sciences__tab-icon {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    
+    /* Strip PyData Sphinx theme image defaults */
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+
+    /* In light mode, black SVGs with opacity become grey */
+    filter: opacity(0.6);
+    transition: filter 0.2s;
+}
+
+.fury-sciences__tab.active .fury-sciences__tab-icon {
+    /* FURY Red (#e60000) filter approximation from black */
+    filter: invert(15%) sepia(87%) saturate(6000%) hue-rotate(355deg) brightness(96%) contrast(115%);
+}
+
+.fury-sciences__display {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.fury-sciences__image-wrapper {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 6px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+.fury-sciences__image-wrapper img {
+    width: 100%;
+    border-radius: 8px;
+    display: block;
+    background: #000;
+}
+
+.fury-sciences__item-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    font-family: "Barlow", "Arial Black", "Helvetica Neue", Arial, sans-serif;
+    color: #1c1919;
+    margin: 0 0 0.5rem 0;
+}
+
+.fury-sciences__item-desc {
+    font-size: 1rem;
+    color: #555;
+    line-height: 1.6;
+    margin: 0;
+}
+
+@media (max-width: 992px) {
+    .fury-sciences__header {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    .fury-sciences__content {
+        grid-template-columns: 1fr;
+    }
+    .fury-sciences__tabs {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 1rem;
+    }
+    .fury-sciences__tab {
+        white-space: nowrap;
+    }
+}
+
+/* --- DARK MODE OVERRIDES FOR SCIENCES --- */
+html[data-theme="dark"] .fury-sciences {
+    background: #0d0808;
+    background-image: linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 4.5rem 100%;
+}
+
+html[data-theme="dark"] .fury-sciences__title,
+html[data-theme="dark"] .fury-sciences__item-title {
+    color: #ffffff;
+}
+
+html[data-theme="dark"] .fury-sciences__description,
+html[data-theme="dark"] .fury-sciences__item-desc {
+    color: #c0b8b8;
+}
+
+html[data-theme="dark"] .fury-sciences__tab {
+    color: #888;
+}
+
+html[data-theme="dark"] .fury-sciences__tab:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+html[data-theme="dark"] .fury-sciences__tab.active {
+    background: #1a1a1a;
+    border: 1px solid rgba(255,68,68,0.5);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+/* Dark mode icons: black logo on white padding/background */
+html[data-theme="dark"] .fury-sciences__tab-icon {
+    background: #ffffff !important;
+    padding: 4px !important;
+    border-radius: 6px !important;
+    filter: none !important; /* Keep SVG black */
+    opacity: 0.6; /* Dim inactive tabs */
+}
+
+/* Active tab icon: full opacity */
+html[data-theme="dark"] .fury-sciences__tab.active .fury-sciences__tab-icon {
+    opacity: 1;
+}
+
+html[data-theme="dark"] .fury-sciences__image-wrapper {
+    background: #150f0f;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255,255,255,0.05);
+}

@@ -37,3 +37,145 @@ function homepageCopyToClipboard(btn) {
         fallbackCopy();
     }
 }
+
+/**
+ * Handle tabs for the "Across the sciences" section.
+ */
+document.addEventListener("DOMContentLoaded", function() {
+    var tabs = document.querySelectorAll(".fury-sciences__tab");
+    var displayImg = document.getElementById("fury-sciences-img");
+    var displayTitle = document.getElementById("fury-sciences-title");
+    var displayDesc = document.getElementById("fury-sciences-desc");
+
+    if (!tabs.length || !displayImg) return;
+
+    var contentData = {
+        "engineering": {
+            title: "Engineering",
+            desc: "Robot-arm kinematics, assemblies and simulation output, animated as scene graphs."
+        },
+        "physics": {
+            title: "Physics",
+            desc: "Simulate particle collisions, wave propagation, and complex physical phenomena."
+        },
+        "chemistry": {
+            title: "Chemistry",
+            desc: "Visualize molecular structures, protein folding, and chemical reactions."
+        },
+        "astronomy": {
+            title: "Astronomy",
+            desc: "Render galaxies, orbital mechanics, and volumetric stellar data."
+        },
+        "aerospace": {
+            title: "Aerospace",
+            desc: "Visualize flow dynamics, wind tunnel simulations, and orbital trajectories."
+        },
+        "biology": {
+            title: "Biology",
+            desc: "Explore cellular structures, tissue imaging, and medical scans in 3D."
+        },
+        "data-science": {
+            title: "Data science",
+            desc: "Plot massive multi-dimensional datasets with GPU-accelerated rendering."
+        },
+        "network-science": {
+            title: "Network science",
+            desc: "Navigate complex interconnected graphs with millions of nodes and edges."
+        },
+        "mathematics": {
+            title: "Mathematics",
+            desc: "Render complex functions, manifolds, and topological structures."
+        }
+    };
+
+    var currentIndex = 0;
+    var intervalId = null;
+    var delay = 2500; // 2.5 seconds delay
+    var carouselContainer = document.querySelector(".fury-sciences__tabs");
+    var userInteracted = false;
+
+    // --- Preload images for seamless transitions ---
+    var currentSrc = displayImg.getAttribute("src");
+    var basePath = "";
+    if (currentSrc) {
+        var parts = currentSrc.split("popup/");
+        if (parts.length === 2) {
+            basePath = parts[0] + "popup/";
+            Object.keys(contentData).forEach(function(key) {
+                var img = new Image();
+                img.src = basePath + key + ".gif";
+            });
+        }
+    }
+
+    function startCarousel() {
+        if (intervalId) return;
+
+        intervalId = setInterval(function() {
+            currentIndex = (currentIndex + 1) % tabs.length;
+            activateTab(tabs[currentIndex]);
+        }, delay);
+    }
+
+    function stopCarousel() {
+        if (intervalId) {
+            clearInterval(intervalId);
+            intervalId = null;
+        }
+    }
+
+    function activateTab(tab) {
+        tabs.forEach(function(t) {
+            t.classList.remove("active");
+            t.setAttribute("aria-selected", "false");
+        });
+        tab.classList.add("active");
+        tab.setAttribute("aria-selected", "true");
+
+        var target = tab.getAttribute("data-target");
+        var data = contentData[target];
+
+        if (data) {
+            displayTitle.innerText = data.title;
+            displayDesc.innerText = data.desc;
+
+            if (basePath) {
+                displayImg.setAttribute("src", basePath + target + ".gif");
+            } else {
+                // Fallback if structure was different
+                var fallbackSrc = displayImg.getAttribute("src");
+                var fallbackParts = fallbackSrc.split("popup/");
+                if (fallbackParts.length === 2) {
+                    displayImg.setAttribute("src", fallbackParts[0] + "popup/" + target + ".gif");
+                }
+            }
+        }
+    }
+
+    tabs.forEach(function(tab, index) {
+        tab.addEventListener("click", function() {
+            currentIndex = index;
+            activateTab(this);
+            // stop auto-play permanently when user takes manual control
+            userInteracted = true;
+            stopCarousel();
+        });
+    });
+
+    if (carouselContainer) {
+        // Pause auto-play while hovered or focused
+        var pauseCarousel = function() {
+            if (!userInteracted) stopCarousel();
+        };
+        var resumeCarousel = function() {
+            if (!userInteracted) startCarousel();
+        };
+
+        carouselContainer.addEventListener("mouseenter", pauseCarousel);
+        carouselContainer.addEventListener("mouseleave", resumeCarousel);
+        carouselContainer.addEventListener("focusin", pauseCarousel);
+        carouselContainer.addEventListener("focusout", resumeCarousel);
+    }
+
+    startCarousel();
+});
