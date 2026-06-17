@@ -10,8 +10,9 @@
 <div class="hero-container">
     <div class="hero-grid">
 
-        <!-- Left Column: Content -->
         <div class="hero-content">
+
+            <!-- Rendering equation: sets a scientific tone -->
             <div class="hero-equation">
                 L<sub>o</sub>(x, &omega;<sub>o</sub>) = L<sub>e</sub>(x, &omega;<sub>o</sub>) + &int;<sub>&Omega;</sub> L<sub>i</sub>(x, &omega;<sub>i</sub>) f<sub>r</sub>(&omega;<sub>i</sub>, x, &omega;<sub>o</sub>) (&omega;<sub>i</sub> &middot; n) d&omega;<sub>i</sub>
             </div>
@@ -26,49 +27,81 @@
                 FURY is a free, open source Python library for 3D scientific visualization and animation, built on the GPU through <strong>pygfx</strong> and WebGPU. NumPy arrays in, real-time renders out.
             </p>
 
+            <!-- Primary and secondary call-to-action buttons -->
             <div class="hero-actions">
                 <a href="{{ pathto('getting_started') }}" class="btn-primary">Get started</a>
                 <a href="{{ pathto('auto_examples/index') }}" class="btn-secondary">Browse the examples &rarr;</a>
             </div>
 
             <div class="install-blocks">
+
+                <!-- pip install block -->
                 <div class="install-block" data-copy="pip install fury">
-                    <span><span class="install-prompt">$</span> pip install fury</span>
-                    <button class="install-copy-trigger" onclick="copyToClipboard(this)" title="Copy to clipboard" aria-label="Copy pip install command">
-                        <i class="fa-regular fa-copy"></i>
+                    <span>
+                        <span class="install-prompt">$</span> pip install fury
+                    </span>
+                    <button
+                        class="install-block__copy-button"
+                        type="button"
+                        onclick="homepageCopyToClipboard(this)"
+                        aria-label="Copy pip install command to clipboard"
+                    >
+                        <span class="install-block__copy-label" aria-hidden="true"></span>
+                        <i class="fa-regular fa-copy" aria-hidden="true"></i>
                     </button>
                 </div>
+
+                <!-- conda install block -->
                 <div class="install-block" data-copy="conda install -c conda-forge fury">
-                    <span><span class="install-prompt">$</span> conda install -c conda-forge fury</span>
-                    <button class="install-copy-trigger" onclick="copyToClipboard(this)" title="Copy to clipboard" aria-label="Copy conda install command">
-                        <i class="fa-regular fa-copy"></i>
+                    <span>
+                        <span class="install-prompt">$</span> conda install -c conda-forge fury
+                    </span>
+                    <button
+                        class="install-block__copy-button"
+                        type="button"
+                        onclick="homepageCopyToClipboard(this)"
+                        aria-label="Copy conda install command to clipboard"
+                    >
+                        <span class="install-block__copy-label" aria-hidden="true"></span>
+                        <i class="fa-regular fa-copy" aria-hidden="true"></i>
                     </button>
                 </div>
+
             </div>
         </div>
 
-        <!-- Right Column: Visuals -->
         <div class="hero-visuals">
 
-            <!-- Horse Render Card -->
+            <!-- Animated render: demonstrates FURY output quality -->
             <div class="visual-card">
                 <img src="{{ pathto('_static/images/horse.gif', 1) }}" alt="FURY Horse Render">
                 <div class="visual-footer">
-                    <span><span class="visual-footer__dot">&bull;</span> custom shader demo &middot; rendered by FURY</span>
+                    <span>
+                        <span class="visual-footer__dot">&bull;</span>
+                        custom shader demo &middot; rendered by FURY
+                    </span>
                     <span>720 &times; 405</span>
                 </div>
             </div>
 
-            <!-- Code Editor Block -->
             <div class="code-editor">
-                <div class="code-header">
-                    <span>your_first_scene.py</span>
-                    <div style="display: flex; gap: 15px; align-items: center;">
-                        <span>10 lines</span>
-                        <button class="code-copy-btn" data-copy-target="code-snippet-1" onclick="copyToClipboard(this)" title="Copy code"><i class="fa-regular fa-copy"></i></button>
+                <div class="code-editor__header">
+                    <span class="code-editor__filename">your_first_scene.py</span>
+                    <div class="code-editor__meta">
+                        <button
+                            class="code-editor__copy-button"
+                            type="button"
+                            data-copy-target="code-editor-snippet"
+                            onclick="homepageCopyToClipboard(this)"
+                            aria-label="Copy code snippet to clipboard"
+                        >
+                            <span class="code-editor__copy-label" aria-hidden="true"></span>
+                            <i class="fa-regular fa-copy" aria-hidden="true"></i>
+                        </button>
                     </div>
                 </div>
-                <div class="code-body" id="code-snippet-1">
+
+                <div class="code-editor__body" id="code-editor-snippet">
                     <span class="code-keyword">import</span> <span class="code-module">numpy</span> <span class="code-keyword">as</span> np<br>
                     <span class="code-keyword">from</span> fury.actor <span class="code-keyword">import</span> <span class="code-module">sphere</span><br>
                     <span class="code-keyword">from</span> fury.window <span class="code-keyword">import</span> <span class="code-module">show</span><br>

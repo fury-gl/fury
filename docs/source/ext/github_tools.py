@@ -248,6 +248,8 @@ def fetch_contributor_stats(project="fury-gl/fury"):
     """
     url = f"https://api.github.com/repos/{project}/stats/contributors"
     r_json = get_json_from_url(url)
+    if not isinstance(r_json, list):
+        r_json = []
 
     contributor_stats = {}
     contributor_stats["total_contributors"] = len(r_json)
