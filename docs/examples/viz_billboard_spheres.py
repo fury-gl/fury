@@ -1,7 +1,7 @@
 """
-===========================
+=============================
 Billboard vs Geometry Spheres
-===========================
+=============================
 
 This example demonstrates the difference between billboard-based sphere impostors
 and traditional geometry-based spheres. Billboard spheres are rendered as textured
