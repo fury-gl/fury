@@ -11,6 +11,7 @@ from functools import reduce
 import logging
 import os
 import sys
+from typing import Iterable
 
 from PIL.Image import fromarray as image_from_array
 import numpy as np
@@ -690,6 +691,8 @@ class ShowManager:
         event handling.
         """
         self._size = size
+        if not title:
+            title = "FURY 2.0"
         self._title = title
         self._is_qt = False
         self._qt_app = qt_app
@@ -1743,7 +1746,12 @@ def analyze_snapshot(im, *, colors=None, find_objects=True, strel=None):
     return report
 
 
-def show(actors, *, window_type="default"):
+def show(
+    actors,
+    *,
+    window_type="default",
+    title="FURY 2.0",
+):
     """
     Display one or more actors in a new window quickly.
 
@@ -1756,9 +1764,14 @@ def show(actors, *, window_type="default"):
         The PyGfx actor(s) to display.
     window_type : str, optional
         The type of window canvas to create ('default', 'glfw', 'qt',
-        'jupyter', 'offscreen'). Defaults to 'default'.
+        'jupyter', 'offscreen').
+    title : str, optional
+        The title for the window.
     """
     scene = Scene()
-    scene.add(*actors)
-    show_m = ShowManager(scene=scene, window_type=window_type)
+    if isinstance(actors, Iterable):
+        scene.add(*actors)
+    else:
+        scene.add(actors)
+    show_m = ShowManager(scene=scene, window_type=window_type, title=title)
     show_m.start()
