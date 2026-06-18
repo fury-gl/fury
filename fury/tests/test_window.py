@@ -8,6 +8,7 @@ import pytest
 
 from fury import actor, window
 from fury.actor import sphere
+from fury.animation import Animation, CameraAnimation, Timeline
 from fury.io import load_image
 from fury.lib import (
     AmbientLight,
@@ -51,6 +52,11 @@ def sample_ui_actor():
     "Fixture to provide a simple ui actor."
     actor = Rectangle2D(size=(5, 5))
     return actor
+
+
+@pytest.fixture
+def timeline():
+    return Timeline(length=1)
 
 
 def test_scene_initialization_default():
@@ -843,3 +849,72 @@ def test_offscreen_animation_recording():
         assert not os.path.exists("test_anim.png")
 
         os.remove("test_anim.gif")
+
+
+def test_show_manager_add_animation_registers_update_callback(timeline):
+    show_m = ShowManager(window_type="offscreen")
+
+    show_m.add_animation(timeline, update_rate=0.25)
+
+    assert show_m._animations == [timeline]
+    assert timeline._scene is show_m.screens[0].scene
+    assert timeline.playing is True
+    assert f"animation_{id(timeline)}" in show_m._callbacks
+
+    show_m.add_animation(timeline, update_rate=0.5)
+
+    assert show_m._animations == [timeline]
+    assert len(show_m._callbacks) == 1
+
+
+def test_show_manager_add_animation_rejects_invalid_object():
+    show_m = ShowManager(window_type="offscreen")
+
+    with pytest.raises(TypeError, match="Expected an Animation or Timeline object"):
+        show_m.add_animation(object())
+
+
+def test_show_manager_remove_animation_unregisters_and_removes_from_scene():
+    show_m = ShowManager(window_type="offscreen")
+    animation = Animation()
+
+    show_m.add_animation(animation)
+    show_m.remove_animation(animation)
+
+    assert show_m._animations == []
+    assert f"animation_{id(animation)}" not in show_m._callbacks
+    assert animation._added_to_scene is False
+
+    show_m.remove_animation(animation)
+    assert show_m._animations == []
+
+
+def test_show_manager_update_animation_updates_and_renders(timeline):
+    animation = Animation()
+    updates = []
+    show_m = ShowManager(window_type="offscreen")
+    animation.add_update_callback(lambda time: updates.append(time))
+
+    timeline.add_animation(animation)
+    timeline.play()
+
+    show_m._update_animation(timeline)
+    show_m._update_animation(animation)
+
+    assert len(updates) == 2
+
+
+def test_show_manager_setup_camera_animations_recurses():
+    camera = object()
+    parent = Animation()
+    child = Animation()
+    camera_animation = CameraAnimation()
+    nested_camera_animation = CameraAnimation()
+    child.add_child_animation(nested_camera_animation)
+    parent.add_child_animation([camera_animation, child])
+    show_m = ShowManager(window_type="offscreen")
+
+    show_m._setup_camera_animations(parent, camera)
+
+    assert camera_animation.camera is camera
+    assert nested_camera_animation.camera is camera

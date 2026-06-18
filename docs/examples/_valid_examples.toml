@@ -63,7 +63,8 @@ files = [
 [animation]
 readme = "file: _animation.rst"
 position = 10
-enable = false
+enable = true
 files = [
+    "viz_fury_animation.py",
     # "viz_interpolators.py",
 ]

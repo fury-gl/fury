@@ -18,6 +18,8 @@ from scipy import ndimage
 
 from fury.actor import Group
 from fury.actor.core import create_axes_helper
+from fury.animation.animation import Animation, CameraAnimation
+from fury.animation.timeline import Timeline
 from fury.io import load_image
 from fury.lib import (
     AmbientLight,
@@ -726,6 +728,7 @@ class ShowManager:
         self._screen_setup(scene, camera, controller, camera_light)
         self.screens = self._create_screens()
         self._callbacks = {}
+        self._animations = []
 
         self._stats = None
         self._stats_initialized = False
@@ -1056,6 +1059,89 @@ class ShowManager:
     def cancel_resize_callback(self):
         """Cancel the window resize callback function."""
         self._on_resize = lambda _size: None
+
+    def _setup_camera_animations(self, animation, camera):
+        """
+        Recursively set camera on CameraAnimation objects if needed.
+
+        Parameters
+        ----------
+        animation : Animation or Timeline
+            Animation object to inspect for camera animations.
+        camera : pygfx.Camera
+            Camera to assign to camera animations.
+        """
+        if isinstance(animation, CameraAnimation) and animation.camera is None:
+            animation.camera = camera
+
+        for child_animation in getattr(animation, "_animations", []):
+            self._setup_camera_animations(child_animation, camera)
+
+    def _update_animation(self, animation):
+        """
+        Update an animation or timeline and request a redraw.
+
+        Parameters
+        ----------
+        animation : Animation or Timeline
+            Animation object to update.
+        """
+        if isinstance(animation, Timeline):
+            animation.update()
+        else:
+            animation.update_animation()
+        self.render()
+
+    def add_animation(self, animation, *, update_rate=1 / 60):
+        """
+        Add an animation or timeline to the render update loop.
+
+        Parameters
+        ----------
+        animation : Animation or Timeline
+            The animation or timeline to add and update during rendering.
+        update_rate : float, optional
+            The time interval in seconds between updates. Default is 1/60.
+        """
+        if not isinstance(animation, (Animation, Timeline)):
+            raise TypeError("Expected an Animation or Timeline object.")
+
+        if animation in self._animations:
+            return
+
+        self._animations.append(animation)
+        if self.screens:
+            scene = self.screens[0].scene
+            animation.add_to_scene(scene)
+            self._setup_camera_animations(animation, self.screens[0].camera)
+            if isinstance(animation, Timeline):
+                animation.play()
+
+        callback_name = f"animation_{id(animation)}"
+        self.register_callback(
+            self._update_animation,
+            update_rate,
+            True,
+            callback_name,
+            animation,
+        )
+
+    def remove_animation(self, animation):
+        """
+        Remove an animation or timeline from the render update loop.
+
+        Parameters
+        ----------
+        animation : Animation or Timeline
+            Animation object to remove.
+        """
+        if animation not in self._animations:
+            return
+
+        self._animations.remove(animation)
+        self.cancel_callback(f"animation_{id(animation)}")
+        if self.screens:
+            animation.remove_from_scene(self.screens[0].scene)
 
     def enable_imgui(self, *, imgui_draw_function=None):
         """
