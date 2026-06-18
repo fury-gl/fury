@@ -29,6 +29,13 @@ def assert_not_equal(x, y):
     npt.assert_equal(np.any(np.not_equal(x, y)), True)
 
 
+def test_animation_record_requires_show_manager():
+    anim = Animation()
+
+    with pytest.raises(RuntimeError, match="ShowManager"):
+        anim.record("animation.mp4")
+
+
 def test_animation_creation(sample_actor):
     anim = Animation()
 

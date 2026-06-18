@@ -48,6 +48,54 @@ def sample_actor():
     return actor
 
 
+@pytest.mark.skipif(not window.have_cv2, reason="OpenCV is required for mp4 export")
+def test_show_manager_record_animation(tmp_path):
+    scene = Scene()
+    show_m = ShowManager(scene=scene, size=(64, 64), window_type="offscreen")
+    timeline = Timeline(length=0.4, loop=False)
+    cube = actor.box(
+        np.array([[0, 0, 0]]),
+        colors=np.array([[1, 0, 0]]),
+        scales=np.array([[1, 1, 1]]),
+    )
+    animation = Animation(actors=cube)
+    original_camera = PerspectiveCamera()
+    camera_animation = CameraAnimation(camera=original_camera, loop=False)
+    camera_animation.set_position(0, np.array([3, 3, 3]))
+    camera_animation.set_position(0.2, np.array([5, 3, 3]))
+    camera_animation.set_focal(0, np.array([0, 0, 0]))
+    camera_animation.set_focal(0.2, np.array([0, 0, 0]))
+    timeline.add_animation([animation, camera_animation])
+    show_m.add_animation(timeline)
+
+    try:
+        fname = tmp_path / "animation.mp4"
+        frames = timeline.record(fname, fps=5)
+
+        assert fname.exists()
+        assert fname.stat().st_size > 0
+        assert len(frames) == 2
+        assert frames[0].shape == (64, 64, 4)
+        assert not np.array_equal(frames[0], frames[1])
+        assert camera_animation.camera is original_camera
+    finally:
+        show_m.window.close()
+
+
+def test_show_manager_record_animation_validates_params():
+    show_m = ShowManager(size=(2, 2), window_type="offscreen")
+    anim = Animation()
+
+    try:
+        with pytest.raises(ValueError, match="fps"):
+            show_m.record_animation(anim, "animation.mp4", fps=0)
+
+        with pytest.raises(ValueError, match="speed"):
+            show_m.record_animation(anim, "animation.mp4", speed=0)
+    finally:
+        show_m.window.close()
+
+
 @pytest.fixture
 def sample_ui_actor():
     "Fixture to provide a simple ui actor."

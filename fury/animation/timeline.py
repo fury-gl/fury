@@ -51,6 +51,7 @@ class Timeline:
         self._loop = loop
         self._length = length
         self._duration = length if length is not None else 0.0
+        self._record_callback = None
 
         if playback_panel:
 
@@ -383,6 +384,34 @@ class Timeline:
                     self.pause()
         if self.playing or force:
             [anim.update_animation(time=time) for anim in self._animations]
+
+    def record(self, fname, *, fps=30, speed=1.0, size=None):
+        """
+        Record the timeline to an mp4 file.
+
+        Parameters
+        ----------
+        fname : str
+            The output file name. The ``.mp4`` extension is added when missing.
+        fps : int, optional
+            The number of frames per second in the output video.
+        speed : float, optional
+            Playback speed multiplier used while sampling the timeline.
+        size : tuple[int, int], optional
+            The offscreen render size as ``(width, height)``. If None, the
+            attached show manager size is used.
+
+        Returns
+        -------
+        list[ndarray]
+            The recorded RGBA frames.
+        """
+        if self._record_callback is None:
+            raise RuntimeError(
+                "Timeline recording requires a ShowManager. Add the timeline "
+                "to a ShowManager or call show_manager.record_animation(...)."
+            )
+        return self._record_callback(self, fname, fps=fps, speed=speed, size=size)
 
     def add_to_scene(self, scene):
         """

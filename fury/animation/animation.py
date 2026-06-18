@@ -62,6 +62,7 @@ class Animation:
         self._motion_path_actor = None
         # self._transform = Transform()
         self._general_callbacks = []
+        self._record_callback = None
         # Adding actors to the animation
         if actors is not None:
             self.add_actor(actors)
@@ -1223,6 +1224,34 @@ class Animation:
 
         # Also update all child Animations.
         [animation.update_animation(time=time) for animation in self._animations]
+
+    def record(self, fname, *, fps=30, speed=1.0, size=None):
+        """
+        Record the animation to an mp4 file.
+
+        Parameters
+        ----------
+        fname : str
+            The output file name. The ``.mp4`` extension is added when missing.
+        fps : int, optional
+            The number of frames per second in the output video.
+        speed : float, optional
+            Playback speed multiplier used while sampling the animation.
+        size : tuple[int, int], optional
+            The offscreen render size as ``(width, height)``. If None, the
+            attached show manager size is used.
+
+        Returns
+        -------
+        list[ndarray]
+            The recorded RGBA frames.
+        """
+        if self._record_callback is None:
+            raise RuntimeError(
+                "Animation recording requires a ShowManager. Add the animation "
+                "to a ShowManager or call show_manager.record_animation(...)."
+            )
+        return self._record_callback(self, fname, fps=fps, speed=speed, size=size)
 
     def add_to_scene(self, scene):
         """

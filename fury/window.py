@@ -51,7 +51,16 @@ from fury.lib import (
     qcall_later,
     run,
 )
+from fury.optpkg import optional_package
 from fury.ui import UI, UIContext
+
+cv2, have_cv2, _ = optional_package(
+    "cv2",
+    trip_msg=(
+        "OpenCV has to be installed to record animations as mp4. "
+        "Install it with `pip install fury[optional]`."
+    ),
+)
 
 
 class Scene(GfxGroup):
@@ -1063,7 +1072,7 @@ class ShowManager:
         """Cancel the window resize callback function."""
         self._on_resize = lambda _size: None
 
-    def _setup_camera_animations(self, animation, camera):
+    def _setup_camera_animations(self, animation, camera, *, force=False):
         """
         Recursively set camera on CameraAnimation objects if needed.
 
@@ -1073,12 +1082,26 @@ class ShowManager:
             Animation object to inspect for camera animations.
         camera : pygfx.Camera
             Camera to assign to camera animations.
+        force : bool, optional
+            If True, replace existing cameras and return previous values.
+
+        Returns
+        -------
+        list[tuple[CameraAnimation, Camera]]
+            Camera animations that were modified and their previous cameras.
         """
-        if isinstance(animation, CameraAnimation) and animation.camera is None:
+        camera_changes = []
+        if isinstance(animation, CameraAnimation) and (
+            force or animation.camera is None
+        ):
+            camera_changes.append((animation, animation.camera))
             animation.camera = camera
 
         for child_animation in getattr(animation, "_animations", []):
-            self._setup_camera_animations(child_animation, camera)
+            camera_changes.extend(
+                self._setup_camera_animations(child_animation, camera, force=force)
+            )
+        return camera_changes
 
     def _update_animation(self, animation):
         """
@@ -1113,6 +1136,7 @@ class ShowManager:
             return
 
         self._animations.append(animation)
+        animation._record_callback = self.record_animation
         if self.screens:
             scene = self.screens[0].scene
             animation.add_to_scene(scene)
@@ -1143,8 +1167,100 @@ class ShowManager:
 
         self._animations.remove(animation)
         self.cancel_callback(f"animation_{id(animation)}")
+        if animation._record_callback == self.record_animation:
+            animation._record_callback = None
         if self.screens:
             animation.remove_from_scene(self.screens[0].scene)
+
+    def record_animation(self, animation, fname, *, fps=30, speed=1.0, size=None):
+        """
+        Record an animation or timeline to an mp4 file.
+
+        Parameters
+        ----------
+        animation : Animation or Timeline
+            The animation or timeline to record.
+        fname : str
+            The output file name. The ``.mp4`` extension is added when missing.
+        fps : int, optional
+            The number of frames per second in the output video.
+        speed : float, optional
+            Playback speed multiplier used while sampling the animation.
+        size : tuple[int, int], optional
+            The offscreen render size as ``(width, height)``. If None, the show
+            manager's current size is used.
+
+        Returns
+        -------
+        list[ndarray]
+            The recorded RGBA frames.
+        """
+        if not isinstance(animation, (Animation, Timeline)):
+            raise TypeError("Expected an Animation or Timeline object.")
+        if fps <= 0:
+            raise ValueError("fps must be greater than 0.")
+        if speed <= 0:
+            raise ValueError("speed must be greater than 0.")
+        if not have_cv2:
+            raise ImportError(
+                "OpenCV has to be installed to record animations as mp4. "
+                "Install it with `pip install fury[optional]`."
+            )
+
+        fname = str(fname)
+        if not fname.endswith(".mp4"):
+            fname += ".mp4"
+
+        size = self._size if size is None else size
+        scene = getattr(animation, "_scene", None)
+        if scene is None and self.screens:
+            scene = self.screens[0].scene
+
+        show_m = ShowManager(
+            scene=scene, size=size, window_type="offscreen", pixel_ratio=1.0
+        )
+        if getattr(animation, "_scene", None) is None:
+            animation.add_to_scene(show_m.screens[0].scene)
+        camera_changes = self._setup_camera_animations(
+            animation, show_m.screens[0].camera, force=True
+        )
+
+        duration = animation.update_duration()
+        timestamps = [0.0]
+        if duration > 0:
+            timestamps = np.arange(0, duration, speed / fps).tolist()
+
+        frames = []
+        writer = None
+        try:
+            for timestamp in timestamps:
+                if isinstance(animation, Timeline):
+                    animation.seek(timestamp)
+                    animation.update(force=True)
+                else:
+                    animation.update_animation(time=timestamp)
+                render_screens(show_m.renderer, show_m.screens)
+                frames.append(np.asarray(show_m.renderer.snapshot()))
+
+            writer = cv2.VideoWriter(
+                fname,
+                cv2.VideoWriter_fourcc(*"mp4v"),
+                fps,
+                size,
+            )
+            if not writer.isOpened():
+                raise RuntimeError(f"Could not open video writer for {fname!r}.")
+
+            for frame in frames:
+                writer.write(cv2.cvtColor(frame[:, :, :3], cv2.COLOR_RGB2BGR))
+        finally:
+            if writer is not None:
+                writer.release()
+            for camera_animation, camera in camera_changes:
+                camera_animation.camera = camera
+            show_m.window.close()
+
+        return frames
 
     def enable_imgui(self, *, imgui_draw_function=None):
         """
