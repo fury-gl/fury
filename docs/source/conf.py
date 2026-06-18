@@ -146,9 +146,9 @@ html_theme_options = {
     "navbar_start": ["navbar-logo"],
     "navbar_center": ["custom-navbar-nav.html"],
     "navbar_end": ["navbar-icon-links", "theme-switcher"],
-    "footer_start": ["copyright"],
-    "footer_center": "",
-    "footer_end": "",
+    "footer_start": ["custom-footer.html"],
+    "footer_center": [],
+    "footer_end": [],
     "switcher": {
         "json_url": json_url,
         "version_match": version_match,
