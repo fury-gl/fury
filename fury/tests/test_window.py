@@ -22,6 +22,7 @@ from fury.lib import (
     Scene as GfxScene,
     ScreenCoordsCamera,
     Texture,
+    TrackballController,
     have_imgui_bundle,
 )
 from fury.ui import Rectangle2D, UIContext
@@ -222,7 +223,7 @@ def test_screen_initialization_default():
     assert screen.size == (640, 480)  # Default size of pygfx
     assert screen.position == (0, 0)  # Default position of pygfx
     assert isinstance(screen.camera, PerspectiveCamera)
-    assert isinstance(screen.controller, OrbitController)
+    assert isinstance(screen.controller, TrackballController)
 
     assert (
         len(screen.scene.main_scene.children) == 3
@@ -522,11 +523,40 @@ def test_show_manager_with_empty_config():
     assert len(show_m.screens) == 1
 
 
+def test_show_manager_with_empty_title():
+    """Test initialization with empty screen config."""
+    show_m = ShowManager(window_type="offscreen", title=None)
+    assert show_m._title == "FURY 2.0"
+    show_m = ShowManager(window_type="offscreen", title="")
+    assert show_m._title == "FURY 2.0"
+
+
 def test_display_default(sample_actor):
     """Test the display function with default parameters."""
     with patch("fury.window.ShowManager") as mock_show_manager:
-        show([sample_actor])
+        show(sample_actor)
         mock_show_manager.assert_called_once()
+        kwargs = mock_show_manager.call_args.kwargs
+        assert kwargs["window_type"] == "default"
+        assert kwargs["title"] == "FURY 2.0"
+        assert sample_actor in kwargs["scene"].main_scene.children
+        mock_show_manager.return_value.start.assert_called_once_with()
+
+
+def test_display_accepts_iterable_actors(sample_actor):
+    """Test the display function with a non-list iterable of actors."""
+    second_actor = sphere(np.array([[1, 0, 0]]), material="basic", impostor=False)
+    actors = (item for item in (sample_actor, second_actor))
+
+    with patch("fury.window.ShowManager") as mock_show_manager:
+        show(actors, window_type="offscreen", title="Iterable actors")
+
+        kwargs = mock_show_manager.call_args.kwargs
+        assert kwargs["window_type"] == "offscreen"
+        assert kwargs["title"] == "Iterable actors"
+        assert sample_actor in kwargs["scene"].main_scene.children
+        assert second_actor in kwargs["scene"].main_scene.children
+        mock_show_manager.return_value.start.assert_called_once_with()
 
 
 def test_add_remove_ui_to_from_scene(sample_actor):
