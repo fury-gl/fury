@@ -34,6 +34,7 @@ import numpy as np
 from fury.colormap import normalize_colors
 from fury.data import read_viz_icons
 from fury.io import get_extension, load_image, load_image_texture
+from fury.lib import EventType
 from fury.ui.containers import ImageContainer2D, Panel2D
 from fury.ui.context import UIContext
 from fury.ui.core import (
@@ -2673,7 +2674,6 @@ class ComboBox2D(UI):
         self.scroll_inactive_color = scroll_bar_inactive_color
         self.menu_opacity = menu_opacity
 
-        # Define subcomponent sizes.
         (
             self.text_block_size,
             self.drop_menu_size,
@@ -2743,7 +2743,6 @@ class ComboBox2D(UI):
         self.drop_down_menu.on_change = self.select_option_callback
         self.drop_down_button.on_clicked = self.menu_toggle_callback
 
-        # Offer some standard hooks to the user.
         self.on_change = lambda ui: None
 
         self._children.extend([self.panel])
@@ -2792,9 +2791,9 @@ class ComboBox2D(UI):
         drop_menu_size = (size[0], int(0.8 * size[1]))
         drop_button_size = (int(0.15 * size[0]), int(0.2 * size[1]))
 
-        sel_pos = (0, 0)
-        btn_pos = (0.85, 0)
-        menu_pos = (0, 0.2)
+        sel_pos = (0.0, 0.0)
+        btn_pos = (0.85, 0.0)
+        menu_pos = (0.0, 0.2)
 
         return (
             text_block_size,
@@ -2814,6 +2813,10 @@ class ComboBox2D(UI):
         size : tuple of 2 ints
             ComboBox size(width, height) in pixels.
         """
+        ratio = size[1] / self.panel_size[1]
+        self.font_size = max(1, int(self.font_size * ratio))
+        self.panel_size = size
+
         self.panel.resize(size)
 
         (
@@ -2830,8 +2833,18 @@ class ComboBox2D(UI):
         self.panel.update_element(self.drop_down_menu, menu_pos)
 
         self.drop_down_button.resize(self.drop_button_size)
+
+        self.drop_down_menu.font_size = self.font_size
+        self.drop_down_menu.slot_height = max(
+            1, int(self.font_size * self.drop_down_menu.line_spacing)
+        )
         self.drop_down_menu.resize(self.drop_menu_size)
+
+        self.selection_box.font_size = self.font_size
         self.selection_box.resize(self.text_block_size)
+
+        if not self._menu_visibility:
+            self.drop_down_menu.set_visibility(False)
 
     def _update_actors_position(self):
         """Update the position of the actors."""
@@ -2897,7 +2910,6 @@ class ComboBox2D(UI):
         """
         for item in items:
             if isinstance(item, (list, tuple)):
-                # Useful when n-d lists/tuples are used.
                 self.append_item(*item)
             elif isinstance(item, (str, Number)):
                 self.items.append(str(item))
@@ -2908,7 +2920,7 @@ class ComboBox2D(UI):
         self.drop_down_menu.update_scrollbar()
         self.drop_down_menu.update()
         if not self._menu_visibility:
-            self.drop_down_menu.scroll_bar.set_visibility(False)
+            self.drop_down_menu.set_visibility(False)
 
     def select_option_callback(self):
         """Select the appropriate option based on ListBox selection."""
@@ -2939,6 +2951,7 @@ class ComboBox2D(UI):
         self.drop_down_button.toggled = self._menu_visibility
         if self._menu_visibility:
             self.drop_down_menu.update()
+            self.drop_down_menu.update_scrollbar()
 
     def left_button_pressed(self, event):
         """
@@ -3075,34 +3088,31 @@ class ListBox2D(UI):
         size = self.panel_size
         font_size = self.font_size
         # Calculating the number of slots.
-        self.nb_slots = int((size[1] - 2 * self.margin) // self.slot_height)
+        self.nb_slots = int((size[1] - 2 * self.margin) // max(1, self.slot_height))
 
         # This panel facilitates adding slots at the right position.
         self.panel = Panel2D(size=size, color=(1, 1, 1))
 
         # Add a scroll bar
-        scroll_bar_height = int(
-            self.nb_slots * (size[1] - 2 * self.margin) / len(self.values)
-        )
-        self.scroll_bar = Rectangle2D(size=(int(size[0] / 20), scroll_bar_height))
+        denom = len(self.values) if len(self.values) > 0 else 1
+        scroll_bar_height = int(self.nb_slots * (size[1] - 2 * self.margin) / denom)
+        scroll_bar_width = int(size[0] / 20)
+        self.scroll_bar = Rectangle2D(size=(scroll_bar_width, scroll_bar_height))
         if len(self.values) <= self.nb_slots:
             self.scroll_bar.set_visibility(False)
             self.scroll_bar.height = 0
 
-        scroll_bar_x = int(size[0] - self.scroll_bar.size[0] - self.margin)
-        scroll_bar_y = int(size[1] - self.scroll_bar.size[1] - self.margin)
+        scroll_bar_x = int(size[0] - scroll_bar_width - self.margin)
+        scroll_bar_y = self.margin
         self._scroll_bar_top_y = scroll_bar_y
         self._scroll_bar_x = scroll_bar_x
         self.panel.add_element(self.scroll_bar, (scroll_bar_x, scroll_bar_y))
 
         # Initialisation of empty text actors
-        self.slot_width = int(
-            size[0] - self.scroll_bar.size[0] - 2 * self.margin - self.margin
-        )
+        self.slot_width = int(size[0] - scroll_bar_width - 3 * self.margin)
         x = self.margin
-        y = int(size[1] - self.margin)
+        y = self.margin
         for _ in range(self.nb_slots):
-            y -= self.slot_height
             item = ListBoxItem2D(
                 on_select=self.select,
                 size=(self.slot_width, self.slot_height),
@@ -3113,14 +3123,13 @@ class ListBox2D(UI):
             )
             item.textblock.font_size = font_size
             self.slots.append(item)
-            self.panel.add_element(item, (int(x), int(y + self.margin)))
+            self.panel.add_element(item, (int(x), int(y)))
+            y += self.slot_height
 
         # Add default events listener for this UI component.
         self.scroll_bar.on_left_mouse_button_pressed = self.scroll_click_callback
         self.scroll_bar.on_left_mouse_button_released = self.scroll_release_callback
         self.scroll_bar.on_left_mouse_button_dragged = self.scroll_drag_callback
-
-        from fury.lib import EventType
 
         self.panel.background.actor.add_event_handler(
             self.wheel_callback, EventType.WHEEL
@@ -3145,7 +3154,56 @@ class ListBox2D(UI):
         size : (int, int)
             Size to resize to.
         """
-        pass
+        self.panel_size = np.array(size, dtype=int)
+        self.panel.resize(size)
+
+        self.nb_slots = int((size[1] - 2 * self.margin) // max(1, self.slot_height))
+
+        new_scrollbar_width = int(size[0] / 20)
+        self._scroll_bar_x = int(size[0] - new_scrollbar_width - self.margin)
+
+        self.slot_width = int(size[0] - new_scrollbar_width - 3 * self.margin)
+        x = self.margin
+
+        if self.nb_slots > len(self.slots):
+            font_size = self.font_size
+
+            for _ in range(self.nb_slots - len(self.slots)):
+                item = ListBoxItem2D(
+                    on_select=self.select,
+                    size=(self.slot_width, self.slot_height),
+                    text_color=self.text_color,
+                    selected_color=self.selected_color,
+                    unselected_color=self.unselected_color,
+                    background_opacity=self.background_opacity,
+                )
+                item.textblock.font_size = font_size
+                item.background.actor.add_event_handler(
+                    self.wheel_callback, EventType.WHEEL
+                )
+                for text_actor in item.textblock.actors:
+                    text_actor.add_event_handler(self.wheel_callback, EventType.WHEEL)
+
+                self.slots.append(item)
+                self.panel.add_element(item, (0, 0))
+
+        while len(self.slots) > self.nb_slots:
+            item = self.slots.pop()
+            self.panel.remove_element(item)
+
+        y = self.margin
+        for slot in self.slots:
+            self.panel.update_element(slot, (int(x), int(y)))
+            slot.textblock.font_size = self.font_size
+            slot.resize((self.slot_width, self.slot_height))
+            y += self.slot_height
+
+        if self.view_offset + self.nb_slots > len(self.values):
+            self.view_offset = max(0, len(self.values) - self.nb_slots)
+
+        self.scroll_bar.width = new_scrollbar_width
+        self.update()
+        self.update_scrollbar()
 
     def _get_actors(self):
         """
@@ -3179,7 +3237,7 @@ class ListBox2D(UI):
             return
 
         scroll_bar_y = int(
-            self._scroll_bar_top_y - self.view_offset * self.scroll_step_size
+            self._scroll_bar_top_y + self.view_offset * self.scroll_step_size
         )
         self.panel.update_element(self.scroll_bar, (self._scroll_bar_x, scroll_bar_y))
 
@@ -3248,19 +3306,17 @@ class ListBox2D(UI):
             The pygfx event.
         """
         position_y = event.y
+        if self.scroll_step_size == 0:
+            return
         offset = int((position_y - self.scroll_init_position) / self.scroll_step_size)
-        if offset > 0 and self.view_offset > 0:
-            offset = min(offset, self.view_offset)
-        elif offset < 0 and (self.view_offset + self.nb_slots < len(self.values)):
-            offset = min(
-                -offset,
-                len(self.values) - self.nb_slots - self.view_offset,
-            )
-            offset = -offset
+        if offset > 0 and (self.view_offset + self.nb_slots < len(self.values)):
+            offset = min(offset, len(self.values) - self.nb_slots - self.view_offset)
+        elif offset < 0 and self.view_offset > 0:
+            offset = max(offset, -self.view_offset)
         else:
             return
 
-        self.view_offset -= offset
+        self.view_offset += offset
         self.update()
         self._update_scroll_bar_position()
         self.scroll_init_position += offset * self.scroll_step_size
@@ -3295,17 +3351,22 @@ class ListBox2D(UI):
         """Change the scroll-bar height when the values change."""
         self.scroll_bar.set_visibility(True)
 
-        self.scroll_bar.height = int(
-            self.nb_slots * (self.panel_size[1] - 2 * self.margin) / len(self.values)
+        denom = len(self.values) if len(self.values) > 0 else 1
+        new_scrollbar_height = int(
+            self.nb_slots * (self.panel_size[1] - 2 * self.margin) / denom
+        )
+        self.scroll_bar.height = new_scrollbar_height
+
+        step_denom = len(self.values) - self.nb_slots
+        if step_denom == 0:
+            step_denom = 1
+
+        self.scroll_step_size = max(
+            1,
+            (self.slot_height * self.nb_slots - new_scrollbar_height) / step_denom,
         )
 
-        self.scroll_step_size = (
-            self.slot_height * self.nb_slots - self.scroll_bar.height
-        ) / (len(self.values) - self.nb_slots)
-
-        self._scroll_bar_top_y = int(
-            self.panel_size[1] - self.scroll_bar.size[1] - self.margin
-        )
+        self._scroll_bar_top_y = self.margin
         self._update_scroll_bar_position()
 
         if len(self.values) <= self.nb_slots:
