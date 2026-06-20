@@ -1257,27 +1257,30 @@ html[data-theme="dark"] .fury-example-card__title {
 
 .fury-community__logo-card {
     background: #ffffff;
-    border-radius: 6px;
-    padding: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border-radius: 8px;
+    padding: 12px 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
     display: flex;
     align-items: center;
     justify-content: center;
     width: 140px;
     height: 70px;
-    transition: transform 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s;
+    overflow: hidden;
 }
 
 .fury-community__logo-card:hover {
     transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.18);
 }
 
 .fury-community__logo-card img {
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
-    mix-blend-mode: multiply;
-    filter: brightness(1.08) contrast(1.15);
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
 /* Dark mode overrides */
@@ -1312,7 +1315,7 @@ html[data-theme="dark"] .fury-community__citation {
 
 html[data-theme="dark"] .fury-community__logo-card {
     background: #ffffff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.35);
 }
 
 @media (max-width: 992px) {
