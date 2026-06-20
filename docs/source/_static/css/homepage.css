@@ -1258,13 +1258,13 @@ html[data-theme="dark"] .fury-example-card__title {
 .fury-community__logo-card {
     background: #ffffff;
     border-radius: 8px;
-    padding: 12px 16px;
+    padding: 16px 20px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.12);
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 140px;
-    height: 70px;
+    width: 160px;
+    height: 80px;
     transition: transform 0.2s, box-shadow 0.2s;
     overflow: hidden;
 }
@@ -1281,6 +1281,18 @@ html[data-theme="dark"] .fury-example-card__title {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
+    transform: scale(1.15);
+}
+
+/* Specific logo scaling to counteract baked-in transparent padding in source files */
+.fury-community__logo-card img[alt="Luddy"] {
+    transform: scale(2.2);
+}
+
+.fury-community__logo-card img[alt="Houdini"],
+.fury-community__logo-card img[alt="Modo"],
+.fury-community__logo-card img[alt="SketchUp"] {
+    transform: scale(1.5);
 }
 
 /* Dark mode overrides */
