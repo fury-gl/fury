@@ -1325,13 +1325,13 @@ html[data-theme="dark"] .fury-example-card__title {
 }
 
 /* Specific logo scaling to counteract baked-in transparent padding in source files */
-.fury-community__logo-card img[alt="Luddy"] {
+.fury-community__logo-card--luddy img {
     transform: scale(2.2);
 }
 
-.fury-community__logo-card img[alt="Houdini"],
-.fury-community__logo-card img[alt="Modo"],
-.fury-community__logo-card img[alt="SketchUp"] {
+.fury-community__logo-card--houdini img,
+.fury-community__logo-card--modo img,
+.fury-community__logo-card--sketchup img {
     transform: scale(1.5);
 }
 
