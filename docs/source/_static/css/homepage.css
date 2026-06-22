@@ -274,21 +274,14 @@ html[data-theme="dark"] .hero-title .fury-red {
 
 /* --- DARK MODE COMPONENT OVERRIDES --- */
 
-/* Deep dark background for the hero */
+/* Hero container is transparent in dark mode — background comes from global html rule */
 html[data-theme="dark"] .hero-container {
-    background: #0d0808;
-    background-image:
-        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-    background-size: 4.5rem 100%;
+    background: transparent;
 }
 
-/* Stronger, more vivid red radial glow for dark mode */
+/* Hide hero's own glow pseudo-element — global html rule provides the glow */
 html[data-theme="dark"] .hero-container::before {
-    background: radial-gradient(circle, rgba(230,0,0,0.35) 0%, rgba(230,0,0,0) 65%);
-    right: -5%;
-    top: -5%;
-    width: 900px;
-    height: 900px;
+    display: none;
 }
 
 /* Equation color stays warm amber */
@@ -543,10 +536,9 @@ html[data-theme="dark"] .code-editor__copy-button.is-copy-success {
 }
 
 /* --- DARK MODE OVERRIDES FOR FEATURES AND HERO VISUALS --- */
+/* Transparent so global html grid/glow shows through */
 html[data-theme="dark"] .fury-features {
-    background: #0d0808;
-    background-image: linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-    background-size: 4.5rem 100%;
+    background: transparent;
 }
 
 html[data-theme="dark"] .visual-card {
@@ -816,10 +808,9 @@ html[data-theme="dark"] .fury-feature-card__caption {
 }
 
 /* --- DARK MODE OVERRIDES FOR SCIENCES --- */
+/* Transparent so global html grid/glow shows through */
 html[data-theme="dark"] .fury-sciences {
-    background: #0d0808;
-    background-image: linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-    background-size: 4.5rem 100%;
+    background: transparent;
 }
 
 html[data-theme="dark"] .fury-sciences__title,
@@ -998,10 +989,9 @@ html[data-theme="dark"] .fury-sciences__image-wrapper {
 }
 
 /* DARK MODE EXAMPLES */
+/* Transparent so global html grid/glow shows through */
 html[data-theme="dark"] .fury-examples {
-    background: #0d0808;
-    background-image: linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-    background-size: 4.5rem 100%;
+    background: transparent;
 }
 
 html[data-theme="dark"] .fury-examples__title {
@@ -1336,8 +1326,9 @@ html[data-theme="dark"] .fury-example-card__title {
 }
 
 /* Dark mode overrides */
+/* Transparent so global html grid/glow shows through */
 html[data-theme="dark"] .fury-community {
-    background: #0d0808;
+    background: transparent;
 }
 
 html[data-theme="dark"] .fury-community__title,
