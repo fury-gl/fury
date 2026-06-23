@@ -7,13 +7,13 @@ from warnings import warn
 import numpy as np
 from scipy.spatial import transform
 
-from fury.animation.helpers import compose_transform_matrix
-from fury.animation.interpolator import (
+from fury.lib import WorldObject
+from fury.motion.helpers import compose_transform_matrix
+from fury.motion.interpolator import (
     linear_interpolator,
     slerp,
     step_interpolator,
 )
-from fury.lib import WorldObject
 
 
 class Animation:

@@ -2,8 +2,8 @@
 
 from time import perf_counter
 
-from fury.animation.animation import Animation
 from fury.decorators import warn_on_args_to_kwargs
+from fury.motion import Animation
 from fury.ui import PlaybackPanel
 
 

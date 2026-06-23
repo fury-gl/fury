@@ -4,16 +4,16 @@ import pytest
 from scipy.spatial import transform
 
 from fury.actor import box
-from fury.animation import Animation, CameraAnimation
-from fury.animation.helpers import compose_transform_matrix
-from fury.animation.interpolator import (
+from fury.lib import PerspectiveCamera
+from fury.motion import Animation, CameraAnimation
+from fury.motion.helpers import compose_transform_matrix
+from fury.motion.interpolator import (
     cubic_bezier_interpolator,
     cubic_spline_interpolator,
     linear_interpolator,
     spline_interpolator,
     step_interpolator,
 )
-from fury.lib import PerspectiveCamera
 
 
 @pytest.fixture

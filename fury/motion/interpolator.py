@@ -4,7 +4,8 @@ import numpy as np
 from scipy.interpolate import splev, splprep
 from scipy.spatial import transform
 
-from fury.animation.helpers import (
+from fury.colormap import hsv2rgb, lab2rgb, rgb2hsv, rgb2lab, rgb2xyz, xyz2rgb
+from fury.motion.helpers import (
     euclidean_distances,
     get_next_timestamp,
     get_previous_timestamp,
@@ -13,7 +14,6 @@ from fury.animation.helpers import (
     get_values_from_keyframes,
     lerp,
 )
-from fury.colormap import hsv2rgb, lab2rgb, rgb2hsv, rgb2lab, rgb2xyz, xyz2rgb
 
 
 def spline_interpolator(keyframes, degree):

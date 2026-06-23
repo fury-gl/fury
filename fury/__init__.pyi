@@ -6,7 +6,6 @@
 
 __all__ = [
     "actor",
-    "animation",
     "colormap",
     # "convert",
     "data",
@@ -17,6 +16,7 @@ __all__ = [
     "io",
     #     "layout",
     "lib",
+    "motion",
     #     "material",
     #     "molecular",
     "optpkg",
@@ -38,7 +38,6 @@ __all__ = [
 
 from . import (
     actor,
-    animation,
     colormap,
     #     convert,
     data,
@@ -48,6 +47,7 @@ from . import (
     #     interactor,
     io,
     lib,
+    motion,
     optpkg,
     pkg_info,
     primitive,
@@ -121,7 +121,7 @@ from . import (
 # #     main_dir_uncertainty as main_dir_uncertainty,
 # #     tensor_ellipsoid as tensor_ellipsoid,
 # # )
-from .animation import (
+from .motion import (
     Animation as Animation,
     # Timeline as Timeline,
     color_interpolator as color_interpolator,

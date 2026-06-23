@@ -1,4 +1,4 @@
-"""Animations module."""
+"""Motion module."""
 
 import lazy_loader as lazy
 

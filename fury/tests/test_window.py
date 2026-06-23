@@ -8,7 +8,6 @@ import pytest
 
 from fury import actor, window
 from fury.actor import sphere
-from fury.animation import Animation, CameraAnimation, Timeline
 from fury.io import load_image
 from fury.lib import (
     AmbientLight,
@@ -25,6 +24,7 @@ from fury.lib import (
     TrackballController,
     have_imgui_bundle,
 )
+from fury.motion import Animation, CameraAnimation, Timeline
 from fury.ui import Rectangle2D, UIContext
 from fury.window import (
     Scene,

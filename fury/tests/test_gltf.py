@@ -10,7 +10,7 @@ from scipy.ndimage._measurements import _stats
 
 from fury import actor, utils, window
 
-# from fury.animation import Timeline
+# from fury.motion import Timeline
 # from fury.data import fetch_gltf, read_viz_gltf
 # from fury.gltf import export_scene, glTF
 from fury.testing import assert_equal, assert_greater
