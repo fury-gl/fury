@@ -1136,7 +1136,7 @@ class ShowManager:
             return
 
         self._animations.append(animation)
-        animation._record_callback = self.record_animation
+        animation._set_record_callback(self.record_animation)
         if self.screens:
             scene = self.screens[0].scene
             animation.add_to_scene(scene)
@@ -1168,11 +1168,13 @@ class ShowManager:
         self._animations.remove(animation)
         self.cancel_callback(f"animation_{id(animation)}")
         if animation._record_callback == self.record_animation:
-            animation._record_callback = None
+            animation._set_record_callback(None)
         if self.screens:
             animation.remove_from_scene(self.screens[0].scene)
 
-    def record_animation(self, animation, fname, *, fps=30, speed=1.0, size=None):
+    def record_animation(
+        self, animation, fname, *, fps=30, speed=1.0, size=None, return_frames=False
+    ):
         """
         Record an animation or timeline to an mp4 file.
 
@@ -1189,11 +1191,14 @@ class ShowManager:
         size : tuple[int, int], optional
             The offscreen render size as ``(width, height)``. If None, the show
             manager's current size is used.
+        return_frames : bool, optional
+            If True, return the recorded RGBA frames. Defaults to False to avoid
+            storing long recordings in memory.
 
         Returns
         -------
-        list[ndarray]
-            The recorded RGBA frames.
+        list[ndarray] or None
+            The recorded RGBA frames when ``return_frames`` is True, otherwise None.
         """
         if not isinstance(animation, (Animation, Timeline)):
             raise TypeError("Expected an Animation or Timeline object.")
@@ -1230,18 +1235,14 @@ class ShowManager:
         if duration > 0:
             timestamps = np.arange(0, duration, speed / fps).tolist()
 
-        frames = []
+        frames = [] if return_frames else None
         writer = None
+        timeline_state = None
+        if isinstance(animation, Timeline):
+            timeline_state = (animation.playing, animation.current_timestamp)
+            if animation.playing:
+                animation.pause()
         try:
-            for timestamp in timestamps:
-                if isinstance(animation, Timeline):
-                    animation.seek(timestamp)
-                    animation.update(force=True)
-                else:
-                    animation.update_animation(time=timestamp)
-                render_screens(show_m.renderer, show_m.screens)
-                frames.append(np.asarray(show_m.renderer.snapshot()))
-
             writer = cv2.VideoWriter(
                 fname,
                 cv2.VideoWriter_fourcc(*"mp4v"),
@@ -1251,13 +1252,26 @@ class ShowManager:
             if not writer.isOpened():
                 raise RuntimeError(f"Could not open video writer for {fname!r}.")
 
-            for frame in frames:
+            for timestamp in timestamps:
+                if isinstance(animation, Timeline):
+                    animation.seek(timestamp)
+                else:
+                    animation.update_animation(time=timestamp)
+                render_screens(show_m.renderer, show_m.screens)
+                frame = np.asarray(show_m.renderer.snapshot())
+                if return_frames:
+                    frames.append(frame)
                 writer.write(cv2.cvtColor(frame[:, :, :3], cv2.COLOR_RGB2BGR))
         finally:
             if writer is not None:
                 writer.release()
             for camera_animation, camera in camera_changes:
                 camera_animation.camera = camera
+            if timeline_state is not None:
+                was_playing, current_timestamp = timeline_state
+                animation.seek(current_timestamp)
+                if was_playing:
+                    animation.play()
             show_m.window.close()
 
         return frames

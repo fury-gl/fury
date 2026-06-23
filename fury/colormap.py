@@ -270,7 +270,7 @@ def orient2rgb(v):
 
     elif v.ndim == 2:
         orientn = np.sqrt(v[:, 0] ** 2 + v[:, 1] ** 2 + v[:, 2] ** 2)
-        orientn.shape = orientn.shape + (1,)
+        orientn = np.reshape(orientn, orientn.shape + (1,))
         orient = np.abs(
             np.divide(
                 v,

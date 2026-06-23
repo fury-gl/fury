@@ -70,7 +70,7 @@ def test_show_manager_record_animation(tmp_path):
 
     try:
         fname = tmp_path / "animation.mp4"
-        frames = timeline.record(fname, fps=5)
+        frames = timeline.record(fname, fps=5, return_frames=True)
 
         assert fname.exists()
         assert fname.stat().st_size > 0
@@ -78,6 +78,7 @@ def test_show_manager_record_animation(tmp_path):
         assert frames[0].shape == (64, 64, 4)
         assert not np.array_equal(frames[0], frames[1])
         assert camera_animation.camera is original_camera
+        assert timeline.playing
     finally:
         show_m.window.close()
 
@@ -92,6 +93,37 @@ def test_show_manager_record_animation_validates_params():
 
         with pytest.raises(ValueError, match="speed"):
             show_m.record_animation(anim, "animation.mp4", speed=0)
+    finally:
+        show_m.window.close()
+
+
+def test_show_manager_record_callback_propagates_to_child_animations():
+    show_m = ShowManager(size=(2, 2), window_type="offscreen")
+    timeline = Timeline()
+    parent_animation = Animation()
+    child_animation = Animation()
+    late_child_animation = Animation()
+    parent_animation.add_child_animation(child_animation)
+    timeline.add_animation(parent_animation)
+
+    try:
+        show_m.add_animation(timeline)
+
+        assert timeline._record_callback == show_m.record_animation
+        assert parent_animation._record_callback == show_m.record_animation
+        assert child_animation._record_callback == show_m.record_animation
+
+        parent_animation.add_child_animation(late_child_animation)
+        assert late_child_animation._record_callback == show_m.record_animation
+
+        with pytest.raises(ValueError, match="fps"):
+            child_animation.record("child.mp4", fps=0)
+
+        show_m.remove_animation(timeline)
+        assert timeline._record_callback is None
+        assert parent_animation._record_callback is None
+        assert child_animation._record_callback is None
+        assert late_child_animation._record_callback is None
     finally:
         show_m.window.close()
 
