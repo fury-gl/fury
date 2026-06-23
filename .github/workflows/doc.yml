@@ -27,7 +27,7 @@ jobs:
     env:
       FURY_OFFSCREEN: true
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 0
     - name: Set up Python ${{ matrix.python-version }}
