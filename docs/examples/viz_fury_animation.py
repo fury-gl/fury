@@ -151,6 +151,16 @@ scene.add(plane)
 showm.add_animation(timeline)
 
 ###############################################################################
-# The ShowManager must go on!
+# Recording the animation
+# =======================
+#
 
-showm.start()
+record_animation = False
+
+if record_animation:
+    timeline.record("viz_fury_animation.mp4", fps=30)
+else:
+    ###########################################################################
+    # The ShowManager must go on!
+
+    showm.start()

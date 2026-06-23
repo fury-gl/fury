@@ -2,6 +2,7 @@ import time
 
 import numpy as np
 import numpy.testing as npt
+import pytest
 
 from fury.animation import Animation, Timeline
 
@@ -28,7 +29,7 @@ def test_timeline_creation():
     tl = Timeline()
     assert tl.duration == 0
     assert tl.loop is True
-    assert not hasattr(tl, "record")
+    assert tl._record_callback is None
 
     tl2 = Timeline(loop=False)
     assert tl2.loop is False
@@ -36,6 +37,13 @@ def test_timeline_creation():
     tl3 = Timeline(length=10)
     tl3.update_duration()
     assert tl3.duration == 10
+
+
+def test_timeline_record_requires_show_manager():
+    tl = Timeline()
+
+    with pytest.raises(RuntimeError, match="ShowManager"):
+        tl.record("timeline.mp4")
 
 
 def test_timeline_playback_panel():
