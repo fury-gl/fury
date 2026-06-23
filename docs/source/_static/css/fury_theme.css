@@ -57,7 +57,7 @@ html[data-theme="light"] .bd-header .navbar-btn {
 
 /* Dark mode navbar */
 html[data-theme="dark"] .bd-header.navbar {
-    background-color: #0d0808 !important;
+    background-color: transparent !important;
 }
 
 html[data-theme="dark"] .bd-header .navbar-brand,
@@ -289,4 +289,35 @@ html[data-theme="dark"] .fury-footer__joss a {
 
 html[data-theme="dark"] .fury-footer__joss a:hover {
     color: #ffffff;
+}
+
+/* --- GLOBAL THEME BACKGROUND --- */
+/*
+ * Renders the global dark mode background (grid + radial glow) on the html root.
+ * PyData's base background variable is forced transparent to ensure all semantic
+ * layout wrappers (body, main, sidebars) inherit the global design seamlessly.
+ */
+html[data-theme="dark"] {
+    --pst-color-background: transparent;
+
+    background-color: #0d0808;
+    background-image:
+        radial-gradient(circle, rgba(230,0,0,0.28) 0%, transparent 65%),
+        linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 900px 900px, 4.5rem 100%;
+    background-position: top -50px right -50px, top left;
+    background-repeat: no-repeat, repeat;
+    background-attachment: fixed;
+}
+
+/* 
+ * Create a clean "glassmorphism" effect for the sticky header.
+ * We keep it minimalistic to match the light mode header (no borders or drop shadows),
+ * but use a semi-transparent background + blur so scrolling text remains hidden
+ * while the global red glow and grid gently show through.
+ */
+html[data-theme="dark"] .bd-header.navbar {
+    background-color: rgba(13, 8, 8, 0.85) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
