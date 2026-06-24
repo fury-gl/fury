@@ -721,6 +721,7 @@ class Rectangle2D(UI):
         """
         w = max(size[0], 1)
         h = max(size[1], 1)
+        size = (w, h)
         self.actor.geometry = plane_geometry(width=w, height=h)
         self._update_actors_position()
 
@@ -1066,6 +1067,9 @@ class TextBlock2D(UI):
 
         self.background.on_left_mouse_button_pressed = lambda event: (
             self.on_left_mouse_button_pressed(event)
+        )
+        self.background.on_left_mouse_button_dragged = lambda event: (
+            self.on_left_mouse_button_dragged(event)
         )
         self.background.on_key_press = lambda event: self.on_key_press(event)
         self.background.on_key_release = lambda event: self.on_key_release(event)
@@ -1524,6 +1528,8 @@ class TextBlock2D(UI):
         else:
             msg = "Vertical justification must be: top, middle or bottom."
             raise ValueError(msg)
+
+        self.actor.anchor = f"{vert_anchor}-{horiz_anchor}"
 
         self.set_actor_position(
             self.actor, updated_text_position, self.z_order, sub_order=1
