@@ -2785,6 +2785,28 @@ def test_listbox_2d_scrolling_logic():
     npt.assert_equal(listbox.view_offset, 0)
 
 
+def test_listbox_2d_resize():
+    values = [f"Item {i}" for i in range(10)]
+    listbox = ui.ListBox2D(values=values, size=(100, 200))
+
+    npt.assert_equal(listbox.size, [100, 200])
+
+    new_size = (200, 400)
+    listbox.resize(new_size)
+
+    npt.assert_equal(listbox.size, [200, 400])
+    npt.assert_equal(listbox.panel.size, new_size)
+
+    new_scrollbar_width = int(new_size[0] / 20)
+    expected_scroll_bar_x = int(new_size[0] - new_scrollbar_width - listbox.margin)
+    npt.assert_equal(listbox._scroll_bar_x, expected_scroll_bar_x)
+
+    expected_slot_width = int(new_size[0] - new_scrollbar_width - 3 * listbox.margin)
+    npt.assert_equal(listbox.slot_width, expected_slot_width)
+
+    npt.assert_equal(len(listbox.slots), listbox.nb_slots)
+
+
 def test_ui_card2d_initialization():
     """Test Card2D initialization and layout logic."""
     fetch_viz_icons()
