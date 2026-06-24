@@ -1234,3 +1234,165 @@ class BillboardSphereMaterial(MeshPhongMaterial):
         """
         material_kwargs.setdefault("flat_shading", False)
         super().__init__(**material_kwargs)
+
+
+class NetworkMaterial(PointsMaterial):
+    """
+    Material handling simulation parameters for the Network.
+
+    Parameters
+    ----------
+    k : float, optional
+        Optimal distance constant.
+    damping : float, optional
+        Damping factor for velocity.
+    speed : float, optional
+        Simulation speed factor.
+    repulsion_strength : float, optional
+        Multiplier for repulsive forces.
+    size : float, optional
+        Size of the rendered nodes.
+    **kwargs : dict
+        Additional parameters passed to PointsMaterial.
+    """
+
+    uniform_type = dict(
+        PointsMaterial.uniform_type,
+        k="f4",
+        damping="f4",
+        speed="f4",
+        repulsion_strength="f4",
+    )
+
+    def __init__(
+        self,
+        k=10.0,
+        damping=0.9,
+        speed=1.0,
+        repulsion_strength=1.0,
+        size=10.0,
+        **kwargs,
+    ):
+        """
+        Initialize the material instance.
+
+        Parameters
+        ----------
+        k : float, optional
+            Optimal distance constant.
+        damping : float, optional
+            Damping factor for velocity.
+        speed : float, optional
+            Simulation speed factor.
+        repulsion_strength : float, optional
+            Multiplier for repulsive forces.
+        size : float, optional
+            Size of the rendered nodes.
+        **kwargs : dict
+            Additional parameters passed to PointsMaterial.
+        """
+        super().__init__(size=size, **kwargs)
+        self.k = k
+        self.damping = damping
+        self.speed = speed
+        self.repulsion_strength = repulsion_strength
+
+    @property
+    def k(self):
+        """
+        Get the optimal distance constant.
+
+        Returns
+        -------
+        float
+            The optimal distance constant.
+        """
+        return self.uniform_buffer.data["k"]
+
+    @k.setter
+    def k(self, v):
+        """
+        Set the optimal distance constant.
+
+        Parameters
+        ----------
+        v : float
+            The new optimal distance value.
+        """
+        self.uniform_buffer.data["k"] = v
+        self.uniform_buffer.update_full()
+
+    @property
+    def damping(self):
+        """
+        Get the velocity damping factor.
+
+        Returns
+        -------
+        float
+            The damping factor.
+        """
+        return self.uniform_buffer.data["damping"]
+
+    @damping.setter
+    def damping(self, v):
+        """
+        Set the velocity damping factor.
+
+        Parameters
+        ----------
+        v : float
+            The new damping factor value.
+        """
+        self.uniform_buffer.data["damping"] = v
+        self.uniform_buffer.update_full()
+
+    @property
+    def speed(self):
+        """
+        Get the simulation speed factor.
+
+        Returns
+        -------
+        float
+            The simulation speed factor.
+        """
+        return self.uniform_buffer.data["speed"]
+
+    @speed.setter
+    def speed(self, v):
+        """
+        Set the simulation speed factor.
+
+        Parameters
+        ----------
+        v : float
+            The new simulation speed value.
+        """
+        self.uniform_buffer.data["speed"] = v
+        self.uniform_buffer.update_full()
+
+    @property
+    def repulsion_strength(self):
+        """
+        Get the repulsive force multiplier.
+
+        Returns
+        -------
+        float
+            The repulsion strength multiplier.
+        """
+        return self.uniform_buffer.data["repulsion_strength"]
+
+    @repulsion_strength.setter
+    def repulsion_strength(self, v):
+        """
+        Set the repulsive force multiplier.
+
+        Parameters
+        ----------
+        v : float
+            The new repulsion strength multiplier.
+        """
+        self.uniform_buffer.data["repulsion_strength"] = v
+        self.uniform_buffer.update_full()

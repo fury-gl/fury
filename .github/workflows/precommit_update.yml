@@ -8,9 +8,10 @@ on:
 
 jobs:
   auto-update:
+    if: github.repository == 'fury-gl/fury'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-python@v6
 

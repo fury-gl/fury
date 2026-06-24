@@ -43,7 +43,7 @@ files = [
     "viz_streamlines_roi.py",
     "viz_contour.py",
     "viz_brownian_motion.py",
-
+    "viz_network.py",
 ]
 
 [ui]
@@ -63,7 +63,8 @@ files = [
 [animation]
 readme = "file: _animation.rst"
 position = 10
-enable = false
+enable = true
 files = [
+    "viz_fury_animation.py",
     # "viz_interpolators.py",
 ]

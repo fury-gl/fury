@@ -8,6 +8,7 @@ import pytest
 
 from fury import actor, window
 from fury.actor import sphere
+from fury.animation import Animation, CameraAnimation, Timeline
 from fury.io import load_image
 from fury.lib import (
     AmbientLight,
@@ -21,6 +22,7 @@ from fury.lib import (
     Scene as GfxScene,
     ScreenCoordsCamera,
     Texture,
+    TrackballController,
     have_imgui_bundle,
 )
 from fury.ui import Rectangle2D, UIContext
@@ -46,11 +48,96 @@ def sample_actor():
     return actor
 
 
+@pytest.mark.skipif(not window.have_cv2, reason="OpenCV is required for mp4 export")
+def test_show_manager_record_animation(tmp_path):
+    scene = Scene()
+    show_m = ShowManager(scene=scene, size=(64, 64), window_type="offscreen")
+    timeline = Timeline(length=0.4, loop=False)
+    cube = actor.box(
+        np.array([[0, 0, 0]]),
+        colors=np.array([[1, 0, 0]]),
+        scales=np.array([[1, 1, 1]]),
+    )
+    animation = Animation(actors=cube)
+    original_camera = PerspectiveCamera()
+    camera_animation = CameraAnimation(camera=original_camera, loop=False)
+    camera_animation.set_position(0, np.array([3, 3, 3]))
+    camera_animation.set_position(0.2, np.array([5, 3, 3]))
+    camera_animation.set_focal(0, np.array([0, 0, 0]))
+    camera_animation.set_focal(0.2, np.array([0, 0, 0]))
+    timeline.add_animation([animation, camera_animation])
+    show_m.add_animation(timeline)
+
+    try:
+        fname = tmp_path / "animation.mp4"
+        frames = timeline.record(fname, fps=5, return_frames=True)
+
+        assert fname.exists()
+        assert fname.stat().st_size > 0
+        assert len(frames) == 2
+        assert frames[0].shape == (64, 64, 4)
+        assert not np.array_equal(frames[0], frames[1])
+        assert camera_animation.camera is original_camera
+        assert timeline.playing
+    finally:
+        show_m.window.close()
+
+
+def test_show_manager_record_animation_validates_params():
+    show_m = ShowManager(size=(2, 2), window_type="offscreen")
+    anim = Animation()
+
+    try:
+        with pytest.raises(ValueError, match="fps"):
+            show_m.record_animation(anim, "animation.mp4", fps=0)
+
+        with pytest.raises(ValueError, match="speed"):
+            show_m.record_animation(anim, "animation.mp4", speed=0)
+    finally:
+        show_m.window.close()
+
+
+def test_show_manager_record_callback_propagates_to_child_animations():
+    show_m = ShowManager(size=(2, 2), window_type="offscreen")
+    timeline = Timeline()
+    parent_animation = Animation()
+    child_animation = Animation()
+    late_child_animation = Animation()
+    parent_animation.add_child_animation(child_animation)
+    timeline.add_animation(parent_animation)
+
+    try:
+        show_m.add_animation(timeline)
+
+        assert timeline._record_callback == show_m.record_animation
+        assert parent_animation._record_callback == show_m.record_animation
+        assert child_animation._record_callback == show_m.record_animation
+
+        parent_animation.add_child_animation(late_child_animation)
+        assert late_child_animation._record_callback == show_m.record_animation
+
+        with pytest.raises(ValueError, match="fps"):
+            child_animation.record("child.mp4", fps=0)
+
+        show_m.remove_animation(timeline)
+        assert timeline._record_callback is None
+        assert parent_animation._record_callback is None
+        assert child_animation._record_callback is None
+        assert late_child_animation._record_callback is None
+    finally:
+        show_m.window.close()
+
+
 @pytest.fixture
 def sample_ui_actor():
     "Fixture to provide a simple ui actor."
     actor = Rectangle2D(size=(5, 5))
     return actor
+
+
+@pytest.fixture
+def timeline():
+    return Timeline(length=1)
 
 
 def test_scene_initialization_default():
@@ -216,7 +303,7 @@ def test_screen_initialization_default():
     assert screen.size == (640, 480)  # Default size of pygfx
     assert screen.position == (0, 0)  # Default position of pygfx
     assert isinstance(screen.camera, PerspectiveCamera)
-    assert isinstance(screen.controller, OrbitController)
+    assert isinstance(screen.controller, TrackballController)
 
     assert (
         len(screen.scene.main_scene.children) == 3
@@ -516,11 +603,40 @@ def test_show_manager_with_empty_config():
     assert len(show_m.screens) == 1
 
 
+def test_show_manager_with_empty_title():
+    """Test initialization with empty screen config."""
+    show_m = ShowManager(window_type="offscreen", title=None)
+    assert show_m._title == "FURY 2.0"
+    show_m = ShowManager(window_type="offscreen", title="")
+    assert show_m._title == "FURY 2.0"
+
+
 def test_display_default(sample_actor):
     """Test the display function with default parameters."""
     with patch("fury.window.ShowManager") as mock_show_manager:
-        show([sample_actor])
+        show(sample_actor)
         mock_show_manager.assert_called_once()
+        kwargs = mock_show_manager.call_args.kwargs
+        assert kwargs["window_type"] == "default"
+        assert kwargs["title"] == "FURY 2.0"
+        assert sample_actor in kwargs["scene"].main_scene.children
+        mock_show_manager.return_value.start.assert_called_once_with()
+
+
+def test_display_accepts_iterable_actors(sample_actor):
+    """Test the display function with a non-list iterable of actors."""
+    second_actor = sphere(np.array([[1, 0, 0]]), material="basic", impostor=False)
+    actors = (item for item in (sample_actor, second_actor))
+
+    with patch("fury.window.ShowManager") as mock_show_manager:
+        show(actors, window_type="offscreen", title="Iterable actors")
+
+        kwargs = mock_show_manager.call_args.kwargs
+        assert kwargs["window_type"] == "offscreen"
+        assert kwargs["title"] == "Iterable actors"
+        assert sample_actor in kwargs["scene"].main_scene.children
+        assert second_actor in kwargs["scene"].main_scene.children
+        mock_show_manager.return_value.start.assert_called_once_with()
 
 
 def test_add_remove_ui_to_from_scene(sample_actor):
@@ -776,7 +892,7 @@ def test_show_manager_toggle_screen_controllers():
 
 
 def test_show_manager_register_drag():
-    """Test registering drag events."""
+    """Test pointer event handling for drag interactions."""
     show_m = ShowManager(window_type="offscreen")
 
     event_down = PointerEvent(x=0, y=0, type=EventType.POINTER_DOWN, target="target1")
@@ -843,3 +959,72 @@ def test_offscreen_animation_recording():
         assert not os.path.exists("test_anim.png")
 
         os.remove("test_anim.gif")
+
+
+def test_show_manager_add_animation_registers_update_callback(timeline):
+    show_m = ShowManager(window_type="offscreen")
+
+    show_m.add_animation(timeline, update_rate=0.25)
+
+    assert show_m._animations == [timeline]
+    assert timeline._scene is show_m.screens[0].scene
+    assert timeline.playing is True
+    assert f"animation_{id(timeline)}" in show_m._callbacks
+
+    show_m.add_animation(timeline, update_rate=0.5)
+
+    assert show_m._animations == [timeline]
+    assert len(show_m._callbacks) == 1
+
+
+def test_show_manager_add_animation_rejects_invalid_object():
+    show_m = ShowManager(window_type="offscreen")
+
+    with pytest.raises(TypeError, match="Expected an Animation or Timeline object"):
+        show_m.add_animation(object())
+
+
+def test_show_manager_remove_animation_unregisters_and_removes_from_scene():
+    show_m = ShowManager(window_type="offscreen")
+    animation = Animation()
+
+    show_m.add_animation(animation)
+    show_m.remove_animation(animation)
+
+    assert show_m._animations == []
+    assert f"animation_{id(animation)}" not in show_m._callbacks
+    assert animation._added_to_scene is False
+
+    show_m.remove_animation(animation)
+    assert show_m._animations == []
+
+
+def test_show_manager_update_animation_updates_and_renders(timeline):
+    animation = Animation()
+    updates = []
+    show_m = ShowManager(window_type="offscreen")
+    animation.add_update_callback(lambda time: updates.append(time))
+
+    timeline.add_animation(animation)
+    timeline.play()
+
+    show_m._update_animation(timeline)
+    show_m._update_animation(animation)
+
+    assert len(updates) == 2
+
+
+def test_show_manager_setup_camera_animations_recurses():
+    camera = object()
+    parent = Animation()
+    child = Animation()
+    camera_animation = CameraAnimation()
+    nested_camera_animation = CameraAnimation()
+    child.add_child_animation(nested_camera_animation)
+    parent.add_child_animation([camera_animation, child])
+    show_m = ShowManager(window_type="offscreen")
+
+    show_m._setup_camera_animations(parent, camera)
+
+    assert camera_animation.camera is camera
+    assert nested_camera_animation.camera is camera

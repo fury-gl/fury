@@ -67,7 +67,7 @@ window = ["PySide6", "jupyter-rfb", "imgui_bundle; python_version >= \"3.12\""]
 plot = ["matplotlib>=3.9.0"]
 medical = ["dipy", "nibabel"]
 compute = ["numba"]
-optional = ["fury[window, plot, medical, compute]"]
+optional = ["fury[window, plot, medical, compute]", "opencv-python"]
 dev = [
     "gitpython",
     "twine",
@@ -127,7 +127,9 @@ filterwarnings = [
     "ignore:We'll no longer accept the way you call the.*function:UserWarning:.*doctest",
     "ignore:.*There is no current event loop.*:DeprecationWarning",
     # This is due to the Qt deprecation warnings in RenderCanvas
-    "ignore:.*ApplicationAttribute.AA_EnableHighDpiScaling.*:DeprecationWarning"
+    "ignore:.*ApplicationAttribute.AA_EnableHighDpiScaling.*:DeprecationWarning",
+    # Upstream pygfx warning with NumPy 2.5
+    "ignore:Setting the shape on a NumPy array has been deprecated.*:DeprecationWarning:pygfx\\..*"
 ]
 # addopts = "--cov --cov-report html --cov-report term-missing --cov-fail-under 95"
 

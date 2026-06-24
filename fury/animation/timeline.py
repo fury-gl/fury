@@ -2,19 +2,9 @@
 
 from time import perf_counter
 
-from PIL import Image
-import numpy as np
-
-from fury import window
 from fury.animation.animation import Animation
 from fury.decorators import warn_on_args_to_kwargs
-from fury.io import get_extension
-
-# from fury.lib import RenderWindow, WindowToImageFilter, numpy_support
-# from fury.ui.elements import PlaybackPanel
-
-RenderWindow, WindowToImageFilter, numpy_support = None, None, None
-PlaybackPanel = None
+from fury.ui import PlaybackPanel
 
 
 class Timeline:
@@ -61,6 +51,7 @@ class Timeline:
         self._loop = loop
         self._length = length
         self._duration = length if length is not None else 0.0
+        self._record_callback = None
 
         if playback_panel:
 
@@ -80,6 +71,19 @@ class Timeline:
 
         if animations is not None:
             self.add_animation(animations)
+
+    def _set_record_callback(self, callback):
+        """
+        Set recording callback on this timeline and its animations.
+
+        Parameters
+        ----------
+        callback : callable or None
+            Function used to record this timeline, or None to clear it.
+        """
+        self._record_callback = callback
+        for animation in self._animations:
+            animation._set_record_callback(callback)
 
     def update_duration(self):
         """
@@ -326,145 +330,6 @@ class Timeline:
         """
         return self.playback_panel is not None
 
-    @warn_on_args_to_kwargs()
-    def record(
-        self,
-        *,
-        fname=None,
-        fps=30,
-        speed=1.0,
-        size=(900, 768),
-        order_transparent=True,
-        multi_samples=8,
-        max_peels=4,
-        show_panel=False,
-    ):
-        """
-        Record the animation to a file or return frames.
-
-        Parameters
-        ----------
-        fname : str, optional
-            The output filename. Creates a GIF if name ends with '.gif', or an MP4
-            video if name ends with '.mp4'. If None, only returns the frames array.
-            Default is None.
-        fps : int, optional
-            The number of frames per second to record. Default is 30.
-        speed : float, optional
-            The playback speed multiplier for the recording. Default is 1.0.
-        size : tuple of int, optional
-            The dimensions of the recording as (width, height). Default is (900, 768).
-        order_transparent : bool, optional
-            Whether to use depth peeling to sort transparent objects. If True,
-            also enables anti-aliasing. Default is True.
-        multi_samples : int, optional
-            Number of samples for anti-aliasing. Use 0 for no anti-aliasing.
-            Default is 8.
-        max_peels : int, optional
-            Maximum number of peels for depth peeling. Default is 4.
-        show_panel : bool, optional
-            Controls whether to show the playback panel (if True) or hide it
-            (if False) in the recording. Default is False.
-
-        Returns
-        -------
-        list
-            List of frames as PIL Image objects.
-
-        Notes
-        -----
-        It's recommended to use 30 or 50 FPS when recording to a GIF file.
-        To save as MP4, OpenCV must be installed.
-        """
-        ext = get_extension(fname)
-
-        mp4 = ext == "mp4"
-
-        if mp4:
-            try:
-                import cv2
-            except ImportError as err:
-                raise ImportError(
-                    "OpenCV must be installed in order to save as MP4 video."
-                ) from err
-            fourcc = cv2.VideoWriter.fourcc(*"mp4v")
-            out = cv2.VideoWriter(fname, fourcc, fps, size)
-
-        duration = self.duration
-        step = speed / fps
-        frames = []
-        t = 0
-        scene = self._scene
-        if not scene:
-            scene = window.Scene()
-            scene.add(self)
-
-        _hide_panel = False
-        if self.has_playback_panel and not show_panel:
-            self.playback_panel.hide()
-            _hide_panel = True
-        render_window = RenderWindow()
-        render_window.SetOffScreenRendering(1)
-        render_window.AddRenderer(scene)
-        render_window.SetSize(*size)
-
-        if order_transparent:
-            window.antialiasing(scene, render_window, multi_samples, max_peels, 0)
-
-        render_window = RenderWindow()
-        render_window.SetOffScreenRendering(1)
-        render_window.AddRenderer(scene)
-        render_window.SetSize(*size)
-
-        if order_transparent:
-            window.antialiasing(scene, render_window, multi_samples, max_peels, 0)
-
-        window_to_image_filter = WindowToImageFilter()
-
-        print("Recording...")
-        while t < duration:
-            self.seek(t)
-            render_window.Render()
-            window_to_image_filter.SetInput(render_window)
-            window_to_image_filter.Update()
-            window_to_image_filter.Modified()
-            vtk_image = window_to_image_filter.GetOutput()
-            h, w, _ = vtk_image.GetDimensions()
-            vtk_array = vtk_image.GetPointData().GetScalars()
-            components = vtk_array.GetNumberOfComponents()
-            snap = numpy_support.vtk_to_numpy(vtk_array).reshape(w, h, components)
-            corrected_snap = np.flipud(snap)
-
-            if mp4:
-                cv_img = cv2.cvtColor(corrected_snap, cv2.COLOR_RGB2BGR)
-                out.write(cv_img)
-            else:
-                pillow_snap = Image.fromarray(corrected_snap)
-                frames.append(pillow_snap)
-
-            t += step
-
-        print("Saving...")
-
-        if fname is None:
-            return frames
-
-        if mp4:
-            out.release()
-        else:
-            frames[0].save(
-                fname,
-                append_images=frames[1:],
-                loop=0,
-                duration=1000 / fps,
-                save_all=True,
-            )
-
-        if _hide_panel:
-            self.playback_panel.show()
-
-        return frames
-
     def add_animation(self, animation):
         """
         Add Animation or list of Animations to the Timeline.
@@ -483,7 +348,10 @@ class Timeline:
         if isinstance(animation, (list, tuple)):
             [self.add_animation(anim) for anim in animation]
         elif isinstance(animation, Animation):
-            animation._timeline = self
+            if animation in self._animations:
+                return
+            animation.timeline = self
+            animation._set_record_callback(self._record_callback)
             self._animations.append(animation)
             self.update_duration()
         else:
@@ -531,6 +399,44 @@ class Timeline:
         if self.playing or force:
             [anim.update_animation(time=time) for anim in self._animations]
 
+    def record(self, fname, *, fps=30, speed=1.0, size=None, return_frames=False):
+        """
+        Record the timeline to an mp4 file.
+
+        Parameters
+        ----------
+        fname : str
+            The output file name. The ``.mp4`` extension is added when missing.
+        fps : int, optional
+            The number of frames per second in the output video.
+        speed : float, optional
+            Playback speed multiplier used while sampling the timeline.
+        size : tuple[int, int], optional
+            The offscreen render size as ``(width, height)``. If None, the
+            attached show manager size is used.
+        return_frames : bool, optional
+            If True, return the recorded RGBA frames. Defaults to False to avoid
+            storing long recordings in memory.
+
+        Returns
+        -------
+        list[ndarray] or None
+            The recorded RGBA frames when ``return_frames`` is True, otherwise None.
+        """
+        if self._record_callback is None:
+            raise RuntimeError(
+                "Timeline recording requires a ShowManager. Add the timeline "
+                "to a ShowManager or call show_manager.record_animation(...)."
+            )
+        return self._record_callback(
+            self,
+            fname,
+            fps=fps,
+            speed=speed,
+            size=size,
+            return_frames=return_frames,
+        )
+
     def add_to_scene(self, scene):
         """
         Add Timeline and all of its Animations to the scene.
@@ -542,7 +448,7 @@ class Timeline:
         """
         self._scene = scene
         if self.has_playback_panel:
-            self.playback_panel.add_to_scene(scene)
+            scene.add(self.playback_panel)
         [animation.add_to_scene(scene) for animation in self._animations]
 
     def remove_from_scene(self, scene):
@@ -556,5 +462,5 @@ class Timeline:
         """
         self._scene = None
         if self.has_playback_panel:
-            scene.rm(*tuple(self.playback_panel.actors))
+            scene.remove(self.playback_panel)
         [animation.remove_from_scene(scene) for animation in self._animations]

@@ -117,10 +117,12 @@ class UI(object, metaclass=abc.ABCMeta):
         self.on_middle_mouse_double_clicked = lambda event: None
         self.on_middle_mouse_button_dragged = lambda event: None
         self.on_key_press = lambda event: None
+        self.on_key_release = lambda event: None
         self.on_hover = lambda event: None
         self.on_dishover = lambda event: None
         self.on_focus = lambda event: None
         self.on_blur = lambda event: None
+        self.on_wheel = lambda event: None
 
     @abc.abstractmethod
     def _setup(self):
@@ -355,9 +357,11 @@ class UI(object, metaclass=abc.ABCMeta):
         actor.add_event_handler(self.mouse_button_down_callback, EventType.POINTER_DOWN)
         actor.add_event_handler(self.mouse_button_up_callback, EventType.POINTER_UP)
         actor.add_event_handler(self.mouse_move_callback, EventType.POINTER_DRAG)
-        actor.add_event_handler(self.key_press_callback, EventType.KEY_UP)
+        actor.add_event_handler(self.key_press_callback, EventType.KEY_DOWN)
+        actor.add_event_handler(self.key_release_callback, EventType.KEY_UP)
         actor.add_event_handler(self.pointer_enter_callback, EventType.POINTER_ENTER)
         actor.add_event_handler(self.pointer_leave_callback, EventType.POINTER_LEAVE)
+        actor.add_event_handler(self.wheel_callback, EventType.WHEEL)
 
     def mouse_button_down_callback(self, event):
         """
@@ -408,6 +412,7 @@ class UI(object, metaclass=abc.ABCMeta):
                 and UIContext.active_ui is not UIContext.hot_ui
             ):
                 UIContext.active_ui.on_blur(event)
+                UIContext.active_ui = None
             UIContext.active_ui = UIContext.hot_ui
             UIContext.active_ui.on_focus(event)
 
@@ -521,7 +526,38 @@ class UI(object, metaclass=abc.ABCMeta):
         event : KeyboardEvent
             The PyGfx keyboard event object.
         """
-        self.on_key_press(event)
+        if UIContext.active_ui is not None:
+            UIContext.active_ui.on_key_press(event)
+        else:
+            self.on_key_press(event)
+
+    def key_release_callback(self, event):
+        """
+        Handle key release event.
+
+        Parameters
+        ----------
+        event : KeyboardEvent
+            The PyGfx keyboard event object.
+        """
+        if UIContext.active_ui is not None:
+            UIContext.active_ui.on_key_release(event)
+        else:
+            self.on_key_release(event)
+
+    def wheel_callback(self, event):
+        """
+        Handle wheel event.
+
+        Parameters
+        ----------
+        event : WheelEvent
+            The PyGfx wheel event object.
+        """
+        if UIContext.hot_ui is not None:
+            UIContext.hot_ui.on_wheel(event)
+        else:
+            self.on_wheel(event)
 
     def pointer_enter_callback(self, event):
         """
@@ -670,10 +706,8 @@ class Rectangle2D(UI):
         size : (float, float)
             Rectangle size (width, height) in pixels.
         """
-        self._size = list(size)
-        w, h = size
-        w = w if w != 0 else 1
-        h = h if h != 0 else 1
+        w = max(size[0], 1)
+        h = max(size[1], 1)
         self.actor.geometry = plane_geometry(width=w, height=h)
         self._update_actors_position()
 
@@ -980,6 +1014,7 @@ class TextBlock2D(UI):
         self._message = text
         self._dynamic_bbox = dynamic_bbox
         self._bg_size = size
+        self._shadow = False
 
         self._last_rendered_size = (0, 0)
 
@@ -1008,6 +1043,41 @@ class TextBlock2D(UI):
         self.background = Rectangle2D()
         self._children.append(self.background)
         self.handle_events(self.actor)
+
+        self.background.on_left_mouse_button_pressed = lambda event: (
+            self.on_left_mouse_button_pressed(event)
+        )
+        self.background.on_key_press = lambda event: self.on_key_press(event)
+        self.background.on_key_release = lambda event: self.on_key_release(event)
+
+        def _bg_hover(event):
+            """
+            Redirect hot_ui to this TextBlock2D on background hover.
+
+            Parameters
+            ----------
+            event : PointerEvent
+                The PyGfx pointer event object.
+            """
+            UIContext.hot_ui = self
+            self.on_hover(event)
+
+        def _bg_dishover(event):
+            """
+            Clear hot_ui on background pointer-leave.
+
+            Parameters
+            ----------
+            event : PointerEvent
+                The PyGfx pointer event object.
+            """
+            if UIContext.hot_ui is self:
+                UIContext.hot_ui = None
+            self.on_dishover(event)
+
+        self.background.on_hover = _bg_hover
+        self.background.on_dishover = _bg_dishover
+        self.background.on_wheel = lambda event: self.on_wheel(event)
 
     def resize(self, size):
         """
@@ -1073,14 +1143,41 @@ class TextBlock2D(UI):
         str
             The formatted markdown string.
         """
-        affix_char = ""
-        if self.bold:
-            affix_char = "**"
-        elif self.italic:
-            affix_char = "*"
+        if not self.bold and not self.italic:
+            return text
+
+        def _wrap_word(word):
+            """
+            Wrap a single word with the appropriate markdown markers.
+
+            Parameters
+            ----------
+            word : str
+                The word to wrap with markdown markers.
+
+            Returns
+            -------
+            str
+                The word wrapped with bold/italic markdown markers.
+            """
+            if not word.strip():
+                return word
+            if self.bold and self.italic:
+                zws = "\u200b"
+                return f"*{zws}**{word}**{zws}*"
+            if self.bold:
+                return f"**{word}**"
+            return f"*{word}*"
 
         lines = text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
-        formatted_lines = [f"{affix_char}{line}{affix_char}" for line in lines]
+        formatted_lines = []
+        for line in lines:
+            if not line.strip():
+                formatted_lines.append(line)
+                continue
+            words = line.split(" ")
+            formatted_words = [_wrap_word(w) if w else w for w in words]
+            formatted_lines.append(" ".join(formatted_words))
 
         return "\n".join(formatted_lines)
 
@@ -1260,6 +1357,30 @@ class TextBlock2D(UI):
             Italicises text if True.
         """
         self._italic = flag
+
+    @property
+    def shadow(self):
+        """
+        Return whether the text has a shadow.
+
+        Returns
+        -------
+        bool
+            True if text has a shadow.
+        """
+        return self._shadow
+
+    @shadow.setter
+    def shadow(self, flag):
+        """
+        Set text shadow.
+
+        Parameters
+        ----------
+        flag : bool
+            True if text has a shadow.
+        """
+        self._shadow = flag
 
     @property
     def color(self):

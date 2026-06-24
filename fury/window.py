@@ -6,12 +6,12 @@ windows using PyGfx. It includes classes and functions for handling
 scenes, cameras, controllers, and rendering multiple screens.
 """
 
-import asyncio
 from dataclasses import dataclass
 from functools import reduce
 import logging
 import os
 import sys
+from typing import Iterable
 
 from PIL.Image import fromarray as image_from_array
 import numpy as np
@@ -19,6 +19,8 @@ from scipy import ndimage
 
 from fury.actor import Group
 from fury.actor.core import create_axes_helper
+from fury.animation.animation import Animation, CameraAnimation
+from fury.animation.timeline import Timeline
 from fury.io import load_image
 from fury.lib import (
     AmbientLight,
@@ -49,7 +51,16 @@ from fury.lib import (
     qcall_later,
     run,
 )
+from fury.optpkg import optional_package
 from fury.ui import UI, UIContext
+
+cv2, have_cv2, _ = optional_package(
+    "cv2",
+    trip_msg=(
+        "OpenCV has to be installed to record animations as mp4. "
+        "Install it with `pip install fury[optional]`."
+    ),
+)
 
 
 class Scene(GfxGroup):
@@ -689,6 +700,8 @@ class ShowManager:
         event handling.
         """
         self._size = size
+        if not title:
+            title = "FURY 2.0"
         self._title = title
         self._is_qt = False
         self._qt_app = qt_app
@@ -710,13 +723,15 @@ class ShowManager:
             EventType.RESIZE,
         )
         self.renderer.add_event_handler(
-            self._set_key_long_press_event, EventType.KEY_DOWN, EventType.KEY_UP
-        )
-        self.renderer.add_event_handler(
             self._register_drag,
             EventType.POINTER_DOWN,
             EventType.POINTER_UP,
             EventType.POINTER_MOVE,
+        )
+        self.renderer.add_event_handler(
+            self._handle_key_event,
+            EventType.KEY_DOWN,
+            EventType.KEY_UP,
         )
 
         self._total_screens = 0
@@ -725,6 +740,7 @@ class ShowManager:
         self._screen_setup(scene, camera, controller, camera_light)
         self.screens = self._create_screens()
         self._callbacks = {}
+        self._animations = []
 
         self._stats = None
         self._stats_initialized = False
@@ -734,7 +750,6 @@ class ShowManager:
             self.enable_imgui(imgui_draw_function=imgui_draw_function)
 
         self.enable_events = enable_events
-        self._key_long_press = None
         self._on_resize = lambda _size: None
         self._resize(self._size)
 
@@ -768,7 +783,7 @@ class ShowManager:
 
     def _register_drag(self, event):
         """
-        Register drag events for pointer interactions.
+        Handle global pointer events (drag) at the renderer level.
 
         Parameters
         ----------
@@ -786,6 +801,50 @@ class ShowManager:
             self._toggle_screen_controllers(disable=False)
         elif event.type == EventType.POINTER_MOVE and self._is_dragging:
             self._handle_drag(event)
+
+    def _handle_key_event(self, event):
+        """
+        Handle global keyboard events at the renderer level.
+
+        Parameters
+        ----------
+        event : KeyboardEvent
+            The PyGfx keyboard event object.
+        """
+        if not UIContext.active_ui:
+            return
+
+        if event.type == EventType.KEY_DOWN:
+            UIContext.active_ui.on_key_press(event)
+
+            self._repeat_key_event = event
+            call_later(0.6, self._do_key_repeat, event)
+
+        elif event.type == EventType.KEY_UP:
+            UIContext.active_ui.on_key_release(event)
+            repeat_event = getattr(self, "_repeat_key_event", None)
+            if repeat_event and repeat_event.key == event.key:
+                self._repeat_key_event = None
+
+    def _do_key_repeat(self, target_event):
+        """
+        Timer callback to repeatedly dispatch a held key.
+
+        Parameters
+        ----------
+        target_event : Event
+            The specific key down event that triggered this repeating timer.
+        """
+        if getattr(self, "_repeat_key_event", None) is not target_event:
+            return
+
+        if not UIContext.active_ui:
+            self._repeat_key_event = None
+            return
+
+        UIContext.active_ui.on_key_press(target_event)
+
+        call_later(0.05, self._do_key_repeat, target_event)
 
     def _screen_setup(self, scene, camera, controller, camera_light):
         """
@@ -920,36 +979,6 @@ class ShowManager:
         reposition_ui(self.screens)
         self.render()
 
-    async def _handle_key_long_press(self, event):
-        """
-        Handle long press events for key inputs.
-
-        Parameters
-        ----------
-        event : KeyEvent
-            The PyGfx key event object.
-        """
-        if self._key_long_press is not None:
-            await asyncio.sleep(0.05)
-            self.renderer.dispatch_event(event)
-
-    def _set_key_long_press_event(self, event):
-        """
-        Handle long press events for key inputs.
-
-        Parameters
-        ----------
-        event : KeyEvent
-            The PyGfx key event object.
-        """
-        if event.type == EventType.KEY_DOWN:
-            self._key_long_press = asyncio.create_task(
-                self._handle_key_long_press(event)
-            )
-        elif self._key_long_press is not None:
-            self._key_long_press.cancel()
-            self._key_long_press = None
-
     def _on_repeat_callback(self, func, time, name, *args):
         """
         Internal method to handle the timing and execution of callbacks.
@@ -1042,6 +1071,210 @@ class ShowManager:
     def cancel_resize_callback(self):
         """Cancel the window resize callback function."""
         self._on_resize = lambda _size: None
+
+    def _setup_camera_animations(self, animation, camera, *, force=False):
+        """
+        Recursively set camera on CameraAnimation objects if needed.
+
+        Parameters
+        ----------
+        animation : Animation or Timeline
+            Animation object to inspect for camera animations.
+        camera : pygfx.Camera
+            Camera to assign to camera animations.
+        force : bool, optional
+            If True, replace existing cameras and return previous values.
+
+        Returns
+        -------
+        list[tuple[CameraAnimation, Camera]]
+            Camera animations that were modified and their previous cameras.
+        """
+        camera_changes = []
+        if isinstance(animation, CameraAnimation) and (
+            force or animation.camera is None
+        ):
+            camera_changes.append((animation, animation.camera))
+            animation.camera = camera
+
+        for child_animation in getattr(animation, "_animations", []):
+            camera_changes.extend(
+                self._setup_camera_animations(child_animation, camera, force=force)
+            )
+        return camera_changes
+
+    def _update_animation(self, animation):
+        """
+        Update an animation or timeline and request a redraw.
+
+        Parameters
+        ----------
+        animation : Animation or Timeline
+            Animation object to update.
+        """
+        if isinstance(animation, Timeline):
+            animation.update()
+        else:
+            animation.update_animation()
+        self.render()
+
+    def add_animation(self, animation, *, update_rate=1 / 60):
+        """
+        Add an animation or timeline to the render update loop.
+
+        Parameters
+        ----------
+        animation : Animation or Timeline
+            The animation or timeline to add and update during rendering.
+        update_rate : float, optional
+            The time interval in seconds between updates. Default is 1/60.
+        """
+        if not isinstance(animation, (Animation, Timeline)):
+            raise TypeError("Expected an Animation or Timeline object.")
+
+        if animation in self._animations:
+            return
+
+        self._animations.append(animation)
+        animation._set_record_callback(self.record_animation)
+        if self.screens:
+            scene = self.screens[0].scene
+            animation.add_to_scene(scene)
+            self._setup_camera_animations(animation, self.screens[0].camera)
+            if isinstance(animation, Timeline):
+                animation.play()
+
+        callback_name = f"animation_{id(animation)}"
+        self.register_callback(
+            self._update_animation,
+            update_rate,
+            True,
+            callback_name,
+            animation,
+        )
+
+    def remove_animation(self, animation):
+        """
+        Remove an animation or timeline from the render update loop.
+
+        Parameters
+        ----------
+        animation : Animation or Timeline
+            Animation object to remove.
+        """
+        if animation not in self._animations:
+            return
+
+        self._animations.remove(animation)
+        self.cancel_callback(f"animation_{id(animation)}")
+        if animation._record_callback == self.record_animation:
+            animation._set_record_callback(None)
+        if self.screens:
+            animation.remove_from_scene(self.screens[0].scene)
+
+    def record_animation(
+        self, animation, fname, *, fps=30, speed=1.0, size=None, return_frames=False
+    ):
+        """
+        Record an animation or timeline to an mp4 file.
+
+        Parameters
+        ----------
+        animation : Animation or Timeline
+            The animation or timeline to record.
+        fname : str
+            The output file name. The ``.mp4`` extension is added when missing.
+        fps : int, optional
+            The number of frames per second in the output video.
+        speed : float, optional
+            Playback speed multiplier used while sampling the animation.
+        size : tuple[int, int], optional
+            The offscreen render size as ``(width, height)``. If None, the show
+            manager's current size is used.
+        return_frames : bool, optional
+            If True, return the recorded RGBA frames. Defaults to False to avoid
+            storing long recordings in memory.
+
+        Returns
+        -------
+        list[ndarray] or None
+            The recorded RGBA frames when ``return_frames`` is True, otherwise None.
+        """
+        if not isinstance(animation, (Animation, Timeline)):
+            raise TypeError("Expected an Animation or Timeline object.")
+        if fps <= 0:
+            raise ValueError("fps must be greater than 0.")
+        if speed <= 0:
+            raise ValueError("speed must be greater than 0.")
+        if not have_cv2:
+            raise ImportError(
+                "OpenCV has to be installed to record animations as mp4. "
+                "Install it with `pip install fury[optional]`."
+            )
+
+        fname = str(fname)
+        if not fname.endswith(".mp4"):
+            fname += ".mp4"
+
+        size = self._size if size is None else size
+        scene = getattr(animation, "_scene", None)
+        if scene is None and self.screens:
+            scene = self.screens[0].scene
+
+        show_m = ShowManager(
+            scene=scene, size=size, window_type="offscreen", pixel_ratio=1.0
+        )
+        if getattr(animation, "_scene", None) is None:
+            animation.add_to_scene(show_m.screens[0].scene)
+        camera_changes = self._setup_camera_animations(
+            animation, show_m.screens[0].camera, force=True
+        )
+
+        duration = animation.update_duration()
+        timestamps = [0.0]
+        if duration > 0:
+            timestamps = np.arange(0, duration, speed / fps).tolist()
+
+        frames = [] if return_frames else None
+        writer = None
+        timeline_state = None
+        if isinstance(animation, Timeline):
+            timeline_state = (animation.playing, animation.current_timestamp)
+            if animation.playing:
+                animation.pause()
+        try:
+            writer = cv2.VideoWriter(
+                fname,
+                cv2.VideoWriter_fourcc(*"mp4v"),
+                fps,
+                size,
+            )
+            if not writer.isOpened():
+                raise RuntimeError(f"Could not open video writer for {fname!r}.")
+
+            for timestamp in timestamps:
+                if isinstance(animation, Timeline):
+                    animation.seek(timestamp)
+                else:
+                    animation.update_animation(time=timestamp)
+                render_screens(show_m.renderer, show_m.screens)
+                frame = np.asarray(show_m.renderer.snapshot())
+                if return_frames:
+                    frames.append(frame)
+                writer.write(cv2.cvtColor(frame[:, :, :3], cv2.COLOR_RGB2BGR))
+        finally:
+            if writer is not None:
+                writer.release()
+            for camera_animation, camera in camera_changes:
+                camera_animation.camera = camera
+            if timeline_state is not None:
+                was_playing, current_timestamp = timeline_state
+                animation.seek(current_timestamp)
+                if was_playing:
+                    animation.play()
+            show_m.window.close()
+
+        return frames
 
     def enable_imgui(self, *, imgui_draw_function=None):
         """
@@ -1643,7 +1876,12 @@ def analyze_snapshot(im, *, colors=None, find_objects=True, strel=None):
     return report
 
 
-def show(actors, *, window_type="default"):
+def show(
+    actors,
+    *,
+    window_type="default",
+    title="FURY 2.0",
+):
     """
     Display one or more actors in a new window quickly.
 
@@ -1656,9 +1894,14 @@ def show(actors, *, window_type="default"):
         The PyGfx actor(s) to display.
     window_type : str, optional
         The type of window canvas to create ('default', 'glfw', 'qt',
-        'jupyter', 'offscreen'). Defaults to 'default'.
+        'jupyter', 'offscreen').
+    title : str, optional
+        The title for the window.
     """
     scene = Scene()
-    scene.add(*actors)
-    show_m = ShowManager(scene=scene, window_type=window_type)
+    if isinstance(actors, Iterable):
+        scene.add(*actors)
+    else:
+        scene.add(actors)
+    show_m = ShowManager(scene=scene, window_type=window_type, title=title)
     show_m.start()

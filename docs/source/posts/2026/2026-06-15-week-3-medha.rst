@@ -1,0 +1,72 @@
+Week 3: Expanding UI Components and Automated GIF Recording
+===========================================================
+
+.. post:: June 15, 2026
+   :author: Medha Bhardwaj
+   :tags: google
+   :category: gsoc
+
+During the third week I dedicated most of my time to expanding the library's UI components and tackling the automated GIF recording support for animation examples.
+
+Overview
+--------
+
+This week, I worked on the following pull requests:
+
+UI Components Development
+-------------------------
+
+- *Introduces Rangeslider and LineDoubleSlider2D* (`#1241 <https://github.com/fury-gl/fury/pull/1241>`_)
+  I introduced the ``Rangeslider`` and ``LineDoubleSlider2D`` UI elements to FURY. These new sliders make it much easier to define and manipulate range-based values interactively inside a scene.
+
+  .. image:: https://github.com/user-attachments/assets/301b72a1-23ae-4860-9896-415565c0d948
+     :align: center
+     :alt: Rangeslider Demonstration
+
+- *ImageContainer2D Introduced* (`#1239 <https://github.com/fury-gl/fury/pull/1239>`_)
+  Following the slider additions, I also introduced the ``ImageContainer2D``. This component allows straightforward visualization of 2D images directly inside the FURY user interface.
+
+  .. image:: https://github.com/user-attachments/assets/ddb614f2-c863-4073-8423-80e347ba02d9
+     :align: center
+     :alt: ImageContainer2D Demonstration
+
+Automated GIF Recording
+-----------------------
+
+- *Add automated GIF recording support for animation examples* (`#1243 <https://github.com/fury-gl/fury/pull/1243>`_)
+  My main focus this week was implementing automated GIF recording for our animation examples. Generating previews for animations is vital, and this feature seamlessly records the animation window to produce lightweight demonstrations.
+
+  Below are some demonstrations of the animations recorded using the new feature:
+
+  .. raw:: html
+
+     <video controls width="100%" style="margin-bottom: 20px;">
+       <source src="https://github.com/user-attachments/assets/53887b2c-fa9b-4f22-a053-89478b1ef202" type="video/webm">
+       Your browser does not support the video tag.
+     </video>
+
+     <video controls width="100%">
+       <source src="https://github.com/user-attachments/assets/c15080b5-9019-479f-810e-cd3227cdf176" type="video/webm">
+       Your browser does not support the video tag.
+     </video>
+
+What I Learned
+--------------
+
+This week provided a great opportunity to dive deeper into FURY's documentation pipeline. I learned a lot about how the image scraper actually works behind the scenes to capture scene frames via ``self.renderer.snapshot()``. To implement the automated GIF recording, I utilized the ``ShowManager``'s callback system (``self._callbacks``) to trigger frame captures sequentially during the animation loop. This ensures that we can extract frames accurately as the animation plays out.
+
+Additionally, I realized that offscreen rendering is incredibly versatile and is used for many different things across the library, not just for building the documentation. Finally, to seamlessly integrate this new recording functionality, we introduced a new environment variable, ``FURY_RECORD_ANIMATION``, which, when used alongside ``FURY_OFFSCREEN``, effortlessly enables GIF recording across our animation examples.
+
+Next Week
+---------
+
+In the upcoming week, I plan to:
+
+- Begin working on the new website interface for FURY.
+- Begin work on other UI components like ListBox2D and Card2D.
+
+Connect with Me
+---------------
+
+- GitHub: `medha-14 <https://github.com/medha-14>`_
+- LinkedIn: `Medha Bhardwaj <https://www.linkedin.com/in/medhabhardwaj/>`_

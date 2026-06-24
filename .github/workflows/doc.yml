@@ -27,7 +27,7 @@ jobs:
     env:
       FURY_OFFSCREEN: true
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 0
     - name: Set up Python ${{ matrix.python-version }}
@@ -50,7 +50,7 @@ jobs:
         cd docs
         make -C . html-no-examples SPHINXOPTS="-W --keep-going"
     - name: Deploy Devs
-      if: success() && github.ref == 'refs/heads/master'
+      if: success() && github.ref == 'refs/heads/master' && github.repository == 'fury-gl/fury'
       uses: JamesIves/github-pages-deploy-action@v4
       with:
         ssh-key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
