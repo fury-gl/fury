@@ -649,8 +649,10 @@ class ShowManager:
         The size (width, height) of the window in pixels.
     window_type : str
         The type of window canvas to create ('default', 'qt', 'jupyter', 'offscreen').
-    pixel_ratio : float
-        The ratio between render buffer and display buffer pixels.
+    pixel_ratio : float, optional
+        The ratio between render buffer and display buffer pixels. If None,
+        the display's native ratio is used. Avoid fractional values,
+        which resample screen-space text and soften its strokes.
     camera_light : bool
         Whether to attach a DirectionalLight to the camera.
     screen_config : list
@@ -682,7 +684,7 @@ class ShowManager:
         title="FURY 2.0",
         size=(800, 800),
         window_type="default",
-        pixel_ratio=1.25,
+        pixel_ratio=None,
         camera_light=True,
         screen_config=None,
         enable_events=True,
@@ -717,7 +719,8 @@ class ShowManager:
         if renderer is None:
             renderer = Renderer(self.window)
         self.renderer = renderer
-        self.renderer.pixel_ratio = pixel_ratio
+        if pixel_ratio is not None:
+            self.renderer.pixel_ratio = pixel_ratio
         self.renderer.add_event_handler(
             lambda event: self._resize(size=(event.width, event.height)),
             EventType.RESIZE,
