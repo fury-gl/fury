@@ -32,7 +32,6 @@
     width: 100%;
     position: relative;
     overflow: hidden;
-    background: #faf5f2;
     color: var(--pst-color-text);
 }
 
@@ -274,13 +273,15 @@ html[data-theme="dark"] .hero-title .fury-red {
 
 /* --- DARK MODE COMPONENT OVERRIDES --- */
 
-/* Hero container is transparent in dark mode — background comes from global html rule */
-html[data-theme="dark"] .hero-container {
+/* Hero container is transparent — background comes from global html rule */
+html[data-theme="dark"] .hero-container,
+html[data-theme="light"] .hero-container {
     background: transparent;
 }
 
 /* Hide hero's own glow pseudo-element — global html rule provides the glow */
-html[data-theme="dark"] .hero-container::before {
+html[data-theme="dark"] .hero-container::before,
+html[data-theme="light"] .hero-container::before {
     display: none;
 }
 
@@ -404,7 +405,6 @@ html[data-theme="dark"] .code-editor__copy-button.is-copy-success {
 /* --- FEATURES COMPONENT --- */
 .fury-features {
     width: 100%;
-    background: #faf5f2; /* Light mode only background */
     color: #1c1919;
     padding: 0 0 6rem 0; /* Removing top padding entirely to keep it flush, but using overflow to trap margins */
     margin: 0;
@@ -537,7 +537,8 @@ html[data-theme="dark"] .code-editor__copy-button.is-copy-success {
 
 /* --- DARK MODE OVERRIDES FOR FEATURES AND HERO VISUALS --- */
 /* Transparent so global html grid/glow shows through */
-html[data-theme="dark"] .fury-features {
+html[data-theme="dark"] .fury-features,
+html[data-theme="light"] .fury-features {
     background: transparent;
 }
 
@@ -576,7 +577,6 @@ html[data-theme="dark"] .fury-feature-card__caption {
 /* --- SCIENCES COMPONENT --- */
 .fury-sciences {
     width: 100%;
-    background: #faf5f2; /* Match the features/hero background exactly */
     color: #1c1919;
     padding: 6rem 0;
     margin: 0;
@@ -809,7 +809,8 @@ html[data-theme="dark"] .fury-feature-card__caption {
 
 /* --- DARK MODE OVERRIDES FOR SCIENCES --- */
 /* Transparent so global html grid/glow shows through */
-html[data-theme="dark"] .fury-sciences {
+html[data-theme="dark"] .fury-sciences,
+html[data-theme="light"] .fury-sciences {
     background: transparent;
 }
 
@@ -886,7 +887,6 @@ html[data-theme="dark"] .fury-sciences__image-wrapper {
 /* --- EXAMPLES COMPONENT --- */
 .fury-examples {
     width: 100%;
-    background: #faf5f2; /* Light mode */
     color: #1c1919;
     padding: 6rem 0;
     margin: 0;
@@ -990,7 +990,8 @@ html[data-theme="dark"] .fury-sciences__image-wrapper {
 
 /* DARK MODE EXAMPLES */
 /* Transparent so global html grid/glow shows through */
-html[data-theme="dark"] .fury-examples {
+html[data-theme="dark"] .fury-examples,
+html[data-theme="light"] .fury-examples {
     background: transparent;
 }
 
@@ -1182,7 +1183,6 @@ html[data-theme="dark"] .fury-example-card__title {
 /* --- COMMUNITY COMPONENT --- */
 .fury-community {
     width: 100%;
-    background: #faf5f2;
     color: #1c1919;
     padding: 6rem 0;
     margin: 0;
@@ -1327,7 +1327,8 @@ html[data-theme="dark"] .fury-example-card__title {
 
 /* Dark mode overrides */
 /* Transparent so global html grid/glow shows through */
-html[data-theme="dark"] .fury-community {
+html[data-theme="dark"] .fury-community,
+html[data-theme="light"] .fury-community {
     background: transparent;
 }
 

@@ -34,9 +34,11 @@ html[data-theme="dark"] .bd-header .search-button__kbd-shortcut {
     padding: 0.6rem 1.5rem;
 }
 
-/* Light mode navbar */
+/* Light mode navbar (Clean Glassmorphism) */
 html[data-theme="light"] .bd-header.navbar {
-    background-color: #faf5f2 !important;
+    background-color: rgba(250, 245, 242, 0.85) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 html[data-theme="light"] .bd-header .navbar-brand,
@@ -55,10 +57,7 @@ html[data-theme="light"] .bd-header .navbar-btn {
     border-color: rgba(0,0,0,0.15) !important;
 }
 
-/* Dark mode navbar */
-html[data-theme="dark"] .bd-header.navbar {
-    background-color: transparent !important;
-}
+/* Dark mode navbar overrides are handled at the bottom of the file */
 
 html[data-theme="dark"] .bd-header .navbar-brand,
 html[data-theme="dark"] .bd-header .nav-link,
@@ -307,6 +306,22 @@ html[data-theme="dark"] {
     background-size: 900px 900px, 4.5rem 100%;
     background-position: top -50px right -50px, top left;
     background-repeat: no-repeat, repeat;
+    background-attachment: fixed;
+}
+
+/*
+ * Renders the global light mode background (cream + red glow + subtle grid).
+ * Just like dark mode, we force PyData's layout wrappers to be transparent
+ * so this premium gradient aesthetic is universally applied to all internal pages.
+ */
+html[data-theme="light"] {
+    --pst-color-background: transparent;
+
+    background-color: #faf5f2;
+    background-image: radial-gradient(circle, rgba(230,0,0,0.12) 0%, transparent 65%);
+    background-size: 900px 900px;
+    background-position: top -50px right -50px;
+    background-repeat: no-repeat;
     background-attachment: fixed;
 }
 
