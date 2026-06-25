@@ -564,3 +564,87 @@ def test_slider2d_base_logic():
     slider.on_change = on_change
     slider.value = 25
     assert hook_data["called"] is True
+
+
+def test_textblock2d_text_renders_above_background():
+    """
+    Text must draw on top of its own background.
+
+    The text actor and its background share the component's z_order, so they
+    are coplanar. The text is given a higher render_order so its anti-aliased
+    edges blend against the background instead of whatever lies behind the UI
+    (which produced ragged, clipped-looking glyphs). Anti-aliasing is also
+    enabled for smooth glyph edges.
+    """
+    tb = ui.TextBlock2D(
+        text="Above background",
+        size=(200, 100),
+        position=(50, 50),
+        bg_color=(1.0, 1.0, 1.0),
+        color=(0.0, 0.0, 0.0),
+    )
+
+    background_actor = tb.background.actors[0]
+    assert tb.actor.render_order > background_actor.render_order
+    assert tb.actor.material.aa is True
+
+
+def test_textblock2d_render_order_tracks_z_order():
+    """
+    render_order increases with z_order while text stays above its background.
+
+    Draw order is derived from z_order so overlapping components stack
+    predictably, with a fixed sub-order keeping a component's text above its
+    own background.
+    """
+    tb = ui.TextBlock2D(
+        text="Layered",
+        size=(200, 100),
+        position=(50, 50),
+        bg_color=(1.0, 1.0, 1.0),
+    )
+    background_actor = tb.background.actors[0]
+
+    low_text = tb.actor.render_order
+    low_bg = background_actor.render_order
+    assert low_text > low_bg
+
+    tb.z_order = 5
+    tb.update_bounding_box()
+
+    assert tb.actor.render_order > low_text
+    assert background_actor.render_order > low_bg
+    assert tb.actor.render_order > background_actor.render_order
+
+
+def test_textblock2d_solid_text_over_background_snapshot():
+    """
+    Black text on a white background renders as solid dark glyphs.
+
+    End-to-end guard for the coplanar draw order: over a red scene, the white
+    background fills the box and the black text on top is the only source of
+    near-black pixels, so its presence confirms the text composites over its
+    background rather than bleeding into the scene behind the UI.
+    """
+    tb = ui.TextBlock2D(
+        text="Solid",
+        font_size=40,
+        size=(200, 60),
+        position=(50, 50),
+        bg_color=(1.0, 1.0, 1.0),
+        color=(0.0, 0.0, 0.0),
+    )
+
+    scene = window.Scene(background=(1.0, 0.0, 0.0, 1.0))
+    scene.add(tb)
+
+    fname = "textblock_solid_over_bg.png"
+    window.snapshot(scene=scene, fname=fname)
+
+    img_array = np.array(Image.open(fname))[:, :, :3]
+
+    white_box = np.all(img_array > 200, axis=2).sum()
+    dark_text = np.all(img_array < 40, axis=2).sum()
+
+    assert white_box > 0
+    assert dark_text > 0
