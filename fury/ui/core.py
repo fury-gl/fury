@@ -5,6 +5,7 @@ import abc
 import numpy as np
 
 from fury.actor import Text, create_mesh
+from fury.colormap import normalize_colors
 from fury.geometry import buffer_to_geometry
 from fury.lib import (
     EventType,
@@ -607,8 +608,8 @@ class Rectangle2D(UI):
         The size of the rectangle (width, height) in pixels.
     position : (float, float)
         Coordinates (x, y) of the lower-left corner of the rectangle.
-    color : (float, float, float)
-        Must take values in [0, 1].
+    color : str, tuple, list or ndarray
+        A hex string ("#FF0000"), RGB(A) in [0, 1], or RGB(A) in [0, 255].
     opacity : float
         Must take values in [0, 1].
     """
@@ -748,10 +749,12 @@ class Rectangle2D(UI):
 
         Parameters
         ----------
-        color : (float, float, float)
-            RGB. Must take values in [0, 1].
+        color : str, tuple, list or ndarray
+            A hex string (``"#FF0000"``), RGB(A) values in [0, 1], or
+            RGB(A) values in [0, 255]. See :func:`normalize_colors`.
         """
-        self.actor.material.color = np.array([*color, 1.0])
+        color = normalize_colors(color)[0]
+        self.actor.material.color = np.array([*color[:3], 1.0])
 
     @property
     def opacity(self):
@@ -790,8 +793,8 @@ class Disk2D(UI):
         Inner radius of the disk.
     center : (float, float), optional
         Coordinates (x, y) of the center of the disk.
-    color : (float, float, float), optional
-        Must take values in [0, 1].
+    color : str, tuple, list or ndarray, optional
+        A hex string ("#FF0000"), RGB(A) in [0, 1], or RGB(A) in [0, 255].
     opacity : float, optional
         Must take values in [0, 1].
     """
@@ -881,10 +884,12 @@ class Disk2D(UI):
 
         Parameters
         ----------
-        color : (float, float, float)
-            RGB. Must take values in [0, 1].
+        color : str, tuple, list or ndarray
+            A hex string (``"#FF0000"``), RGB(A) values in [0, 1], or
+            RGB(A) values in [0, 255]. See :func:`normalize_colors`.
         """
-        self.actor.material.color = np.array([*color, 1.0])
+        color = normalize_colors(color)[0]
+        self.actor.material.color = np.array([*color[:3], 1.0])
 
     @property
     def opacity(self):
@@ -995,10 +1000,12 @@ class TextBlock2D(UI):
         If True, makes text italicized.
     size : (int, int), optional
         The (width, height) in pixels for the text bounding box.
-    color : (float, float, float), optional
-        RGB color for the text (0-1).
-    bg_color : (float, float, float), optional
-        RGB color for the background (0-1). If None, no background is drawn.
+    color : str, tuple, list or ndarray, optional
+        Text color. A hex string ("#FF0000"), RGB(A) in [0, 1], or RGB(A) in
+        [0, 255].
+    bg_color : str, tuple, list or ndarray, optional
+        Background color, same formats as ``color``. If None, no background
+        is drawn.
     position : (float, float), optional
         Absolute coordinates (x, y) for placement.
     dynamic_bbox : bool, optional
@@ -1414,12 +1421,15 @@ class TextBlock2D(UI):
 
         Parameters
         ----------
-        color : (float, float, float)
-            RGB: Values must be between 0-1.
+        color : str, tuple, list or ndarray
+            A hex string (``"#FF0000"``), RGB(A) values in [0, 1], or
+            RGB(A) values in [0, 255]. ``None`` defaults to white.
+            See :func:`normalize_colors`.
         """
         if color is None:
             color = (1, 1, 1)
-        self.actor.material.color = np.array([*color, 1.0])
+        color = normalize_colors(color)[0]
+        self.actor.material.color = np.array([*color[:3], 1.0])
 
     @property
     def background_color(self):
@@ -1443,8 +1453,9 @@ class TextBlock2D(UI):
 
         Parameters
         ----------
-        color : (float, float, float) or None
-            RGB values (0-1). If None, the background is removed.
+        color : str, tuple, list, ndarray or None
+            A hex string ("#FF0000"), RGB(A) in [0, 1], or RGB(A) in [0, 255].
+            If None, the background is removed.
         """
         if color is None:
             # Remove background.

@@ -21,14 +21,14 @@ class Panel2D(UI):
         Size (width, height) in pixels of the panel.
     position : (float, float)
         Absolute coordinates (x, y) of the lower-left corner of the panel.
-    color : (float, float, float)
-        Must take values in [0, 1].
+    color : str, tuple, list or ndarray
+        A hex string ("#FF0000"), RGB(A) in [0, 1], or RGB(A) in [0, 255].
     opacity : float
         Must take values in [0, 1].
     align : [left, right]
         Alignment of the panel with respect to the overall screen.
-    border_color : (float, float, float), optional
-        RGB color of the border. Must take values in [0, 1].
+    border_color : str, tuple, list or ndarray, optional
+        Border color, same formats as ``color``.
     border_width : float, optional
         Width of the border.
     has_border : bool, optional
@@ -212,8 +212,9 @@ class Panel2D(UI):
 
         Parameters
         ----------
-        color : (float, float, float)
-            New RGB color of the panel background. Must take values in [0, 1].
+        color : str, tuple, list or ndarray
+            New background color. A hex string ("#FF0000"), RGB(A) in [0, 1],
+            or RGB(A) in [0, 255].
         """
         self.background.color = color
 
@@ -424,7 +425,9 @@ class Panel2D(UI):
         Parameters
         ----------
         side_color : Iterable
-            Iterable `[side, color]` containing the side (str) and color (RGB tuple).
+            Iterable `[side, color]` containing the side (str) and the color.
+            The color accepts a hex string ("#FF0000"), RGB(A) in [0, 1], or
+            RGB(A) in [0, 255].
         """
         side, color = side_color
 
@@ -509,8 +512,9 @@ class TabPanel2D(UI):
         Width and height in pixels of the tab header.
     title : str, optional
         Initial text displayed in the tab header.
-    color : (float, float, float), optional
-        RGB color of the tab header background. Values must be in [0, 1].
+    color : str, tuple, list or ndarray, optional
+        Tab header background color. A hex string ("#FF0000"), RGB(A) in
+        [0, 1], or RGB(A) in [0, 255].
     content_size : (int, int), optional
         Width and height in pixels of the content panel. If None, ``size`` is
         used.
@@ -625,9 +629,9 @@ class TabPanel2D(UI):
 
         Parameters
         ----------
-        color : (float, float, float)
-            New RGB color of the tab header background. Values must be in
-            [0, 1].
+        color : str, tuple, list or ndarray
+            New tab header background color. A hex string ("#FF0000"), RGB(A)
+            in [0, 1], or RGB(A) in [0, 255].
         """
         self.panel.color = color
 
@@ -699,8 +703,9 @@ class TabPanel2D(UI):
 
         Parameters
         ----------
-        color : (float, float, float)
-            New RGB color of the tab title. Values must be in [0, 1].
+        color : str, tuple, list or ndarray
+            New tab title color. A hex string ("#FF0000"), RGB(A) in [0, 1],
+            or RGB(A) in [0, 255].
         """
         self.text_block.color = color
 
@@ -822,10 +827,11 @@ class TabUI(UI):
     tab_titles : list of str, optional
         Titles used to create tabs during initialization. If None, one tab with
         the default title is created.
-    active_color : (float, float, float), optional
-        RGB color of the active tab header. Values must be in [0, 1].
-    inactive_color : (float, float, float), optional
-        RGB color of inactive tab headers. Values must be in [0, 1].
+    active_color : str, tuple, list or ndarray, optional
+        Color of the active tab header. A hex string ("#FF0000"), RGB(A) in
+        [0, 1], or RGB(A) in [0, 255].
+    inactive_color : str, tuple, list or ndarray, optional
+        Color of inactive tab headers, same formats as ``active_color``.
     font_size : int, optional
         Font size used by tab titles.
     draggable : bool, optional
