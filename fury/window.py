@@ -730,6 +730,7 @@ class ShowManager:
             EventType.POINTER_DOWN,
             EventType.POINTER_UP,
             EventType.POINTER_MOVE,
+            EventType.WHEEL,
         )
         self.renderer.add_event_handler(
             self._handle_key_event,
@@ -804,6 +805,9 @@ class ShowManager:
             self._toggle_screen_controllers(disable=False)
         elif event.type == EventType.POINTER_MOVE and self._is_dragging:
             self._handle_drag(event)
+        elif event.type == EventType.WHEEL:
+            if UIContext.hot_ui:
+                event.stop_propagation()
 
     def _handle_key_event(self, event):
         """
