@@ -57,7 +57,6 @@ html[data-theme="light"] .bd-header .navbar-btn {
     border-color: rgba(0,0,0,0.15) !important;
 }
 
-/* Dark mode navbar overrides are handled at the bottom of the file */
 
 html[data-theme="dark"] .bd-header .navbar-brand,
 html[data-theme="dark"] .bd-header .nav-link,
@@ -291,13 +290,19 @@ html[data-theme="dark"] .fury-footer__joss a:hover {
 }
 
 /* --- GLOBAL THEME BACKGROUND --- */
-/*
- * Renders the global dark mode background (grid + radial glow) on the html root.
- * PyData's base background variable is forced transparent to ensure all semantic
- * layout wrappers (body, main, sidebars) inherit the global design seamlessly.
- */
 html[data-theme="dark"] {
+    --pst-color-primary: #ff4444;
+    --pst-color-secondary: #ff1a1a;
+    --pst-color-accent: #d6b85c;
+    --pst-color-info: #151111;
     --pst-color-background: transparent;
+
+    /* Sphinx-Gallery Button Overrides (Outlined Style) */
+    --sg-download-a-background-color: transparent;
+    --sg-download-a-background-image: none;
+    --sg-download-a-border-color: #ff4444;
+    --sg-download-a-color: #ff4444;
+    --sg-download-a-hover-background-color: rgba(255, 68, 68, 0.1);
 
     background-color: #0d0808;
     background-image:
@@ -309,13 +314,20 @@ html[data-theme="dark"] {
     background-attachment: fixed;
 }
 
-/*
- * Renders the global light mode background (cream + red glow + subtle grid).
- * Just like dark mode, we force PyData's layout wrappers to be transparent
- * so this premium gradient aesthetic is universally applied to all internal pages.
- */
+/* Light mode: cream base + red radial glow, fixed to viewport. */
 html[data-theme="light"] {
+    --pst-color-primary: #e60000;
+    --pst-color-secondary: #cc0000;
+    --pst-color-accent: #a88b32;
+    --pst-color-info: #faf5f2;
     --pst-color-background: transparent;
+
+    /* Sphinx-Gallery Button Overrides (Outlined Style) */
+    --sg-download-a-background-color: transparent;
+    --sg-download-a-background-image: none;
+    --sg-download-a-border-color: #e60000;
+    --sg-download-a-color: #e60000;
+    --sg-download-a-hover-background-color: rgba(230, 0, 0, 0.05);
 
     background-color: #faf5f2;
     background-image: radial-gradient(circle, rgba(230,0,0,0.12) 0%, transparent 65%);
@@ -325,14 +337,103 @@ html[data-theme="light"] {
     background-attachment: fixed;
 }
 
-/* 
- * Create a clean "glassmorphism" effect for the sticky header.
- * We keep it minimalistic to match the light mode header (no borders or drop shadows),
- * but use a semi-transparent background + blur so scrolling text remains hidden
- * while the global red glow and grid gently show through.
- */
+/* Dark navbar: glassmorphism blur over the dark background. */
 html[data-theme="dark"] .bd-header.navbar {
     background-color: rgba(13, 8, 8, 0.85) !important;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+}
+
+/* Scope FURY red inline-code style to article content only; sidebar nav links are unaffected. */
+html[data-theme="light"] .bd-article code.docutils.literal:not(.download),
+html[data-theme="light"] .bd-article code.xref:not(.download) {
+    color: #e60000;
+    background-color: rgba(230, 0, 0, 0.05);
+    border: 1px solid rgba(230, 0, 0, 0.15);
+}
+
+html[data-theme="dark"] .bd-article code.docutils.literal:not(.download),
+html[data-theme="dark"] .bd-article code.xref:not(.download) {
+    color: #ff4444;
+    background-color: rgba(255, 68, 68, 0.1);
+    border: 1px solid rgba(255, 68, 68, 0.2);
+}
+
+/* Reset PyData's code-badge styling on sidebar nav links so they render as plain text. */
+.bd-sidebar-primary li a code.literal,
+.bd-sidebar-primary li a code.xref,
+.bd-sidebar-primary li a code.docutils {
+    background-color: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    color: inherit !important;
+}
+
+/* --- CODE BLOCK OVERRIDES --- */
+/* PyData sets `pre { background: var(--pst-color-surface) }` globally, which covers our
+   custom div.highlight background. We override div.highlight and reset pre inside it. */
+html[data-theme="light"] div.highlight {
+    background-color: #fcfcfc !important;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 4px;
+}
+html[data-theme="light"] div.highlight pre {
+    background-color: transparent !important;
+    border: none !important;
+}
+
+html[data-theme="dark"] div.highlight {
+    background-color: #151111 !important;
+    border: 1px solid #332b2b !important;
+    border-radius: 4px;
+}
+html[data-theme="dark"] div.highlight pre {
+    background-color: transparent !important;
+    border: none !important;
+}
+
+
+/* --- SPHINX GALLERY DOWNLOAD BUTTON --- */
+div.sphx-glr-download a code.download {
+    color: inherit !important;
+}
+
+/* --- ADMONITION OVERRIDES --- */
+html[data-theme="light"] .admonition.note,
+html[data-theme="light"] .admonition.info {
+    border-color: #cc0000 !important;
+    background-color: #faf5f2 !important;
+}
+html[data-theme="light"] .admonition.note > .admonition-title,
+html[data-theme="light"] .admonition.info > .admonition-title {
+    background-color: rgba(230, 0, 0, 0.08) !important;
+    color: #e60000 !important;
+}
+html[data-theme="light"] .admonition.note > .admonition-title::before,
+html[data-theme="light"] .admonition.info > .admonition-title::before {
+    color: #e60000 !important;
+}
+
+html[data-theme="dark"] .admonition.note,
+html[data-theme="dark"] .admonition.info {
+    border-color: rgba(255, 68, 68, 0.4) !important;
+    background-color: #151111 !important;
+}
+html[data-theme="dark"] .admonition.note > .admonition-title,
+html[data-theme="dark"] .admonition.info > .admonition-title {
+    background-color: rgba(255, 68, 68, 0.1) !important;
+    color: #ff4444 !important;
+}
+html[data-theme="dark"] .admonition.note > .admonition-title::before,
+html[data-theme="dark"] .admonition.info > .admonition-title::before {
+    color: #ff4444 !important;
+}
+
+/* --- BACK TO TOP BUTTON --- */
+#pst-back-to-top,
+#pst-back-to-top * {
+    color: #ffffff !important;
 }
