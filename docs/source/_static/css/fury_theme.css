@@ -80,7 +80,7 @@ html[data-theme="dark"] .bd-header .navbar-btn {
 .bd-header .navbar-brand {
     display: flex !important;
     align-items: center !important;
-    gap: 0.6rem !important;
+    gap: 0.9rem !important;
     text-decoration: none !important;
 }
 
