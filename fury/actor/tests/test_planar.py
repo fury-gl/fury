@@ -514,10 +514,10 @@ def test_line_projection_validation():
         LineProjection(lines, outline_thickness="invalid")
 
     # Test invalid outline_color
-    with pytest.raises(ValueError, match="outline_color must have a length of 1 or"):
+    with pytest.raises(ValueError, match="must have 3 or 4 channels"):
         LineProjection(lines, outline_color=(1, 0))
 
-    with pytest.raises(ValueError, match="colors must have a length of 1 or"):
+    with pytest.raises(ValueError, match="must have 3 or 4 channels"):
         LineProjection(lines, colors=(1, 0))
 
     # Test invalid plane in property setter

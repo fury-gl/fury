@@ -717,13 +717,11 @@ class Streamlines(Line):
         if not isinstance(outline_thickness, (int, float)) or outline_thickness < 0:
             raise ValueError("outline_thickness must be a non-negative number")
 
-        outline_color = np.asarray(outline_color, dtype=np.float32)
+        outline_color = normalize_colors(outline_color)[0].astype(np.float32)
         if outline_color.size not in (3, 4):
             raise ValueError(
                 "outline_color must be a tuple/array of 3 (RGB) or 4 (RGBA) values"
             )
-        if not np.all((outline_color >= 0) & (outline_color <= 1)):
-            raise ValueError("outline_color values must be between 0 and 1")
 
         if not isinstance(enable_picking, bool):
             raise TypeError("enable_picking must be a boolean")
@@ -974,16 +972,18 @@ def streamlines(
     ----------
     lines : list of ndarray of shape (P, 3) or ndarray of shape (N, P, 3)
         Lines points.
-    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
+    colors : str, tuple, list or ndarray, optional
+        A hex string, RGB(A) in [0, 1], RGB(A) in [0, 255], or a per-line /
+        per-vertex array of such colors. See :func:`normalize_colors`.
     thickness : float, optional
         The thickness of the streamline.
     opacity : float, optional
         The opacity of the streamline.
     outline_thickness : float, optional
         The thickness of the outline.
-    outline_color : tuple, optional
-        The color of the outline.
+    outline_color : str, tuple, list or ndarray, optional
+        The color of the outline. Accepts a hex string, RGB(A) in [0, 1], or
+        RGB(A) in [0, 255].
     roi_mask : ndarray, optional
         3D array where values > 0 define the ROI voxels. When provided,
         streamlines are filtered in a compute baking pass using this volumetric
@@ -1013,6 +1013,11 @@ def streamlines(
         running += int(ln)
         if i < len(lengths) - 1:
             running += 1  # separator slot
+
+    colors = normalize_colors(colors)
+    if colors.ndim == 2 and len(colors) == 1:
+        # A single color: collapse to 1-D so it is tiled across all lines.
+        colors = colors[0]
 
     lines_positions, lines_colors = line_buffer_separator(lines_list, color=colors)
 
@@ -1995,9 +2000,12 @@ def streamtube(
         List of lines, where each line is a set of 3D points.
     opacity : float, optional
         Overall opacity of the actor, from 0.0 to 1.0.
-    colors : tuple or ndarray, optional
-        - A single color tuple (e.g., (1,0,0)) for all lines.
+    colors : str, tuple, list or ndarray, optional
+        - A hex string (e.g. ``"#FF0000"``) or RGB(A) tuple for all lines.
+        - RGB(A) values in [0, 255] are accepted and normalized.
         - An array of colors, one for each line (e.g., [[1,0,0], [0,1,0],...]).
+        - The special string ``"rgb"`` colors each tube by orientation
+          (requires ``backend="gpu"``).
     radius : float, optional
         The radius of the tubes.
     segments : int, optional
@@ -2051,6 +2059,21 @@ def streamtube(
 
     if backend not in ("cpu", "gpu"):
         raise ValueError(f"backend must be 'cpu' or 'gpu', got {backend!r}")
+
+    # Normalize hex / [0, 255] / [0, 1] colors. The special "rgb" mode and
+    # per-point color arrays (list of 2D ndarrays) are passed through as-is.
+    is_rgb_mode = isinstance(colors, str) and colors.lower() == "rgb"
+    is_per_point = (
+        isinstance(colors, (list, tuple))
+        and len(colors) > 0
+        and isinstance(colors[0], np.ndarray)
+        and colors[0].ndim == 2
+    )
+    if not is_rgb_mode and not is_per_point:
+        colors = normalize_colors(colors)
+        if colors.ndim == 2 and len(colors) == 1:
+            # A single color: collapse to 1-D so it is tiled across all lines.
+            colors = colors[0]
 
     color_components = _resolve_color_components_for_streamtube(colors, backend)
     wgpu_device = gfx_wgpu.get_shared().device

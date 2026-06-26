@@ -10,6 +10,7 @@ from fury.actor import (
     show_slices,
     vector_field_slicer,
 )
+from fury.colormap import normalize_colors
 from fury.utils import get_transformed_cube_bounds
 
 
@@ -160,8 +161,9 @@ def contour_from_roi(
         An ROI file that will be binarized and displayed.
     affine : ndarray, optional
         The affine transformation matrix to apply to the contour.
-    color : tuple, optional
-        The RGB output color of the contour in the range [0, 1].
+    color : str, tuple, list or ndarray, optional
+        The output color of the contour. Accepts a hex string, RGB(A) in
+        [0, 1], or RGB(A) in [0, 255].
     opacity : float, optional
         The opacity of the contour.
         Takes values from 0 (fully transparent) to 1 (opaque).
@@ -193,10 +195,11 @@ def contour_from_label(data, *, affine=None, colors=None, opacities=None):
         A labeled volume where each integer label represents a different region.
     affine : ndarray, optional
         The affine transformation matrix to apply to the contour.
-    colors : ndarray, shape (N, 3) or (N, 4), optional
-        An array of RGB or RGBA colors for each unique label in the volume.
-        where N is the number of unique labels (excluding background label 0).
-        If None, random colors will be assigned.
+    colors : list or ndarray, shape (N, 3) or (N, 4), optional
+        A color for each unique label in the volume, where N is the number
+        of unique labels (excluding background label 0). Each entry accepts a
+        hex string, RGB(A) in [0, 1], or RGB(A) in [0, 255]. If None, random
+        colors will be assigned.
     opacities : ndarray, shape (N,) or None, optional
         The opacities of the contours.
         Takes values from 0 (fully transparent) to 1 (opaque). It will be overridden
@@ -216,8 +219,10 @@ def contour_from_label(data, *, affine=None, colors=None, opacities=None):
 
     if colors is None:
         colors = np.random.rand(nb_surfaces, 3)
-    elif colors.shape != (nb_surfaces, 3) and colors.shape != (nb_surfaces, 4):
-        raise ValueError("Incorrect color array shape")
+    else:
+        colors = normalize_colors(colors)
+        if colors.shape != (nb_surfaces, 3) and colors.shape != (nb_surfaces, 4):
+            raise ValueError("Incorrect color array shape")
 
     if colors.shape == (nb_surfaces, 4):
         opacities = colors[:, -1]

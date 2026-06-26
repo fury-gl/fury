@@ -211,7 +211,7 @@ def test_contour_from_label(colors, opacities):
 @pytest.mark.parametrize(
     "colors,opacities,error_msg",
     [
-        (np.array([[1, 0]]), None, "Incorrect color array shape"),
+        (np.array([[1, 0]]), None, "must have 3 or 4 channels"),
         (np.array([[1, 0, 0]]), np.array([0.5, 0.5]), "Incorrect opacity array shape"),
     ],
 )

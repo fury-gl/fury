@@ -2,6 +2,7 @@
 
 import numpy as np
 
+from fury.colormap import normalize_colors
 from fury.lib import (
     ImageBasicMaterial,
     LineArrowMaterial,
@@ -433,8 +434,9 @@ def _create_text_material(
 
     Parameters
     ----------
-    color : tuple, optional
-        The color of the text as RGB or RGBA tuple.
+    color : str, tuple, list or ndarray, optional
+        The color of the text. Accepts a hex string, RGB(A) in [0, 1], or
+        RGB(A) in [0, 255].
     opacity : float, optional
         The opacity of the material, from 0 (transparent) to 1 (opaque).
         If RGBA is provided, the final alpha will be:
@@ -465,13 +467,11 @@ def _create_text_material(
     opacity = validate_opacity(opacity)
 
     if color is not None:
+        color = normalize_colors(color)[0]
         if len(color) == 3:
             color = (*color, opacity)
-        elif len(color) == 4:
-            color = color
-            color = (*color[:3], color[3] * opacity)
         else:
-            raise ValueError("Color must be a tuple of length 3 or 4.")
+            color = (*color[:3], color[3] * opacity)
 
     return TextMaterial(
         color=color,

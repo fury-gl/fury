@@ -213,9 +213,7 @@ def test_streamtube_gpu_invalid_inputs():
             backend="gpu",
         )
 
-    with pytest.raises(
-        ValueError, match=r"(must have 3|components, got) \(RGB\) or 4 \(RGBA\)"
-    ):
+    with pytest.raises(ValueError, match="must have 3 or 4 channels"):
         actor.streamtube(
             [line_a],
             colors=np.array([1.0, 0.5], dtype=np.float32),

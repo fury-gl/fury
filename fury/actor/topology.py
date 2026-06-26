@@ -6,6 +6,7 @@ import os
 import numpy as np
 
 from fury.actor import Group, create_mesh
+from fury.colormap import normalize_colors
 from fury.geometry import buffer_to_geometry
 from fury.io import load_image_texture
 from fury.material import _create_mesh_material, validate_opacity
@@ -36,8 +37,9 @@ def surface(
     material : str, optional
         The material type for the surface mesh. Options are 'phong' and 'basic'. This
         option only works with colors is passed.
-    colors : ndarray, shape (N, 3) or (N, 4) or tuple (3,) or tuple (4,), optional
-        RGB or RGBA values in the range [0, 1].
+    colors : str, tuple, list or ndarray, optional
+        A per-vertex ``(N, 3)``/``(N, 4)`` array, or a single color as a hex
+        string, RGB(A) in [0, 1], or RGB(A) in [0, 255].
     texture : str, optional
         Path to the texture image file.
     texture_axis : str, optional
@@ -65,6 +67,13 @@ def surface(
     if colors is not None:
         if texture is not None:
             logging.warning("Texture will be ignored when colors are provided.")
+
+        is_per_vertex = (
+            isinstance(colors, np.ndarray) and colors.shape[0] == vertices.shape[0]
+        )
+        if not is_per_vertex:
+            # A single color: normalize hex / [0, 255] / [0, 1] to RGB.
+            colors = normalize_colors(colors)[0][:3]
 
         if isinstance(colors, np.ndarray) and colors.shape[0] == vertices.shape[0]:
             geo = buffer_to_geometry(
@@ -136,8 +145,9 @@ def contour_from_volume(data, *, color=(1, 0, 0), opacity=0.5, material="phong")
     ----------
     data : ndarray, shape (X, Y, Z)
         An ROI file that will be binarized and displayed.
-    color : tuple, optional
-        The RGB output color of the contour in the range [0, 1].
+    color : str, tuple, list or ndarray, optional
+        The output color of the contour. Accepts a hex string, RGB(A) in
+        [0, 1], or RGB(A) in [0, 255].
     opacity : float, optional
         The opacity of the contour.
         Takes values from 0 (fully transparent) to 1 (opaque).
@@ -149,8 +159,9 @@ def contour_from_volume(data, *, color=(1, 0, 0), opacity=0.5, material="phong")
     Group
         A group of actors containing the generated contours from the volume data.
     """
-    if color is None or len(color) != 3:
+    if color is None:
         raise ValueError("Color must be a tuple of three values (R, G, B).")
+    color = normalize_colors(color)[0][:3]
 
     surface_data = voxel_mesh_by_object(data, connectivity=1)
 
