@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&display=swap');
+
 /* --- SEARCH COMPONENT OVERRIDES --- */
 /* Force FURY theme colors for the search button in dark mode */
 html[data-theme="dark"] button.btn.search-button__button,
@@ -75,13 +77,36 @@ html[data-theme="dark"] .bd-header .navbar-btn {
     border-color: rgba(255,255,255,0.12) !important;
 }
 
-/* Logo text "FURY" */
-html[data-theme="dark"] .bd-header .navbar-brand .logo__title {
+.bd-header .navbar-brand {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.6rem !important;
+    text-decoration: none !important;
+}
+
+html[data-theme="dark"] .bd-header .navbar-brand,
+html[data-theme="dark"] .bd-header .navbar-brand .logo__title,
+html[data-theme="dark"] .fury-footer__logo-text {
     color: #ffffff !important;
 }
 
-html[data-theme="light"] .bd-header .navbar-brand .logo__title {
+html[data-theme="light"] .bd-header .navbar-brand,
+html[data-theme="light"] .bd-header .navbar-brand .logo__title,
+html[data-theme="light"] .fury-footer__logo-text {
     color: #1a1a1a !important;
+}
+
+.bd-header .navbar-brand .logo__title,
+.fury-footer__logo-text {
+    font-family: "Gotham", "Montserrat", sans-serif !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.03em !important;
+    font-size: 1.6rem !important;
+    display: inline-block !important;
+    margin-bottom: 0 !important;
+    line-height: 1 !important;
+    transform: scaleX(1.3) !important;
+    transform-origin: left center !important;
 }
 
 /* --- CUSTOM FULL-WIDTH FOOTER --- */
@@ -325,7 +350,7 @@ html[data-theme="light"] {
     background-attachment: fixed;
 }
 
-/* 
+/*
  * Create a clean "glassmorphism" effect for the sticky header.
  * We keep it minimalistic to match the light mode header (no borders or drop shadows),
  * but use a semi-transparent background + blur so scrolling text remains hidden
