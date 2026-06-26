@@ -35,6 +35,7 @@ from fury.lib import (
     PerspectiveCamera,
     PointerEvent,
     QtCanvas,
+    QtGui,
     Renderer,
     Scene as GfxScene,  # type: ignore
     ScreenCoordsCamera,
@@ -1665,11 +1666,179 @@ class ShowManager:
         ndarray
             A NumPy array representing the captured image data (RGBA).
         """
+        if self._is_qt:
+            qt_arr = self._qt_snapshot(fname)
+            if qt_arr is not None:
+                return qt_arr
+
         arr = np.asarray(self.renderer.snapshot())
         if fname is not None:
             img = image_from_array(arr)
             img.save(fname)
         return arr
+
+    def _qt_snapshot(self, fname=None):
+        """
+        Capture the full Qt widget/window instead of only the render canvas.
+
+        Parameters
+        ----------
+        fname : str, optional
+            File path where the snapshot image should be saved. If None, the
+            image is only returned as an array.
+
+        Returns
+        -------
+        ndarray or None
+            Captured RGBA image data, or None if Qt widget capture is not
+            available.
+        """
+        widget = self._qt_parent if self._qt_parent is not None else self.window
+        if not hasattr(widget, "grab"):
+            return None
+
+        if self._qt_app is None:
+            self._qt_app = get_app()
+
+        if hasattr(widget, "show"):
+            widget.show()
+        if self._qt_app is not None:
+            self._qt_app.processEvents()
+
+        for screen in self.screens:
+            update_camera(screen.camera, screen.size, screen.scene)
+        self._draw_function()
+        if self._qt_app is not None:
+            self._qt_app.processEvents()
+
+        pixmap = widget.grab()
+        if pixmap.isNull():
+            return None
+
+        qimage_format = getattr(QtGui.QImage, "Format", QtGui.QImage)
+        image = pixmap.toImage().convertToFormat(qimage_format.Format_RGBA8888)
+        width = image.width()
+        height = image.height()
+        bytes_per_line = image.bytesPerLine()
+        bits = image.bits()
+
+        if hasattr(bits, "setsize"):
+            bits.setsize(height * bytes_per_line)
+
+        arr = np.frombuffer(bits, np.uint8).reshape((height, bytes_per_line))
+        arr = arr[:, : width * 4].reshape((height, width, 4)).copy()
+
+        render_arr = np.asarray(self.renderer.snapshot())
+        canvas_pos = self.window.mapTo(widget, self.window.rect().topLeft())
+        canvas_x = canvas_pos.x()
+        canvas_y = canvas_pos.y()
+        canvas_width = self.window.width()
+        canvas_height = self.window.height()
+
+        x0 = max(canvas_x, 0)
+        y0 = max(canvas_y, 0)
+        x1 = min(canvas_x + canvas_width, width)
+        y1 = min(canvas_y + canvas_height, height)
+
+        if x1 > x0 and y1 > y0:
+            render_img = image_from_array(render_arr).resize(
+                (canvas_width, canvas_height)
+            )
+            render_arr = np.asarray(render_img)
+            src_x0 = x0 - canvas_x
+            src_y0 = y0 - canvas_y
+            src_x1 = src_x0 + (x1 - x0)
+            src_y1 = src_y0 + (y1 - y0)
+            arr[y0:y1, x0:x1] = render_arr[src_y0:src_y1, src_x0:src_x1]
+
+        if fname is not None:
+            image_from_array(arr).save(fname)
+
+        return arr
+
+    def _snapshot_array(self):
+        """
+        Capture the current frame as an array.
+
+        Returns
+        -------
+        ndarray
+            Captured RGBA image data.
+        """
+        if self._is_qt:
+            arr = self._qt_snapshot()
+            if arr is not None:
+                return arr
+
+        return np.asarray(self.renderer.snapshot())
+
+    def _save_offscreen_capture(self, record_animation):
+        """
+        Save an offscreen PNG or GIF for documentation builds.
+
+        Parameters
+        ----------
+        record_animation : bool
+            If True and callbacks are registered, save a GIF. Otherwise, save a
+            single PNG snapshot.
+        """
+        frames = []
+        if self._callbacks and record_animation:
+            max_frames = 300
+            env_max_frames = os.environ.get("FURY_OFFSCREEN_MAX_FRAMES")
+            if env_max_frames and env_max_frames.isdigit():
+                max_frames = int(env_max_frames)
+
+            for _ in range(max_frames):
+                if not self._callbacks:
+                    break
+
+                for _name, cb_info in list(self._callbacks.items()):
+                    func, cb_time, repeat, args = cb_info
+                    func(*args)
+
+                self._draw_function()
+                if self._qt_app is not None:
+                    self._qt_app.processEvents()
+                frames.append(image_from_array(self._snapshot_array()))
+
+        if frames:
+            gif_name = f"{self._title.replace(' ', '_')}.gif"
+            frames[0].save(
+                gif_name,
+                append_images=frames[1:],
+                save_all=True,
+                duration=30,
+                loop=0,
+            )
+        else:
+            self._draw_function()
+            self.snapshot(fname=f"{self._title}.png")
+
+    def _start_qt_offscreen_capture(self, record_animation):
+        """
+        Run Qt briefly so the canvas can render before doc capture.
+
+        Parameters
+        ----------
+        record_animation : bool
+            If True and callbacks are registered, save a GIF. Otherwise, save a
+            single PNG snapshot.
+        """
+        if self._qt_app is None:
+            self._qt_app = get_app()
+
+        def capture_and_close():
+            """Capture the Qt window and stop the Qt event loop."""
+            self._save_offscreen_capture(record_animation)
+            self.window.close()
+            if self._qt_app is not None:
+                self._qt_app.quit()
+
+        self.render()
+        qcall_later(0.5, capture_and_close)
+        if self._qt_app is not None:
+            self._qt_app.exec()
 
     def _draw_function(self):
         """Draw all screens and request a window redraw."""
@@ -1703,42 +1872,15 @@ class ShowManager:
             "true",
             "1",
         ]:
-            frames = []
             record_animation = os.environ.get("FURY_RECORD_ANIMATION", "").lower() in [
                 "true",
                 "1",
             ]
-            if self._callbacks and record_animation:
-                max_frames = 300
-                env_max_frames = os.environ.get("FURY_OFFSCREEN_MAX_FRAMES")
-                if env_max_frames and env_max_frames.isdigit():
-                    max_frames = int(env_max_frames)
+            if self._is_qt:
+                self._start_qt_offscreen_capture(record_animation)
+                return
 
-                for _ in range(max_frames):
-                    if not self._callbacks:
-                        break
-
-                    for _name, cb_info in list(self._callbacks.items()):
-                        func, cb_time, repeat, args = cb_info
-                        func(*args)
-
-                    self._draw_function()
-                    arr = self.snapshot()
-                    frames.append(image_from_array(arr))
-
-            if frames:
-                gif_name = f"{self._title.replace(' ', '_')}.gif"
-                frames[0].save(
-                    gif_name,
-                    append_images=frames[1:],
-                    save_all=True,
-                    duration=30,
-                    loop=0,
-                )
-            else:
-                self._draw_function()
-                self.snapshot(fname=f"{self._title}.png")
-
+            self._save_offscreen_capture(record_animation)
             self.window.close()
             return
 

@@ -27,6 +27,7 @@ jobs:
     env:
       FURY_OFFSCREEN: 1
       FURY_RECORD_ANIMATION: 1
+      QT_QPA_PLATFORM: xcb
     steps:
     - uses: actions/checkout@v7
       with:
