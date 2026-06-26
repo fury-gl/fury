@@ -9,8 +9,7 @@ Camera and opacity keyframe animation explained in this tutorial.
 import numpy as np
 
 import fury
-from fury.animation import Animation, CameraAnimation, Timeline
-from fury.animation.interpolator import cubic_spline_interpolator
+from fury.motion import Animation, CameraAnimation, Timeline, cubic_spline_interpolator
 from fury.data import fetch_viz_cubemaps, read_viz_cubemap
 from fury.io import load_cube_map_texture
 

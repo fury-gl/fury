@@ -109,7 +109,7 @@ raw-options = { version_scheme = "release-branch-semver" }
 version-file = "fury/_version.py"
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
 ignore_missing_imports = "True"
 exclude = [
   "/tests",

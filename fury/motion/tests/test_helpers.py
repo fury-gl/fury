@@ -1,7 +1,7 @@
 import numpy as np
 import numpy.testing as npt
 
-import fury.animation.helpers as helpers
+import fury.motion.helpers as helpers
 import fury.testing as ft
 
 

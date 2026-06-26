@@ -1,4 +1,4 @@
-# This file is used to enable type hinting for the `fury.animation` module.
+# This file is used to enable type hinting for the `fury.motion` module.
 # explicit definition of `__all__` will enable type inference for engines.
 
 __all__ = [
@@ -25,7 +25,7 @@ __all__ = [
     "xyz_color_interpolator",
 ]
 
-from .animation import Animation, CameraAnimation
+from .core import Animation, CameraAnimation
 from .helpers import (
     euclidean_distances,
     get_next_timestamp,

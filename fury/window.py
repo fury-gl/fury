@@ -19,8 +19,6 @@ from scipy import ndimage
 
 from fury.actor import Group
 from fury.actor.core import create_axes_helper
-from fury.animation.animation import Animation, CameraAnimation
-from fury.animation.timeline import Timeline
 from fury.io import load_image
 from fury.lib import (
     AmbientLight,
@@ -51,6 +49,7 @@ from fury.lib import (
     qcall_later,
     run,
 )
+from fury.motion import Animation, CameraAnimation, Timeline
 from fury.optpkg import optional_package
 from fury.ui import UI, UIContext
 

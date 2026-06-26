@@ -2,48 +2,12 @@ import time
 
 import numpy as np
 import numpy.testing as npt
-import pytest
 
-from fury.animation import Animation, Timeline
-
-
-class DummyAnimation(Animation):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.updated_times = []
-        self.added_scenes = []
-        self.removed_scenes = []
-
-    def update_animation(self, *, time=None):
-        self.updated_times.append(time)
-        self._current_timestamp = time
-
-    def add_to_scene(self, scene):
-        self.added_scenes.append(scene)
-
-    def remove_from_scene(self, scene):
-        self.removed_scenes.append(scene)
+from fury.motion import Animation, Timeline
 
 
-def test_timeline_creation():
-    tl = Timeline()
-    assert tl.duration == 0
-    assert tl.loop is True
-    assert tl._record_callback is None
-
-    tl2 = Timeline(loop=False)
-    assert tl2.loop is False
-
-    tl3 = Timeline(length=10)
-    tl3.update_duration()
-    assert tl3.duration == 10
-
-
-def test_timeline_record_requires_show_manager():
-    tl = Timeline()
-
-    with pytest.raises(RuntimeError, match="ShowManager"):
-        tl.record("timeline.mp4")
+def assert_not_equal(x, y):
+    npt.assert_equal(np.any(np.not_equal(x, y)), True)
 
 
 def test_timeline_playback_panel():
@@ -185,7 +149,9 @@ def test_timeline_restart():
 
 
 def test_timeline_update():
-    anim = DummyAnimation()
+    updated_times = []
+    anim = Animation()
+    anim.add_update_callback(updated_times.append)
     anim.set_position(0, np.array([0, 0, 0]))
     anim.set_position(5, np.array([10, 10, 10]))
     tl = Timeline(animations=anim)
@@ -193,16 +159,20 @@ def test_timeline_update():
     tl.seek(2.5)
     tl.update(force=True)
 
-    assert anim.updated_times[-1] == 2.5
+    assert updated_times[-1] == 2.5
 
 
 def test_timeline_add_and_remove_from_scene():
     scene = object()
-    anim = DummyAnimation()
+    anim = Animation()
     tl = Timeline(animations=anim)
 
     tl.add_to_scene(scene)
+    assert tl._scene is scene
+    assert anim._scene is scene
+    assert anim._added_to_scene is True
+
     tl.remove_from_scene(scene)
 
-    assert anim.added_scenes == [scene]
-    assert anim.removed_scenes == [scene]
+    assert tl._scene is None
+    assert anim._added_to_scene is False

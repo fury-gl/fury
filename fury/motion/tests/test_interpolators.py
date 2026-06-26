@@ -3,7 +3,7 @@ from itertools import combinations
 import numpy as np
 import numpy.testing as npt
 
-from fury.animation.interpolator import (
+from fury.motion.interpolator import (
     cubic_bezier_interpolator,
     cubic_spline_interpolator,
     hsv_color_interpolator,
