@@ -25,7 +25,8 @@ jobs:
       matrix:
         python-version: [3.12]
     env:
-      FURY_OFFSCREEN: true
+      FURY_OFFSCREEN: 1
+      FURY_RECORD_ANIMATION: 1
     steps:
     - uses: actions/checkout@v7
       with:
@@ -48,7 +49,7 @@ jobs:
     - name: Build docs
       run: |
         cd docs
-        make -C . html-no-examples SPHINXOPTS="-W --keep-going"
+        make -C . html SPHINXOPTS="-W --keep-going"
     - name: Deploy Devs
       if: success() && github.ref == 'refs/heads/master' && github.repository == 'fury-gl/fury'
       uses: JamesIves/github-pages-deploy-action@v4
