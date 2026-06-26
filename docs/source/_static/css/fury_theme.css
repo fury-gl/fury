@@ -431,3 +431,9 @@ html[data-theme="dark"] .admonition.note > .admonition-title::before,
 html[data-theme="dark"] .admonition.info > .admonition-title::before {
     color: #ff4444 !important;
 }
+
+/* --- BACK TO TOP BUTTON --- */
+#pst-back-to-top,
+#pst-back-to-top * {
+    color: #ffffff !important;
+}
