@@ -2249,7 +2249,163 @@ def test_range_slider_size_vertical():
 #     npt.assert_equal(True, combobox.selection_box.actors[0].GetVisibility())
 
 
-# @pytest.mark.skipif(
+def test_ui_combobox_2d_initialization_and_properties():
+    """Test ComboBox2D initialization, default parameters, layout, and properties."""
+    fetch_viz_icons()
+    values = ["Item0", "Item1", "Item2"]
+
+    combobox = ui.ComboBox2D(
+        items=values, position=(100, 100), size=(300, 200), placeholder="Pick one..."
+    )
+    npt.assert_equal(combobox.items, values)
+    npt.assert_equal(combobox.selected_text, "Pick one...")
+    npt.assert_equal(combobox._menu_visibility, False)
+    assert combobox.selected_text_index is None
+    assert combobox._drag_offset is None
+    npt.assert_equal(combobox.size, (300, 200))
+    npt.assert_equal(combobox.panel_size, (300, 200))
+    assert combobox.panel in combobox._children
+
+    default_cb = ui.ComboBox2D(items=["placeholder"])
+    npt.assert_equal(default_cb._selection, "Choose selection...")
+    npt.assert_equal(default_cb.draggable, True)
+    npt.assert_equal(default_cb.font_size, 20)
+
+    combobox.resize((450, 300))
+    expected_text = (int(0.85 * 450), int(0.2 * 300))
+    expected_menu = (450, int(0.8 * 300))
+    expected_btn = (int(0.15 * 450), int(0.2 * 300))
+
+    npt.assert_equal(combobox.text_block_size, expected_text)
+    npt.assert_equal(combobox.drop_menu_size, expected_menu)
+    npt.assert_equal(combobox.drop_button_size, expected_btn)
+
+    # Test font scaling
+    expected_font_size = int(20 * (300 / 200))  # 30
+    npt.assert_equal(combobox.font_size, expected_font_size)
+    npt.assert_equal(combobox.drop_down_menu.font_size, expected_font_size)
+    npt.assert_equal(combobox.selection_box.font_size, expected_font_size)
+    expected_slot_height = max(
+        1, int(expected_font_size * combobox.drop_down_menu.line_spacing)
+    )
+    npt.assert_equal(combobox.drop_down_menu.slot_height, expected_slot_height)
+
+    # Test appending
+    combobox.append_item("C", "D")
+    npt.assert_equal(combobox.items, ["Item0", "Item1", "Item2", "C", "D"])
+    complex_list = [[1], (2, [[3, 4], 5])]
+    combobox.append_item(*complex_list)
+    combobox.append_item(42, 3.14)
+    expected = [
+        "Item0",
+        "Item1",
+        "Item2",
+        "C",
+        "D",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "42",
+        "3.14",
+    ]
+    npt.assert_equal(combobox.items, expected)
+    npt.assert_equal(combobox.drop_down_menu.values, expected)
+
+    npt.assert_raises(TypeError, combobox.append_item, {"key": "value"})
+
+    # Test items list copy
+    original = ["A", "B"]
+    copy_cb = ui.ComboBox2D(items=original)
+    original.append("C")
+    npt.assert_equal(copy_cb.items, ["A", "B"])
+
+
+def test_ui_combobox_2d_interaction():
+    """Test menu toggle, selection, and callbacks."""
+    fetch_viz_icons()
+    combobox = ui.ComboBox2D(items=["A", "B", "C"])
+
+    # Test Toggle
+    mock_event = window.PointerEvent(
+        x=100, y=100, type=window.EventType.POINTER_DOWN, target="target"
+    )
+    combobox.menu_toggle_callback(mock_event)
+    assert combobox._menu_visibility is True
+    assert combobox.drop_down_button.toggled is True
+
+    combobox.menu_toggle_callback(mock_event)
+    assert combobox._menu_visibility is False
+
+    # Test selection
+    results = {"called": False, "selected": None}
+
+    def on_change(cb):
+        results["called"] = True
+        results["selected"] = cb.selected_text
+
+    combobox.on_change = on_change
+
+    combobox.drop_down_menu.selected = ["B"]
+    combobox.drop_down_menu.last_selection_idx = 1
+    combobox._menu_visibility = True
+    combobox.select_option_callback()
+
+    npt.assert_equal(combobox.selected_text, "B")
+    npt.assert_equal(combobox.selected_text_index, 1)
+    assert combobox._menu_visibility is False
+    assert results["called"] is True
+    npt.assert_equal(results["selected"], "B")
+
+    combobox.drop_down_menu.selected = []
+    combobox.select_option_callback()
+    npt.assert_equal(combobox.selected_text, "B")
+
+
+def test_ui_combobox_2d_visibility():
+    """Test set_visibility logic."""
+    fetch_viz_icons()
+    combobox = ui.ComboBox2D(items=["A", "B", "C"])
+
+    combobox.set_visibility(False)
+    assert combobox.panel.actors[0].visible is False
+    combobox.set_visibility(True)
+    assert combobox.panel.actors[0].visible is True
+    assert combobox._menu_visibility is False
+
+    combobox._menu_visibility = True
+    combobox.drop_down_menu.set_visibility(True)
+    combobox._menu_visibility = False
+    combobox.set_visibility(True)
+    assert combobox._menu_visibility is False
+
+
+def test_ui_combobox_2d_drag_events():
+    """Test drag properties and operations."""
+    fetch_viz_icons()
+    combobox = ui.ComboBox2D(items=["A"], position=(10, 10), draggable=True)
+
+    event_press = window.PointerEvent(
+        x=20, y=20, type=window.EventType.POINTER_DOWN, target="target"
+    )
+    combobox.left_button_pressed(event_press)
+    npt.assert_array_almost_equal(combobox._drag_offset, [10, 10])
+
+    event_drag = window.PointerEvent(
+        x=50, y=60, type=window.EventType.POINTER_MOVE, target="target"
+    )
+    combobox.left_button_dragged(event_drag)
+    npt.assert_array_almost_equal(combobox.get_position(), [40, 50])
+
+    cb2 = ui.ComboBox2D(items=["A"], position=(10, 10), draggable=True)
+    cb2.left_button_dragged(event_drag)
+    npt.assert_array_almost_equal(cb2.get_position(), [10, 10])
+
+    cb3 = ui.ComboBox2D(items=["A"], draggable=False)
+    assert cb3.draggable is False
+
+
 #     skip_osx,
 #     reason="This test does not work on macOS."
 #     "It works on the local machines."
@@ -2627,6 +2783,28 @@ def test_listbox_2d_scrolling_logic():
         listbox.scroll_up()
 
     npt.assert_equal(listbox.view_offset, 0)
+
+
+def test_listbox_2d_resize():
+    values = [f"Item {i}" for i in range(10)]
+    listbox = ui.ListBox2D(values=values, size=(100, 200))
+
+    npt.assert_equal(listbox.size, [100, 200])
+
+    new_size = (200, 400)
+    listbox.resize(new_size)
+
+    npt.assert_equal(listbox.size, [200, 400])
+    npt.assert_equal(listbox.panel.size, new_size)
+
+    new_scrollbar_width = int(new_size[0] / 20)
+    expected_scroll_bar_x = int(new_size[0] - new_scrollbar_width - listbox.margin)
+    npt.assert_equal(listbox._scroll_bar_x, expected_scroll_bar_x)
+
+    expected_slot_width = int(new_size[0] - new_scrollbar_width - 3 * listbox.margin)
+    npt.assert_equal(listbox.slot_width, expected_slot_width)
+
+    npt.assert_equal(len(listbox.slots), listbox.nb_slots)
 
 
 def test_ui_card2d_initialization():

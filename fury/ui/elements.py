@@ -12,7 +12,7 @@ __all__ = [
     #     "Checkbox",
     #     "Option",
     #     "RadioButton",
-    #     "ComboBox2D",
+    "ComboBox2D",
     "ListBox2D",
     "ListBoxItem2D",
     #     "FileMenu2D",
@@ -24,6 +24,7 @@ __all__ = [
 ]
 
 
+from numbers import Number
 from string import printable
 import textwrap
 
@@ -33,6 +34,7 @@ import numpy as np
 from fury.colormap import normalize_colors
 from fury.data import read_viz_icons
 from fury.io import get_extension, load_image, load_image_texture
+from fury.lib import EventType
 from fury.ui.containers import ImageContainer2D, Panel2D
 from fury.ui.context import UIContext
 from fury.ui.core import (
@@ -2575,349 +2577,407 @@ class RangeSlider(UI):
 #         self.on_change(self)
 
 
-# class ComboBox2D(UI):
-#     """UI element to create drop-down menus.
+#
+class ComboBox2D(UI):
+    """
+    UI element to create drop-down menus.
 
-#     Attributes
-#     ----------
-#     selection_box: :class: 'TextBox2D'
-#         Display selection and placeholder text.
-#     drop_down_button: :class: 'Button2D'
-#         Button to show or hide menu.
-#     drop_down_menu: :class: 'ListBox2D'
-#         Container for item list.
+    Parameters
+    ----------
+    items : list of str, optional
+        List of items to be displayed as choices.
+    position : tuple of 2 floats, optional
+        Absolute coordinates (x, y) of the lower-left corner of this
+        UI component.
+    size : tuple of 2 ints, optional
+        Width and height in pixels of this UI component.
+    placeholder : str, optional
+        Holds the default text to be displayed.
+    draggable : bool, optional
+        Whether the UI element is draggable or not.
+    selection_text_color : tuple of 3 floats, optional
+        Color of the selected text to be displayed.
+    selection_bg_color : tuple of 3 floats, optional
+        Background color of the selection text.
+    menu_text_color : tuple of 3 floats, optional
+        Color of the options displayed in drop down menu.
+    selected_color : tuple of 3 floats, optional
+        Background color of the selected option in drop down menu.
+    unselected_color : tuple of 3 floats, optional
+        Background color of the unselected option in drop down menu.
+    scroll_bar_active_color : tuple of 3 floats, optional
+        Color of the scrollbar when in active use.
+    scroll_bar_inactive_color : tuple of 3 floats, optional
+        Color of the scrollbar when inactive.
+    menu_opacity : float, optional
+        Opacity of the drop down menu background.
+    reverse_scrolling : bool, optional
+        If True, scrolling up will move the list of files down.
+    font_size : int, optional
+        The font size of selected text in pixels.
+    line_spacing : float, optional
+        Distance between drop down menu's items in pixels.
+    z_order : int, optional
+        Z-order of the UI component.
 
-#     """
+    Attributes
+    ----------
+    selection_box : TextBox2D
+        Display selection and placeholder text.
+    drop_down_button : Button2D
+        Button to show or hide menu.
+    drop_down_menu : ListBox2D
+        Container for item list.
+    """
 
-#     @warn_on_args_to_kwargs()
-#     def __init__(
-#         self,
-#         *,
-#         items=None,
-#         position=(0, 0),
-#         size=(300, 200),
-#         placeholder="Choose selection...",
-#         draggable=True,
-#         selection_text_color=(0, 0, 0),
-#         selection_bg_color=(1, 1, 1),
-#         menu_text_color=(0.2, 0.2, 0.2),
-#         selected_color=(0.9, 0.6, 0.6),
-#         unselected_color=(0.6, 0.6, 0.6),
-#         scroll_bar_active_color=(0.6, 0.2, 0.2),
-#         scroll_bar_inactive_color=(0.9, 0.0, 0.0),
-#         menu_opacity=1.0,
-#         reverse_scrolling=False,
-#         font_size=20,
-#         line_spacing=1.4,
-#     ):
-#         """Init class Instance.
+    def __init__(
+        self,
+        *,
+        items=None,
+        position=(0, 0),
+        size=(300, 200),
+        placeholder="Choose selection...",
+        draggable=True,
+        selection_text_color=(0, 0, 0),
+        selection_bg_color=(1, 1, 1),
+        menu_text_color=(0.2, 0.2, 0.2),
+        selected_color=(0.9, 0.6, 0.6),
+        unselected_color=(0.6, 0.6, 0.6),
+        scroll_bar_active_color=(0.6, 0.2, 0.2),
+        scroll_bar_inactive_color=(0.9, 0.0, 0.0),
+        menu_opacity=1.0,
+        reverse_scrolling=False,
+        font_size=20,
+        line_spacing=1.4,
+        z_order=0,
+    ):
+        """Init class instance."""
+        if items is None:
+            items = []
 
-#         Parameters
-#         ----------
-#         items: list(string)
-#             List of items to be displayed as choices.
-#         position : (float, float)
-#             Absolute coordinates (x, y) of the lower-left corner of this
-#             UI component.
-#         size : (int, int)
-#             Width and height in pixels of this UI component.
-#         placeholder : str
-#             Holds the default text to be displayed.
-#         draggable: {True, False}
-#             Whether the UI element is draggable or not.
-#         selection_text_color : tuple of 3 floats
-#             Color of the selected text to be displayed.
-#         selection_bg_color : tuple of 3 floats
-#             Background color of the selection text.
-#         menu_text_color : tuple of 3 floats.
-#             Color of the options displayed in drop down menu.
-#         selected_color : tuple of 3 floats.
-#             Background color of the selected option in drop down menu.
-#         unselected_color : tuple of 3 floats.
-#             Background color of the unselected option in drop down menu.
-#         scroll_bar_active_color : tuple of 3 floats.
-#             Color of the scrollbar when in active use.
-#         scroll_bar_inactive_color : tuple of 3 floats.
-#             Color of the scrollbar when inactive.
-#         reverse_scrolling: {True, False}
-#             If True, scrolling up will move the list of files down.
-#         font_size: int
-#             The font size of selected text in pixels.
-#         line_spacing: float
-#             Distance between drop down menu's items in pixels.
+        self.items = items.copy()
+        self.font_size = font_size
+        self.reverse_scrolling = reverse_scrolling
+        self.line_spacing = line_spacing
+        self.panel_size = size
+        self._selection = placeholder
+        self._menu_visibility = False
+        self._selection_ID = None
+        self._drag_offset = None
+        self.draggable = draggable
+        self.sel_text_color = selection_text_color
+        self.sel_bg_color = selection_bg_color
+        self.menu_txt_color = menu_text_color
+        self.selected_color = selected_color
+        self.unselected_color = unselected_color
+        self.scroll_active_color = scroll_bar_active_color
+        self.scroll_inactive_color = scroll_bar_inactive_color
+        self.menu_opacity = menu_opacity
 
-#         """
-#         if items is None:
-#             items = []
+        (
+            self.text_block_size,
+            self.drop_menu_size,
+            self.drop_button_size,
+            self._sel_pos,
+            self._btn_pos,
+            self._menu_pos,
+        ) = self._calculate_layout(size)
 
-#         self.items = items.copy()
-#         self.font_size = font_size
-#         self.reverse_scrolling = reverse_scrolling
-#         self.line_spacing = line_spacing
-#         self.panel_size = size
-#         self._selection = placeholder
-#         self._menu_visibility = False
-#         self._selection_ID = None
-#         self.draggable = draggable
-#         self.sel_text_color = selection_text_color
-#         self.sel_bg_color = selection_bg_color
-#         self.menu_txt_color = menu_text_color
-#         self.selected_color = selected_color
-#         self.unselected_color = unselected_color
-#         self.scroll_active_color = scroll_bar_active_color
-#         self.scroll_inactive_color = scroll_bar_inactive_color
-#         self.menu_opacity = menu_opacity
+        self._icon_files = {
+            "default": read_viz_icons(fname="circle-down.png"),
+            "pressed": read_viz_icons(fname="circle-up.png"),
+        }
 
-#         # Define subcomponent sizes.
-#         self.text_block_size = (int(0.9 * size[0]), int(0.1 * size[1]))
-#         self.drop_menu_size = (int(0.9 * size[0]), int(0.7 * size[1]))
-#         self.drop_button_size = (int(0.1 * size[0]), int(0.1 * size[1]))
+        super(ComboBox2D, self).__init__(position=position, z_order=z_order)
 
-#         self._icon_files = [
-#             ("left", read_viz_icons(fname="circle-left.png")),
-#             ("down", read_viz_icons(fname="circle-down.png")),
-#         ]
+    def _setup(self):
+        """
+        Setup this UI component.
+        """
+        self.selection_box = TextBlock2D(
+            size=self.text_block_size,
+            color=self.sel_text_color,
+            bg_color=self.sel_bg_color,
+            text=self._selection,
+            font_size=self.font_size,
+            justification="center",
+            vertical_justification="middle",
+            bold=True,
+        )
 
-#         super(ComboBox2D, self).__init__()
-#         self.position = position
+        self.drop_down_button = TexturedButton2D(
+            states=self._icon_files, size=self.drop_button_size, is_toggle=True
+        )
 
-#     def _setup(self):
-#         """Setup this UI component.
+        self.drop_down_menu = ListBox2D(
+            values=self.items,
+            multiselection=False,
+            font_size=self.font_size,
+            line_spacing=self.line_spacing,
+            text_color=self.menu_txt_color,
+            selected_color=self.selected_color,
+            unselected_color=self.unselected_color,
+            scroll_bar_active_color=self.scroll_active_color,
+            scroll_bar_inactive_color=self.scroll_inactive_color,
+            background_opacity=self.menu_opacity,
+            reverse_scrolling=self.reverse_scrolling,
+            size=self.drop_menu_size,
+        )
 
-#         Create the ListBox filled with empty slots (ListBoxItem2D).
-#         Create TextBox with placeholder text.
-#         Create Button for toggling drop down menu.
-#         """
-#         self.selection_box = TextBlock2D(
-#             size=self.text_block_size,
-#             color=self.sel_text_color,
-#             bg_color=self.sel_bg_color,
-#             text=self._selection,
-#         )
+        self.drop_down_menu.set_visibility(False)
 
-#         self.drop_down_button = Button2D(
-#             icon_fnames=self._icon_files, size=self.drop_button_size
-#         )
+        self.drop_down_menu.panel.background.on_left_mouse_button_pressed = lambda e: (
+            None
+        )
+        self.drop_down_menu.panel.background.on_left_mouse_button_dragged = lambda e: (
+            None
+        )
 
-#         self.drop_down_menu = ListBox2D(
-#             values=self.items,
-#             multiselection=False,
-#             font_size=self.font_size,
-#             line_spacing=self.line_spacing,
-#             text_color=self.menu_txt_color,
-#             selected_color=self.selected_color,
-#             unselected_color=self.unselected_color,
-#             scroll_bar_active_color=self.scroll_active_color,
-#             scroll_bar_inactive_color=self.scroll_inactive_color,
-#             background_opacity=self.menu_opacity,
-#             reverse_scrolling=self.reverse_scrolling,
-#             size=self.drop_menu_size,
-#         )
+        self.panel = Panel2D(self.panel_size, opacity=0.0)
+        self.panel.add_element(self.selection_box, self._sel_pos)
+        self.panel.add_element(self.drop_down_button, self._btn_pos)
+        self.panel.add_element(self.drop_down_menu, self._menu_pos)
 
-#         self.drop_down_menu.set_visibility(False)
+        self._setup_drag_events()
 
-#         self.panel = Panel2D(self.panel_size, opacity=0.0)
-#         self.panel.add_element(self.selection_box, (0.001, 0.7))
-#         self.panel.add_element(self.drop_down_button, (0.8, 0.7))
-#         self.panel.add_element(self.drop_down_menu, (0, 0))
+        self.drop_down_menu.on_change = self.select_option_callback
+        self.drop_down_button.on_clicked = self.menu_toggle_callback
 
-#         if self.draggable:
-#             self.drop_down_button.on_left_mouse_button_dragged = (
-#                 self.left_button_dragged
-#             )
-#             self.drop_down_menu.panel.background.on_left_mouse_button_dragged = (
-#                 self.left_button_dragged
-#             )
-#             self.selection_box.on_left_mouse_button_dragged = self.left_button_dragged
-#             self.selection_box.background.on_left_mouse_button_dragged = (
-#                 self.left_button_dragged
-#             )
+        self.on_change = lambda ui: None
 
-#             self.drop_down_button.on_left_mouse_button_pressed = (
-#                 self.left_button_pressed
-#             )
-#             self.drop_down_menu.panel.background.on_left_mouse_button_pressed = (
-#                 self.left_button_pressed
-#             )
-#             self.selection_box.on_left_mouse_button_pressed = self.left_button_pressed
-#             self.selection_box.background.on_left_mouse_button_pressed = (
-#                 self.left_button_pressed
-#             )
-#         else:
-#             self.panel.background.on_left_mouse_button_dragged = (
-#                 lambda i_ren, _obj, _comp: i_ren.force_render
-#             )
-#             self.drop_down_menu.panel.background.on_left_mouse_button_dragged = (
-#                 lambda i_ren, _obj, _comp: i_ren.force_render
-#             )
+        self._children.extend([self.panel])
 
-#         # Handle mouse wheel events on the slots.
-#         for slot in self.drop_down_menu.slots:
-#             slot.add_callback(
-#                 slot.textblock.actor,
-#                 "LeftButtonPressEvent",
-#                 self.select_option_callback,
-#             )
+    def _setup_drag_events(self):
+        """Attach drag event handlers to all interactive surfaces."""
+        if self.draggable:
+            drag_targets = [
+                self.selection_box,
+                self.selection_box.background,
+            ]
 
-#             slot.add_callback(
-#                 slot.background.actor,
-#                 "LeftButtonPressEvent",
-#                 self.select_option_callback,
-#             )
+            for target in drag_targets:
+                target.on_left_mouse_button_dragged = self.left_button_dragged
+                target.on_left_mouse_button_pressed = self.left_button_pressed
+        else:
+            self.panel.background.on_left_mouse_button_dragged = lambda event: None
 
-#         self.drop_down_button.on_left_mouse_button_clicked = self.menu_toggle_callback
+    def _get_actors(self):
+        """
+        Get the actors composing this UI component.
 
-#         # Offer some standard hooks to the user.
-#         self.on_change = lambda ui: None
+        Returns
+        -------
+        list
+            A list of actors.
+        """
+        return []
 
-#     def _get_actors(self):
-#         """Get the actors composing this UI component."""
-#         return self.panel.actors
+    def _calculate_layout(self, size):
+        """
+        Calculate subcomponent sizes and positions for the given overall size.
 
-#     def resize(self, size):
-#         """Resize ComboBox2D.
+        Parameters
+        ----------
+        size : tuple of 2 ints
+            ComboBox size (width, height) in pixels.
 
-#         Parameters
-#         ----------
-#         size : (int, int)
-#             ComboBox size(width, height) in pixels.
+        Returns
+        -------
+        tuple
+            Tuple of (text_block_size, drop_menu_size, drop_button_size,
+            sel_pos, btn_pos, menu_pos).
+        """
+        text_block_size = (int(0.85 * size[0]), int(0.2 * size[1]))
+        drop_menu_size = (size[0], int(0.8 * size[1]))
+        drop_button_size = (int(0.15 * size[0]), int(0.2 * size[1]))
 
-#         """
-#         self.panel.resize(size)
+        sel_pos = (0.0, 0.0)
+        btn_pos = (0.85, 0.0)
+        menu_pos = (0.0, 0.2)
 
-#         self.text_block_size = (int(0.9 * size[0]), int(0.1 * size[1]))
-#         self.drop_menu_size = (int(0.9 * size[0]), int(0.7 * size[1]))
-#         self.drop_button_size = (int(0.1 * size[0]), int(0.1 * size[1]))
+        return (
+            text_block_size,
+            drop_menu_size,
+            drop_button_size,
+            sel_pos,
+            btn_pos,
+            menu_pos,
+        )
 
-#         self.panel.update_element(self.selection_box, (0.001, 0.7))
-#         self.panel.update_element(self.drop_down_button, (0.8, 0.7))
-#         self.panel.update_element(self.drop_down_menu, (0, 0))
+    def resize(self, size):
+        """
+        Resize ComboBox2D.
 
-#         self.drop_down_button.resize(self.drop_button_size)
-#         self.drop_down_menu.resize(self.drop_menu_size)
-#         self.selection_box.resize(self.text_block_size)
+        Parameters
+        ----------
+        size : tuple of 2 ints
+            ComboBox size(width, height) in pixels.
+        """
+        ratio = size[1] / self.panel_size[1]
+        self.font_size = max(1, int(self.font_size * ratio))
+        self.panel_size = size
 
-#     def _set_position(self, coords):
-#         """Set the lower-left corner position of this UI component.
+        self.panel.resize(size)
 
-#         Parameters
-#         ----------
-#         coords: (float, float)
-#             Absolute pixel coordinates (x, y).
+        (
+            self.text_block_size,
+            self.drop_menu_size,
+            self.drop_button_size,
+            sel_pos,
+            btn_pos,
+            menu_pos,
+        ) = self._calculate_layout(size)
 
-#         """
-#         self.panel.position = coords
-#         self.panel.position = (
-#             self.panel.position[0],
-#             self.panel.position[1] - self.drop_menu_size[1],
-#         )
+        self.panel.update_element(self.selection_box, sel_pos)
+        self.panel.update_element(self.drop_down_button, btn_pos)
+        self.panel.update_element(self.drop_down_menu, menu_pos)
 
-#     def _add_to_scene(self, scene):
-#         """Add all subcomponents or VTK props that compose this UI component.
+        self.drop_down_button.resize(self.drop_button_size)
 
-#         Parameters
-#         ----------
-#         scene : scene
+        self.drop_down_menu.font_size = self.font_size
+        self.drop_down_menu.slot_height = max(
+            1, int(self.font_size * self.drop_down_menu.line_spacing)
+        )
+        self.drop_down_menu.resize(self.drop_menu_size)
 
-#         """
-#         self.panel.add_to_scene(scene)
-#         self.selection_box.font_size = self.font_size
+        self.selection_box.font_size = self.font_size
+        self.selection_box.resize(self.text_block_size)
 
-#     def _get_size(self):
-#         return self.panel.size
+        if not self._menu_visibility:
+            self.drop_down_menu.set_visibility(False)
 
-#     @property
-#     def selected_text(self):
-#         return self._selection
+    def _update_actors_position(self):
+        """Update the position of the actors."""
+        pos = self.get_position()
+        self.panel.set_position((pos[0], pos[1] - self.drop_menu_size[1]))
 
-#     @property
-#     def selected_text_index(self):
-#         return self._selection_ID
+    def _get_size(self):
+        """
+        Get the size of the UI component.
 
-#     def set_visibility(self, visibility):
-#         super().set_visibility(visibility)
-#         if not self._menu_visibility:
-#             self.drop_down_menu.set_visibility(False)
+        Returns
+        -------
+        tuple of 2 ints
+            Size of the UI component.
+        """
+        return self.panel.size
 
-#     def append_item(self, *items):
-#         """Append additional options to the menu.
+    @property
+    def selected_text(self):
+        """
+        Get the currently selected text.
 
-#         Parameters
-#         ----------
-#         items : n-d list, n-d tuple, Number or str
-#             Additional options.
+        Returns
+        -------
+        str
+            Currently selected text.
+        """
+        return self._selection
 
-#         """
-#         for item in items:
-#             if isinstance(item, (list, tuple)):
-#                 # Useful when n-d lists/tuples are used.
-#                 self.append_item(*item)
-#             elif isinstance(item, (str, Number)):
-#                 self.items.append(str(item))
-#             else:
-#                 raise TypeError("Invalid item instance {}".format(type(item)))
+    @property
+    def selected_text_index(self):
+        """
+        Get the index of the currently selected text.
 
-#         self.drop_down_menu.update_scrollbar()
-#         if not self._menu_visibility:
-#             self.drop_down_menu.scroll_bar.set_visibility(False)
+        Returns
+        -------
+        int
+            Index of the currently selected text.
+        """
+        return self._selection_ID
 
-#     def select_option_callback(self, i_ren, _obj, listboxitem):
-#         """Select the appropriate option
+    def set_visibility(self, visibility):
+        """
+        Set the visibility of the UI component.
 
-#         Parameters
-#         ----------
-#         i_ren: :class:`CustomInteractorStyle`
-#         obj: :class:`vtkActor`
-#             The picked actor
-#         listboxitem: :class:`ListBoxItem2D`
+        Parameters
+        ----------
+        visibility : bool
+            Whether the UI element is visible or not.
+        """
+        super().set_visibility(visibility)
+        if not self._menu_visibility:
+            self.drop_down_menu.set_visibility(False)
 
-#         """
-#         # Set the Text of TextBlock2D to the text of listboxitem
-#         self._selection = listboxitem.element
-#         self._selection_ID = self.items.index(self._selection)
+    def append_item(self, *items):
+        """
+        Append additional options to the menu.
 
-#         self.selection_box.message = self._selection
-#         clip_overflow(self.selection_box, self.selection_box.background.size[0])
-#         self.drop_down_menu.set_visibility(False)
-#         self._menu_visibility = False
+        Parameters
+        ----------
+        *items : str or float or list or tuple
+            Additional options.
+        """
+        for item in items:
+            if isinstance(item, (list, tuple)):
+                self.append_item(*item)
+            elif isinstance(item, (str, Number)):
+                self.items.append(str(item))
+            else:
+                raise TypeError("Invalid item instance {}".format(type(item)))
 
-#         self.drop_down_button.next_icon()
+        self.drop_down_menu.values = self.items
+        self.drop_down_menu.update_scrollbar()
+        self.drop_down_menu.update()
+        if not self._menu_visibility:
+            self.drop_down_menu.set_visibility(False)
 
-#         self.on_change(self)
+    def select_option_callback(self):
+        """Select the appropriate option based on ListBox selection."""
+        if not self.drop_down_menu.selected:
+            return
 
-#         i_ren.force_render()
-#         i_ren.event.abort()
+        self._selection = self.drop_down_menu.selected[0]
+        self._selection_ID = self.drop_down_menu.last_selection_idx
 
-#     def menu_toggle_callback(self, i_ren, _vtkactor, _combobox):
-#         """Toggle visibility of drop down menu list.
+        self.selection_box.message = self._selection
+        clip_overflow(self.selection_box, self.selection_box.background.size[0])
+        self.drop_down_menu.set_visibility(False)
+        self._menu_visibility = False
+        self.drop_down_button.toggled = False
+        self.on_change(self)
 
-#         Parameters
-#         ----------
-#         i_ren : :class:`CustomInteractorStyle`
-#         vtkactor : :class:`vtkActor`
-#             The picked actor
-#         combobox : :class:`ComboBox2D`
+    def menu_toggle_callback(self, event):
+        """
+        Toggle visibility of drop down menu list.
 
-#         """
-#         self._menu_visibility = not self._menu_visibility
-#         self.drop_down_menu.set_visibility(self._menu_visibility)
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        self._menu_visibility = not self._menu_visibility
+        self.drop_down_menu.set_visibility(self._menu_visibility)
+        self.drop_down_button.toggled = self._menu_visibility
+        if self._menu_visibility:
+            self.drop_down_menu.update()
+            self.drop_down_menu.update_scrollbar()
 
-#         self.drop_down_button.next_icon()
+    def left_button_pressed(self, event):
+        """
+        Handle left mouse button press event for dragging.
 
-#         i_ren.force_render()
-#         i_ren.event.abort()  # Stop propagating the event.
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        click_pos = np.array([event.x, event.y])
+        self._drag_offset = click_pos - self.get_position()
 
-#     def left_button_pressed(self, i_ren, _obj, _sub_component):
-#         click_pos = np.array(i_ren.event.position)
-#         self._click_position = click_pos
-#         i_ren.event.abort()  # Stop propagating the event.
+    def left_button_dragged(self, event):
+        """
+        Handle left mouse button drag event for movement.
 
-#     def left_button_dragged(self, i_ren, _obj, _sub_component):
-#         click_position = np.array(i_ren.event.position)
-#         change = click_position - self._click_position
-#         self.panel.position += change
-#         self._click_position = click_position
-#         i_ren.force_render()
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        if self._drag_offset is not None:
+            click_position = np.array([event.x, event.y])
+            new_position = click_position - self._drag_offset
+            self.set_position(new_position)
 
 
 class ListBox2D(UI):
@@ -3028,34 +3088,31 @@ class ListBox2D(UI):
         size = self.panel_size
         font_size = self.font_size
         # Calculating the number of slots.
-        self.nb_slots = int((size[1] - 2 * self.margin) // self.slot_height)
+        self.nb_slots = int((size[1] - 2 * self.margin) // max(1, self.slot_height))
 
         # This panel facilitates adding slots at the right position.
         self.panel = Panel2D(size=size, color=(1, 1, 1))
 
         # Add a scroll bar
-        scroll_bar_height = int(
-            self.nb_slots * (size[1] - 2 * self.margin) / len(self.values)
-        )
-        self.scroll_bar = Rectangle2D(size=(int(size[0] / 20), scroll_bar_height))
+        denom = len(self.values) if len(self.values) > 0 else 1
+        scroll_bar_height = int(self.nb_slots * (size[1] - 2 * self.margin) / denom)
+        scroll_bar_width = int(size[0] / 20)
+        self.scroll_bar = Rectangle2D(size=(scroll_bar_width, scroll_bar_height))
         if len(self.values) <= self.nb_slots:
             self.scroll_bar.set_visibility(False)
             self.scroll_bar.height = 0
 
-        scroll_bar_x = int(size[0] - self.scroll_bar.size[0] - self.margin)
-        scroll_bar_y = int(size[1] - self.scroll_bar.size[1] - self.margin)
+        scroll_bar_x = int(size[0] - scroll_bar_width - self.margin)
+        scroll_bar_y = self.margin
         self._scroll_bar_top_y = scroll_bar_y
         self._scroll_bar_x = scroll_bar_x
         self.panel.add_element(self.scroll_bar, (scroll_bar_x, scroll_bar_y))
 
         # Initialisation of empty text actors
-        self.slot_width = int(
-            size[0] - self.scroll_bar.size[0] - 2 * self.margin - self.margin
-        )
+        self.slot_width = int(size[0] - scroll_bar_width - 3 * self.margin)
         x = self.margin
-        y = int(size[1] - self.margin)
+        y = self.margin
         for _ in range(self.nb_slots):
-            y -= self.slot_height
             item = ListBoxItem2D(
                 on_select=self.select,
                 size=(self.slot_width, self.slot_height),
@@ -3066,14 +3123,13 @@ class ListBox2D(UI):
             )
             item.textblock.font_size = font_size
             self.slots.append(item)
-            self.panel.add_element(item, (int(x), int(y + self.margin)))
+            self.panel.add_element(item, (int(x), int(y)))
+            y += self.slot_height
 
         # Add default events listener for this UI component.
         self.scroll_bar.on_left_mouse_button_pressed = self.scroll_click_callback
         self.scroll_bar.on_left_mouse_button_released = self.scroll_release_callback
         self.scroll_bar.on_left_mouse_button_dragged = self.scroll_drag_callback
-
-        from fury.lib import EventType
 
         self.panel.background.actor.add_event_handler(
             self.wheel_callback, EventType.WHEEL
@@ -3098,7 +3154,56 @@ class ListBox2D(UI):
         size : (int, int)
             Size to resize to.
         """
-        pass
+        self.panel_size = np.array(size, dtype=int)
+        self.panel.resize(size)
+
+        self.nb_slots = int((size[1] - 2 * self.margin) // max(1, self.slot_height))
+
+        new_scrollbar_width = int(size[0] / 20)
+        self._scroll_bar_x = int(size[0] - new_scrollbar_width - self.margin)
+
+        self.slot_width = int(size[0] - new_scrollbar_width - 3 * self.margin)
+        x = self.margin
+
+        if self.nb_slots > len(self.slots):
+            font_size = self.font_size
+
+            for _ in range(self.nb_slots - len(self.slots)):
+                item = ListBoxItem2D(
+                    on_select=self.select,
+                    size=(self.slot_width, self.slot_height),
+                    text_color=self.text_color,
+                    selected_color=self.selected_color,
+                    unselected_color=self.unselected_color,
+                    background_opacity=self.background_opacity,
+                )
+                item.textblock.font_size = font_size
+                item.background.actor.add_event_handler(
+                    self.wheel_callback, EventType.WHEEL
+                )
+                for text_actor in item.textblock.actors:
+                    text_actor.add_event_handler(self.wheel_callback, EventType.WHEEL)
+
+                self.slots.append(item)
+                self.panel.add_element(item, (0, 0))
+
+        while len(self.slots) > self.nb_slots:
+            item = self.slots.pop()
+            self.panel.remove_element(item)
+
+        y = self.margin
+        for slot in self.slots:
+            self.panel.update_element(slot, (int(x), int(y)))
+            slot.textblock.font_size = self.font_size
+            slot.resize((self.slot_width, self.slot_height))
+            y += self.slot_height
+
+        if self.view_offset + self.nb_slots > len(self.values):
+            self.view_offset = max(0, len(self.values) - self.nb_slots)
+
+        self.scroll_bar.width = new_scrollbar_width
+        self.update()
+        self.update_scrollbar()
 
     def _get_actors(self):
         """
@@ -3132,7 +3237,7 @@ class ListBox2D(UI):
             return
 
         scroll_bar_y = int(
-            self._scroll_bar_top_y - self.view_offset * self.scroll_step_size
+            self._scroll_bar_top_y + self.view_offset * self.scroll_step_size
         )
         self.panel.update_element(self.scroll_bar, (self._scroll_bar_x, scroll_bar_y))
 
@@ -3201,19 +3306,17 @@ class ListBox2D(UI):
             The pygfx event.
         """
         position_y = event.y
+        if self.scroll_step_size == 0:
+            return
         offset = int((position_y - self.scroll_init_position) / self.scroll_step_size)
-        if offset > 0 and self.view_offset > 0:
-            offset = min(offset, self.view_offset)
-        elif offset < 0 and (self.view_offset + self.nb_slots < len(self.values)):
-            offset = min(
-                -offset,
-                len(self.values) - self.nb_slots - self.view_offset,
-            )
-            offset = -offset
+        if offset > 0 and (self.view_offset + self.nb_slots < len(self.values)):
+            offset = min(offset, len(self.values) - self.nb_slots - self.view_offset)
+        elif offset < 0 and self.view_offset > 0:
+            offset = max(offset, -self.view_offset)
         else:
             return
 
-        self.view_offset -= offset
+        self.view_offset += offset
         self.update()
         self._update_scroll_bar_position()
         self.scroll_init_position += offset * self.scroll_step_size
@@ -3248,17 +3351,22 @@ class ListBox2D(UI):
         """Change the scroll-bar height when the values change."""
         self.scroll_bar.set_visibility(True)
 
-        self.scroll_bar.height = int(
-            self.nb_slots * (self.panel_size[1] - 2 * self.margin) / len(self.values)
+        denom = len(self.values) if len(self.values) > 0 else 1
+        new_scrollbar_height = int(
+            self.nb_slots * (self.panel_size[1] - 2 * self.margin) / denom
+        )
+        self.scroll_bar.height = new_scrollbar_height
+
+        step_denom = len(self.values) - self.nb_slots
+        if step_denom == 0:
+            step_denom = 1
+
+        self.scroll_step_size = max(
+            1,
+            (self.slot_height * self.nb_slots - new_scrollbar_height) / step_denom,
         )
 
-        self.scroll_step_size = (
-            self.slot_height * self.nb_slots - self.scroll_bar.height
-        ) / (len(self.values) - self.nb_slots)
-
-        self._scroll_bar_top_y = int(
-            self.panel_size[1] - self.scroll_bar.size[1] - self.margin
-        )
+        self._scroll_bar_top_y = self.margin
         self._update_scroll_bar_position()
 
         if len(self.values) <= self.nb_slots:
@@ -3302,8 +3410,8 @@ class ListBox2D(UI):
             self.selected.append(item.element)
             self.last_selection_idx = selection_idx
 
-        self.on_change()  # Call hook.
         self.update()
+        self.on_change()
 
 
 class ListBoxItem2D(UI):

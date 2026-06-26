@@ -18,7 +18,7 @@ __all__ = [
     #     "Checkbox",
     #     "Option",
     #     "RadioButton",
-    #     "ComboBox2D",
+    "ComboBox2D",
     "ListBox2D",
     "ListBoxItem2D",
     #     "FileMenu2D",
@@ -51,6 +51,7 @@ from .context import UIContext
 from .core import UI, Anchor, Disk2D, Rectangle2D, TextBlock2D
 from .elements import (
     Card2D,
+    ComboBox2D,
     LineDoubleSlider2D,
     LineSlider2D,
     ListBox2D,

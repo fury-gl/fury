@@ -569,6 +569,7 @@ class UI(object, metaclass=abc.ABCMeta):
             UIContext.hot_ui.on_wheel(event)
         else:
             self.on_wheel(event)
+        event.stop_propagation()
 
     def pointer_enter_callback(self, event):
         """
