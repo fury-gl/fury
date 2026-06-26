@@ -13,7 +13,12 @@ from fury.lib import (
 from fury.material import _create_mesh_material
 from fury.primitive import prim_ring
 from fury.ui import UIContext
-from fury.ui.helpers import UI_Z_RANGE, Anchor, get_anchor_to_multiplier
+from fury.ui.helpers import (
+    UI_SUBLAYER_SCALE,
+    UI_Z_RANGE,
+    Anchor,
+    get_anchor_to_multiplier,
+)
 
 
 class UI(object, metaclass=abc.ABCMeta):
@@ -178,7 +183,7 @@ class UI(object, metaclass=abc.ABCMeta):
                 f"y_anchor should be one of these {', '.join([Anchor.TOP, Anchor.CENTER, Anchor.BOTTOM])} but received {y_anchor}"  # noqa: E501
             )
 
-    def set_actor_position(self, actor, center_position, z_order):
+    def set_actor_position(self, actor, center_position, z_order, *, sub_order=0):
         """
         Set the position of the PyGfx actor.
 
@@ -191,12 +196,18 @@ class UI(object, metaclass=abc.ABCMeta):
             position of the actor.
         z_order : int
             The Z-order of the UI component.
+        sub_order : int, optional
+            Ordering of this actor relative to other actors of the *same*
+            component (and `z_order`). Higher values are drawn on top. This
+            disambiguates coplanar actors, such as a text actor and its
+            background, whose draw order would otherwise be undefined.
         """
         canvas_size = UIContext.canvas_size
 
         actor.local.x = center_position[0]
         actor.local.y = canvas_size[1] - center_position[1]
         actor.local.z = np.interp(z_order, UIContext.z_order_bounds, UI_Z_RANGE)
+        actor.render_order = float(z_order * UI_SUBLAYER_SCALE + sub_order)
 
     def set_position(self, coords, x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP):
         """
@@ -1040,6 +1051,7 @@ class TextBlock2D(UI):
         self.actor = Text(
             markdown=self._message, screen_space=True, anchor="middle-center"
         )
+        self.actor.material.aa = True
         self.background = Rectangle2D()
         self._children.append(self.background)
         self.handle_events(self.actor)
@@ -1501,7 +1513,9 @@ class TextBlock2D(UI):
             msg = "Vertical justification must be: top, middle or bottom."
             raise ValueError(msg)
 
-        self.set_actor_position(self.actor, updated_text_position, self.z_order)
+        self.set_actor_position(
+            self.actor, updated_text_position, self.z_order, sub_order=1
+        )
 
     def update_bounding_box(self, *, size=None):
         """
