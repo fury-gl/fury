@@ -146,9 +146,6 @@ html_theme_options = {
     "navbar_start": ["navbar-logo"],
     "navbar_center": ["custom-navbar-nav.html"],
     "navbar_end": ["navbar-icon-links", "theme-switcher"],
-    "logo": {
-        "text": "FURY",
-    },
     "footer_start": ["custom-footer.html"],
     "footer_center": [],
     "footer_end": [],
