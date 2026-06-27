@@ -146,6 +146,9 @@ html_theme_options = {
     "navbar_start": ["navbar-logo"],
     "navbar_center": ["custom-navbar-nav.html"],
     "navbar_end": ["navbar-icon-links", "theme-switcher"],
+    "logo": {
+        "text": "FURY",
+    },
     "footer_start": ["custom-footer.html"],
     "footer_center": [],
     "footer_end": [],
@@ -168,7 +171,7 @@ html_theme_options = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-html_css_files = []
+html_css_files = ["css/fury_theme.css"]
 html_additional_pages = {"index": "home.html"}
 
 # html_baseurl = os.environ.get("SPHINX_HTML_BASE_URL", "http://127.0.0.1:8000/")
@@ -185,12 +188,12 @@ github_project_url = "https://github.com/fury-gl/fury"
 import github_tools as ght
 
 # Skip GitHub fetching for now
-all_versions = [] # ght.get_all_versions(ignore="micro")
+all_versions = []  # ght.get_all_versions(ignore="micro")
 html_context = {
     "all_versions": all_versions,
     "versions_list": ["dev", "latest"] + all_versions,
-    "basic_stats": {}, # ght.fetch_basic_stats(),
-    "contributors": {"total_contributors": 0, "contributors": [], "total_commits": 0}, # ght.fetch_contributor_stats(),
+    "basic_stats": ght.fetch_basic_stats(),
+    "contributors": ght.fetch_contributor_stats(),
     "default_mode": "light",
 }
 
