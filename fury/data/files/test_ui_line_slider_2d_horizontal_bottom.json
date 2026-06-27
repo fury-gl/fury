@@ -1,1 +1,1 @@
-{"MiddleButtonReleaseEvent": 0, "RightButtonReleaseEvent": 0, "KeyPressEvent": 0, "LeftButtonPressEvent": 7, "MouseMoveEvent": 266, "CharEvent": 0, "LeftButtonReleaseEvent": 7, "RightButtonPressEvent": 0, "KeyReleaseEvent": 0, "MiddleButtonPressEvent": 0}
+{"events_counts": {"pointer_down": 7, "pointer_up": 6, "pointer_move": 90, "pointer_drag": 497, "key_down": 0, "key_up": 0, "click": 1, "double_click": 0, "wheel": 0}, "ui_snapshots": {"0": {"LineSlider2D": {"position": [0.0, 0.0], "size": [200, 20]}}}, "window": {"size": [600, 600], "screen_config": null}}

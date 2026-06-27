@@ -375,6 +375,23 @@ class UI(object, metaclass=abc.ABCMeta):
         actor.add_event_handler(self.pointer_leave_callback, EventType.POINTER_LEAVE)
         actor.add_event_handler(self.wheel_callback, EventType.WHEEL)
 
+    def add_callback(self, prop, event_type, callback, *, priority=0):
+        """
+        Add a callback to a specific event for this UI component.
+
+        Parameters
+        ----------
+        prop : object
+            The PyGfx actor on which this callback is to be added.
+        event_type : str
+            The event type (e.g., 'pointer_down', 'key_down').
+        callback : function
+            The callback function.
+        priority : int
+            Higher number is higher priority.
+        """
+        prop.add_event_handler(callback, event_type)
+
     def mouse_button_down_callback(self, event):
         """
         Handle mouse button press event.

@@ -1,11 +1,14 @@
 """Test for components module."""
 
+from os.path import join as pjoin
+
 import numpy as np
 import numpy.testing as npt
 
 from fury import ui, window
-from fury.data import fetch_viz_icons, read_viz_icons
+from fury.data import DATA_DIR, fetch_viz_icons, read_viz_icons
 from fury.lib import KeyboardEvent
+from fury.testing import VisualTest
 from fury.ui.helpers import Anchor
 
 
@@ -883,40 +886,30 @@ def test_textbox_handle_character_returns_false():
 #     npt.assert_equal(is_off_focused[0], True)
 
 
-# def test_ui_line_slider_2d_horizontal_bottom(recording=False):
-#     filename = "test_ui_line_slider_2d_horizontal_bottom"
-#     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-#     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+def test_ui_line_slider_2d_horizontal_bottom(recording=False):
+    filename = "test_ui_line_slider_2d_horizontal_bottom"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
-#     line_slider_2d_test = ui.LineSlider2D(
-#         initial_value=-2,
-#         min_value=-5,
-#         max_value=5,
-#         orientation="horizontal",
-#         text_alignment="bottom",
-#     )
-#     line_slider_2d_test.center = (300, 300)
+    line_slider_2d_test = ui.LineSlider2D(
+        initial_value=-2,
+        min_value=-5,
+        max_value=5,
+        orientation="horizontal",
+    )
+    line_slider_2d_test.center = (300, 300)
 
-#     # Assign the counter callback to every possible event.
-#     event_counter = EventCounter()
-#     event_counter.monitor(line_slider_2d_test)
+    # Assign the counter callback to every possible event.
+    event_counter = VisualTest()
+    event_counter.monitor(line_slider_2d_test)
 
-#     current_size = (600, 600)
-#     show_manager = window.ShowManager(
-#         size=current_size, title="FURY Horizontal Line Slider"
-#     )
-
-#     show_manager.scene.add(line_slider_2d_test)
-
-#     if recording:
-#         show_manager.record_events_to_file(recording_filename)
-#         print(list(event_counter.events_counts.items()))
-#         event_counter.save(expected_events_counts_filename)
-
-#     else:
-#         show_manager.play_events_from_file(recording_filename)
-#         expected = EventCounter.load(expected_events_counts_filename)
-#         event_counter.check_counts(expected)
+    event_counter.record_or_test(
+        recording_filename,
+        expected_events_counts_filename,
+        size=(600, 600),
+        title="FURY Horizontal Line Slider",
+        recording=recording,
+    )
 
 
 # def test_ui_line_slider_2d_horizontal_top(recording=False):
