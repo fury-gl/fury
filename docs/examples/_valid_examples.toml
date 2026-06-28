@@ -44,6 +44,7 @@ files = [
     "viz_contour.py",
     "viz_brownian_motion.py",
     "viz_network.py",
+    "viz_read_mesh.py",
 ]
 
 [ui]
