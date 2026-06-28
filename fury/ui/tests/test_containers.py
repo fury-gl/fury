@@ -1,8 +1,5 @@
 """Test containers module."""
 
-from os.path import join as pjoin
-
-from PIL import Image
 import numpy as np
 import numpy.testing as npt
 
@@ -162,9 +159,7 @@ def test_panel2d_z_ordering():
     assert custom_element.z_order == 2
 
 
-def test_panel2d_visual_snapshot(
-    tmp_path,
-):
+def test_panel2d_visual_snapshot():
     """
     Visual test for Panel2D: Verifies composite rendering and color
     checks.
@@ -187,16 +182,9 @@ def test_panel2d_visual_snapshot(
     scene = window.Scene()
     scene.add(panel)
 
-    # show_manager = window.ShowManager(
-    #     scene=scene, size=window_size, window_type="offscreen"
-    # )
-
-    fname = pjoin(tmp_path, "panel_visible.png")
-    # arr = show_manager.snapshot(fname=str(fname))
-    window.snapshot(scene=scene, fname=str(fname))
-    img = Image.open(fname)
-    arr = np.array(img)
-
+    arr = window.snapshot(scene=scene, fname=None, return_array=True)
+    report = window.analyze_snapshot(arr, find_objects=True)
+    assert report.objects >= 1
     assert np.sum(arr) > 0
 
     mean_r, mean_g, mean_b, _ = np.mean(arr.reshape(-1, arr.shape[2]), axis=0)
@@ -206,13 +194,10 @@ def test_panel2d_visual_snapshot(
     scene = window.Scene()
     scene.add(panel)
 
-    fname = pjoin(tmp_path, "panel_hidden.png")
     panel.set_visibility(False)
-    # arr_hidden = show_manager.snapshot(fname=str(fname))
-    window.snapshot(scene=scene, fname=str(fname))
-    img = Image.open(fname)
-    arr_hidden = np.array(img)
-
+    arr_hidden = window.snapshot(scene=scene, fname=None, return_array=True)
+    report_hidden = window.analyze_snapshot(arr_hidden, find_objects=True)
+    assert report_hidden.objects == 0
     npt.assert_almost_equal(np.mean(arr_hidden[..., :3]), 0, decimal=0)
 
 

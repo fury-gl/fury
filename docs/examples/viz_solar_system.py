@@ -279,4 +279,4 @@ if __name__ == "__main__":
 
     showm.start()
 
-showm.snapshot("viz_solar_system_animation.png")
+showm.snapshot(fname="viz_solar_system_animation.png")

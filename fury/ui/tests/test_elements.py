@@ -1,6 +1,5 @@
 """Test for components module."""
 
-from PIL import Image
 import numpy as np
 import numpy.testing as npt
 
@@ -101,13 +100,11 @@ def test_text_button_2d_visual_snapshot():
     scene.add(button)
     button.update_visual_state()
 
-    fname = "text_button_render.png"
-    window.snapshot(scene=scene, fname=fname)
+    arr = window.snapshot(scene=scene, fname=None, return_array=True)
+    report = window.analyze_snapshot(arr, find_objects=True)
+    assert report.objects >= 1
 
-    img = Image.open(fname)
-    img_array = np.array(img)
-
-    mean_colors = np.mean(img_array.reshape(-1, img_array.shape[2]), axis=0)
+    mean_colors = np.mean(arr.reshape(-1, arr.shape[2]), axis=0)
     assert mean_colors[2] > mean_colors[0]
     assert mean_colors[2] > mean_colors[1]
 

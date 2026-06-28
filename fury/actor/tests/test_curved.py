@@ -1,6 +1,5 @@
 import math
 
-from PIL import Image
 import numpy as np
 import pytest
 
@@ -78,18 +77,14 @@ def test_streamtube():
     tube_actor = actor.streamtube(lines=lines, colors=colors)
     scene.add(tube_actor)
 
-    fname = "streamtube_test.png"
-    window.snapshot(scene=scene, fname=fname)
-    img = Image.open(fname)
-    img_array = np.array(img)
+    arr = window.snapshot(scene=scene, fname=None, return_array=True)
+    report = window.analyze_snapshot(arr, find_objects=True)
+    assert report.objects >= 1
 
-    mean_r, mean_g, mean_b, _ = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
-
+    mean_r, mean_g, mean_b, _ = np.mean(arr.reshape(-1, arr.shape[2]), axis=0)
     assert mean_r > mean_g and mean_r > mean_b
 
-    middle_pixel = img_array[img_array.shape[0] // 2, img_array.shape[1] // 2]
+    middle_pixel = arr[arr.shape[0] // 2, arr.shape[1] // 2]
     r, g, b, a = middle_pixel
     assert r > g and r > b
 

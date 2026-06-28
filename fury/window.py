@@ -402,9 +402,11 @@ def update_camera(camera, size, target):
     if isinstance(target, Scene):
         target = target.main_scene
 
-    if (isinstance(target, GfxScene) and len(target.children) > 3) or (  # type: ignore [misc]
+    has_object = (isinstance(target, GfxScene) and len(target.children) > 3) or (  # type: ignore [misc]
         not isinstance(target, GfxScene) and target is not None  # type: ignore [misc]
-    ):
+    )
+
+    if has_object and target.get_world_bounding_sphere() is not None:
         camera.show_object(target)
     elif size is not None:
         camera.width = size[0]
@@ -1264,7 +1266,7 @@ class ShowManager:
                 else:
                     animation.update_animation(time=timestamp)
                 render_screens(show_m.renderer, show_m.screens)
-                frame = np.asarray(show_m.renderer.snapshot())
+                frame = show_m.snapshot(fname=None)
                 if return_frames:
                     frames.append(frame)
                 writer.write(cv2.cvtColor(frame[:, :, :3], cv2.COLOR_RGB2BGR))
@@ -1645,7 +1647,7 @@ class ShowManager:
             return getattr(self._stats, "_fps", None)
         return None
 
-    def snapshot(self, fname):
+    def snapshot(self, *, fname=None):
         """
         Save a snapshot of the current rendered content to a file.
 
@@ -1653,9 +1655,10 @@ class ShowManager:
 
         Parameters
         ----------
-        fname : str
+        fname : str or None
             The file path (including extension, e.g., 'image.png') where the
-            snapshot will be saved.
+            snapshot will be saved. If None, the image is not written to disk
+            and only the array is returned.
 
         Returns
         -------
@@ -1663,8 +1666,9 @@ class ShowManager:
             A NumPy array representing the captured image data (RGBA).
         """
         arr = np.asarray(self.renderer.snapshot())
-        img = image_from_array(arr)
-        img.save(fname)
+        if fname is not None:
+            img = image_from_array(arr)
+            img.save(fname)
         return arr
 
     def _draw_function(self):
@@ -1719,7 +1723,7 @@ class ShowManager:
                         func(*args)
 
                     self._draw_function()
-                    arr = np.asarray(self.renderer.snapshot())
+                    arr = self.snapshot()
                     frames.append(image_from_array(arr))
 
             if frames:
@@ -1733,7 +1737,7 @@ class ShowManager:
                 )
             else:
                 self._draw_function()
-                self.snapshot(f"{self._title}.png")
+                self.snapshot(fname=f"{self._title}.png")
 
             self.window.close()
             return
@@ -1776,8 +1780,9 @@ def snapshot(
         Defaults to None.
     screen_config : list, optional
         Screen layout configuration (see ShowManager). Defaults to None (single screen).
-    fname : str, optional
+    fname : str or None, optional
         The file path to save the snapshot image. Defaults to "output.png".
+        If None, the image is not written to disk (use with ``return_array``).
     actors : Object or list of Object, optional
         Convenience parameter. If provided, a new Scene is created containing
         these actors, and the `scene` parameter is ignored. Defaults to None.
@@ -1800,7 +1805,7 @@ def snapshot(
     )
     show_m.render()
     show_m.window.draw()
-    arr = show_m.snapshot(fname)
+    arr = show_m.snapshot(fname=fname)
 
     if return_array:
         return arr
