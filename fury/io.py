@@ -341,9 +341,6 @@ def read_mesh(file_path, *, format=None):
     """
     Read a mesh from a file using polyxios.
 
-    Supported formats include the ones handled by polyxios, such as VTK, VTP,
-    PLY, OBJ and the VTK XML family.
-
     Parameters
     ----------
     file_path : str
