@@ -154,6 +154,7 @@ from .colormap import (
     _xyz2rgb as _xyz2rgb,
     boys2rgb as boys2rgb,
     cc as cc,
+    colors_to_uint8 as colors_to_uint8,
     #     colormap_lookup_table as colormap_lookup_table,
     create_colormap as create_colormap,
     distinguishable_colormap as distinguishable_colormap,

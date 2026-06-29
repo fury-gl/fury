@@ -912,6 +912,36 @@ def normalize_colors(colors, n_points=None):
     return _tile_colors(colors)
 
 
+def colors_to_uint8(colors, *, n_points=None):
+    """
+    Convert colors to 8-bit integer RGB(A) values in [0, 255].
+
+    Companion to :func:`normalize_colors`: the input is first normalized to
+    floats in [0, 1] (accepting hex strings, ``[0, 255]`` or ``[0, 1]`` numeric
+    RGB(A)), then scaled and rounded to ``uint8`` in ``[0, 255]``.
+
+    Parameters
+    ----------
+    colors : tuple, list, ndarray, str, or None
+        Input colors in any format accepted by :func:`normalize_colors`.
+    n_points : int, optional
+        If given, a single color is broadcast (tiled) to ``(n_points, C)``.
+
+    Returns
+    -------
+    ndarray, shape (N, 3) or (N, 4), dtype uint8
+        Colors as 8-bit integers in ``[0, 255]``.
+
+    Examples
+    --------
+    >>> from fury.colormap import colors_to_uint8
+    >>> colors_to_uint8((1.0, 0.0, 0.0))
+    array([[255,   0,   0]], dtype=uint8)
+    """
+    normalized = normalize_colors(colors, n_points=n_points)
+    return np.rint(normalized * 255).astype(np.uint8)
+
+
 def rgb2hsv(rgb):
     """
     Convert RGB color values to HSV color space.

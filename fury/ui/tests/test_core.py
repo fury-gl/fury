@@ -6,7 +6,7 @@ import numpy.testing as npt
 
 from fury import ui, window
 from fury.actor import Mesh
-from fury.actor.tests._helpers import assert_visibility
+from fury.testing import assert_visibility
 from fury.ui.helpers import Anchor
 
 
