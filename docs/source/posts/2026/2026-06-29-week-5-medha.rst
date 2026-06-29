@@ -1,0 +1,61 @@
+Week 5: Advancing the FURY Homepage Revamp
+==========================================
+
+.. post:: June 29, 2026
+   :author: Medha Bhardwaj
+   :tags: google
+   :category: gsoc
+
+During the week, I focused on advancing the FURY website's homepage redesign, adding interactivity and ensuring mobile responsiveness.
+
+Overview
+--------
+
+This week, I worked on the following pull requests:
+
+Homepage Redesign and Interactivity
+-----------------------------------
+
+- *Adds interactive features to homepage (both dark and light mode)* (`#1260 <https://github.com/fury-gl/fury/pull/1260>`_)
+  I enhanced the homepage with interactive elements, ensuring a consistent and engaging experience across both light and dark modes.
+
+- *Add interactive science domain showcase section to homepage (light and dark mode)* (`#1262 <https://github.com/fury-gl/fury/pull/1262>`_)
+  I introduced a dedicated section to showcase FURY's applications across various scientific domains.
+
+- *Adds examples gallery and installation section to the homepage* (`#1264 <https://github.com/fury-gl/fury/pull/1264>`_)
+  To help users get started quickly, I added an installation section and an interactive examples gallery directly on the homepage.
+
+- *Adds community and support section to homepage* (`#1265 <https://github.com/fury-gl/fury/pull/1265>`_)
+  I implemented a community section to highlight how users can connect, seek support, and contribute to FURY.
+
+- *Implement and integrate custom documentation footer* (`#1266 <https://github.com/fury-gl/fury/pull/1266>`_)
+  I created a custom footer for the documentation and homepage to improve navigation and provide essential links.
+
+- *refactor: enhance homepage responsiveness and refine mobile UI components* (`#1267 <https://github.com/fury-gl/fury/pull/1267>`_)
+  I focused on refining the mobile experience, making sure all the new homepage components look great and are fully responsive on smaller screens.
+
+Documentation and Usability Enhancements
+----------------------------------------
+
+- *Improve copy-to-clipboard functionality with improved UI feedback and minor refactor* (`#1258 <https://github.com/fury-gl/fury/pull/1258>`_)
+  I enhanced the code snippet copy functionality across the documentation, adding better visual feedback for users.
+
+What I Learned
+--------------
+
+This week provided a great opportunity to dive deeper into front-end development within the Sphinx documentation ecosystem. I learned a lot about managing state for dark and light modes using CSS variables and integrating them smoothly across custom layouts. I built the interactive examples gallery and science domain showcase, taking care to ensure everything remains responsive and functional across different screen sizes.
+
+
+Next Week
+---------
+
+In the upcoming week, I plan to:
+
+- Finalize any remaining website homepage tweaks.
+- Implementing more UI components in FURY LIKE ComboBox, Tree UI.
+
+Connect with Me
+---------------
+
+- GitHub: `medha-14 <https://github.com/medha-14>`_
+- LinkedIn: `Medha Bhardwaj <https://www.linkedin.com/in/medhabhardwaj/>`_
