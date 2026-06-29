@@ -545,10 +545,10 @@ def text(
     text : str or list of str
         The plain text to render. When a list is given, each item becomes
         a separate text actor and a Group is returned.
-    colors : tuple (3,) or tuple (4,) or list of tuple, optional
-        RGB or RGBA values in the range [0, 1]. When ``text`` is a list,
-        this can be a single color applied to all actors, or a list of
-        colors (one per text item).
+    colors : str, tuple, list or ndarray, optional
+        A hex string, RGB(A) in [0, 1], or RGB(A) in [0, 255]. When ``text``
+        is a list, this can be a single color applied to all actors, or a
+        list of colors (one per text item). See :func:`normalize_colors`.
     position : tuple (3,) or list of tuple (3,), optional
         The (x, y, z) coordinates to place the text in 3D space. When
         ``text`` is a list, this can be a single position applied to all
@@ -610,7 +610,7 @@ def text(
         is_color_seq = (
             isinstance(colors, (list, tuple))
             and len(colors) > 0
-            and isinstance(colors[0], (list, tuple))
+            and isinstance(colors[0], (list, tuple, str, np.ndarray))
         )
         if is_color_seq:
             if len(colors) != n:
@@ -919,16 +919,17 @@ class LineProjection(Points):
         A list of lines to be projected.
     plane : tuple, optional
         The plane equation (a, b, c, d) for the projection.
-    colors : tuple, optional
-        The color of the lines.
+    colors : str, tuple, list or ndarray, optional
+        The color of the lines. Accepts a hex string, RGB(A) in [0, 1],
+        RGB(A) in [0, 255], or one such color per line.
     lengths : list, optional
         A list of lengths for each line.
     offsets : list, optional
         A list of offsets for each line.
     thickness : float, optional
         Thickness of the cross-section.
-    outline_color : tuple, optional
-        The color of the outline.
+    outline_color : str, tuple, list or ndarray, optional
+        The color of the outline. Same formats as ``colors``.
     outline_thickness : float, optional
         The thickness of the outline.
     opacity : float, optional
@@ -1003,7 +1004,10 @@ class LineProjection(Points):
         if colors is None:
             colors = np.ones((self.num_lines, 4), dtype="float32")
         else:
-            colors = np.asarray(colors, dtype="float32")
+            colors = normalize_colors(colors).astype("float32")
+            if len(colors) == 1:
+                # A single color: collapse so it is tiled across all lines.
+                colors = colors[0]
 
         if colors.ndim == 1:
             colors = np.tile(colors, (self.num_lines, 1))
@@ -1021,7 +1025,10 @@ class LineProjection(Points):
         if outline_color is None:
             outline_color = np.ones((self.num_lines, 4), dtype="float32")
         else:
-            outline_color = np.asarray(outline_color, dtype="float32")
+            outline_color = normalize_colors(outline_color).astype("float32")
+            if len(outline_color) == 1:
+                # A single color: collapse so it is tiled across all lines.
+                outline_color = outline_color[0]
 
         if outline_color.ndim == 1:
             outline_color = np.tile(outline_color, (self.num_lines, 1))
@@ -1159,17 +1166,17 @@ def line_projection(
         A list of lines to be projected.
     plane : {str, tuple}, optional
         The plane equation (a, b, c, d) for the projection.
-    colors : {tuple, list, ndarray}, optional
-        The color of the cross-section point. It can be a single color or
-        a list of colors for each line.
+    colors : str, tuple, list or ndarray, optional
+        The color of the cross-section point. Accepts a hex string, RGB(A)
+        in [0, 1], RGB(A) in [0, 255], or one such color per line.
     lengths : list, optional
         A list of lengths for each line.
     offsets : list, optional
         A list of offsets for each line.
     thickness : float, optional
         Thickness of the cross-section.
-    outline_color : tuple, optional
-        The color of the outline.
+    outline_color : str, tuple, list or ndarray, optional
+        The color of the outline. Same formats as ``colors``.
     outline_thickness : float, optional
         The thickness of the outline.
     opacity : float, optional

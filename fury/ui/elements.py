@@ -828,8 +828,8 @@ class TextBox2D(UI):
         The initial text while building the actor.
     position : (float, float), optional
         (x, y) in pixels.
-    color : (float, float, float), optional
-        RGB values between 0 and 1.
+    color : str, tuple, list or ndarray, optional
+        A hex string ("#FF0000"), RGB(A) in [0, 1], or RGB(A) in [0, 255].
     font_size : int, optional
         Size of the text font.
     font_family : str, optional
@@ -892,8 +892,8 @@ class TextBox2D(UI):
             The initial text while building the actor.
         position : (float, float), optional
             (x, y) in pixels.
-        color : (float, float, float), optional
-            RGB values between 0 and 1.
+        color : str, tuple, list or ndarray, optional
+            A hex string ("#FF0000"), RGB(A) in [0, 1], or RGB(A) in [0, 255].
         font_size : int, optional
             Size of the text font.
         font_family : str, optional
@@ -1906,10 +1906,12 @@ class RingSlider2D(Slider2D):
         The moving part of the slider.
     text : :class:`TextBlock2D`
         The text that shows percentage.
-    default_color : (float, float, float)
-        Color of the handle when in unpressed state.
-    active_color : (float, float, float)
-        Color of the handle when it is pressed.
+    default_color : str, tuple, list or ndarray
+        Color of the handle when in unpressed state. A hex string
+        ("#FF0000"), RGB(A) in [0, 1], or RGB(A) in [0, 255].
+    active_color : str, tuple, list or ndarray
+        Color of the handle when it is pressed, same formats as
+        ``default_color``.
     """
 
     def __init__(
@@ -2595,19 +2597,21 @@ class ComboBox2D(UI):
         Holds the default text to be displayed.
     draggable : bool, optional
         Whether the UI element is draggable or not.
-    selection_text_color : tuple of 3 floats, optional
-        Color of the selected text to be displayed.
-    selection_bg_color : tuple of 3 floats, optional
+    selection_text_color : str, tuple, list or ndarray, optional
+        Color of the selected text to be displayed. All color parameters
+        accept a hex string ("#FF0000"), RGB(A) in [0, 1], or RGB(A) in
+        [0, 255].
+    selection_bg_color : str, tuple, list or ndarray, optional
         Background color of the selection text.
-    menu_text_color : tuple of 3 floats, optional
+    menu_text_color : str, tuple, list or ndarray, optional
         Color of the options displayed in drop down menu.
-    selected_color : tuple of 3 floats, optional
+    selected_color : str, tuple, list or ndarray, optional
         Background color of the selected option in drop down menu.
-    unselected_color : tuple of 3 floats, optional
+    unselected_color : str, tuple, list or ndarray, optional
         Background color of the unselected option in drop down menu.
-    scroll_bar_active_color : tuple of 3 floats, optional
+    scroll_bar_active_color : str, tuple, list or ndarray, optional
         Color of the scrollbar when in active use.
-    scroll_bar_inactive_color : tuple of 3 floats, optional
+    scroll_bar_inactive_color : str, tuple, list or ndarray, optional
         Color of the scrollbar when inactive.
     menu_opacity : float, optional
         Opacity of the drop down menu background.
@@ -3002,15 +3006,16 @@ class ListBox2D(UI):
         The font size in pixels.
     line_spacing : float, optional
         Distance between listbox's items in pixels.
-    text_color : tuple of 3 floats, optional
-        Color of the text.
-    selected_color : tuple of 3 floats, optional
+    text_color : str, tuple, list or ndarray, optional
+        Color of the text. All color parameters accept a hex string
+        ("#FF0000"), RGB(A) in [0, 1], or RGB(A) in [0, 255].
+    selected_color : str, tuple, list or ndarray, optional
         Background color of selected item.
-    unselected_color : tuple of 3 floats, optional
+    unselected_color : str, tuple, list or ndarray, optional
         Background color of unselected item.
-    scroll_bar_active_color : tuple of 3 floats, optional
+    scroll_bar_active_color : str, tuple, list or ndarray, optional
         Color of active scroll bar.
-    scroll_bar_inactive_color : tuple of 3 floats, optional
+    scroll_bar_inactive_color : str, tuple, list or ndarray, optional
         Color of inactive scroll bar.
     background_opacity : float, optional
         Opacity of the background.
@@ -3424,11 +3429,12 @@ class ListBoxItem2D(UI):
         Callback invoked when the item is clicked.
     size : (int, int)
         Size of the item.
-    text_color : tuple of 3 floats, optional
-        Text color.
-    selected_color : tuple of 3 floats, optional
+    text_color : str, tuple, list or ndarray, optional
+        Text color. All color parameters accept a hex string ("#FF0000"),
+        RGB(A) in [0, 1], or RGB(A) in [0, 255].
+    selected_color : str, tuple, list or ndarray, optional
         Selected background color.
-    unselected_color : tuple of 3 floats, optional
+    unselected_color : str, tuple, list or ndarray, optional
         Unselected background color.
     background_opacity : float, optional
         Opacity.
@@ -3453,9 +3459,9 @@ class ListBoxItem2D(UI):
             Callback invoked when the item is clicked.
         size : tuple of 2 ints
             The size of the listbox item.
-        text_color : tuple of 3 floats
-        unselected_color : tuple of 3 floats
-        selected_color : tuple of 3 floats
+        text_color : str, tuple, list or ndarray
+        unselected_color : str, tuple, list or ndarray
+        selected_color : str, tuple, list or ndarray
         background_opacity : float
 
         """
@@ -4398,16 +4404,17 @@ class Card2D(UI):
         Width and height in pixels of the card.
     image_scale : float, optional
         Fraction of the card height taken by the image (between 0 and 1).
-    bg_color : (float, float, float) or str, optional
-        Background color of the card. Can be RGB/RGBA array, or hex string.
+    bg_color : str, tuple, list or ndarray, optional
+        Background color of the card. A hex string ("#FF0000"), RGB(A) in
+        [0, 1], or RGB(A) in [0, 255].
     bg_opacity : float, optional
         Background opacity. Must be in [0, 1].
-    title_color : (float, float, float) or str, optional
-        Title text color. Can be RGB/RGBA array, or hex string.
-    body_color : (float, float, float) or str, optional
-        Body text color. Can be RGB/RGBA array, or hex string.
-    border_color : (float, float, float) or str, optional
-        Border color. Can be RGB/RGBA array, or hex string.
+    title_color : str, tuple, list or ndarray, optional
+        Title text color, same formats as ``bg_color``.
+    body_color : str, tuple, list or ndarray, optional
+        Body text color, same formats as ``bg_color``.
+    border_color : str, tuple, list or ndarray, optional
+        Border color, same formats as ``bg_color``.
     border_width : int, optional
         Width of the border in pixels.
     maintain_aspect : bool, optional
@@ -4639,8 +4646,8 @@ class Card2D(UI):
 
         Parameters
         ----------
-        color : (float, float, float) or str
-            RGB color. Values can be in [0, 1], [0, 255], or hex strings.
+        color : str, tuple, list or ndarray
+            A hex string ("#FF0000"), RGB(A) in [0, 1], or RGB(A) in [0, 255].
         """
         self.panel.color = normalize_colors(color)[0]
 

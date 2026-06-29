@@ -2762,6 +2762,27 @@ def test_listbox_2d_selection_logic():
     npt.assert_equal(listbox.selected, ["Item 3"])
 
 
+def test_listbox_2d_color_normalization():
+    """Test ListBox2D normalizes hex / [0, 255] slot colors."""
+    values = ["Item 1", "Item 2", "Item 3"]
+    listbox = ui.ListBox2D(
+        values=values,
+        size=(100, 300),
+        text_color="#0000FF",
+        selected_color="#FF0000",
+        unselected_color=(0, 255, 0),
+    )
+
+    slot = listbox.slots[0]
+    npt.assert_array_almost_equal(slot.textblock.color, [0, 0, 1])
+
+    slot.select()
+    npt.assert_array_almost_equal(slot.background.color, [1, 0, 0])
+
+    slot.deselect()
+    npt.assert_array_almost_equal(slot.background.color, [0, 1, 0])
+
+
 def test_listbox_2d_scrolling_logic():
     values = [f"Item {i}" for i in range(50)]
     listbox = ui.ListBox2D(values=values, size=(100, 300))

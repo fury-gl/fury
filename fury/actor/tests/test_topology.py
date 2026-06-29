@@ -191,5 +191,5 @@ def test_contour_from_volume_invalid_color():
     data = np.zeros((3, 3, 3), dtype=int)
     data[1, 1, 1] = 1
 
-    with pytest.raises(ValueError, match="Color must be a tuple of three values"):
+    with pytest.raises(ValueError, match="must have 3 or 4 channels"):
         contour_from_volume(data, color=(1, 0))

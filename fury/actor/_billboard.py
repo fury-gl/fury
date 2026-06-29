@@ -9,6 +9,7 @@ factory function plus shader registration.
 import numpy as np
 
 from fury.actor import Mesh
+from fury.colormap import normalize_colors
 from fury.geometry import buffer_to_geometry
 from fury.lib import register_wgpu_render_function
 from fury.material import (
@@ -63,8 +64,8 @@ def _create_billboard_actor(
         centers = centers.reshape(1, 3)
     n = len(centers)
 
-    colors = np.asarray(colors, dtype=np.float32)
-    if colors.ndim == 1:
+    colors = normalize_colors(colors)
+    if colors.shape[0] == 1:
         colors = np.tile(colors, (n, 1))
     elif colors.shape[0] != n:
         colors = np.tile(colors[0], (n, 1))
@@ -263,8 +264,9 @@ def billboard(
     ----------
     centers : (N,3) array_like
         Billboard positions.
-    colors : (N,3|4) array_like or single color
-        Per-billboard RGB(A) colors.
+    colors : str, tuple, list or ndarray, optional
+        Per-billboard color. Accepts a hex string, RGB(A) in [0, 1], RGB(A)
+        in [0, 255], or one such color per billboard.
     sizes : (N,2) | (2,) | float | (N,) array_like
         Width/height per billboard. Scalar or single pair broadcast.
     opacity : float, optional
@@ -303,8 +305,9 @@ def billboard_sphere(
     ----------
     centers : array_like
         Sphere centers provided as an ``(N, 3)`` array or broadcastable input.
-    colors : array_like, optional
-        RGB or RGBA color per sphere. Single color inputs are broadcast.
+    colors : str, tuple, list or ndarray, optional
+        Color per sphere. Accepts a hex string, RGB(A) in [0, 1], RGB(A) in
+        [0, 255], or one such color per sphere. Single colors are broadcast.
     radii : array_like, optional
         Scalar radii or per-sphere radii array. Used to compute billboard size.
     opacity : float, optional

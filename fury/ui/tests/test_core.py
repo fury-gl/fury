@@ -80,6 +80,18 @@ def test_rectangle2d_color_property():
     npt.assert_array_almost_equal(rect.color, new_color)
 
 
+def test_rectangle2d_color_normalization():
+    """Test Rectangle2D accepts hex strings and [0, 255] colors."""
+    rect = ui.Rectangle2D(color="#FF0000")
+    npt.assert_array_almost_equal(rect.color, [1, 0, 0])
+
+    rect.color = "#00FF00"
+    npt.assert_array_almost_equal(rect.color, [0, 1, 0])
+
+    rect.color = (0, 0, 255)
+    npt.assert_array_almost_equal(rect.color, [0, 0, 1])
+
+
 def test_rectangle2d_opacity_property():
     """Test opacity getter and setter for Rectangle2D."""
     rect = ui.Rectangle2D()
@@ -181,6 +193,15 @@ def test_disk2d_color_property():
     new_color = (0.6, 0.7, 0.8)
     disk_ui.color = new_color
     npt.assert_array_almost_equal(disk_ui.color, new_color)
+
+
+def test_disk2d_color_normalization():
+    """Test Disk2D accepts hex strings and [0, 255] colors."""
+    disk_ui = ui.Disk2D(outer_radius=10, color="#FF0000")
+    npt.assert_array_almost_equal(disk_ui.color, [1, 0, 0])
+
+    disk_ui.color = (0, 255, 0)
+    npt.assert_array_almost_equal(disk_ui.color, [0, 1, 0])
 
 
 def test_disk2d_opacity_property():
@@ -424,6 +445,23 @@ def test_textblock2d_color_property():
 
     tb.color = (0.5, 0.5, 0.5)
     npt.assert_array_almost_equal(tb.color, [0.5, 0.5, 0.5])
+
+
+def test_textblock2d_color_normalization():
+    """Test TextBlock2D accepts hex strings and [0, 255] colors."""
+    tb = ui.TextBlock2D(size=(100, 50), color="#0000FF")
+    npt.assert_array_almost_equal(tb.color, [0, 0, 1])
+
+    tb.color = (255, 0, 0)
+    npt.assert_array_almost_equal(tb.color, [1, 0, 0])
+
+    # None falls back to white.
+    tb.color = None
+    npt.assert_array_almost_equal(tb.color, [1, 1, 1])
+
+    # Background color is normalized via the same path.
+    tb.background_color = "#00FF00"
+    npt.assert_array_almost_equal(tb.background_color, [0, 1, 0])
 
 
 def test_textblock2d_background_color_property():

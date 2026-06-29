@@ -647,12 +647,13 @@ def axes(
     ----------
     scale : tuple (3,), optional
         The size (length) of each axis in the x, y, and z directions.
-    color_x : tuple (3,), optional
-        Color for the X-axis.
-    color_y : tuple (3,), optional
-        Color for the Y-axis.
-    color_z : tuple (3,), optional
-        Color for the Z-axis.
+    color_x : str, tuple, list or ndarray, optional
+        Color for the X-axis. Accepts a hex string, RGB in [0, 1], or
+        RGB in [0, 255].
+    color_y : str, tuple, list or ndarray, optional
+        Color for the Y-axis. Same formats as ``color_x``.
+    color_z : str, tuple, list or ndarray, optional
+        Color for the Z-axis. Same formats as ``color_x``.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
 
@@ -673,8 +674,15 @@ def axes(
     """
     centers = np.zeros((3, 3))
     directions = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    color_x = normalize_colors(color_x)[0][:3]
+    color_y = normalize_colors(color_y)[0][:3]
+    color_z = normalize_colors(color_z)[0][:3]
     colors = np.array(
-        [color_x + (opacity,), color_y + (opacity,), color_z + (opacity,)]
+        [
+            [*color_x, opacity],
+            [*color_y, opacity],
+            [*color_z, opacity],
+        ]
     )
     scales = np.asarray(scale)
 
@@ -701,8 +709,9 @@ def create_axes_helper(
     ----------
     labels : list of str, optional
         Labels for [-X, +X, -Y, +Y, -Z, +Z].
-    colors : list of tuple, optional
-        RGB colors for each axis endpoint.
+    colors : list, optional
+        Color for each axis endpoint. Each entry accepts a hex string,
+        RGB in [0, 1], or RGB in [0, 255].
     thickness : float, optional
         Thickness for endpoint lines.
     center_disk_radius : float, optional

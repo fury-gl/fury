@@ -64,6 +64,22 @@ def test_panel2d_color_opacity_properties():
     npt.assert_almost_equal(panel.background.opacity, new_opacity)
 
 
+def test_panel2d_color_normalization():
+    """Test Panel2D normalizes hex / [0, 255] colors for body and border."""
+    panel = ui.Panel2D(
+        size=(10, 10), color="#FF0000", has_border=True, border_color=(0, 255, 0)
+    )
+    npt.assert_array_almost_equal(panel.color, [1, 0, 0])
+    npt.assert_array_almost_equal(panel.background.color, [1, 0, 0])
+    npt.assert_array_almost_equal(panel.borders["top"].color, [0, 1, 0])
+
+    panel.color = (0, 0, 255)
+    npt.assert_array_almost_equal(panel.color, [0, 0, 1])
+
+    panel.border_color = ("left", "#FFFFFF")
+    npt.assert_array_almost_equal(panel.borders["left"].color, [1, 1, 1])
+
+
 def test_panel2d_resize_and_border_sync():
     """Test resizing updates background and correctly sizes border elements."""
     size = (100, 50)
@@ -254,6 +270,19 @@ def test_tab_panel2d_properties_and_content():
     tab_panel.update_element(element, (10, 10))
     tab_panel.remove_element(element)
     assert element not in tab_panel.content_panel._elements
+
+
+def test_tab_panel2d_color_normalization():
+    """Test TabPanel2D normalizes hex / [0, 255] colors."""
+    tab_panel = ui.TabPanel2D(size=(120, 30), color="#FF0000")
+    npt.assert_array_almost_equal(tab_panel.color, [1, 0, 0])
+    npt.assert_array_almost_equal(tab_panel.panel.color, [1, 0, 0])
+
+    tab_panel.color = (0, 0, 255)
+    npt.assert_array_almost_equal(tab_panel.color, [0, 0, 1])
+
+    tab_panel.title_color = "#00FF00"
+    npt.assert_array_almost_equal(tab_panel.title_color, [0, 1, 0])
 
 
 def test_tab_ui_initialization_and_selection():

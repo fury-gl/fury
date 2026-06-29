@@ -11,6 +11,7 @@ from fury.actor import (
     set_group_visibility,
     show_slices,
 )
+from fury.colormap import normalize_colors
 from fury.geometry import buffer_to_geometry
 from fury.lib import (
     Geometry,
@@ -156,8 +157,9 @@ class VectorField(WorldObject, Actor):
     cross_section : list or tuple, shape (3,), optional
         A list or tuple representing the cross section dimensions.
         If None, the cross section will be ignored and complete field will be shown.
-    colors : tuple, optional
-        Color for the vectors. If None, the color will used from the orientation.
+    colors : str, tuple, list or ndarray, optional
+        Color for the vectors. Accepts a hex string, RGB(A) in [0, 1], or
+        RGB(A) in [0, 255]. If None, the color is taken from the orientation.
     scales : {float, ndarray}, shape {(X, Y, Z, N) or (X, Y, Z)}, optional
         Scale factor for the vectors. If ndarray, it should match the shape of the
         field.
@@ -221,7 +223,7 @@ class VectorField(WorldObject, Actor):
         if colors is None:
             colors = np.asarray((0, 0, 0), dtype=np.float32)
         else:
-            colors = np.asarray(colors, dtype=np.float32)
+            colors = normalize_colors(colors)[0].astype(np.float32)
 
         colors = np.tile(colors, (total_vectors * pnts_per_vector, 1))
         self.geometry = buffer_to_geometry(positions=pts, colors=colors)
@@ -451,8 +453,9 @@ def vector_field(
     actor_type : str, optional
         The type of vector field visualization. Options are "thin_line",
         "line", and "arrow".
-    colors : tuple, optional
-        Color for the vectors. If None, the color will used from the orientation.
+    colors : str, tuple, list or ndarray, optional
+        Color for the vectors. Accepts a hex string, RGB(A) in [0, 1], or
+        RGB(A) in [0, 255]. If None, the color is taken from the orientation.
     scales : {float, ndarray}, shape {(X, Y, Z, N) or (X, Y, Z)}, optional
         Scale factor for the vectors. If ndarray, it should match the shape of the
         field.
@@ -506,8 +509,9 @@ def vector_field_slicer(
     cross_section : list or tuple, shape (3,), optional
         A list or tuple representing the cross section dimensions.
         If None, the cross section will be ignored and complete field will be shown.
-    colors : tuple, optional
-        Color for the vectors. If None, the color will used from the orientation.
+    colors : str, tuple, list or ndarray, optional
+        Color for the vectors. Accepts a hex string, RGB(A) in [0, 1], or
+        RGB(A) in [0, 255]. If None, the color is taken from the orientation.
     scales : {float, ndarray}, shape {(X, Y, Z, N) or (X, Y, Z)}, optional
         Scale factor for the vectors. If ndarray, it should match the shape of the
         field.
