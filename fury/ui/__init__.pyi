@@ -5,6 +5,7 @@ __all__ = [
     "ImageContainer2D",
     #     "GridUI",
     "Rectangle2D",
+    "RoundedRectangle2D",
     "Disk2D",
     "TextBlock2D",
     # "Slider2D",
@@ -48,7 +49,7 @@ __all__ = [
 
 from .containers import ImageContainer2D, Panel2D, TabPanel2D, TabUI
 from .context import UIContext
-from .core import UI, Anchor, Disk2D, Rectangle2D, TextBlock2D
+from .core import UI, Anchor, Disk2D, Rectangle2D, RoundedRectangle2D, TextBlock2D
 from .elements import (
     Card2D,
     ComboBox2D,
