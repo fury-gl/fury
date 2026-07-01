@@ -2921,3 +2921,142 @@ def test_ui_card2d_events():
     card.left_button_dragged(event_drag)
 
     npt.assert_array_almost_equal(card.get_position(), [40, 50])
+
+
+def test_ui_tree2d_initialization():
+    """Test Tree2D initialization and structure parsing."""
+    structure = [{"Root": ["Child1", "Child2"]}]
+    tree = ui.elements.Tree2D(structure=structure, tree_name="TestTree")
+
+    npt.assert_equal(tree.tree_name, "TestTree")
+    npt.assert_equal(len(tree.nodes_dict), 3)
+    assert "Root" in tree.nodes_dict
+    assert "Child1" in tree.nodes_dict
+    assert "Child2" in tree.nodes_dict
+
+    root_node = tree.nodes_dict["Root"]
+    assert root_node.parent is tree.base_node
+    assert len(root_node._children) > 0
+    assert tree.base_node.expandable is False
+    assert tree.base_node.expanded is True
+
+
+def test_ui_treenode2d_add_content():
+    """Test adding content to a TreeNode2D via Tree2D."""
+    structure = [{"Root": []}]
+    tree = ui.elements.Tree2D(structure=structure, tree_name="TestTree")
+
+    text_block = ui.TextBlock2D(text="My Content", size=(50, 50))
+    tree.add_content("Root", text_block, (0.5, 0.5))
+
+    root_node = tree.select_node("Root")
+    assert text_block in root_node.content_panel._elements
+
+
+def test_ui_tree2d_events():
+    """Test Tree2D dragging events."""
+    structure = [{"Root": []}]
+    tree = ui.elements.Tree2D(
+        structure=structure, tree_name="TestTree", position=(10, 10)
+    )
+
+    event_press = window.PointerEvent(
+        x=20, y=20, type=window.EventType.POINTER_DOWN, target="target"
+    )
+    tree.base_node.left_button_pressed(event_press)
+
+    npt.assert_array_almost_equal(tree.base_node._drag_offset, [10, 10])
+
+    event_drag = window.PointerEvent(
+        x=50, y=60, type=window.EventType.POINTER_MOVE, target="target"
+    )
+    tree.base_node.left_button_dragged(event_drag)
+
+    npt.assert_array_almost_equal(tree.base_node.get_position(), [40, 50])
+
+
+def test_ui_treenode2d_selection_logic():
+    """Test TreeNode2D selection toggle and callbacks."""
+    structure = [{"Root": []}]
+    tree = ui.elements.Tree2D(structure=structure, tree_name="TestTree")
+    root_node = tree.nodes_dict["Root"]
+
+    callback_tracker = {"selected": False, "deselected": False}
+
+    def on_select(node):
+        callback_tracker["selected"] = True
+
+    def on_deselect(node):
+        callback_tracker["deselected"] = True
+
+    root_node.on_node_select = on_select
+    root_node.on_node_deselect = on_deselect
+
+    assert root_node.selected is False
+
+    root_node.select_node(None)
+    assert root_node.selected is True
+    assert callback_tracker["selected"] is True
+    npt.assert_array_almost_equal(root_node.color, root_node.selected_color)
+
+    root_node.select_node(None)
+    assert root_node.selected is False
+    assert callback_tracker["deselected"] is True
+    npt.assert_array_almost_equal(root_node.color, root_node.unselected_color)
+
+
+def test_ui_treenode2d_expand_collapse_logic():
+    """Test TreeNode2D expansion and collapsing logic."""
+    structure = [{"Root": ["Child1"]}]
+    tree = ui.elements.Tree2D(structure=structure, tree_name="TestTree")
+    root_node = tree.nodes_dict["Root"]
+
+    assert root_node.expanded is False
+    assert root_node.content_panel.actors[0].visible is False
+
+    event_click = window.PointerEvent(
+        x=10, y=10, type=window.EventType.POINTER_DOWN, target="target"
+    )
+
+    root_node.toggle_view(event_click)
+    assert root_node.expanded is True
+    assert root_node.content_panel.actors[0].visible is True
+
+    root_node.toggle_view(event_click)
+    assert root_node.expanded is False
+    assert root_node.content_panel.actors[0].visible is False
+
+
+def test_ui_tree2d_scrolling_logic():
+    """Test Tree2D scrollbar dragging and scrolling logic."""
+    structure = [{"Root": [f"Child{i}" for i in range(20)]}]
+    tree = ui.elements.Tree2D(
+        structure=structure, tree_name="TestTree", size=(200, 200)
+    )
+
+    root_node = tree.nodes_dict["Root"]
+    root_node.expanded = True
+    tree.update_scrollbar()
+
+    npt.assert_equal(tree.view_offset, 0)
+
+    event_press = window.PointerEvent(
+        x=0, y=50, type=window.EventType.POINTER_DOWN, target="target"
+    )
+    tree.scroll_click_callback(event_press)
+    npt.assert_equal(tree.scroll_init_position, 50)
+    npt.assert_array_almost_equal(tree.scroll_bar.color, tree.scroll_bar_active_color)
+
+    event_drag = window.PointerEvent(
+        x=0, y=100, type=window.EventType.POINTER_MOVE, target="target"
+    )
+    tree.scroll_drag_callback(event_drag)
+    npt.assert_equal(tree.scroll_init_position, 100)
+
+    assert tree.view_offset > 0
+
+    event_release = window.PointerEvent(
+        x=0, y=100, type=window.EventType.POINTER_UP, target="target"
+    )
+    tree.scroll_release_callback(event_release)
+    npt.assert_array_almost_equal(tree.scroll_bar.color, tree.scroll_bar_inactive_color)
