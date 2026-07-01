@@ -975,6 +975,10 @@ def play_events(show_manager, events, visual_test=None, expected_ui_snapshots=No
             if show_manager.renderer not in path:
                 path.append(show_manager.renderer)
 
+            step_count += 1
+            if visual_test is not None and step_count % 5 == 0:
+                visual_test.snapshot_all_ui(step=step_count)
+
             event._target = target
             for obj in path:
                 if hasattr(obj, "handle_event"):
@@ -985,11 +989,8 @@ def play_events(show_manager, events, visual_test=None, expected_ui_snapshots=No
 
             show_manager._draw_canvas()
 
-            # Increment step counter and check if we should snapshot
-            step_count += 1
-            if visual_test is not None:
-                if step_count % 5 == 0 or step_count == len(events):
-                    visual_test.snapshot_all_ui(step=step_count)
+            if visual_test is not None and step_count == len(events):
+                visual_test.snapshot_all_ui(step=step_count)
 
             if not hasattr(show_manager.window, "draw"):
                 import time
