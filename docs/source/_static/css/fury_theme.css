@@ -648,9 +648,15 @@ html[data-theme="dark"] .join-us__icon {
 /* --- CONTRIBUTORS LIST --- */
 #github_visualization_contributors_wrapper {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 15px;
     margin-top: 20px;
+}
+
+@media (max-width: 768px) {
+    #github_visualization_contributors_wrapper {
+        grid-template-columns: 1fr;
+    }
 }
 
 #github_visualization_contributors_wrapper a {
@@ -660,24 +666,44 @@ html[data-theme="dark"] .join-us__icon {
 .github_visualization_contributor_info {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding: 20px;
+    align-items: flex-start;
+    gap: 4px; /* Reduced gap between rows */
+    padding: 15px 20px;
     border-radius: 12px;
     transition: transform 0.2s, box-shadow 0.2s;
-    text-align: center;
 }
 
 .github_visualization_contributor_info:hover {
     transform: translateY(-2px);
 }
 
+.github_visualization_contributor_stat_row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+}
+
+.stat_icon_holder {
+    width: 40px;
+    height: 30px; /* Reduced height to remove extra space */
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat_icon {
+    font-size: 1.1rem; /* Slightly smaller icon to fit nicely */
+}
+
 .github_visualization_contributor_img_holder {
-    width: 80px;
-    height: 80px;
+    width: 40px; /* Matching width with icon holder */
+    height: 40px;
     border-radius: 50%;
     overflow: hidden;
-    margin-bottom: 10px;
-    border: 3px solid rgba(0,0,0,0.05);
+    flex-shrink: 0;
+    border: 2px solid rgba(0,0,0,0.05);
 }
 
 .github_visualization_contributor_img {
@@ -689,17 +715,22 @@ html[data-theme="dark"] .join-us__icon {
 .github_visualization_contributor_name {
     font-weight: 700;
     font-size: 1.1rem;
-    margin-bottom: 5px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     width: 100%;
 }
 
+.github_visualization_contributor_diffs {
+    display: flex;
+    gap: 15px;
+}
+
 .github_visualization_contributor_commits,
 .github_visualization_contributor_additions,
 .github_visualization_contributor_deletions {
-    font-size: 0.85rem;
+    font-size: 0.95rem;
+    font-weight: 600;
 }
 
 html[data-theme="light"] .github_visualization_contributor_info {
@@ -726,6 +757,10 @@ html[data-theme="light"] .github_visualization_contributor_additions {
 
 html[data-theme="light"] .github_visualization_contributor_deletions {
     color: #f44336;
+}
+
+html[data-theme="light"] .stat_icon {
+    color: #666666;
 }
 
 html[data-theme="dark"] .github_visualization_contributor_info {
@@ -757,4 +792,8 @@ html[data-theme="dark"] .github_visualization_contributor_deletions {
 
 html[data-theme="dark"] .github_visualization_contributor_img_holder {
     border-color: rgba(255,255,255,0.1);
+}
+
+html[data-theme="dark"] .stat_icon {
+    color: #aaaaaa;
 }
