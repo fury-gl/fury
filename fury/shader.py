@@ -12,7 +12,10 @@ from fury.lib import (
     ThinLineSegmentShader,
     load_wgsl,
 )
-from fury.material import StreamlinesMaterial, _StreamlineBakedMaterial
+from fury.material import (
+    StreamlinesMaterial,
+    _StreamlineBakedMaterial,
+)
 
 
 class VectorFieldComputeShader(BaseShader):
@@ -232,6 +235,23 @@ class StreamlinesShader(LineShader):
         return load_wgsl("streamline_render.wgsl", package_name="fury.wgsl")
 
 
+class RoundedRectangleShader(MeshShader):
+    """
+    Shader for RoundedRectangleMaterial.
+    """
+
+    def get_code(self):
+        """
+        Get the WGSL code for the rounded rectangle render shader.
+
+        Returns
+        -------
+        str
+            The WGSL code as a string.
+        """
+        return load_wgsl("rounded_rect_render.wgsl", package_name="fury.wgsl")
+
+
 class _StreamlineBakingShader(BaseShader):
     """
     Initialize the streamline baking compute shader.
@@ -258,9 +278,11 @@ class _StreamlineBakingShader(BaseShader):
             int(roi_dim[1]),
             int(roi_dim[2]),
         )
-        self["roi_origin_x"], self["roi_origin_y"], self["roi_origin_z"] = (
-            wobject.roi_origin
-        )
+        (
+            self["roi_origin_x"],
+            self["roi_origin_y"],
+            self["roi_origin_z"],
+        ) = wobject.roi_origin
         self["roi_enabled"] = (
             1
             if getattr(getattr(wobject, "material", None), "roi_enabled", False)
@@ -341,9 +363,11 @@ class _StreamlineBakingShader(BaseShader):
             int(roi_dim[1]),
             int(roi_dim[2]),
         )
-        self["roi_origin_x"], self["roi_origin_y"], self["roi_origin_z"] = (
-            wobject.roi_origin
-        )
+        (
+            self["roi_origin_x"],
+            self["roi_origin_y"],
+            self["roi_origin_z"],
+        ) = wobject.roi_origin
         self["roi_enabled"] = (
             1
             if getattr(getattr(wobject, "material", None), "roi_enabled", False)
