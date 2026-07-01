@@ -47,11 +47,8 @@ qt_pckg_msg = (
 )
 
 PySide6, have_py_side6, _ = optional_package("PySide6", trip_msg=qt_pckg_msg)
-PyQt6, have_py_qt6, _ = optional_package("PyQt6", trip_msg=qt_pckg_msg)
-PyQt5, have_py_qt5, _ = optional_package("PyQt5", trip_msg=qt_pckg_msg)
 
-have_qt = have_py_side6 or have_py_qt6 or have_py_qt5
-if have_qt:
+if have_py_side6:
     from rendercanvas.qt import RenderCanvas as QtRenderCanvas, loop as qloop
 
     qcall_later = qloop.call_later
@@ -60,15 +57,8 @@ if have_qt:
         return qloop._app
 
 
-if have_qt:
-    if have_py_side6:
-        from PySide6 import QtGui, QtWidgets
-
-    if have_py_qt6:
-        from PyQt6 import QtGui, QtWidgets
-
-    if have_py_qt5:
-        from PyQt5 import QtGui, QtWidgets
+if have_py_side6:
+    from PySide6 import QtGui, QtWidgets
 
 GfxGroup = gfx.Group
 Texture = gfx.Texture
@@ -154,7 +144,7 @@ if have_jupyter_rfb:
     JupyterCanvas = JupyterWgpuCanvas
 else:
     JupyterCanvas = jupyter_rfb
-if have_qt:
+if have_py_side6:
     QtCanvas = QtRenderCanvas
 else:
     QtCanvas = PySide6

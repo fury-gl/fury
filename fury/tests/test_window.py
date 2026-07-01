@@ -23,7 +23,7 @@ from fury.lib import (
     Texture,
     TrackballController,
     have_imgui_bundle,
-    have_qt,
+    have_py_side6,
 )
 from fury.motion import Animation, CameraAnimation, Timeline
 from fury.ui import Rectangle2D, UIContext
@@ -396,7 +396,7 @@ def test_show_manager_initialization_default_window():
     assert show_m.app is None
 
 
-@pytest.mark.skipif(not (have_qt), reason="Needs Qt")
+@pytest.mark.skipif(not (have_py_side6), reason="Needs Qt")
 def test_show_manager_initialization_qt_window():
     """Test ShowManager initialization with a Qt window."""
     show_m = ShowManager(window_type="qt")
@@ -993,7 +993,7 @@ def test_offscreen_animation_recording(tmp_path):
 
 
 @pytest.mark.skipif(
-    not (have_qt),
+    not (have_py_side6),
     reason="A Qt binding is required for Qt offscreen capture",
 )
 def test_qt_offscreen_capture_saves_parent_widget(tmp_path):
