@@ -7,6 +7,8 @@ import numpy as np
 import numpy.testing as npt
 
 # import pytest
+import polyxios as px
+
 # from fury.decorators import skip_osx
 from fury.data import fetch_viz_cubemaps, read_viz_cubemap
 from fury.io import (
@@ -19,6 +21,9 @@ from fury.io import (
     # load_polydata,
     # load_sprite_sheet,
     # load_text,
+    read_lines,
+    read_mesh,
+    read_points,
     save_image,
     save_network,
 )
@@ -205,6 +210,82 @@ def test_save_and_load_network():
             fname_path,
             format="invalid",
         )
+
+
+def test_read_mesh():
+    vertices = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0]], dtype=np.float64)
+    faces = np.array([[0, 1, 2], [1, 3, 2]], dtype=np.int32)
+    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 0]], dtype=np.float32)
+
+    poly = px.make_polydata(
+        vertices,
+        [("triangle", faces)],
+        vertex_attrs={"colors": colors},
+    )
+
+    with InTemporaryDirectory() as odir:
+        fname_path = pjoin(odir, "temp-mesh.vtk")
+        px.write(poly, fname_path)
+
+        out_vertices, out_faces, out_colors = read_mesh(fname_path)
+
+    npt.assert_equal(out_vertices.dtype, np.float32)
+    npt.assert_equal(out_faces.dtype, np.int32)
+    npt.assert_array_almost_equal(out_vertices, vertices)
+    npt.assert_array_equal(out_faces, faces)
+    npt.assert_array_almost_equal(out_colors, colors)
+
+
+def test_read_points():
+    vertices = np.array([[0, 0, 0], [1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=np.float64)
+    connectivity = np.array([[0], [1], [2], [3]], dtype=np.int32)
+
+    poly = px.make_polydata(vertices, [("vertex", connectivity)])
+
+    with InTemporaryDirectory() as odir:
+        fname_path = pjoin(odir, "temp-points.vtk")
+        px.write(poly, fname_path)
+
+        out_points, out_colors = read_points(fname_path)
+
+    npt.assert_equal(out_points.dtype, np.float32)
+    npt.assert_equal(out_points.shape, (4, 3))
+    npt.assert_array_almost_equal(out_points, vertices)
+    npt.assert_equal(out_colors, None)
+
+
+def test_read_lines():
+    vertices = np.array([[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, 0, 0]], dtype=np.float64)
+    line = np.array([[0, 1, 2, 3]], dtype=np.int32)
+
+    poly = px.make_polydata(vertices, [("poly_line", line)])
+
+    with InTemporaryDirectory() as odir:
+        fname_path = pjoin(odir, "temp-lines.vtk")
+        px.write(poly, fname_path)
+
+        out_lines, out_colors = read_lines(fname_path)
+
+    npt.assert_equal(len(out_lines), 1)
+    npt.assert_equal(out_lines[0].dtype, np.float32)
+    npt.assert_array_almost_equal(out_lines[0], vertices)
+    npt.assert_equal(out_colors, None)
+
+
+def test_read_lines_without_line_elements():
+    vertices = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]], dtype=np.float64)
+    faces = np.array([[0, 1, 2]], dtype=np.int32)
+
+    poly = px.make_polydata(vertices, [("triangle", faces)])
+
+    with InTemporaryDirectory() as odir:
+        fname_path = pjoin(odir, "temp-no-lines.vtk")
+        px.write(poly, fname_path)
+
+        out_lines, out_colors = read_lines(fname_path)
+
+    npt.assert_equal(out_lines, [])
+    npt.assert_equal(out_colors, None)
 
 
 def test_save_load_image():

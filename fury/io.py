@@ -1,18 +1,14 @@
 """I/O functions for loading and saving images, textures."""
 
 import os
-
-# from tempfile import TemporaryDirectory as InTemporaryDirectory
 from urllib.request import urlretrieve
 
 # import warnings
 from PIL import Image
 import numpy as np
+import polyxios as px
 
-# from fury.decorators import warn_on_args_to_kwargs
 from fury.lib import Texture, wgpu
-
-# from fury.utils import set_input
 from fury.network.parser import parse_network, stringify_network
 
 
@@ -339,6 +335,121 @@ def save_network(network_data, file_path, format=None):
 
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(data)
+
+
+def read_mesh(file_path, *, format=None):
+    """
+    Read a mesh from a file using polyxios.
+
+    Parameters
+    ----------
+    file_path : str
+        The path to the mesh file.
+    format : str, optional
+        The specific file format override (e.g. '.vtk'). Inferred from the file
+        extension when None.
+
+    Returns
+    -------
+    tuple
+        A tuple containing:
+
+        - vertices (np.ndarray): Shape (N, 3) float32 array of vertex positions.
+        - faces (np.ndarray or None): Shape (M, 3) int32 array of triangle face
+          indices, or None when the mesh has no surface elements.
+        - colors (np.ndarray or None): Shape (N, 3) float32 array of per-vertex
+          RGB colors in [0, 1], or None when no vertex colors are present.
+    """
+    poly = px.read(file_path, fmt=format)
+
+    vertices = np.asarray(poly.vertices, dtype=np.float32)
+
+    faces = poly.faces
+    if faces is not None:
+        faces = np.asarray(faces, dtype=np.int32)
+
+    colors = px.transforms.vertex_colors(poly)
+    if colors is not None:
+        colors = np.asarray(colors, dtype=np.float32)
+
+    return vertices, faces, colors
+
+
+def read_points(file_path, *, format=None):
+    """
+    Read point coordinates from a file using polyxios.
+
+    Parameters
+    ----------
+    file_path : str
+        The path to the mesh file.
+    format : str, optional
+        The specific file format override (e.g. '.vtk'). Inferred from the file
+        extension when None.
+
+    Returns
+    -------
+    tuple
+        A tuple containing:
+
+        - points (np.ndarray): Shape (N, 3) float32 array of point positions.
+        - colors (np.ndarray or None): Shape (N, 3) float32 array of per-point
+          RGB colors in [0, 1], or None when no vertex colors are present.
+    """
+    poly = px.read(file_path, fmt=format)
+
+    points = np.asarray(poly.vertices, dtype=np.float32)
+
+    colors = px.transforms.vertex_colors(poly)
+    if colors is not None:
+        colors = np.asarray(colors, dtype=np.float32)
+
+    return points, colors
+
+
+def read_lines(file_path, *, format=None):
+    """
+    Read line segments from a file using polyxios.
+
+    Each line or poly_line element is translated into an array of its vertex
+    positions, ready to be consumed by FURY line actors.
+
+    Parameters
+    ----------
+    file_path : str
+        The path to the mesh file.
+    format : str, optional
+        The specific file format override (e.g. '.vtk'). Inferred from the file
+        extension when None.
+
+    Returns
+    -------
+    tuple
+        A tuple containing:
+
+        - lines (list of np.ndarray): One Shape (P, 3) float32 array of vertex
+          positions per line. Empty list when the file has no line elements.
+        - colors (list of np.ndarray or None): One Shape (P, 3) float32 array of
+          per-vertex RGB colors in [0, 1] per line, or None when no vertex
+          colors are present.
+    """
+    poly = px.read(file_path, fmt=format)
+
+    line_indices = poly.lines
+    if line_indices is None:
+        return [], None
+
+    vertices = np.asarray(poly.vertices, dtype=np.float32)
+    lines = [vertices[idx] for idx in line_indices]
+
+    vertex_colors = px.transforms.vertex_colors(poly)
+    if vertex_colors is None:
+        colors = None
+    else:
+        vertex_colors = np.asarray(vertex_colors, dtype=np.float32)
+        colors = [vertex_colors[idx] for idx in line_indices]
+
+    return lines, colors
 
 
 # def load_polydata(file_name):
