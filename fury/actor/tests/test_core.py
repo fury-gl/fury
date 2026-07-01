@@ -1,4 +1,3 @@
-from PIL import Image
 import numpy as np
 import pytest
 
@@ -181,13 +180,10 @@ def test_axes():
 
     assert axes_actor.prim_count == 3
 
-    fname = "axes_test.png"
-    window.snapshot(scene=scene, fname=fname)
-    img = Image.open(fname)
-    img_array = np.array(img)
-    mean_r, mean_g, mean_b, _mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
+    arr = window.snapshot(scene=scene, fname=None, return_array=True)
+    report = window.analyze_snapshot(arr, find_objects=True)
+    assert report.objects >= 1
+    mean_r, mean_g, mean_b, _mean_a = np.mean(arr.reshape(-1, arr.shape[2]), axis=0)
     assert np.isclose(mean_r, mean_g, atol=0.02)
     assert 0 < mean_r < 255
     assert 0 < mean_g < 255
@@ -264,9 +260,7 @@ def test_actor_from_primitive_transparency_visual(sphere_prim):
 
     opaque = actor_from_primitive(vertices, faces, centers, colors=colors)
     scene.add(opaque)
-    fname = "transparency_opaque_test.png"
-    window.snapshot(scene=scene, fname=fname)
-    img_array_op = np.array(Image.open(fname))
+    img_array_op = window.snapshot(scene=scene, fname=None, return_array=True)
     mid = img_array_op[img_array_op.shape[0] // 2, img_array_op.shape[1] // 2]
     assert mid[0] > mid[1] and mid[0] > mid[2]
     scene.remove(opaque)
@@ -275,9 +269,7 @@ def test_actor_from_primitive_transparency_visual(sphere_prim):
         vertices, faces, centers, colors=colors, opacity=0.5
     )
     scene.add(transparent)
-    fname = "transparency_semi_test.png"
-    window.snapshot(scene=scene, fname=fname)
-    img_array_tr = np.array(Image.open(fname))
+    img_array_tr = window.snapshot(scene=scene, fname=None, return_array=True)
     mean_r_tr, mean_g_tr, mean_b_tr, _ = np.mean(
         img_array_tr.reshape(-1, img_array_tr.shape[2]), axis=0
     )

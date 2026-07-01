@@ -4,11 +4,6 @@ Tests for billboard actor.
 Simple tests for billboard creation and basic rendering functionality.
 """
 
-from __future__ import annotations
-
-import os
-import tempfile
-
 import numpy as np
 import numpy.testing as npt
 
@@ -72,9 +67,7 @@ def test_basic_billboard(interactive: bool = False):
         window.show([bb_render])
 
     # Test snapshot creation
-    tmp_fd, tmp_file = tempfile.mkstemp(suffix="_bb.png")
-    os.close(tmp_fd)
-    arr = window.snapshot(scene=scene, fname=tmp_file, return_array=True)
+    arr = window.snapshot(scene=scene, fname=None, return_array=True)
 
     # Basic checks: array exists and has expected shape
     assert arr is not None
@@ -85,8 +78,6 @@ def test_basic_billboard(interactive: bool = False):
     _assert_red_visible(arr)
 
     scene.clear()
-    if tmp_file and os.path.exists(tmp_file):
-        os.remove(tmp_file)
 
 
 def test_billboard_camera_facing():
@@ -101,9 +92,7 @@ def test_billboard_camera_facing():
     scene.add(bb)
 
     # Test from default camera position
-    tmp_fd1, tmp_file1 = tempfile.mkstemp(suffix="_bb_front.png")
-    os.close(tmp_fd1)
-    arr1 = window.snapshot(scene=scene, fname=tmp_file1, return_array=True)
+    arr1 = window.snapshot(scene=scene, fname=None, return_array=True)
 
     # Billboard should be visible from front view
     data1 = np.asarray(arr1)
@@ -119,11 +108,7 @@ def test_billboard_camera_facing():
     assert arr1 is not None
     assert green_pixels1 > 0, "Billboard should be visible with green pixels"
 
-    # Cleanup
     scene.clear()
-    for tmp_file in [tmp_file1]:
-        if tmp_file and os.path.exists(tmp_file):
-            os.remove(tmp_file)
 
 
 def test_rectangular_billboards():
@@ -200,8 +185,7 @@ def test_billboard_sphere(interactive: bool = False):
     if interactive:  # pragma: no cover
         window.show(scene)
 
-    tmp_file = tempfile.mktemp(suffix="_bbs.png")
-    arr = window.snapshot(scene=scene, fname=tmp_file, return_array=True)
+    arr = window.snapshot(scene=scene, fname=None, return_array=True)
     assert arr is not None
     _assert_red_visible(arr)
 
@@ -212,8 +196,6 @@ def test_billboard_sphere(interactive: bool = False):
     assert positive_red.max() > positive_red.min()
 
     scene.clear()
-    if tmp_file and os.path.exists(tmp_file):
-        os.remove(tmp_file)
 
 
 def _assert_red_visible(image):
@@ -276,7 +258,7 @@ def test_billboard_bounding_box_camera_framing():
     )
     scene.add(bb)
 
-    arr = window.snapshot(scene=scene, return_array=True)
+    arr = window.snapshot(scene=scene, fname=None, return_array=True)
     assert arr is not None
 
     _assert_red_visible(arr)

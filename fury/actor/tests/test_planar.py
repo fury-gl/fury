@@ -1,4 +1,3 @@
-from PIL import Image
 import numpy as np
 import numpy.testing as npt
 import pytest
@@ -39,29 +38,23 @@ def test_ring():
     mean_vertex = np.round(np.mean(ring_actor.geometry.positions.view, axis=0))
     npt.assert_array_almost_equal(mean_vertex, centers[0])
 
-    fname = "ring_test.png"
-    window.snapshot(scene=scene, fname=fname)
+    arr = window.snapshot(scene=scene, fname=None, return_array=True)
+    report = window.analyze_snapshot(arr, find_objects=True)
+    assert report.objects >= 1
 
-    img = Image.open(fname)
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, _mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
+    mean_r, mean_g, mean_b, _mean_a = np.mean(arr.reshape(-1, arr.shape[2]), axis=0)
 
     assert mean_r > mean_b and mean_r > mean_g
     scene.remove(ring_actor)
 
     ring_actor_1 = actor.ring(centers=centers, colors=colors, material="basic")
     scene.add(ring_actor_1)
-    fname_1 = "ring_test_1.png"
-    window.snapshot(scene=scene, fname=fname_1)
-    img = Image.open(fname_1)
-    img_array = np.array(img)
+    arr = window.snapshot(scene=scene, fname=None, return_array=True)
+    report = window.analyze_snapshot(arr, colors=(255, 0, 0), find_objects=True)
+    assert report.objects >= 1
+    assert report.colors_found == [True]
 
-    mean_r, mean_g, mean_b, _mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
+    mean_r, mean_g, mean_b, _mean_a = np.mean(arr.reshape(-1, arr.shape[2]), axis=0)
 
     assert mean_r > mean_b and mean_r > mean_g
     assert 0 < mean_r < 255
@@ -82,29 +75,22 @@ def test_point():
     mean_vertex = np.round(np.mean(point_actor.geometry.positions.view, axis=0))
     npt.assert_array_almost_equal(mean_vertex, centers[0])
 
-    fname = "point_test.png"
-    window.snapshot(scene=scene, fname=fname)
+    arr = window.snapshot(scene=scene, fname=None, return_array=True)
+    report = window.analyze_snapshot(arr, find_objects=True)
+    assert report.objects >= 1
 
-    img = Image.open(fname)
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, _mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
+    mean_r, mean_g, mean_b, _mean_a = np.mean(arr.reshape(-1, arr.shape[2]), axis=0)
 
     assert mean_r > mean_b and mean_r > mean_g
     scene.remove(point_actor)
 
     point_actor_1 = actor.point(centers=centers, colors=colors, material="gaussian")
     scene.add(point_actor_1)
-    fname_1 = "point_test_1.png"
-    window.snapshot(scene=scene, fname=fname_1)
-    img = Image.open(fname_1)
-    img_array = np.array(img)
+    arr = window.snapshot(scene=scene, fname=None, return_array=True)
+    report = window.analyze_snapshot(arr, find_objects=True)
+    assert report.objects >= 1
 
-    mean_r, mean_g, mean_b, _mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
+    mean_r, mean_g, mean_b, _mean_a = np.mean(arr.reshape(-1, arr.shape[2]), axis=0)
 
     assert mean_r > mean_b and mean_r > mean_g
     assert 0 < mean_r < 255
@@ -125,29 +111,22 @@ def test_marker():
     mean_vertex = np.round(np.mean(marker_actor.geometry.positions.view, axis=0))
     npt.assert_array_almost_equal(mean_vertex, centers[0])
 
-    fname = "marker_test.png"
-    window.snapshot(scene=scene, fname=fname)
+    arr = window.snapshot(scene=scene, fname=None, return_array=True)
+    report = window.analyze_snapshot(arr, find_objects=True)
+    assert report.objects >= 1
 
-    img = Image.open(fname)
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, _mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
+    mean_r, mean_g, mean_b, _mean_a = np.mean(arr.reshape(-1, arr.shape[2]), axis=0)
 
     assert mean_r > mean_b and mean_r > mean_g
     scene.remove(marker_actor)
 
     marker_actor_1 = actor.marker(centers=centers, colors=colors, marker="heart")
     scene.add(marker_actor_1)
-    fname_1 = "marker_test_1.png"
-    window.snapshot(scene=scene, fname=fname_1)
-    img = Image.open(fname_1)
-    img_array = np.array(img)
+    arr = window.snapshot(scene=scene, fname=None, return_array=True)
+    report = window.analyze_snapshot(arr, find_objects=True)
+    assert report.objects >= 1
 
-    mean_r, mean_g, mean_b, _mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
+    mean_r, mean_g, mean_b, _mean_a = np.mean(arr.reshape(-1, arr.shape[2]), axis=0)
 
     assert mean_r > mean_b and mean_r > mean_g
     assert 0 < mean_r < 255
@@ -167,15 +146,11 @@ def test_text():
 
     npt.assert_array_equal(text_actor.local.position, position1)
 
-    fname = "text_test.png"
-    window.snapshot(scene=scene, fname=fname)
+    arr = window.snapshot(scene=scene, fname=None, return_array=True)
+    report = window.analyze_snapshot(arr, find_objects=True)
+    assert report.objects >= 1
 
-    img = Image.open(fname)
-    img_array = np.array(img)
-
-    mean_r, mean_g, mean_b, _mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
+    mean_r, mean_g, mean_b, _mean_a = np.mean(arr.reshape(-1, arr.shape[2]), axis=0)
 
     assert mean_r == mean_b and mean_r == mean_g
     assert 0 < mean_r < 255
@@ -188,14 +163,11 @@ def test_text():
     text_actor_1 = actor.text(text=text1, anchor="middle-center", position=position2)
     scene.add(text_actor_1)
     npt.assert_array_equal(text_actor_1.local.position, position2)
-    fname_1 = "text_test_1.png"
-    window.snapshot(scene=scene, fname=fname_1)
-    img = Image.open(fname_1)
-    img_array = np.array(img)
+    arr = window.snapshot(scene=scene, fname=None, return_array=True)
+    report = window.analyze_snapshot(arr, find_objects=True)
+    assert report.objects >= 1
 
-    mean_r, mean_g, mean_b, _mean_a = np.mean(
-        img_array.reshape(-1, img_array.shape[2]), axis=0
-    )
+    mean_r, mean_g, mean_b, _mean_a = np.mean(arr.reshape(-1, arr.shape[2]), axis=0)
 
     assert mean_r == mean_b and mean_r == mean_g
     assert 0 < mean_r < 255
