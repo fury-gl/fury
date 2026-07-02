@@ -1,6 +1,5 @@
 import logging
 import os
-from unittest import mock
 from unittest.mock import patch
 
 import numpy as np
@@ -17,12 +16,14 @@ from fury.lib import (
     OrbitController,
     PerspectiveCamera,
     PointerEvent,
+    QtWidgets,
     Renderer,
     Scene as GfxScene,
     ScreenCoordsCamera,
     Texture,
     TrackballController,
     have_imgui_bundle,
+    have_py_side6,
 )
 from fury.motion import Animation, CameraAnimation, Timeline
 from fury.ui import Rectangle2D, UIContext
@@ -395,14 +396,12 @@ def test_show_manager_initialization_default_window():
     assert show_m.app is None
 
 
-# @pytest.mark.skipif(
-#     not (have_py_side6 or have_py_qt6 or have_py_qt5), reason="Needs Qt"
-# )
-# def test_show_manager_initialization_qt_window():
-#     """Test ShowManager initialization with a Qt window."""
-#     show_m = ShowManager(window_type="qt")
-#     assert show_m._is_qt is True
-#     assert show_m.app is not None
+@pytest.mark.skipif(not (have_py_side6), reason="Needs Qt")
+def test_show_manager_initialization_qt_window():
+    """Test ShowManager initialization with a Qt window."""
+    show_m = ShowManager(window_type="qt")
+    assert show_m._is_qt is True
+    assert isinstance(show_m.window, QtWidgets.QWidget)
 
 
 def test_show_manager_screen_setup():
@@ -925,41 +924,125 @@ def test_show_manager_register_drag():
         assert screen.controller.enabled is True
 
 
-def test_offscreen_animation_recording():
-
-    # Create a simple scene
+def test_offscreen_animation_recording(tmp_path):
     scene = window.Scene()
     scene.add(actor.axes(scale=(1, 1, 1)))
 
     show_m = window.ShowManager(scene=scene, size=(200, 200), title="test_anim")
 
-    # to trigger animation logic
-    def dummy_callback():
+    def noop_callback():
         pass
 
-    show_m.register_callback(dummy_callback, time=1.0, repeat=True, name="dummy")
+    show_m.register_callback(noop_callback, time=1.0, repeat=True, name="noop")
 
-    # test 1: record animation is FALSE
-    with mock.patch.dict(
-        os.environ, {"FURY_OFFSCREEN": "1", "FURY_RECORD_ANIMATION": "0"}
-    ):
+    original_cwd = os.getcwd()
+    original_offscreen = os.environ.get("FURY_OFFSCREEN")
+    original_record = os.environ.get("FURY_RECORD_ANIMATION")
+    os.chdir(tmp_path)
+    os.environ["FURY_OFFSCREEN"] = "1"
+    os.environ["FURY_RECORD_ANIMATION"] = "0"
+
+    try:
         show_m.start()
-        assert os.path.exists("test_anim.png")
-        assert not os.path.exists("test_anim.gif")
+    finally:
+        os.chdir(original_cwd)
+        if original_offscreen is None:
+            os.environ.pop("FURY_OFFSCREEN", None)
+        else:
+            os.environ["FURY_OFFSCREEN"] = original_offscreen
+        if original_record is None:
+            os.environ.pop("FURY_RECORD_ANIMATION", None)
+        else:
+            os.environ["FURY_RECORD_ANIMATION"] = original_record
 
-        os.remove("test_anim.png")
+    assert (tmp_path / "test_anim.png").exists()
+    assert not (tmp_path / "test_anim.gif").exists()
+    os.remove(tmp_path / "test_anim.png")
 
-    # test 2: record animation is TRUE
-    with mock.patch.dict(
-        os.environ, {"FURY_OFFSCREEN": "1", "FURY_RECORD_ANIMATION": "1"}
-    ):
+    original_cwd = os.getcwd()
+    original_offscreen = os.environ.get("FURY_OFFSCREEN")
+    original_record = os.environ.get("FURY_RECORD_ANIMATION")
+    original_max_frames = os.environ.get("FURY_OFFSCREEN_MAX_FRAMES")
+    os.chdir(tmp_path)
+    os.environ["FURY_OFFSCREEN"] = "1"
+    os.environ["FURY_RECORD_ANIMATION"] = "1"
+    os.environ["FURY_OFFSCREEN_MAX_FRAMES"] = "2"
+
+    try:
         show_m2 = window.ShowManager(scene=scene, size=(200, 200), title="test_anim")
-        show_m2.register_callback(dummy_callback, time=1.0, repeat=True, name="dummy")
+        show_m2.register_callback(noop_callback, time=1.0, repeat=True, name="noop")
         show_m2.start()
-        assert os.path.exists("test_anim.gif")
-        assert not os.path.exists("test_anim.png")
+    finally:
+        os.chdir(original_cwd)
+        if original_offscreen is None:
+            os.environ.pop("FURY_OFFSCREEN", None)
+        else:
+            os.environ["FURY_OFFSCREEN"] = original_offscreen
+        if original_record is None:
+            os.environ.pop("FURY_RECORD_ANIMATION", None)
+        else:
+            os.environ["FURY_RECORD_ANIMATION"] = original_record
+        if original_max_frames is None:
+            os.environ.pop("FURY_OFFSCREEN_MAX_FRAMES", None)
+        else:
+            os.environ["FURY_OFFSCREEN_MAX_FRAMES"] = original_max_frames
 
-        os.remove("test_anim.gif")
+    assert (tmp_path / "test_anim.gif").exists()
+    assert not (tmp_path / "test_anim.png").exists()
+    os.remove(tmp_path / "test_anim.gif")
+
+
+@pytest.mark.skipif(
+    not (have_py_side6),
+    reason="A Qt binding is required for Qt offscreen capture",
+)
+def test_qt_offscreen_capture_saves_parent_widget(tmp_path):
+    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
+    parent = QtWidgets.QWidget()
+    parent.resize(240, 120)
+
+    scene = window.Scene()
+    scene.add(actor.axes(scale=(1, 1, 1)))
+
+    show_m = window.ShowManager(
+        scene=scene,
+        size=(100, 100),
+        title="qt_capture",
+        window_type="qt",
+        qt_app=app,
+        qt_parent=parent,
+    )
+
+    layout = QtWidgets.QHBoxLayout()
+    parent.setLayout(layout)
+    layout.addWidget(QtWidgets.QPushButton("Capture", parent))
+    layout.addWidget(show_m.window)
+
+    original_cwd = os.getcwd()
+    original_offscreen = os.environ.get("FURY_OFFSCREEN")
+    original_record = os.environ.get("FURY_RECORD_ANIMATION")
+    os.chdir(tmp_path)
+    os.environ["FURY_OFFSCREEN"] = "1"
+    os.environ["FURY_RECORD_ANIMATION"] = "0"
+
+    try:
+        show_m.start()
+    finally:
+        os.chdir(original_cwd)
+        if original_offscreen is None:
+            os.environ.pop("FURY_OFFSCREEN", None)
+        else:
+            os.environ["FURY_OFFSCREEN"] = original_offscreen
+        if original_record is None:
+            os.environ.pop("FURY_RECORD_ANIMATION", None)
+        else:
+            os.environ["FURY_RECORD_ANIMATION"] = original_record
+
+    fname = tmp_path / "qt_capture.png"
+    assert fname.exists()
+    image = load_image(str(fname))
+    assert image.shape[0] == parent.height()
+    assert image.shape[1] == parent.width()
 
 
 def test_show_manager_add_animation_registers_update_callback(timeline):
