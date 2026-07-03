@@ -466,6 +466,7 @@ class VisualTest:
                 recording_filename,
                 visual_test=self,
                 expected_ui_snapshots=expected_snapshots,
+                show_simulation=show_simulation,
             )
 
             # Re-snapshot final step if it was recorded
@@ -904,7 +905,13 @@ def record_events_to_file(show_manager, filename, visual_test=None):
             f.write(events_json)
 
 
-def play_events(show_manager, events, visual_test=None, expected_ui_snapshots=None):
+def play_events(
+    show_manager,
+    events,
+    visual_test=None,
+    expected_ui_snapshots=None,
+    show_simulation=False,
+):
     """
     Simulate a pre-recorded sequence of event interactions.
 
@@ -918,6 +925,8 @@ def play_events(show_manager, events, visual_test=None, expected_ui_snapshots=No
         VisualTest instance to trigger intermediate checkpoints.
     expected_ui_snapshots : dict, optional
         Loaded snapshots mapping step -> components -> properties to check.
+    show_simulation : bool, optional
+        Flag to enable or disable real-time canvas simulation.
     """
     show_manager.render()
     show_manager._draw_canvas()
@@ -987,27 +996,30 @@ def play_events(show_manager, events, visual_test=None, expected_ui_snapshots=No
                     if getattr(event, "_propagation_stopped", False):
                         break
 
-            show_manager._draw_canvas()
+            if show_simulation:
+                show_manager._draw_canvas()
+
+                if not hasattr(show_manager.window, "draw"):
+                    time.sleep(0.001)
+                    try:
+                        import glfw
+
+                        glfw.poll_events()
+                    except Exception:
+                        pass
 
             if visual_test is not None and step_count == len(events):
                 visual_test.snapshot_all_ui(step=step_count)
-
-            if not hasattr(show_manager.window, "draw"):
-                import time
-
-                time.sleep(0.001)
-                try:
-                    import glfw
-
-                    glfw.poll_events()
-                except Exception:
-                    pass
     finally:
         show_manager._playing_back = False
 
 
 def play_events_from_file(
-    show_manager, filename, visual_test=None, expected_ui_snapshots=None
+    show_manager,
+    filename,
+    visual_test=None,
+    expected_ui_snapshots=None,
+    show_simulation=False,
 ):
     """
     Deserialize and simulate events from a recorded trace file.
@@ -1022,6 +1034,8 @@ def play_events_from_file(
         VisualTest instance to trigger intermediate checkpoints.
     expected_ui_snapshots : dict, optional
         Loaded snapshots mapping step -> components -> properties to check.
+    show_simulation : bool, optional
+        Flag to enable or disable real-time canvas simulation.
     """
     import gzip
     import json
@@ -1038,4 +1052,5 @@ def play_events_from_file(
         events,
         visual_test=visual_test,
         expected_ui_snapshots=expected_ui_snapshots,
+        show_simulation=show_simulation,
     )
