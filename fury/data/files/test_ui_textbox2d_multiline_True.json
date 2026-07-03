@@ -1,0 +1,1 @@
+{"events_counts": {"pointer_down": 3, "pointer_up": 3, "pointer_move": 50, "pointer_drag": 17, "key_down": 0, "key_up": 0, "click": 3, "double_click": 0, "wheel": 0}, "ui_snapshots": {"0": {"TextBox2D": {"position": [300.0, 300.0], "size": [180, 145]}}}, "window": {"size": [600, 600], "screen_config": null}}

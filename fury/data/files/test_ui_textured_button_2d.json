@@ -1,0 +1,1 @@
+{"events_counts": {"pointer_down": 13, "pointer_up": 12, "pointer_move": 177, "pointer_drag": 193, "key_down": 0, "key_up": 0, "click": 12, "double_click": 2, "wheel": 1}, "ui_snapshots": {"0": {"TexturedButton2D": {"position": [300.0, 300.0], "size": [50, 50]}}}, "window": {"size": [600, 600], "screen_config": null}}

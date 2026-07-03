@@ -334,7 +334,7 @@ from .primitive import (
 #     remove_shm_from_resource_tracker as remove_shm_from_resource_tracker,
 # )
 from .testing import (
-    EventCounter as EventCounter,
+    VisualTest as VisualTest,
     assert_arrays_equal as assert_arrays_equal,
     assert_operator as assert_operator,
     captured_output as captured_output,

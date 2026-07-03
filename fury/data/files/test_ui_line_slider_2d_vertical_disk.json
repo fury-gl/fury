@@ -1,0 +1,1 @@
+{"events_counts": {"pointer_down": 7, "pointer_up": 6, "pointer_move": 117, "pointer_drag": 291, "key_down": 0, "key_up": 0, "click": 0, "double_click": 0, "wheel": 0}, "ui_snapshots": {"0": {"LineSlider2D": {"position": [300.0, 300.0], "size": [20, 200]}}}, "window": {"size": [600, 600], "screen_config": null}}

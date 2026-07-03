@@ -1,9 +1,13 @@
 """Test containers module."""
 
+from os.path import join as pjoin
+
 import numpy as np
 import numpy.testing as npt
 
 from fury import ui, window
+from fury.data import DATA_DIR
+from fury.testing import VisualTest
 
 
 def test_panel2d_initialization_default():
@@ -900,3 +904,35 @@ def test_tab_ui_layout_and_invalid_index():
 #     npt.assert_equal(0, tab_ui_bottom.active_tab_idx)
 #     npt.assert_equal(14, next(changes))
 #     npt.assert_equal(5, next(collapses))
+
+
+def test_ui_panel2d_visual(recording=False):
+    panel = ui.Panel2D(
+        size=(200, 200), color=(0.2, 0.3, 0.4), opacity=0.8, position=(300, 300)
+    )
+
+    event_counter = VisualTest()
+    event_counter.monitor(panel)
+    event_counter.record_or_test(
+        pjoin(DATA_DIR, "test_ui_panel2d_container.log.gz"),
+        pjoin(DATA_DIR, "test_ui_panel2d_container.json"),
+        size=(600, 600),
+        title="Panel2D Visual Test",
+        recording=recording,
+    )
+
+
+def test_ui_tabui_visual(recording=False):
+    tab_ui = ui.TabUI(
+        size=(400, 300), tab_titles=["Home", "Settings"], position=(100, 100)
+    )
+
+    event_counter = VisualTest()
+    event_counter.monitor(tab_ui)
+    event_counter.record_or_test(
+        pjoin(DATA_DIR, "test_ui_tabui_container.log.gz"),
+        pjoin(DATA_DIR, "test_ui_tabui_container.json"),
+        size=(600, 600),
+        title="TabUI Visual Test",
+        recording=recording,
+    )

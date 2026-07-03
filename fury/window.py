@@ -768,6 +768,8 @@ class ShowManager:
         event : PointerEvent
             The PyGfx pointer event object.
         """
+        if getattr(self, "_playing_back", False):
+            return
         if self._drag_target is None:
             self._drag_target = event.target
         drag_event = PointerEvent(
@@ -1507,6 +1509,22 @@ class ShowManager:
         )
 
     @property
+    def scene(self):
+        """
+        Get the primary scene associated with the show manager.
+
+        Returns
+        -------
+        Scene
+            The root base layout scene.
+        """
+        if hasattr(self, "screens") and self.screens:
+            return self.screens[0].scene
+        if self._scene and len(self._scene) > 0:
+            return self._scene[0]
+        return None
+
+    @property
     def app(self):
         """
         Get the associated QApplication instance, if any.
@@ -1853,6 +1871,17 @@ class ShowManager:
         )
         self._imgui and self._imgui.render()
         self.window.request_draw()
+
+    def _draw_canvas(self):
+        """Draw a single canvas frame synchronously across different canvas types."""
+        if hasattr(self.window, "force_draw"):
+            self.window.force_draw()
+        elif hasattr(self.window, "draw"):
+            self.window.draw()
+        elif hasattr(self.window, "draw_frame"):
+            self.window.draw_frame()
+        else:
+            self.window.request_draw()
 
     def render(self):
         """Request a redraw of all screens in the window."""

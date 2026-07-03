@@ -1,11 +1,14 @@
 """Test for components module."""
 
+from os.path import join as pjoin
+
 import numpy as np
 import numpy.testing as npt
 
 from fury import ui, window
-from fury.data import fetch_viz_icons, read_viz_icons
+from fury.data import DATA_DIR, fetch_viz_icons, read_viz_icons
 from fury.lib import KeyboardEvent
+from fury.testing import VisualTest
 from fury.ui.helpers import Anchor
 
 
@@ -840,371 +843,33 @@ def test_textbox_handle_character_returns_false():
     assert result is False
 
 
-# def test_ui_textbox(recording=False):
-#     filename = "test_ui_textbox"
-#     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-#     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
-
-#     print(recording_filename)
-#     # TextBox
-#     textbox_test = ui.TextBox2D(height=3, width=10, text="Text")
-
-#     another_textbox_test = ui.TextBox2D(height=3, width=10, text="Enter Text")
-#     another_textbox_test.set_message("Enter Text")
-
-#     # Checking whether textbox went out of focus
-#     is_off_focused = [False]
-
-#     def _off_focus(textbox):
-#         is_off_focused[0] = True
-
-#     # Set up a callback when textbox went out of focus
-#     textbox_test.off_focus = _off_focus
-
-#     # Assign the counter callback to every possible event.
-#     event_counter = EventCounter()
-#     event_counter.monitor(textbox_test)
-
-#     current_size = (600, 600)
-#     show_manager = window.ShowManager(size=current_size, title="FURY TextBox")
-
-#     show_manager.scene.add(textbox_test)
-
-#     if recording:
-#         show_manager.record_events_to_file(recording_filename)
-#         print(list(event_counter.events_counts.items()))
-#         event_counter.save(expected_events_counts_filename)
-
-#     else:
-#         show_manager.play_events_from_file(recording_filename)
-#         expected = EventCounter.load(expected_events_counts_filename)
-#         event_counter.check_counts(expected)
-
-#     npt.assert_equal(is_off_focused[0], True)
-
-
-# def test_ui_line_slider_2d_horizontal_bottom(recording=False):
-#     filename = "test_ui_line_slider_2d_horizontal_bottom"
-#     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-#     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
-
-#     line_slider_2d_test = ui.LineSlider2D(
-#         initial_value=-2,
-#         min_value=-5,
-#         max_value=5,
-#         orientation="horizontal",
-#         text_alignment="bottom",
-#     )
-#     line_slider_2d_test.center = (300, 300)
-
-#     # Assign the counter callback to every possible event.
-#     event_counter = EventCounter()
-#     event_counter.monitor(line_slider_2d_test)
-
-#     current_size = (600, 600)
-#     show_manager = window.ShowManager(
-#         size=current_size, title="FURY Horizontal Line Slider"
-#     )
-
-#     show_manager.scene.add(line_slider_2d_test)
-
-#     if recording:
-#         show_manager.record_events_to_file(recording_filename)
-#         print(list(event_counter.events_counts.items()))
-#         event_counter.save(expected_events_counts_filename)
-
-#     else:
-#         show_manager.play_events_from_file(recording_filename)
-#         expected = EventCounter.load(expected_events_counts_filename)
-#         event_counter.check_counts(expected)
-
-
-# def test_ui_line_slider_2d_horizontal_top(recording=False):
-#     filename = "test_ui_line_slider_2d_horizontal_top"
-#     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-#     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
-
-#     line_slider_2d_test = ui.LineSlider2D(
-#         initial_value=-2,
-#         min_value=-5,
-#         max_value=5,
-#         orientation="horizontal",
-#         text_alignment="top",
-#     )
-#     line_slider_2d_test.center = (300, 300)
-
-#     # Assign the counter callback to every possible event.
-#     event_counter = EventCounter()
-#     event_counter.monitor(line_slider_2d_test)
-
-#     current_size = (600, 600)
-#     show_manager = window.ShowManager(
-#         size=current_size, title="FURY Horizontal Line Slider"
-#     )
-
-#     show_manager.scene.add(line_slider_2d_test)
-
-#     if recording:
-#         show_manager.record_events_to_file(recording_filename)
-#         print(list(event_counter.events_counts.items()))
-#         event_counter.save(expected_events_counts_filename)
-
-#     else:
-#         show_manager.play_events_from_file(recording_filename)
-#         expected = EventCounter.load(expected_events_counts_filename)
-#         event_counter.check_counts(expected)
-
-
-# def test_ui_line_slider_2d_vertical_left(recording=False):
-#     filename = "test_ui_line_slider_2d_vertical_left"
-#     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-#     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
-
-#     line_slider_2d_test = ui.LineSlider2D(
-#         initial_value=-2,
-#         min_value=-5,
-#         max_value=5,
-#         orientation="vertical",
-#         text_alignment="left",
-#     )
-#     line_slider_2d_test.center = (300, 300)
-
-#     # Assign the counter callback to every possible event.
-#     event_counter = EventCounter()
-#     event_counter.monitor(line_slider_2d_test)
-
-#     current_size = (600, 600)
-#     show_manager = window.ShowManager(
-#         size=current_size, title="FURY Vertical Line Slider"
-#     )
-
-#     show_manager.scene.add(line_slider_2d_test)
-
-#     if recording:
-#         show_manager.record_events_to_file(recording_filename)
-#         print(list(event_counter.events_counts.items()))
-#         event_counter.save(expected_events_counts_filename)
-
-#     else:
-#         show_manager.play_events_from_file(recording_filename)
-#         expected = EventCounter.load(expected_events_counts_filename)
-#         event_counter.check_counts(expected)
-
-
-# def test_ui_line_slider_2d_vertical_right(recording=False):
-#     filename = "test_ui_line_slider_2d_vertical_right"
-#     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-#     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
-
-#     line_slider_2d_test = ui.LineSlider2D(
-#         initial_value=-2,
-#         min_value=-5,
-#         max_value=5,
-#         orientation="vertical",
-#         text_alignment="right",
-#     )
-#     line_slider_2d_test.center = (300, 300)
-
-#     # Assign the counter callback to every possible event.
-#     event_counter = EventCounter()
-#     event_counter.monitor(line_slider_2d_test)
-
-#     current_size = (600, 600)
-#     show_manager = window.ShowManager(
-#         size=current_size, title="FURY Vertical Line Slider"
-#     )
-
-#     show_manager.scene.add(line_slider_2d_test)
-
-#     if recording:
-#         show_manager.record_events_to_file(recording_filename)
-#         print(list(event_counter.events_counts.items()))
-#         event_counter.save(expected_events_counts_filename)
-
-#     else:
-#         show_manager.play_events_from_file(recording_filename)
-#         expected = EventCounter.load(expected_events_counts_filename)
-#         event_counter.check_counts(expected)
-
-
-# def test_ui_2d_line_slider_hooks(recording=False):
-#     global changed, value_changed, slider_moved
-
-#     filename = "test_ui_line_slider_2d_hooks"
-#     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-#     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
-
-#     line_slider_2d = ui.LineSlider2D(center=(300, 300))
-
-#     event_counter = EventCounter()
-#     event_counter.monitor(line_slider_2d)
-
-#     show_manager = window.ShowManager(size=(600, 600), title="FURY Line Slider hooks")
-
-#     # counters for the hooks to increment
-#     changed = value_changed = slider_moved = 0
-
-#     def on_line_slider_change(slider):
-#         global changed
-#         changed += 1
-
-#     def on_line_slider_moved(slider):
-#         global slider_moved
-#         slider_moved += 1
-
-#     def on_line_slider_value_changed(slider):
-#         global value_changed
-#         value_changed += 1
-
-#     line_slider_2d.on_change = on_line_slider_change
-#     line_slider_2d.on_moving_slider = on_line_slider_moved
-#     line_slider_2d.on_value_changed = on_line_slider_value_changed
-
-#     for i in range(100, -1, -1):
-#         line_slider_2d.value = i
-
-#     show_manager.scene.add(line_slider_2d)
-
-#     if recording:
-#         show_manager.record_events_to_file(recording_filename)
-#         event_counter.save(expected_events_counts_filename)
-
-#     else:
-#         show_manager.play_events_from_file(recording_filename)
-#         expected = EventCounter.load(expected_events_counts_filename)
-#         event_counter.check_counts(expected)
-
-#     assert_greater(changed, 0)
-#     assert_greater(value_changed, 0)
-#     assert_greater(slider_moved, 0)
-#     assert_equal(changed, value_changed + slider_moved)
-
-
-# def test_ui_line_double_slider_2d(interactive=False):
-#     line_double_slider_2d_horizontal_test = ui.LineDoubleSlider2D(
-#         center=(300, 300),
-#         shape="disk",
-#         outer_radius=15,
-#         min_value=-10,
-#         max_value=10,
-#         initial_values=(-10, 10),
-#     )
-#     npt.assert_equal(line_double_slider_2d_horizontal_test.handles[0].size, (30, 30))
-#     npt.assert_equal(line_double_slider_2d_horizontal_test.left_disk_value, -10)
-#     npt.assert_equal(line_double_slider_2d_horizontal_test.right_disk_value, 10)
-
-#     line_double_slider_2d_vertical_test = ui.LineDoubleSlider2D(
-#         center=(300, 300),
-#         shape="disk",
-#         outer_radius=15,
-#         min_value=-10,
-#         max_value=10,
-#         initial_values=(-10, 10),
-#     )
-#     npt.assert_equal(line_double_slider_2d_vertical_test.handles[0].size, (30, 30))
-#     npt.assert_equal(line_double_slider_2d_vertical_test.bottom_disk_value, -10)
-#     npt.assert_equal(line_double_slider_2d_vertical_test.top_disk_value, 10)
-
-#     if interactive:
-#         show_manager = window.ShowManager(
-#             size=(600, 600), title="FURY Line Double Slider"
-#         )
-#         show_manager.scene.add(line_double_slider_2d_horizontal_test)
-#         show_manager.scene.add(line_double_slider_2d_vertical_test)
-#         show_manager.start()
-
-#     line_double_slider_2d_horizontal_test = ui.LineDoubleSlider2D(
-#         center=(300, 300),
-#         shape="square",
-#         handle_side=5,
-#         orientation="horizontal",
-#         initial_values=(50, 40),
-#     )
-#     npt.assert_equal(line_double_slider_2d_horizontal_test.handles[0].size, (5, 5))
-#     npt.assert_equal(line_double_slider_2d_horizontal_test.left_disk_value, 39)
-#     npt.assert_equal(line_double_slider_2d_horizontal_test.right_disk_value, 40)
-#     npt.assert_equal(line_double_slider_2d_horizontal_test.left_disk_ratio, 0.39)
-#     npt.assert_equal(line_double_slider_2d_horizontal_test.right_disk_ratio, 0.4)
-
-#     line_double_slider_2d_vertical_test = ui.LineDoubleSlider2D(
-#         center=(300, 300),
-#         shape="square",
-#         handle_side=5,
-#         orientation="vertical",
-#         initial_values=(50, 40),
-#     )
-#     npt.assert_equal(line_double_slider_2d_vertical_test.handles[0].size, (5, 5))
-#     npt.assert_equal(line_double_slider_2d_vertical_test.bottom_disk_value, 39)
-#     npt.assert_equal(line_double_slider_2d_vertical_test.top_disk_value, 40)
-#     npt.assert_equal(line_double_slider_2d_vertical_test.bottom_disk_ratio, 0.39)
-#     npt.assert_equal(line_double_slider_2d_vertical_test.top_disk_ratio, 0.4)
-
-#     with npt.assert_raises(ValueError):
-#         ui.LineDoubleSlider2D(orientation="Not_hor_not_vert")
-
-#     if interactive:
-#         show_manager = window.ShowManager(
-#             size=(600, 600), title="FURY Line Double Slider"
-#         )
-#         show_manager.scene.add(line_double_slider_2d_horizontal_test)
-#         show_manager.scene.add(line_double_slider_2d_vertical_test)
-#         show_manager.start()
-
-
-# def test_ui_2d_line_double_slider_hooks(recording=False):
-#     global changed, value_changed, slider_moved
-
-#     filename = "test_ui_line_double_slider_2d_hooks"
-#     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-#     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
-
-#     line_double_slider_2d = ui.LineDoubleSlider2D(center=(300, 300))
-
-#     event_counter = EventCounter()
-#     event_counter.monitor(line_double_slider_2d)
-
-#     show_manager = window.ShowManager(
-#         size=(600, 600), title="FURY Line Double Slider hooks"
-#     )
-
-#     # counters for the line double slider's changes
-#     changed = value_changed = slider_moved = 0
-
-#     def on_line_double_slider_change(slider):
-#         global changed
-#         changed += 1
-
-#     def on_line_double_slider_moved(slider):
-#         global slider_moved
-#         slider_moved += 1
-
-#     def on_line_double_slider_value_changed(slider):
-#         global value_changed
-#         value_changed += 1
-
-#     line_double_slider_2d.on_change = on_line_double_slider_change
-#     line_double_slider_2d.on_moving_slider = on_line_double_slider_moved
-#     line_double_slider_2d.on_value_changed = on_line_double_slider_value_changed
-
-#     for i in range(50, -1, -1):
-#         line_double_slider_2d.left_disk_value = i
-#         line_double_slider_2d.right_disk_value = 100 - i
-
-#     show_manager.scene.add(line_double_slider_2d)
-
-#     if recording:
-#         show_manager.record_events_to_file(recording_filename)
-#         event_counter.save(expected_events_counts_filename)
-
-#     else:
-#         show_manager.play_events_from_file(recording_filename)
-#         expected = EventCounter.load(expected_events_counts_filename)
-#         event_counter.check_counts(expected)
-
-#     assert_greater(changed, 0)
-#     assert_greater(value_changed, 0)
-#     assert_greater(slider_moved, 0)
-#     assert_equal(changed, value_changed + slider_moved)
+def test_ui_line_slider_2d_variations(recording=False):
+    for orientation in ["horizontal", "vertical"]:
+        for shape in ["disk", "square"]:
+            filename = f"test_ui_line_slider_2d_{orientation}_{shape}"
+            recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+            expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+            line_slider_2d_test = ui.LineSlider2D(
+                initial_value=-2,
+                min_value=-5,
+                max_value=5,
+                orientation=orientation,
+                shape=shape,
+                position=(300, 300),
+            )
+
+            # Assign the counter callback to every possible event.
+            event_counter = VisualTest()
+            event_counter.monitor(line_slider_2d_test)
+
+            event_counter.record_or_test(
+                recording_filename,
+                expected_events_counts_filename,
+                size=(600, 600),
+                title=f"FURY {orientation.capitalize()} Line Slider ({shape})",
+                recording=recording,
+            )
 
 
 def test_ring_slider_2d_functional_initialization():
@@ -1715,68 +1380,6 @@ def test_range_slider_size_vertical():
     expected_h = max(rs.range_slider.size[1], rs.value_slider.size[1])
     npt.assert_equal(size[0], expected_w)
     npt.assert_equal(size[1], expected_h)
-
-
-# def test_ui_range_slider(interactive=False):
-#     range_slider_test_horizontal = ui.RangeSlider(shape="square")
-#     range_slider_test_vertical = ui.RangeSlider(shape="square", orientation="vertical")  # noqa: E501
-
-#     if interactive:
-#         show_manager = window.ShowManager(
-#             size=(600, 600), title="FURY Line Double Slider"
-#         )
-#         show_manager.scene.add(range_slider_test_horizontal)
-#         show_manager.scene.add(range_slider_test_vertical)
-#         show_manager.start()
-
-
-# def test_ui_slider_value_range():
-#     with npt.assert_no_warnings():
-#         # LineSlider2D
-#         line_slider = ui.LineSlider2D(min_value=0, max_value=0)
-#         assert_equal(line_slider.value, 0)
-#         assert_equal(line_slider.min_value, 0)
-#         assert_equal(line_slider.max_value, 0)
-#         line_slider.value = 100
-#         assert_equal(line_slider.value, 0)
-#         line_slider.value = -100
-#         assert_equal(line_slider.value, 0)
-
-#         line_slider = ui.LineSlider2D(min_value=0, max_value=100)
-#         line_slider.value = 105
-#         assert_equal(line_slider.value, 100)
-#         line_slider.value = -100
-#         assert_equal(line_slider.value, 0)
-
-#         # LineDoubleSlider2D
-#         line_double_slider = ui.LineDoubleSlider2D(min_value=0, max_value=0)
-#         assert_equal(line_double_slider.left_disk_value, 0)
-#         assert_equal(line_double_slider.right_disk_value, 0)
-#         line_double_slider.left_disk_value = 100
-#         assert_equal(line_double_slider.left_disk_value, 0)
-#         line_double_slider.right_disk_value = -100
-#         assert_equal(line_double_slider.right_disk_value, 0)
-
-#         line_double_slider = ui.LineDoubleSlider2D(min_value=50, max_value=100)
-#         line_double_slider.right_disk_value = 150
-#         assert_equal(line_double_slider.right_disk_value, 100)
-#         line_double_slider.left_disk_value = -150
-#         assert_equal(line_double_slider.left_disk_value, 50)
-
-#         # RingSlider2D
-#         ring_slider = ui.RingSlider2D(initial_value=0, min_value=0, max_value=0)
-#         assert_equal(ring_slider.value, 0)
-#         assert_equal(ring_slider.previous_value, 0)
-#         ring_slider.value = 180
-#         assert_equal(ring_slider.value, 0)
-#         ring_slider.value = -180
-#         assert_equal(ring_slider.value, 0)
-
-#         # RangeSlider
-#         range_slider_2d = ui.RangeSlider(min_value=0, max_value=0)
-#         assert_equal(range_slider_2d.value_slider.value, 0)
-#         range_slider_2d.value_slider.value = 100
-#         assert_equal(range_slider_2d.value_slider.value, 0)
 
 
 # def test_ui_option(interactive=False):
@@ -2921,3 +2524,197 @@ def test_ui_card2d_events():
     card.left_button_dragged(event_drag)
 
     npt.assert_array_almost_equal(card.get_position(), [40, 50])
+
+
+def test_ui_textured_button_2d_visual(recording=False):
+    fetch_viz_icons()
+    states = {
+        "default": read_viz_icons(fname="play3.png"),
+        "hover": read_viz_icons(fname="stop2.png"),
+        "pressed": read_viz_icons(fname="pause2.png"),
+    }
+    button = ui.TexturedButton2D(states=states, size=(50, 50), position=(300, 300))
+
+    event_counter = VisualTest()
+    event_counter.monitor(button)
+    event_counter.record_or_test(
+        pjoin(DATA_DIR, "test_ui_textured_button_2d.log.gz"),
+        pjoin(DATA_DIR, "test_ui_textured_button_2d.json"),
+        size=(600, 600),
+        title="TexturedButton2D Visual Test",
+        recording=recording,
+    )
+
+
+def test_ui_text_button_2d_visual(recording=False):
+    button = ui.TextButton2D(label="Click Me", size=(120, 40), position=(300, 300))
+
+    event_counter = VisualTest()
+    event_counter.monitor(button)
+    event_counter.record_or_test(
+        pjoin(DATA_DIR, "test_ui_text_button_2d.log.gz"),
+        pjoin(DATA_DIR, "test_ui_text_button_2d.json"),
+        size=(600, 600),
+        title="TextButton2D Visual Test",
+        recording=recording,
+    )
+
+
+def test_ui_playback_panel_visual(recording=False):
+    panel = ui.PlaybackPanel(width=400, position=(100, 100))
+
+    event_counter = VisualTest()
+    event_counter.monitor(panel)
+    event_counter.record_or_test(
+        pjoin(DATA_DIR, "test_ui_playback_panel_element.log.gz"),
+        pjoin(DATA_DIR, "test_ui_playback_panel_element.json"),
+        size=(600, 600),
+        title="PlaybackPanel Visual Test",
+        recording=recording,
+    )
+
+
+def test_ui_textbox2d_variations(recording=False):
+    for multiline in [False, True]:
+        filename = f"test_ui_textbox2d_multiline_{multiline}"
+        textbox = ui.TextBox2D(
+            20, 5 if multiline else 1, text="Type here...", position=(300, 300)
+        )
+
+        event_counter = VisualTest()
+        event_counter.monitor(textbox)
+        event_counter.record_or_test(
+            pjoin(DATA_DIR, filename + ".log.gz"),
+            pjoin(DATA_DIR, filename + ".json"),
+            size=(600, 600),
+            title=f"TextBox2D Multiline {multiline}",
+            recording=recording,
+        )
+
+
+def test_ui_line_double_slider_2d_visual(recording=False):
+    slider = ui.LineDoubleSlider2D(
+        line_width=5,
+        outer_radius=10,
+        length=250,
+        initial_values=(20, 80),
+        min_value=0,
+        max_value=100,
+        position=(300, 300),
+    )
+
+    event_counter = VisualTest()
+    event_counter.monitor(slider)
+    event_counter.record_or_test(
+        pjoin(DATA_DIR, "test_ui_line_double_slider_element.log.gz"),
+        pjoin(DATA_DIR, "test_ui_line_double_slider_element.json"),
+        size=(600, 600),
+        title="LineDoubleSlider2D Visual Test",
+        recording=recording,
+    )
+
+
+def test_ui_ring_slider_2d_visual(recording=False):
+    slider = ui.RingSlider2D(
+        initial_value=45,
+        min_value=0,
+        max_value=360,
+    )
+
+    event_counter = VisualTest()
+    event_counter.monitor(slider)
+    event_counter.record_or_test(
+        pjoin(DATA_DIR, "test_ui_ring_slider_element.log.gz"),
+        pjoin(DATA_DIR, "test_ui_ring_slider_element.json"),
+        size=(600, 600),
+        title="RingSlider2D Visual Test",
+        recording=recording,
+    )
+
+
+def test_ui_range_slider_visual(recording=False):
+    slider = ui.RangeSlider(
+        range_slider_center=(300, 320),
+        value_slider_center=(300, 280),
+        min_value=0,
+        max_value=100,
+    )
+
+    event_counter = VisualTest()
+    event_counter.monitor(slider)
+    event_counter.record_or_test(
+        pjoin(DATA_DIR, "test_ui_range_slider_element.log.gz"),
+        pjoin(DATA_DIR, "test_ui_range_slider_element.json"),
+        size=(600, 600),
+        title="RangeSlider Visual Test",
+        recording=recording,
+    )
+
+
+def test_ui_combobox2d_visual(recording=False):
+    combobox = ui.ComboBox2D(
+        items=[
+            "Option A",
+            "Option B",
+            "Option C",
+            "Option D",
+            "Option E",
+            "Option F",
+            "Option Very Very Very Very Big",
+        ],
+        position=(300, 300),
+    )
+
+    event_counter = VisualTest()
+    event_counter.monitor(combobox)
+    event_counter.record_or_test(
+        pjoin(DATA_DIR, "test_ui_combobox_element.log.gz"),
+        pjoin(DATA_DIR, "test_ui_combobox_element.json"),
+        size=(600, 600),
+        title="ComboBox2D Visual Test",
+        recording=recording,
+    )
+
+
+def test_ui_listbox2d_visual(recording=False):
+    listbox = ui.ListBox2D(
+        values=[
+            "First",
+            "Second",
+            "Third",
+            "Fourth",
+            "Very Very Very Very Big Line",
+            "Fifth",
+            "Sixth",
+        ],
+        size=(150, 150),
+        position=(300, 300),
+    )
+
+    event_counter = VisualTest()
+    event_counter.monitor(listbox)
+    event_counter.record_or_test(
+        pjoin(DATA_DIR, "test_ui_listbox_element.log.gz"),
+        pjoin(DATA_DIR, "test_ui_listbox_element.json"),
+        size=(600, 600),
+        title="ListBox2D Visual Test",
+        recording=recording,
+    )
+
+
+def test_ui_card2d_visual(recording=False):
+    fetch_viz_icons()
+    img_path = read_viz_icons(fname="play3.png")
+    card = ui.Card2D(
+        image_path=img_path, size=(200, 250), border_width=1, position=(300, 300)
+    )
+
+    event_counter = VisualTest()
+    event_counter.monitor(card)
+    event_counter.record_or_test(
+        pjoin(DATA_DIR, "test_ui_card_element.log.gz"),
+        pjoin(DATA_DIR, "test_ui_card_element.json"),
+        size=(600, 600),
+        title="Card2D Visual Test",
+        recording=recording,
+    )
