@@ -70,17 +70,27 @@ Contributors
         {% for contributor in contributors["contributors"] %}
         <a href="{{ contributor.html_url }}" target="_blank">
         <div class="github_visualization_contributor_info">
-            <div class="github_visualization_contributor_img_holder">
-                <img class="github_visualization_contributor_img" src="{{ contributor.avatar_url }}">
+            <div class="github_visualization_contributor_stat_row">
+                <div class="github_visualization_contributor_img_holder">
+                    <img class="github_visualization_contributor_img" src="{{ contributor.avatar_url }}">
+                </div>
+                {% if contributor.fullname %}
+                <span class="github_visualization_contributor_name">{{ contributor.fullname }}</span>
+                {% else %}
+                <span class="github_visualization_contributor_name">{{ contributor.username }}</span>
+                {% endif %}
             </div>
-            {% if contributor.fullname %}
-            <span class="github_visualization_contributor_name">{{ contributor.fullname }}</span>
-            {% else %}
-            <span class="github_visualization_contributor_name">{{ contributor.username }}</span>
-            {% endif %}
-            <span class="github_visualization_contributor_commits">Commits: {{ contributor.nb_commits }}</span>
-            <span class="github_visualization_contributor_additions"> ++{{ contributor.total_additions }}</span>
-            <span class="github_visualization_contributor_deletions"> --{{contributor.total_deletions }}</span>
+            <div class="github_visualization_contributor_stat_row">
+                <div class="stat_icon_holder"><i class="fa-solid fa-code-commit stat_icon"></i></div>
+                <span class="github_visualization_contributor_commits">{{ contributor.nb_commits }} Commits</span>
+            </div>
+            <div class="github_visualization_contributor_stat_row">
+                <div class="stat_icon_holder"><i class="fa-solid fa-file-code stat_icon"></i></div>
+                <div class="github_visualization_contributor_diffs">
+                    <span class="github_visualization_contributor_additions"><i class="fa-solid fa-plus"></i> {{ contributor.total_additions }}</span>
+                    <span class="github_visualization_contributor_deletions"><i class="fa-solid fa-minus"></i> {{contributor.total_deletions }}</span>
+                </div>
+            </div>
         </div>
         </a>
         {% endfor %}
