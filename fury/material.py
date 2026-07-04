@@ -1008,6 +1008,7 @@ class RoundedRectangleMaterial(MeshBasicMaterial):
         **kwargs : dict
             Additional keyword arguments forwarded to ``MeshBasicMaterial``.
         """
+        kwargs.setdefault("pick_write", True)
         super().__init__(**kwargs)
         self.size = size
         self.corner_radius = corner_radius

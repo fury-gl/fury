@@ -80,5 +80,14 @@ fn fs_main(varyings: Varyings) -> FragmentOutput {
 
     var out: FragmentOutput;
     out.color = vec4<f32>(physical_color, final_alpha);
+
+    $$ if write_pick
+    out.pick = (
+        pick_pack(u32(u_wobject.global_id), 20) +
+        pick_pack(0u, 26) +
+        pick_pack(0u, 18)
+    );
+    $$ endif
+
     return out;
 }
