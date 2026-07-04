@@ -100,11 +100,11 @@ html[data-theme="light"] .fury-footer__logo-text {
     font-family: "Gotham", "Montserrat", sans-serif !important;
     font-weight: 700 !important;
     letter-spacing: 0.03em !important;
-    font-size: 1.6rem !important;
+    font-size: 2.1rem !important;
     display: inline-block !important;
     margin-bottom: 0 !important;
     line-height: 1 !important;
-    transform: scaleX(1.3) !important;
+    transform: scaleX(1.2) translateY(2px) !important;
     transform-origin: left center !important;
 }
 
