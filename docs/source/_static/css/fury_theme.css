@@ -104,7 +104,7 @@ html[data-theme="light"] .fury-footer__logo-text {
     display: inline-block !important;
     margin-bottom: 0 !important;
     line-height: 1 !important;
-    transform: scaleX(1.3) !important;
+    transform: scaleX(1.2) translateY(6px) !important;
     transform-origin: left center !important;
 }
 
