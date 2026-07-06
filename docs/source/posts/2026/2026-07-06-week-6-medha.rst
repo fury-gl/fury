@@ -1,0 +1,81 @@
+Week 6: Combobox UI Component and Global Theme Integration
+==========================================================
+
+.. post:: July 06, 2026
+   :author: Medha Bhardwaj
+   :tags: google
+   :category: gsoc
+
+During the week, I focused on adding a new Combobox UI element to FURY and implementing global theming for the FURY website's internal pages.
+
+Overview
+--------
+
+This week, I worked on the following pull requests:
+
+UI Components Development
+-------------------------
+
+- *Introduces Combobox* (`#1271 <https://github.com/fury-gl/fury/pull/1271>`_)
+  I added the ``Combobox`` component to FURY, allowing users to select an option from a drop-down menu within the UI.
+
+  .. image:: https://github.com/user-attachments/assets/1a407269-a725-4f5d-9036-bc44259d3509
+     :align: center
+     :alt: Combobox Demonstration
+
+Website Revamp and Global Theming
+---------------------------------
+
+- *Migrate images to PNG and update logo card styling* (`#1275 <https://github.com/fury-gl/fury/pull/1275>`_)
+  I migrated existing images to PNG format, so they work well even in dark mode and updated the styling of the logo cards on the website for a cleaner look.
+
+  .. image:: https://github.com/user-attachments/assets/5e992cae-2014-4c67-9f53-d4b79b537484
+     :align: center
+     :alt: Logo Card Styling
+
+- *Extracts shared navbar/footer styles into fury_theme.css and scope homepage.css to home.html* (`#1276 <https://github.com/fury-gl/fury/pull/1276>`_)
+  To prevent unintentional CSS side effects on non-homepages, I extracted the shared navbar and footer styles into a separate file and scoped the homepage styles appropriately.
+
+  .. image:: https://github.com/user-attachments/assets/4f383eb0-b780-42f5-8298-f69e78a87635
+     :align: center
+     :alt: Shared Styles Extraction
+
+- *Implements global light mode theme for internal pages (same as homepage)* (`#1281 <https://github.com/fury-gl/fury/pull/1281>`_)
+  I expanded the new light mode theme from the homepage to all internal documentation pages, ensuring a consistent look and feel throughout the website.
+
+  .. image:: https://github.com/user-attachments/assets/23ee30b8-ab4f-40a4-93eb-d98f9eaef1b8
+     :align: center
+     :alt: Global Light Mode Theme
+
+- *Implements global dark mode theme for internal pages (same as homepage)* (`#1278 <https://github.com/fury-gl/fury/pull/1278>`_)
+  Following the light mode implementation, I added a global dark mode theme for all internal pages. I also ensured that the red gradient remains visible when scrolling in dark mode.
+
+  .. image:: https://github.com/user-attachments/assets/a9e4821e-b13e-41b6-a549-7a1bbf96767c
+     :align: center
+     :alt: Global Dark Mode Theme
+
+- *Override Default CSS with Custom Styles to Update Doc Page Colors* (`#1282 <https://github.com/fury-gl/fury/pull/1282>`_)
+  I identified and overrode the default colors for the documentation pages with custom styles. This is a temporary update to match the new themes while the final designs are being completed.
+
+  .. image:: https://github.com/user-attachments/assets/b21c4ea8-847e-4e42-ab76-b6c9880253a8
+     :align: center
+     :alt: Doc Page Colors Update
+
+What I Learned
+--------------
+
+This week was largely focused on CSS architecture and theme management. I learned how to effectively scope CSS to specific pages to avoid style leakage and how to create a consistent theming system across both light and dark modes. I also gained experience in overriding default Sphinx styles to align with custom design requirements. In addition, I successfully integrated a new UI element, the Combobox.
+
+
+In the upcoming week, I plan to:
+--------------
+
+- Finalize the custom styling for the internal documentation pages once the final designs are ready.
+- Continue working on advanced UI components, such as the Tree UI.
+- Adding new Rounded Rectangle to FURY.
+
+Connect with Me
+---------------
+
+- GitHub: `medha-14 <https://github.com/medha-14>`_
+- LinkedIn: `Medha Bhardwaj <https://www.linkedin.com/in/medhabhardwaj/>`_
