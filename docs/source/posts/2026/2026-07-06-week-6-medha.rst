@@ -68,7 +68,7 @@ This week was largely focused on CSS architecture and theme management. I learne
 
 
 In the upcoming week, I plan to:
---------------
+--------------------------------
 
 - Finalize the custom styling for the internal documentation pages once the final designs are ready.
 - Continue working on advanced UI components, such as the Tree UI.
