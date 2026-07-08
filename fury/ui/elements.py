@@ -1601,6 +1601,12 @@ class LineDoubleSlider2D(UI):
     def _update_actors_position(self):
         """Update the position of the track and handle actors."""
         pos = self.get_position(x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP)
+
+        self.track.z_order = self.z_order
+        for i in range(2):
+            self.handles[i].z_order = self.z_order + 1
+            self.texts[i].z_order = self.z_order + 2
+
         self.track.set_position(
             pos + self.size / 2, x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER
         )
@@ -2229,18 +2235,44 @@ class RangeSlider(UI):
         numpy.ndarray
             The width and height of the component.
         """
-        if self.orientation == "horizontal":
-            w = max(self.range_slider.size[0], self.value_slider.size[0])
-            h = self.range_slider.size[1] + self.value_slider.size[1]
-        else:
-            w = self.range_slider.size[0] + self.value_slider.size[0]
-            h = max(self.range_slider.size[1], self.value_slider.size[1])
+        w1, h1 = self.range_slider.size
+        w2, h2 = self.value_slider.size
+
+        orig_pos_x = min(self.range_slider_center[0], self.value_slider_center[0])
+        orig_pos_y = min(self.range_slider_center[1], self.value_slider_center[1])
+
+        rel_range_x = self.range_slider_center[0] - orig_pos_x
+        rel_range_y = self.range_slider_center[1] - orig_pos_y
+
+        rel_value_x = self.value_slider_center[0] - orig_pos_x
+        rel_value_y = self.value_slider_center[1] - orig_pos_y
+
+        w = max(rel_range_x + w1, rel_value_x + w2)
+        h = max(rel_range_y + h1, rel_value_y + h2)
+
         return np.array([w, h])
 
     def _update_actors_position(self):
         """Update the position of the internal sliders."""
-        self.range_slider.set_position(self.range_slider_center)
-        self.value_slider.set_position(self.value_slider_center)
+        pos = self.get_position(x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP)
+        orig_pos_x = min(self.range_slider_center[0], self.value_slider_center[0])
+        orig_pos_y = min(self.range_slider_center[1], self.value_slider_center[1])
+
+        rel_range = np.array(
+            [
+                self.range_slider_center[0] - orig_pos_x,
+                self.range_slider_center[1] - orig_pos_y,
+            ]
+        )
+        rel_value = np.array(
+            [
+                self.value_slider_center[0] - orig_pos_x,
+                self.value_slider_center[1] - orig_pos_y,
+            ]
+        )
+
+        self.range_slider.set_position(pos + rel_range)
+        self.value_slider.set_position(pos + rel_value)
 
     def range_slider_handle_move_callback(self, ui):
         """
@@ -2853,7 +2885,7 @@ class ComboBox2D(UI):
     def _update_actors_position(self):
         """Update the position of the actors."""
         pos = self.get_position()
-        self.panel.set_position((pos[0], pos[1] - self.drop_menu_size[1]))
+        self.panel.set_position((pos[0], pos[1]))
 
     def _get_size(self):
         """
@@ -3349,7 +3381,6 @@ class ListBox2D(UI):
         for slot in self.slots[len(values_to_show) :]:
             slot.element = None
             slot.set_visibility(False)
-            slot.resize((self.slot_width, 0))
             slot.deselect()
 
     def update_scrollbar(self):
@@ -3580,6 +3611,9 @@ class ListBoxItem2D(UI):
         event : object
             The pygfx event.
         """
+        if self._element is None:
+            return
+
         modifiers = getattr(event, "modifiers", None) or ()
         multiselect = "Control" in modifiers
         range_select = "Shift" in modifiers

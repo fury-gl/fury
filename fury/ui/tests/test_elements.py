@@ -1361,23 +1361,47 @@ def test_line_double_slider_2d_initial_values_clamping():
 
 
 def test_range_slider_size_horizontal():
-    """Test that horizontal RangeSlider adds heights of sub-sliders."""
+    """Test that horizontal RangeSlider size encompasses its sub-sliders."""
     rs = ui.RangeSlider(length=200, orientation="horizontal")
 
     size = rs._get_size()
-    expected_h = rs.range_slider.size[1] + rs.value_slider.size[1]
-    expected_w = max(rs.range_slider.size[0], rs.value_slider.size[0])
+    expected_w = (
+        max(
+            rs.range_slider.size[0] + rs.range_slider.get_position()[0],
+            rs.value_slider.size[0] + rs.value_slider.get_position()[0],
+        )
+        - rs.get_position()[0]
+    )
+    expected_h = (
+        max(
+            rs.range_slider.size[1] + rs.range_slider.get_position()[1],
+            rs.value_slider.size[1] + rs.value_slider.get_position()[1],
+        )
+        - rs.get_position()[1]
+    )
     npt.assert_equal(size[0], expected_w)
     npt.assert_equal(size[1], expected_h)
 
 
 def test_range_slider_size_vertical():
-    """Test that vertical RangeSlider adds widths of sub-sliders."""
+    """Test that vertical RangeSlider size encompasses its sub-sliders."""
     rs = ui.RangeSlider(length=200, orientation="vertical")
 
     size = rs._get_size()
-    expected_w = rs.range_slider.size[0] + rs.value_slider.size[0]
-    expected_h = max(rs.range_slider.size[1], rs.value_slider.size[1])
+    expected_w = (
+        max(
+            rs.range_slider.size[0] + rs.range_slider.get_position()[0],
+            rs.value_slider.size[0] + rs.value_slider.get_position()[0],
+        )
+        - rs.get_position()[0]
+    )
+    expected_h = (
+        max(
+            rs.range_slider.size[1] + rs.range_slider.get_position()[1],
+            rs.value_slider.size[1] + rs.value_slider.get_position()[1],
+        )
+        - rs.get_position()[1]
+    )
     npt.assert_equal(size[0], expected_w)
     npt.assert_equal(size[1], expected_h)
 
