@@ -1,0 +1,70 @@
+Week 7: Rounded Rectangle Research and Website Enhancements
+============================================================
+
+.. post:: July 13, 2026
+   :author: Medha Bhardwaj
+   :tags: google
+   :category: gsoc
+
+During the week, I focused on researching different approaches for implementing a Rounded Rectangle UI component in FURY and continued working on the FURY website revamp.
+
+Overview
+--------
+
+This week, I worked on the following pull requests and carried out a design study for the Rounded Rectangle component.
+
+Website Revamp
+--------------
+
+- *Community page (both light and dark mode)* (`#1293 <https://github.com/fury-gl/fury/pull/1293>`_)
+  I built the Community page for the FURY website with full support for both light and dark mode, maintaining visual consistency with the rest of the site.
+
+  .. image:: https://github.com/user-attachments/assets/621fbabd-f2af-4741-9f71-61c35dc6e169
+     :align: center
+     :alt: Community Page Light Mode
+
+  .. image:: https://github.com/user-attachments/assets/f8b1d4aa-b5e2-4df2-9d56-bdb3823ed6d4
+     :align: center
+     :alt: Community Page Dark Mode
+
+
+- *Adds FURY next to logo in homepage in navbar* (`#1284 <https://github.com/fury-gl/fury/pull/1284>`_)
+  I added the "FURY" text alongside the logo in the homepage navbar to improve brand visibility and recognition.
+
+  .. image:: https://github.com/user-attachments/assets/bf4cb2d8-4b42-4b5c-830b-f30b524b4ccb
+     :align: center
+     :alt: FURY Logo in Navbar
+
+Rounded Rectangle Approaches
+-----------------------------
+
+A significant portion of this week was spent researching and documenting four different approaches for creating a Rounded Rectangle primitive in FURY. I wrote a detailed comparison document covering each method's implementation, pros, and cons.
+
+**1. Fragment Shader SDF**
+  Render a simple rectangular quad and use a Signed Distance Field in the fragment shader to mathematically carve out the rounded corners per pixel. This gives resolution-independent, perfectly smooth curves with minimal geometry (just two triangles), and is easy to extend with borders and outlines. However, it requires careful scaling management and proper depth sorting so that the transparent corners don't occlude elements behind them.
+
+**2. Geometry Composition (Rectangles + Discs)**
+  Physically assemble the shape from six actors: two overlapping rectangles and four quarter-disc arcs placed at the corners. This approach is simple and uses only existing FURY components, and click/hover detection works correctly out of the box. The downsides are six separate draw calls per rectangle, a transparency overlap artifact (the center appears darker at partial opacity), and difficulty adding continuous visual effects like outlines or gradients.
+
+**3. Custom Geometry Primitive**
+  Mathematically calculate the full outline using trigonometry for the curved corners and fill the shape with triangles to form a single continuous mesh. This solves the transparency overlap problem, gives accurate interactivity, and requires only a single draw call. The trade-off is that the curves are approximated by straight-line segments (which can appear jagged at extreme zoom), and resizing requires rebuilding the entire mesh.
+
+**4. Texture-Based (Canvas Rendering)**
+  Use a Python image library to draw a rounded rectangle image with transparent corners and apply it as a texture to a flat quad. This is straightforward, makes it easy to add gradients and borders via image processing, and looks crisp at native resolution. However, it becomes blurry when zoomed in, resizing requires regenerating the image on the CPU, and each unique size/color combination consumes separate texture memory.
+
+What I Learned
+--------------
+
+This week gave me a deep understanding of the different trade-offs involved in rendering 2D shapes within a 3D visualization framework. I learned about Signed Distance Fields and how fragment shaders can produce resolution-independent curves, the compositing problems that arise from overlapping semi-transparent geometry, and the balance between mesh complexity and visual fidelity when building custom geometry primitives. On the website side, I continued refining the site's look and feel with the new Community page and navbar branding.
+
+In the upcoming week, I plan to:
+--------------------------------
+
+- Begin implementing the Rounded Rectangle component using the chosen approach.
+- Work on additional UI components.
+
+Connect with Me
+---------------
+
+- GitHub: `medha-14 <https://github.com/medha-14>`_
+- LinkedIn: `Medha Bhardwaj <https://www.linkedin.com/in/medhabhardwaj/>`_
