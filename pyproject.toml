@@ -83,6 +83,8 @@ doc = [
     "sphinx-copybutton",
     "sphinx-gallery>=0.10.0",
     "pydata-sphinx-theme==0.15.2",
+    "sphinx-sitemap",
+    "sphinxext-opengraph",
     "fury[window, plot, medical]",
     ]
 style = ["ruff", "pre-commit"]
