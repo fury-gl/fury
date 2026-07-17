@@ -1743,112 +1743,6 @@ def test_range_slider_size_vertical():
 #             show_manager.start()
 
 
-# def test_ui_combobox_2d(interactive=False):
-#     filename = "test_ui_combobox_2d"
-#     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-#     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
-
-#     values = ["An Item" + str(i) for i in range(0, 5)]
-#     new_values = ["An Item5", "An Item6"]
-
-#     combobox = ui.ComboBox2D(items=values, position=(400, 400), size=(300, 200))
-
-#     # Assign the counter callback to every possible event.
-#     event_counter = EventCounter()
-#     event_counter.monitor(combobox)
-
-#     current_size = (800, 800)
-#     show_manager = window.ShowManager(size=current_size, title="ComboBox UI Example")
-#     show_manager.scene.add(combobox)
-
-#     values.extend(new_values)
-#     combobox.append_item(*new_values)
-#     npt.assert_equal(values, combobox.items)
-
-#     values.append("An Item7")
-#     combobox.append_item("An Item7")
-#     npt.assert_equal(values, combobox.items)
-
-#     values.append("An Item8")
-#     values.append("An Item9")
-#     combobox.append_item("An Item8", "An Item9")
-#     npt.assert_equal(values, combobox.items)
-
-#     complex_list = [[0], (1, [[2, 3], 4], 5)]
-#     combobox.append_item(*complex_list)
-#     values.extend([str(i) for i in range(6)])
-#     npt.assert_equal(values, combobox.items)
-
-#     invalid_item = {"Hello": 1, "World": 2}
-#     npt.assert_raises(TypeError, combobox.append_item, invalid_item)
-
-#     npt.assert_equal(values, combobox.items)
-#     npt.assert_equal((30, 20), combobox.drop_button_size)
-#     npt.assert_equal([270, 140], combobox.drop_menu_size)
-#     npt.assert_equal([300, 200], combobox.size)
-
-#     ui.ComboBox2D(items=values, draggable=False)
-
-#     if interactive:
-#         show_manager.record_events_to_file(recording_filename)
-#         print(list(event_counter.events_counts.items()))
-#         event_counter.save(expected_events_counts_filename)
-
-#     else:
-#         show_manager.play_events_from_file(recording_filename)
-#         expected = EventCounter.load(expected_events_counts_filename)
-#         event_counter.check_counts(expected)
-
-#     npt.assert_equal("An Item1", combobox.selected_text)
-#     npt.assert_equal(1, combobox.selected_text_index)
-
-#     combobox.resize((450, 300))
-#     npt.assert_equal((405, 30), combobox.text_block_size)
-#     npt.assert_equal((45, 30), combobox.drop_button_size)
-#     npt.assert_equal((405, 210), combobox.drop_menu_size)
-
-
-# def test_ui_combobox_2d_dropdown_visibility(interactive=False):
-#     values = ["An Item" + str(i) for i in range(0, 5)]
-
-#     tab_ui = ui.TabUI(position=(49, 94), size=(400, 400), nb_tabs=1, draggable=True)
-#     combobox = ui.ComboBox2D(items=values, position=(400, 400), size=(300, 200))
-
-#     tab_ui.add_element(0, combobox, (0.1, 0.3))
-
-#     # Assign the counter callback to every possible event.
-#     event_counter = EventCounter()
-#     event_counter.monitor(combobox)
-#     event_counter.monitor(tab_ui)
-
-#     current_size = (800, 800)
-#     show_manager = window.ShowManager(size=current_size, title="ComboBox UI Example")
-#     show_manager.scene.add(tab_ui)
-
-#     tab_ui.tabs[0].content_panel.set_visibility(True)
-#     npt.assert_equal(False, combobox._menu_visibility)
-#     npt.assert_equal(False, combobox.drop_down_menu.panel.actors[0].GetVisibility())
-#     npt.assert_equal(0, combobox.drop_down_button.current_icon_id)
-#     npt.assert_equal(True, combobox.drop_down_button.actors[0].GetVisibility())
-#     npt.assert_equal(True, combobox.selection_box.actors[0].GetVisibility())
-
-#     tab_ui.tabs[0].content_panel.set_visibility(False)
-#     npt.assert_equal(False, combobox._menu_visibility)
-#     npt.assert_equal(False, combobox.drop_down_menu.panel.actors[0].GetVisibility())
-#     npt.assert_equal(0, combobox.drop_down_button.current_icon_id)
-#     npt.assert_equal(False, combobox.drop_down_button.actors[0].GetVisibility())
-#     npt.assert_equal(False, combobox.selection_box.actors[0].GetVisibility())
-
-#     iren = show_manager.scene.GetRenderWindow().GetInteractor().GetInteractorStyle()
-#     combobox.menu_toggle_callback(iren, None, None)
-#     tab_ui.tabs[0].content_panel.set_visibility(True)
-#     npt.assert_equal(True, combobox._menu_visibility)
-#     npt.assert_equal(True, combobox.drop_down_menu.panel.actors[0].GetVisibility())
-#     npt.assert_equal(1, combobox.drop_down_button.current_icon_id)
-#     npt.assert_equal(True, combobox.drop_down_button.actors[0].GetVisibility())
-#     npt.assert_equal(True, combobox.selection_box.actors[0].GetVisibility())
-
-
 def test_ui_combobox_2d_initialization_and_properties():
     """Test ComboBox2D initialization, default parameters, layout, and properties."""
     fetch_viz_icons()
@@ -2004,6 +1898,26 @@ def test_ui_combobox_2d_drag_events():
 
     cb3 = ui.ComboBox2D(items=["A"], draggable=False)
     assert cb3.draggable is False
+
+    assert combobox._menu_visibility is False
+    event_press2 = window.PointerEvent(
+        x=20, y=20, type=window.EventType.POINTER_DOWN, target="target"
+    )
+    combobox.left_button_pressed(event_press2)
+    event_release = window.PointerEvent(
+        x=20, y=20, type=window.EventType.POINTER_UP, target="target"
+    )
+    combobox.left_button_released(event_release)
+    assert combobox._menu_visibility is True
+    assert combobox._drag_offset is None
+
+    combobox.left_button_pressed(event_press2)
+    combobox.left_button_dragged(event_drag)
+    assert combobox._is_dragging is True
+    combobox.left_button_released(event_release)
+    assert combobox._is_dragging is False
+    assert combobox._menu_visibility is True
+    assert combobox._drag_offset is None
 
 
 #     skip_osx,
