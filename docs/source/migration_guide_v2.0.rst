@@ -1,11 +1,11 @@
 .. _migration_guide_v2_0:
 
 ==================================================
-Migration Guide: FURY 0.13.x → Master (v2.0.0)
+Migration Guide: FURY 0.12.0 → v2.0.0
 ==================================================
 
 This document catalogs all user-level API changes introduced between FURY
-``0.13.x`` and the ``master`` branch (targeting FURY ``v2.0.0``). Every
+``0.12.x`` and the ``master`` branch (targeting FURY ``v2.0.0``). Every
 entry is grounded in the actual source code and the official release notes
 spanning ``v2.0.0a1`` through ``v2.0.0a7``. No changes are documented here
 unless verified against the live codebase.
@@ -30,7 +30,7 @@ PyGfx ``WorldObject`` sub-classes as its actor types.
 
 .. code-block:: python
 
-   # FURY 0.13.x (VTK-based)
+   # FURY 0.12.x (VTK-based)
    import fury
    actor = fury.actor.sphere(centers, colors=colors)
    # Users often interacted directly with the underlying VTK object:
@@ -87,7 +87,7 @@ those still exist).
 
 .. code-block:: python
 
-   # FURY 0.13.x (VTK-based transforms)
+   # FURY 0.12.x (VTK-based transforms)
    import fury
    from fury.transform import euler_matrix
    actor = fury.actor.sphere(centers)
@@ -128,41 +128,41 @@ involved or a transformation matrix is needed independently.
 The monolithic ``fury/actor.py`` has been refactored into a package with
 the following sub-modules:
 
-+------------------+-----------------------------------------------------------+
-| Sub-module       | Contents                                                  |
-+==================+===========================================================+
-| ``core.py``      | ``Actor``, ``Mesh``, ``Line``, ``Points``, ``Text``,      |
-|                  | ``Image``, ``Volume``, ``Group``, ``actor_from_primitive`` |
-|                  | ``create_mesh``, ``create_line``, ``create_point``,       |
-|                  | ``create_text``, ``create_image``, ``create_axes_helper`` |
-|                  | ``line``, ``arrow``, ``axes``                             |
-+------------------+-----------------------------------------------------------+
-| ``curved.py``    | ``sphere``, ``ellipsoid``, ``cylinder``, ``cone``,        |
-|                  | ``streamtube``, ``streamlines``                           |
-+------------------+-----------------------------------------------------------+
-| ``planar.py``    | ``disk``, ``image``, ``line_projection``, ``marker``,     |
-|                  | ``point``, ``ring``, ``square``, ``star``, ``text``,      |
-|                  | ``triangle``                                              |
-+------------------+-----------------------------------------------------------+
-| ``polyhedron.py``| ``box``, ``frustum``, ``icosahedron``, ``octagonalprism``,|
-|                  | ``pentagonalprism``, ``rhombicuboctahedron``,             |
-|                  | ``superquadric``, ``tetrahedron``, ``triangularprism``    |
-+------------------+-----------------------------------------------------------+
-| ``slicer.py``    | ``VectorField``, ``SphGlyph``, ``data_slicer``,           |
-|                  | ``sph_glyph``, ``vector_field``, ``vector_field_slicer``  |
-+------------------+-----------------------------------------------------------+
-| ``topology.py``  | ``contour_from_volume``, ``surface``                      |
-+------------------+-----------------------------------------------------------+
-| ``bio.py``       | ``contour_from_roi``, ``contour_from_label``,             |
-|                  | ``peaks_slicer``, ``volume_slicer``                       |
-+------------------+-----------------------------------------------------------+
-| ``_billboard.py``| ``Billboard``, ``billboard``, ``billboard_sphere``        |
-+------------------+-----------------------------------------------------------+
-| ``utils.py``     | ``set_opacity``, ``set_group_opacity``,                   |
-|                  | ``set_group_visibility``, ``get_slices``, ``show_slices`` |
-|                  | ``apply_affine_to_actor``, ``apply_affine_to_group``,     |
-|                  | ``read_buffer``                                           |
-+------------------+-----------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 80
+
+   * - Sub-module
+     - Contents
+   * - ``core.py``
+     - ``Actor``, ``Mesh``, ``Line``, ``Points``, ``Text``, ``Image``,
+       ``Volume``, ``Group``, ``actor_from_primitive``, ``create_mesh``,
+       ``create_line``, ``create_point``, ``create_text``, ``create_image``,
+       ``create_axes_helper``, ``line``, ``arrow``, ``axes``
+   * - ``curved.py``
+     - ``sphere``, ``ellipsoid``, ``cylinder``, ``cone``, ``streamtube``,
+       ``streamlines``
+   * - ``planar.py``
+     - ``disk``, ``image``, ``line_projection``, ``marker``, ``point``,
+       ``ring``, ``square``, ``star``, ``text``, ``triangle``
+   * - ``polyhedron.py``
+     - ``box``, ``frustum``, ``icosahedron``, ``octagonalprism``,
+       ``pentagonalprism``, ``rhombicuboctahedron``, ``superquadric``,
+       ``tetrahedron``, ``triangularprism``
+   * - ``slicer.py``
+     - ``VectorField``, ``SphGlyph``, ``data_slicer``, ``sph_glyph``,
+       ``vector_field``, ``vector_field_slicer``
+   * - ``topology.py``
+     - ``contour_from_volume``, ``surface``
+   * - ``bio.py``
+     - ``contour_from_roi``, ``contour_from_label``, ``peaks_slicer``,
+       ``volume_slicer``
+   * - ``_billboard.py``
+     - ``Billboard``, ``billboard``, ``billboard_sphere``
+   * - ``utils.py``
+     - ``set_opacity``, ``set_group_opacity``, ``set_group_visibility``,
+       ``get_slices``, ``show_slices``, ``apply_affine_to_actor``,
+       ``apply_affine_to_group``, ``read_buffer``
 
 **Action**: Always import from ``fury.actor`` (the public ``__init__``
 facade). Avoid deep internal imports like
@@ -205,37 +205,40 @@ corrected. (Ref: :ghissue:`1124`, :ghpull:`1125`)
 6. New Actors in master
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-The following actors are **new** in master and do not exist in 0.13.x:
+The following actors are **new** in master and do not exist in 0.12.x:
 
-+----------------------------+------------------------------------------+
-| Actor                      | PR reference                             |
-+============================+==========================================+
-| ``actor.streamlines``      | :ghpull:`1021`                           |
-+----------------------------+------------------------------------------+
-| ``actor.streamtube``       | Shader-based rewrite :ghpull:`1038`      |
-+----------------------------+------------------------------------------+
-| ``actor.peaks_slicer``     | :ghpull:`1018`                           |
-+----------------------------+------------------------------------------+
-| ``actor.volume_slicer``    | :ghpull:`996`                            |
-+----------------------------+------------------------------------------+
-| ``actor.data_slicer``      | (slicer sub-module)                      |
-+----------------------------+------------------------------------------+
-| ``actor.vector_field``     | :ghpull:`992`, :ghpull:`995`             |
-+----------------------------+------------------------------------------+
-| ``actor.surface``          | :ghpull:`997`, :ghpull:`1040`            |
-+----------------------------+------------------------------------------+
-| ``actor.contour_from_roi`` | :ghpull:`1053`                           |
-+----------------------------+------------------------------------------+
-| ``actor.contour_from_volume``| :ghpull:`1053`                         |
-+----------------------------+------------------------------------------+
-| ``actor.sph_glyph``        | :ghpull:`1009`                           |
-+----------------------------+------------------------------------------+
-| ``actor.billboard_sphere`` | :ghpull:`1037`                           |
-+----------------------------+------------------------------------------+
-| ``actor.line_projection``  | :ghpull:`1029`                           |
-+----------------------------+------------------------------------------+
-| ``actor.read_buffer``      | GPU readback :ghpull:`1098`              |
-+----------------------------+------------------------------------------+
+.. list-table::
+   :header-rows: 1
+   :widths: 40 60
+
+   * - Actor
+     - PR reference
+   * - ``actor.streamlines``
+     - :ghpull:`1021`
+   * - ``actor.streamtube``
+     - Shader-based rewrite :ghpull:`1038`
+   * - ``actor.peaks_slicer``
+     - :ghpull:`1018`
+   * - ``actor.volume_slicer``
+     - :ghpull:`996`
+   * - ``actor.data_slicer``
+     - (slicer sub-module)
+   * - ``actor.vector_field``
+     - :ghpull:`992`, :ghpull:`995`
+   * - ``actor.surface``
+     - :ghpull:`997`, :ghpull:`1040`
+   * - ``actor.contour_from_roi``
+     - :ghpull:`1053`
+   * - ``actor.contour_from_volume``
+     - :ghpull:`1053`
+   * - ``actor.sph_glyph``
+     - :ghpull:`1009`
+   * - ``actor.billboard_sphere``
+     - :ghpull:`1037`
+   * - ``actor.line_projection``
+     - :ghpull:`1029`
+   * - ``actor.read_buffer``
+     - GPU readback :ghpull:`1098`
 
 The ``actor.image`` actor now supports directional parameters.
 (Ref: :ghpull:`1001`)
@@ -273,7 +276,7 @@ The ``window`` module has been rewritten around PyGfx canvas types.
 
 .. code-block:: python
 
-   # FURY 0.13.x (VTK-based scene)
+   # FURY 0.12.x (VTK-based scene)
    import fury
    scene = fury.window.Scene()
    scene.background((0, 0, 0))    # method call (not a property)
@@ -351,7 +354,7 @@ while a pointer button is held down. This enables per-object drag handling:
 
 .. code-block:: python
 
-   # FURY 0.13.x (VTK observers)
+   # FURY 0.12.x (VTK observers)
    import fury
    show_m = fury.window.ShowManager(scene)
    def vtk_on_drag(obj, event):
@@ -423,29 +426,35 @@ disk re-aligns the camera to that axis.
 **Summary** (Ref: :ghpull:`998`, :ghpull:`999`, :ghpull:`1043`,
 :ghpull:`1052`, :ghpull:`1056`, :ghpull:`1118`)
 
-The UI system has been rebuilt from scratch on PyGfx. Many 0.13.x
-components are temporarily disabled (``ComboBox2D``, ``ListBox2D``,
-``FileMenu2D``, ``DrawPanel``, etc.) while the migration is in progress.
-Legacy backward-compatibility code was explicitly removed.
-(Ref: :ghpull:`1043`)
+The UI system has been rebuilt from scratch on PyGfx. A few 0.12.x
+components remain temporarily disabled (``DrawPanel``, ``FileMenu2D``,
+``GridUI``, ``Checkbox``, ``RadioButton``, ``SpinBox``) while the
+migration is in progress. Legacy backward-compatibility code was
+explicitly removed. (Ref: :ghpull:`1043`)
 
 **Currently available UI components**:
 
 * ``fury.ui.Rectangle2D``
 * ``fury.ui.Disk2D``
 * ``fury.ui.TextBlock2D``       (Ref: :ghpull:`1052`)
-* ``fury.ui.Panel2D``           (Ref: :ghpull:`999`)
-* ``fury.ui.TexturedButton2D``  (Ref: :ghpull:`1056`)
-* ``fury.ui.TextButton2D``      (Ref: :ghpull:`1056`)
-* ``fury.ui.LineSlider2D``      (Ref: :ghpull:`1118`)
-* ``fury.ui.RingSlider2D``
-* ``fury.ui.PlaybackPanel``
+* ``fury.ui.Panel2D``, ``fury.ui.TabPanel2D``, ``fury.ui.TabUI`` (Ref: :ghpull:`999`)
 * ``fury.ui.ImageContainer2D``
-* ``fury.ui.Panel2D``, ``fury.ui.TabPanel2D``, ``fury.ui.TabUI``
+* ``fury.ui.TexturedButton2D``, ``fury.ui.TextButton2D``  (Ref: :ghpull:`1056`)
+* ``fury.ui.LineSlider2D``      (Ref: :ghpull:`1118`)
+* ``fury.ui.LineDoubleSlider2D``
+* ``fury.ui.RingSlider2D``
+* ``fury.ui.RangeSlider``
+* ``fury.ui.TextBox2D``
+* ``fury.ui.ComboBox2D``
+* ``fury.ui.ListBox2D``, ``fury.ui.ListBoxItem2D``
+* ``fury.ui.Card2D``
+* ``fury.ui.PlaybackPanel``
 
-**Action**: If you relied on ``ComboBox2D``, ``ListBox2D``, ``DrawPanel``,
-``TextBox2D``, or ``RangeSlider`` in 0.13.x, these are not yet available
-in master. Consider using ImGui panels as a temporary replacement.
+**Action**: ``ComboBox2D``, ``ListBox2D``, ``TextBox2D``, and
+``RangeSlider`` are available in master and require no replacement. Only
+``DrawPanel`` and ``FileMenu2D`` remain unavailable; if you relied on
+those, consider an ImGui panel as a temporary substitute until they are
+ported.
 
 
 13. FPS Display and Control
@@ -479,7 +488,7 @@ Read GPU buffer contents back to a NumPy array:
 
 **Summary** (Ref: :ghpull:`1163`, :ghissue:`1162`)
 
-In 0.13.x, passing ``compression_type`` to ``save_image()`` for TIFF
+In 0.12.x, passing ``compression_type`` to ``save_image()`` for TIFF
 files was silently ignored. This is now corrected:
 
 .. code-block:: python
@@ -522,60 +531,62 @@ The free function ``fury.window.snapshot`` wraps an offscreen
 18. Removed / Commented-Out APIs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The following modules and symbols exist in 0.13.x but are **not** in the
+The following modules and symbols exist in 0.12.x but are **not** in the
 master public API (either removed or temporarily commented out pending
 v2.0.0 stabilization):
 
-+-------------------------------+--------------------------------------------------+
-| Removed / commented out       | Notes                                            |
-+===============================+==================================================+
-| ``fury.gltf``                 | Optional; pending PyGfx port                     |
-+-------------------------------+--------------------------------------------------+
-| ``fury.interactor``           | VTK interactor; removed with VTK                 |
-+-------------------------------+--------------------------------------------------+
-| ``fury.layout``               | Grid/horizontal/vertical layouts pending port    |
-+-------------------------------+--------------------------------------------------+
-| ``fury.molecular``            | Pending port                                     |
-+-------------------------------+--------------------------------------------------+
-| ``fury.pick``                 | VTK pick manager removed                         |
-+-------------------------------+--------------------------------------------------+
-| ``fury.stream``               | Streaming module pending port                    |
-+-------------------------------+--------------------------------------------------+
-| ``fury.colormap.colormap_lookup_table`` | VTK LUT removed                     |
-+-------------------------------+--------------------------------------------------+
-| ``fury.io.load_polydata``     | VTK polydata I/O removed                         |
-+-------------------------------+--------------------------------------------------+
-| ``fury.io.save_polydata``     | VTK polydata I/O removed                         |
-+-------------------------------+--------------------------------------------------+
-| ``fury.ui.ComboBox2D``        | Pending UI port                                  |
-+-------------------------------+--------------------------------------------------+
-| ``fury.ui.ListBox2D``         | Pending UI port                                  |
-+-------------------------------+--------------------------------------------------+
-| ``fury.ui.DrawPanel``         | Pending UI port                                  |
-+-------------------------------+--------------------------------------------------+
-| ``fury.ui.FileMenu2D``        | Pending UI port                                  |
-+-------------------------------+--------------------------------------------------+
-| ``fury.ui.TextBox2D``         | Pending UI port                                  |
-+-------------------------------+--------------------------------------------------+
-| ``fury.ui.RangeSlider``       | Pending UI port                                  |
-+-------------------------------+--------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+   :widths: 40 60
+
+   * - Removed / commented out
+     - Notes
+   * - ``fury.gltf``
+     - Optional; pending PyGfx port
+   * - ``fury.interactor``
+     - VTK interactor; removed with VTK
+   * - ``fury.layout``
+     - Grid/horizontal/vertical layouts pending port
+   * - ``fury.molecular``
+     - Pending port
+   * - ``fury.pick``
+     - VTK pick manager removed
+   * - ``fury.stream``
+     - Streaming module pending port
+   * - ``fury.colormap.colormap_lookup_table``
+     - VTK LUT removed
+   * - ``fury.io.load_polydata``
+     - VTK polydata I/O removed
+   * - ``fury.io.save_polydata``
+     - VTK polydata I/O removed
+   * - ``fury.ui.DrawPanel``
+     - Pending UI port
+   * - ``fury.ui.FileMenu2D``
+     - Pending UI port
+   * - ``fury.ui.GridUI``
+     - Pending UI port
+   * - ``fury.ui.Checkbox``, ``fury.ui.RadioButton``, ``fury.ui.SpinBox``
+     - Pending UI port
 
 
 Dependency Changes
 ------------------
 
-+---------------------+--------------------+
-| Dependency          | Change             |
-+=====================+====================+
-| ``vtk``             | Removed            |
-+---------------------+--------------------+
-| ``pygfx``           | Added (≥ 0.13.0)  |
-+---------------------+--------------------+
-| ``wgpu``            | Added              |
-+---------------------+--------------------+
-| ``jupyter_rfb``     | Added (Jupyter)    |
-+---------------------+--------------------+
-| ``imgui``           | Optional           |
-+---------------------+--------------------+
-| ``numba``           | Optional           |
-+---------------------+--------------------+
+.. list-table::
+   :header-rows: 1
+   :widths: 50 50
+
+   * - Dependency
+     - Change
+   * - ``vtk``
+     - Removed
+   * - ``pygfx``
+     - Added (≥ 0.13.0)
+   * - ``wgpu``
+     - Added
+   * - ``jupyter_rfb``
+     - Added (Jupyter)
+   * - ``imgui``
+     - Optional
+   * - ``numba``
+     - Optional

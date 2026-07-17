@@ -7,7 +7,6 @@ For a full list of the features implemented in the most recent release cycle, ch
 .. toctree::
    :maxdepth: 1
 
-   release_notes/migration_guide_v2.0
    release_notes/releasev2.0.0a7
    release_notes/releasev2.0.0a6
    release_notes/releasev2.0.0a5

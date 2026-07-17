@@ -17,6 +17,7 @@ test
 
    installation
    getting_started
+   Migration guide <migration_guide_v2.0>
    auto_examples/index
    fury-pybullet
 
