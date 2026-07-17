@@ -6,7 +6,7 @@ import numpy as np
 import numpy.testing as npt
 
 from fury import ui, window
-from fury.data import DATA_DIR, fetch_viz_icons, read_viz_icons
+from fury.data import DATA_DIR, fetch_viz_icons, fetch_viz_new_icons, read_viz_icons
 from fury.lib import KeyboardEvent
 from fury.testing import VisualTest
 from fury.ui.helpers import Anchor
@@ -2718,3 +2718,289 @@ def test_ui_card2d_visual(recording=False):
         title="Card2D Visual Test",
         recording=recording,
     )
+
+
+def _click_event():
+    """Build a real left-button pointer-down event for triggering handlers."""
+    return window.PointerEvent(
+        x=0, y=0, type=window.EventType.POINTER_DOWN, target="target"
+    )
+
+
+def test_button_group_not_public_but_subclasses_are():
+    """ButtonGroup is internal; Checkbox and RadioButton are public."""
+    assert not hasattr(ui, "ButtonGroup")
+    assert hasattr(ui, "Checkbox")
+    assert hasattr(ui, "RadioButton")
+
+
+def test_checkbox_uses_new_checkbox_state_icons():
+    """Checkbox buttons load the four new_icons checkbox state textures."""
+    fetch_viz_new_icons()
+    checkbox = ui.Checkbox(labels=["A"])
+
+    button = checkbox.options["A"][0]
+    npt.assert_equal(
+        sorted(button.texture_map.keys()),
+        ["default", "pressed", "pressed-selected", "selected"],
+    )
+
+
+def test_radio_button_uses_new_circle_state_icons():
+    """RadioButton buttons load the four new_icons circle state textures."""
+    fetch_viz_new_icons()
+    radio = ui.RadioButton(labels=["A"])
+
+    button = radio.options["A"][0]
+    npt.assert_equal(
+        sorted(button.texture_map.keys()),
+        ["default", "pressed", "pressed-selected", "selected"],
+    )
+
+
+def test_toggle_button_resolves_selected_state_icons():
+    """A four-state toggle button resolves keys from selected x interaction."""
+    fetch_viz_new_icons()
+    states = {
+        "default": read_viz_icons(style="new_icons", fname="checkbox.png"),
+        "selected": read_viz_icons(style="new_icons", fname="checkbox-selected.png"),
+        "pressed": read_viz_icons(style="new_icons", fname="checkbox-pressed.png"),
+        "pressed-selected": read_viz_icons(
+            style="new_icons", fname="checkbox-pressed-selected.png"
+        ),
+    }
+    button = ui.TexturedButton2D(states=states, size=(24, 24), is_toggle=True)
+
+    keys = button.texture_map
+    npt.assert_equal(button.resolve_state_key(keys), "default")
+
+    button.is_hovered = True
+    npt.assert_equal(button.resolve_state_key(keys), "pressed")
+
+    button.is_hovered = False
+    button.toggled = True
+    npt.assert_equal(button.resolve_state_key(keys), "selected")
+
+    button.is_hovered = True
+    npt.assert_equal(button.resolve_state_key(keys), "pressed-selected")
+
+
+def test_checkbox_toggle_swaps_displayed_texture():
+    """Toggling a checkbox option swaps the shown texture to the selected one."""
+    checkbox = ui.Checkbox(labels=["A"])
+    button = checkbox.options["A"][0]
+
+    default_tex = button.texture_map["default"]
+    selected_tex = button.texture_map["selected"]
+
+    assert button.child.actor.material.map.texture is default_tex
+    button.do_click()
+    assert button.child.actor.material.map.texture is selected_tex
+
+
+def test_checkbox_initialization():
+    """Checkbox builds an option per label with the right initial state."""
+    checkbox = ui.Checkbox(
+        labels=["Red", "Green", "Blue"],
+        checked_labels=["Green"],
+        position=(40, 40),
+    )
+
+    npt.assert_equal(checkbox.labels, ["Red", "Green", "Blue"])
+    npt.assert_equal(sorted(checkbox.options.keys()), ["Blue", "Green", "Red"])
+    npt.assert_equal(checkbox.checked_labels, ["Green"])
+
+    for label, (button, text) in checkbox.options.items():
+        assert isinstance(button, ui.TexturedButton2D)
+        assert isinstance(text, ui.TextBlock2D)
+        npt.assert_equal(button.toggled, label == "Green")
+
+
+def test_checkbox_allows_multiple_selections():
+    """Clicking checkbox options toggles them independently."""
+    checkbox = ui.Checkbox(labels=["A", "B", "C"], checked_labels=["A"])
+
+    changed = []
+    checkbox.on_change = lambda group: changed.append(list(group.checked_labels))
+
+    checkbox.options["B"][0].do_click()
+    checkbox.options["C"][0].do_click()
+    npt.assert_equal(sorted(checkbox.checked_labels), ["A", "B", "C"])
+
+    checkbox.options["A"][0].do_click()
+    npt.assert_equal(sorted(checkbox.checked_labels), ["B", "C"])
+
+    # on_change fired once per click with the state at that time.
+    npt.assert_equal(len(changed), 3)
+    npt.assert_equal(sorted(changed[-1]), ["B", "C"])
+
+
+def test_checkbox_click_on_label_toggles_option():
+    """Clicking an option's text label toggles it, like clicking the button."""
+    checkbox = ui.Checkbox(labels=["A", "B"])
+    _, text = checkbox.options["A"]
+
+    text.on_left_mouse_button_clicked(_click_event())
+    npt.assert_equal(checkbox.checked_labels, ["A"])
+    assert checkbox.options["A"][0].toggled is True
+
+    text.on_left_mouse_button_clicked(_click_event())
+    npt.assert_equal(checkbox.checked_labels, [])
+
+
+def test_checkbox_select_and_deselect_helpers():
+    """select() and deselect() update state and the button toggle."""
+    checkbox = ui.Checkbox(labels=["A", "B"])
+
+    checkbox.select("A")
+    npt.assert_equal(checkbox.checked_labels, ["A"])
+    assert checkbox.options["A"][0].toggled is True
+
+    # Selecting again does not duplicate the label.
+    checkbox.select("A")
+    npt.assert_equal(checkbox.checked_labels, ["A"])
+
+    checkbox.deselect("A")
+    npt.assert_equal(checkbox.checked_labels, [])
+    assert checkbox.options["A"][0].toggled is False
+
+
+def test_checkbox_horizontal_layout_has_no_overlap():
+    """In horizontal layout each option starts after the previous label."""
+    checkbox = ui.Checkbox(
+        labels=["Small", "Medium", "Large"],
+        orientation="horizontal",
+        font_size=20,
+    )
+
+    prev_text_right = None
+    for label in checkbox.labels:
+        button, text = checkbox.options[label]
+        button_left = button.get_position()[0]
+        if prev_text_right is not None:
+            assert button_left >= prev_text_right
+        prev_text_right = text.get_position()[0] + text.size[0]
+
+
+def test_checkbox_vertical_layout_stacks_options():
+    """In vertical layout options share an x and increase in y."""
+    checkbox = ui.Checkbox(
+        labels=["A", "B", "C"], orientation="vertical", position=(30, 30)
+    )
+
+    xs = [checkbox.options[lbl][0].get_position()[0] for lbl in checkbox.labels]
+    ys = [checkbox.options[lbl][0].get_position()[1] for lbl in checkbox.labels]
+
+    npt.assert_array_almost_equal(xs, [xs[0]] * 3)
+    assert ys[0] < ys[1] < ys[2]
+
+
+def test_checkbox_orientation_validation():
+    """An unknown orientation raises a ValueError."""
+    with npt.assert_raises(ValueError):
+        ui.Checkbox(labels=["A"], orientation="diagonal")
+
+
+def test_checkbox_visual_snapshot():
+    """A checkbox renders visible marks against the scene."""
+    checkbox = ui.Checkbox(
+        labels=["Red", "Green", "Blue"],
+        checked_labels=["Green"],
+        position=(60, 60),
+    )
+    scene = window.Scene()
+    scene.add(checkbox)
+
+    arr = window.snapshot(scene=scene, fname=None, return_array=True)
+    report = window.analyze_snapshot(arr, find_objects=True)
+    assert report.objects >= 1
+
+
+def test_checkbox_text_color_applies_to_labels():
+    """A custom text color is applied to the option labels."""
+    checkbox = ui.Checkbox(labels=["A", "B"], text_color=(0, 1, 0))
+
+    for _, text in checkbox.options.values():
+        npt.assert_array_almost_equal(text.color[:3], (0.0, 1.0, 0.0))
+
+
+def test_radio_button_initialization():
+    """RadioButton builds an option per label with a single initial choice."""
+    radio = ui.RadioButton(
+        labels=["Low", "Medium", "High"],
+        checked_labels=["Medium"],
+        position=(40, 40),
+    )
+
+    npt.assert_equal(radio.labels, ["Low", "Medium", "High"])
+    npt.assert_equal(radio.checked_labels, ["Medium"])
+    npt.assert_equal(radio.options["Medium"][0].toggled, True)
+    npt.assert_equal(radio.options["Low"][0].toggled, False)
+
+
+def test_radio_button_enforces_single_selection():
+    """Selecting a radio option clears the previously selected one."""
+    radio = ui.RadioButton(labels=["X", "Y", "Z"], checked_labels=["X"])
+
+    changed = []
+    radio.on_change = lambda group: changed.append(list(group.checked_labels))
+
+    radio.options["Y"][0].do_click()
+    npt.assert_equal(radio.checked_labels, ["Y"])
+    npt.assert_equal(radio.options["X"][0].toggled, False)
+    npt.assert_equal(radio.options["Y"][0].toggled, True)
+
+    radio.options["Z"][0].do_click()
+    npt.assert_equal(radio.checked_labels, ["Z"])
+    npt.assert_equal(
+        [radio.options[lbl][0].toggled for lbl in radio.labels],
+        [False, False, True],
+    )
+
+    npt.assert_equal(changed, [["Y"], ["Z"]])
+
+
+def test_radio_button_reclicking_selected_keeps_it_selected():
+    """Clicking the already-selected radio option leaves it selected."""
+    radio = ui.RadioButton(labels=["X", "Y"], checked_labels=["X"])
+
+    radio.options["X"][0].do_click()
+    npt.assert_equal(radio.checked_labels, ["X"])
+    npt.assert_equal(radio.options["X"][0].toggled, True)
+
+
+def test_radio_button_rejects_multiple_preselected():
+    """Preselecting more than one radio option raises a ValueError."""
+    with npt.assert_raises(ValueError):
+        ui.RadioButton(labels=["A", "B"], checked_labels=["A", "B"])
+
+
+def test_radio_button_horizontal_layout_has_no_overlap():
+    """In horizontal layout each radio option starts after the previous label."""
+    radio = ui.RadioButton(
+        labels=["Small", "Medium", "Large"],
+        orientation="horizontal",
+        font_size=20,
+    )
+
+    prev_text_right = None
+    for label in radio.labels:
+        button, text = radio.options[label]
+        if prev_text_right is not None:
+            assert button.get_position()[0] >= prev_text_right
+        prev_text_right = text.get_position()[0] + text.size[0]
+
+
+def test_radio_button_visual_snapshot():
+    """A radio button renders visible marks against the scene."""
+    radio = ui.RadioButton(
+        labels=["Low", "Medium", "High"],
+        checked_labels=["Medium"],
+        position=(60, 60),
+    )
+    scene = window.Scene()
+    scene.add(radio)
+
+    arr = window.snapshot(scene=scene, fname=None, return_array=True)
+    report = window.analyze_snapshot(arr, find_objects=True)
+    assert report.objects >= 1

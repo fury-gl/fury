@@ -3,15 +3,12 @@
 __all__ = [
     "TexturedButton2D",
     "TextButton2D",
-    "LineSlider2D",
     "TextBox2D",
-    #     "LineSlider2D",
-    #     "LineDoubleSlider2D",
+    "LineSlider2D",
+    "LineDoubleSlider2D",
     "RingSlider2D",
-    #     "RangeSlider",
     #     "Checkbox",
     #     "Option",
-    #     "RadioButton",
     "ComboBox2D",
     "ListBox2D",
     "ListBoxItem2D",
@@ -78,12 +75,12 @@ class TexturedButton2D(Button2D):
 
     def _load_textures(self, states):
         """
-        Load image files into PyGfx textures.
+        Load state images into PyGfx textures.
 
         Parameters
         ----------
         states : dict
-            Dictionary of state names and file paths.
+            Dictionary of state names to image file paths.
 
         Returns
         -------
@@ -2255,328 +2252,34 @@ class RangeSlider(UI):
         self.value_slider.max_value = self.range_slider.right_disk_value
 
 
-# class Option(UI):
-#     """A set of a Button2D and a TextBlock2D to act as a single option
-#     for checkboxes and radio buttons.
-#     Clicking the button toggles its checked/unchecked status.
+def _toggle_icon_states(name):
+    """
+    Build the four-state texture mapping for a toggle icon.
 
-#     Attributes
-#     ----------
-#     label : str
-#         The label for the option.
-#     font_size : int
-#             Font Size of the label.
+    Uses the ``new_icons`` set, which provides an idle and a pressed image for
+    both the unselected and selected states of ``name`` (e.g. ``"checkbox"`` or
+    ``"circle"``): ``name.png``, ``name-selected.png``, ``name-pressed.png`` and
+    ``name-pressed-selected.png``.
 
-#     """
+    Parameters
+    ----------
+    name : str
+        Base name of the icon in the ``new_icons`` set.
 
-#     @warn_on_args_to_kwargs()
-#     def __init__(self, label, *, position=(0, 0), font_size=18, checked=False):
-#         """Init this class instance.
-
-#         Parameters
-#         ----------
-#         label : str
-#             Text to be displayed next to the option's button.
-#         position : (float, float)
-#             Absolute coordinates (x, y) of the lower-left corner of
-#             the button of the option.
-#         font_size : int
-#             Font size of the label.
-#         checked : bool, optional
-#             Boolean value indicates the initial state of the option
-
-#         """
-#         self.label = label
-#         self.font_size = font_size
-#         self.checked = checked
-#         self.button_size = (font_size * 1.2, font_size * 1.2)
-#         self.button_label_gap = 10
-#         super(Option, self).__init__(position=position)
-
-#         # Offer some standard hooks to the user.
-#         self.on_change = lambda obj: None
-
-#     def _setup(self):
-#         """Setup this UI component."""
-#         # Option's button
-#         self.button_icons = []
-#         self.button_icons.append(("unchecked", read_viz_icons(fname="stop2.png")))
-#         self.button_icons.append(("checked", read_viz_icons(fname="checkmark.png")))
-#         self.button = Button2D(icon_fnames=self.button_icons, size=self.button_size)
-
-#         self.text = TextBlock2D(text=self.label, font_size=self.font_size)
-
-#         # Display initial state
-#         if self.checked:
-#             self.button.set_icon_by_name("checked")
-
-#         # Add callbacks
-#         self.button.on_left_mouse_button_clicked = self.toggle
-#         self.text.on_left_mouse_button_clicked = self.toggle
-
-#     def _get_actors(self):
-#         """Get the actors composing this UI component."""
-#         return self.button.actors + self.text.actors
-
-#     def _add_to_scene(self, scene):
-#         """Add all subcomponents or VTK props that compose this UI component.
-
-#         Parameters
-#         ----------
-#         scene : scene
-
-#         """
-#         self.button.add_to_scene(scene)
-#         self.text.add_to_scene(scene)
-
-#     def _get_size(self):
-#         width = self.button.size[0] + self.button_label_gap + self.text.size[0]
-#         height = max(self.button.size[1], self.text.size[1])
-#         return np.array([width, height])
-
-#     def _set_position(self, coords):
-#         """Set the lower-left corner position of this UI component.
-
-#         Parameters
-#         ----------
-#         coords: (float, float)
-#             Absolute pixel coordinates (x, y).
-
-#         """
-#         num_newlines = self.label.count("\n")
-#         self.button.position = coords + (0, num_newlines * self.font_size * 0.5)
-#         offset = (self.button.size[0] + self.button_label_gap, 0)
-#         self.text.position = coords + offset
-
-#     def toggle(self, i_ren, _obj, _element):
-#         if self.checked:
-#             self.deselect()
-#         else:
-#             self.select()
-
-#         self.on_change(self)
-#         i_ren.force_render()
-
-#     def select(self):
-#         self.checked = True
-#         self.button.set_icon_by_name("checked")
-
-#     def deselect(self):
-#         self.checked = False
-#         self.button.set_icon_by_name("unchecked")
-
-
-# class Checkbox(UI):
-#     """A 2D set of :class:'Option' objects.
-#     Multiple options can be selected.
-
-#     Attributes
-#     ----------
-#     labels : list(string)
-#         List of labels of each option.
-#     options : dict(Option)
-#         Dictionary of all the options in the checkbox set.
-#     padding : float
-#         Distance between two adjacent options
-
-#     """
-
-#     @warn_on_args_to_kwargs()
-#     def __init__(
-#         self,
-#         labels,
-#         *,
-#         checked_labels=(),
-#         padding=1,
-#         font_size=18,
-#         font_family="Arial",
-#         position=(0, 0),
-#     ):
-#         """Init this class instance.
-
-#         Parameters
-#         ----------
-#         labels : list(str)
-#             List of labels of each option.
-#         checked_labels: list(str), optional
-#             List of labels that are checked on setting up.
-#         padding : float, optional
-#             The distance between two adjacent options
-#         font_size : int, optional
-#             Size of the text font.
-#         font_family : str, optional
-#             Currently only supports Arial.
-#         position : (float, float), optional
-#             Absolute coordinates (x, y) of the lower-left corner of
-#             the button of the first option.
-
-#         """
-#         self.labels = list(reversed(list(labels)))
-#         self._padding = padding
-#         self._font_size = font_size
-#         self.font_family = font_family
-#         self.checked_labels = list(checked_labels)
-#         super(Checkbox, self).__init__(position=position)
-#         self.on_change = lambda checkbox: None
-
-#     def _setup(self):
-#         """Setup this UI component."""
-#         self.options = OrderedDict()
-#         button_y = self.position[1]
-#         for label in self.labels:
-#             option = Option(
-#                 label=label,
-#                 font_size=self.font_size,
-#                 position=(self.position[0], button_y),
-#                 checked=(label in self.checked_labels),
-#             )
-
-#             line_spacing = option.text.actor.GetTextProperty().GetLineSpacing()
-#             button_y = (
-#                 button_y
-#                 + self.font_size * (label.count("\n") + 1) * (line_spacing + 0.1)
-#                 + self.padding
-#             )
-#             self.options[label] = option
-
-#             # Set callback
-#             option.on_change = self._handle_option_change
-
-#     def _get_actors(self):
-#         """Get the actors composing this UI component."""
-#         actors = []
-#         for option in self.options.values():
-#             actors = actors + option.actors
-#         return actors
-
-#     def _add_to_scene(self, scene):
-#         """Add all subcomponents or VTK props that compose this UI component.
-
-#         Parameters
-#         ----------
-#         scene : scene
-
-#         """
-#         for option in self.options.values():
-#             option.add_to_scene(scene)
-
-#     def _get_size(self):
-#         option_width, option_height = self.options.values()[0].get_size()
-#         height = len(self.labels) * (option_height + self.padding) - self.padding
-#         return np.asarray([option_width, height])
-
-#     def _handle_option_change(self, option):
-#         """Update whenever an option changes.
-
-#         Parameters
-#         ----------
-#         option : :class:`Option`
-
-#         """
-#         if option.checked:
-#             self.checked_labels.append(option.label)
-#         else:
-#             self.checked_labels.remove(option.label)
-
-#         self.on_change(self)
-
-#     def _set_position(self, coords):
-#         """Set the lower-left corner position of this UI component.
-
-#         Parameters
-#         ----------
-#         coords: (float, float)
-#             Absolute pixel coordinates (x, y).
-
-#         """
-#         button_y = coords[1]
-#         for option_no, option in enumerate(self.options.values()):
-#             option.position = (coords[0], button_y)
-#             line_spacing = option.text.actor.GetTextProperty().GetLineSpacing()
-#             button_y = (
-#                 button_y
-#                 + self.font_size
-#                 * (self.labels[option_no].count("\n") + 1)
-#                 * (line_spacing + 0.1)
-#                 + self.padding
-#             )
-
-#     @property
-#     def font_size(self):
-#         """Gets the font size of text."""
-#         return self._font_size
-
-#     @property
-#     def padding(self):
-#         """Get the padding between options."""
-#         return self._padding
-
-
-# class RadioButton(Checkbox):
-#     """A 2D set of :class:'Option' objects.
-#     Only one option can be selected.
-
-#     Attributes
-#     ----------
-#     labels : list(string)
-#         List of labels of each option.
-#     options : dict(Option)
-#         Dictionary of all the options in the checkbox set.
-#     padding : float
-#         Distance between two adjacent options
-
-#     """
-
-#     @warn_on_args_to_kwargs()
-#     def __init__(
-#         self,
-#         labels,
-#         checked_labels,
-#         *,
-#         padding=1,
-#         font_size=18,
-#         font_family="Arial",
-#         position=(0, 0),
-#     ):
-#         """Init class instance.
-
-#         Parameters
-#         ----------
-#         labels : list(str)
-#             List of labels of each option.
-#         checked_labels: list(str), optional
-#             List of labels that are checked on setting up.
-#         padding : float, optional
-#             The distance between two adjacent options
-#         font_size : int, optional
-#             Size of the text font.
-#         font_family : str, optional
-#             Currently only supports Arial.
-#         position : (float, float), optional
-#             Absolute coordinates (x, y) of the lower-left corner of
-#             the button of the first option.
-
-#         """
-#         if len(checked_labels) > 1:
-#             err_msg = "Only one option can be preselected for radio buttons."
-#             raise ValueError(err_msg)
-
-#         super(RadioButton, self).__init__(
-#             labels=labels,
-#             position=position,
-#             padding=padding,
-#             font_size=font_size,
-#             font_family=font_family,
-#             checked_labels=checked_labels,
-#         )
-
-#     def _handle_option_change(self, option):
-#         for option_ in self.options.values():
-#             option_.deselect()
-
-#         option.select()
-#         self.checked_labels = [option.label]
-#         self.on_change(self)
+    Returns
+    -------
+    dict
+        Mapping of ``"default"``, ``"selected"``, ``"pressed"`` and
+        ``"pressed-selected"`` to icon file paths.
+    """
+    return {
+        "default": read_viz_icons(style="new_icons", fname=f"{name}.png"),
+        "selected": read_viz_icons(style="new_icons", fname=f"{name}-selected.png"),
+        "pressed": read_viz_icons(style="new_icons", fname=f"{name}-pressed.png"),
+        "pressed-selected": read_viz_icons(
+            style="new_icons", fname=f"{name}-pressed-selected.png"
+        ),
+    }
 
 
 class ButtonGroup(UI):
@@ -2596,9 +2299,11 @@ class ButtonGroup(UI):
     checked_labels : list of str, optional
         Labels that should be toggled on initially.
     button_states : dict, optional
-        Mapping of state names to icon file paths for the toggle button.
-        The ``"default"`` icon is shown when an option is off and the
-        ``"pressed"`` icon when it is on. Defaults to checkbox-style icons.
+        Mapping of state names to icon file paths for the toggle button. The
+        ``"default"``/``"selected"`` images are shown when an option is off/on,
+        and the ``"pressed"``/``"pressed-selected"`` images provide the
+        hover-and-press feedback for those states. When omitted, the icons from
+        :meth:`_make_button_states` are used (checkbox icons by default).
     orientation : str, optional
         Layout direction of the options: ``"vertical"`` or ``"horizontal"``.
     padding : float, optional
@@ -2652,20 +2357,31 @@ class ButtonGroup(UI):
         self.font_family = font_family
         self.text_color = text_color
 
-        self.button_states = button_states or {
-            "default": read_viz_icons(fname="stop2.png"),
-            "pressed": read_viz_icons(fname="checkmark.png"),
-        }
+        if button_states is None:
+            button_states = self._make_button_states()
+        self.button_states = button_states
 
-        # Size of the toggle button, scaled to the label font size.
         self.button_size = (int(font_size * 1.2), int(font_size * 1.2))
-        # Gap in pixels between a button and its label.
-        self.button_label_gap = 8
+        self.button_label_gap = max(12, int(round(font_size * 0.8)))
 
         super(ButtonGroup, self).__init__(position=position, z_order=z_order)
 
-        # User hook: called with this group whenever a selection changes.
         self.on_change = lambda group: None
+
+    def _make_button_states(self):
+        """
+        Build the toggle-button icon states for this group.
+
+        The base implementation returns the checkbox icons. Subclasses override
+        this to provide their own icons, e.g. the radio button's circle icons.
+
+        Returns
+        -------
+        dict
+            Mapping of state names to icon file paths, as returned by
+            :func:`_toggle_icon_states`.
+        """
+        return _toggle_icon_states("checkbox")
 
     def _setup(self):
         """Set up this UI component."""
@@ -2685,6 +2401,9 @@ class ButtonGroup(UI):
                 color=self.text_color,
                 dynamic_bbox=True,
             )
+            # A dynamic_bbox text only knows its true width after the first
+            # render; force the layout now so options don't overlap.
+            self._measure_text(text)
 
             if label in self._checked_labels:
                 button.toggled = True
@@ -2696,6 +2415,29 @@ class ButtonGroup(UI):
             self.options[label] = (button, text)
             self._label_by_button[id(button)] = label
             self._children.extend([button, text])
+
+    @staticmethod
+    def _measure_text(text):
+        """
+        Force a text block to compute its glyph layout.
+
+        A :class:`TextBlock2D` created with ``dynamic_bbox=True`` reports a
+        stale, undersized width until the text actor is laid out during the
+        first render. This eagerly triggers that layout so the reported size
+        is accurate at positioning time.
+
+        Parameters
+        ----------
+        text : TextBlock2D
+            The text block whose layout should be computed.
+        """
+        update = getattr(text.actor, "_update_object", None)
+        if callable(update):
+            try:
+                update()
+            except Exception:
+                pass
+        text.update_bounding_box()
 
     def _get_actors(self):
         """
@@ -2857,6 +2599,170 @@ class ButtonGroup(UI):
             Spacing in pixels between two adjacent options.
         """
         return self._padding
+
+
+class Checkbox(ButtonGroup):
+    """
+    A group of independently toggleable options.
+
+    Any number of options may be checked at the same time. This is a thin
+    :class:`ButtonGroup` that uses the checkbox icons (a square box that gains
+    a checkmark when checked); clicking an option toggles it on or off without
+    affecting the others.
+
+    Parameters
+    ----------
+    labels : list of str
+        Text label for each option.
+    checked_labels : list of str, optional
+        Labels that should be checked initially.
+    orientation : str, optional
+        Layout direction of the options: ``"vertical"`` or ``"horizontal"``.
+    padding : float, optional
+        Spacing in pixels between two adjacent options.
+    font_size : int, optional
+        Font size of the labels in pixels.
+    font_family : str, optional
+        Font family of the labels. Currently only supports "Arial".
+    text_color : str, tuple, list or ndarray, optional
+        Color of the label text. Accepts a hex string ("#FF0000"), RGB(A) in
+        [0, 1], or RGB(A) in [0, 255].
+    position : (float, float), optional
+        Absolute coordinates (x, y) of the top-left corner of this component.
+    z_order : int, optional
+        Z-order of the UI component.
+    """
+
+    def __init__(
+        self,
+        labels,
+        *,
+        checked_labels=(),
+        orientation="vertical",
+        padding=10,
+        font_size=18,
+        font_family="Arial",
+        text_color=(1, 1, 1),
+        position=(0, 0),
+        z_order=0,
+    ):
+        """Init class instance."""
+        super(Checkbox, self).__init__(
+            labels,
+            checked_labels=checked_labels,
+            orientation=orientation,
+            padding=padding,
+            font_size=font_size,
+            font_family=font_family,
+            text_color=text_color,
+            position=position,
+            z_order=z_order,
+        )
+
+
+class RadioButton(ButtonGroup):
+    """
+    A group of mutually exclusive options.
+
+    Only a single option can be selected at a time. This :class:`ButtonGroup`
+    uses the circle icons (a ring that gains a filled center dot when selected)
+    and enforces single selection: clicking an option selects it and clears the
+    previously selected one.
+
+    Parameters
+    ----------
+    labels : list of str
+        Text label for each option.
+    checked_labels : list of str, optional
+        Label that should be selected initially. At most one is allowed.
+    orientation : str, optional
+        Layout direction of the options: ``"vertical"`` or ``"horizontal"``.
+    padding : float, optional
+        Spacing in pixels between two adjacent options.
+    font_size : int, optional
+        Font size of the labels in pixels.
+    font_family : str, optional
+        Font family of the labels. Currently only supports "Arial".
+    text_color : str, tuple, list or ndarray, optional
+        Color of the label text. Accepts a hex string ("#FF0000"), RGB(A) in
+        [0, 1], or RGB(A) in [0, 255].
+    position : (float, float), optional
+        Absolute coordinates (x, y) of the top-left corner of this component.
+    z_order : int, optional
+        Z-order of the UI component.
+
+    Raises
+    ------
+    ValueError
+        If more than one label is passed in ``checked_labels``.
+    """
+
+    def __init__(
+        self,
+        labels,
+        *,
+        checked_labels=(),
+        orientation="vertical",
+        padding=10,
+        font_size=18,
+        font_family="Arial",
+        text_color=(1, 1, 1),
+        position=(0, 0),
+        z_order=0,
+    ):
+        """Init class instance."""
+        if len(checked_labels) > 1:
+            raise ValueError("Only one option can be preselected for radio buttons.")
+
+        super(RadioButton, self).__init__(
+            labels,
+            checked_labels=checked_labels,
+            orientation=orientation,
+            padding=padding,
+            font_size=font_size,
+            font_family=font_family,
+            text_color=text_color,
+            position=position,
+            z_order=z_order,
+        )
+
+    def _make_button_states(self):
+        """
+        Build the radio button's circle icon states.
+
+        The ``circle`` icons show a ring when unselected and a ring with a
+        filled center dot when selected.
+
+        Returns
+        -------
+        dict
+            Mapping of state names to icon file paths, as returned by
+            :func:`_toggle_icon_states`.
+        """
+        return _toggle_icon_states("circle")
+
+    def _handle_option_change(self, label):
+        """
+        Enforce single selection when an option is clicked.
+
+        The clicked option always ends up selected (clicking the currently
+        selected option leaves it selected), and every other option is
+        cleared.
+
+        Parameters
+        ----------
+        label : str
+            The label of the option that was clicked.
+        """
+        for other in self.labels:
+            if other == label:
+                continue
+            other_button, _ = self.options[other]
+            other_button.toggled = False
+
+        selected_button, _ = self.options[label]
+        selected_button.toggled = True
+        self._checked_labels = [label]
 
 
 class ComboBox2D(UI):
