@@ -100,8 +100,11 @@ def load_image(filename):
         filename = image_name
 
     with Image.open(filename) as pil_image:
-        if pil_image.mode in ["P"]:
-            pil_image = pil_image.convert("RGB")
+        if pil_image.mode == "P":
+            if "transparency" in pil_image.info:
+                pil_image = pil_image.convert("RGBA")
+            else:
+                pil_image = pil_image.convert("RGB")
 
         if pil_image.mode in ["RGBA", "RGB", "L"]:
             image = np.asarray(pil_image)
