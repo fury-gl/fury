@@ -624,6 +624,10 @@ class WorldManager:
             spawn_pos = np.array(
                 [sc[0] + x_offset, 0.0, sc[2] + np.random.uniform(-100.0, 100.0)]
             )
+            # Ensure mountains do not overlap the runway (X = -25 to 25 + radius)
+            min_mtn_x = obj.radius + 25.0
+            if abs(spawn_pos[0]) < min_mtn_x:
+                spawn_pos[0] = min_mtn_x if spawn_pos[0] >= 0 else -min_mtn_x
             obj.set_position(spawn_pos)
         elif isinstance(obj, Tree):
             side = 1.0 if np.random.rand() > 0.5 else -1.0
@@ -631,6 +635,9 @@ class WorldManager:
             spawn_pos = np.array(
                 [sc[0] + x_offset, 0.0, sc[2] + np.random.uniform(-80.0, 80.0)]
             )
+            # Ensure trees do not spawn on or near the runway (X = -20 to 20)
+            if abs(spawn_pos[0]) < 20.0:
+                spawn_pos[0] = 20.0 if spawn_pos[0] >= 0 else -20.0
             obj.set_position(spawn_pos)
         else:
             spawn_y = max(60.0, p_pos[1] + np.random.uniform(-20.0, 150.0))
@@ -678,32 +685,43 @@ world = WorldManager()
 # speed, and score.
 ##########################################################################################
 
-hud_score = ui.TextBlock2D(
-    text="SCORE: 00000",
-    position=(30, 710),
-    size=(300, 30),
-    font_size=22,
-    color=(0.0, 0.9, 1.0),
+hud_telemetry = ui.TextBlock2D(
+    text="ALTITUDE: 0 m\nAIRSPEED: 0 kts",
+    position=(30, 678),
+    size=(350, 70),
+    font_size=18,
+    color=(1.0, 1.0, 1.0),
     bold=True,
 )
-hud_alt = ui.TextBlock2D(
-    text="ALTITUDE: 0 m",
-    position=(30, 675),
-    size=(300, 30),
+hud_keys = ui.TextBlock2D(
+    text=(
+        "CONTROLS:\n"
+        "Space : Speed Up / Takeoff\n"
+        "B     : Brake / Slow Down\n"
+        "W / S : Fly Up / Down\n"
+        "A / D : Turn Left / Right\n"
+        "Q / E : Tilt Left / Right\n"
+        "R     : Restart Flight"
+    ),
+    position=(750, 30),
+    size=(250, 180),
     font_size=18,
-    color=(0.0, 0.8, 0.9),
-)
-hud_speed = ui.TextBlock2D(
-    text="AIRSPEED: 0 kts",
-    position=(30, 640),
-    size=(300, 30),
-    font_size=18,
-    color=(0.0, 0.8, 0.9),
+    color=(1.0, 1.0, 1.0),
+    bold=True,
 )
 
-scene.add(hud_score)
-scene.add(hud_alt)
-scene.add(hud_speed)
+scene.add(hud_telemetry)
+scene.add(hud_keys)
+
+
+def disable_depth_testing(world_object):
+    if hasattr(world_object, "material") and world_object.material is not None:
+        world_object.material.depth_test = False
+        world_object.material.depth_write = False
+    if hasattr(world_object, "children"):
+        for child in world_object.children:
+            disable_depth_testing(child)
+
 
 ##########################################################################################
 # Here we listen to keyboard events and store active states. We also write
@@ -840,7 +858,7 @@ def game_tick(showm):
     # Space accelerates; Enter acts as an airbrake.
     if " " in keys:
         state["speed"] += 50.0 * dt
-    elif "enter" in keys:
+    elif "b" in keys:
         state["speed"] -= 50.0 * dt
     else:
         state["speed"] -= 5.0 * dt
@@ -929,9 +947,14 @@ def game_tick(showm):
 
     # Update GUI labels.
     state["score"] += state["speed"] * dt * 0.1
-    hud_score.message = f"SCORE: {int(state['score']):05d}"
-    hud_alt.message = f"ALTITUDE: {max(0, int(state['player_pos'][1] - min_y))} m"
-    hud_speed.message = f"AIRSPEED: {int(state['speed'])} kts"
+    alt = max(0, int(state["player_pos"][1] - min_y))
+    speed = int(state["speed"])
+    hud_telemetry.message = f"ALTITUDE: {alt} m\nAIRSPEED: {speed} kts"
+
+    # Reposition UI elements dynamically relative to screen size.
+    w, h = showm.renderer.logical_size
+    hud_keys.set_position((w - hud_keys.size[0], h - hud_keys.size[1]))
+    hud_telemetry.set_position((30, h - 90))
 
     if check_collisions():
         state["is_playing"] = False
@@ -977,6 +1000,9 @@ if __name__ == "__main__":
 
     # Disable default mouse controls to preserve chase camera tracking.
     showm.screens[0].controller.enabled = False
+
+    # Ensure UI elements always render on top
+    disable_depth_testing(scene.ui_scene)
 
     showm.register_callback(game_tick, 0.01, True, "GameLoop", showm)
     showm.start()
