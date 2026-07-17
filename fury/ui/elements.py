@@ -2579,7 +2579,286 @@ class RangeSlider(UI):
 #         self.on_change(self)
 
 
-#
+class ButtonGroup(UI):
+    """
+    Base class for a group of labeled toggle buttons.
+
+    Each entry pairs a :class:`TexturedButton2D` (used as a toggle) with a
+    :class:`TextBlock2D` label. Entries are laid out either vertically or
+    horizontally. This class is not meant to be used directly; it provides
+    the shared machinery for the :class:`Checkbox` and :class:`RadioButton`
+    components, which subclass it to define their selection semantics.
+
+    Parameters
+    ----------
+    labels : list of str
+        Text label for each option.
+    checked_labels : list of str, optional
+        Labels that should be toggled on initially.
+    button_states : dict, optional
+        Mapping of state names to icon file paths for the toggle button.
+        The ``"default"`` icon is shown when an option is off and the
+        ``"pressed"`` icon when it is on. Defaults to checkbox-style icons.
+    orientation : str, optional
+        Layout direction of the options: ``"vertical"`` or ``"horizontal"``.
+    padding : float, optional
+        Spacing in pixels between two adjacent options.
+    font_size : int, optional
+        Font size of the labels in pixels.
+    font_family : str, optional
+        Font family of the labels. Currently only supports "Arial".
+    text_color : str, tuple, list or ndarray, optional
+        Color of the label text. Accepts a hex string ("#FF0000"), RGB(A) in
+        [0, 1], or RGB(A) in [0, 255].
+    position : (float, float), optional
+        Absolute coordinates (x, y) of the top-left corner of this component.
+    z_order : int, optional
+        Z-order of the UI component.
+
+    Attributes
+    ----------
+    labels : list of str
+        Ordered list of option labels.
+    options : dict
+        Mapping of label to its ``(button, text)`` pair.
+    """
+
+    def __init__(
+        self,
+        labels,
+        *,
+        checked_labels=(),
+        button_states=None,
+        orientation="vertical",
+        padding=10,
+        font_size=18,
+        font_family="Arial",
+        text_color=(1, 1, 1),
+        position=(0, 0),
+        z_order=0,
+    ):
+        """Init class instance."""
+        if orientation not in ("vertical", "horizontal"):
+            raise ValueError(
+                f"orientation should be 'vertical' or 'horizontal', "
+                f"got {orientation!r}."
+            )
+
+        self.labels = list(labels)
+        self._checked_labels = list(checked_labels)
+        self.orientation = orientation
+        self._padding = padding
+        self._font_size = font_size
+        self.font_family = font_family
+        self.text_color = text_color
+
+        self.button_states = button_states or {
+            "default": read_viz_icons(fname="stop2.png"),
+            "pressed": read_viz_icons(fname="checkmark.png"),
+        }
+
+        # Size of the toggle button, scaled to the label font size.
+        self.button_size = (int(font_size * 1.2), int(font_size * 1.2))
+        # Gap in pixels between a button and its label.
+        self.button_label_gap = 8
+
+        super(ButtonGroup, self).__init__(position=position, z_order=z_order)
+
+        # User hook: called with this group whenever a selection changes.
+        self.on_change = lambda group: None
+
+    def _setup(self):
+        """Set up this UI component."""
+        self.options = {}
+        self._label_by_button = {}
+
+        for label in self.labels:
+            button = TexturedButton2D(
+                states=self.button_states,
+                size=self.button_size,
+                is_toggle=True,
+            )
+            text = TextBlock2D(
+                text=label,
+                font_size=self.font_size,
+                font_family=self.font_family,
+                color=self.text_color,
+                dynamic_bbox=True,
+            )
+
+            if label in self._checked_labels:
+                button.toggled = True
+
+            # Clicking either the button or its label toggles the option.
+            button.on_clicked = self._handle_button_clicked
+            text.on_left_mouse_button_clicked = lambda _event, b=button: b.do_click()
+
+            self.options[label] = (button, text)
+            self._label_by_button[id(button)] = label
+            self._children.extend([button, text])
+
+    def _get_actors(self):
+        """
+        Get the actors composing this UI component.
+
+        Returns
+        -------
+        list
+            An empty list; rendering is delegated to the child components.
+        """
+        return []
+
+    def _get_size(self):
+        """
+        Get the size of the UI component.
+
+        Returns
+        -------
+        (int, int)
+            Width and height of the UI component in pixels.
+        """
+        along = 0
+        cross = 0
+        for index, label in enumerate(self.labels):
+            button, text = self.options[label]
+            row_w = button.size[0] + self.button_label_gap + text.size[0]
+            row_h = max(button.size[1], text.size[1])
+
+            if self.orientation == "horizontal":
+                along += row_w + (self.padding if index else 0)
+                cross = max(cross, row_h)
+            else:
+                along += row_h + (self.padding if index else 0)
+                cross = max(cross, row_w)
+
+        if self.orientation == "horizontal":
+            return (along, cross)
+        return (cross, along)
+
+    def _update_actors_position(self):
+        """Update the position of the internal actors."""
+        origin = self.get_position()
+        cursor = np.array(origin, dtype=float)
+
+        for label in self.labels:
+            button, text = self.options[label]
+            b_w, b_h = button.size
+            t_w, t_h = text.size
+            row_h = max(b_h, t_h)
+
+            # Vertically center the button and label within the row.
+            button.set_position((cursor[0], cursor[1] + (row_h - b_h) / 2))
+            text.set_position(
+                (
+                    cursor[0] + b_w + self.button_label_gap,
+                    cursor[1] + (row_h - t_h) / 2,
+                )
+            )
+
+            if self.orientation == "horizontal":
+                cursor[0] += b_w + self.button_label_gap + t_w + self.padding
+            else:
+                cursor[1] += row_h + self.padding
+
+    def _handle_button_clicked(self, button):
+        """
+        Handle a click on one of the option buttons.
+
+        Parameters
+        ----------
+        button : TexturedButton2D
+            The button that was clicked. Its ``toggled`` state has already
+            been updated by the time this is called.
+        """
+        label = self._label_by_button[id(button)]
+        self._handle_option_change(label)
+        self.on_change(self)
+
+    def _handle_option_change(self, label):
+        """
+        Update the checked state after an option is toggled.
+
+        Subclasses override this to enforce their selection semantics (e.g.
+        a radio button clears the other options). The base implementation
+        keeps :attr:`checked_labels` in sync with the buttons' toggled state,
+        allowing multiple options to be checked at once.
+
+        Parameters
+        ----------
+        label : str
+            The label of the option that changed.
+        """
+        button, _ = self.options[label]
+        if button.toggled and label not in self._checked_labels:
+            self._checked_labels.append(label)
+        elif not button.toggled and label in self._checked_labels:
+            self._checked_labels.remove(label)
+
+    def select(self, label):
+        """
+        Toggle the option on.
+
+        Parameters
+        ----------
+        label : str
+            The label of the option to select.
+        """
+        button, _ = self.options[label]
+        button.toggled = True
+        if label not in self._checked_labels:
+            self._checked_labels.append(label)
+
+    def deselect(self, label):
+        """
+        Toggle the option off.
+
+        Parameters
+        ----------
+        label : str
+            The label of the option to deselect.
+        """
+        button, _ = self.options[label]
+        button.toggled = False
+        if label in self._checked_labels:
+            self._checked_labels.remove(label)
+
+    @property
+    def checked_labels(self):
+        """
+        Get the labels of the currently checked options.
+
+        Returns
+        -------
+        list of str
+            Labels of the options that are currently toggled on.
+        """
+        return list(self._checked_labels)
+
+    @property
+    def font_size(self):
+        """
+        Get the font size of the labels.
+
+        Returns
+        -------
+        int
+            Font size of the labels in pixels.
+        """
+        return self._font_size
+
+    @property
+    def padding(self):
+        """
+        Get the padding between options.
+
+        Returns
+        -------
+        float
+            Spacing in pixels between two adjacent options.
+        """
+        return self._padding
+
+
 class ComboBox2D(UI):
     """
     UI element to create drop-down menus.
