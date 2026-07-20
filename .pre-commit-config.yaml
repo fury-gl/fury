@@ -24,13 +24,13 @@ repos:
         args: [--allow-missing-credentials]
     -   id: detect-private-key
 -   repo: https://github.com/codespell-project/codespell
-    rev: v2.4.2
+    rev: v2.4.3
     hooks:
     -   id: codespell
         additional_dependencies:
         -   tomli
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v2.2.0
+    rev: v2.3.0
     hooks:
     -   id: mypy
         # Sync with project.optional-dependencies.typing
@@ -45,7 +45,7 @@ repos:
         args: ["fury"]
         pass_filenames: false
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.21
+    rev: v0.15.22
     hooks:
       # Run the linter
     -   id: ruff
