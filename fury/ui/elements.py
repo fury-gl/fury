@@ -2668,6 +2668,7 @@ class ComboBox2D(UI):
         self._menu_visibility = False
         self._selection_ID = None
         self._drag_offset = None
+        self._is_dragging = False
         self.draggable = draggable
         self.sel_text_color = selection_text_color
         self.sel_bg_color = selection_bg_color
@@ -2753,17 +2754,22 @@ class ComboBox2D(UI):
 
     def _setup_drag_events(self):
         """Attach drag event handlers to all interactive surfaces."""
-        if self.draggable:
-            drag_targets = [
-                self.selection_box,
-                self.selection_box.background,
-            ]
+        drag_targets = [
+            self.selection_box,
+            self.selection_box.background,
+        ]
 
+        for target in drag_targets:
+            target.on_left_mouse_button_released = self.left_button_released
+
+        if self.draggable:
             for target in drag_targets:
                 target.on_left_mouse_button_dragged = self.left_button_dragged
                 target.on_left_mouse_button_pressed = self.left_button_pressed
         else:
             self.panel.background.on_left_mouse_button_dragged = lambda event: None
+            for target in drag_targets:
+                target.on_left_mouse_button_pressed = self.left_button_pressed
 
     def _get_actors(self):
         """
@@ -2968,6 +2974,7 @@ class ComboBox2D(UI):
         """
         click_pos = np.array([event.x, event.y])
         self._drag_offset = click_pos - self.get_position()
+        self._is_dragging = False
 
     def left_button_dragged(self, event):
         """
@@ -2979,9 +2986,25 @@ class ComboBox2D(UI):
             The PyGfx pointer event.
         """
         if self._drag_offset is not None:
+            self._is_dragging = True
             click_position = np.array([event.x, event.y])
             new_position = click_position - self._drag_offset
             self.set_position(new_position)
+
+    def left_button_released(self, event):
+        """
+        Handle left mouse button release event.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The PyGfx pointer event.
+        """
+        if self._is_dragging:
+            self._is_dragging = False
+        else:
+            self.menu_toggle_callback(event)
+        self._drag_offset = None
 
 
 class ListBox2D(UI):
