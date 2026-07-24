@@ -40,7 +40,8 @@ def test_basic_billboard(interactive: bool = False):
     npt.assert_equal(len(geom.normals.data), 18)
     normals = np.asarray(geom.normals.data).reshape(-1, 3)
     npt.assert_allclose(normals[0, :2], sizes[0])
-    npt.assert_equal(len(geom.indices.data), 18)
+    npt.assert_equal(geom.indices.data.shape, (6, 3))
+    npt.assert_equal(geom.indices.data.size, 18)
 
     # Check material opacity
     assert np.isclose(bb.material.opacity, 0.75)

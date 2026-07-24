@@ -88,7 +88,7 @@ def _create_billboard_actor(
     repeats = 6  # 2 triangles per quad
     pos = np.repeat(centers, repeats, axis=0).astype(np.float32)
     col = np.repeat(colors, repeats, axis=0).astype(np.float32)
-    indices = np.arange(pos.shape[0], dtype=np.uint32)
+    indices = np.arange(pos.shape[0], dtype=np.uint32).reshape(-1, 3)
 
     # Encode per-billboard size in normals so shaders can fetch dimensions
     normals = np.repeat(
