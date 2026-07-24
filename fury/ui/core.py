@@ -1771,11 +1771,14 @@ class Button2D(UI):
         """
         Determine the current visual state key based on priority.
 
-        The priority order is:
-        1. 'disabled' (if not enabled)
-        2. 'pressed' (if is_pressed or toggled is True)
-        3. 'hover' (if is_hovered)
-        4. 'default'
+        Two schemes are supported, chosen by the keys the subclass provides:
+
+        * One-dimensional (default): ``'disabled'`` > ``'pressed'`` (when
+          ``is_pressed`` or ``toggled``) > ``'hover'`` > ``'default'``.
+        * Two-dimensional toggle icons: when a ``'selected'`` key is present,
+          the selected dimension (``toggled``) is combined with interaction
+          feedback, yielding ``'default'``, ``'selected'``, ``'pressed'`` or
+          ``'pressed-selected'``. This suits checkbox/radio state icons.
 
         Parameters
         ----------
@@ -1789,6 +1792,16 @@ class Button2D(UI):
         """
         if not self.enabled:
             return "disabled" if "disabled" in available_keys else "default"
+
+        # Two-dimensional toggle icons: selected state x interaction feedback.
+        if "selected" in available_keys:
+            selected = self.is_toggle and self.toggled
+            active = self.is_pressed or self.is_hovered
+            if active and selected and "pressed-selected" in available_keys:
+                return "pressed-selected"
+            if active and not selected and "pressed" in available_keys:
+                return "pressed"
+            return "selected" if selected else "default"
 
         is_active = self.is_pressed or (self.is_toggle and self.toggled)
 
