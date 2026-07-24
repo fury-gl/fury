@@ -975,6 +975,95 @@ class _StreamlineBakedMaterial(StreamlinesMaterial):
         self.auto_detach = bool(auto_detach)
 
 
+class RoundedRectangleMaterial(MeshBasicMaterial):
+    """
+    Material for rendering rounded rectangles using signed distance fields.
+
+    Parameters
+    ----------
+    size : tuple
+        Width and height of the rectangle in pixels or local units.
+    corner_radius : float
+        Radius of the rounded corners in the same units.
+    **kwargs : dict
+        Additional keyword arguments forwarded to ``MeshBasicMaterial``.
+    """
+
+    uniform_type = dict(
+        MeshBasicMaterial.uniform_type,
+        size="2xf4",
+        corner_radius="f4",
+    )
+
+    def __init__(self, size=(100.0, 100.0), corner_radius=10.0, **kwargs):
+        """
+        Initialize the material and forward arguments to the base class.
+
+        Parameters
+        ----------
+        size : tuple
+            Width and height of the rectangle in pixels or local units.
+        corner_radius : float
+            Radius of the rounded corners in the same units.
+        **kwargs : dict
+            Additional keyword arguments forwarded to ``MeshBasicMaterial``.
+        """
+        kwargs.setdefault("pick_write", True)
+        super().__init__(**kwargs)
+        self.size = size
+        self.corner_radius = corner_radius
+
+    @property
+    def size(self):
+        """
+        Get the physical size of the rectangle.
+
+        Returns
+        -------
+        tuple
+            Width and height of the rectangle.
+        """
+        return self.uniform_buffer.data["size"]
+
+    @size.setter
+    def size(self, value):
+        """
+        Set the physical size of the rectangle.
+
+        Parameters
+        ----------
+        value : tuple
+            Width and height of the rectangle.
+        """
+        self.uniform_buffer.data["size"] = value
+        self.uniform_buffer.update_full()
+
+    @property
+    def corner_radius(self):
+        """
+        Get the corner radius of the rectangle.
+
+        Returns
+        -------
+        float
+            Corner radius of the rectangle.
+        """
+        return float(self.uniform_buffer.data["corner_radius"])
+
+    @corner_radius.setter
+    def corner_radius(self, value):
+        """
+        Set the corner radius of the rectangle.
+
+        Parameters
+        ----------
+        value : float
+            Corner radius of the rectangle.
+        """
+        self.uniform_buffer.data["corner_radius"] = float(value)
+        self.uniform_buffer.update_full()
+
+
 class BillboardMaterial(MeshBasicMaterial):
     """
     Billboard material for creating quads that always face the camera.

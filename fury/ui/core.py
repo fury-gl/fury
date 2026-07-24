@@ -4,15 +4,17 @@ import abc
 
 import numpy as np
 
-from fury.actor import Text, create_mesh
+from fury.actor import Mesh, Text, create_mesh
 from fury.colormap import normalize_colors
 from fury.geometry import buffer_to_geometry
 from fury.lib import (
     EventType,
     plane_geometry,
+    register_wgpu_render_function,
 )
-from fury.material import _create_mesh_material
+from fury.material import RoundedRectangleMaterial, _create_mesh_material
 from fury.primitive import prim_ring
+from fury.shader import RoundedRectangleShader
 from fury.ui import UIContext
 from fury.ui.helpers import (
     UI_SUBLAYER_SCALE,
@@ -796,6 +798,228 @@ class Rectangle2D(UI):
             Degree of transparency. Must be between [0, 1].
         """
         self.actor.material.opacity = opacity
+
+
+class RoundedRectangle2D(UI):
+    """
+    A 2D rounded rectangle sub-classed from UI.
+
+    Parameters
+    ----------
+    size : (int, int)
+        The size of the rectangle (width, height) in pixels.
+    position : (float, float)
+        Coordinates (x, y) of the lower-left corner of the rectangle.
+    color : str, tuple, list or ndarray
+        A hex string ("#FF0000"), RGB(A) in [0, 1], or RGB(A) in [0, 255].
+    corner_radius : float
+        Radius of the rounded corners in pixels.
+    opacity : float
+        Must take values in [0, 1].
+    """
+
+    def __init__(
+        self,
+        *,
+        size=(100, 100),
+        position=(0, 0),
+        color=(1, 1, 1),
+        corner_radius=10.0,
+        opacity=1.0,
+    ):
+        """Initialize a rounded rectangle."""
+        super(RoundedRectangle2D, self).__init__(position=position)
+
+        self.color = color
+        self.opacity = opacity
+        self.corner_radius = corner_radius
+        self.resize(size)
+
+    def _setup(self):
+        """
+        Set up this UI component.
+
+        Create the plane actor used internally.
+        """
+        geo = plane_geometry(width=1, height=1)
+        mat = RoundedRectangleMaterial(
+            size=(100.0, 100.0),
+            corner_radius=10.0,
+            color=(1, 1, 1),
+            opacity=1.0,
+            side="BOTH",
+        )
+        self.actor = create_mesh(geometry=geo, material=mat)
+
+        self.handle_events(self.actor)
+
+    def _get_actors(self):
+        """
+        Get the actors composing this UI component.
+
+        Returns
+        -------
+        list
+            List of actors.
+        """
+        return [self.actor]
+
+    def _get_size(self):
+        """
+        Get the current size of the rectangle actor.
+
+        Returns
+        -------
+        list
+            Width and height of the rectangle.
+        """
+        if hasattr(self, "_size"):
+            return self._size
+        bounds = self.actor.get_bounding_box()
+        minx, miny, minz = bounds[0]
+        maxx, maxy, maxz = bounds[1]
+        return [maxx - minx, maxy - miny]
+
+    @property
+    def width(self):
+        """
+        Get the current width of the rectangle.
+
+        Returns
+        -------
+        float
+            Width of the rectangle.
+        """
+        return self._get_size()[0]
+
+    @width.setter
+    def width(self, width):
+        """
+        Set the width of the rectangle.
+
+        Parameters
+        ----------
+        width : float
+            New width.
+        """
+        self.resize((width, self.height))
+
+    @property
+    def height(self):
+        """
+        Get the current height of the rectangle.
+
+        Returns
+        -------
+        float
+            Height of the rectangle.
+        """
+        return self._get_size()[1]
+
+    @height.setter
+    def height(self, height):
+        """
+        Set the height of the rectangle.
+
+        Parameters
+        ----------
+        height : float
+            New height.
+        """
+        self.resize((self.width, height))
+
+    def resize(self, size):
+        """
+        Set the rectangle size.
+
+        Parameters
+        ----------
+        size : (float, float)
+            Rectangle size (width, height) in pixels.
+        """
+        w = max(size[0], 1)
+        h = max(size[1], 1)
+        self.actor.geometry = plane_geometry(width=w, height=h)
+        self.actor.material.size = (w, h)
+        self._update_actors_position()
+
+    def _update_actors_position(self):
+        """Set the position of the internal actor."""
+        position = self.get_position(x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER)
+        self.set_actor_position(self.actor, position, self.z_order)
+
+    @property
+    def color(self):
+        """
+        Get the rectangle color.
+
+        Returns
+        -------
+        tuple
+            RGB color.
+        """
+        return self.actor.material.color[:3]
+
+    @color.setter
+    def color(self, color):
+        """
+        Set the rectangle color.
+
+        Parameters
+        ----------
+        color : tuple
+            New color.
+        """
+        color = normalize_colors(color)[0]
+        self.actor.material.color = np.array([*color[:3], 1.0])
+
+    @property
+    def opacity(self):
+        """
+        Get the rectangle opacity.
+
+        Returns
+        -------
+        float
+            Opacity of the rectangle.
+        """
+        return self.actor.material.opacity
+
+    @opacity.setter
+    def opacity(self, opacity):
+        """
+        Set the rectangle opacity.
+
+        Parameters
+        ----------
+        opacity : float
+            New opacity.
+        """
+        self.actor.material.opacity = opacity
+
+    @property
+    def corner_radius(self):
+        """
+        Get the corner radius.
+
+        Returns
+        -------
+        float
+            Corner radius.
+        """
+        return self.actor.material.corner_radius
+
+    @corner_radius.setter
+    def corner_radius(self, radius):
+        """
+        Set the corner radius.
+
+        Parameters
+        ----------
+        radius : float
+            New corner radius.
+        """
+        self.actor.material.corner_radius = radius
 
 
 class Disk2D(UI):
@@ -2155,3 +2379,21 @@ class Slider2D(UI):
         self.text.z_order = self.z_order + 2
 
         self._children.extend([self.handle, self.text])
+
+
+@register_wgpu_render_function(Mesh, RoundedRectangleMaterial)
+def register_rounded_rect_render_function(wobject):
+    """
+    Register rounded rectangle render function.
+
+    Parameters
+    ----------
+    wobject : Mesh
+        The mesh object to be rendered.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the rounded rectangle shader.
+    """
+    return (RoundedRectangleShader(wobject),)
