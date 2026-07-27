@@ -1850,6 +1850,8 @@ class ShowManager:
             """Capture the Qt window and stop the Qt event loop."""
             self._save_offscreen_capture(record_animation)
             self.window.close()
+            if self._qt_parent is not None:
+                self._qt_parent.close()
             if self._qt_app is not None:
                 self._qt_app.quit()
 

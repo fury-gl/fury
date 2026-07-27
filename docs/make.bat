@@ -52,6 +52,16 @@ if "%1" == "html-no-examples" (
 	exit /B
 )
 
+if "%1" == "html" (
+	set FURY_OFFSCREEN=true
+	set FURY_RECORD_ANIMATION=true
+	%SPHINXBUILD% -M html %SOURCEDIR% %BUILDDIR% %SPHINXOPTS%
+	set FURY_OFFSCREEN=
+	set FURY_RECORD_ANIMATION=
+	echo Build finished. The HTML pages are in %BUILDDIR%
+	exit /B
+)
+
 if "%1" == "serve" (
 	:serve
 	echo Serving docs at http://localhost:8000 ...

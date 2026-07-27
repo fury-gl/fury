@@ -434,8 +434,7 @@ def main():
                 run("make -C . html")
         finally:
             os.chdir(original_dir)
-
-        os.environ["FURY_OFFSCREEN"] = "0"
+            os.environ["FURY_OFFSCREEN"] = "0"
 
         answer = input("Have you checked the generated docs [yes/no]: ").strip()
         if answer.lower() in ["yes", "y"]:
