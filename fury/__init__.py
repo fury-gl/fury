@@ -1,6 +1,8 @@
 """Init file for visualization package."""
 
-from os.path import dirname
+from importlib.util import find_spec
+import os
+from os.path import dirname, join
 import sys
 import warnings
 
@@ -8,6 +10,13 @@ import lazy_loader as lazy
 
 from fury.optpkg import optional_package
 from fury.pkg_info import __version__, pkg_commit_hash
+
+if sys.platform == "darwin" and not os.environ.get("PYGLFW_LIBRARY"):
+    _imgui_spec = find_spec("imgui_bundle")
+    if _imgui_spec and _imgui_spec.submodule_search_locations:
+        _lib = join(_imgui_spec.submodule_search_locations[0], "libglfw.3.dylib")
+        if os.path.exists(_lib):
+            os.environ["PYGLFW_LIBRARY"] = _lib
 
 __getattr__, __dir__, __all__ = lazy.attach_stub(__name__, __file__)
 
