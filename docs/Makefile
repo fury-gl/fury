@@ -33,6 +33,13 @@ html-no-examples:
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
+html:
+	@export FURY_OFFSCREEN=true FURY_RECORD_ANIMATION=true; \
+	$(SPHINXBUILD) -M html "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O); \
+	unset FURY_OFFSCREEN FURY_RECORD_ANIMATION
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)."
+
 serve:
 	@echo "Serving docs at http://localhost:8000 ..."
 	@python -m webbrowser http://localhost:8000 &
