@@ -1,9 +1,7 @@
 
 Home Page
 
-.. meta::
-   :description: FURY - Free Unified Rendering in pYthon. A free and open-source software library for Scientific Visualization and 3D animations.
-   :keywords: FURY, Python, 3D rendering, scientific visualization, animation, simulation, graphics
+.. This page renders from _templates/home.html, which is where its SEO meta tags live.
 
 .. toctree::
    :maxdepth: 2
