@@ -20,7 +20,7 @@ class Panel2D(UI):
     size : (int, int)
         Size (width, height) in pixels of the panel.
     position : (float, float)
-        Absolute coordinates (x, y) of the lower-left corner of the panel.
+        Absolute coordinates (x, y) of the top-left corner of the panel.
     color : str, tuple, list or ndarray
         A hex string ("#FF0000"), RGB(A) in [0, 1], or RGB(A) in [0, 255].
     opacity : float
@@ -246,7 +246,7 @@ class Panel2D(UI):
         """
         Add a UI component to the panel.
 
-        The coordinates represent an offset from the lower left corner of the
+        The coordinates represent an offset from the top-left corner of the
         panel.
 
         Parameters
@@ -1846,7 +1846,7 @@ class ImageContainer2D(Rectangle2D):
     img_path : str
         URL or local path of the image.
     position : (float, float), optional
-        Absolute coordinates (x, y) of the lower-left corner of the image.
+        Absolute coordinates (x, y) of the top-left corner of the image.
     size : (int, int), optional
         Width and height in pixels of the image.
 
@@ -1867,7 +1867,7 @@ class ImageContainer2D(Rectangle2D):
         img_path : str or ndarray
             URL, local path of the image, or a NumPy array containing image data.
         position : (float, float), optional
-            Absolute coordinates (x, y) of the lower-left corner of the image.
+            Absolute coordinates (x, y) of the top-left corner of the image.
         size : (int, int), optional
             Width and height in pixels of the image.
 
