@@ -1,6 +1,15 @@
 {% extends "layout.html" %}
 
 {% block extrahead %}
+{# sphinxext-opengraph skips this page: it has no doctree, so the tags are set here. #}
+<meta name="description" content="FURY - Free Unified Rendering in pYthon. A free and open-source software library for Scientific Visualization and 3D animations.">
+<meta name="keywords" content="FURY, Python, 3D rendering, scientific visualization, animation, simulation, graphics">
+<meta property="og:type" content="website">
+<meta property="og:title" content="FURY - Free Unified Rendering in pYthon">
+<meta property="og:description" content="A free and open-source Python library for Scientific Visualization and 3D animations, GPU accelerated through pygfx and WebGPU.">
+<meta property="og:url" content="https://fury.gl/">
+<meta property="og:image" content="https://fury.gl/_static/images/text-logo.png">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@800;900&display=swap" rel="stylesheet">

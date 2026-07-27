@@ -64,6 +64,19 @@ extensions = [
 ogp_site_url = "https://fury.gl/"
 ogp_image = "https://fury.gl/_static/images/text-logo.png"
 
+# Sitemap configuration. The docs are served at the root of html_baseurl, so the
+# default scheme's version/language prefixes are dropped. See _extra/robots.txt.
+sitemap_filename = "sitemap.xml"
+sitemap_url_scheme = "{link}"
+# Generated indexes and source views, of no value in search results.
+sitemap_excludes = [
+    "search.html",
+    "genindex.html",
+    "py-modindex.html",
+    "_modules/*",
+    "*sg_execution_times.html",
+]
+
 # Configuration options for plot_directive. See:
 # https://github.com/matplotlib/matplotlib/blob/f3ed922d935751e08494e5fb5311d3050a3b637b/lib/matplotlib/sphinxext/plot_directive.py#L81
 plot_html_show_source_link = False
@@ -298,3 +311,13 @@ intersphinx_mapping = {
     "dipy": ("https://docs.dipy.org/stable", None),
     "scikit-learn": ("https://scikit-learn.org/stable/", None),
 }
+
+
+def _home_canonical(app, pagename, templatename, context, doctree):
+    """Canonicalize the home page as the site root, not as /index.html."""
+    if pagename == "index" and context.get("pageurl"):
+        context["pageurl"] = app.config.html_baseurl
+
+
+def setup(app):
+    app.connect("html-page-context", _home_canonical)

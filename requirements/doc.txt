@@ -8,6 +8,8 @@ tomli; python_version < "3.11"
 sphinx-copybutton
 sphinx-gallery>=0.10.0
 pydata-sphinx-theme==0.15.2
+sphinx-sitemap
+sphinxext-opengraph
 dipy
 nibabel
 matplotlib>=3.9.0
