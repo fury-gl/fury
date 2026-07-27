@@ -165,6 +165,9 @@ html_theme_options = {
     "navbar_start": ["navbar-logo"],
     "navbar_center": ["custom-navbar-nav.html"],
     "navbar_end": ["navbar-icon-links", "theme-switcher"],
+    "logo": {
+        "text": "FURY",
+    },
     "footer_start": ["custom-footer.html"],
     "footer_center": [],
     "footer_end": [],
@@ -202,19 +205,15 @@ html_sidebars = {"**": ["globaltoc.html"]}
 # ghissue config
 github_project_url = "https://github.com/fury-gl/fury"
 
-import github_tools as ght  # noqa: F401  (used by the disabled calls below)
+import github_tools as ght
 
 # Skip GitHub fetching for now
 all_versions = []  # ght.get_all_versions(ignore="micro")
 html_context = {
     "all_versions": all_versions,
     "versions_list": ["dev", "latest"] + all_versions,
-    "basic_stats": {},  # ght.fetch_basic_stats(),
-    "contributors": {
-        "total_contributors": 0,
-        "contributors": [],
-        "total_commits": 0,
-    },  # ght.fetch_contributor_stats(),
+    "basic_stats": ght.fetch_basic_stats(),
+    "contributors": ght.fetch_contributor_stats(),
     "default_mode": "light",
 }
 
