@@ -428,9 +428,8 @@ disk re-aligns the camera to that axis.
 
 The UI system has been rebuilt from scratch on PyGfx. A few 0.12.x
 components remain temporarily disabled (``DrawPanel``, ``FileMenu2D``,
-``GridUI``, ``Checkbox``, ``RadioButton``, ``SpinBox``) while the
-migration is in progress. Legacy backward-compatibility code was
-explicitly removed. (Ref: :ghpull:`1043`)
+``GridUI``, ``SpinBox``) while the migration is in progress. Legacy
+backward-compatibility code was explicitly removed. (Ref: :ghpull:`1043`)
 
 **Currently available UI components**:
 
@@ -448,6 +447,7 @@ explicitly removed. (Ref: :ghpull:`1043`)
 * ``fury.ui.ComboBox2D``
 * ``fury.ui.ListBox2D``, ``fury.ui.ListBoxItem2D``
 * ``fury.ui.Card2D``
+* ``fury.ui.Checkbox``, ``fury.ui.RadioButton``  (Ref: :ghpull:`1305`)
 * ``fury.ui.PlaybackPanel``
 
 **Action**: ``ComboBox2D``, ``ListBox2D``, ``TextBox2D``, and
@@ -565,7 +565,7 @@ v2.0.0 stabilization):
      - Pending UI port
    * - ``fury.ui.GridUI``
      - Pending UI port
-   * - ``fury.ui.Checkbox``, ``fury.ui.RadioButton``, ``fury.ui.SpinBox``
+   * - ``fury.ui.SpinBox``
      - Pending UI port
 
 
