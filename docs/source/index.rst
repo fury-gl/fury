@@ -18,7 +18,6 @@ Home Page
    installation
    getting_started
    auto_examples/index
-   fury-pybullet
 
 .. toctree::
    :maxdepth: 2
