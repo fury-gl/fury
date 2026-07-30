@@ -180,7 +180,7 @@ html_logo = "_static/images/logo.svg"
 
 html_favicon = "_static/images/logo.ico"
 
-html_sidebars = {"**": ["globaltoc.html"]}
+html_sidebars = {"index": [], "**": ["globaltoc.html"]}
 
 # ghissue config
 github_project_url = "https://github.com/fury-gl/fury"

@@ -13,9 +13,9 @@
 
         <div class="hero-content">
 
-            <!-- Rendering equation: sets a scientific tone -->
+            <!-- Playful FURY "equation": sets a scientific/code tone -->
             <div class="hero-equation">
-                L<sub>o</sub>(x, &omega;<sub>o</sub>) = L<sub>e</sub>(x, &omega;<sub>o</sub>) + &int;<sub>&Omega;</sub> L<sub>i</sub>(x, &omega;<sub>i</sub>) f<sub>r</sub>(&omega;<sub>i</sub>, x, &omega;<sub>o</sub>) (&omega;<sub>i</sub> &middot; n) d&omega;<sub>i</sub>
+                science + speed = <span class="fury-red">fury</span>
             </div>
 
             <h1 class="hero-title">
@@ -75,13 +75,17 @@
 
             <!-- Animated render: demonstrates FURY output quality -->
             <div class="visual-card">
-                <img src="{{ pathto('_static/images/horse.gif', 1) }}" alt="FURY Horse Render">
+                <video autoplay loop muted playsinline preload="metadata"
+                       poster="{{ pathto('_static/images/hero.jpg', 1) }}" aria-label="FURY keyframe animation">
+                    <source src="{{ pathto('_static/images/hero.webm', 1) }}" type="video/webm">
+                    <source src="{{ pathto('_static/images/hero.mp4', 1) }}" type="video/mp4">
+                </video>
                 <div class="visual-footer">
                     <span>
                         <span class="visual-footer__dot">&bull;</span>
-                        custom shader demo &middot; rendered by FURY
+                        keyframe animation &middot; rendered by FURY
                     </span>
-                    <span>720 &times; 405</span>
+                    <span>800 &times; 450</span>
                 </div>
             </div>
 
@@ -133,7 +137,11 @@
             <div class="fury-feature-card">
                 <div class="fury-feature-card__visual">
                     <div class="fury-feature-card__image-wrapper">
-                        <img src="{{ pathto('_static/images/horse.gif', 1) }}" alt="Shaders">
+                        <video autoplay loop muted playsinline preload="metadata"
+                               poster="{{ pathto('_static/images/horse.jpg', 1) }}" aria-label="Shaders">
+                            <source src="{{ pathto('_static/images/horse.webm', 1) }}" type="video/webm">
+                            <source src="{{ pathto('_static/images/horse.mp4', 1) }}" type="video/mp4">
+                        </video>
                         <div class="fury-feature-card__caption">shader-deformed mesh, animated per frame</div>
                     </div>
                 </div>
@@ -157,7 +165,11 @@
                 </div>
                 <div class="fury-feature-card__visual">
                     <div class="fury-feature-card__image-wrapper">
-                        <img src="{{ pathto('_static/images/physical.gif', 1) }}" alt="Physically based rendering">
+                        <video autoplay loop muted playsinline preload="metadata"
+                               poster="{{ pathto('_static/images/physical.jpg', 1) }}" aria-label="Physically based rendering">
+                            <source src="{{ pathto('_static/images/physical.webm', 1) }}" type="video/webm">
+                            <source src="{{ pathto('_static/images/physical.mp4', 1) }}" type="video/mp4">
+                        </video>
                         <div class="fury-feature-card__caption">anisotropic specular reflection</div>
                     </div>
                 </div>
@@ -167,7 +179,11 @@
             <div class="fury-feature-card">
                 <div class="fury-feature-card__visual">
                     <div class="fury-feature-card__image-wrapper">
-                        <img src="{{ pathto('_static/images/4.gif', 1) }}" alt="Large networks">
+                        <video autoplay loop muted playsinline preload="metadata"
+                               poster="{{ pathto('_static/images/4.jpg', 1) }}" aria-label="Large networks">
+                            <source src="{{ pathto('_static/images/4.webm', 1) }}" type="video/webm">
+                            <source src="{{ pathto('_static/images/4.mp4', 1) }}" type="video/mp4">
+                        </video>
                         <div class="fury-feature-card__caption">force-directed network, animated live</div>
                     </div>
                 </div>
@@ -177,6 +193,29 @@
                         interesting parts preferably combined with one or several 'maps' in a multiview display. The
                         main view displays a selected part in details, while the 'maps' provide the user with
                         information about the position of the part inside the network.</p>
+                </div>
+            </div>
+
+            <!-- Feature 4 -->
+            <div class="fury-feature-card fury-feature-card--reverse">
+                <div class="fury-feature-card__content">
+                    <h3 class="fury-feature-card__title">Real-time simulation</h3>
+                    <p class="fury-feature-card__description">This entire flight simulator &mdash; procedural terrain,
+                        a composite aircraft, flight physics, and a chase camera &mdash; is roughly
+                        <strong>600 lines of Python</strong>, built entirely from FURY primitives and running in a
+                        real-time event loop.
+                        <a href="https://github.com/fury-gl/fury/blob/master/docs/examples/viz_flight_simulator.py"
+                           target="_blank" rel="noopener">Read the tutorial &rarr;</a></p>
+                </div>
+                <div class="fury-feature-card__visual">
+                    <div class="fury-feature-card__image-wrapper">
+                        <video autoplay loop muted playsinline preload="metadata"
+                               poster="{{ pathto('_static/images/flight.jpg', 1) }}" aria-label="Real-time flight simulator">
+                            <source src="{{ pathto('_static/images/flight.webm', 1) }}" type="video/webm">
+                            <source src="{{ pathto('_static/images/flight.mp4', 1) }}" type="video/mp4">
+                        </video>
+                        <div class="fury-feature-card__caption">interactive flight simulator, rendered live</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -236,7 +275,9 @@
 
             <div class="fury-sciences__display">
                 <div class="fury-sciences__image-wrapper">
-                    <img id="fury-sciences-img" src="{{ pathto('_static/images/sc-dom/popup/engineering.gif', 1) }}" alt="Engineering render">
+                    <video id="fury-sciences-img" autoplay loop muted playsinline preload="metadata"
+                           poster="{{ pathto('_static/images/sc-dom/popup/engineering.jpg', 1) }}"
+                           src="{{ pathto('_static/images/sc-dom/popup/engineering.mp4', 1) }}" aria-label="Engineering render"></video>
                 </div>
                 <div class="fury-sciences__text">
                     <h3 id="fury-sciences-title" class="fury-sciences__item-title">Engineering</h3>

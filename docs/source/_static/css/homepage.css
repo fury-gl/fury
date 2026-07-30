@@ -208,7 +208,8 @@ html[data-theme="dark"] .hero-title .fury-red {
     border-radius: 0 0 8px 0;
 }
 
-.visual-card img {
+.visual-card img,
+.visual-card video {
     width: 100%;
     border-radius: 8px;
     display: block;
@@ -474,7 +475,8 @@ html[data-theme="dark"] .code-editor__copy-button.is-copy-success {
     box-shadow: 0 8px 24px rgba(0,0,0,0.08);
 }
 
-.fury-feature-card__image-wrapper img {
+.fury-feature-card__image-wrapper img,
+.fury-feature-card__image-wrapper video {
     width: 100%;
     border-radius: 6px;
     display: block;
@@ -689,7 +691,8 @@ html[data-theme="dark"] .fury-feature-card__caption {
     box-shadow: 0 8px 24px rgba(0,0,0,0.08);
 }
 
-.fury-sciences__image-wrapper img {
+.fury-sciences__image-wrapper img,
+.fury-sciences__image-wrapper video {
     width: 100%;
     border-radius: 8px;
     display: block;

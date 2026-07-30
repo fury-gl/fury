@@ -101,9 +101,9 @@ document.addEventListener("DOMContentLoaded", function() {
         var parts = currentSrc.split("popup/");
         if (parts.length === 2) {
             basePath = parts[0] + "popup/";
+            // Warm the browser cache so tab switches are seamless
             Object.keys(contentData).forEach(function(key) {
-                var img = new Image();
-                img.src = basePath + key + ".gif";
+                fetch(basePath + key + ".mp4").catch(function() {});
             });
         }
     }
@@ -139,15 +139,22 @@ document.addEventListener("DOMContentLoaded", function() {
             displayTitle.innerText = data.title;
             displayDesc.innerText = data.desc;
 
+            var nextSrc = null;
             if (basePath) {
-                displayImg.setAttribute("src", basePath + target + ".gif");
+                nextSrc = basePath + target + ".mp4";
             } else {
                 // Fallback if structure was different
-                var fallbackSrc = displayImg.getAttribute("src");
-                var fallbackParts = fallbackSrc.split("popup/");
+                var fallbackParts = displayImg.getAttribute("src").split("popup/");
                 if (fallbackParts.length === 2) {
-                    displayImg.setAttribute("src", fallbackParts[0] + "popup/" + target + ".gif");
+                    nextSrc = fallbackParts[0] + "popup/" + target + ".mp4";
                 }
+            }
+            if (nextSrc) {
+                displayImg.setAttribute("src", nextSrc);
+                // <video> needs an explicit reload + play after src change
+                displayImg.load();
+                var playPromise = displayImg.play();
+                if (playPromise) { playPromise.catch(function() {}); }
             }
         }
     }
