@@ -581,7 +581,7 @@ Dependency Changes
    * - ``vtk``
      - Removed
    * - ``pygfx``
-     - Added (≥ 0.13.0)
+     - Added (≥ 0.16.0)
    * - ``wgpu``
      - Added
    * - ``jupyter_rfb``
