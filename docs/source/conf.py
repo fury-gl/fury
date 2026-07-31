@@ -164,7 +164,7 @@ html_theme_options = {
     "navigation_with_keys": True,
     "navbar_start": ["navbar-logo"],
     "navbar_center": ["custom-navbar-nav.html"],
-    "navbar_end": ["navbar-icon-links", "theme-switcher"],
+    "navbar_end": ["version-switcher", "navbar-icon-links", "theme-switcher"],
     "logo": {
         "text": "FURY",
     },
