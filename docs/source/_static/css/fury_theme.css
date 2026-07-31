@@ -389,6 +389,31 @@ html[data-theme="dark"] .bd-article code.xref:not(.download) {
     border: 1px solid rgba(255, 68, 68, 0.2);
 }
 
+/* On mobile, PyData turns the primary/secondary sidebars into fixed off-canvas
+   drawers that slide on top of the article (see pydata-sphinx-theme's
+   max-width:959.98px / 1199.98px rules). --pst-color-background is transparent
+   above so the desktop sidebar blends into the global grid/glow, but that same
+   transparency makes the mobile drawer unreadable since the article text
+   underneath shows straight through the nav links. Force an opaque,
+   theme-matched background only at the widths where the sidebar overlays content. */
+@media (max-width: 959.98px) {
+    html[data-theme="light"] .bd-sidebar-primary {
+        background-color: #faf5f2 !important;
+    }
+    html[data-theme="dark"] .bd-sidebar-primary {
+        background-color: #151111 !important;
+    }
+}
+
+@media (max-width: 1199.98px) {
+    html[data-theme="light"] .bd-sidebar-secondary {
+        background-color: #faf5f2 !important;
+    }
+    html[data-theme="dark"] .bd-sidebar-secondary {
+        background-color: #151111 !important;
+    }
+}
+
 /* Reset PyData's code-badge styling on sidebar nav links so they render as plain text. */
 .bd-sidebar-primary li a code.literal,
 .bd-sidebar-primary li a code.xref,

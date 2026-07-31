@@ -104,8 +104,9 @@ html[data-theme="dark"] .hero-title .fury-red {
 /* Call to Action Buttons */
 .hero-actions {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 2rem;
+    gap: 1.25rem 2rem;
     margin-top: 1rem;
 }
 
@@ -402,7 +403,6 @@ html[data-theme="dark"] .install-block__copy-button.is-copy-success,
 html[data-theme="dark"] .code-editor__copy-button.is-copy-success {
     color: #3fb950;
 }
-<<<<<<< ours
 
 /* --- FEATURES COMPONENT --- */
 .fury-features {
@@ -1085,8 +1085,9 @@ html[data-theme="dark"] .fury-example-card__title {
 
 .fury-cta__actions {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 2rem;
+    gap: 1.25rem 2rem;
     margin-top: 1rem;
 }
 
@@ -1369,5 +1370,45 @@ html[data-theme="dark"] .fury-community__logo-card {
 @media (max-width: 992px) {
     .fury-community__columns {
         grid-template-columns: 1fr;
+    }
+}
+
+/* --- MOBILE-FIRST REFINEMENTS (PHONES) --- */
+/* The 992px breakpoints above only reflow grids to a single column; the large
+   display type and 2rem section padding tuned for tablets still crowd/overflow
+   on phone-width viewports, so tighten both further below 576px. */
+@media (max-width: 576px) {
+    .hero-grid,
+    .fury-features-grid,
+    .fury-sciences-grid,
+    .fury-examples-grid,
+    .fury-cta-grid,
+    .fury-community-grid {
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+    }
+
+    .hero-title {
+        font-size: 2.25rem;
+    }
+
+    .fury-features__title,
+    .fury-sciences__title,
+    .fury-examples__title,
+    .fury-cta__title,
+    .fury-community__title {
+        font-size: 2.25rem;
+    }
+
+    .hero-description,
+    .fury-sciences__description,
+    .fury-examples__description,
+    .fury-cta__description {
+        font-size: 1rem;
+    }
+
+    .fury-community__logo-card {
+        width: 140px;
+        height: 68px;
     }
 }
