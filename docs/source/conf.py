@@ -313,11 +313,20 @@ intersphinx_mapping = {
 }
 
 
-def _home_canonical(app, pagename, templatename, context, doctree):
-    """Canonicalize the home page as the site root, not as /index.html."""
-    if pagename == "index" and context.get("pageurl"):
-        context["pageurl"] = app.config.html_baseurl
+def _home_page_context(app, pagename, templatename, context, doctree):
+    """
+    Fix up context for the home page.
+
+    It renders via home.html through html_additional_pages, which Sphinx builds
+    with an empty context (no doctree) - so ``title`` is never populated (the
+    <title> tag ends up empty) and ``pageurl`` resolves to /index.html instead
+    of the site root.
+    """
+    if pagename == "index":
+        context["title"] = "FURY - Free Unified Rendering in pYthon"
+        if context.get("pageurl"):
+            context["pageurl"] = app.config.html_baseurl
 
 
 def setup(app):
-    app.connect("html-page-context", _home_canonical)
+    app.connect("html-page-context", _home_page_context)
