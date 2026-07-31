@@ -1,836 +1,478 @@
-<!DOCTYPE html>
-<html lang="en-us">
+{% extends "layout.html" %}
 
-<head>
-    <meta name="description" content="FURY - Your go-to scientific visualization library." />
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <meta http-equiv="x-ua-compatible" content="ie=edge" />
-    <title>FURY</title>
+{% block extrahead %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@800;900&display=swap" rel="stylesheet">
+<link href="{{ pathto('_static/css/homepage.css', 1) }}" rel="stylesheet">
+{% endblock %}
 
-    <link rel="icon" href="_static/images/logo.ico" />
-    <link rel="icon" type="image/svg+xml" href="_static/images/logo.svg" />
+{% block body %}
+<div class="hero-container">
+    <div class="hero-grid">
 
-    <link href="https://fonts.googleapis.com/css?family=Lato:400,900" rel="stylesheet" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/pydata-sphinx-theme.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+        <div class="hero-content">
 
-
-    <link rel="stylesheet" href="_static/css/util.css" />
-    <link rel="stylesheet" href="_static/css/main.css" />
-    <link rel="stylesheet" href="_static/css/sponsors.css" />
-    <link rel="stylesheet" href="_static/css/comp-soft.css" />
-    <link rel="stylesheet" href="_static/css/navbar.css" />
-
-    <link rel="stylesheet" href="_static/vendor/vars.css" />
-    <link rel="stylesheet" href="_static/vendor/styles.css" />
-    <link rel="stylesheet" href="_static/vendor/content.css" />
-    <link rel="stylesheet" href="_static/vendor/news.css" />
-    <link rel="stylesheet" href="_static/vendor/keyfeatures.css" />
-    <link rel="stylesheet" href="_static/vendor/tables.css" />
-    <link rel="stylesheet" href="_static/vendor/videos.css" />
-    <link rel="stylesheet" href="_static/vendor/posts.css" />
-    <link rel="stylesheet" href="_static/vendor/teams.css" />
-    <link rel="stylesheet" href="_static/vendor/code-highlight.css" />
-    <link rel="stylesheet" href="_static/vendor/installtext.css" />
-    <link rel="stylesheet" href="_static/vendor/gallery.css" />
-    <link rel="stylesheet" href="_static/vendor/features.css" />
-    <link rel="stylesheet" href="_static/vendor/fa.css" />
-    <link rel="stylesheet" href="_static/vendor/tabs.css" />
-    <link rel="stylesheet" href="_static/vendor/display-card.css" />
-    <link rel="stylesheet" href="_static/vendor/new-promotions.css" />
-    <link rel="stylesheet" href="_static/vendor/fonts.css" />
-    <link rel="stylesheet" href="_static/vendor/style.css" />
-    <link rel="stylesheet" href="_static/vendor/icons.css" />
-
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="_static/images/logo.svg" />
-
-    <meta name="twitter:title" content="FURY" />
-    <meta name="twitter:description" content="FURY - Your go-to scientific visualization library." />
-
-</head>
-
-<body>
-
-    <nav id="nav" class="navbar is-fresh is-transparent no-shadow" role="navigation" aria-label="main navigation">
-        <div class="container">
-            <div class="navbar-brand">
-
-
-                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false"
-                    data-target="navbar-menu">
-                    <span aria-hidden="true"></span>
-                    <span aria-hidden="true"></span>
-                    <span aria-hidden="true"></span>
-                </a>
+            <!-- Playful FURY "equation": sets a scientific/code tone -->
+            <div class="hero-equation">
+                science + speed = <span class="fury-red">fury</span>
             </div>
 
-            <div id="navbar-menu" class="navbar-menu is-static">
+            <h1 class="hero-title">
+                Scientific<br>
+                visualization,<br>
+                <span class="fury-red">furiously fast.</span>
+            </h1>
 
-                <div class="navbar-end">
-                    <a href="installation.html" class="navbar-item is-secondary">
-                        Installation
-                    </a>
-                    <a href="auto_examples/index.html" class="navbar-item is-secondary">
-                        Tutorials
-                    </a>
-                    <a href="blog.html" class="navbar-item is-secondary">
-                        Blog
-                    </a>
-                    <a href="reference/index.html" class="navbar-item is-secondary">
-                        API
-                    </a>
-                    <a href="community.html" class="navbar-item is-secondary">
-                        Community
-                    </a>
+            <p class="hero-description">
+                FURY is a free, open source Python library for 3D scientific visualization and animation, built on the GPU through <strong>pygfx</strong> and WebGPU. NumPy arrays in, real-time renders out.
+            </p>
+
+            <!-- Primary and secondary call-to-action buttons -->
+            <div class="hero-actions">
+                <a href="{{ pathto('getting_started') }}" class="btn-primary">Get started</a>
+                <a href="{{ pathto('auto_examples/index') }}" class="btn-secondary">Browse the examples &rarr;</a>
+            </div>
+
+            <div class="install-blocks">
+
+                <!-- pip install block -->
+                <div class="install-block" data-copy="pip install fury">
+                    <span>
+                        <span class="install-prompt">$</span> pip install fury
+                    </span>
+                    <button
+                        class="install-block__copy-button"
+                        type="button"
+                        onclick="homepageCopyToClipboard(this)"
+                        aria-label="Copy pip install command to clipboard"
+                    >
+                        <span class="install-block__copy-label" aria-hidden="true"></span>
+                        <i class="fa-regular fa-copy" aria-hidden="true"></i>
+                    </button>
                 </div>
+
+                <!-- conda install block -->
+                <div class="install-block" data-copy="conda install -c conda-forge fury">
+                    <span>
+                        <span class="install-prompt">$</span> conda install -c conda-forge fury
+                    </span>
+                    <button
+                        class="install-block__copy-button"
+                        type="button"
+                        onclick="homepageCopyToClipboard(this)"
+                        aria-label="Copy conda install command to clipboard"
+                    >
+                        <span class="install-block__copy-label" aria-hidden="true"></span>
+                        <i class="fa-regular fa-copy" aria-hidden="true"></i>
+                    </button>
+                </div>
+
             </div>
         </div>
-    </nav>
 
+        <div class="hero-visuals">
 
-
-    <nav id="navbar-clone" class="navbar is-fresh is-transparent" role="navigation" aria-label="main navigation">
-        <div class="container">
-            <div class="navbar-brand">
-                <a class="navbar-item" href="index.html">
-                    <img id="navbar-logo" src="_static/images/logo.svg" alt="%!s(&lt;nil&gt;) logo">
-                    <div id="navbar-logo-text">FURY</div>
-                </a>
-
-                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false"
-                    data-target="cloned-navbar-menu">
-                    <span aria-hidden="true"></span>
-                    <span aria-hidden="true"></span>
-                    <span aria-hidden="true"></span>
-                </a>
-            </div>
-
-            <div id="cloned-navbar-menu" class="navbar-menu is-fixed">
-
-                <div class="navbar-end">
-                    <a href="installation.html" class="navbar-item is-secondary">
-                        Installation
-                    </a>
-                    <a href="auto_examples/index.html" class="navbar-item is-secondary">
-                        Demos
-                    </a>
-                    <a href="reference/index.html" class="navbar-item is-secondary">
-                        API
-                    </a>
-                    <a href="community.html" class="navbar-item is-secondary">
-                        Community
-                    </a>
+            <!-- Animated render: demonstrates FURY output quality -->
+            <div class="visual-card">
+                <video autoplay loop muted playsinline preload="metadata"
+                       poster="{{ pathto('_static/images/hero.jpg', 1) }}" aria-label="FURY keyframe animation">
+                    <source src="{{ pathto('_static/images/hero.webm', 1) }}" type="video/webm">
+                    <source src="{{ pathto('_static/images/hero.mp4', 1) }}" type="video/mp4">
+                </video>
+                <div class="visual-footer">
+                    <span>
+                        <span class="visual-footer__dot">&bull;</span>
+                        keyframe animation &middot; rendered by FURY
+                    </span>
+                    <span>800 &times; 450</span>
                 </div>
             </div>
-        </div>
-    </nav>
 
-
-    <section class="hero">
-        <div class="hero-container">
-            <div class="hero-content">
-                <div class="hero-title-content">
-                    <div class="hero-title">
-                        <img class="hero-logo" src="_static/images/logo.svg" alt="FURY logo. ">
-                        <p class="logo-text"> fury </p>
-                    </div>
-                    <div class="flex-column">
-
-                        <div class="hero-subtitle">
-                            A free and open-source software library for Scientific Visualization and 3D animations. Learn how to use the rendering equation
-                            \begin{equation}
-                            L_o\left( x, \omega_o\right) = L_e\left( x, \omega_o\right) + \int_{\Omega} L_i\left( x, \omega_i\right)  f_r\left(\omega_i, x,  \omega_o\right) \left(\omega_i\cdot n\right) d\omega_i
-                            \end{equation}
-                            and other powerful techniques to create the most advanced effects and give new life to your data.
-                        </div>
-
-
-                        <div class="hero-cta">
-                            <a href="getting_started.html"><button class="cta-button">Get started</button></a>
-                        </div>
-
+            <div class="code-editor">
+                <div class="code-editor__header">
+                    <span class="code-editor__filename">your_first_scene.py</span>
+                    <div class="code-editor__meta">
+                        <span class="code-editor__lines-count">10 lines</span>
+                        <button
+                            class="code-editor__copy-button"
+                            type="button"
+                            data-copy-target="code-editor-snippet"
+                            onclick="homepageCopyToClipboard(this)"
+                            aria-label="Copy code snippet to clipboard"
+                        >
+                            <span class="code-editor__copy-label" aria-hidden="true"></span>
+                            <i class="fa-regular fa-copy" aria-hidden="true"></i>
+                        </button>
                     </div>
                 </div>
-            </div>
-        </div>
-    </section>
 
-
-
-
-
-
-
-    <section class="gallery">
-        <div class="container">
-            <h1 class="gallery-title">FURY in action</h1>
-            <div class="gallery-box-container">
-                <div class="gallery-box-content gallery-underline">
-                    <div class="gallery-box-title">Shaders</div>
-                    <img src="_static/images/horse.gif" alt="">
-                    <div class="gallery-box-text">Shaders are simple programs that describe the traits of either a
-                        vertex or a pixel. Vertex shaders describe the attributes (position, texture coordinates,
-                        colors, etc.) of a vertex, while pixel shaders describe the traits (color, z-depth and alpha
-                        value) of a pixel.</div>
-                    </div>
-                <div class="gallery-box-content gallery-underline">
-                    <div class="gallery-box-title">Physically based rendering</div>
-                    <img src="_static/images/physical.gif" alt="">
-                    <div class="gallery-box-text">Physically based rendering (PBR) is a computer graphics approach that seeks to render images in a way that models the flow of light in the real world. Many PBR pipelines aim to achieve photorealism. This video demonstrates Anisotropic specular reflection in FURY.</div>
+                <div class="code-editor__body" id="code-editor-snippet">
+                    <span class="code-keyword">import</span> <span class="code-module">numpy</span> <span class="code-keyword">as</span> np<br>
+                    <span class="code-keyword">from</span> fury.actor <span class="code-keyword">import</span> <span class="code-module">sphere</span><br>
+                    <span class="code-keyword">from</span> fury.window <span class="code-keyword">import</span> <span class="code-module">show</span><br>
+                    <br>
+                    <span class="code-var">rng</span> = np.random.default_rng()<br>
+                    <span class="code-var">centers</span> = rng.uniform(<span class="code-number">-50</span>, <span class="code-number">50</span>, size=(<span class="code-number">1000</span>, <span class="code-number">3</span>))<br>
+                    <span class="code-var">colors</span> = rng.uniform(<span class="code-number">0</span>, <span class="code-number">1</span>, size=(<span class="code-number">1000</span>, <span class="code-number">3</span>))<br>
+                    <br>
+                    <span class="code-var">actor</span> = <span class="code-function">sphere</span>(centers, colors=colors, radii=<span class="code-number">1.5</span>)<br>
+                    <span class="code-function">show</span>(actors=[actor])
                 </div>
-                <div class="gallery-box-content gallery-underline">
-                    <div class="gallery-box-title">large networks</div>
-                    <img src="_static/images/4.gif" alt="">
-                    <div class="gallery-box-text">A large network can be visualized by presenting its interesting parts
-                        preferably combined with one or several 'maps' in a multiview display. The main view displays a
-                        selected part in details, while the 'maps' provide the user with information about the position
-                        of the part inside the network.</div>
-                    </div>
             </div>
+
         </div>
-    </section>
-
-
-
-
-
-    <div id="container">
-        <header id="banner" class="wrapper">
-            <div class="inner">
-                <h1 id="banner-title">Install FURY And Start Using It!</h1>
-                    <div id="banner-start">
-                        <span id="banner-start-command" class="txt-rotate" data-period="2000"
-                            data-rotate='["pip install fury", "conda install -c conda-forge fury"]'></span>
-                    </div>
-            </div>
-        </header>
     </div>
-    <section class="p-t-20 tabs-section">
-        <div class="container">
-            <div class="uikit-tab-wrapper">
-                <ul class="uk-flex-center uk-nav" uk-tab>
-                    <li class="uk-active"><a href="#">Scientific Domains</a></li>
-                    <li><a href="#">Physics Simulation</a></li>
-                    <li><a href="#">Molecular Dynamics</a></li>
-                    <li><a href="#">Neuroscience</a></li>
-                    <li><a href="#">Additional Features</a></li>
-                </ul>
-                <ul id="tabs-content" class="uk-switcher uk-margin">
-                    <li class="scientific-domains">
-                        <div class="mobile-view">
-                            <div class="image-grid grid g-gap-2 g-m-col-2">
-                                <div>
-                                    <div class="h-card__header">
-                                        <img class="h-card__title-icon engineering" src="_static/images/sc-dom/engineering.svg" alt="">
-                                        <h3 class="h-card__title">Engineering</h3>
-                                    </div>
-                                    <a href="auto_examples/10_animation/viz_robot_arm_animation.html">
-                                        <img src="_static/images/sc-dom/popup/engineering.gif" alt="Engineering" align="middle"></a>
+</div>
 
-                                </div>
-                                <div>
-                                    <div class="h-card__header">
-                                        <img class="h-card__title-icon" src="_static/images/sc-dom/physics.svg" alt="">
-                                        <h3 class="h-card__title">Physics</h3>
-                                    </div>
-                                    <a href="auto_examples/04_demos/viz_brownian_motion.html">
-                                        <img src="_static/images/sc-dom/popup/physics.gif" alt="Physics" align="middle"></a>
-
-                                </div>
-                                <div>
-                                    <div class="h-card__header">
-                                        <img class="h-card__title-icon" src="_static/images/sc-dom/chemistry.svg" alt="">
-                                        <h3 class="h-card__title">Chemistry</h3>
-                                    </div>
-                                    <a href="auto_examples/04_demos/collision-particles.html">
-                                        <img src="_static/images/sc-dom/popup/chemistry.gif" alt="Chemistry" align="middle"></a>
-
-                                </div>
-                                <div>
-                                    <div class="h-card__header">
-                                        <img class="h-card__title-icon" src="_static/images/sc-dom/astronomy.svg" alt="">
-                                        <h3 class="h-card__title">Astronomy</h3>
-                                    </div>
-                                    <a href="auto_examples/04_demos/viz_tesseract.html">
-                                        <img src="_static/images/sc-dom/popup/astronomy.gif" alt="Chemistry" align="middle"></a>
-
-                                </div>
-                                <div>
-                                    <div class="h-card__header">
-                                        <img class="h-card__title-icon" src="_static/images/sc-dom/aerospace.svg" alt="">
-                                        <h3 class="h-card__title">Aerospace</h3>
-                                    </div>
-                                    <a href="auto_examples/01_introductory/viz_texture.html">
-                                        <img src="_static/images/sc-dom/popup/aerospace.gif" alt="Aerospace" align="middle"></a>
-
-                                </div>
-                                <div>
-                                    <div class="h-card__header">
-                                        <img class="h-card__title-icon" src="_static/images/sc-dom/biology.svg" alt="">
-                                        <h3 class="h-card__title">Biology</h3>
-                                    </div>
-                                    <a href="auto_examples/04_demos/viz_bundles.html">
-                                        <img src="_static/images/sc-dom/popup/biology.gif" alt="Biology" align="middle"></a>
-
-                                </div>
-                                <div>
-                                    <div class="h-card__header">
-                                        <img class="h-card__title-icon" src="_static/images/sc-dom/data-science.svg" alt="">
-                                        <h3 class="h-card__title">Data Science</h3>
-                                    </div>
-                                    <a href="auto_examples/01_introductory/viz_morphing.html">
-                                        <img src="_static/images/sc-dom/popup/data-science.gif" alt="Data Science" align="middle"></a>
-
-                                </div>
-                                <div>
-                                    <div class="h-card__header">
-                                        <img class="h-card__title-icon" src="_static/images/sc-dom/network.svg" alt="">
-                                        <h3 class="h-card__title">Network Science</h3>
-                                    </div>
-                                    <a href="auto_examples/04_demos/viz_network_animated.html">
-                                        <img src="_static/images/sc-dom/popup/network-science.gif" alt="Network Science" align="middle"></a>
-
-                                </div>
-                                <div>
-                                    <div class="h-card__header">
-                                        <img class="h-card__title-icon" src="_static/images/sc-dom/maths.svg" alt="">
-                                        <h3 class="h-card__title">Mathematics</h3>
-                                    </div>
-                                    <a href="auto_examples/04_demos/viz_animated_surfaces.html">
-                                        <img src="_static/images/sc-dom/popup/mathematics.gif" alt="Mathematics"
-                                         align="middle"></a>
-
-                                </div>
-                            </div>
-                        </div>
-                        <div class="h-card non-mobile-view">
-                            <div class="h-card__holder">
-                                <div class="h-card__display-wrapper">
-                                    <img class="h-card__display" src="_static/images/sc-dom/popup/engineering.gif" alt="">
-                                </div>
-                                <div class="h-card__data">
-                                    <div class="h-card__header">
-                                        <img class="h-card__title-icon engineering" src="_static/images/sc-dom/engineering.svg" alt="">
-                                        <h3 class="h-card__title">Engineering</h3>
-                                    </div>
-                                    <p class="h-card__content">FURY is a powerful tool for engineers and visualisation experts. It allows them to create high-quality visualisations quickly and easily, without the need for extensive programming knowledge. Its functional programming paradigm and support for large data sets make it an ideal tool for visualising complex systems and data, such as those used in engineering and scientific research.
-                                    </p>
-
-                                    <a class="h-card__button" href="auto_examples/10_animation/viz_robot_arm_animation.html">
-                                        View More
-                                        <i class="fas fa-external-link-alt"></i>
-                                    </a>
-                                    <img id="engineering" class="h-card__data-background engineering" src="_static/images/sc-dom/engineering.svg" alt="">
-                                </div>
-                            </div>
-                            <div class="h-card__holder">
-                                <div class="h-card__display-wrapper">
-                                    <img class="h-card__display" src="_static/images/sc-dom/popup/physics.gif" alt="">
-                                </div>
-                                <div class="h-card__data">
-                                    <div class="h-card__header">
-                                        <img id="physics" class="h-card__title-icon" src="_static/images/sc-dom/physics.svg" alt="">
-                                        <h3 class="h-card__title">Physics</h3>
-                                    </div>
-
-                                    <p class="h-card__content">FURY's ability to create stunning visualisations of complex physical phenomena. For example, FURY can be used to create detailed visualisations of fluid dynamics, such as the flow of water or gas. It can also be used to visualise the motion of particles in a simulation.
-                                    </p>
-
-                                    <a class="h-card__button" href="auto_examples/04_demos/viz_brownian_motion.html">
-                                        View More
-                                        <i class="fas fa-external-link-alt"></i>
-                                    </a>
-                                    <img id="physics" class="h-card__data-background" src="_static/images/sc-dom/physics.svg" alt="">
-                                </div>
-                            </div>
-                            <div class="h-card__holder">
-                                <div class="h-card__display-wrapper">
-                                    <img class="h-card__display" src="_static/images/sc-dom/popup/chemistry.gif" alt="">
-                                </div>
-
-                                <div class="h-card__data">
-                                    <div class="h-card__header">
-                                        <img class="h-card__title-icon" src="_static/images/sc-dom/chemistry.svg" alt="">
-                                        <h3 class="h-card__title">Chemistry</h3>
-                                    </div>
-                                    <p class="h-card__content">FURY can be used to create detailed visualisations of the structure of molecules, including their bonding and interactions. It can also be used to visualise the motion of atoms and molecules in a simulation, such as the motion of atoms and molecules in a material.
-                                    </p>
-
-                                    <a class="h-card__button" href="auto_examples/04_demos/collision-particles.html">
-                                        View More
-                                        <i class="fas fa-external-link-alt"></i>
-                                    </a>
-                                    <img id="chemistry" class="h-card__data-background" src="_static/images/sc-dom/chemistry.svg" alt="">
-                                </div>
-                            </div>
-                            <div class="h-card__holder">
-                                <div class="h-card__display-wrapper">
-                                    <img class="h-card__display" src="_static/images/sc-dom/popup/astronomy.gif" alt="">
-                                </div>
-
-                                <div class="h-card__data">
-                                    <div class="h-card__header">
-                                        <img class="h-card__title-icon" src="_static/images/sc-dom/astronomy.svg" alt="">
-                                        <h3 class="h-card__title">Astronomy</h3>
-                                    </div>
-                                    <p class="h-card__content">FURY can be used to create detailed visualisations of the structure of galaxies, including the distribution of stars, gas, and dust. It can also be used to visualise the motion of celestial bodies in a simulation, such as the motion of stars and planets in a solar system.
-                                    </p>
-
-                                    <a class="h-card__button" href="auto_examples/04_demos/viz_tesseract.html">
-                                        View More
-                                        <i class="fas fa-external-link-alt"></i>
-                                    </a>
-                                    <img id="astronomy" class="h-card__data-background" src="_static/images/sc-dom/astronomy.svg" alt="">
-                                </div>
-                            </div>
-                            <div class="h-card__holder">
-                                <div class="h-card__display-wrapper">
-                                    <img class="h-card__display" src="_static/images/sc-dom/popup/aerospace.gif" alt="">
-                                </div>
-
-                                <div class="h-card__data">
-                                    <div class="h-card__header">
-                                        <img class="h-card__title-icon" src="_static/images/sc-dom/aerospace.svg" alt="">
-                                        <h3 class="h-card__title">Aerospace</h3>
-                                    </div>
-                                    <p class="h-card__content">FURY can easily create 3D visualizations of aerodynamic simulations, which can help engineers understand the performance of an aircraft in different flight conditions. This can be done by importing the simulation data into FURY and then using the library's built-in functions to create 3D models of the aircraft, along with visualizations of the airflow patterns and other important parameters.
-                                    </p>
-
-                                    <a class="h-card__button" href="auto_examples/01_introductory/viz_texture.html">
-                                        View More
-                                        <i class="fas fa-external-link-alt"></i>
-                                    </a>
-                                    <img id="aerospace" class="h-card__data-background" src="_static/images/sc-dom/aerospace.svg" alt="">
-                                </div>
-                            </div>
-                            <div class="h-card__holder">
-                                <div class="h-card__display-wrapper">
-                                    <img class="h-card__display" src="_static/images/sc-dom/popup/biology.gif" alt="">
-                                </div>
-
-                                <div class="h-card__data">
-                                    <div class="h-card__header">
-                                        <img class="h-card__title-icon" src="_static/images/sc-dom/biology.svg" alt="">
-                                        <h3 class="h-card__title">Biology</h3>
-                                    </div>
-                                    <p class="h-card__content">With FURY, researchers can create detailed models of cells and organelles, such as the mitochondria, ribosomes, and endoplasmic reticulum. This allows for a more in-depth understanding of the structure and function of these important cellular components.
-                                    </p>
-
-                                    <a class="h-card__button" href="auto_examples/04_demos/viz_bundles.html">
-                                        View More
-                                        <i class="fas fa-external-link-alt"></i>
-                                    </a>
-                                    <img id="biology" class="h-card__data-background" src="_static/images/sc-dom/biology.svg" alt="">
-                                </div>
-                            </div>
-                            <div class="h-card__holder">
-                                <div class="h-card__display-wrapper">
-                                    <img class="h-card__display" src="_static/images/sc-dom/popup/data-science.gif" alt="">
-                                </div>
-
-                                <div class="h-card__data">
-                                    <div class="h-card__header">
-                                        <img class="h-card__title-icon" src="_static/images/sc-dom/data-science.svg" alt="">
-                                        <h3 class="h-card__title">Data Science</h3>
-                                    </div>
-                                    <p class="h-card__content">One of the key features of FURY is its ability to handle large amounts of data. This makes it perfect for data scientists who need to work with large datasets, as well as for visualizers who need to create interactive and engaging visualizations.
-                                    </p>
-
-                                    <a class="h-card__button" href="auto_examples/01_introductory/viz_morphing.html">
-                                        View More
-                                        <i class="fas fa-external-link-alt"></i>
-                                    </a>
-                                    <img id="data-science" class="h-card__data-background" src="_static/images/sc-dom/data-science.svg" alt="">
-                                </div>
-                            </div>
-                            <div class="h-card__holder">
-                                <div class="h-card__display-wrapper">
-                                    <img class="h-card__display" src="_static/images/sc-dom/popup/network-science.gif" alt="">
-                                </div>
-
-                                <div class="h-card__data">
-                                    <div class="h-card__header">
-                                        <img class="h-card__title-icon" src="_static/images/sc-dom/network.svg" alt="">
-                                        <h3 class="h-card__title">Network Science</h3>
-                                    </div>
-                                    <p class="h-card__content">One of the key features of FURY is its ability to handle large and complex networks. It can handle millions of nodes and edges, and can display the network in a variety of different ways, including node-link diagrams, matrix plots, and force-directed layouts. This allows users to explore their networks in a variety of different ways, and to find the best way to visualize their data.
-                                    </p>
-
-                                    <a class="h-card__button" href="auto_examples/04_demos/viz_network_animated.html">
-                                        View More
-                                        <i class="fas fa-external-link-alt"></i>
-                                    </a>
-                                    <img id="network-science" class="h-card__data-background" src="_static/images/sc-dom/network.svg" alt="">
-                                </div>
-                            </div>
-                            <div class="h-card__holder">
-                                <div class="h-card__display-wrapper">
-                                    <img class="h-card__display" src="_static/images/sc-dom/popup/mathematics.gif" alt="">
-                                </div>
-
-                                <div class="h-card__data">
-                                    <div class="h-card__header">
-                                        <img class="h-card__title-icon" src="_static/images/sc-dom/maths.svg" alt="">
-                                        <h3 class="h-card__title">Mathematics</h3>
-                                    </div>
-                                    <p class="h-card__content">FURY allows users to easily visualise complex mathematical data in a way that is easy to understand. For example, a mathematician studying a complex equation could use FURY to create a 3D plot of the equation's solutions, which would make it much easier to understand the behaviour of the equation.
-                                    </p>
-
-                                    <a class="h-card__button" href="auto_examples/04_demos/viz_animated_surfaces.html">
-                                        View More
-                                        <i class="fas fa-external-link-alt"></i>
-                                    </a>
-                                    <img id="mathematics" class="h-card__data-background" src="_static/images/sc-dom/maths.svg" alt="">
-                                </div>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="physics-simulation">
-                        <h6 class="tabs-info txt-center">With FURY, it becomes simple to produce multiple physics animations with ease.</h6>
-                        <div class="visualization-images">
-                            <div class="image-grid grid g-gap-2 g-col-3 g-row-2 g-m-col-2 g-m-row-3">
-                                <div>
-                                    <a href="fury-pybullet.html"><img
-                                            src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/physics_domino.gif"
-                                            alt="physics domino" align="middle"></a>
-
-                                </div>
-                                <div>
-                                    <a href="fury-pybullet.html"><img
-                                            src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/physics_bricks_multi_actor.gif"
-                                            alt="physics bricks" align="middle"></a>
-
-                                </div>
-                                <div>
-                                    <a href="fury-pybullet.html"><img
-                                            src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/physics_collision.gif"
-                                            alt="physic collision" align="middle"></a>
-
-                                </div>
-                                <div>
-                                    <a href="auto_examples/index.html#demos"><img
-                                            src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/brownian_motion.gif"
-                                            alt="brownian motion" align="middle"></a>
-
-                                </div>
-                                <div>
-                                    <a href="auto_examples/index.html#demos"><img
-                                            src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/em_wave.gif" alt="Em wave"
-                                            align="middle"></a>
-
-                                </div>
-                                <div>
-                                    <a href="auto_examples/index.html#demos"><img
-                                            src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/helical_path.gif"
-                                            alt="Helical path" align="middle"></a>
-
-                                </div>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="molecular-dynamics">
-                        <div class="col-sm">
-                            <p class="tabs-info txt-center">Some Molecular Dynamics applications using FURY.</p>
-                        </div>
-                        <div class="grid-container">
-                            <div class="visualization-images">
-                                <div class="image-grid grid g-gap-2 g-col-2">
-                                    <div class="g-span-2 molecular-band">
-                                        <a href="fury-pybullet.html"><img src="https://furiousatoms.com/_static/images/fullerene_1.png" alt="fullrene Modellin" align="middle"></a>
-                                    </div>
-                                    <div>
-                                        <a href="fury-pybullet.html"><img
-                                                src="https://github.com/fury-gl/fury-communication-assets/raw/main/molecular_ribbons.gif"
-                                                alt="Molecular Ribbon" align="middle"></a>
-                                    </div>
-                                    <div>
-                                        <a href="fury-pybullet.html"><img
-                                                src="https://github.com/fury-gl/fury-communication-assets/raw/main/molecular_surface.gif"
-                                                alt="Molecular Surface" align="middle"></a>
-                                    </div>
-                                </div>
-                            </div>
-                    </li>
-                    <li class="neuroscience">
-                        <div class="col-sm">
-                            <p class="tabs-info txt-center">Built with FURY: Neuroscience application examples </p>
-                        </div>
-                        <div class="grid-container">
-                            <div class="visualization-images">
-                                <div class="image-grid grid g-gap-2 g-col-3 g-row-2 g-m-col-2 g-m-row-3">
-                                    <div>
-                                        <a href="fury-pybullet.html"><img src="https://user-images.githubusercontent.com/50577357/155691603-161e0546-f150-4389-badd-72e207a10063.png" alt="Brain bundle " align="middle"></a>
-                                    </div>
-                                    <div>
-                                        <a href="fury-pybullet.html"><img src="https://user-images.githubusercontent.com/9929496/115797697-82d5a100-a3a2-11eb-89b4-d9995930ce47.png" alt="Brain bundle " align="middle"></a>
-                                    </div>
-                                    <div>
-                                        <a href="fury-pybullet.html"><img src="https://github.com/dipy/dipy_data/raw/master/AF_L_highlighted.png" alt="Brain bundle " align="middle"></a>
-                                    </div>
-                                    <div>
-                                        <a href="auto_examples/index.html#demos"><img src="https://github.com/dipy/dipy_data/raw/master/eudx_tracking.png" alt="Brain bundle " align="middle"></a>
-                                    </div>
-                                    <div>
-                                        <a href="auto_examples/index.html#demos"><img src="https://dipy.org/documentation/1.5.0/_images/contour_from_roi_tutorial.png" alt="Brain bundle " align="middle"></a>
-                                    </div>
-                                    <div>
-                                        <a href="auto_examples/index.html#demos"><img src="https://dipy.org/documentation/1.5.0/_images/slices.png" alt="Brain bundle " align="middle"></a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="other-features">
-                        <div class="keyfeatures-box-container">
-                            <div class="keyfeatures-box-content keyfeatures-underline">
-                                <p>
-                                    <div class="keyfeatures-box-title">Releases</div>
-                                    <div class="keyfeatures-box-text">FURY is a Python library available for scientific
-                                        visualization. The library is available via <a
-                                        href="https://pypi.org/project/fury/">PyPi</a> or Anaconda package system</div>
-                                </p>
-                            </div>
-                            <div class="keyfeatures-box-content keyfeatures-underline">
-                                <p>
-                                    <div class="keyfeatures-box-title">Free</div>
-                                    <div class="keyfeatures-box-text">FURY is totally free and it will be always free</div>
-                                </p>
-                            </div>
-                            <div class="keyfeatures-box-content keyfeatures-underline">
-                                <p>
-                                    <div class="keyfeatures-box-title">Community</div>
-                                    <div class="keyfeatures-box-text">Join FURY family <a
-                                        href="https://fury.gl/latest/community.html">here</a> and share your knowledge</div>
-                                </p>
-                            </div>
-                            <div class="keyfeatures-box-content keyfeatures-underline">
-                                <p>
-                                    <div class="keyfeatures-box-title">Easy to Use</div>
-                                    <div class="keyfeatures-box-text">FURY is designed to be really easy to use</div>
-                                </p>
-                            </div>
-                        </div>
-                    </li>
-                </ul>
-            </div>
+<div class="fury-features">
+    <div class="fury-features-grid">
+        <div class="fury-features__header">
+            <h2 class="fury-features__title">FURY in Action</h2>
+            <a href="{{ pathto('auto_examples/index') }}" class="fury-features__link">Browse all examples &rarr;</a>
         </div>
-    </section>
 
-
-
-
-
-
-
-
-    <div id="backtotop"><a href="#" id="backtotop-color"></a></div>
-    <section class="comp-soft-section">
-        <h3 class="comp-soft-title">
-            Compatibility
-        </h3>
-        <div class="comp-soft-wrapper">
-            <div class="comp-soft-container">
-                <div class="comp-soft">
-                    <div class="comp-soft-image-holder">
-                        <img src="_static/images/comp-soft/blender.jpg" alt="">
+        <div class="fury-features__list">
+            <!-- Feature 1 -->
+            <div class="fury-feature-card">
+                <div class="fury-feature-card__visual">
+                    <div class="fury-feature-card__image-wrapper">
+                        <video autoplay loop muted playsinline preload="metadata"
+                               poster="{{ pathto('_static/images/horse.jpg', 1) }}" aria-label="Shaders">
+                            <source src="{{ pathto('_static/images/horse.webm', 1) }}" type="video/webm">
+                            <source src="{{ pathto('_static/images/horse.mp4', 1) }}" type="video/mp4">
+                        </video>
+                        <div class="fury-feature-card__caption">shader-deformed mesh, animated per frame</div>
                     </div>
                 </div>
-                <div class="comp-soft">
-                    <div class="comp-soft-image-holder">
-                        <img src="_static/images/comp-soft/unity.jpg" alt="">
-                    </div>
+                <div class="fury-feature-card__content">
+                    <h3 class="fury-feature-card__title">Shaders</h3>
+                    <p class="fury-feature-card__description">Shaders are simple programs that describe the traits of
+                        either a vertex or a pixel. Vertex shaders describe the attributes (position, texture
+                        coordinates, colors, etc.) of a vertex, while pixel shaders describe the traits (color, z-depth
+                        and alpha value) of a pixel.</p>
                 </div>
-                <div class="comp-soft">
-                    <div class="comp-soft-image-holder">
-                        <img src="_static/images/comp-soft/autodesk.jpg" alt="">
-                    </div>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="fury-feature-card fury-feature-card--reverse">
+                <div class="fury-feature-card__content">
+                    <h3 class="fury-feature-card__title">Physically based rendering</h3>
+                    <p class="fury-feature-card__description">Physically based rendering (PBR) is a computer graphics
+                        approach that seeks to render images in a way that models the flow of light in the real world.
+                        Many PBR pipelines aim to achieve photorealism. This video demonstrates Anisotropic specular
+                        reflection in FURY.</p>
                 </div>
-                <div class="comp-soft">
-                    <div class="comp-soft-image-holder">
-                        <img src="_static/images/comp-soft/adobedimension.jpg" width="100" alt="">
+                <div class="fury-feature-card__visual">
+                    <div class="fury-feature-card__image-wrapper">
+                        <video autoplay loop muted playsinline preload="metadata"
+                               poster="{{ pathto('_static/images/physical.jpg', 1) }}" aria-label="Physically based rendering">
+                            <source src="{{ pathto('_static/images/physical.webm', 1) }}" type="video/webm">
+                            <source src="{{ pathto('_static/images/physical.mp4', 1) }}" type="video/mp4">
+                        </video>
+                        <div class="fury-feature-card__caption">anisotropic specular reflection</div>
                     </div>
                 </div>
             </div>
-            <div class="comp-soft-container">
-                <div class="comp-soft">
-                    <div class="comp-soft-image-holder">
-                        <img src="_static/images/comp-soft/houdini.jpg" alt="">
+
+            <!-- Feature 3 -->
+            <div class="fury-feature-card">
+                <div class="fury-feature-card__visual">
+                    <div class="fury-feature-card__image-wrapper">
+                        <video autoplay loop muted playsinline preload="metadata"
+                               poster="{{ pathto('_static/images/4.jpg', 1) }}" aria-label="Large networks">
+                            <source src="{{ pathto('_static/images/4.webm', 1) }}" type="video/webm">
+                            <source src="{{ pathto('_static/images/4.mp4', 1) }}" type="video/mp4">
+                        </video>
+                        <div class="fury-feature-card__caption">force-directed network, animated live</div>
                     </div>
                 </div>
-                <div class="comp-soft">
-                    <div class="comp-soft-image-holder">
-                        <img src="_static/images/comp-soft/modo.jpg" alt="">
-                    </div>
+                <div class="fury-feature-card__content">
+                    <h3 class="fury-feature-card__title">Large networks</h3>
+                    <p class="fury-feature-card__description">A large network can be visualized by presenting its
+                        interesting parts preferably combined with one or several 'maps' in a multiview display. The
+                        main view displays a selected part in details, while the 'maps' provide the user with
+                        information about the position of the part inside the network.</p>
                 </div>
-                <div class="comp-soft">
-                    <div class="comp-soft-image-holder">
-                        <img src="_static/images/comp-soft/sketchup.jpg" alt="">
+            </div>
+
+            <!-- Feature 4 -->
+            <div class="fury-feature-card fury-feature-card--reverse">
+                <div class="fury-feature-card__content">
+                    <h3 class="fury-feature-card__title">Real-time simulation</h3>
+                    <p class="fury-feature-card__description">This entire flight simulator &mdash; procedural terrain,
+                        a composite aircraft, flight physics, and a chase camera &mdash; is roughly
+                        <strong>600 lines of Python</strong>, built entirely from FURY primitives and running in a
+                        real-time event loop.
+                        <a href="https://github.com/fury-gl/fury/blob/master/docs/examples/viz_flight_simulator.py"
+                           target="_blank" rel="noopener">Read the tutorial &rarr;</a></p>
+                </div>
+                <div class="fury-feature-card__visual">
+                    <div class="fury-feature-card__image-wrapper">
+                        <video autoplay loop muted playsinline preload="metadata"
+                               poster="{{ pathto('_static/images/flight.jpg', 1) }}" aria-label="Real-time flight simulator">
+                            <source src="{{ pathto('_static/images/flight.webm', 1) }}" type="video/webm">
+                            <source src="{{ pathto('_static/images/flight.mp4', 1) }}" type="video/mp4">
+                        </video>
+                        <div class="fury-feature-card__caption">interactive flight simulator, rendered live</div>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+</div>
 
-    <section class="sponsors-wrapper">
-        <h3 class="sponsors-title">
-            Our Sponsors
-        </h3>
-        <div class="container sponsors">
-            <div class="sponsors-logo">
-                <img src="_static/images/sponsors/luddy.jpg" alt="Luddy">
+<div class="fury-sciences">
+    <div class="fury-sciences-grid">
+        <div class="fury-sciences__header">
+            <div class="fury-sciences__title-col">
+                <h2 class="fury-sciences__title">Across the sciences</h2>
             </div>
-            <div class="sponsors-logo">
-                <img src="_static/images/sponsors/gsoc.jpg" alt="GSoC">
-            </div>
-            <div class="sponsors-logo">
-                <img src="_static/images/sponsors/iu.jpg" alt="IU">
+            <div class="fury-sciences__desc-col">
+                <p class="fury-sciences__description">The same scene graph handles whatever your field throws at it. Pick a domain for a sample render.</p>
             </div>
         </div>
 
-        <div class="cite-wrapper">
-            <h3 class="sponsors-title">
-                Cite Us!
-            </h3>
-            <div class="container sponsors">
-                <p>Eleftherios Garyfallidis, Serge Koudoro, Javier Guaje, Marc-Alex Côté, Soham Biswas, David Reagan, Nasim
-                    Anousheh, Filipi Silva, Geoffrey Fox, and FURY Contributors
-                    <a class="cite" href="https://doi.org/10.21105/joss.03384">FURY: advanced scientific visualization</a>
-                </p>
+        <div class="fury-sciences__content">
+            <div class="fury-sciences__tabs">
+                <button class="fury-sciences__tab active" data-target="engineering">
+                    <img src="{{ pathto('_static/images/sc-dom/engineering.svg', 1) }}" class="fury-sciences__tab-icon" alt="">
+                    <span>Engineering</span>
+                </button>
+                <button class="fury-sciences__tab" data-target="physics">
+                    <img src="{{ pathto('_static/images/sc-dom/physics.svg', 1) }}" class="fury-sciences__tab-icon" alt="">
+                    <span>Physics</span>
+                </button>
+                <button class="fury-sciences__tab" data-target="chemistry">
+                    <img src="{{ pathto('_static/images/sc-dom/chemistry.svg', 1) }}" class="fury-sciences__tab-icon" alt="">
+                    <span>Chemistry</span>
+                </button>
+                <button class="fury-sciences__tab" data-target="astronomy">
+                    <img src="{{ pathto('_static/images/sc-dom/astronomy.svg', 1) }}" class="fury-sciences__tab-icon" alt="">
+                    <span>Astronomy</span>
+                </button>
+                <button class="fury-sciences__tab" data-target="aerospace">
+                    <img src="{{ pathto('_static/images/sc-dom/aerospace.svg', 1) }}" class="fury-sciences__tab-icon" alt="">
+                    <span>Aerospace</span>
+                </button>
+                <button class="fury-sciences__tab" data-target="biology">
+                    <img src="{{ pathto('_static/images/sc-dom/biology.svg', 1) }}" class="fury-sciences__tab-icon" alt="">
+                    <span>Biology</span>
+                </button>
+                <button class="fury-sciences__tab" data-target="data-science">
+                    <img src="{{ pathto('_static/images/sc-dom/data-science.svg', 1) }}" class="fury-sciences__tab-icon" alt="">
+                    <span>Data science</span>
+                </button>
+                <button class="fury-sciences__tab" data-target="network-science">
+                    <img src="{{ pathto('_static/images/sc-dom/network.svg', 1) }}" class="fury-sciences__tab-icon" alt="">
+                    <span>Network science</span>
+                </button>
+                <button class="fury-sciences__tab" data-target="mathematics">
+                    <img src="{{ pathto('_static/images/sc-dom/maths.svg', 1) }}" class="fury-sciences__tab-icon" alt="">
+                    <span>Mathematics</span>
+                </button>
             </div>
-        </div>
-    </section>
 
-    <footer id="footer" class="footer">
-        <div class="container">
-            <div id="footer-columns" class="columns">
-                <div class="footer-logo-column">
-                    <img id="footer-logo" src="_static/images/logo.svg" alt=" logo. ">
+            <div class="fury-sciences__display">
+                <div class="fury-sciences__image-wrapper">
+                    <video id="fury-sciences-img" autoplay loop muted playsinline preload="metadata"
+                           poster="{{ pathto('_static/images/sc-dom/popup/engineering.jpg', 1) }}"
+                           src="{{ pathto('_static/images/sc-dom/popup/engineering.mp4', 1) }}" aria-label="Engineering render"></video>
                 </div>
-                <div class="link-column">
-                    <div class="footer-column">
-                        <div class="footer-header">
-                            <h5>About</h5>
-                        </div>
-                        <ul class="link-list">
-                            <li class="link-list"><a class="footer-link" href="community.html#contributors"><i class="fa fa-angle-double-right"></i>
-                                Developers
-                            </a></li>
-                            <li class="link-list"><a class="footer-link" href="https://discord.gg/6btFPPj"><i class="fa fa-angle-double-right"></i>
-                                Support
-                            </a></li>
-                            <li class="link-list"><a class="footer-link" href="installation.html"><i class="fa fa-angle-double-right"></i>
-                                Download
-                            </a></li>
-                            <li class="link-list"><a class="footer-link" href="auto_examples/index.html"><i class="fa fa-angle-double-right"></i>
-                                Tutorials
-                            </a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="link-column">
-                    <div class="footer-column">
-                        <div class="footer-header">
-                            <h5>Friends</h5>
-                        </div>
-                        <ul class="link-list">
-                            <li class="link-list"><a class="footer-link" target="_blank" href="https://dipy.org/"><i class="fa fa-angle-double-right"></i>
-                                DIPY
-                            </a></li>
-                            <li class="link-list"><a class="footer-link" target="_blank" href="https://heliosnetwork.io/"><i class="fa fa-angle-double-right"></i>
-                                Helios
-                            </a></li>
-                            <li class="link-list"><a class="footer-link" target="_blank" href="https://furiousatoms.com/"><i class="fa fa-angle-double-right"></i>
-                                Furious Atoms
-                            </a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="link-column">
-                    <div class="footer-column">
-                        <div class="footer-header">
-                            <h5>Support</h5>
-                        </div>
-                        <ul class="">
-                            <li class="link-list"><a class="footer-link" target="_blank" href="https://engineering.indiana.edu/"><i class="fa fa-angle-double-right"></i>
-                                    The department of Intelligent Systems Engineering of Indiana University
-                            </a></li>
-                            <li class="link-list"><a class="footer-link" target="_blank" href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=1720625"><i class="fa fa-angle-double-right"></i>
-                                NSF NCN - Engineered NanoBIO - NSF award #1720625
-                            </a></li>
-                            <li class="link-list"><a class="footer-link" target="_blank" href="https://summerofcode.withgoogle.com/"><i class="fa fa-angle-double-right"></i>
-                                    Google Summer of Code Program
-                            </a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="footer-actions">
-
-
-                    <nav class="level is-mobile">
-                        <div class="social-media-icons">
-                            <a class="level-item" href="https://github.com/fury-gl/fury"
-                                aria-label="https://github.com/fury-gl/fury">
-                                <span class="icon"><i class="fab fa-github-alt" style="color: white;"></i></span>
-                            </a>
-                            <a class="level-item" href="https://twitter.com/fury_engine"
-                            aria-label="https://twitter.com/fury_engine">
-                            <span class="icon"><i class="fab fa-twitter" style="color: white;"></i></span>
-                        </a>
-                        </div>
-                    </nav>
-                    <div class="copyright">&copy; {{copyright}}. All rights reserved.</div>
+                <div class="fury-sciences__text">
+                    <h3 id="fury-sciences-title" class="fury-sciences__item-title">Engineering</h3>
+                    <p id="fury-sciences-desc" class="fury-sciences__item-desc">Robot-arm kinematics, assemblies and simulation output, animated as scene graphs.</p>
                 </div>
             </div>
         </div>
-    </footer>
+    </div>
+</div>
 
+<div class="fury-examples">
+    <div class="fury-examples-grid">
+        <div class="fury-examples__header">
+            <h2 class="fury-examples__title">Start from a working example</h2>
+            <p class="fury-examples__description">Every entry is a runnable script from the gallery, not pseudocode.</p>
+        </div>
 
-    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://unpkg.com/feather-icons"></script>
-    <script src="_static/js/fresh.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+        <div class="fury-examples__cards">
+            <a href="{{ pathto('auto_examples/01_introductory/viz_show') }}" class="fury-example-card">
+                <div class="fury-example-card__script">viz_show.py <span class="fury-example-card__arrow">&nearr;</span></div>
+                <h3 class="fury-example-card__title">A complete first scene</h3>
+                <p class="fury-example-card__description">Colored spheres on screen in ten lines of Python.</p>
+            </a>
+            <a href="{{ pathto('auto_examples/04_demos/viz_streamlines_roi') }}" class="fury-example-card">
+                <div class="fury-example-card__script">viz_streamlines_roi.py <span class="fury-example-card__arrow">&nearr;</span></div>
+                <h3 class="fury-example-card__title">Tractography streamlines</h3>
+                <p class="fury-example-card__description">A streamline bundle filtered through a region-of-interest mask.</p>
+            </a>
+            <a href="{{ pathto('auto_examples/04_demos/viz_vector_field') }}" class="fury-example-card">
+                <div class="fury-example-card__script">viz_vector_field.py <span class="fury-example-card__arrow">&nearr;</span></div>
+                <h3 class="fury-example-card__title">Vector fields</h3>
+                <p class="fury-example-card__description">Diverging fields as arrows, lines and cross-section slices.</p>
+            </a>
+            <a href="{{ pathto('auto_examples/04_demos/viz_slicer') }}" class="fury-example-card">
+                <div class="fury-example-card__script">viz_slicer.py <span class="fury-example-card__arrow">&nearr;</span></div>
+                <h3 class="fury-example-card__title">Volume slicing</h3>
+                <p class="fury-example-card__description">Move through 3D image volumes plane by plane.</p>
+            </a>
+            <a href="{{ pathto('auto_examples/04_demos/viz_skybox') }}" class="fury-example-card">
+                <div class="fury-example-card__script">viz_skybox.py <span class="fury-example-card__arrow">&nearr;</span></div>
+                <h3 class="fury-example-card__title">Skybox environments</h3>
+                <p class="fury-example-card__description">Wrap a scene in a cube-map backdrop.</p>
+            </a>
+            <a href="{{ pathto('auto_examples/04_demos/viz_spherical_harmonics') }}" class="fury-example-card">
+                <div class="fury-example-card__script">viz_spherical_harmonics.py <span class="fury-example-card__arrow">&nearr;</span></div>
+                <h3 class="fury-example-card__title">Spherical harmonics</h3>
+                <p class="fury-example-card__description">Glyph fields for orientation distribution functions.</p>
+            </a>
+            <a href="{{ pathto('auto_examples/07_ui/viz_sliders') }}" class="fury-example-card">
+                <div class="fury-example-card__script">viz_sliders.py <span class="fury-example-card__arrow">&nearr;</span></div>
+                <h3 class="fury-example-card__title">Built-in UI</h3>
+                <p class="fury-example-card__description">Sliders, panels and buttons rendered inside the scene.</p>
+            </a>
+            <a href="{{ pathto('auto_examples/01_introductory/viz_integrate_with_qt') }}" class="fury-example-card">
+                <div class="fury-example-card__script">viz_integrate_with_qt.py <span class="fury-example-card__arrow">&nearr;</span></div>
+                <h3 class="fury-example-card__title">Qt integration</h3>
+                <p class="fury-example-card__description">Embed a FURY canvas inside a PySide6 desktop app.</p>
+            </a>
+            <a href="{{ pathto('auto_examples/04_demos/viz_contour') }}" class="fury-example-card">
+                <div class="fury-example-card__script">viz_contour.py <span class="fury-example-card__arrow">&nearr;</span></div>
+                <h3 class="fury-example-card__title">Contour surfaces</h3>
+                <p class="fury-example-card__description">Extract and visualize 3D volume surfaces as meshes.</p>
+            </a>
+        </div>
+    </div>
+</div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+<div class="fury-cta">
+    <div class="fury-cta-grid">
+        <div class="fury-cta__content">
+            <h2 class="fury-cta__title">One command<br>from your<br>first render.</h2>
+            <p class="fury-cta__description">Python 3.10 or newer, on Linux, macOS or Windows.<br>The GPU comes through WebGPU, so there is no driver ceremony.</p>
+            <div class="fury-cta__actions">
+                <a href="{{ pathto('getting_started') }}" class="btn-cta-primary">Get started</a>
+                <a href="{{ pathto('installation') }}" class="btn-cta-secondary">Installation guide &rarr;</a>
+            </div>
+        </div>
+        <div class="fury-cta__terminals">
+            <div class="fury-cta__tabs" role="tablist" aria-label="Installation commands">
+                <button class="fury-cta__tab active" data-target="terminal-pip" role="tab" aria-selected="true" aria-controls="terminal-pip">pip</button>
+                <button class="fury-cta__tab" data-target="terminal-conda" role="tab" aria-selected="false" aria-controls="terminal-conda">conda</button>
+                <button class="fury-cta__tab" data-target="terminal-uv" role="tab" aria-selected="false" aria-controls="terminal-uv">uv</button>
+            </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/uikit@3.7.6/dist/js/uikit.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.7.6/dist/css/uikit.min.css" />
-    <script src="https://unpkg.com/thebe@0.8.2/lib/index.js"></script>
+            <div class="fury-cta__terminal active" id="terminal-pip" role="tabpanel">
+                <div class="install-block cta-install-block" data-copy="pip install fury">
+                    <span>
+                        <span class="install-prompt">$</span> pip install fury
+                    </span>
+                    <button
+                        class="install-block__copy-button"
+                        type="button"
+                        onclick="homepageCopyToClipboard(this)"
+                        aria-label="Copy pip install command to clipboard"
+                    >
+                        <span class="install-block__copy-label" aria-hidden="true"></span>
+                        <i class="fa-regular fa-copy" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
 
-    <script src="_static/js/shortcuts.js"></script>
-    <script src="_static/js/installtext.js"></script>
-    <script type="text/javascript">
-        setupShortcuts(maxLevel = 2);
-    </script>
-    <script type="text/javascript">
-        textRotate();
-    </script>
-    <script>
-        MathJax = {
-          tex: {
-            inlineMath: [['$', '$'], ['\\(', '\\)']]
-          },
-          svg: {
-            fontCache: 'global'
-          }
-        };
-    </script>
+            <div class="fury-cta__terminal" id="terminal-conda" role="tabpanel">
+                <div class="install-block cta-install-block" data-copy="conda install -c conda-forge fury">
+                    <span>
+                        <span class="install-prompt">$</span> conda install -c conda-forge fury
+                    </span>
+                    <button
+                        class="install-block__copy-button"
+                        type="button"
+                        onclick="homepageCopyToClipboard(this)"
+                        aria-label="Copy conda install command to clipboard"
+                    >
+                        <span class="install-block__copy-label" aria-hidden="true"></span>
+                        <i class="fa-regular fa-copy" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
 
+            <div class="fury-cta__terminal" id="terminal-uv" role="tabpanel">
+                <div class="install-block cta-install-block" data-copy="uv pip install fury">
+                    <span>
+                        <span class="install-prompt">$</span> uv pip install fury
+                    </span>
+                    <button
+                        class="install-block__copy-button"
+                        type="button"
+                        onclick="homepageCopyToClipboard(this)"
+                        aria-label="Copy uv install command to clipboard"
+                    >
+                        <span class="install-block__copy-label" aria-hidden="true"></span>
+                        <i class="fa-regular fa-copy" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
+<div class="fury-community">
+    <div class="fury-community-grid">
+        <h2 class="fury-community__title">Built in the open</h2>
 
+        <div class="fury-community__columns">
+            <div class="fury-community__col">
+                <h3 class="fury-community__col-title">
+                    <i class="fa-brands fa-github"></i> Contribute
+                </h3>
+                <p>FURY is BSD-licensed and developed publicly. Issues, pull requests and design discussions all happen on GitHub, and the project mentors students through Google Summer of Code every year.</p>
+                <a href="https://github.com/fury-gl/fury" class="fury-community__link">fury-gl/fury on GitHub &nearr;</a>
+            </div>
+            <div class="fury-community__col">
+                <h3 class="fury-community__col-title">
+                    <i class="fa-brands fa-discord"></i> Talk to the team
+                </h3>
+                <p>The maintainers and the GSoC crowd hang out on Discord. Questions about your first scene or your thousandth get answered there, and longer threads live on the mailing list.</p>
+                <a href="https://discord.gg/6btFPPj" class="fury-community__link">Join the Discord server &nearr;</a>
+            </div>
+            <div class="fury-community__col">
+                <h3 class="fury-community__col-title">
+                    <i class="fa-regular fa-file-lines"></i> Cite FURY
+                </h3>
+                <p>If FURY supports your research, cite the JOSS paper so the work that funds it stays visible.</p>
+                <div class="fury-community__citation">
+                    Garyfallidis E., Koudoro S., Guaje J., et al. (2021). <strong>FURY: advanced scientific visualization</strong>. <em>Journal of Open Source Software</em>, 6(64), 3384.
+                </div>
+            </div>
+        </div>
 
+        <h2 class="fury-community__title" style="margin-top: 6rem;">Compatibility &amp; support</h2>
 
+        <div class="fury-community__support-section">
+            <h3 class="fury-community__support-title">Plays well with your 3D toolchain</h3>
+            <p>The wider 3D ecosystem FURY users pair it with, from DCC suites to game engines.</p>
+            <div class="fury-community__logos">
+                <div class="fury-community__logo-card"><img src="{{ pathto('_static/images/comp-soft/blender.png', 1) }}" alt="Blender"></div>
+                <div class="fury-community__logo-card"><img src="{{ pathto('_static/images/comp-soft/unity.png', 1) }}" alt="Unity"></div>
+                <div class="fury-community__logo-card"><img src="{{ pathto('_static/images/comp-soft/autodesk.png', 1) }}" alt="Autodesk"></div>
+                <div class="fury-community__logo-card"><img src="{{ pathto('_static/images/comp-soft/adobedimension.png', 1) }}" alt="Dimension"></div>
+                <div class="fury-community__logo-card fury-community__logo-card--houdini"><img src="{{ pathto('_static/images/comp-soft/houdini.png', 1) }}" alt="Houdini"></div>
+                <div class="fury-community__logo-card fury-community__logo-card--modo"><img src="{{ pathto('_static/images/comp-soft/modo.png', 1) }}" alt="Modo"></div>
+                <div class="fury-community__logo-card fury-community__logo-card--sketchup"><img src="{{ pathto('_static/images/comp-soft/sketchup.png', 1) }}" alt="SketchUp"></div>
+            </div>
+        </div>
 
+        <div class="fury-community__support-section" style="margin-top: 3rem;">
+            <h3 class="fury-community__support-title">Supported by</h3>
+            <p>Development is backed by Indiana University and Google Summer of Code.</p>
+            <div class="fury-community__logos">
+                <div class="fury-community__logo-card fury-community__logo-card--luddy"><img src="{{ pathto('_static/images/sponsors/luddy.png', 1) }}" alt="Luddy"></div>
+                <div class="fury-community__logo-card"><img src="{{ pathto('_static/images/sponsors/gsoc.png', 1) }}" alt="Google Summer of Code"></div>
+                <div class="fury-community__logo-card"><img src="{{ pathto('_static/images/sponsors/iu.png', 1) }}" alt="Indiana University"></div>
+            </div>
+        </div>
+    </div>
+</div>
 
-
-
-
-
-
-
-
-</body>
-
-</html>
+<script src="{{ pathto('_static/js/homepage.js', 1) }}"></script>
+{% endblock %}

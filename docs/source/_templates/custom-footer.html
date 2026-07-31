@@ -1,78 +1,74 @@
-<div id="footer-columns" class="footer-columns">
-    <div class="footer-logo-column">
-        <img id="footer-logo" src="{{ pathto('_static/images/logo.svg', 1) }}" alt=" logo. ">
-    </div>
-    <div class="link-column">
-        <div class="footer-column">
-            <div class="footer-header">
-                <h5 class="footer-h5">About</h5>
-            </div>
-            <ul class="link-list" style="padding-left: 0px;">
-                <li class="link-list"><a class="footer-link" href="{{ pathto('community.html#contributors', 1) }}"><i
-                            class="fa fa-angle-double-right"></i> Developers</a></li>
-                <li class="link-list"><a class="footer-link" href="https://discord.gg/6btFPPj"><i
-                            class="fa fa-angle-double-right"></i> Support</a></li>
-                <li class="link-list"><a class="footer-link" href="{{ pathto('installation.html', 1) }}"><i
-                            class="fa fa-angle-double-right"></i> Download</a></li>
-                <li class="link-list"><a class="footer-link" href="{{ pathto('auto_tutorials/index.html', 1) }}"><i
-                            class="fa fa-angle-double-right"></i> Tutorials</a></li>
-            </ul>
-        </div>
-    </div>
-    <div class="link-column">
-        <div class="footer-column">
-            <div class="footer-header">
-                <h5 class="footer-h5">Friends</h5>
-            </div>
-            <ul class="" style="padding-left: 0px;">
-                <li class="link-list"><a class="footer-link" target="_blank" href="https://dipy.org/"><i
-                            class="fa fa-angle-double-right"></i> DIPY</a></li>
-                <li class="link-list"><a class="footer-link" target="_blank" href="https://heliosnetwork.io/"><i
-                            class="fa fa-angle-double-right"></i> Helios</a></li>
-                <li class="link-list"><a class="footer-link" target="_blank" href="https://furiousatoms.com/"><i
-                            class="fa fa-angle-double-right"></i> Furious Atoms</a></li>
-            </ul>
-        </div>
-    </div>
-    <div class="link-column">
-        <div class="footer-column">
-            <div class="footer-header">
-                <h5 class="footer-h5">Support</h5>
-            </div>
-            <ul class="" style="padding-left: 0px;">
-                <li class="link-list"><a class="footer-link" target="_blank" href="https://engineering.indiana.edu/"><i
-                            class="fa fa-angle-double-right"></i>
-                        The department of Intelligent Systems Engineering of Indiana University
-                    </a></li>
-                <li class="link-list"><a class="footer-link" target="_blank"
-                        href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=1720625"><i
-                            class="fa fa-angle-double-right"></i>
-                        NSF NCN - Engineered NanoBIO - NSF award #1720625
-                    </a></li>
-                <li class="link-list"><a class="footer-link" target="_blank"
-                        href="https://summerofcode.withgoogle.com/"><i class="fa fa-angle-double-right"></i>
-                        Google Summer of Code Program
-                    </a></li>
-            </ul>
-        </div>
-    </div>
-    <div class="footer-actions">
+<div class="fury-footer-wrapper">
+    <!-- Main Footer Section -->
+    <div class="fury-footer__main">
+        <div class="fury-footer__inner">
+            <div class="fury-footer__grid">
+                <!-- Column 1: Logo & Info -->
+                <div class="fury-footer__col">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                        <img src="{{ pathto('_static/images/logo.svg', 1) }}" alt="FURY Logo" class="fury-footer__logo" style="margin: 0;">
+                        <span class="fury-footer__logo-text">FURY</span>
+                    </div>
+                    <p class="fury-footer__desc">
+                        Free Unified Rendering in pYthon. Scientific visualization and 3D animation on the GPU.
+                    </p>
+                    <div class="fury-footer__socials">
+                        <a href="https://github.com/fury-gl/fury" class="fury-footer__social-btn" aria-label="GitHub">
+                            <i class="fa-brands fa-github"></i>
+                        </a>
+                        <a href="https://discord.gg/fury" class="fury-footer__social-btn" aria-label="Discord">
+                            <i class="fa-brands fa-discord"></i>
+                        </a>
+                        <a href="https://x.com/fury_gl" class="fury-footer__social-btn" aria-label="X">
+                            <i class="fa-brands fa-x-twitter"></i>
+                        </a>
+                    </div>
+                </div>
 
+                <!-- Column 2: Docs -->
+                <div class="fury-footer__col">
+                    <h4 class="fury-footer__heading">DOCS</h4>
+                    <ul class="fury-footer__links">
+                        <li><a href="{{ pathto('installation') }}">Installation</a></li>
+                        <li><a href="{{ pathto('getting_started') }}">Getting started</a></li>
+                        <li><a href="{{ pathto('auto_examples/index') }}">Examples</a></li>
+                        <li><a href="{{ pathto('reference/index') }}">API reference</a></li>
+                        <li><a href="{{ pathto('blog') }}">Blog</a></li>
+                    </ul>
+                </div>
 
-        <nav class="level is-mobile">
-            <div class="social-media-icons">
-                <a class="level-item" href="https://github.com/fury-gl/fury"
-                    aria-label="https://github.com/fury-gl/fury">
-                    <span class="icon"><i class="fab fa-github-alt"
-                            style="color: white; margin-right: 0.75rem;"></i></span>
-                </a>
-                <a class="level-item" href="https://twitter.com/fury_engine"
-                    aria-label="https://twitter.com/fury_engine">
-                    <span class="icon"><i class="fab fa-twitter"
-                            style="color: white; margin-right: 0.75rem;"></i></span>
-                </a>
+                <!-- Column 3: Project -->
+                <div class="fury-footer__col">
+                    <h4 class="fury-footer__heading">PROJECT</h4>
+                    <ul class="fury-footer__links">
+                        <li><a href="{{ pathto('community') }}">Contributors</a></li>
+                        <li><a href="https://github.com/fury-gl/fury/issues">Report a bug</a></li>
+                        <li><a href="https://mail.python.org/mailman3/lists/fury.python.org/">Mailing list</a></li>
+                        <li><a href="https://github.com/fury-gl/fury/blob/master/LICENSE">License</a></li>
+                    </ul>
+                </div>
+
+                <!-- Column 4: Friends & Support -->
+                <div class="fury-footer__col">
+                    <h4 class="fury-footer__heading">FRIENDS &amp; SUPPORT</h4>
+                    <ul class="fury-footer__links">
+                        <li><a href="https://dipy.org/">DIPY</a></li>
+                        <li><a href="https://furious-atoms.org/">Furious Atoms</a></li>
+                        <li><a href="https://engineering.indiana.edu/">Intelligent Systems Engineering, IU</a></li>
+                        <li><a href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=1720625">NSF award #1720625</a></li>
+                        <li><a href="https://summerofcode.withgoogle.com/">Google Summer of Code</a></li>
+                    </ul>
+                </div>
             </div>
-        </nav>
-        <div class="copyright">&copy; {{copyright}}. All rights reserved.</div>
+
+            <div class="fury-footer__bottom">
+                <div class="fury-footer__copyright">
+                    &copy; 2018-2026, FURY. BSD 3-Clause licensed.
+                </div>
+                <div class="fury-footer__joss">
+                    <a href="https://joss.theoj.org/papers/10.21105/joss.03384">JOSS - 10.21105/joss.03384</a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

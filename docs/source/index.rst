@@ -1,5 +1,5 @@
 
-test
+Home Page
 
 .. toctree::
    :maxdepth: 2
@@ -18,7 +18,6 @@ test
    installation
    getting_started
    auto_examples/index
-   fury-pybullet
 
 .. toctree::
    :maxdepth: 2
