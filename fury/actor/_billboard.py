@@ -119,7 +119,7 @@ def _create_billboard_actor(
     return obj
 
 
-class Billboard(Mesh):
+class BillboardActor(Mesh):
     """
     World object representing one or more billboards.
 
@@ -247,6 +247,9 @@ class Billboard(Mesh):
             Billboard width/height pairs.
         """
         self._billboard_sizes = np.asarray(value, dtype=np.float32)
+
+
+Billboard = BillboardActor
 
 
 def billboard(
