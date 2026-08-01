@@ -2,6 +2,9 @@
 Getting Started
 ===============
 
+.. meta::
+   :description: A quick-start guide to building your first scientific visualization scene with FURY in Python.
+
 Start by importing FURY.
 
 .. code-block:: python

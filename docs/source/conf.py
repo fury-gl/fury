@@ -60,12 +60,15 @@ extensions = [
     "sphinxext.opengraph",
 ]
 
-# Open Graph configuration
-ogp_site_url = "https://fury.gl/"
-ogp_image = "https://fury.gl/_static/images/text-logo.png"
+html_baseurl = os.environ.get("SPHINX_HTML_BASE_URL", "https://fury.gl/latest/")
 
-# Sitemap configuration. The docs are served at the root of html_baseurl, so the
-# default scheme's version/language prefixes are dropped. See _extra/robots.txt.
+# Open Graph configuration
+ogp_site_url = html_baseurl
+ogp_image = html_baseurl + "_static/images/text-logo.png"
+
+# Sitemap configuration. html_baseurl already points at this build's own
+# deploy root (e.g. /dev/, /latest/, /vX.Y.x/), so the default scheme's
+# version/language prefixes are redundant and dropped. See _extra/robots.txt.
 sitemap_filename = "sitemap.xml"
 sitemap_url_scheme = "{link}"
 # Generated indexes and source views, of no value in search results.
@@ -193,7 +196,6 @@ html_static_path = ["_static"]
 html_css_files = ["css/fury_theme.css"]
 html_additional_pages = {"index": "home.html"}
 
-html_baseurl = os.environ.get("SPHINX_HTML_BASE_URL", "https://fury.gl/")
 html_extra_path = ["_extra"]
 
 html_logo = "_static/images/logo.svg"

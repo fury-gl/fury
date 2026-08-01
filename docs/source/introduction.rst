@@ -4,7 +4,6 @@ About
 
 .. meta::
    :description: Discover FURY, a powerful Python library for advanced scientific visualization and 3D animations. Open-source, GPU-accelerated, and easy to use.
-   :keywords: FURY, about FURY, scientific visualization library, 3D animations, GPU acceleration, Pythonic API
 
 Overview
 --------
