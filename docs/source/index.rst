@@ -1,6 +1,8 @@
 
 Home Page
 
+.. This page renders from _templates/home.html, which is where its SEO meta tags live.
+
 .. toctree::
    :maxdepth: 2
    :caption: About FURY

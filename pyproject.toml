@@ -84,6 +84,8 @@ doc = [
     "sphinx-copybutton",
     "sphinx-gallery>=0.10.0",
     "pydata-sphinx-theme==0.15.2",
+    "sphinx-sitemap",
+    "sphinxext-opengraph",
     "fury[window, plot, medical]",
     ]
 style = ["ruff", "pre-commit"]
@@ -110,6 +112,8 @@ raw-options = { version_scheme = "release-branch-semver" }
 version-file = "fury/_version.py"
 
 [tool.mypy]
+# NumPy >= 2.4 ships stubs that use PEP 695 `type` statements, which mypy only
+# accepts when targeting 3.12 or newer.
 python_version = "3.12"
 ignore_missing_imports = "True"
 exclude = [

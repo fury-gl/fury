@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /dev/
+Disallow: /v*/
+
+Sitemap: https://fury.gl/latest/sitemap.xml

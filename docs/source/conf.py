@@ -56,6 +56,28 @@ extensions = [
     "ext.github_tools",
     "ext.rstjinja",
     "ablog",
+    "sphinx_sitemap",
+    "sphinxext.opengraph",
+]
+
+html_baseurl = os.environ.get("SPHINX_HTML_BASE_URL", "https://fury.gl/latest/")
+
+# Open Graph configuration
+ogp_site_url = html_baseurl
+ogp_image = html_baseurl + "_static/images/text-logo.png"
+
+# Sitemap configuration. html_baseurl already points at this build's own
+# deploy root (e.g. /dev/, /latest/, /vX.Y.x/), so the default scheme's
+# version/language prefixes are redundant and dropped. See _extra/robots.txt.
+sitemap_filename = "sitemap.xml"
+sitemap_url_scheme = "{link}"
+# Generated indexes and source views, of no value in search results.
+sitemap_excludes = [
+    "search.html",
+    "genindex.html",
+    "py-modindex.html",
+    "_modules/*",
+    "*sg_execution_times.html",
 ]
 
 # Configuration options for plot_directive. See:
@@ -145,7 +167,7 @@ html_theme_options = {
     "navigation_with_keys": True,
     "navbar_start": ["navbar-logo"],
     "navbar_center": ["custom-navbar-nav.html"],
-    "navbar_end": ["navbar-icon-links", "theme-switcher"],
+    "navbar_end": ["version-switcher", "navbar-icon-links", "theme-switcher"],
     "logo": {
         "text": "FURY",
     },
@@ -174,7 +196,7 @@ html_static_path = ["_static"]
 html_css_files = ["css/fury_theme.css"]
 html_additional_pages = {"index": "home.html"}
 
-# html_baseurl = os.environ.get("SPHINX_HTML_BASE_URL", "http://127.0.0.1:8000/")
+html_extra_path = ["_extra"]
 
 html_logo = "_static/images/logo.svg"
 
@@ -291,3 +313,22 @@ intersphinx_mapping = {
     "dipy": ("https://docs.dipy.org/stable", None),
     "scikit-learn": ("https://scikit-learn.org/stable/", None),
 }
+
+
+def _home_page_context(app, pagename, templatename, context, doctree):
+    """
+    Fix up context for the home page.
+
+    It renders via home.html through html_additional_pages, which Sphinx builds
+    with an empty context (no doctree) - so ``title`` is never populated (the
+    <title> tag ends up empty) and ``pageurl`` resolves to /index.html instead
+    of the site root.
+    """
+    if pagename == "index":
+        context["title"] = "FURY - Free Unified Rendering in pYthon"
+        if context.get("pageurl"):
+            context["pageurl"] = app.config.html_baseurl
+
+
+def setup(app):
+    app.connect("html-page-context", _home_page_context)
