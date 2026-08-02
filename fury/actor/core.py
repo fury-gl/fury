@@ -156,16 +156,25 @@ class Points(gfx.Points, Actor):
     """Points actor class."""
 
 
-class Line(gfx.Line, Actor):
+class LineActor(gfx.Line, Actor):
     """Line actor class."""
 
 
-class Text(gfx.Text, Actor):
+Line = LineActor
+
+
+class TextActor(gfx.Text, Actor):
     """Text actor class."""
 
 
-class Image(gfx.Image, Actor):
+Text = TextActor
+
+
+class ImageActor(gfx.Image, Actor):
     """Image actor class."""
+
+
+Image = ImageActor
 
 
 class Volume(gfx.Volume, Actor):

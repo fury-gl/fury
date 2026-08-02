@@ -551,7 +551,7 @@ def cone(
     )
 
 
-class Streamlines(Line):
+class StreamlinesActor(Line):
     """
     Create a streamline representation.
 
@@ -951,6 +951,9 @@ class Streamlines(Line):
                 filter_ids.append(line_id)
 
         return kept_ids, filter_ids
+
+
+Streamlines = StreamlinesActor
 
 
 def streamlines(
