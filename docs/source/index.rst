@@ -19,6 +19,7 @@ Home Page
 
    installation
    getting_started
+   Migration guide <migration_guide_v2.0>
    auto_examples/index
 
 .. toctree::
