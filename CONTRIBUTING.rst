@@ -132,43 +132,36 @@ Checklist before Releasing
 
 * Check whether there are no builds failing on `GitHub Actions`.
 
-* Review and update the release notes. Get a partial list of contributors with something like::
-
-      git shortlog -nse v0.10.0..
-
-  where ``v0.10.0`` was the last release tag name.
-
-  Then manually go over ``git shortlog v0.10.0..`` to make sure the release notes
-  are as complete as possible and that every contributor was recognized.
-
-* Use the opportunity to update the ``.mailmap`` file if there are any duplicate
-  authors listed from ``git shortlog -ns``.
-
-* Add any new authors to the ``AUTHORS`` file.
-
-* Check the copyright years in ``LICENSE``
-
-* Generate release notes. Go to ``docs/source/ext`` and run ``github_tools.py`` script the following way::
-
-    $ python github_tools.py --tag=v0.10.0 --save --version=0.11.0
-
-  This command will generate a new file named ``release0.11.0.rst`` in ``release_notes`` folder.
-
-* Add in ``release-history.rst`` the newly created file ``release0.11.0.rst``.
-
 * Check the examples and tutorial - we really need an automated check here.
 
-* Make sure all tests pass on your local machine (from the ``<fury root>`` directory)::
+* Run ``tools/prepare_release.py`` from the ``<fury root>`` directory::
 
-    cd ..
-    pytest -svv --doctest-modules fury
-    cd fury # back to the root directory
+    $ python tools/prepare_release.py
 
-* Check the documentation doctests::
+  This script walks you through the rest of the release preparation
+  interactively and will prompt you when it needs input:
 
-    cd docs
-    make -C . html
-    cd ..
+  * It asks for the release series (e.g. ``0.x``, ``1.x``, ``2.x``) and finds
+    the latest tag in that series.
+  * It pauses so you can review and update the ``.mailmap`` file for any
+    duplicate authors, then prints ``git shortlog -nse <last-tag>..HEAD`` so
+    you can double check that every contributor is recognized.
+  * It updates the ``AUTHORS`` file with any new authors from ``git log``.
+  * It checks (and updates if needed) the copyright year range in ``LICENSE``.
+  * It asks for the new version number, then generates the release notes by
+    running ``docs/source/ext/github_tools.py`` for you, creating
+    ``release_notes/releasev<version>.rst``. It will pause for you to manually
+    fill in the "Quick overview" section of that file.
+  * It updates ``release-history.rst`` to include the newly generated release
+    notes file.
+  * It creates a release announcement blog post stub under
+    ``docs/source/posts/<year>/``, prompting you for the author id and name.
+  * It asks you to confirm that deprecated functions/modules have been
+    checked before continuing.
+  * It runs the test suite (``pytest -svv --doctest-modules fury``) and builds
+    the documentation (``make -C docs html``), then asks you to confirm the
+    generated docs look correct - looping back through tests/docs until you
+    confirm.
 
 * The release should now be ready.
 
