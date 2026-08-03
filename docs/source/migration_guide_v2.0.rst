@@ -1,4 +1,4 @@
-.. _migration_guide_v2_0:
+.. _migration_guide_v2.0:
 
 ==================================================
 Migration Guide: FURY 0.12.0 → v2.0.0
@@ -202,10 +202,10 @@ Bug fixed: a redundant ``local.position`` offset was being applied when
 corrected. (Ref: :ghissue:`1124`, :ghpull:`1125`)
 
 
-6. New Actors in master
-~~~~~~~~~~~~~~~~~~~~~~~~
+6. New and Rewritten Actors in master
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The following actors are **new** in master and do not exist in 0.12.x:
+**New actors** — these have no 0.12.x counterpart:
 
 .. list-table::
    :header-rows: 1
@@ -215,30 +215,45 @@ The following actors are **new** in master and do not exist in 0.12.x:
      - PR reference
    * - ``actor.streamlines``
      - :ghpull:`1021`
-   * - ``actor.streamtube``
-     - Shader-based rewrite :ghpull:`1038`
-   * - ``actor.peaks_slicer``
-     - :ghpull:`1018`
-   * - ``actor.volume_slicer``
-     - :ghpull:`996`
-   * - ``actor.data_slicer``
-     - (slicer sub-module)
    * - ``actor.vector_field``
      - :ghpull:`992`, :ghpull:`995`
-   * - ``actor.surface``
-     - :ghpull:`997`, :ghpull:`1040`
-   * - ``actor.contour_from_roi``
-     - :ghpull:`1053`
    * - ``actor.contour_from_volume``
      - :ghpull:`1053`
-   * - ``actor.sph_glyph``
-     - :ghpull:`1009`
+   * - ``actor.data_slicer``
+     - (slicer sub-module)
    * - ``actor.billboard_sphere``
-     - :ghpull:`1037`
+     - New specialized impostor variant built on ``billboard``
+       :ghpull:`1037`
    * - ``actor.line_projection``
      - :ghpull:`1029`
-   * - ``actor.read_buffer``
-     - GPU readback :ghpull:`1098`
+
+**Renamed / rewritten actors** — these existed in 0.12.x (VTK-based),
+were removed during the VTK-strip rewrite (Ref: :ghpull:`993`,
+:ghpull:`953`, :ghpull:`946`, :ghpull:`978`), and were reintroduced on
+PyGfx under the same or a renamed API. They are not new capabilities:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 40 60
+
+   * - Actor
+     - 0.12.x name / PR reference
+   * - ``actor.streamtube``
+     - Same name in 0.12.x; GPU shader-based rewrite :ghpull:`1038`
+   * - ``actor.peaks_slicer``
+     - Renamed from 0.12.x's ``peak_slicer``; rewritten on PyGfx
+       :ghpull:`1018`
+   * - ``actor.volume_slicer``
+     - Renamed from 0.12.x's ``slicer``; rewritten on PyGfx with added
+       affine support :ghpull:`996`
+   * - ``actor.surface``
+     - Same name in 0.12.x; rewritten on PyGfx :ghpull:`997`,
+       :ghpull:`1040`
+   * - ``actor.contour_from_roi``
+     - Same name in 0.12.x; rewritten on PyGfx :ghpull:`1053`
+   * - ``actor.sph_glyph``
+     - Generalizes/replaces 0.12.x's ``odf`` and ``odf_slicer`` for
+       arbitrary spherical-harmonics glyphs :ghpull:`1009`
 
 The ``actor.image`` actor now supports directional parameters.
 (Ref: :ghpull:`1001`)
@@ -319,7 +334,7 @@ The ``window`` module has been rewritten around PyGfx canvas types.
 
    show_m.start()              # blocking render loop
    show_m.render()             # non-blocking single-frame request
-   show_m.snapshot(fname)      # save PNG of current frame
+   show_m.snapshot(fname=fname)      # save PNG of current frame
    show_m.close()
 
 **Callback system** (Ref: :ghpull:`1047`):
@@ -383,7 +398,7 @@ on top of the 3D scene.
 
 .. code-block:: python
 
-   import imgui
+   from imgui_bundle import imgui
 
    def draw_gui():
        imgui.begin("Debug")
@@ -450,11 +465,11 @@ backward-compatibility code was explicitly removed. (Ref: :ghpull:`1043`)
 * ``fury.ui.Checkbox``, ``fury.ui.RadioButton``  (Ref: :ghpull:`1305`)
 * ``fury.ui.PlaybackPanel``
 
-**Action**: ``ComboBox2D``, ``ListBox2D``, ``TextBox2D``, and
-``RangeSlider`` are available in master and require no replacement. Only
-``DrawPanel`` and ``FileMenu2D`` remain unavailable; if you relied on
-those, consider an ImGui panel as a temporary substitute until they are
-ported.
+**Action**: ``DrawPanel``, ``FileMenu2D``, ``GridUI``, and ``SpinBox``
+remain unavailable pending their PyGfx port; if you relied on those,
+consider an ImGui panel as a temporary substitute until they are ported.
+All other 0.12.x UI components have a PyGfx-backed equivalent listed
+above.
 
 
 13. FPS Display and Control
@@ -493,7 +508,7 @@ files was silently ignored. This is now corrected:
 
 .. code-block:: python
 
-   fury.io.save_image(array, "output.tiff", compression_type="tiff_lzw")
+   fury.io.save_image(array, "output.tiff", compression_type="lzw")
 
 
 16. ``fury.colormap`` Changes
@@ -524,7 +539,7 @@ The free function ``fury.window.snapshot`` wraps an offscreen
        actors=None,
        screen_config=None,
        fname="output.png",
-       return_array=False,
+       return_array=True,
    )
 
 
@@ -570,7 +585,7 @@ v2.0.0 stabilization):
 
 
 Dependency Changes
-------------------
+~~~~~~~~~~~~~~~~~~
 
 .. list-table::
    :header-rows: 1
@@ -582,11 +597,11 @@ Dependency Changes
      - Removed
    * - ``pygfx``
      - Added (≥ 0.16.0)
-   * - ``wgpu``
-     - Added
+   * - ``polyxios``
+     - Added (== 0.2.0)
    * - ``jupyter_rfb``
-     - Added (Jupyter)
-   * - ``imgui``
+     - Optional (Jupyter)
+   * - ``imgui_bundle``
      - Optional
    * - ``numba``
      - Optional
