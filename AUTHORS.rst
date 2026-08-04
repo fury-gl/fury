@@ -80,6 +80,7 @@ Contributors
 * Marc-Alexandre Côté
 * Marssis
 * Matthew Brett
+* Medha Bhardwaj
 * Meha Bhalodiya
 * Melina Raglin
 * Mohamed Agour
@@ -119,3 +120,4 @@ Contributors
 * sailesh
 * sparshg
 * theaverageguy
+* williamcancodee
