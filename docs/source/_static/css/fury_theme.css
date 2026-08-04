@@ -108,6 +108,79 @@ html[data-theme="light"] .fury-footer__logo-text {
     transform-origin: left center !important;
 }
 
+/* The shared .logo__title rule above nudges the wordmark down 6px, which leaves
+   "FURY" sitting lower than the nav links, search field and version switcher --
+   they all centre on the same line. Keep the horizontal stretch but drop the
+   vertical offset in the header; the footer keeps its own treatment. */
+.bd-header .navbar-brand .logo__title {
+    transform: scaleX(1.2) !important;
+}
+
+/* Between the theme's 960px mobile breakpoint and ~1440px, the nav links plus
+   the search/version/icon-links group don't fit on one row, so the icon-links
+   wrap to an orphaned second row. The theme reserves 25% of the header for the
+   logo (col-lg-3) even though it needs far less, so reclaim that space and keep
+   the row from wrapping. Collapsing to the hamburger here is not an option: the
+   drawer only works below 960px, and the homepage has no sidebar to fall back
+   on. */
+@media (min-width: 960px) and (max-width: 1439.98px) {
+    .bd-header .navbar-header-items__start {
+        width: auto !important;
+        max-width: none !important;
+        flex: 0 0 auto !important;
+        /* the logo is scaleX(1.2), so it paints wider than its layout box */
+        margin-right: 2rem !important;
+    }
+
+    .bd-header .navbar-header-items {
+        width: auto !important;
+        max-width: none !important;
+        flex: 1 1 auto !important;
+        padding-left: 0 !important;
+    }
+
+    .bd-header .navbar-header-items__end {
+        flex-wrap: nowrap !important;
+    }
+
+    .bd-header .bd-navbar-elements .nav-link {
+        white-space: nowrap !important;
+    }
+}
+
+/* Reclaiming the logo column is enough down to ~1230px. Below that the row
+   still overruns, so drop to the search field's icon-only form -- the same
+   presentation the theme itself uses under 960px -- and tighten nav spacing.
+   Above 1230px none of this applies, so the full search pill stays put. */
+@media (min-width: 960px) and (max-width: 1229.98px) {
+    .bd-header .search-button-field > :not(svg) {
+        display: none !important;
+    }
+
+    .bd-header .search-button-field {
+        padding: 0.4rem !important;
+    }
+
+    .bd-header .navbar-header-items__end {
+        column-gap: 0.5rem !important;
+    }
+
+    .bd-header .navbar-header-items__center {
+        column-gap: 0.2rem !important;
+    }
+
+    .bd-header .bd-navbar-elements .nav-link {
+        font-size: 0.92rem !important;
+        padding-left: 0.2rem !important;
+        padding-right: 0.2rem !important;
+    }
+
+    .bd-header .version-switcher__button {
+        font-size: 0.85rem !important;
+        padding: 0.25rem 0.5rem !important;
+    }
+}
+
 /* --- CUSTOM FULL-WIDTH FOOTER --- */
 
 /* Override PyData Sphinx Theme Footer Constraints */

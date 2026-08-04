@@ -5,23 +5,30 @@ Installation
 .. meta::
    :description: Install FURY, the open-source Python library for scientific visualization and 3D animations, via pip or conda.
 
-FURY supports Python 3.5+. You can currently still use Python 2.7 but it will soon stop being supported as the Python 2.7 end of life is on December 31st 2019.
+FURY supports Python 3.10+.
 
 Dependencies
 ------------
 
 The mandatory dependencies are:
 
-- numpy >= 1.7.1
-- vtk >= 8.1.0
-- scipy >= 0.9
+- numpy >= 2.0
+- scipy >= 1.13.0
+- pillow >= 10.4.0
+- packaging >= 23.0
+- lazy_loader >= 0.4
+- pygfx >= 0.16.0
+- glfw >= 2.7.0
 - aiohttp
-- pygltflib
+- polyxios >= 0.2.0
 
 The optional dependencies are:
 
-- matplotlib >= 2.0.0
-- dipy >= 0.16.0
+- matplotlib >= 3.9.0 (``plot``)
+- dipy, nibabel (``medical``)
+- numba (``compute``)
+- PySide6, jupyter-rfb, imgui_bundle (``window``)
+- opencv-python
 
 
 Installation with PyPi
@@ -121,7 +128,7 @@ There are two ways to run FURY tests:
 Running the Tests Offscreen
 ---------------------------
 
-FURY is based on VTK which uses OpenGL for all its rendering. For a headless rendering, we recommend to install and use Xvfb software on linux or OSX.
+FURY is based on pygfx which uses OpenGL/WGPU for all its rendering. For a headless rendering, we recommend to install and use Xvfb software on linux or OSX.
 Since Xvfb will require an X server (we also recommend to install XQuartz package on OSX). After Xvfb is installed you have 2 options to run FURY tests:
 
 - First option

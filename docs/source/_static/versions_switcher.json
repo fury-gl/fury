@@ -4,9 +4,14 @@
     "version": "latest",
     "url": "https://fury.gl/dev/"
   },
-  {
-    "name": "v0.12.x (stable)",
+    {
+    "name": "v2.0.x (stable)",
     "version": "stable",
+    "url": "https://fury.gl/v2.0.x/"
+  },
+  {
+    "name": "v0.12.x",
+    "version": "v0.12.0",
     "url": "https://fury.gl/v0.12.x/"
   },
   {

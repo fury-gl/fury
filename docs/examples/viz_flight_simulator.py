@@ -39,7 +39,6 @@ from fury.window import EventType
 #       Total active instances representing vegetation structures.
 # * **MOUNTAIN_COUNT**: int
 #       Total active instances representing background obstacle terrain.
-##########################################################################################
 
 V_FWD = np.array([0.0, 0.0, 1.0])
 V_UP = np.array([0.0, 1.0, 0.0])
@@ -77,7 +76,6 @@ MOUNTAIN_COUNT = 30
 # To avoid this, we represent our plane's orientation using Quaternions. Let's write
 # some handy helper functions to turn angles into rotations, multiply them together,
 # and rotate our direction vectors.
-##########################################################################################
 
 
 def axis_angle_to_quat(axis, angle_deg):
@@ -189,7 +187,6 @@ def get_surface_height(pos):
 # inside a Scene. Let's initialize it, paint the sky blue, and drop in a giant flat
 # box to act as our endless grassy ground. We'll also place a bright sphere far away
 # to represent our sun.
-##########################################################################################
 
 scene = window.Scene()
 scene.background = (0.45, 0.65, 0.95)
@@ -213,7 +210,6 @@ scene.add(sun)
 # distances can cause single-precision floating-point jitter on the GPU.
 # To keep performance in check, we build a RunwayManager. It dynamically moves the mesh
 # and its lights along with our plane's Z position, tricking the pilot's eyes.
-##########################################################################################
 
 
 class RunwayManager:
@@ -301,7 +297,6 @@ runway_mgr = RunwayManager()
 # by combining basic shapes (cylinders, cones, boxes, and spheres). We store their local
 # relative offsets from the plane's center of gravity. When we update the plane's flight
 # coordinates, we apply our quaternion rotation to project each sub-part cleanly.
-##########################################################################################
 
 
 class Aircraft:
@@ -452,7 +447,6 @@ player.update_transform(state["player_pos"], state["player_quat"], 0.0)
 # classes to assemble procedural terrain assets. Our low-poly Tree model stacks colored
 # cones over a cylinder trunk, and our Mountain model places a snowy cone cap on top
 # of a larger, rocky base.
-##########################################################################################
 
 
 class Tree:
@@ -549,7 +543,6 @@ class Mountain:
 # memory and the CPU will stutter from allocations. Instead, we write a WorldManager
 # that maintains a static pool of objects. When an object drifts behind us, we project
 # it ahead of our plane. Continuous landscape generation without garbage-collection.
-##########################################################################################
 
 
 class WorldManager:
@@ -683,7 +676,6 @@ world = WorldManager()
 # Now we initialize FURY TextBlock2D screen overlay blocks to paint
 # live instrument displays directly onto our screen viewport, showing our altitude,
 # speed, and score.
-##########################################################################################
 
 hud_telemetry = ui.TextBlock2D(
     text="ALTITUDE: 0 m\nAIRSPEED: 0 kts",
@@ -727,7 +719,6 @@ def disable_depth_testing(world_object):
 # Here we listen to keyboard events and store active states. We also write
 # a collision checking script. If the center coordinates of our airplane glide too close
 # to mountain bounds or tree trunk geometries, we restart the game!
-##########################################################################################
 
 
 def restart_game():
@@ -827,7 +818,6 @@ def consume_mouse(event):
 # pitch, roll, and yaw input rates. We integrate lift factors based on speed and adjust
 # our local coordinate direction vectors to smoothly transition our chase-camera
 # coordinates directly behind the plane's exhaust.
-##########################################################################################
 
 
 def game_tick(showm):
@@ -989,7 +979,6 @@ def game_tick(showm):
 # Now we instantiate the FURY ShowManager, register global event handlers to hook up
 # player control keys, block default camera behaviors to let our custom chase camera
 # drive, and launch our flight simulator!
-##########################################################################################
 
 if __name__ == "__main__":
     showm = window.ShowManager(
