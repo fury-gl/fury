@@ -1,0 +1,75 @@
+Week 10: Finalizing Website Revamp and Performance Optimization
+===============================================================
+
+.. post:: August 03, 2026
+   :author: Medha Bhardwaj
+   :tags: google
+   :category: gsoc
+
+This week, I focused on finalizing the FURY website revamp in preparation for the upcoming v2.0 release, with a major emphasis on SEO and performance optimization.
+
+Overview
+--------
+
+This week, I worked on the following:
+
+- Finalizing the new website revamp to launch alongside the FURY v2 release (`#1312 <https://github.com/fury-gl/fury/pull/1312>`_).
+- Conducting a comprehensive performance audit and implementing SEO and load-time optimizations.
+
+The Core Problem: Website Performance
+-------------------------------------
+
+During our final review of the revamped website, a performance audit revealed that the homepage was shipping a massive **~51.8 MB network payload**, driving the Largest Contentful Paint (LCP) past 11 seconds. For a well-optimized page, this should ideally stay under 2–3 MB.
+
+The root cause was unoptimized media. The site is visually heavy with animated demo GIFs, hero banners, and sponsor logos. Furthermore, much of this media was being hotlinked from external domains (e.g., ``raw.githubusercontent.com``, ``dipy.org``, and ``furiousatoms.com``).
+
+This external hotlinking caused two major issues:
+
+1. **Performance overhead**: Each distinct domain requires a fresh DNS lookup and TLS handshake, slowing down the initial load.
+2. **Reliability risks**: If any of those external repositories get renamed or moved, the FURY homepage would silently break.
+
+Optimization Strategies Implemented
+-----------------------------------
+
+To drastically reduce the payload size and improve load times, I implemented several key optimizations:
+
+**1. Media Optimization and Self-Hosting**
+This was our biggest lever, saving an estimated **35.9 MB**.
+
+- **Converted images**: We converted large PNGs and JPEGs to modern formats like WebP and AVIF.
+- **Replaced GIFs with Videos**: We replaced every animated GIF with muted, autoplaying, looping ``<video>`` elements (MP4/WebM). Since GIF is a 40-year-old format with poor compression, this alone provided an 80–95% size reduction per animation!
+- **Self-hosting**: We migrated all hotlinked media to FURY's own domain to eliminate third-party DNS overhead.
+- **Lazy Loading**: Added ``loading="lazy"`` and ``decoding="async"`` to all below-the-fold images to defer loading until the user scrolls to them.
+
+**2. Preventing Layout Shifts (CLS)**
+We were experiencing Cumulative Layout Shift (CLS) because images were missing explicit dimensions. I added explicit ``width`` and ``height`` attributes to every image and video, allowing the browser to reserve layout space before the files finish loading.
+
+**3. Caching and Delivery**
+To save bandwidth for returning visitors (an estimated **46.9 MB** savings), we configured our server with long-lived cache headers (``Cache-Control: public, max-age=31536000, immutable``) for versioned static assets, while keeping the main HTML on a short cache lifetime. We also eliminated unnecessary URL redirect chains.
+
+**4. Eliminating Render-Blocking Resources**
+
+- **JavaScript**: Moved non-critical scripts to the bottom of the body or marked them with ``defer`` so they wouldn't block the initial HTML parse and paint.
+- **CSS**: Inlined critical above-the-fold CSS and deferred the rest of the stylesheets.
+
+**5. Dead Code Elimination and Minification**
+We integrated PurgeCSS to strip out unused CSS selectors and used bundler code-splitting to ensure we only ship the JavaScript actually needed for each page. All assets are now automatically minified in the build pipeline.
+
+**6. Accessibility Improvements**
+Several repeated links originally used identical, non-descriptive text like "View More". I updated these to be descriptive (e.g., "View more Physics examples"), which greatly improves navigation for screen readers and AI browsing agents.
+
+What I Learned
+--------------
+
+This week was an incredible deep dive into modern web performance and SEO. I learned that simply replacing GIFs with modern video formats is one of the most effective ways to cut down page weight. I also gained hands-on experience with browser rendering pipelines—understanding how DNS lookups, render-blocking scripts, and missing image dimensions can severely impact user experience metrics like LCP and CLS.
+
+In the upcoming week, I plan to:
+---------------------------------
+
+- Work on fully implementing the SEO and performance optimizations outlined above to significantly improve the website's load times and overall performance.
+
+Connect with Me
+---------------
+
+- GitHub: `medha-14 <https://github.com/medha-14>`_
+- LinkedIn: `Medha Bhardwaj <https://www.linkedin.com/in/medhabhardwaj/>`_
