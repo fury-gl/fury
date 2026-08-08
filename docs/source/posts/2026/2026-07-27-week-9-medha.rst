@@ -1,0 +1,78 @@
+Week 9: Improving Tree UI from Review Feedback and Migration Guide
+====================================================================
+
+.. post:: July 27, 2026
+   :author: Medha Bhardwaj
+   :tags: google
+   :category: gsoc
+
+This week, I focused on improving the Tree UI component based on detailed mentor feedback, and authored a comprehensive migration guide for users transitioning from FURY 0.12.x to v2.0.0.
+
+Overview
+--------
+
+This week, I worked on the following:
+
+- Improving the Tree UI component based on review feedback (`#1283 <https://github.com/fury-gl/fury/pull/1283>`_)
+- Writing the FURY 0.12.x → v2.0.0 migration guide (`#1302 <https://github.com/fury-gl/fury/pull/1302>`_)
+
+Tree UI Improvements
+---------------------
+
+**Before Improvements:**
+
+.. image:: https://github.com/user-attachments/assets/82ab994b-ecfe-4498-8de9-90cbe6709816
+   :align: center
+   :alt: Tree UI Component (Before)
+
+After submitting the initial Tree UI implementation, I received a thorough code review from my mentor. The feedback covered both functional improvements and architectural concerns. Here is a summary of the key feedback items I worked on:
+
+- **Collapse/expand button positioning**: The default button position collided with other elements and was not visible until the ``TreeNode`` was activated. I fixed the layout so buttons are properly positioned and visible by default.
+- **Using ``TexturedButton2D`` over ``ImageContainer2D``**: The review suggested using ``TexturedButton2D`` instead of ``ImageContainer2D`` for interactive icons, as it provides proper button semantics and toggle mode support out of the box.
+- **Customizable button position**: The expand/collapse button should be positionable at either the start or end of the node. I made this configurable, defaulting to the start position with plus/minus icons to resemble a standard file tree.
+- **Toggle mode for expand/collapse**: Instead of manually swapping icon states, I leveraged the existing toggle mode in our button components to handle the expanded/collapsed visual state.
+- **Scroll wheel support on TreeNodes**: Previously, only the scrollbar itself responded to scroll events. I added wheel event listeners to the ``TreeNode`` and background panel so users can scroll by hovering anywhere over the tree, matching the behavior already established in ``ListBox`` and ``ComboBox``.
+- **Scrollbar abstraction**: The review pointed out that the scrollbar implementation is duplicated across ``ListBox``, ``ComboBox``, and now ``Tree2D``. I explored the feasibility of abstracting it into a shared component.
+- **Richer example scene**: The example was expanded to include all available UI elements — sliders, buttons, ``ComboBox``, and more — turning the tree into a comprehensive showcase of every UI component in FURY.
+- **ListBox rendering fix**: A rendering issue in ``ListBox`` was identified during review, and I investigated and addressed it.
+
+**After Improvements:**
+
+.. image:: https://github.com/user-attachments/assets/66608574-5501-4fd7-8a3a-51bb0fa3942b
+   :align: center
+   :alt: Tree UI Component (After)
+
+Migration Guide: FURY 0.12.x → v2.0.0
+---------------------------------------
+
+I also authored a comprehensive migration guide documenting all user-level API changes between FURY 0.12.x and v2.0.0. The guide covers 18 major areas of change, including:
+
+- **Rendering backend switch** from VTK to PyGfx/WGPU, with code examples showing how to migrate direct VTK calls.
+- **Color API normalization**, including auto-conversion of 0 to 255 integer colors and hex string support.
+- **Actor module restructuring**, documenting the new sub-module layout (``core.py``, ``curved.py``, ``planar.py``, etc.).
+- **New per-actor transform API** with ``rotate()``, ``translate()``, and ``scale()`` methods directly on actor objects.
+- **Window and ShowManager changes**, including the new multi-screen layout, callback system, and ImGui integration.
+- **UI sub-system rebuild**, listing all currently available components and those still pending migration.
+- **Removed APIs**, providing a clear table of modules and symbols that no longer exist in v2.0.0.
+
+A few nuances that came up while writing the migration guide:
+
+- **Angle units changed**: The old ``euler_matrix`` function used radians, while the new ``actor.rotate()`` uses degrees. This is a subtle breaking change that could easily be missed.
+- **Background API change**: ``scene.background()`` was a method call in 0.12.x but is now a settable property (``scene.background = (r, g, b, a)``), and it accepts RGBA rather than just RGB.
+- **Legacy backward-compatibility code explicitly removed**: The old UI system had compatibility shims that were deliberately stripped out, meaning old UI code will fail immediately rather than degrade gracefully.
+
+What I Learned
+--------------
+
+This week reinforced the importance of thorough code review in improving component quality. The mentor feedback on the Tree UI pushed me to think about reusability (scrollbar abstraction), proper component composition (using ``TexturedButton2D`` with toggle mode instead of manual state management), and user experience details (scroll-anywhere behavior). Writing the migration guide also deepened my understanding of the entire FURY architecture and the scale of changes involved in the VTK to PyGfx transition.
+
+In the upcoming week, I plan to:
+---------------------------------
+
+- Continue addressing review comments on the Tree UI PR.
+- Work on fury website SEO and image optimization.
+Connect with Me
+---------------
+
+- GitHub: `medha-14 <https://github.com/medha-14>`_
+- LinkedIn: `Medha Bhardwaj <https://www.linkedin.com/in/medhabhardwaj/>`_
