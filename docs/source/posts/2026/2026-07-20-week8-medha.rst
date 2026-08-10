@@ -1,0 +1,69 @@
+Week 8: Implementing Rounded Rectangle with Fragment Shaders
+=============================================================
+
+.. post:: July 20, 2026
+   :author: Medha Bhardwaj
+   :tags: google
+   :category: gsoc
+
+This week, I focused on implementing the Rounded Rectangle component in FURY using the fragment shader SDF approach, and investigated a color rendering issue in the PlaybackPanel within the animation framework.
+
+Overview
+--------
+
+This week, I worked on the following:
+
+- Implementing the Rounded Rectangle component using fragment shaders (`#1294 <https://github.com/fury-gl/fury/pull/1294>`_)
+- Investigating and debugging a PlaybackPanel color rendering issue in FURY's animation framework.
+
+Rounded Rectangle Implementation
+---------------------------------
+
+.. image:: https://github.com/user-attachments/assets/9980f68f-d8cf-4ad9-ae2a-77a4217c946e
+   :align: center
+   :alt: Rounded Rectangle Implementation
+
+After researching four different approaches in the previous week, we decided to go with the **Fragment Shader SDF (Signed Distance Field)** approach for implementing the Rounded Rectangle. This method renders a simple rectangular quad and uses a mathematical function in the fragment shader to carve out rounded corners on a per-pixel basis.
+
+**Why the Shader Approach?**
+
+The SDF approach stood out because it produces resolution-independent, perfectly smooth curves with minimal geometry (just two triangles forming a quad). Unlike the geometry composition method (which suffered from transparency overlap artifacts) or the texture-based method (which became blurry on zoom), the shader approach gives us pixel-perfect rendering at any scale with a single draw call.
+
+**How the SDF Works**
+
+The core idea behind a Signed Distance Field is simple yet powerful: for every pixel being rendered, we compute its distance from the boundary of the desired shape. If the distance is negative (inside the shape), the pixel is filled. If positive (outside), it is discarded. For a rounded rectangle, this distance function accounts for the corner radius by treating each corner as a quarter-circle arc. The key shader concepts I learned during this process include:
+
+- **Normalized coordinates**: The fragment shader receives texture coordinates in the ``[0, 1]`` range. These are mapped to the rectangle's actual dimensions to compute the SDF correctly, ensuring the rounding is uniform regardless of the rectangle's aspect ratio.
+- **SDF for a rounded rectangle**: The distance is computed by finding the nearest point on the rectangle's inner boundary (inset by the corner radius) and subtracting the radius. This elegant formula produces smooth curves at each corner while keeping the edges straight.
+- **Anti-aliasing with smoothstep**: Instead of a hard cutoff between filled and discarded pixels, I used ``smoothstep`` over a small transition band around the boundary. This produces smooth, alias-free edges without requiring multisampling.
+- **Alpha blending and discard**: Pixels outside the rounded boundary are discarded using the ``discard`` keyword in the fragment shader, which is critical for ensuring that the transparent corners do not interfere with the depth buffer or occlude elements behind the rectangle.
+
+**Handling Transparent Corner Clicks**
+
+One nuance that required careful thought was handling mouse interaction in the transparent corner regions. Since the rectangle's geometry is still a full quad, click and hover events would normally register even on the rounded-off corners where nothing is visually rendered. To solve this, I implemented a hit-testing mechanism that mirrors the SDF logic: when a click event occurs, the corresponding position is checked against the same rounded rectangle distance function. If the point falls outside the rounded boundary, the event is ignored. This ensures that interactivity matches the visual shape exactly.
+
+PlaybackPanel Color Rendering Issue
+-------------------------------------
+
+While working on the animation framework, I noticed that the ``PlaybackPanel`` was not rendering texture colors correctly in the FURY animation example, even though it worked perfectly in the standalone PlaybackPanel example. After investigating, I discovered that the issue was related to how GIF output handles colors.
+
+The GIF format is limited to a palette of **256 colors** per frame. When the animation example rendered the PlaybackPanel alongside other scene elements, the combined color palette exceeded this limit, causing the GIF encoder to quantize and approximate colors. This resulted in the washed-out or incorrect colors that I was observing. The standalone example had fewer total colors in the scene, so it stayed within the 256-color limit and rendered correctly.
+
+This was an important lesson in understanding the limitations of different output formats and how they can affect visual fidelity in unexpected ways.
+
+What I Learned
+--------------
+
+This week was a deep dive into GPU-side rendering and shader programming. I gained hands-on experience with fragment shaders, signed distance fields, and the mathematical concepts behind resolution-independent shape rendering. I learned how ``smoothstep`` can be used for anti-aliasing, how the ``discard`` keyword controls pixel visibility and depth buffer behavior, and how to translate visual boundaries into interactive hit-testing logic. On the debugging side, I learned about the color palette limitations of the GIF format and how they can cause subtle rendering artifacts in multi-element scenes.
+
+In the upcoming week, I plan to:
+---------------------------------
+
+- Address review comments on the Rounded Rectangle PR and work towards getting it merged.
+- Continue development of additional UI components.
+
+Connect with Me
+---------------
+
+- GitHub: `medha-14 <https://github.com/medha-14>`_
+- LinkedIn: `Medha Bhardwaj <https://www.linkedin.com/in/medhabhardwaj/>`_
