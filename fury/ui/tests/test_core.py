@@ -119,6 +119,128 @@ def test_rectangle2d_set_visibility():
     assert rect.actor.visible is True
 
 
+def test_rounded_rectangle2d_initialization_default():
+    """
+    Test RoundedRectangle2D initialization with default parameters.
+
+    Checks default size, color, opacity, corner_radius and position.
+    """
+    rect = ui.RoundedRectangle2D()
+    npt.assert_equal(rect.size, (100, 100))
+    npt.assert_array_equal(rect.color, [1, 1, 1])
+    npt.assert_equal(rect.opacity, 1.0)
+    npt.assert_equal(rect.corner_radius, 10.0)
+    assert isinstance(rect.actor, Mesh)
+    assert rect.actor in rect.actors
+
+    npt.assert_array_equal(rect.get_position(Anchor.LEFT, Anchor.BOTTOM), [0, 100])
+
+
+def test_rounded_rectangle2d_initialization_custom():
+    """
+    Test RoundedRectangle2D initialization with custom parameters.
+
+    Checks custom size, position, color, opacity, and corner_radius.
+    """
+    custom_size = (200, 100)
+    custom_position = (50, 80)
+    custom_color = (0.5, 0.2, 0.8)
+    custom_opacity = 0.7
+    custom_radius = 25.0
+
+    rect = ui.RoundedRectangle2D(
+        size=custom_size,
+        position=custom_position,
+        color=custom_color,
+        opacity=custom_opacity,
+        corner_radius=custom_radius,
+    )
+
+    npt.assert_equal(rect.size, custom_size)
+    npt.assert_array_equal(rect.get_position(Anchor.LEFT, Anchor.TOP), custom_position)
+    npt.assert_array_almost_equal(rect.color, custom_color)
+    npt.assert_almost_equal(rect.opacity, custom_opacity)
+    npt.assert_almost_equal(rect.corner_radius, custom_radius)
+    assert isinstance(rect.actor, Mesh)
+    assert rect.actor in rect.actors
+
+
+def test_rounded_rectangle2d_width_property():
+    """Test width getter and setter for RoundedRectangle2D."""
+    rect = ui.RoundedRectangle2D(size=(100, 50))
+    npt.assert_equal(rect.width, 100)
+    rect.width = 120
+    npt.assert_equal(rect.width, 120)
+    npt.assert_equal(rect.height, 50)
+    npt.assert_equal(rect.size, (120, 50))
+
+
+def test_rounded_rectangle2d_height_property():
+    """Test height getter and setter for RoundedRectangle2D."""
+    rect = ui.RoundedRectangle2D(size=(100, 50))
+    npt.assert_equal(rect.height, 50)
+    rect.height = 70
+    npt.assert_equal(rect.height, 70)
+    npt.assert_equal(rect.width, 100)
+    npt.assert_equal(rect.size, (100, 70))
+
+
+def test_rounded_rectangle2d_color_property():
+    """Test color getter and setter for RoundedRectangle2D."""
+    rect = ui.RoundedRectangle2D()
+    npt.assert_array_equal(rect.color, [1, 1, 1])
+    new_color = (0.1, 0.2, 0.3)
+    rect.color = new_color
+    npt.assert_array_almost_equal(rect.color, new_color)
+
+
+def test_rounded_rectangle2d_color_normalization():
+    """Test RoundedRectangle2D accepts hex strings and [0, 255] colors."""
+    rect = ui.RoundedRectangle2D(color="#FF0000")
+    npt.assert_array_almost_equal(rect.color, [1, 0, 0])
+
+    rect.color = "#00FF00"
+    npt.assert_array_almost_equal(rect.color, [0, 1, 0])
+
+    rect.color = (0, 0, 255)
+    npt.assert_array_almost_equal(rect.color, [0, 0, 1])
+
+
+def test_rounded_rectangle2d_opacity_property():
+    """Test opacity getter and setter for RoundedRectangle2D."""
+    rect = ui.RoundedRectangle2D()
+    npt.assert_equal(rect.opacity, 1.0)
+    new_opacity = 0.5
+    rect.opacity = new_opacity
+    npt.assert_equal(rect.opacity, new_opacity)
+
+
+def test_rounded_rectangle2d_corner_radius_property():
+    """Test corner_radius getter and setter for RoundedRectangle2D."""
+    rect = ui.RoundedRectangle2D()
+    npt.assert_equal(rect.corner_radius, 10.0)
+    new_radius = 20.0
+    rect.corner_radius = new_radius
+    npt.assert_equal(rect.corner_radius, new_radius)
+
+
+def test_rounded_rectangle2d_resize():
+    """Test resize method for RoundedRectangle2D."""
+    rect = ui.RoundedRectangle2D(size=(100, 50))
+    new_size = (250, 150)
+    rect.resize(new_size)
+    npt.assert_equal(rect.size, new_size)
+
+
+def test_rounded_rectangle2d_set_visibility():
+    """Test set_visibility method for RoundedRectangle2D."""
+    rect = ui.RoundedRectangle2D(size=(10, 10))
+    rect.set_visibility(False)
+    assert rect.actor.visible is False
+    rect.set_visibility(True)
+    assert rect.actor.visible is True
+
+
 def test_disk2d_initialization_default():
     """
     Test Disk2D initialization with default parameters.
@@ -229,6 +351,19 @@ def test_rectangle2d_visual_snapshot():
         size=(50, 50),
         position=(75, 75),
         color=(1.0, 0.0, 0.0),
+        opacity=1.0,
+    )
+
+    assert_visibility(rect, toggle=rect.set_visibility, colors=[(1.0, 0.0, 0.0)])
+
+
+def test_rounded_rectangle2d_visual_snapshot():
+    """Visibility snapshot test for RoundedRectangle2D."""
+    rect = ui.RoundedRectangle2D(
+        size=(50, 50),
+        position=(75, 75),
+        color=(1.0, 0.0, 0.0),
+        corner_radius=15.0,
         opacity=1.0,
     )
 
