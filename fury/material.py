@@ -983,8 +983,10 @@ class RoundedRectangleMaterial(MeshBasicMaterial):
     ----------
     size : tuple
         Width and height of the rectangle in pixels or local units.
-    corner_radius : float
-        Radius of the rounded corners in the same units.
+    corner_radius : float or tuple
+        Radius of the rounded corners. Can be a single float (applied to all
+        corners) or a 4-tuple ``(top_left, top_right, bottom_right,
+        bottom_left)`` following CSS ``border-radius`` order.
     **kwargs : dict
         Additional keyword arguments forwarded to ``MeshBasicMaterial``.
     """
@@ -992,7 +994,7 @@ class RoundedRectangleMaterial(MeshBasicMaterial):
     uniform_type = dict(
         MeshBasicMaterial.uniform_type,
         size="2xf4",
-        corner_radius="f4",
+        corner_radius="4xf4",
     )
 
     def __init__(self, size=(100.0, 100.0), corner_radius=10.0, **kwargs):
@@ -1003,8 +1005,10 @@ class RoundedRectangleMaterial(MeshBasicMaterial):
         ----------
         size : tuple
             Width and height of the rectangle in pixels or local units.
-        corner_radius : float
-            Radius of the rounded corners in the same units.
+        corner_radius : float or tuple
+            Radius of the rounded corners. Can be a single float (applied to
+            all corners) or a 4-tuple ``(top_left, top_right, bottom_right,
+            bottom_left)`` following CSS ``border-radius`` order.
         **kwargs : dict
             Additional keyword arguments forwarded to ``MeshBasicMaterial``.
         """
@@ -1041,26 +1045,30 @@ class RoundedRectangleMaterial(MeshBasicMaterial):
     @property
     def corner_radius(self):
         """
-        Get the corner radius of the rectangle.
+        Get the corner radii of the rectangle.
 
         Returns
         -------
-        float
-            Corner radius of the rectangle.
+        tuple
+            A 4-tuple ``(top_left, top_right, bottom_right, bottom_left)``.
         """
-        return float(self.uniform_buffer.data["corner_radius"])
+        r = self.uniform_buffer.data["corner_radius"]
+        return (float(r[0]), float(r[1]), float(r[2]), float(r[3]))
 
     @corner_radius.setter
     def corner_radius(self, value):
         """
-        Set the corner radius of the rectangle.
+        Set the corner radii of the rectangle.
 
         Parameters
         ----------
-        value : float
-            Corner radius of the rectangle.
+        value : float or tuple
+            A single float (applied to all four corners) or a 4-tuple
+            ``(top_left, top_right, bottom_right, bottom_left)``.
         """
-        self.uniform_buffer.data["corner_radius"] = float(value)
+        if isinstance(value, (int, float)):
+            value = (float(value), float(value), float(value), float(value))
+        self.uniform_buffer.data["corner_radius"] = value
         self.uniform_buffer.update_full()
 
 
