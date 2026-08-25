@@ -12,6 +12,7 @@ from fury.lib import (
     AmbientLight,
     DirectionalLight,
     EventType,
+    GfxGroup,
     OffscreenCanvas,
     OrbitController,
     PerspectiveCamera,
@@ -1112,3 +1113,172 @@ def test_show_manager_setup_camera_animations_recurses():
 
     assert camera_animation.camera is camera
     assert nested_camera_animation.camera is camera
+
+
+def _framed_camera_position(*, camera_light):
+    """Camera position ShowManager picks for a scene holding one sphere."""
+    scene = window.Scene()
+    scene.add(actor.sphere(np.zeros((1, 3)), radii=8.0, impostor=False))
+    show_m = window.ShowManager(scene=scene, size=(600, 400), camera_light=camera_light)
+    return np.asarray(show_m.screens[0].camera.local.position, dtype=float)
+
+
+def test_camera_is_framed_regardless_of_camera_light():
+    # camera_light only decides whether a light rides along with the camera; it
+    # must not change whether the scene gets framed. It used to: the camera was
+    # added to the scene inside the camera_light branch, leaving the scene one
+    # child short of update_camera's threshold, so framing was skipped and the
+    # camera stayed at the origin -- inside any object centred there.
+    lit = _framed_camera_position(camera_light=True)
+    unlit = _framed_camera_position(camera_light=False)
+
+    assert np.allclose(lit, unlit)
+    # A radius-8 sphere sits at the origin, so a framed camera must be clear of it.
+    assert np.linalg.norm(unlit) > 8.0
+
+
+def test_camera_is_added_to_the_scene_without_camera_light():
+    scene = window.Scene()
+    scene.add(actor.sphere(np.zeros((1, 3)), radii=8.0, impostor=False))
+    show_m = window.ShowManager(scene=scene, size=(600, 400), camera_light=False)
+
+    camera = show_m.screens[0].camera
+    assert camera in scene.main_scene.children
+
+
+###############################################################################
+# Scene skybox -> env_map. The material side of this (a material picks the
+# cubemap up on add, an explicit env_map survives, set_skybox applies
+# retroactively) is covered in test_material.py; what follows covers the part
+# that lives in Scene: walking the object it is handed, deciding which
+# materials qualify, and keeping track of what it assigned so it can take it
+# back. The cubemaps are synthetic so these tests need no fetched data.
+
+
+def _cubemap(value, *, side=8):
+    """A flat cubemap. Only its identity matters, except in the render test."""
+    return Texture(
+        np.full((6, side, side, 3), value, dtype=np.uint8),
+        dim=2,
+        size=(side, side, 6),
+        generate_mipmaps=True,
+    )
+
+
+def _pbr_sphere(**material_params):
+    """A sphere carrying a real MeshStandardMaterial, not an impostor."""
+    return sphere(
+        np.zeros((1, 3)),
+        # white: on a metal the base color tints every reflection, and this
+        # test only wants to know whether there is a reflection at all
+        colors=(1, 1, 1),
+        radii=4.0,
+        phi=32,
+        theta=32,
+        impostor=False,
+        material="standard",
+        material_params=material_params or None,
+    )
+
+
+def _env_texture(material):
+    """The Texture behind an env_map; pygfx wraps assignments in a TextureMap."""
+    env_map = material.env_map
+    return None if env_map is None else env_map.texture
+
+
+def test_scene_set_skybox_replaces_the_env_map_it_assigned():
+    """Swapping the skybox must move the materials it lit onto the new one."""
+    first, second = _cubemap(255), _cubemap(128)
+    scene = Scene(skybox=first)
+    actor_ = _pbr_sphere()
+    scene.add(actor_)
+    assert _env_texture(actor_.material) is first
+
+    scene.set_skybox(second)
+
+    assert _env_texture(actor_.material) is second
+    assert actor_.material in scene._auto_env_mapped
+
+
+def test_scene_skybox_keeps_an_explicit_env_map_through_a_skybox_swap():
+    skybox, own = _cubemap(255), _cubemap(10)
+    scene = Scene(skybox=skybox)
+    actor_ = _pbr_sphere()
+    actor_.material.env_map = own
+    scene.add(actor_)
+
+    scene.set_skybox(_cubemap(128))
+
+    assert _env_texture(actor_.material) is own
+    assert actor_.material not in scene._auto_env_mapped
+
+
+def test_scene_skybox_reaches_materials_nested_below_the_object_added():
+    """Scene.add is handed the top of a subtree, not necessarily the mesh."""
+    skybox = _cubemap(255)
+    group = GfxGroup()
+    actor_ = _pbr_sphere()
+    group.add(actor_)
+
+    Scene(skybox=skybox).add(group)
+
+    assert _env_texture(actor_.material) is skybox
+
+
+def test_scene_skybox_ignores_non_pbr_materials():
+    """Image based lighting is a PBR feature; phong has no use for the cubemap."""
+    scene = Scene(skybox=_cubemap(255))
+    phong = sphere(np.zeros((1, 3)), radii=4.0, impostor=False, material="phong")
+
+    scene.add(phong)
+
+    assert _env_texture(phong.material) is None
+    assert phong.material not in scene._auto_env_mapped
+
+
+def test_scene_background_color_empties_the_env_map_bookkeeping():
+    scene = Scene(skybox=_cubemap(255))
+    actor_ = _pbr_sphere()
+    scene.add(actor_)
+    assert scene._auto_env_mapped
+
+    scene.background = (0, 0, 0, 1)
+
+    assert _env_texture(actor_.material) is None
+    assert not scene._auto_env_mapped
+
+
+def test_skybox_actually_lights_a_metal():
+    """
+    The reason the env map is assigned at all.
+
+    A metal has no diffuse response, so with no image based lighting it renders
+    black however bright the scene looks behind it.
+    """
+
+    def mean_of_sphere(env_map):
+        actor_ = _pbr_sphere(metalness=1.0, roughness=0.3)
+        if env_map is not None:
+            actor_.material.env_map = env_map
+        scene = Scene(skybox=_cubemap(255))
+        scene.add(actor_)
+        show_m = ShowManager(
+            scene=scene,
+            size=(128, 128),
+            window_type="offscreen",
+            camera_light=False,
+        )
+        show_m.screens[0].camera.show_object(actor_, scale=1.0)
+        show_m.render()
+        show_m.window.draw()
+        image = show_m.snapshot(fname=None)[..., :3].astype(float)
+        height, width = image.shape[:2]
+        # the middle of the frame is all sphere
+        return image[height // 3 : 2 * height // 3, width // 3 : 2 * width // 3].mean()
+
+    lit = mean_of_sphere(None)  # the scene hands over its white cubemap
+    unlit = mean_of_sphere(_cubemap(0))  # an explicit black one, left alone
+
+    assert unlit < 10
+    assert lit > 200
