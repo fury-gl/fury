@@ -84,6 +84,7 @@ Material = gfx.Material
 MeshBasicMaterial = gfx.MeshBasicMaterial
 MeshPhongMaterial = gfx.MeshPhongMaterial
 MeshStandardMaterial = gfx.MeshStandardMaterial
+MeshPhysicalMaterial = gfx.MeshPhysicalMaterial
 PointsMaterial = gfx.PointsMaterial
 PointsGaussianBlobMaterial = gfx.PointsGaussianBlobMaterial
 PointsMarkerMaterial = gfx.PointsMarkerMaterial

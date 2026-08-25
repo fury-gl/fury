@@ -16,6 +16,7 @@ from fury.lib import (
     ImageBasicMaterial,
     MeshBasicMaterial,
     MeshPhongMaterial,
+    MeshStandardMaterial,
     PointsGaussianBlobMaterial,
     PointsMarkerMaterial,
     PointsMaterial,
@@ -194,7 +195,9 @@ def create_mesh(geometry, material):
     geometry : Geometry
         The geometry object.
     material : Material
-        The material object. Must be either MeshPhongMaterial or MeshBasicMaterial.
+        The material object. Must be an instance of MeshPhongMaterial,
+        MeshBasicMaterial or MeshStandardMaterial (which MeshPhysicalMaterial
+        derives from).
 
     Returns
     -------
@@ -205,14 +208,18 @@ def create_mesh(geometry, material):
     ------
     TypeError
         If geometry is not an instance of Geometry or material is not an
-        instance of MeshPhongMaterial or MeshBasicMaterial.
+        instance of MeshPhongMaterial, MeshBasicMaterial or
+        MeshStandardMaterial.
     """
     if not isinstance(geometry, Geometry):
         raise TypeError("geometry must be an instance of Geometry.")
 
-    if not isinstance(material, (MeshPhongMaterial, MeshBasicMaterial)):
+    if not isinstance(
+        material, (MeshPhongMaterial, MeshBasicMaterial, MeshStandardMaterial)
+    ):
         raise TypeError(
-            "material must be an instance of MeshPhongMaterial or MeshBasicMaterial."
+            "material must be an instance of MeshPhongMaterial, "
+            "MeshBasicMaterial or MeshStandardMaterial."
         )
 
     mesh = Mesh(geometry=geometry, material=material)
@@ -390,6 +397,7 @@ def actor_from_primitive(
     have_tiled_verts=False,
     wireframe=False,
     wireframe_thickness=1.0,
+    material_params=None,
 ):
     """
     Build an actor from a primitive.
@@ -416,7 +424,9 @@ def actor_from_primitive(
         If both `opacity` and RGBA are provided, the final alpha will be:
         final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
-        The material type for the primitive. Options are 'phong' and 'basic'.
+        The material type for the primitive. Options are 'phong', 'basic',
+        'standard' and 'physical'. The last two are physically based (PBR)
+        materials.
     smooth : bool, optional
         Whether to create a smooth primitive or a faceted primitive.
     enable_picking : bool, optional
@@ -431,6 +441,10 @@ def actor_from_primitive(
         Whether to render the mesh as a wireframe.
     wireframe_thickness : float, optional
         The thickness of the wireframe lines.
+    material_params : dict, optional
+        Extra properties forwarded to the material, e.g.
+        ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
+        :func:`fury.material._create_mesh_material` for the supported keys.
 
     Returns
     -------
@@ -491,6 +505,7 @@ def actor_from_primitive(
         wireframe_thickness=wireframe_thickness,
         alpha_mode="weighted_blend" if is_transparent else "auto",
         depth_write=not is_transparent,
+        **(material_params or {}),
     )
     obj = create_mesh(geometry=geo, material=mat)
     if not repeat_primitive:
@@ -512,6 +527,7 @@ def arrow(
     scales=(1, 1, 1),
     opacity=None,
     material="phong",
+    material_params=None,
     enable_picking=True,
 ):
     """
@@ -550,7 +566,13 @@ def arrow(
         If both `opacity` and RGBA are provided, the final alpha will be:
         final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
-        The material type for the arrows. Options are 'phong' and 'basic'.
+        The material type for the arrows. Options are 'phong', 'basic',
+        'standard' and 'physical'. The last two are physically based (PBR)
+        materials.
+    material_params : dict, optional
+        Extra properties forwarded to the material, e.g.
+        ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
+        :func:`fury.material._create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the arrows should be pickable in a 3D scene.
 
@@ -603,6 +625,7 @@ def arrow(
             directions=directions,
             opacity=opacity,
             material=material,
+            material_params=material_params,
             enable_picking=enable_picking,
         )
 
@@ -633,6 +656,7 @@ def arrow(
         directions=directions,
         opacity=opacity,
         material=material,
+        material_params=material_params,
         enable_picking=enable_picking,
         have_tiled_verts=True,
     )

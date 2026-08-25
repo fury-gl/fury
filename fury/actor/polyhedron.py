@@ -12,6 +12,7 @@ def box(
     scales=(1, 1, 1),
     opacity=None,
     material="phong",
+    material_params=None,
     enable_picking=True,
     detailed=True,
     wireframe=False,
@@ -38,7 +39,13 @@ def box(
         If both `opacity` and RGBA are provided, the final alpha will be:
         final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
-        The material type for the boxes. Options are 'phong' and 'basic'.
+        The material type for the boxes. Options are 'phong', 'basic',
+        'standard' and 'physical'. The last two are physically based (PBR)
+        materials.
+    material_params : dict, optional
+        Extra properties forwarded to the material, e.g.
+        ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
+        :func:`fury.material._create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the boxes should be pickable in a 3D scene.
     detailed : bool, optional
@@ -77,6 +84,7 @@ def box(
         directions=directions,
         opacity=opacity,
         material=material,
+        material_params=material_params,
         enable_picking=enable_picking,
         wireframe=wireframe,
         wireframe_thickness=wireframe_thickness,
@@ -91,6 +99,7 @@ def frustum(
     scales=(1, 1, 1),
     opacity=None,
     material="phong",
+    material_params=None,
     enable_picking=True,
     wireframe=False,
     wireframe_thickness=1.0,
@@ -116,7 +125,13 @@ def frustum(
         If both `opacity` and RGBA are provided, the final alpha will be:
         final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
-        The material type for the frustums. Options are 'phong' and 'basic'.
+        The material type for the frustums. Options are 'phong', 'basic',
+        'standard' and 'physical'. The last two are physically based (PBR)
+        materials.
+    material_params : dict, optional
+        Extra properties forwarded to the material, e.g.
+        ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
+        :func:`fury.material._create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the frustums should be pickable in a 3D scene.
     wireframe : bool, optional
@@ -152,6 +167,7 @@ def frustum(
         directions=directions,
         opacity=opacity,
         material=material,
+        material_params=material_params,
         enable_picking=enable_picking,
         wireframe=wireframe,
         wireframe_thickness=wireframe_thickness,
@@ -166,6 +182,7 @@ def tetrahedron(
     scales=(1, 1, 1),
     opacity=None,
     material="phong",
+    material_params=None,
     enable_picking=True,
     wireframe=False,
     wireframe_thickness=1.0,
@@ -191,7 +208,13 @@ def tetrahedron(
         If both `opacity` and RGBA are provided, the final alpha will be:
         final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
-        The material type for the tetrahedrons. Options are 'phong' and 'basic'.
+        The material type for the tetrahedrons. Options are 'phong', 'basic',
+        'standard' and 'physical'. The last two are physically based (PBR)
+        materials.
+    material_params : dict, optional
+        Extra properties forwarded to the material, e.g.
+        ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
+        :func:`fury.material._create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the tetrahedrons should be pickable in a 3D scene.
     wireframe : bool, optional
@@ -227,6 +250,7 @@ def tetrahedron(
         directions=directions,
         opacity=opacity,
         material=material,
+        material_params=material_params,
         enable_picking=enable_picking,
         wireframe=wireframe,
         wireframe_thickness=wireframe_thickness,
@@ -241,6 +265,7 @@ def icosahedron(
     scales=(1, 1, 1),
     opacity=None,
     material="phong",
+    material_params=None,
     enable_picking=True,
     wireframe=False,
     wireframe_thickness=1.0,
@@ -266,7 +291,13 @@ def icosahedron(
         If both `opacity` and RGBA are provided, the final alpha will be:
         final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
-        The material type for the icosahedrons. Options are 'phong' and 'basic'.
+        The material type for the icosahedrons. Options are 'phong', 'basic',
+        'standard' and 'physical'. The last two are physically based (PBR)
+        materials.
+    material_params : dict, optional
+        Extra properties forwarded to the material, e.g.
+        ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
+        :func:`fury.material._create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the icosahedrons should be pickable in a 3D scene.
     wireframe : bool, optional
@@ -302,6 +333,7 @@ def icosahedron(
         directions=directions,
         opacity=opacity,
         material=material,
+        material_params=material_params,
         enable_picking=enable_picking,
         wireframe=wireframe,
         wireframe_thickness=wireframe_thickness,
@@ -316,6 +348,7 @@ def rhombicuboctahedron(
     scales=(1, 1, 1),
     opacity=None,
     material="phong",
+    material_params=None,
     enable_picking=True,
     wireframe=False,
     wireframe_thickness=1.0,
@@ -341,7 +374,13 @@ def rhombicuboctahedron(
         If both `opacity` and RGBA are provided, the final alpha will be:
         final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
-        The material type for the rhombicuboctahedrons. Options are 'phong' and 'basic'.
+        The material type for the rhombicuboctahedrons. Options are 'phong', 'basic',
+        'standard' and 'physical'. The last two are physically based (PBR)
+        materials.
+    material_params : dict, optional
+        Extra properties forwarded to the material, e.g.
+        ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
+        :func:`fury.material._create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the rhombicuboctahedrons should be pickable in a 3D scene.
     wireframe : bool, optional
@@ -378,6 +417,7 @@ def rhombicuboctahedron(
         directions=directions,
         opacity=opacity,
         material=material,
+        material_params=material_params,
         enable_picking=enable_picking,
         wireframe=wireframe,
         wireframe_thickness=wireframe_thickness,
@@ -392,6 +432,7 @@ def triangularprism(
     scales=(1, 1, 1),
     opacity=None,
     material="phong",
+    material_params=None,
     enable_picking=True,
     wireframe=False,
     wireframe_thickness=1.0,
@@ -417,7 +458,13 @@ def triangularprism(
         If both `opacity` and RGBA are provided, the final alpha will be:
         final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
-        The material type for the triangular prisms. Options are 'phong' and 'basic'.
+        The material type for the triangular prisms. Options are 'phong', 'basic',
+        'standard' and 'physical'. The last two are physically based (PBR)
+        materials.
+    material_params : dict, optional
+        Extra properties forwarded to the material, e.g.
+        ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
+        :func:`fury.material._create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the triangular prisms should be pickable in a 3D scene.
     wireframe : bool, optional
@@ -453,6 +500,7 @@ def triangularprism(
         directions=directions,
         opacity=opacity,
         material=material,
+        material_params=material_params,
         enable_picking=enable_picking,
         wireframe=wireframe,
         wireframe_thickness=wireframe_thickness,
@@ -467,6 +515,7 @@ def pentagonalprism(
     scales=(1, 1, 1),
     opacity=None,
     material="phong",
+    material_params=None,
     enable_picking=True,
     wireframe=False,
     wireframe_thickness=1.0,
@@ -492,7 +541,13 @@ def pentagonalprism(
         If both `opacity` and RGBA are provided, the final alpha will be:
         final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
-        The material type for the pentagonal prisms. Options are 'phong' and 'basic'.
+        The material type for the pentagonal prisms. Options are 'phong', 'basic',
+        'standard' and 'physical'. The last two are physically based (PBR)
+        materials.
+    material_params : dict, optional
+        Extra properties forwarded to the material, e.g.
+        ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
+        :func:`fury.material._create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the pentagonal prisms should be pickable in a 3D scene.
     wireframe : bool, optional
@@ -528,6 +583,7 @@ def pentagonalprism(
         directions=directions,
         opacity=opacity,
         material=material,
+        material_params=material_params,
         enable_picking=enable_picking,
         wireframe=wireframe,
         wireframe_thickness=wireframe_thickness,
@@ -542,6 +598,7 @@ def octagonalprism(
     scales=(1, 1, 1),
     opacity=None,
     material="phong",
+    material_params=None,
     enable_picking=True,
     wireframe=False,
     wireframe_thickness=1.0,
@@ -567,7 +624,13 @@ def octagonalprism(
         If both `opacity` and RGBA are provided, the final alpha will be:
         final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
-        The material type for the octagonal prisms. Options are 'phong' and 'basic'.
+        The material type for the octagonal prisms. Options are 'phong', 'basic',
+        'standard' and 'physical'. The last two are physically based (PBR)
+        materials.
+    material_params : dict, optional
+        Extra properties forwarded to the material, e.g.
+        ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
+        :func:`fury.material._create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the octagonal prisms should be pickable in a 3D scene.
     wireframe : bool, optional
@@ -603,6 +666,7 @@ def octagonalprism(
         directions=directions,
         opacity=opacity,
         material=material,
+        material_params=material_params,
         enable_picking=enable_picking,
         wireframe=wireframe,
         wireframe_thickness=wireframe_thickness,
@@ -618,6 +682,7 @@ def superquadric(
     scales=(1, 1, 1),
     opacity=None,
     material="phong",
+    material_params=None,
     enable_picking=True,
     wireframe=False,
     wireframe_thickness=1.0,
@@ -645,7 +710,13 @@ def superquadric(
         If both `opacity` and RGBA are provided, the final alpha will be:
         final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
-        The material type for the superquadrics. Options are 'phong' and 'basic'.
+        The material type for the superquadrics. Options are 'phong', 'basic',
+        'standard' and 'physical'. The last two are physically based (PBR)
+        materials.
+    material_params : dict, optional
+        Extra properties forwarded to the material, e.g.
+        ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
+        :func:`fury.material._create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the superquadrics should be pickable in a 3D scene.
     wireframe : bool, optional
@@ -681,6 +752,7 @@ def superquadric(
         directions=directions,
         opacity=opacity,
         material=material,
+        material_params=material_params,
         enable_picking=enable_picking,
         wireframe=wireframe,
         wireframe_thickness=wireframe_thickness,

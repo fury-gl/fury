@@ -18,6 +18,7 @@ def surface(
     faces,
     *,
     material="phong",
+    material_params=None,
     colors=None,
     texture=None,
     texture_axis="xy",
@@ -35,8 +36,13 @@ def surface(
     faces : ndarray, shape (M, 3)
         The indices of the vertices that form each triangular face.
     material : str, optional
-        The material type for the surface mesh. Options are 'phong' and 'basic'. This
-        option only works with colors is passed.
+        The material type for the surface mesh. Options are 'phong', 'basic',
+        'standard' and 'physical'. The last two are physically based (PBR)
+        materials.
+    material_params : dict, optional
+        Extra properties forwarded to the material, e.g.
+        ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
+        :func:`fury.material._create_mesh_material` for the supported keys.
     colors : str, tuple, list or ndarray, optional
         A per-vertex ``(N, 3)``/``(N, 4)`` array, or a single color as a hex
         string, RGB(A) in [0, 1], or RGB(A) in [0, 255].
@@ -62,6 +68,7 @@ def surface(
     geo = None
     mat = None
 
+    material_params = material_params or {}
     opacity = validate_opacity(opacity)
 
     if colors is not None:
@@ -83,7 +90,7 @@ def surface(
                 normals=normals.astype("float32") if normals is not None else None,
             )
             mat = _create_mesh_material(
-                material=material, mode="vertex", opacity=opacity
+                material=material, mode="vertex", opacity=opacity, **material_params
             )
         elif isinstance(colors, (tuple, list, np.ndarray)) and len(colors) == 3:
             geo = buffer_to_geometry(
@@ -92,7 +99,11 @@ def surface(
                 normals=normals.astype("float32") if normals is not None else None,
             )
             mat = _create_mesh_material(
-                material=material, mode="auto", opacity=opacity, color=colors
+                material=material,
+                mode="auto",
+                opacity=opacity,
+                color=colors,
+                **material_params,
             )
         else:
             raise ValueError(
@@ -125,19 +136,27 @@ def surface(
             normals=normals.astype("float32") if normals is not None else None,
         )
         mat = _create_mesh_material(
-            material=material, texture=tex, opacity=opacity, mode="auto"
+            material=material,
+            texture=tex,
+            opacity=opacity,
+            mode="auto",
+            **material_params,
         )
     else:
         geo = buffer_to_geometry(
             positions=vertices.astype("float32"), indices=faces.astype("int32")
         )
-        mat = _create_mesh_material(material=material, opacity=opacity)
+        mat = _create_mesh_material(
+            material=material, opacity=opacity, **material_params
+        )
 
     obj = create_mesh(geo, mat)
     return obj
 
 
-def contour_from_volume(data, *, color=(1, 0, 0), opacity=0.5, material="phong"):
+def contour_from_volume(
+    data, *, color=(1, 0, 0), opacity=0.5, material="phong", material_params=None
+):
     """
     Generate surface actor from a binary ROI.
 
@@ -152,7 +171,13 @@ def contour_from_volume(data, *, color=(1, 0, 0), opacity=0.5, material="phong")
         The opacity of the contour.
         Takes values from 0 (fully transparent) to 1 (opaque).
     material : str, optional
-        The material type for the contour mesh. Options are 'phong' and 'basic'.
+        The material type for the contour mesh. Options are 'phong', 'basic',
+        'standard' and 'physical'. The last two are physically based (PBR)
+        materials.
+    material_params : dict, optional
+        Extra properties forwarded to the material, e.g.
+        ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
+        :func:`fury.material._create_mesh_material` for the supported keys.
 
     Returns
     -------
@@ -174,6 +199,7 @@ def contour_from_volume(data, *, color=(1, 0, 0), opacity=0.5, material="phong")
             colors=color,
             opacity=opacity,
             material=material,
+            material_params=material_params,
         )
         contours.add(surface_actor)
 

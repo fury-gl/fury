@@ -43,6 +43,7 @@ def square(
     scales=(1, 1, 1),
     opacity=None,
     material="phong",
+    material_params=None,
     enable_picking=True,
     wireframe=False,
     wireframe_thickness=1.0,
@@ -68,7 +69,13 @@ def square(
         If both `opacity` and RGBA are provided, the final alpha will be:
         final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
-        The material type for the squares. Options are 'phong' and 'basic'.
+        The material type for the squares. Options are 'phong', 'basic',
+        'standard' and 'physical'. The last two are physically based (PBR)
+        materials.
+    material_params : dict, optional
+        Extra properties forwarded to the material, e.g.
+        ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
+        :func:`fury.material._create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the squares should be pickable in a 3D scene.
     wireframe : bool, optional
@@ -104,6 +111,7 @@ def square(
         directions=directions,
         opacity=opacity,
         material=material,
+        material_params=material_params,
         enable_picking=enable_picking,
         wireframe=wireframe,
         wireframe_thickness=wireframe_thickness,
@@ -119,6 +127,7 @@ def star(
     scales=(1, 1, 1),
     opacity=None,
     material="phong",
+    material_params=None,
     enable_picking=True,
     wireframe=False,
     wireframe_thickness=1.0,
@@ -146,7 +155,13 @@ def star(
         If both `opacity` and RGBA are provided, the final alpha will be:
         final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
-        The material type for the stars. Options are 'phong' and 'basic'.
+        The material type for the stars. Options are 'phong', 'basic',
+        'standard' and 'physical'. The last two are physically based (PBR)
+        materials.
+    material_params : dict, optional
+        Extra properties forwarded to the material, e.g.
+        ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
+        :func:`fury.material._create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the stars should be pickable in a 3D scene.
     wireframe : bool, optional
@@ -182,6 +197,7 @@ def star(
         directions=directions,
         opacity=opacity,
         material=material,
+        material_params=material_params,
         enable_picking=enable_picking,
         wireframe=wireframe,
         wireframe_thickness=wireframe_thickness,
@@ -198,6 +214,7 @@ def disk(
     directions=(0.0, 0.0, 0.0),
     opacity=None,
     material="phong",
+    material_params=None,
     enable_picking=True,
     wireframe=False,
     wireframe_thickness=1.0,
@@ -229,7 +246,13 @@ def disk(
         If both `opacity` and RGBA are provided, the final alpha will be:
         final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
-        The material type for the disk. Options are 'phong' and 'basic'.
+        The material type for the disk. Options are 'phong', 'basic',
+        'standard' and 'physical'. The last two are physically based (PBR)
+        materials.
+    material_params : dict, optional
+        Extra properties forwarded to the material, e.g.
+        ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
+        :func:`fury.material._create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the disk should be pickable in a 3D scene.
     wireframe : bool, optional
@@ -271,6 +294,7 @@ def disk(
             directions=directions,
             opacity=opacity,
             material=material,
+            material_params=material_params,
             enable_picking=enable_picking,
             wireframe=wireframe,
             wireframe_thickness=wireframe_thickness,
@@ -290,6 +314,7 @@ def disk(
         directions=directions,
         opacity=opacity,
         material=material,
+        material_params=material_params,
         enable_picking=enable_picking,
         wireframe=wireframe,
         wireframe_thickness=wireframe_thickness,
@@ -305,6 +330,7 @@ def triangle(
     scales=(1, 1, 1),
     opacity=None,
     material="phong",
+    material_params=None,
     enable_picking=True,
     wireframe=False,
     wireframe_thickness=1.0,
@@ -330,7 +356,13 @@ def triangle(
         If both `opacity` and RGBA are provided, the final alpha will be:
         final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
-        The material type for the triangles. Options are 'phong' and 'basic'.
+        The material type for the triangles. Options are 'phong', 'basic',
+        'standard' and 'physical'. The last two are physically based (PBR)
+        materials.
+    material_params : dict, optional
+        Extra properties forwarded to the material, e.g.
+        ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
+        :func:`fury.material._create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the triangles should be pickable in a 3D scene.
     wireframe : bool, optional
@@ -366,6 +398,7 @@ def triangle(
         directions=directions,
         opacity=opacity,
         material=material,
+        material_params=material_params,
         enable_picking=enable_picking,
         wireframe=wireframe,
         wireframe_thickness=wireframe_thickness,
@@ -797,6 +830,7 @@ def ring(
     scales=(1, 1, 1),
     opacity=None,
     material="phong",
+    material_params=None,
     enable_picking=True,
 ):
     """
@@ -830,7 +864,13 @@ def ring(
         If both `opacity` and RGBA are provided, the final alpha will be:
         final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
-        The material type for the rings. Options are 'phong' and 'basic'.
+        The material type for the rings. Options are 'phong', 'basic',
+        'standard' and 'physical'. The last two are physically based (PBR)
+        materials.
+    material_params : dict, optional
+        Extra properties forwarded to the material, e.g.
+        ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
+        :func:`fury.material._create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the rings should be pickable in a 3D scene.
 
@@ -876,6 +916,7 @@ def ring(
             directions=directions,
             opacity=opacity,
             material=material,
+            material_params=material_params,
             enable_picking=enable_picking,
         )
 
@@ -904,6 +945,7 @@ def ring(
         directions=directions,
         opacity=opacity,
         material=material,
+        material_params=material_params,
         enable_picking=enable_picking,
         have_tiled_verts=True,
     )
