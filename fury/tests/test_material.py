@@ -3,7 +3,9 @@ import pytest
 
 from fury import material, window
 from fury.actor import create_mesh
+from fury.data import read_viz_cubemap
 from fury.geometry import buffer_to_geometry
+from fury.io import load_cube_map_texture
 from fury.lib import (
     ImageBasicMaterial,
     LineArrowMaterial,
@@ -11,6 +13,8 @@ from fury.lib import (
     LineSegmentMaterial,
     LineThinMaterial,
     LineThinSegmentMaterial,
+    MeshPhysicalMaterial,
+    MeshStandardMaterial,
     PointsGaussianBlobMaterial,
     PointsMarkerMaterial,
     PointsMaterial,
@@ -852,3 +856,205 @@ def test_StreamtubeBakedMaterial_setup_compute_shader():
     assert mat.line_count == 5
     assert mat.segments == 20
     assert mat._max_line_length == 18
+
+
+def test_create_mesh_material_standard():
+    mat = _create_mesh_material(material="standard")
+    assert isinstance(mat, MeshStandardMaterial)
+    assert mat.metalness == 0.0
+    assert mat.roughness == pytest.approx(material.DEFAULT_PBR_ROUGHNESS)
+
+    mat = _create_mesh_material(
+        material="standard",
+        color=(1, 0, 0),
+        mode="auto",
+        opacity=0.5,
+        metalness=1.0,
+        roughness=0.25,
+        emissive_intensity=2.0,
+    )
+    assert isinstance(mat, MeshStandardMaterial)
+    assert mat.color == (1, 0, 0, 0.5)
+    assert mat.metalness == pytest.approx(1.0)
+    assert mat.roughness == pytest.approx(0.25)
+    assert mat.emissive_intensity == pytest.approx(2.0)
+
+
+def test_create_mesh_material_physical():
+    mat = _create_mesh_material(
+        material="physical",
+        metalness=1.0,
+        roughness=0.2,
+        clearcoat=1.0,
+        clearcoat_roughness=0.1,
+        ior=1.6,
+    )
+    assert isinstance(mat, MeshPhysicalMaterial)
+    assert mat.metalness == pytest.approx(1.0)
+    assert mat.roughness == pytest.approx(0.2)
+    assert mat.clearcoat == pytest.approx(1.0)
+    assert mat.clearcoat_roughness == pytest.approx(0.1)
+    assert mat.ior == pytest.approx(1.6)
+
+
+@pytest.mark.parametrize("mesh_material", ["phong", "basic"])
+def test_create_mesh_material_pbr_props_rejected(mesh_material):
+    with pytest.raises(ValueError, match="not supported by material"):
+        _create_mesh_material(material=mesh_material, metalness=1.0)
+
+
+def test_create_mesh_material_standard_rejects_physical_props():
+    with pytest.raises(ValueError, match="Use material='physical'"):
+        _create_mesh_material(material="standard", clearcoat=1.0)
+
+
+def test_create_mesh_accepts_pbr_material():
+    verts, faces = prim_sphere()
+    geo = buffer_to_geometry(
+        indices=faces.astype("int32"),
+        positions=verts.astype("float32"),
+        colors=np.ones_like(verts).astype("float32"),
+    )
+    for mesh_material in ("standard", "physical"):
+        obj = create_mesh(
+            geometry=geo, material=_create_mesh_material(material=mesh_material)
+        )
+        scene = window.Scene()
+        scene.add(obj)
+
+
+def test_create_mesh_material_pbr_roughness_default():
+    # pygfx defaults roughness to 1.0, at which a metal renders as a flat disc.
+    for mesh_material in ("standard", "physical"):
+        mat = _create_mesh_material(material=mesh_material)
+        assert mat.roughness == pytest.approx(material.DEFAULT_PBR_ROUGHNESS)
+
+    mat = _create_mesh_material(material="standard", roughness=0.9)
+    assert mat.roughness == pytest.approx(0.9)
+
+
+def test_scene_skybox_supplies_env_map():
+    cube_map = load_cube_map_texture(read_viz_cubemap("skybox"))
+    scene = window.Scene(skybox=cube_map)
+
+    mat = _create_mesh_material(material="standard", metalness=1.0)
+    assert mat.env_map is None
+
+    verts, faces = prim_sphere()
+    geo = buffer_to_geometry(
+        indices=faces.astype("int32"),
+        positions=verts.astype("float32"),
+        colors=np.ones_like(verts).astype("float32"),
+    )
+    obj = create_mesh(geometry=geo, material=mat)
+    scene.add(obj)
+    assert mat.env_map is not None
+    assert mat.env_map.texture is cube_map
+
+
+def test_scene_without_skybox_leaves_env_map_unset():
+    mat = _create_mesh_material(material="standard")
+    verts, faces = prim_sphere()
+    geo = buffer_to_geometry(
+        indices=faces.astype("int32"),
+        positions=verts.astype("float32"),
+        colors=np.ones_like(verts).astype("float32"),
+    )
+    window.Scene().add(create_mesh(geometry=geo, material=mat))
+    assert mat.env_map is None
+
+
+def test_scene_preserves_explicit_env_map():
+    scene_map = load_cube_map_texture(read_viz_cubemap("skybox"))
+    own_map = load_cube_map_texture(read_viz_cubemap("skybox"))
+
+    mat = _create_mesh_material(material="standard", env_map=own_map)
+    verts, faces = prim_sphere()
+    geo = buffer_to_geometry(
+        indices=faces.astype("int32"),
+        positions=verts.astype("float32"),
+        colors=np.ones_like(verts).astype("float32"),
+    )
+    scene = window.Scene(skybox=scene_map)
+    scene.add(create_mesh(geometry=geo, material=mat))
+    assert mat.env_map.texture is own_map
+
+    # A color background clears only the env maps the scene assigned itself.
+    scene.background = (0, 0, 0, 1)
+    assert mat.env_map.texture is own_map
+
+
+def test_set_skybox_applies_env_map_retroactively():
+    cube_map = load_cube_map_texture(read_viz_cubemap("skybox"))
+    mat = _create_mesh_material(material="standard")
+    verts, faces = prim_sphere()
+    geo = buffer_to_geometry(
+        indices=faces.astype("int32"),
+        positions=verts.astype("float32"),
+        colors=np.ones_like(verts).astype("float32"),
+    )
+    scene = window.Scene()
+    scene.add(create_mesh(geometry=geo, material=mat))
+    assert mat.env_map is None
+
+    scene.set_skybox(cube_map)
+    assert mat.env_map.texture is cube_map
+
+    scene.background = (0, 0, 0, 1)
+    assert mat.env_map is None
+
+
+def test_physical_material_is_a_standard_material():
+    # create_mesh only whitelists MeshStandardMaterial; physical has to pass
+    # that guard by inheritance.
+    assert issubclass(MeshPhysicalMaterial, MeshStandardMaterial)
+
+
+@pytest.mark.parametrize("mesh_material", ["standard", "physical"])
+def test_pbr_materials_accept_shared_properties(mesh_material):
+    texture = TextureMap(Texture(np.random.rand(8, 8).astype(np.float32), dim=2))
+    mat = _create_mesh_material(
+        material=mesh_material,
+        metalness=0.7,
+        roughness=0.3,
+        emissive=(0.1, 0.2, 0.3),
+        emissive_intensity=1.5,
+        env_map_intensity=0.8,
+        metalness_map=texture,
+        roughness_map=texture,
+        emissive_map=texture,
+        normal_map=texture,
+        normal_scale=(0.5, 0.5),
+    )
+    assert mat.metalness == pytest.approx(0.7)
+    assert mat.roughness == pytest.approx(0.3)
+    assert mat.emissive_intensity == pytest.approx(1.5)
+    assert mat.env_map_intensity == pytest.approx(0.8)
+    assert tuple(mat.normal_scale) == pytest.approx((0.5, 0.5))
+    for slot in ("metalness_map", "roughness_map", "emissive_map", "normal_map"):
+        assert getattr(mat, slot) is texture
+
+
+@pytest.mark.parametrize(
+    "param, value",
+    [
+        ("ior", 1.6),
+        ("clearcoat", 1.0),
+        ("clearcoat_roughness", 0.1),
+        ("sheen", 0.8),
+        ("sheen_roughness", 0.3),
+        ("anisotropy", 0.4),
+        ("anisotropy_rotation", 0.25),
+        ("iridescence", 0.7),
+        ("iridescence_ior", 1.2),
+        ("specular_intensity", 0.9),
+    ],
+)
+def test_physical_only_properties_pass_through(param, value):
+    mat = _create_mesh_material(material="physical", **{param: value})
+    assert isinstance(mat, MeshPhysicalMaterial)
+    assert getattr(mat, param) == pytest.approx(value)
+
+    # The same property must be refused by 'standard', which cannot express it.
+    with pytest.raises(ValueError, match="Use material='physical'"):
+        _create_mesh_material(material="standard", **{param: value})
