@@ -31,6 +31,7 @@ from fury.lib import (
     EventType,
     GfxGroup,
     JupyterCanvas,
+    MeshStandardMaterial,
     OffscreenCanvas,
     PerspectiveCamera,
     PointerEvent,
@@ -79,7 +80,9 @@ class Scene(GfxGroup):
     background : tuple, optional
         The background color of the scene. It is a tuple of 4 floats (R, G, B, A).
     skybox : Texture, optional
-        The skybox texture of the scene. It is a PyGfx Texture object.
+        The skybox texture of the scene. It is a PyGfx Texture object. It is
+        also used as the ``env_map`` of any PBR material added to the scene that
+        does not already have one, so that metals are lit by the environment.
     lights : list of Light, optional
         The lights in the scene. It is a list of PyGfx Light objects.
         If None, a default AmbientLight is added.
@@ -109,6 +112,11 @@ class Scene(GfxGroup):
 
         self._bg_color = background
         self._bg_actor = None
+
+        # Cubemap used to light PBR materials, and the materials we assigned it
+        # to, so that swapping the skybox does not clobber a user-set env_map.
+        self._env_map = skybox
+        self._auto_env_mapped = set()
 
         if skybox is not None:
             self._bg_actor = self._skybox(skybox)
@@ -142,6 +150,37 @@ class Scene(GfxGroup):
             geometry=None, material=BackgroundSkyboxMaterial(map=cube_map)
         )
 
+    def _apply_env_map(self, obj):
+        """
+        Light PBR materials under ``obj`` with the scene's skybox cubemap.
+
+        A ``MeshStandardMaterial`` (or ``MeshPhysicalMaterial``) with no
+        ``env_map`` has no image based lighting, so a metal added to a skybox
+        scene would render nearly black. Materials that already carry an
+        explicit ``env_map`` are left alone.
+
+        Parameters
+        ----------
+        obj : WorldObject
+            The object to walk. Children are visited recursively.
+        """
+        if self._env_map is None:
+            return
+
+        for child in obj.iter(lambda o: getattr(o, "material", None) is not None):
+            material = child.material
+            if not isinstance(material, MeshStandardMaterial):
+                continue
+            if material.env_map is None:
+                material.env_map = self._env_map
+                self._auto_env_mapped.add(material)
+
+    def _clear_auto_env_maps(self):
+        """Drop the env maps this scene assigned, leaving user-set ones alone."""
+        for material in self._auto_env_mapped:
+            material.env_map = None
+        self._auto_env_mapped.clear()
+
     @property
     def background(self):
         """
@@ -170,6 +209,9 @@ class Scene(GfxGroup):
         self.remove(self._bg_actor)
         self._bg_color = value
         self._bg_actor = Background.from_color(value)
+        # A color background provides no image based lighting.
+        self._clear_auto_env_maps()
+        self._env_map = None
         self.add(self._bg_actor)
 
     def set_skybox(self, cube_map):
@@ -183,9 +225,17 @@ class Scene(GfxGroup):
         ----------
         cube_map : Texture
             A PyGfx Texture object (cubemap) for the skybox.
+
+        Notes
+        -----
+        The cubemap also becomes the ``env_map`` of any PBR material already in
+        the scene that does not carry an explicit one of its own.
         """
         self.remove(self._bg_actor)
         self._bg_actor = self._skybox(cube_map)
+        self._clear_auto_env_maps()
+        self._env_map = cube_map
+        self._apply_env_map(self.main_scene)
         self.add(self._bg_actor)
 
     def clear(self):
@@ -215,6 +265,7 @@ class Scene(GfxGroup):
                 super().add(obj)
             else:
                 self.main_scene.add(obj)
+                self._apply_env_map(obj)
 
     def remove(self, *objects):
         """
@@ -373,7 +424,12 @@ def create_screen(
         if camera_light:
             light = DirectionalLight()
             camera.add(light)
-            scene.add(camera)
+        # The camera belongs in the scene graph whether or not it carries a
+        # light. Adding it only in the camera_light branch also left the scene
+        # one child short of the threshold update_camera uses to decide there
+        # is something to frame, so camera_light=False silently skipped
+        # framing and left the camera at the origin.
+        scene.add(camera)
 
     if controller is None:
         controller = TrackballController(camera, register_events=vp)

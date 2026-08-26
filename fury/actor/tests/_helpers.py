@@ -3,8 +3,11 @@
 from PIL import Image
 import numpy as np
 import numpy.testing as npt
+import pytest
 
 from fury import actor, window
+from fury.lib import MeshPhysicalMaterial, MeshStandardMaterial
+from fury.material import DEFAULT_PBR_ROUGHNESS
 
 # --- Shared real inputs for visibility/snapshot tests -----------------------
 
@@ -210,3 +213,86 @@ def validate_actors(actor_type="actor_name", prim_count=1, **kwargs):
     assert report.objects == 0
     assert report.colors_found == [False]
     scene.remove(get_actor_1)
+
+
+# --- PBR material helpers --------------------------------------------------
+
+#: PBR material name -> the pygfx class the actor must end up with.
+PBR_MATERIAL_TYPES = {
+    "standard": MeshStandardMaterial,
+    "physical": MeshPhysicalMaterial,
+}
+
+#: Properties only MeshPhysicalMaterial understands, reached through the
+#: ``**kwargs`` passthrough of ``_create_mesh_material``.
+PHYSICAL_ONLY_PARAMS = {
+    "ior": 1.6,
+    "clearcoat": 1.0,
+    "clearcoat_roughness": 0.1,
+    "sheen": 0.8,
+    "sheen_roughness": 0.3,
+    "anisotropy": 0.4,
+    "anisotropy_rotation": 0.25,
+    "iridescence": 0.7,
+    "iridescence_ior": 1.2,
+    "specular_intensity": 0.9,
+}
+
+
+def assert_supports_pbr(actor_name, mesh_material, *, centers=None, **build_kwargs):
+    """
+    Assert an ``actor_from_primitive``-backed actor honours a PBR material.
+
+    Checks that ``material_params`` reach the mesh, that the material is the
+    expected pygfx class, and that an unset roughness falls back to FURY's
+    default rather than the pygfx one.
+
+    Parameters
+    ----------
+    actor_name : str
+        Name of the actor factory on :mod:`fury.actor`.
+    mesh_material : str
+        Either ``'standard'`` or ``'physical'``.
+    centers : ndarray, optional
+        Positions passed to the actor. Defaults to a single origin.
+    **build_kwargs : dict, optional
+        Extra arguments for the actor factory. Use this to keep an actor off a
+        code path that only warns, e.g. ``impostor=False`` for ``sphere``.
+    """
+    build = getattr(actor, actor_name)
+    centers = CENTERS if centers is None else centers
+
+    params = {"metalness": 1.0, "roughness": 0.25}
+    if mesh_material == "physical":
+        params["clearcoat"] = 1.0
+
+    obj = build(centers, material=mesh_material, material_params=params, **build_kwargs)
+    assert type(obj.material) is PBR_MATERIAL_TYPES[mesh_material]
+    for name, value in params.items():
+        assert getattr(obj.material, name) == pytest.approx(value)
+
+    unset = build(centers, material=mesh_material, **build_kwargs)
+    assert unset.material.roughness == pytest.approx(DEFAULT_PBR_ROUGHNESS)
+
+
+def assert_rejects_pbr_params_on_phong(actor_name, *, centers=None, **build_kwargs):
+    """
+    Assert a PBR property on a non-PBR material fails instead of being dropped.
+
+    Parameters
+    ----------
+    actor_name : str
+        Name of the actor factory on :mod:`fury.actor`.
+    centers : ndarray, optional
+        Positions passed to the actor. Defaults to a single origin.
+    **build_kwargs : dict, optional
+        Extra arguments for the actor factory. See :func:`assert_supports_pbr`.
+    """
+    centers = CENTERS if centers is None else centers
+    with pytest.raises(ValueError, match="not supported by material"):
+        getattr(actor, actor_name)(
+            centers,
+            material="phong",
+            material_params={"metalness": 1.0},
+            **build_kwargs,
+        )

@@ -4,7 +4,11 @@ import pytest
 
 from fury import actor, window
 from fury.actor import Group
-from fury.actor.tests._helpers import validate_actors
+from fury.actor.tests._helpers import (
+    assert_rejects_pbr_params_on_phong,
+    assert_supports_pbr,
+    validate_actors,
+)
 
 
 def test_square():
@@ -632,3 +636,17 @@ def test_marker_accepts_hex_colors():
     np.testing.assert_array_almost_equal(
         a1.geometry.colors.view, a2.geometry.colors.view
     )
+
+
+PLANAR_PBR_ACTORS = ["square", "star", "disk", "triangle", "ring"]
+
+
+@pytest.mark.parametrize("actor_name", PLANAR_PBR_ACTORS)
+@pytest.mark.parametrize("mesh_material", ["standard", "physical"])
+def test_planar_actors_support_pbr(actor_name, mesh_material):
+    assert_supports_pbr(actor_name, mesh_material)
+
+
+@pytest.mark.parametrize("actor_name", PLANAR_PBR_ACTORS)
+def test_planar_actors_reject_pbr_params_on_phong(actor_name):
+    assert_rejects_pbr_params_on_phong(actor_name)

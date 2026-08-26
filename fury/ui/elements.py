@@ -172,6 +172,8 @@ class TextButton2D(Button2D):
             bg_color=(1, 1, 1),
             font_size=self.font_size,
             size=self._dims,
+            justification="center",
+            vertical_justification="middle",
         )
         self.handle_events(self.child.actor)
         self.handle_events(self.child.background.actor)

@@ -2,10 +2,19 @@
 
 from concurrent.futures import ThreadPoolExecutor
 import itertools
+import logging
 
 import numpy as np
 
-from fury.actor import Group, Line, Mesh, actor_from_primitive, create_mesh, read_buffer
+from fury.actor import (
+    Group,
+    Line,
+    Mesh,
+    actor_from_primitive,
+    billboard_sphere,
+    create_mesh,
+    read_buffer,
+)
 from fury.colormap import normalize_colors
 from fury.geometry import buffer_to_geometry, line_buffer_separator
 from fury.lib import (
@@ -15,6 +24,7 @@ from fury.lib import (
     register_wgpu_render_function,
 )
 from fury.material import (
+    PBR_MATERIALS,
     StreamlinesMaterial,
     _StreamlineBakedMaterial,
     _StreamtubeBakedMaterial,
@@ -52,6 +62,7 @@ def sphere(
     theta=16,
     opacity=None,
     material="phong",
+    material_params=None,
     enable_picking=True,
     smooth=True,
     wireframe=False,
@@ -80,7 +91,13 @@ def sphere(
         If both `opacity` and RGBA are provided, the final alpha will be:
         final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
-        The material type for the spheres. Options are 'phong' and 'basic'.
+        The material type for the spheres. Options are 'phong', 'basic',
+        'standard' and 'physical'. The last two are physically based (PBR)
+        materials.
+    material_params : dict, optional
+        Extra properties forwarded to the material, e.g.
+        ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
+        :func:`fury.material._create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the spheres should be pickable in a 3D scene.
     smooth : bool, optional
@@ -129,9 +146,14 @@ def sphere(
         elif radii_arr.size != count:
             radii_arr = np.full((count,), radii_arr.flat[0], dtype=np.float32)
 
-    if impostor:
-        from fury.actor._billboard import billboard_sphere
+    if impostor and (material in PBR_MATERIALS or material_params):
+        logging.warning(
+            "impostor spheres do not support PBR materials or material_params; "
+            "falling back to impostor=False."
+        )
+        impostor = False
 
+    if impostor:
         obj = billboard_sphere(
             centers_arr,
             colors=colors,
@@ -155,6 +177,7 @@ def sphere(
         directions=directions,
         opacity=opacity,
         material=material,
+        material_params=material_params,
         smooth=smooth,
         enable_picking=enable_picking,
         wireframe=wireframe,
@@ -173,6 +196,7 @@ def ellipsoid(
     phi=16,
     theta=16,
     material="phong",
+    material_params=None,
     enable_picking=True,
     smooth=True,
     wireframe=False,
@@ -206,7 +230,13 @@ def ellipsoid(
     theta : int, optional
         The number of segments in the latitude direction.
     material : str, optional
-        The material type for the ellipsoids. Options are 'phong' and 'basic'.
+        The material type for the ellipsoids. Options are 'phong', 'basic',
+        'standard' and 'physical'. The last two are physically based (PBR)
+        materials.
+    material_params : dict, optional
+        Extra properties forwarded to the material, e.g.
+        ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
+        :func:`fury.material._create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Allow picking of the ellipsoids in a 3D scene.
     smooth : bool, optional
@@ -297,6 +327,7 @@ def ellipsoid(
         colors=all_colors,
         opacity=opacity,
         material=material,
+        material_params=material_params,
         smooth=smooth,
         enable_picking=enable_picking,
         repeat_primitive=False,
@@ -317,6 +348,7 @@ def cylinder(
     capped=True,
     opacity=None,
     material="phong",
+    material_params=None,
     enable_picking=True,
     wireframe=False,
     wireframe_thickness=1.0,
@@ -354,7 +386,13 @@ def cylinder(
         If both `opacity` and RGBA are provided, the final alpha will be:
         final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
-        The material type for the cylinders. Options are 'phong' and 'basic'.
+        The material type for the cylinders. Options are 'phong', 'basic',
+        'standard' and 'physical'. The last two are physically based (PBR)
+        materials.
+    material_params : dict, optional
+        Extra properties forwarded to the material, e.g.
+        ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
+        :func:`fury.material._create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the cylinders should be pickable in a 3D scene.
     wireframe : bool, optional
@@ -401,6 +439,7 @@ def cylinder(
             directions=directions,
             opacity=opacity,
             material=material,
+            material_params=material_params,
             enable_picking=enable_picking,
             wireframe=wireframe,
             wireframe_thickness=wireframe_thickness,
@@ -425,6 +464,7 @@ def cylinder(
         directions=directions,
         opacity=opacity,
         material=material,
+        material_params=material_params,
         enable_picking=enable_picking,
         wireframe=wireframe,
         wireframe_thickness=wireframe_thickness,
@@ -443,6 +483,7 @@ def cone(
     directions=(0, 1, 0),
     opacity=None,
     material="phong",
+    material_params=None,
     enable_picking=True,
     wireframe=False,
     wireframe_thickness=1.0,
@@ -477,7 +518,13 @@ def cone(
         If both `opacity` and RGBA are provided, the final alpha will be:
         final_alpha = alpha_in_RGBA * opacity.
     material : str, optional
-        The material type for the cones. Options are 'phong' and 'basic'.
+        The material type for the cones. Options are 'phong', 'basic',
+        'standard' and 'physical'. The last two are physically based (PBR)
+        materials.
+    material_params : dict, optional
+        Extra properties forwarded to the material, e.g.
+        ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
+        :func:`fury.material._create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the cones should be pickable in a 3D scene.
     wireframe : bool, optional
@@ -524,6 +571,7 @@ def cone(
             directions=directions,
             opacity=opacity,
             material=material,
+            material_params=material_params,
             enable_picking=enable_picking,
             wireframe=wireframe,
             wireframe_thickness=wireframe_thickness,
@@ -544,6 +592,7 @@ def cone(
         directions=directions,
         opacity=opacity,
         material=material,
+        material_params=material_params,
         enable_picking=enable_picking,
         wireframe=wireframe,
         wireframe_thickness=wireframe_thickness,

@@ -9,7 +9,13 @@ from fury.actor import (
     actor_from_primitive,
     create_axes_helper,
 )
-from fury.actor.tests._helpers import validate_actors
+from fury.actor.tests._helpers import (
+    PHYSICAL_ONLY_PARAMS,
+    assert_rejects_pbr_params_on_phong,
+    assert_supports_pbr,
+    validate_actors,
+)
+from fury.primitive import prim_square
 
 
 def test_actor_rotate_sets_quaternion_on_local_rotation(sphere_actor):
@@ -410,3 +416,51 @@ def test_actor_accepts_255_array_colors():
     colors_255 = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
     a = actor.arrow(centers=centers, colors=colors_255)
     assert a.prim_count == 3
+
+
+@pytest.mark.parametrize("mesh_material", ["standard", "physical"])
+def test_arrow_supports_pbr(mesh_material):
+    assert_supports_pbr("arrow", mesh_material)
+
+
+def test_arrow_rejects_pbr_params_on_phong():
+    assert_rejects_pbr_params_on_phong("arrow")
+
+
+@pytest.mark.parametrize("mesh_material", ["standard", "physical"])
+def test_actor_from_primitive_forwards_material_params(mesh_material):
+    vertices, faces = prim_square()
+    obj = actor_from_primitive(
+        vertices,
+        faces,
+        centers=np.array([[0.0, 0.0, 0.0]]),
+        material=mesh_material,
+        material_params={"metalness": 0.8, "roughness": 0.2},
+    )
+    assert obj.material.metalness == pytest.approx(0.8)
+    assert obj.material.roughness == pytest.approx(0.2)
+
+
+@pytest.mark.parametrize("param, value", sorted(PHYSICAL_ONLY_PARAMS.items()))
+def test_actor_from_primitive_forwards_physical_only_params(param, value):
+    vertices, faces = prim_square()
+    obj = actor_from_primitive(
+        vertices,
+        faces,
+        centers=np.array([[0.0, 0.0, 0.0]]),
+        material="physical",
+        material_params={param: value},
+    )
+    assert getattr(obj.material, param) == pytest.approx(value)
+
+
+def test_actor_from_primitive_rejects_physical_params_on_standard():
+    vertices, faces = prim_square()
+    with pytest.raises(ValueError, match="Use material='physical'"):
+        actor_from_primitive(
+            vertices,
+            faces,
+            centers=np.array([[0.0, 0.0, 0.0]]),
+            material="standard",
+            material_params={"clearcoat": 1.0},
+        )

@@ -12,6 +12,8 @@ from fury.lib import (
     LineThinSegmentMaterial,
     MeshBasicMaterial,
     MeshPhongMaterial,
+    MeshPhysicalMaterial,
+    MeshStandardMaterial,
     PointsGaussianBlobMaterial,
     PointsMarkerMaterial,
     PointsMaterial,
@@ -84,6 +86,10 @@ def validate_color(color, opacity, mode):
     return color
 
 
+PBR_MATERIALS = ("standard", "physical")
+DEFAULT_PBR_ROUGHNESS = 0.5
+
+
 def _create_mesh_material(
     *,
     material="phong",
@@ -97,6 +103,18 @@ def _create_mesh_material(
     wireframe_thickness=-1.0,
     alpha_mode="blend",
     depth_write=True,
+    metalness=None,
+    roughness=None,
+    emissive=None,
+    emissive_intensity=None,
+    env_map=None,
+    env_map_intensity=None,
+    metalness_map=None,
+    roughness_map=None,
+    emissive_map=None,
+    normal_map=None,
+    normal_scale=None,
+    **kwargs,
 ):
     """
     Create a mesh material.
@@ -104,8 +122,11 @@ def _create_mesh_material(
     Parameters
     ----------
     material : str, optional
-        The type of material to create. Options are 'phong' (default) and
-        'basic'.
+        The type of material to create. Options are 'phong' (default),
+        'basic', 'standard' and 'physical'. The last two are physically based
+        (PBR) materials: 'standard' implements the metallic-roughness workflow
+        and 'physical' extends it with clearcoat, sheen, anisotropy,
+        iridescence and transmission.
     enable_picking : bool, optional
         Whether the material should be pickable in a scene.
     color : tuple or None, optional
@@ -130,6 +151,43 @@ def _create_mesh_material(
         https://docs.pygfx.org/stable/_autosummary/materials/pygfx.materials.Material.html#pygfx.materials.Material.alpha_mode.
     depth_write : bool, optional
         Whether to write depth information for the material.
+    metalness : float, optional
+        How metallic the surface looks, from 0 (dielectric) to 1 (metal).
+        PBR materials only. If None, the pygfx default (0.0) is used.
+        A metal has no diffuse response, so it needs either an ``env_map`` or a
+        directional light to be visible at all.
+    roughness : float, optional
+        How rough the surface is, from 0 (mirror-like) to 1 (fully diffuse).
+        PBR materials only. Defaults to ``DEFAULT_PBR_ROUGHNESS`` (0.5) rather
+        than the pygfx default of 1.0, at which a metal renders as a flat disc.
+    emissive : str or tuple, optional
+        The emissive (light emitting) color of the material. PBR materials only.
+    emissive_intensity : float, optional
+        The intensity applied to ``emissive``. PBR materials only.
+    env_map : Texture, optional
+        The environment cube map used for image based lighting. Without it, a
+        PBR material is lit only by the lights present in the scene. PBR
+        materials only.
+    env_map_intensity : float, optional
+        The intensity of the environment map contribution. PBR materials only.
+    metalness_map : TextureMap or Texture, optional
+        Texture whose blue channel modulates ``metalness``. PBR materials only.
+    roughness_map : TextureMap or Texture, optional
+        Texture whose green channel modulates ``roughness``. PBR materials only.
+    emissive_map : TextureMap or Texture, optional
+        Texture modulating ``emissive``. PBR materials only.
+    normal_map : TextureMap or Texture, optional
+        Tangent space normal map. PBR materials only.
+    normal_scale : tuple, optional
+        How much ``normal_map`` affects the surface, as an (x, y) pair.
+        PBR materials only.
+    **kwargs : dict, optional
+        Extra properties forwarded to the underlying pygfx material. Only
+        accepted when ``material='physical'``, where they cover the additional
+        ``MeshPhysicalMaterial`` properties such as ``ior``, ``clearcoat``,
+        ``clearcoat_roughness``, ``anisotropy``, ``anisotropy_rotation``,
+        ``sheen``, ``sheen_color``, ``sheen_roughness``, ``specular``,
+        ``specular_intensity`` and ``iridescence``.
 
     Returns
     -------
@@ -139,7 +197,17 @@ def _create_mesh_material(
     Raises
     ------
     ValueError
-        If an unsupported material type is specified.
+        If an unsupported material type is specified, or if PBR properties are
+        given for a material that is not physically based.
+
+    Notes
+    -----
+    The FURY 0.x helpers ``manifest_pbr`` and ``manifest_principled`` map onto
+    ``material='physical'`` as follows: ``metallic`` -> ``metalness``,
+    ``coat_strength`` -> ``clearcoat``, ``coat_roughness`` ->
+    ``clearcoat_roughness``, ``base_ior`` -> ``ior``, ``sheen_tint`` ->
+    ``sheen_color``; ``roughness``, ``anisotropy``, ``anisotropy_rotation`` and
+    ``sheen`` keep their names.
     """
     opacity = validate_opacity(opacity)
     color = validate_color(color, opacity, mode)
@@ -157,10 +225,48 @@ def _create_mesh_material(
         "depth_write": depth_write,
     }
 
+    if roughness is None and material in PBR_MATERIALS:
+        roughness = 0.5
+
+    pbr_args = {
+        name: value
+        for name, value in {
+            "metalness": metalness,
+            "roughness": roughness,
+            "emissive": emissive,
+            "emissive_intensity": emissive_intensity,
+            "env_map": env_map,
+            "env_map_intensity": env_map_intensity,
+            "metalness_map": metalness_map,
+            "roughness_map": roughness_map,
+            "emissive_map": emissive_map,
+            "normal_map": normal_map,
+            "normal_scale": normal_scale,
+        }.items()
+        if value is not None
+    }
+    pbr_args.update(kwargs)
+
+    if material not in PBR_MATERIALS and pbr_args:
+        raise ValueError(
+            f"PBR properties {sorted(pbr_args)} are not supported by material "
+            f"'{material}'. Use one of {PBR_MATERIALS} instead."
+        )
+
+    if material == "standard" and kwargs:
+        raise ValueError(
+            f"Properties {sorted(kwargs)} are not supported by material "
+            "'standard'. Use material='physical' instead."
+        )
+
     if material == "phong":
         return MeshPhongMaterial(**args)
     elif material == "basic":
         return MeshBasicMaterial(**args)
+    elif material == "standard":
+        return MeshStandardMaterial(**args, **pbr_args)
+    elif material == "physical":
+        return MeshPhysicalMaterial(**args, **pbr_args)
     else:
         raise ValueError(f"Unsupported material type: {material}")
 

@@ -36,6 +36,7 @@ files = [
     "viz_tesseract.py",
     "viz_slicer.py",
     "viz_skybox.py",
+    "viz_pbr_interactive.py",
     "viz_emwave_animation.py",
     "viz_vector_field.py",
     "viz_spherical_harmonics.py",

@@ -1,3 +1,4 @@
+import logging
 import math
 
 import numpy as np
@@ -8,7 +9,14 @@ from fury.actor.curved import (
     _estimate_streamtube_buffer_size,
     _split_streamtube_lines,
 )
-from fury.actor.tests._helpers import validate_actors
+from fury.actor.tests._helpers import (
+    CENTERS,
+    LINES,
+    PBR_MATERIAL_TYPES,
+    assert_rejects_pbr_params_on_phong,
+    assert_supports_pbr,
+    validate_actors,
+)
 from fury.lib import BufferUsage
 from fury.material import (
     StreamlinesMaterial,
@@ -560,3 +568,48 @@ def test_ellipsoid_accepts_hex_colors():
     np.testing.assert_array_almost_equal(
         a1.geometry.colors.view, a2.geometry.colors.view
     )
+
+
+CURVED_PBR_ACTORS = ["sphere", "ellipsoid", "cylinder", "cone"]
+
+#: sphere defaults to impostor=True, whose billboard shader has no PBR path and
+#: therefore warns before falling back. That fallback is asserted on its own in
+#: test_sphere_impostor_falls_back_for_pbr_material, so ask for real geometry
+#: here and keep these cases warning-free.
+CURVED_PBR_BUILD_KWARGS = {"sphere": {"impostor": False}}
+
+
+@pytest.mark.parametrize("actor_name", CURVED_PBR_ACTORS)
+@pytest.mark.parametrize("mesh_material", ["standard", "physical"])
+def test_curved_actors_support_pbr(actor_name, mesh_material):
+    assert_supports_pbr(
+        actor_name, mesh_material, **CURVED_PBR_BUILD_KWARGS.get(actor_name, {})
+    )
+
+
+@pytest.mark.parametrize("actor_name", CURVED_PBR_ACTORS)
+def test_curved_actors_reject_pbr_params_on_phong(actor_name):
+    assert_rejects_pbr_params_on_phong(
+        actor_name, **CURVED_PBR_BUILD_KWARGS.get(actor_name, {})
+    )
+
+
+def test_sphere_impostor_falls_back_for_pbr_material(caplog):
+    # The impostor shader has no PBR path, so a PBR request must switch to real
+    # geometry rather than silently dropping the material -- and must say so.
+    # This is the one case that leaves impostor at its default; everywhere else
+    # asks for geometry up front so no warning is raised.
+    with caplog.at_level(logging.WARNING):
+        obj = actor.sphere(CENTERS, impostor=True, material="standard")
+
+    assert type(obj.material) is PBR_MATERIAL_TYPES["standard"]
+    assert "impostor spheres do not support PBR materials" in caplog.text
+    assert "falling back to impostor=False" in caplog.text
+
+
+@pytest.mark.parametrize("mesh_material", ["standard", "physical"])
+def test_streamtube_rejects_pbr_material(mesh_material):
+    # Streamtubes render through a baked phong shader, so a PBR request must
+    # fail loudly rather than be silently ignored.
+    with pytest.raises(ValueError, match="phong"):
+        actor.streamtube(LINES, material=mesh_material)
