@@ -41,9 +41,26 @@ fn vs_main(in: VertexInput) -> Varyings {
 // p = current point position (relative to center 0,0)
 // b = half-size of the box (width/2, height/2)
 // r = corner radius
-fn sd_round_box(p: vec2<f32>, b: vec2<f32>, r: f32) -> f32 {
-    let q = abs(p) - b + vec2<f32>(r, r);
-    return length(max(q, vec2<f32>(0.0, 0.0))) + min(max(q.x, q.y), 0.0) - r;
+fn sd_round_box(p: vec2<f32>, b: vec2<f32>, r: vec4<f32>) -> f32 {
+    // r = (top_left, top_right, bottom_right, bottom_left)
+    // p is local position relative to center. Assuming +x is right, +y is up
+    var rad: f32;
+    if (p.x > 0.0) {
+        if (p.y > 0.0) {
+            rad = r[1]; // top_right
+        } else {
+            rad = r[2]; // bottom_right
+        }
+    } else {
+        if (p.y > 0.0) {
+            rad = r[0]; // top_left
+        } else {
+            rad = r[3]; // bottom_left
+        }
+    }
+
+    let q = abs(p) - b + vec2<f32>(rad, rad);
+    return length(max(q, vec2<f32>(0.0, 0.0))) + min(max(q.x, q.y), 0.0) - rad;
 }
 
 @fragment
