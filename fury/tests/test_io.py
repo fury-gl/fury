@@ -2,7 +2,7 @@ import os
 from os.path import join as pjoin
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 
-# from PIL import Image
+from PIL import Image
 import numpy as np
 import numpy.testing as npt
 
@@ -26,6 +26,7 @@ from fury.io import (
     read_points,
     save_image,
     save_network,
+    save_as_gif,
 )
 
 # save_polydata,
@@ -398,7 +399,55 @@ def test_save_load_image():
         "test.tiff",
         compression_type="invalid",
     )
+def test_save_as_gif():
+    """Test saving multiple frames as an animated GIF."""
+    frames = np.zeros((3, 20, 20, 3), dtype=np.uint8)
 
+    frames[0] = [255, 0, 0]
+    frames[1] = [0, 255, 0]
+    frames[2] = [0, 0, 255]
+
+    with InTemporaryDirectory() as odir:
+        filename = pjoin(odir, "animation.gif")
+
+        save_as_gif(frames, filename)
+
+        assert os.path.isfile(filename)
+
+        with Image.open(filename) as gif:
+            assert gif.n_frames == 3
+def test_save_as_gif_colors():
+    """Test that GIF frame colors are preserved."""
+    frames = np.zeros((3, 10, 10, 3), dtype=np.uint8)
+
+    frames[0] = [255, 0, 0]
+    frames[1] = [0, 255, 0]
+    frames[2] = [0, 0, 255]
+
+    with InTemporaryDirectory() as odir:
+        filename = pjoin(odir, "colors.gif")
+
+        save_as_gif(frames, filename)
+
+        with Image.open(filename) as gif:
+            for i in range(3):
+                gif.seek(i)
+                saved_frame = np.asarray(gif.convert("RGB"))
+
+                npt.assert_array_equal(saved_frame, frames[i])
+def test_save_as_gif_invalid_extension():
+    """Test that saving a GIF with an invalid extension raises an error."""
+    frames = np.zeros((2, 10, 10, 3), dtype=np.uint8)
+
+    with InTemporaryDirectory() as odir:
+        filename = pjoin(odir, "animation.png")
+
+        npt.assert_raises(
+            OSError,
+            save_as_gif,
+            frames,
+            filename,
+        )
 
 # @pytest.mark.skipif(
 #     skip_osx,
