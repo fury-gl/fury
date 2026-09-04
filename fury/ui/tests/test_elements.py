@@ -843,6 +843,25 @@ def test_textbox_handle_character_returns_false():
     result = tb.handle_character("Backspace", "")
     assert result is False
 
+def test_textbox_font_size_updates_background():
+    """Test that the textbox background updates when font size changes."""
+    textbox = ui.TextBox2D(
+        width=10,
+        height=2,
+        font_size=20,
+    )
+
+    initial_size = textbox.text.size
+
+    textbox.font_size = 40
+
+    updated_size = textbox.text.size
+
+    assert textbox.font_size == 40
+    assert textbox.text.font_size == 40
+    assert updated_size[0] > initial_size[0]
+    assert updated_size[1] > initial_size[1]
+
 
 def test_ui_line_slider_2d_variations(recording=False):
     for orientation in ["horizontal", "vertical"]:
