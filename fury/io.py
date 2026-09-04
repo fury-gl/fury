@@ -263,6 +263,54 @@ def save_image(
     im.save(filename, **save_kwargs)
 
 
+def save_as_gif(arr, filename, *, duration=100, loop=0):
+    """
+    Save multiple image frames as an animated GIF.
+
+    Parameters
+    ----------
+    arr : ndarray
+        Array containing animation frames with shape (N, H, W),
+        (N, H, W, 3), or (N, H, W, 4).
+    filename : str
+        Output filename. Should be a gif file.
+    duration : int, optional
+        Duration of each frame in milliseconds.
+    loop : int, optional
+        Number of times the animation should loop. 0 means infinite looping.
+    """
+    extension = get_extension(filename).lower()
+
+    if extension != "gif":
+        raise OSError(
+            f"Impossible to save the file {filename}: Unknown extension {extension}"
+        )
+
+    if arr.ndim not in (3, 4):
+        raise ValueError(
+            "GIF frames should have shape (N, H, W), "
+            "(N, H, W, 3), or (N, H, W, 4)."
+        )
+
+    if arr.ndim == 4 and arr.shape[-1] not in (3, 4):
+        raise ValueError(
+            "GIF frames must have 3 (RGB) or 4 (RGBA) channels."
+        )
+
+    if arr.shape[0] == 0:
+        raise ValueError("At least one frame is required to create a GIF.")
+
+    frames = [Image.fromarray(frame) for frame in arr]
+
+    frames[0].save(
+        filename,
+        save_all=True,
+        append_images=frames[1:],
+        duration=duration,
+        loop=loop,
+    )
+
+
 def get_extension(file_path):
     """
     Get the file extension.
@@ -312,53 +360,6 @@ def load_network(file_path, format=None):
         data = f.read()
 
     return parse_network(data, format)
-
-def save_as_gif(arr, filename, *, duration=100, loop=0):
-    """
-    Save multiple image frames as an animated GIF.
-
-    Parameters
-    ----------
-    arr : ndarray
-        Array containing animation frames with shape (N, H, W),
-        (N, H, W, 3), or (N, H, W, 4).
-    filename : str
-        Output filename. Should be a gif file.
-    duration : int, optional
-        Duration of each frame in milliseconds.
-    loop : int, optional
-        Number of times the animation should loop. 0 means infinite looping.
-    """
-    extension = get_extension(filename).lower()
-
-    if extension != "gif":
-        raise OSError(
-            f"Impossible to save the file {filename}: Unknown extension {extension}"
-        )
-
-    if arr.ndim not in (3, 4):
-        raise ValueError(
-            "GIF frames should have shape (N, H, W), "
-            "(N, H, W, 3), or (N, H, W, 4)."
-        )
-
-    if arr.ndim == 4 and arr.shape[-1] not in (3, 4):
-        raise ValueError(
-            "GIF frames must have 3 (RGB) or 4 (RGBA) channels."
-        )
-
-    if arr.shape[0] == 0:
-        raise ValueError("At least one frame is required to create a GIF.")
-
-    frames = [Image.fromarray(frame) for frame in arr]
-
-    frames[0].save(
-        filename,
-        save_all=True,
-        append_images=frames[1:],
-        duration=duration,
-        loop=loop,
-    )
 
 
 def save_network(network_data, file_path, format=None):
