@@ -979,6 +979,21 @@ class TextBox2D(UI):
         self.text.on_key_press = self.key_press
         self.text.on_key_release = self.key_release
         self.text.on_wheel = self.wheel_scroll
+    @property
+    def font_size(self):
+        return self._font_size
+    @font_size.setter
+    def font_size(self, value):
+        self._font_size = value
+
+        bold_factor =1.25 if self._bold else 1.0
+        italic_factor = 1.1 if self._italic else 1.0
+        bg_width = int(self._width * self._font_size * 0.5 * bold_factor * italic_factor)
+        bg_height = int ((self._height *self._font_size *1.5) +10)
+
+        if hasattr(self, 'text') and self.text is not None:
+            self.text.font_size = value
+            self.text.size = (bg_width, bg_height)
 
     def _update_height(self):
         """
