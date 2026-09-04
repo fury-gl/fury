@@ -24,9 +24,9 @@ from fury.io import (
     read_lines,
     read_mesh,
     read_points,
+    save_as_gif,
     save_image,
     save_network,
-    save_as_gif,
 )
 
 # save_polydata,
