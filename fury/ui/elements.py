@@ -983,7 +983,7 @@ class TextBox2D(UI):
     def font_size(self):
         return self._font_size
     @font_size.setter
-    def font_size((self, value):
+    def font_size(self, value):
         self._font_size = value
 
         bold_factor =1.25 if self._bold else 1.0
