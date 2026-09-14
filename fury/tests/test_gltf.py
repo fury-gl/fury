@@ -1,11 +1,13 @@
+import numpy as np
 import numpy.testing as npt
 import pytest
 
 from fury import window
 from fury.actor import Mesh, SkinnedMesh
 from fury.data import fetch_gltf, read_viz_gltf
-from fury.gltf import glTF, have_gltflib, load_gltf, load_gltf_mesh
+from fury.gltf import GLTFAnimation, glTF, have_gltflib, load_gltf, load_gltf_mesh
 from fury.lib import gfx
+from fury.motion import Timeline
 from fury.optpkg import TripWireError
 
 pytestmark = pytest.mark.skipif(not have_gltflib, reason="Requires gltflib")
@@ -133,3 +135,124 @@ def test_gltf_renders():
 
     npt.assert_equal(image.shape[-1], 4)
     npt.assert_equal(image[..., :3].any(), True)
+
+
+def test_gltf_animations():
+    fetch_gltf(name="Fox")
+    filename = read_viz_gltf("Fox")
+    gltf_obj = glTF(filename)
+
+    npt.assert_equal(list(gltf_obj.animations), ["Survey", "Walk", "Run"])
+    npt.assert_equal(isinstance(gltf_obj.animations["Walk"], GLTFAnimation), True)
+    npt.assert_equal(gltf_obj.animations is gltf_obj.animations, True)
+
+
+def test_gltf_animations_unnamed():
+    fetch_gltf(name="BoxAnimated")
+    filename = read_viz_gltf("BoxAnimated")
+    gltf_obj = glTF(filename)
+
+    npt.assert_equal(list(gltf_obj.animations), ["anim_0"])
+
+
+def test_gltf_animations_absent():
+    fetch_gltf(name="Duck")
+    filename = read_viz_gltf("Duck")
+    gltf_obj = glTF(filename)
+
+    npt.assert_equal(gltf_obj.animations, {})
+    npt.assert_equal(gltf_obj.main_animation().duration, 0.0)
+
+
+def test_gltf_animation_duration():
+    fetch_gltf(name="BoxAnimated")
+    filename = read_viz_gltf("BoxAnimated")
+    animation = glTF(filename).animations["anim_0"]
+
+    npt.assert_almost_equal(animation.duration, 3.7083333, decimal=5)
+    npt.assert_equal(animation.name, None)
+
+
+def test_gltf_main_animation():
+    fetch_gltf(name="BoxAnimated")
+    filename = read_viz_gltf("BoxAnimated")
+    gltf_obj = glTF(filename)
+    timeline = gltf_obj.main_animation()
+
+    npt.assert_equal(isinstance(timeline, Timeline), True)
+    npt.assert_equal(timeline.animations, list(gltf_obj.animations.values()))
+    npt.assert_almost_equal(timeline.duration, 3.7083333, decimal=5)
+    npt.assert_equal(timeline.has_playback_panel, False)
+
+    panelled = gltf_obj.main_animation(playback_panel=True)
+    npt.assert_equal(panelled.has_playback_panel, True)
+
+
+def test_gltf_animation_moves_nodes():
+    fetch_gltf(name="BoxAnimated")
+    filename = read_viz_gltf("BoxAnimated")
+    gltf_obj = glTF(filename)
+    timeline = gltf_obj.main_animation()
+    actor = gltf_obj.actors()[-1]
+
+    timeline.seek(0.0)
+    timeline.update(force=True)
+    start = np.array(actor.world.position, copy=True)
+
+    timeline.seek(timeline.duration / 2)
+    timeline.update(force=True)
+    middle = np.array(actor.world.position, copy=True)
+
+    npt.assert_equal(np.allclose(start, middle), False)
+
+
+def test_gltf_animation_drives_skeleton():
+    fetch_gltf(name="RiggedFigure")
+    filename = read_viz_gltf("RiggedFigure")
+    gltf_obj = glTF(filename)
+    timeline = gltf_obj.main_animation()
+    bones = [obj for obj in gltf_obj.scene.iter() if isinstance(obj, gfx.Bone)]
+
+    timeline.seek(0.0)
+    timeline.update(force=True)
+    start = [np.array(bone.local.matrix, copy=True) for bone in bones]
+
+    timeline.seek(timeline.duration / 2)
+    timeline.update(force=True)
+    moved = [
+        not np.allclose(before, bone.local.matrix)
+        for before, bone in zip(start, bones, strict=True)
+    ]
+
+    npt.assert_equal(len(bones), 19)
+    npt.assert_equal(any(moved), True)
+
+
+def test_gltf_animation_drives_morph_weights():
+    fetch_gltf(name="AnimatedMorphCube")
+    filename = read_viz_gltf("AnimatedMorphCube")
+    gltf_obj = glTF(filename)
+    timeline = gltf_obj.main_animation()
+    mesh = gltf_obj.actors()[0]
+
+    timeline.seek(0.0)
+    timeline.update(force=True)
+    start = np.array(mesh.morph_target_influences, copy=True)
+
+    timeline.seek(timeline.duration / 4)
+    timeline.update(force=True)
+    later = np.array(mesh.morph_target_influences, copy=True)
+
+    npt.assert_equal(np.allclose(start, later), False)
+
+
+def test_gltf_animation_adds_scene_to_window():
+    fetch_gltf(name="BoxAnimated")
+    filename = read_viz_gltf("BoxAnimated")
+    gltf_obj = glTF(filename)
+    timeline = gltf_obj.main_animation()
+
+    scene = window.Scene()
+    timeline.add_to_scene(scene)
+
+    npt.assert_equal(gltf_obj.scene in scene.main_scene.children, True)

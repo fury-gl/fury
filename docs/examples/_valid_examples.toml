@@ -46,6 +46,7 @@ files = [
     "viz_network.py",
     "viz_read_mesh.py",
     "viz_gltf.py",
+    "viz_gltf_animated.py",
     "viz_flight_simulator.py",
     "viz_solar_system.py",
     "viz_helical_solar_system.py",

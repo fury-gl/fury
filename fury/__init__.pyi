@@ -220,6 +220,7 @@ from .deprecator import (
 )
 
 from .gltf import (
+    GLTFAnimation as GLTFAnimation,
     glTF as glTF,
     load_gltf as load_gltf,
     load_gltf_mesh as load_gltf_mesh,

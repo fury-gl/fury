@@ -1,7 +1,11 @@
 """Reading of glTF 2.0 assets."""
 
+import math
+from time import perf_counter
+
 from fury.actor import Line, Mesh, Points, SkinnedMesh
 from fury.lib import gfx
+from fury.motion import Animation, Timeline
 from fury.optpkg import TripWireError, optional_package
 
 gltf_msg = (
@@ -150,6 +154,7 @@ class glTF:
         """Read a glTF 2.0 asset."""
         self._gltf = load_gltf(filename, quiet=quiet, remote_ok=remote_ok)
         self._actors = None
+        self._animations = None
 
     @property
     def scene(self):
@@ -219,3 +224,98 @@ class glTF:
             ]
 
         return self._actors
+
+    @property
+    def animations(self):
+        """
+        Get the animation clips of the asset, keyed by name.
+
+        Clips the asset leaves unnamed are keyed ``anim_0``, ``anim_1`` and so
+        on, by the order in which they are declared.
+
+        Returns
+        -------
+        dict of str to GLTFAnimation
+            Animations found in the asset.
+        """
+        if self._animations is None:
+            clips = self._gltf.animations or []
+            self._animations = {
+                clip.name or f"anim_{index}": GLTFAnimation(clip, self.scene)
+                for index, clip in enumerate(clips)
+            }
+
+        return self._animations
+
+    def main_animation(self, *, playback_panel=False, loop=True):
+        """
+        Get a Timeline playing every animation of the asset together.
+
+        Parameters
+        ----------
+        playback_panel : bool, optional
+            Whether to attach a playback panel to the Timeline.
+        loop : bool, optional
+            Whether to restart the Timeline once it reaches its end.
+
+        Returns
+        -------
+        Timeline
+            Timeline controlling every animation of the asset.
+        """
+        return Timeline(
+            animations=list(self.animations.values()),
+            playback_panel=playback_panel,
+            loop=loop,
+        )
+
+
+class GLTFAnimation(Animation):
+    """
+    Playback of a single glTF animation clip.
+
+    The clip is evaluated by PyGfx, which writes the node transforms, joint
+    matrices and morph weights it drives straight onto the imported scene. This
+    class wraps that evaluation in the FURY animation interface, so a clip can
+    be handed to a :class:`fury.motion.Timeline` and share its playback
+    controls with the rest of a scene.
+
+    Parameters
+    ----------
+    clip : gfx.AnimationClip
+        Clip to play.
+    root : gfx.WorldObject
+        Imported scene the clip drives.
+    loop : bool, optional
+        Whether to restart the clip once it reaches its end.
+
+    Attributes
+    ----------
+    name : str
+        Name of the clip.
+    """
+
+    def __init__(self, clip, root, *, loop=True):
+        """Initialize the GLTFAnimation."""
+        super().__init__(actors=root, length=clip.duration, loop=loop)
+        self.name = clip.name
+        self._mixer = gfx.AnimationMixer()
+        self._action = self._mixer.clip_action(clip)
+        self._action.set_loop(repetitions=math.inf if loop else 1)
+        self._action.play()
+
+    def update_animation(self, *, time=None):
+        """
+        Evaluate the clip at a given time.
+
+        Parameters
+        ----------
+        time : float, optional
+            Time to evaluate the clip at. If None, the time elapsed since the
+            animation was created is used.
+        """
+        if time is None:
+            time = perf_counter() - self._start_time
+
+        self._current_timestamp = time
+        self._mixer.set_time(time)
