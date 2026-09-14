@@ -1,9 +1,10 @@
 import numpy.testing as npt
 import pytest
 
-from fury.actor import Mesh
+from fury import window
+from fury.actor import Mesh, SkinnedMesh
 from fury.data import fetch_gltf, read_viz_gltf
-from fury.gltf import have_gltflib, load_gltf, load_gltf_mesh
+from fury.gltf import glTF, have_gltflib, load_gltf, load_gltf_mesh
 from fury.lib import gfx
 from fury.optpkg import TripWireError
 
@@ -76,3 +77,59 @@ def test_load_gltf_without_gltflib(monkeypatch):
 
     npt.assert_raises(TripWireError, load_gltf, "Duck.gltf")
     npt.assert_raises(TripWireError, load_gltf_mesh, "Duck.gltf")
+
+
+def test_gltf_scene():
+    fetch_gltf(name="Duck")
+    filename = read_viz_gltf("Duck")
+    gltf_obj = glTF(filename)
+
+    npt.assert_equal(isinstance(gltf_obj.scene, gfx.Group), True)
+    npt.assert_equal(len(gltf_obj.scenes), 1)
+    npt.assert_equal(len(gltf_obj.cameras), 1)
+    npt.assert_equal(gltf_obj.lights, [])
+
+
+def test_gltf_actors():
+    fetch_gltf(name="Duck")
+    filename = read_viz_gltf("Duck")
+    gltf_obj = glTF(filename)
+    actors = gltf_obj.actors()
+
+    npt.assert_equal(len(actors), 1)
+    npt.assert_equal(isinstance(actors[0], Mesh), True)
+    npt.assert_equal(actors[0].geometry.positions.data.shape, (2399, 3))
+
+
+def test_gltf_actors_are_scene_nodes():
+    fetch_gltf(name="Duck")
+    filename = read_viz_gltf("Duck")
+    gltf_obj = glTF(filename)
+    actor = gltf_obj.actors()[0]
+
+    npt.assert_equal(actor in list(gltf_obj.scene.iter()), True)
+    npt.assert_equal(gltf_obj.actors() is gltf_obj.actors(), True)
+
+
+def test_gltf_skinned_actors():
+    fetch_gltf(name="RiggedFigure")
+    filename = read_viz_gltf("RiggedFigure")
+    gltf_obj = glTF(filename)
+    actors = gltf_obj.actors()
+
+    npt.assert_equal(len(actors), 1)
+    npt.assert_equal(isinstance(actors[0], SkinnedMesh), True)
+    npt.assert_equal(isinstance(actors[0], gfx.SkinnedMesh), True)
+
+
+def test_gltf_renders():
+    fetch_gltf(name="Duck")
+    filename = read_viz_gltf("Duck")
+    gltf_obj = glTF(filename)
+
+    scene = window.Scene()
+    scene.add(*gltf_obj.actors())
+    image = window.snapshot(scene=scene, fname=None, return_array=True)
+
+    npt.assert_equal(image.shape[-1], 4)
+    npt.assert_equal(image[..., :3].any(), True)

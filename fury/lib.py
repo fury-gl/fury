@@ -61,6 +61,7 @@ if have_py_side6:
     from PySide6 import QtGui, QtWidgets
 
 GfxGroup = gfx.Group
+GfxSkinnedMesh = gfx.SkinnedMesh
 Texture = gfx.Texture
 TextureMap = gfx.TextureMap
 VolumeSliceMaterial = gfx.VolumeSliceMaterial

@@ -1,6 +1,6 @@
 """Reading of glTF 2.0 assets."""
 
-from fury.actor import Mesh
+from fury.actor import Line, Mesh, Points, SkinnedMesh
 from fury.lib import gfx
 from fury.optpkg import TripWireError, optional_package
 
@@ -9,6 +9,14 @@ gltf_msg = (
     "Please install or upgrade gltflib using pip install -U fury[gltf]"
 )
 _, have_gltflib, _ = optional_package("gltflib", trip_msg=gltf_msg)
+
+# Drawables the PyGfx glTF importer builds, mapped to their FURY counterpart.
+_ACTOR_TYPES = {
+    gfx.Mesh: Mesh,
+    gfx.SkinnedMesh: SkinnedMesh,
+    gfx.Points: Points,
+    gfx.Line: Line,
+}
 
 
 def _check_gltflib():
@@ -26,23 +34,24 @@ def _check_gltflib():
 
 def _to_actor(obj):
     """
-    Retype a PyGfx mesh as a FURY actor.
+    Retype a PyGfx drawable as a FURY actor.
 
-    ``Mesh`` subclasses ``gfx.Mesh`` without adding state, so rebinding the
-    class exposes the FURY actor methods on the object the importer built,
-    leaving it usable as the same node of the imported scene graph.
+    Each FURY actor class subclasses its PyGfx counterpart without adding
+    state, so rebinding the class exposes the FURY actor methods on the object
+    the importer built, leaving it usable as the same node of the imported
+    scene graph.
 
     Parameters
     ----------
-    obj : gfx.Mesh
-        Mesh produced by the PyGfx glTF importer.
+    obj : gfx.WorldObject
+        Drawable produced by the PyGfx glTF importer.
 
     Returns
     -------
-    Mesh
-        The same object, retyped as a FURY mesh actor.
+    Actor
+        The same object, retyped as the matching FURY actor.
     """
-    obj.__class__ = Mesh
+    obj.__class__ = _ACTOR_TYPES[type(obj)]
     return obj
 
 
@@ -110,3 +119,103 @@ def load_gltf_mesh(fname, *, materials=True, quiet=True, remote_ok=False):
     )
 
     return [_to_actor(mesh) for mesh in meshes]
+
+
+class glTF:
+    """
+    Reader for the contents of a glTF 2.0 asset.
+
+    Parameters
+    ----------
+    filename : str
+        Path of the ``.gltf`` or ``.glb`` file.
+    quiet : bool, optional
+        Whether to suppress the warnings raised for unsupported glTF features.
+    remote_ok : bool, optional
+        Whether ``filename`` is allowed to be a URL.
+
+    Attributes
+    ----------
+    scene : gfx.Group
+        Default scene of the asset.
+    scenes : list of gfx.Group
+        Every scene the asset declares.
+    cameras : list of gfx.Camera
+        Cameras the asset declares.
+    lights : list of gfx.Light
+        Punctual lights the asset declares.
+    """
+
+    def __init__(self, filename, *, quiet=True, remote_ok=False):
+        """Read a glTF 2.0 asset."""
+        self._gltf = load_gltf(filename, quiet=quiet, remote_ok=remote_ok)
+        self._actors = None
+
+    @property
+    def scene(self):
+        """
+        Get the default scene of the asset.
+
+        Returns
+        -------
+        gfx.Group
+            Scene the asset nominates as its default.
+        """
+        return self._gltf.scene
+
+    @property
+    def scenes(self):
+        """
+        Get every scene the asset declares.
+
+        Returns
+        -------
+        list of gfx.Group
+            Scenes found in the asset.
+        """
+        return self._gltf.scenes
+
+    @property
+    def cameras(self):
+        """
+        Get the cameras the asset declares.
+
+        Returns
+        -------
+        list of gfx.Camera
+            Cameras found in the asset, positioned by their node transform.
+        """
+        return self._gltf.cameras
+
+    @property
+    def lights(self):
+        """
+        Get the punctual lights the asset declares.
+
+        Returns
+        -------
+        list of gfx.Light
+            Lights found in the asset, positioned by their node transform.
+        """
+        return self._gltf.lights
+
+    def actors(self):
+        """
+        Get the drawables of the default scene as FURY actors.
+
+        The actors are the nodes of :attr:`scene` itself, so their node
+        transforms are already applied and moving an actor moves the scene
+        with it.
+
+        Returns
+        -------
+        list of Actor
+            Mesh, skinned mesh, point and line actors of the default scene.
+        """
+        if self._actors is None:
+            self._actors = [
+                _to_actor(obj)
+                for obj in self.scene.iter(lambda x: type(x) in _ACTOR_TYPES)
+            ]
+
+        return self._actors

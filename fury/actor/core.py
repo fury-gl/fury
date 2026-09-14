@@ -13,6 +13,7 @@ from fury.geometry import (
 from fury.io import load_image
 from fury.lib import (
     Geometry,
+    GfxSkinnedMesh,
     ImageBasicMaterial,
     MeshBasicMaterial,
     MeshPhongMaterial,
@@ -150,6 +151,13 @@ class Actor:
 
 class Mesh(gfx.Mesh, Actor):
     """Mesh actor class."""
+
+
+class SkinnedMeshActor(GfxSkinnedMesh, Actor):
+    """Skinned mesh actor class."""
+
+
+SkinnedMesh = SkinnedMeshActor
 
 
 class Points(gfx.Points, Actor):
