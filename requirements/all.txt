@@ -29,4 +29,5 @@ PySide6
 jupyter-rfb
 imgui_bundle; python_version >= "3.12"
 numba
+gltflib
 opencv-python

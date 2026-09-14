@@ -11,7 +11,7 @@ __all__ = [
     "data",
     "deprecator",
     "decorators",
-    #     "gltf",
+    "gltf",
     #     "interactor",
     "io",
     #     "layout",
@@ -43,7 +43,7 @@ from . import (
     data,
     decorators,
     deprecator,
-    #     gltf,
+    gltf,
     #     interactor,
     io,
     lib,
@@ -219,9 +219,12 @@ from .deprecator import (
     is_bad_version as is_bad_version,
 )
 
+from .gltf import (
+    load_gltf as load_gltf,
+    load_gltf_mesh as load_gltf_mesh,
+)
+
 # # from .gltf import (
-# #     glTF as glTF,
-# #     _connect_primitives as _connect_primitives,
 # #     export_scene as export_scene,
 # #     get_prim as get_prim,
 # #     write_accessor as write_accessor,
