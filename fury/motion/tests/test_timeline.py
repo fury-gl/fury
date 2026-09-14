@@ -176,3 +176,56 @@ def test_timeline_add_and_remove_from_scene():
 
     assert tl._scene is None
     assert anim._added_to_scene is False
+
+
+def test_timeline_playback_panel_follows_playback():
+    tl = Timeline(length=10, playback_panel=True)
+    panel = tl.playback_panel
+
+    assert panel.playing is False
+    assert panel._play_pause_btn.toggled is False
+
+    tl.play()
+    assert panel.playing is True
+    assert panel._play_pause_btn.toggled is True
+
+    tl.pause()
+    assert panel.playing is False
+    assert panel._play_pause_btn.toggled is False
+
+    tl.restart()
+    assert panel.playing is True
+    assert panel._play_pause_btn.toggled is True
+
+    tl.stop()
+    assert panel.playing is False
+    assert panel._play_pause_btn.toggled is False
+
+
+def test_timeline_playback_panel_button_drives_timeline():
+    tl = Timeline(length=10, playback_panel=True)
+    panel = tl.playback_panel
+
+    panel._play_pause_callback(None)
+    assert tl.playing is True
+    assert panel.playing is True
+
+    panel._play_pause_callback(None)
+    assert tl.playing is False
+    assert panel.playing is False
+
+
+def test_timeline_playback_panel_follows_loop_and_speed():
+    tl = Timeline(length=10, playback_panel=True, loop=True)
+    panel = tl.playback_panel
+
+    assert panel._loop_btn.toggled is True
+
+    tl.loop = False
+    assert panel._loop_btn.toggled is False
+
+    tl.loop = True
+    assert panel._loop_btn.toggled is True
+
+    tl.speed = 2.0
+    assert panel.speed == 2.0

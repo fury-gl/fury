@@ -119,6 +119,11 @@ class Timeline:
         """
         return self._duration
 
+    def _sync_playback_panel(self):
+        """Show the current playback state on the playback panel, if there is one."""
+        if self.has_playback_panel:
+            self.playback_panel.playing = self._playing
+
     def play(self):
         """
         Play the animation.
@@ -134,6 +139,7 @@ class Timeline:
                 perf_counter() - self._current_timestamp / self.speed
             )
             self._playing = True
+            self._sync_playback_panel()
 
     def pause(self):
         """
@@ -143,6 +149,7 @@ class Timeline:
         """
         self._current_timestamp = self.current_timestamp
         self._playing = False
+        self._sync_playback_panel()
 
     def stop(self):
         """
@@ -152,6 +159,7 @@ class Timeline:
         """
         self._current_timestamp = 0
         self._playing = False
+        self._sync_playback_panel()
         self.update(force=True)
 
     def restart(self):
@@ -162,6 +170,7 @@ class Timeline:
         """
         self._current_timestamp = 0
         self._playing = True
+        self._sync_playback_panel()
         self.update(force=True)
 
     @property
@@ -292,6 +301,8 @@ class Timeline:
         self._speed = speed
         self._last_started_time = perf_counter()
         self.current_timestamp = current
+        if self.has_playback_panel:
+            self.playback_panel.speed = speed
 
     @property
     def loop(self):
@@ -317,6 +328,8 @@ class Timeline:
             When False, playback will stop at the end of the timeline.
         """
         self._loop = loop
+        if self.has_playback_panel:
+            self.playback_panel.loop() if loop else self.playback_panel.play_once()
 
     @property
     def has_playback_panel(self):

@@ -644,6 +644,35 @@ class PlaybackPanel(UI):
         self.on_progress_bar_changed(slider.value)
         self.current_time = slider.value
 
+    @property
+    def playing(self):
+        """
+        Get whether the controller shows a playing state.
+
+        Returns
+        -------
+        bool
+            True if the panel shows playback as running, False otherwise.
+        """
+        return self._playing
+
+    @playing.setter
+    def playing(self, playing):
+        """
+        Set the state the controller shows, without running its callbacks.
+
+        Use this to reflect playback that was started or stopped elsewhere.
+        :meth:`play`, :meth:`pause` and :meth:`stop` report the change to
+        their listeners and would drive that playback back.
+
+        Parameters
+        ----------
+        playing : bool
+            Whether to show playback as running.
+        """
+        self._playing = playing
+        self._play_pause_btn.toggled = playing
+
     def play(self):
         """Set the controller to playing state."""
         self._playing = True
