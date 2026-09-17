@@ -1,6 +1,7 @@
 import numpy as np
 import numpy.testing as npt
 import pytest
+from scipy.spatial.transform import Rotation
 
 from fury import actor, window
 from fury.actor import Group
@@ -217,6 +218,29 @@ def test_text_list_position_length_mismatch_raises():
             text=["Hello", "World", "FURY"],
             position=[(0.0, 0.0, 0.0), (1.0, 0.0, 0.0)],
         )
+
+def test_vector_text_direction():
+    direction = np.array([0.0, 1.0, 1.0])
+    vector_text_actor = actor.vector_text(
+        text="Hello",
+        pos=(1.0, 2.0, 3.0),
+        scale=(0.2, 0.3, 0.4),
+        direction=direction,
+    )
+
+    npt.assert_array_equal(vector_text_actor.local.position, (1.0, 2.0, 3.0))
+    npt.assert_allclose(vector_text_actor.local.scale, (0.2, 0.3, 0.4))
+    npt.assert_allclose(
+        Rotation.from_quat(vector_text_actor.local.rotation).apply(
+            [0.0, 0.0, 1.0]
+        ),
+        direction / np.linalg.norm(direction),
+    )
+
+
+def test_vector_text_rejects_zero_direction():
+    with pytest.raises(ValueError, match="non-zero"):
+        actor.vector_text(text="Hello", direction=(0.0, 0.0, 0.0))
 
 
 def test_text_list_colors_length_mismatch_raises():

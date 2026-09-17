@@ -27,6 +27,7 @@ __all__ = [
     "square",
     "star",
     "text",
+    "vector_text",
     "triangle",
     "billboard",
     "billboard_sphere",

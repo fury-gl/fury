@@ -715,6 +715,62 @@ def text(
 
     return obj
 
+def vector_text(
+    text="Origin",
+    pos=(0.0, 0.0, 0.0),
+    scale=(0.2, 0.2, 0.2),
+    color=(1.0, 1.0, 1.0),
+    direction=(0.0, 0.0, 1.0),
+):
+    """
+    Create text oriented along a direction vector.
+
+    Parameters
+    ----------
+    text : str, optional
+        The text content.
+    pos : tuple (3,), optional
+        The position of the text in 3D space.
+    scale : tuple (3,), optional
+        The scale of the text actor.
+    color : tuple (3,) or tuple (4,), optional
+        The text color.
+    direction : tuple (3,), optional
+        The direction the front of the text faces. The default is the +Z axis.
+
+    Returns
+    -------
+    Text
+        A text actor oriented along ``direction``.
+
+    Raises
+    ------
+    ValueError
+        If ``direction`` is not a non-zero three-dimensional vector.
+    """
+    direction = np.asarray(direction, dtype=np.float32)
+    if direction.shape != (3,) or np.linalg.norm(direction) == 0:
+        raise ValueError("direction must be a non-zero vector of length 3.")
+
+    obj = globals()["text"](text=text, colors=color, position=pos)
+    direction /= np.linalg.norm(direction)
+    default_direction = np.array([0.0, 0.0, 1.0])
+    rotation_axis = np.cross(default_direction, direction)
+    dot_product = np.dot(default_direction, direction)
+
+    if np.linalg.norm(rotation_axis) > 1e-6:
+        rotation_axis /= np.linalg.norm(rotation_axis)
+        rotation = R.from_rotvec(
+            np.arccos(np.clip(dot_product, -1.0, 1.0)) * rotation_axis
+        )
+    elif dot_product < 0:
+        rotation = R.from_rotvec(np.pi * np.array([1.0, 0.0, 0.0]))
+    else:
+        rotation = R.identity()
+
+    obj.local.rotation = rotation.as_quat()
+    obj.local.scale = np.asarray(scale, dtype=np.float32)
+    return obj
 
 def image(
     image,
