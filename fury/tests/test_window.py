@@ -639,6 +639,22 @@ def test_display_accepts_iterable_actors(sample_actor):
         assert second_actor in kwargs["scene"].main_scene.children
         mock_show_manager.return_value.start.assert_called_once_with()
 
+def test_jupyter_start_does_not_enter_desktop_event_loop():
+    """Jupyter canvases must not start the global event loop (tracker #652)."""
+    show_m = object.__new__(ShowManager)
+    show_m._window_type = "jupyter"
+    show_m.window = object()
+
+    with (
+        patch.object(show_m, "render") as render,
+        patch("fury.window.display_jupyter_widget") as display,
+        patch("fury.window.run") as run,
+    ):
+        show_m.start()
+
+    render.assert_called_once_with()
+    display.assert_called_once_with(show_m.window)
+    run.assert_not_called()
 
 def test_add_remove_ui_to_from_scene(sample_actor):
     """Test add/remove UI hierarchy to/from scene."""
