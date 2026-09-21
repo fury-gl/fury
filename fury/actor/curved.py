@@ -2036,6 +2036,7 @@ def streamtube(
     opacity=1.0,
     colors=(1, 1, 1),
     radius=0.2,
+    linewidth=None,
     segments=8,
     end_caps=True,
     flat_shading=False,
@@ -2060,6 +2061,10 @@ def streamtube(
           (requires ``backend="gpu"``).
     radius : float, optional
         The radius of the tubes.
+    linewidth : float or array-like, optional
+        Alias for ``radius``. A scalar applies to all tubes; an array-like
+        value creates one tube actor per input line with the corresponding
+        radius.
     segments : int, optional
         Number of segments for the tube's cross-section.
     end_caps : bool, optional
@@ -2102,6 +2107,48 @@ def streamtube(
     for line_arr in lines_list:
         if line_arr.ndim != 2 or line_arr.shape[1] != 3:
             raise ValueError("Each line must be a 2D array of shape (N, 3)")
+
+    linewidths = np.asarray(linewidth) if linewidth is not None else None
+    if linewidths is not None and linewidths.ndim > 0:
+        linewidths = np.asarray(linewidths, dtype=float)
+        if linewidths.ndim != 1 or len(linewidths) != len(lines_list):
+            raise ValueError(
+                "linewidth must be a scalar or an array with one value per line"
+            )
+        if np.any(linewidths <= 0):
+            raise ValueError("linewidth values must be positive")
+        group = Group()
+        for idx, line_arr in enumerate(lines_list):
+            line_colors = colors
+            if colors is not None:
+                if isinstance(colors, (list, tuple)) and colors and isinstance(
+                    colors[0], np.ndarray
+                ):
+                    line_colors = [colors[idx]]
+                else:
+                    colors_arr = np.asarray(colors)
+                    if colors_arr.ndim >= 2 and colors_arr.shape[0] == len(lines_list):
+                        line_colors = colors_arr[idx]
+            group.add(
+                streamtube(
+                    [line_arr],
+                    opacity=opacity,
+                    colors=line_colors,
+                    radius=float(linewidths[idx]),
+                    segments=segments,
+                    end_caps=end_caps,
+                    flat_shading=flat_shading,
+                    material=material,
+                    enable_picking=enable_picking,
+                    backend=backend,
+                )
+            )
+        return group
+
+    if linewidth is not None:
+        if linewidths.ndim != 0 or float(linewidths) <= 0:
+            raise ValueError("linewidth must be a positive scalar")
+        radius = float(linewidths)
 
     if radius <= 0:
         raise ValueError(f"radius must be positive, got {radius}")

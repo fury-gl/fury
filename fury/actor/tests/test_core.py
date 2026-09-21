@@ -172,6 +172,17 @@ def test_line():
     actor.line(line, colors=colors, material="basic")
     actor.line(line, colors=line, material="basic")
 
+def test_line_per_streamline_linewidth():
+    lines = [
+        np.array([[0, 0, 0], [1, 0, 0]]),
+        np.array([[0, 1, 0], [1, 1, 0]]),
+    ]
+    line_actor = actor.line(lines, linewidth=[1.0, 3.0])
+
+    assert len(line_actor.children) == 2
+    assert line_actor.children[0].material.thickness == 1.0
+    assert line_actor.children[1].material.thickness == 3.0
+
 
 def test_arrow():
     centers = np.array([[0, 0, 0]])

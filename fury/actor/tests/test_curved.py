@@ -96,6 +96,19 @@ def test_streamtube():
     r, g, b, a = middle_pixel
     assert r > g and r > b
 
+def test_streamtube_per_streamline_linewidth():
+    lines = [
+        np.array([[0, 0, 0], [1, 0, 0]], dtype=np.float32),
+        np.array([[0, 1, 0], [1, 1, 0]], dtype=np.float32),
+    ]
+    tube_actor = actor.streamtube(
+        lines, linewidth=[0.1, 0.3], backend="gpu", segments=4
+    )
+
+    assert len(tube_actor.children) == 2
+    assert tube_actor.children[0].radius == 0.1
+    assert tube_actor.children[1].radius == 0.3
+
 
 def test_streamtube_gpu_geometry_and_buffers():
     """GPU streamtube: geometry, buffers, and material state consistency."""

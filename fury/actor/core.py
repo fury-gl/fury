@@ -868,6 +868,7 @@ def line(
     opacity=None,
     material="basic",
     enable_picking=True,
+    linewidth=2.0,
 ):
     """
     Visualize one or many lines with different colors.
@@ -887,7 +888,10 @@ def line(
         'thin', and 'thin_segment'.
     enable_picking : bool, optional
         Whether the lines should be pickable in a 3D scene.
-
+    linewidth : float or array-like, optional
+        Line thickness is in logical pixels. A scalar applies to all the lines; a
+        array-like value creates one line actor per input line.
+        
     Returns
     -------
     Actor
@@ -906,12 +910,45 @@ def line(
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
+
+    lines_list = list(lines)
+    linewidths = np.asarray(linewidth)
+    if linewidths.ndim == 0:
+        linewidths = float(linewidths)
+    else:
+        linewidths = np.asarray(linewidths, dtype=float)
+        if linewidths.ndim != 1 or len(linewidths) != len(lines_list):
+            raise ValueError(
+                "linewidth must be a scalar or an array with one value per line"
+            )
+        if np.any(linewidths <= 0):
+            raise ValueError("linewidth values must be positive")
+
+        group = Group()
+        for idx, line_points in enumerate(lines_list):
+            line_colors = colors
+            if colors is not None:
+                colors_arr = np.asarray(colors)
+                if colors_arr.ndim >= 2 and colors_arr.shape[0] == len(lines_list):
+                    line_colors = colors_arr[idx]
+            group.add(
+                line(
+                    [line_points],
+                    colors=line_colors,
+                    opacity=opacity,
+                    material=material,
+                    enable_picking=enable_picking,
+                    linewidth=float(linewidths[idx]),
+                )
+            )
+        return group
+
     if colors is not None:
         colors = normalize_colors(colors)
         if colors.ndim == 2 and len(colors) == 1:
             colors = colors[0]
 
-    lines_positions, lines_colors = line_buffer_separator(lines, color=colors)
+    lines_positions, lines_colors = line_buffer_separator(lines_list, color=colors)
 
     geo = buffer_to_geometry(
         positions=lines_positions.astype("float32"),
@@ -923,12 +960,13 @@ def line(
         enable_picking=enable_picking,
         mode="vertex",
         opacity=opacity,
+        thickness=linewidth,
     )
 
     obj = create_line(geometry=geo, material=mat)
 
     obj.local.position = lines_positions[0]
 
-    obj.prim_count = len(lines)
+    obj.prim_count = len(lines_list)
 
     return obj
