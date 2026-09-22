@@ -14,12 +14,13 @@ def test_rectangle2d_initialization_default():
     """
     Test Rectangle2D initialization with default parameters.
 
-    Checks default size, color, opacity, and position.
+    Checks default size, color, opacity, corner_radius and position.
     """
     rect = ui.Rectangle2D()
     npt.assert_equal(rect.size, (100, 100))
     npt.assert_array_equal(rect.color, [1, 1, 1])
     npt.assert_equal(rect.opacity, 1.0)
+    npt.assert_equal(rect.corner_radius, (0.0, 0.0, 0.0, 0.0))
     assert isinstance(rect.actor, Mesh)
     assert rect.actor in rect.actors
 
@@ -30,7 +31,7 @@ def test_rectangle2d_initialization_custom():
     """
     Test Rectangle2D initialization with custom parameters.
 
-    Checks custom size, position, color, and opacity.
+    Checks custom size, position, color, corner_radius and opacity.
     """
     custom_size = (200, 100)
     custom_position = (50, 80)
@@ -50,6 +51,38 @@ def test_rectangle2d_initialization_custom():
     npt.assert_almost_equal(rect.opacity, custom_opacity)
     assert isinstance(rect.actor, Mesh)
     assert rect.actor in rect.actors
+
+
+def test_rectangle2d_corner_radius_property():
+    """Test corner_radius getter and setter for Rectangle2D."""
+    rect = ui.Rectangle2D()
+    npt.assert_equal(rect.corner_radius, (0.0, 0.0, 0.0, 0.0))
+
+    # Uniform radius from float
+    rect.corner_radius = 15.0
+    npt.assert_equal(rect.corner_radius, (15.0, 15.0, 15.0, 15.0))
+
+    # Per-corner radius from tuple
+    rect.corner_radius = (10.0, 20.0, 30.0, 5.0)
+    npt.assert_equal(rect.corner_radius, (10.0, 20.0, 30.0, 5.0))
+
+
+def test_rectangle2d_with_corner_radius_init():
+    """Test Rectangle2D can be initialized with corner_radius."""
+    rect = ui.Rectangle2D(
+        size=(150, 80),
+        corner_radius=12.0,
+        color=(0.5, 0.5, 0.5),
+    )
+    npt.assert_equal(rect.corner_radius, (12.0, 12.0, 12.0, 12.0))
+    npt.assert_equal(rect.size, (150, 80))
+
+    rect_tuple = ui.Rectangle2D(
+        size=(150, 80),
+        corner_radius=(10.0, 20.0, 30.0, 5.0),
+        color=(0.5, 0.5, 0.5),
+    )
+    npt.assert_equal(rect_tuple.corner_radius, (10.0, 20.0, 30.0, 5.0))
 
 
 def test_rectangle2d_width_property():
@@ -129,11 +162,14 @@ def test_rounded_rectangle2d_initialization_default():
     npt.assert_equal(rect.size, (100, 100))
     npt.assert_array_equal(rect.color, [1, 1, 1])
     npt.assert_equal(rect.opacity, 1.0)
-    npt.assert_equal(rect.corner_radius, 10.0)
+    npt.assert_equal(rect.corner_radius, (10.0, 10.0, 10.0, 10.0))
     assert isinstance(rect.actor, Mesh)
     assert rect.actor in rect.actors
 
     npt.assert_array_equal(rect.get_position(Anchor.LEFT, Anchor.BOTTOM), [0, 100])
+
+    # Verify RoundedRectangle2D is a subclass of Rectangle2D
+    assert isinstance(rect, ui.Rectangle2D)
 
 
 def test_rounded_rectangle2d_initialization_custom():
@@ -160,9 +196,19 @@ def test_rounded_rectangle2d_initialization_custom():
     npt.assert_array_equal(rect.get_position(Anchor.LEFT, Anchor.TOP), custom_position)
     npt.assert_array_almost_equal(rect.color, custom_color)
     npt.assert_almost_equal(rect.opacity, custom_opacity)
-    npt.assert_almost_equal(rect.corner_radius, custom_radius)
+    npt.assert_equal(rect.corner_radius, (25.0, 25.0, 25.0, 25.0))
     assert isinstance(rect.actor, Mesh)
     assert rect.actor in rect.actors
+
+    custom_radius_tuple = (10.0, 20.0, 30.0, 40.0)
+    rect_tuple = ui.RoundedRectangle2D(
+        size=custom_size,
+        position=custom_position,
+        color=custom_color,
+        opacity=custom_opacity,
+        corner_radius=custom_radius_tuple,
+    )
+    npt.assert_equal(rect_tuple.corner_radius, custom_radius_tuple)
 
 
 def test_rounded_rectangle2d_width_property():
@@ -218,10 +264,16 @@ def test_rounded_rectangle2d_opacity_property():
 def test_rounded_rectangle2d_corner_radius_property():
     """Test corner_radius getter and setter for RoundedRectangle2D."""
     rect = ui.RoundedRectangle2D()
-    npt.assert_equal(rect.corner_radius, 10.0)
+    npt.assert_equal(rect.corner_radius, (10.0, 10.0, 10.0, 10.0))
+
+    # Uniform radius from float
     new_radius = 20.0
     rect.corner_radius = new_radius
-    npt.assert_equal(rect.corner_radius, new_radius)
+    npt.assert_equal(rect.corner_radius, (20.0, 20.0, 20.0, 20.0))
+
+    # Per-corner radius from tuple
+    rect.corner_radius = (5.0, 15.0, 25.0, 0.0)
+    npt.assert_equal(rect.corner_radius, (5.0, 15.0, 25.0, 0.0))
 
 
 def test_rounded_rectangle2d_resize():

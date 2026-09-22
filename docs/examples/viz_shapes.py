@@ -35,13 +35,11 @@ rect = Rectangle2D(size=(100, 100), position=(400, 400), color=(1, 0, 1))
 disk = Disk2D(outer_radius=50, center=(200, 200), color=(1, 1, 0))
 
 ###############################################################################
-# And a rounded rectangle with custom corner radius and opacity.
-
 rounded_rect = RoundedRectangle2D(
     size=(150, 100),
     position=(500, 200),
     color=(0.2, 0.6, 0.9),
-    corner_radius=20,
+    corner_radius=(0, 20, 0, 20),
     opacity=0.9,
 )
 
