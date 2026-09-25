@@ -3832,14 +3832,31 @@ class FileMenu2D(UI):
 
     Can go to new folder, previous folder and select multiple files.
 
+    Parameters
+    ----------
+    directory_path : str
+        Path of the directory where this dialog should open.
+    extensions : list of str, optional
+        List of extensions to be shown as files. To show all files, use
+        ``["*"]`` or ``[""]`` (the default).
+    position : (float, float), optional
+        Absolute coordinates (x, y) of the top-left corner of this
+        UI component.
+    size : (int, int), optional
+        Width and height in pixels of this UI component.
+    multiselection : bool, optional
+        Whether multiple values can be selected at once.
+    reverse_scrolling : bool, optional
+        If True, scrolling up will move the list of files down.
+    font_size : int, optional
+        The font size in pixels.
+    line_spacing : float, optional
+        Distance between listbox's items in pixels.
+
     Attributes
     ----------
-    extensions: ['extension1', 'extension2', ....]
-        To show all files, extensions=["*"] or [""]
-        List of extensions to be shown as files.
-    listbox : :class: 'ListBox2D'
+    listbox : ListBox2D
         Container for the menu.
-
     """
 
     def __init__(
@@ -3854,30 +3871,7 @@ class FileMenu2D(UI):
         font_size=20,
         line_spacing=1.4,
     ):
-        """
-        Init class instance.
-
-        Parameters
-        ----------
-        extensions: list(string)
-            List of extensions to be shown as files.
-        directory_path: string
-            Path of the directory where this dialog should open.
-        position : (float, float)
-            Absolute coordinates (x, y) of the lower-left corner of this
-            UI component.
-        size : (int, int)
-            Width and height in pixels of this UI component.
-        multiselection: {True, False}
-            Whether multiple values can be selected at once.
-        reverse_scrolling: {True, False}
-            If True, scrolling up will move the list of files down.
-        font_size: int
-            The font size in pixels.
-        line_spacing: float
-            Distance between listbox's items in pixels.
-
-        """
+        """Init class instance."""
         self.font_size = font_size
         self.multiselection = multiselection
         self.reverse_scrolling = reverse_scrolling
@@ -3895,7 +3889,6 @@ class FileMenu2D(UI):
         Setup this UI component.
 
         Create the ListBox (Panel2D) filled with empty slots (ListBoxItem2D).
-
         """
         self.directory_contents = self.get_all_file_names()
         content_names = [x[0] for x in self.directory_contents]
@@ -3920,14 +3913,29 @@ class FileMenu2D(UI):
         self._children.extend([self.listbox])
 
     def _get_actors(self):
-        """Get the actors composing this UI component."""
+        """
+        Get the actors composing this UI component.
+
+        Returns
+        -------
+        list
+            Always empty; the actors belong to the child ListBox2D.
+        """
         return []
 
     def _update_actors_position(self):
-        """Set the lower-left corner position of this UI component."""
+        """Set the position of this UI component."""
         self.listbox.set_position(self.get_position())
 
     def _get_size(self):
+        """
+        Get the size of this UI component.
+
+        Returns
+        -------
+        numpy.ndarray
+            The (width, height) in pixels.
+        """
         return self.listbox.size
 
     def resize(self, size):
@@ -3953,9 +3961,8 @@ class FileMenu2D(UI):
 
         Returns
         -------
-        all_file_names: list((string, {"directory", "file"}))
+        list of (str, {"directory", "file"})
             List of all file and directory names as string.
-
         """
         all_file_names = []
 
@@ -3975,9 +3982,8 @@ class FileMenu2D(UI):
 
         Returns
         -------
-        directory_names: list(string)
+        list of str
             List of all directory names as string.
-
         """
         # A list of directory names in the current directory
         directory_names = []
@@ -3994,9 +4000,8 @@ class FileMenu2D(UI):
 
         Returns
         -------
-        file_names: list(string)
+        list of str
             List of all file names as string.
-
         """
         # A list of file names with extension in the current directory
         files = []
@@ -4004,21 +4009,19 @@ class FileMenu2D(UI):
             files += f
             break
 
-        file_names = []
-        if "*" in self.extensions or "" in self.extensions:
-            file_names = files
-        else:
-            for ext in self.extensions:
-                for file in files:
-                    if file.endswith("." + ext):
-                        file_names.append(file)
+        # Check each file once, so a file matching several extensions
+        # (e.g. "gz" and "tar.gz") is only listed once.
+        show_all = "*" in self.extensions or "" in self.extensions
+        suffixes = tuple("." + ext for ext in self.extensions)
+        file_names = [f for f in files if show_all or f.endswith(suffixes)]
         file_names.sort(key=lambda s: s.lower())
         return file_names
 
     def set_slot_colors(self):
         """
-        Set the text color of the slots based on the type of element
-        they show. Blue for directories and green for files.
+        Color each slot's text by the type of entry it shows.
+
+        Directories are green and files are blue.
         """
         for idx, slot in enumerate(self.listbox.slots):
             list_idx = self.listbox.view_offset + idx
@@ -4046,6 +4049,9 @@ class FileMenu2D(UI):
         self.directory_contents = self.get_all_file_names()
         content_names = [x[0] for x in self.directory_contents]
         self.listbox.clear_selection()
+        # The old index belongs to the previous directory's list; a range
+        # select starting from it can run past the end of the new list.
+        self.listbox.last_selection_idx = 0
         self.listbox.values = content_names
         self.listbox.view_offset = 0
         self.listbox.update()

@@ -2447,6 +2447,49 @@ def test_file_menu_2d_resize(tmp_path):
     npt.assert_equal(menu.listbox.panel.size, (200, 400))
 
 
+def test_file_menu_2d_range_select_after_navigation(tmp_path):
+    for name in "abcdef":
+        (tmp_path / name).mkdir()
+    (tmp_path / "f" / "x.txt").write_text("x")
+    (tmp_path / "f" / "y.txt").write_text("y")
+    menu = ui.FileMenu2D(str(tmp_path), size=(200, 400))
+
+    f_idx = menu.directory_contents.index(("f", "directory"))
+    menu.listbox.select(menu.listbox.slots[f_idx])
+    # The range must start in the new, shorter directory, not at the index
+    # of "f" in the previous one.
+    menu.listbox.select(menu.listbox.slots[2], range_select=True)
+
+    npt.assert_equal(menu.listbox.selected, ["../", "x.txt", "y.txt"])
+
+
+def test_file_menu_2d_overlapping_extensions(tmp_path):
+    (tmp_path / "data.tar.gz").write_text("")
+    (tmp_path / "notes.txt").write_text("")
+    menu = ui.FileMenu2D(str(tmp_path), extensions=["gz", "tar.gz"], size=(200, 200))
+
+    file_names = [entry[0] for entry in menu.directory_contents if entry[1] == "file"]
+    npt.assert_equal(file_names, ["data.tar.gz"])
+
+
+def test_file_menu_2d_slot_colors_after_scroll(tmp_path):
+    for i in range(30):
+        (tmp_path / f"file_{i:02d}.txt").write_text("")
+    (tmp_path / "dir_a").mkdir()
+    menu = ui.FileMenu2D(str(tmp_path), size=(200, 200))
+
+    for _ in range(3):
+        menu.listbox.scroll_down()
+
+    npt.assert_equal(menu.listbox.view_offset, 3)
+    for idx, slot in enumerate(menu.listbox.slots):
+        if slot.element is None:
+            continue
+        entry = menu.directory_contents[menu.listbox.view_offset + idx]
+        expected = [0, 0.6, 0] if entry[1] == "directory" else [0, 0, 0.7]
+        npt.assert_array_almost_equal(slot.textblock.color, expected)
+
+
 def test_ui_card2d_initialization():
     """Test Card2D initialization and layout logic."""
     fetch_viz_icons()
