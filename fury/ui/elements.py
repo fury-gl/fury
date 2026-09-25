@@ -5243,10 +5243,12 @@ class SpinBox(UI):
         int
             If valid return converted integer else the previous value.
         """
-        if value.isnumeric():
+        # int() accepts a leading sign, which str.isnumeric() rejects, and
+        # raises for characters like "²" that isnumeric() accepts.
+        try:
             return int(value)
-
-        return self.value
+        except ValueError:
+            return self.value
 
     def increment(self):
         """Increment the current value by the step."""

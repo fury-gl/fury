@@ -2248,6 +2248,30 @@ def test_spinbox_textbox_input():
     npt.assert_equal(changes, [42, 100, 100])
 
 
+def test_spinbox_textbox_signed_and_invalid_input():
+    """Test negative, whitespace and non-integer typed input."""
+    fetch_viz_icons()
+
+    spinbox = ui.SpinBox(min_val=-20, max_val=20, initial_val=0)
+
+    spinbox.textbox.set_message("-5")
+    spinbox.textbox.on_blur(None)
+    npt.assert_equal(spinbox.value, -5)
+
+    spinbox.textbox.set_message("-99")
+    spinbox.textbox.on_blur(None)
+    npt.assert_equal(spinbox.value, -20)
+
+    spinbox.textbox.set_message(" 4")
+    spinbox.textbox.on_blur(None)
+    npt.assert_equal(spinbox.value, 4)
+
+    for invalid in ["3.5", "", "-", "²"]:
+        spinbox.textbox.set_message(invalid)
+        spinbox.textbox.on_blur(None)
+        npt.assert_equal(spinbox.value, 4)
+
+
 def test_spinbox_resize():
     """Test SpinBox resize updates child sizes and layout."""
     fetch_viz_icons()
