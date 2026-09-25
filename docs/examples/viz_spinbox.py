@@ -48,6 +48,7 @@ label = TextBlock2D(
     position=(200, 400),
     font_size=24,
     color=(1, 1, 1),
+    dynamic_bbox=True,
 )
 scene.add(label)
 
