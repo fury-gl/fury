@@ -1972,7 +1972,7 @@ class ShowManager:
             return
 
         if self._window_type == "jupyter":
-            display_jupyter_widget.display_jupyter_widget(self.window)
+            display_jupyter_widget(self.window)
             return
 
         if self._is_qt:

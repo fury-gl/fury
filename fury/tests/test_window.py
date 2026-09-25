@@ -639,8 +639,9 @@ def test_display_accepts_iterable_actors(sample_actor):
         assert second_actor in kwargs["scene"].main_scene.children
         mock_show_manager.return_value.start.assert_called_once_with()
 
-def test_jupyter_start_does_not_enter_desktop_event_loop():
-    """Jupyter canvases must not start the global event loop (tracker #652)."""
+def test_jupyter_start_does_not_enter_desktop_event_loop(monkeypatch):
+    """Jupyter canvases must not start the global event loop."""
+    monkeypatch.delenv("FURY_OFFSCREEN", raising=False)
     show_m = object.__new__(ShowManager)
     show_m._window_type = "jupyter"
     show_m.window = object()
