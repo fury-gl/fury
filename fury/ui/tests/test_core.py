@@ -497,6 +497,42 @@ def test_textblock2d_alignment_invalid():
     with npt.assert_raises(ValueError):
         tb.vertical_justification = "sideways"
 
+def test_textblock2d_padding_keeps_text_inside_background():
+    """Text padding offsets glyph bounds from the background edge (tracker #838)."""
+    from fury.ui import UIContext
+
+    default_tb = ui.TextBlock2D(text="HI", size=(300, 150))
+    default_text_height = default_tb.get_text_actor_size()[1]
+    npt.assert_equal(
+        default_tb.actor.local.y,
+        UIContext.canvas_size[1]
+        - (default_tb.boundingbox[1] + default_text_height // 2),
+    )
+
+    padding = 4
+    tb = ui.TextBlock2D(
+        text="HI",
+        size=(300, 150),
+        bg_color=(0.5, 0.5, 0.5),
+        padding=padding,
+    )
+    _, text_height = tb.get_text_actor_size()
+    text_left = tb.actor.local.x + tb.actor._aabb[0][0]
+    text_top = UIContext.canvas_size[1] - tb.actor.local.y - text_height / 2
+
+    npt.assert_allclose(text_left - tb.boundingbox[0], padding)
+    npt.assert_allclose(text_top - tb.boundingbox[1], padding)
+
+    tb.padding = 8
+    text_top = UIContext.canvas_size[1] - tb.actor.local.y - text_height / 2
+    npt.assert_allclose(text_top - tb.boundingbox[1], 8)
+
+    dynamic_tb = ui.TextBlock2D(text="HI", dynamic_bbox=True, padding=padding)
+    text_size = dynamic_tb.get_text_actor_size()
+    npt.assert_array_equal(
+        dynamic_tb.size,
+        np.asarray([dimension + 2 * padding for dimension in text_size], dtype=int),
+    )
 
 def test_textblock2d_color_property():
     """Test text color getter and setter."""
