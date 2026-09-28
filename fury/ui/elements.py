@@ -17,7 +17,7 @@ __all__ = [
     #     "DrawPanel",
     "PlaybackPanel",
     "Card2D",
-    #     "SpinBox",
+    "SpinBox",
 ]
 
 
@@ -5011,210 +5011,265 @@ class Card2D(UI):
         return image_size, title_box_size, body_box_size
 
 
-# class SpinBox(UI):
-#     """SpinBox UI."""
+class SpinBox(UI):
+    """
+    A numeric input with increment and decrement buttons.
 
-#     @warn_on_args_to_kwargs()
-#     def __init__(
-#         self,
-#         *,
-#         position=(350, 400),
-#         size=(300, 100),
-#         padding=10,
-#         panel_color=(1, 1, 1),
-#         min_val=0,
-#         max_val=100,
-#         initial_val=50,
-#         step=1,
-#         max_column=10,
-#         max_line=2,
-#     ):
-#         """Init this UI element.
+    The value can be typed into the textbox or changed by ``step`` using
+    the up/down buttons. It is always clamped to ``[min_val, max_val]``.
 
-#         Parameters
-#         ----------
-#         position : (int, int), optional
-#             Absolute coordinates (x, y) of the lower-left corner of this
-#             UI component.
-#         size : (int, int), optional
-#             Width and height in pixels of this UI component.
-#         padding : int, optional
-#             Distance between TextBox and Buttons.
-#         panel_color : (float, float, float), optional
-#             Panel color of SpinBoxUI.
-#         min_val: int, optional
-#             Minimum value of SpinBoxUI.
-#         max_val: int, optional
-#             Maximum value of SpinBoxUI.
-#         initial_val: int, optional
-#             Initial value of SpinBoxUI.
-#         step: int, optional
-#             Step value of SpinBoxUI.
-#         max_column: int, optional
-#             Max number of characters in a line.
-#         max_line: int, optional
-#             Max number of lines in the textbox.
+    Parameters
+    ----------
+    position : (float, float), optional
+        Absolute coordinates (x, y) for placement.
+    size : (int, int), optional
+        Width and height in pixels of this UI component.
+    padding : int, optional
+        Distance between TextBox and Buttons.
+    panel_color : (float, float, float), optional
+        Panel color of SpinBox.
+    min_val : int, optional
+        Minimum value of SpinBox.
+    max_val : int, optional
+        Maximum value of SpinBox.
+    initial_val : int, optional
+        Initial value of SpinBox.
+    step : int, optional
+        Step value of SpinBox.
+    max_column : int, optional
+        Max number of characters in a line.
+    max_line : int, optional
+        Max number of lines in the textbox.
 
-#         """
-#         self.panel_size = size
-#         self.padding = padding
-#         self.panel_color = panel_color
-#         self.min_val = min_val
-#         self.max_val = max_val
-#         self.step = step
-#         self.max_column = max_column
-#         self.max_line = max_line
+    Attributes
+    ----------
+    panel : :class:`Panel2D`
+        The background panel that holds the textbox and buttons.
+    textbox : :class:`TextBox2D`
+        Displays the current value and accepts typed input.
+    increment_button : :class:`TexturedButton2D`
+        Increases the value by ``step`` when clicked.
+    decrement_button : :class:`TexturedButton2D`
+        Decreases the value by ``step`` when clicked.
+    """
 
-#         super(SpinBox, self).__init__(position=position)
-#         self.value = initial_val
-#         self.resize(size)
+    def __init__(
+        self,
+        *,
+        position=(350, 400),
+        size=(300, 100),
+        padding=10,
+        panel_color=(1, 1, 1),
+        min_val=0,
+        max_val=100,
+        initial_val=50,
+        step=1,
+        max_column=10,
+        max_line=2,
+    ):
+        """Initialize the SpinBox instance."""
+        self.panel_size = size
+        self.padding = padding
+        self.panel_color = panel_color
+        self.min_val = min_val
+        self.max_val = max_val
+        self.step = step
+        self.max_column = max_column
+        self.max_line = max_line
 
-#         self.on_change = lambda ui: None
+        super(SpinBox, self).__init__(position=position)
+        self.value = initial_val
+        self.resize(size)
 
-#     def _setup(self):
-#         """Setup this UI component.
+        self.on_change = lambda ui: None
 
-#         Create the SpinBoxUI with Background (Panel2D) and InputBox (TextBox2D)
-#         and Increment,Decrement Button (Button2D).
-#         """
-#         self.panel = Panel2D(size=self.panel_size, color=self.panel_color)
+    def _setup(self):
+        """
+        Set up this UI component.
 
-#         self.textbox = TextBox2D(width=self.max_column, height=self.max_line)
-#         self.textbox.text.dynamic_bbox = False
-#         self.textbox.text.auto_font_scale = True
-#         self.increment_button = Button2D(
-#             icon_fnames=[("up", read_viz_icons(fname="circle-up.png"))]
-#         )
-#         self.decrement_button = Button2D(
-#             icon_fnames=[("down", read_viz_icons(fname="circle-down.png"))]
-#         )
+        Create the SpinBox with a background (Panel2D), an input box
+        (TextBox2D) and increment/decrement buttons (TexturedButton2D).
+        """
+        self.panel = Panel2D(size=self.panel_size, color=self.panel_color)
 
-#         self.panel.add_element(self.textbox, (0, 0))
-#         self.panel.add_element(self.increment_button, (0, 0))
-#         self.panel.add_element(self.decrement_button, (0, 0))
+        self.textbox = TextBox2D(width=self.max_column, height=self.max_line)
+        self.increment_button = TexturedButton2D(
+            states={"default": read_viz_icons(fname="circle-up.png")}
+        )
+        self.decrement_button = TexturedButton2D(
+            states={"default": read_viz_icons(fname="circle-down.png")}
+        )
 
-#         # Adding button click callbacks
-#         self.increment_button.on_left_mouse_button_pressed = self.increment_callback
-#         self.decrement_button.on_left_mouse_button_pressed = self.decrement_callback
-#         self.textbox.off_focus = self.textbox_update_value
+        self.panel.add_element(self.textbox, (0, 0))
+        self.panel.add_element(self.increment_button, (0, 0))
+        self.panel.add_element(self.decrement_button, (0, 0))
 
-#     def resize(self, size):
-#         """Resize SpinBox.
+        self.increment_button.on_clicked = self.increment_callback
+        self.decrement_button.on_clicked = self.decrement_callback
+        self.textbox.on_blur = self.textbox_update_value
 
-#         Parameters
-#         ----------
-#         size : (float, float)
-#             SpinBox size(width, height) in pixels.
+        self._children.append(self.panel)
 
-#         """
-#         self.panel_size = size
-#         self.textbox_size = (int(0.7 * size[0]), int(0.8 * size[1]))
-#         self.button_size = (int(0.2 * size[0]), int(0.3 * size[1]))
-#         self.padding = int(0.03 * self.panel_size[0])
+    def resize(self, size):
+        """
+        Resize SpinBox.
 
-#         self.panel.resize(size)
-#         self.textbox.text.resize(self.textbox_size)
-#         self.increment_button.resize(self.button_size)
-#         self.decrement_button.resize(self.button_size)
+        Parameters
+        ----------
+        size : (float, float)
+            SpinBox size(width, height) in pixels.
+        """
+        self.panel_size = size
+        self.textbox_size = (int(0.7 * size[0]), int(0.8 * size[1]))
+        self.button_size = (int(0.2 * size[0]), int(0.3 * size[1]))
+        self.padding = int(0.03 * self.panel_size[0])
 
-#         textbox_pos = (self.padding, int((size[1] - self.textbox_size[1]) / 2))
-#         inc_btn_pos = (
-#             size[0] - self.padding - self.button_size[0],
-#             int((1.5 * size[1] - self.button_size[1]) / 2),
-#         )
-#         dec_btn_pos = (
-#             size[0] - self.padding - self.button_size[0],
-#             int((0.5 * size[1] - self.button_size[1]) / 2),
-#         )
+        self.panel.resize(size)
+        self.textbox.text.resize(self.textbox_size)
+        self.increment_button.resize(self.button_size)
+        self.decrement_button.resize(self.button_size)
 
-#         self.panel.update_element(self.textbox, textbox_pos)
-#         self.panel.update_element(self.increment_button, inc_btn_pos)
-#         self.panel.update_element(self.decrement_button, dec_btn_pos)
+        # Panel coordinates are offsets from its top-left corner, so the
+        # increment button sits in the upper half and decrement in the lower.
+        textbox_pos = (self.padding, int((size[1] - self.textbox_size[1]) / 2))
+        inc_btn_pos = (
+            size[0] - self.padding - self.button_size[0],
+            int((0.5 * size[1] - self.button_size[1]) / 2),
+        )
+        dec_btn_pos = (
+            size[0] - self.padding - self.button_size[0],
+            int((1.5 * size[1] - self.button_size[1]) / 2),
+        )
 
-#     def _get_actors(self):
-#         """Get the actors composing this UI component."""
-#         return self.panel.actors
+        self.panel.update_element(self.textbox, textbox_pos)
+        self.panel.update_element(self.increment_button, inc_btn_pos)
+        self.panel.update_element(self.decrement_button, dec_btn_pos)
 
-#     def _add_to_scene(self, scene):
-#         """Add all subcomponents or VTK props that compose this UI component.
+    def _get_actors(self):
+        """
+        Get the actors composing this UI component.
 
-#         Parameters
-#         ----------
-#         scene : Scene
+        Returns
+        -------
+        list
+            Empty list as this UI uses other UI elements as children
+            instead of direct actors.
+        """
+        return []
 
-#         """
-#         self.panel.add_to_scene(scene)
+    def _get_size(self):
+        """
+        Get the total size of the SpinBox.
 
-#     def _get_size(self):
-#         return self.panel.size
+        Returns
+        -------
+        (int, int)
+            Width and height in pixels.
+        """
+        return self.panel.size
 
-#     def _set_position(self, coords):
-#         """Set the lower-left corner position of this UI component.
+    def _update_actors_position(self):
+        """Update the internal position of the UI element."""
+        self.panel.set_position(self.get_position())
 
-#         Parameters
-#         ----------
-#         coords: (float, float)
-#             Absolute pixel coordinates (x, y).
+    def update_layout(self):
+        """Propagate layout updates to the textbox's text block."""
+        self.textbox.text.update_layout()
 
-#         """
-#         self.panel.center = coords
+    def increment_callback(self, button):
+        """
+        Handle a click on the increment button.
 
-#     def increment_callback(self, i_ren, _obj, _button):
-#         self.increment()
-#         i_ren.force_render()
-#         i_ren.event.abort()
+        Parameters
+        ----------
+        button : :class:`TexturedButton2D`
+            The button that was clicked.
+        """
+        self.increment()
 
-#     def decrement_callback(self, i_ren, _obj, _button):
-#         self.decrement()
-#         i_ren.force_render()
-#         i_ren.event.abort()
+    def decrement_callback(self, button):
+        """
+        Handle a click on the decrement button.
 
-#     @property
-#     def value(self):
-#         return self._value
+        Parameters
+        ----------
+        button : :class:`TexturedButton2D`
+            The button that was clicked.
+        """
+        self.decrement()
 
-#     @value.setter
-#     def value(self, value):
-#         if value >= self.max_val:
-#             self._value = self.max_val
-#         elif value <= self.min_val:
-#             self._value = self.min_val
-#         else:
-#             self._value = value
+    @property
+    def value(self):
+        """
+        Get the current value of the SpinBox.
 
-#         self.textbox.set_message(str(self._value))
+        Returns
+        -------
+        int
+            The current value.
+        """
+        return self._value
 
-#     def validate_value(self, value):
-#         """Validate and convert the given value into integer.
+    @value.setter
+    def value(self, value):
+        """
+        Set the value, clamped to ``[min_val, max_val]``.
 
-#         Parameters
-#         ----------
-#         value : str
-#             Input value received from the textbox.
+        Parameters
+        ----------
+        value : int
+            The new value.
+        """
+        if value >= self.max_val:
+            self._value = self.max_val
+        elif value <= self.min_val:
+            self._value = self.min_val
+        else:
+            self._value = value
 
-#         Returns
-#         -------
-#         int
-#             If valid return converted integer else the previous value.
+        self.textbox.set_message(str(self._value))
 
-#         """
-#         if value.isnumeric():
-#             return int(value)
+    def validate_value(self, value):
+        """
+        Validate and convert the given value into integer.
 
-#         return self.value
+        Parameters
+        ----------
+        value : str
+            Input value received from the textbox.
 
-#     def increment(self):
-#         """Increment the current value by the step."""
-#         current_val = self.validate_value(self.textbox.message)
-#         self.value = current_val + self.step
-#         self.on_change(self)
+        Returns
+        -------
+        int
+            If valid return converted integer else the previous value.
+        """
+        # int() accepts a leading sign, which str.isnumeric() rejects, and
+        # raises for characters like "²" that isnumeric() accepts.
+        try:
+            return int(value)
+        except ValueError:
+            return self.value
 
-#     def decrement(self):
-#         """Decrement the current value by the step."""
-#         current_val = self.validate_value(self.textbox.message)
-#         self.value = current_val - self.step
-#         self.on_change(self)
+    def increment(self):
+        """Increment the current value by the step."""
+        current_val = self.validate_value(self.textbox._message)
+        self.value = current_val + self.step
+        self.on_change(self)
 
-#     def textbox_update_value(self, textbox):
-#         self.value = self.validate_value(textbox.message)
-#         self.on_change(self)
+    def decrement(self):
+        """Decrement the current value by the step."""
+        current_val = self.validate_value(self.textbox._message)
+        self.value = current_val - self.step
+        self.on_change(self)
+
+    def textbox_update_value(self, event):
+        """
+        Update the value from the textbox once it loses focus.
+
+        Parameters
+        ----------
+        event : Event or None
+            The event that caused the textbox to lose focus.
+        """
+        self.value = self.validate_value(self.textbox._message)
+        self.on_change(self)
