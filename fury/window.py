@@ -597,10 +597,14 @@ def render_screens(renderer, screens, stats=None, is_dirty=False):
     for screen in screens:
         scene_root = screen.scene
 
-        if is_dirty:
-            for ui_element in scene_root.ui_elements:
-                if hasattr(ui_element, "update_layout"):
-                    ui_element.update_layout()
+        for ui_element in scene_root.ui_elements:
+            # Text dimensions can change after the initial layout (for example,
+            # when TextBlock2D.font_size or message is updated). Keep these
+            # components' bounds and backgrounds in sync with the rendered text.
+            if hasattr(ui_element, "update_layout") and (
+                is_dirty or hasattr(ui_element, "dynamic_bbox")
+            ):
+                ui_element.update_layout()
 
         screen.viewport.render(scene_root.main_scene, screen.camera, flush=False)
         screen.viewport.render(scene_root.ui_scene, scene_root.ui_camera, flush=False)
