@@ -1971,6 +1971,10 @@ class ShowManager:
             self.window.close()
             return
 
+        if self._window_type == "jupyter":
+            display_jupyter_widget(self.window)
+            return
+
         if self._is_qt:
             if self._qt_app is None:
                 self._qt_app = get_app()
@@ -1978,8 +1982,6 @@ class ShowManager:
         else:
             run()
 
-        if self._window_type == "jupyter":
-            display_jupyter_widget(self.window)
 
     def close(self):
         """
