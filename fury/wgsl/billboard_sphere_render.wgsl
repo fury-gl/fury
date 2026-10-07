@@ -1,6 +1,7 @@
 {$ include 'pygfx.std.wgsl' $}
 {$ include 'pygfx.light_phong.wgsl' $}
 {$ include 'fury.utils.wgsl' $}
+{$ include 'fury.billboard_common.wgsl' $}
 
 struct VertexInput {
     @builtin(vertex_index) index : u32,
@@ -11,16 +12,7 @@ fn vs_main(in: VertexInput) -> Varyings {
     // Generate quad vertices for billboard impostor
     let billboard_index = i32(in.index) / 6;
     let vertex_in_quad = i32(in.index) % 6;
-
-    var local_pos: vec2<f32>;
-    switch vertex_in_quad {
-        case 0: { local_pos = vec2<f32>(-0.5, -0.5); }
-        case 1: { local_pos = vec2<f32>(0.5, -0.5); }
-        case 2: { local_pos = vec2<f32>(-0.5, 0.5); }
-        case 3: { local_pos = vec2<f32>(0.5, -0.5); }
-        case 4: { local_pos = vec2<f32>(0.5, 0.5); }
-        default: { local_pos = vec2<f32>(-0.5, 0.5); }
-    }
+    let local_pos = billboard_quad_corner(in.index);
 
     let raw_center = load_s_positions(billboard_index * 6);
     let world_center = u_wobject.world_transform * vec4<f32>(raw_center.xyz, 1.0);
@@ -49,6 +41,7 @@ fn vs_main(in: VertexInput) -> Varyings {
     var varyings: Varyings;
     varyings.position = vec4<f32>(clip_pos);
     varyings.world_pos = vec3<f32>(world_pos);
+    varyings.glyph_index_parts = vec2<f32>(billboard_encode_glyph_index(u32(billboard_index)));
     $$ if color_buffer_channels == 4
     varyings.color = vec4<f32>(load_s_colors(billboard_index * 6));
     $$ elif color_buffer_channels == 3
@@ -69,12 +62,6 @@ fn vs_main(in: VertexInput) -> Varyings {
     return varyings;
 }
 
-struct ReflectedLight {
-    direct_diffuse: vec3<f32>,
-    direct_specular: vec3<f32>,
-    indirect_diffuse: vec3<f32>,
-    indirect_specular: vec3<f32>,
-};
 
 @fragment
 fn fs_main(varyings: Varyings, @builtin(front_facing) is_front: bool) -> FragmentOutput {
@@ -112,22 +99,7 @@ fn fs_main(varyings: Varyings, @builtin(front_facing) is_front: bool) -> Fragmen
     }
     ray_dir = normalize(ray_dir);
 
-    let oc = ray_origin - center;
-    let b = dot(ray_dir, oc);
-    let c = dot(oc, oc) - radius * radius;
-    var discriminant = b * b - c;
-    if (discriminant < 0.0) {
-        if (discriminant > -1e-4) {
-            discriminant = 0.0;
-        } else {
-            discard;
-        }
-    }
-    let sqrt_disc = sqrt(discriminant);
-    var t = -b - sqrt_disc;
-    if (t < 0.0) {
-        t = -b + sqrt_disc;
-    }
+    let t = impostor_sphere_hit(ray_origin - center, ray_dir, radius, 1e-4);
     if (t < 0.0) {
         discard;
     }
@@ -137,7 +109,6 @@ fn fs_main(varyings: Varyings, @builtin(front_facing) is_front: bool) -> Fragmen
         world_normal = -world_normal;
     }
 
-    let clip_pos = u_stdinfo.projection_transform * u_stdinfo.cam_transform * vec4<f32>(world_pos, 1.0);
     var view_dir = -ray_dir;
     if (ortho) {
         view_dir = ray_dir;
@@ -148,50 +119,17 @@ fn fs_main(varyings: Varyings, @builtin(front_facing) is_front: bool) -> Fragmen
     diffuse_color.a *= u_material.opacity * mask;
     do_alpha_test(diffuse_color.a);
 
-    let physical_albedo = diffuse_color.rgb;
-    let specular_strength = 1.0;
-
-    var reflected_light: ReflectedLight = ReflectedLight(
-        vec3<f32>(0.0),
-        vec3<f32>(0.0),
-        vec3<f32>(0.0),
-        vec3<f32>(0.0),
-    );
-
-    var geometry: GeometricContext;
-    geometry.position = world_pos;
-    geometry.normal = world_normal;
-    geometry.view_dir = view_dir;
-
-    var material: BlinnPhongMaterial;
-    material.diffuse_color = physical_albedo;
-    material.specular_color = srgb2physical(u_material.specular_color.rgb);
-    material.specular_shininess = u_material.shininess;
-    material.specular_strength = specular_strength;
-
-    {$ include 'pygfx.light_punctual.wgsl' $}
-
-    let ambient_color = u_ambient_light.color.rgb;
-    var irradiance = getAmbientLightIrradiance(ambient_color);
-    RE_IndirectDiffuse(irradiance, geometry, material, &reflected_light);
-
-    var emissive_color = srgb2physical(u_material.emissive_color.rgb) * u_material.emissive_intensity;
-
-    var physical_color = reflected_light.direct_diffuse +
-        reflected_light.direct_specular +
-        reflected_light.indirect_diffuse +
-        reflected_light.indirect_specular +
-        emissive_color;
-
-    if (all(physical_color == vec3<f32>(0.0))) {
-        let fallback_light = normalize(vec3<f32>(0.3, 0.5, 0.8));
-        let fallback_diffuse = max(dot(world_normal, fallback_light), 0.0);
-        physical_color = physical_albedo * clamp(0.3 + 0.7 * fallback_diffuse, 0.0, 1.0);
-    }
+    let physical_color = impostor_phong(world_pos, world_normal, view_dir, diffuse_color.rgb);
 
     var out: FragmentOutput;
     out.color = vec4<f32>(physical_color, diffuse_color.a);
-    let ndc = clip_pos / clip_pos.w;
-    out.depth = ndc.z;
+    out.depth = impostor_depth(world_pos);
+    $$ if write_pick
+    out.pick = (
+        pick_pack(u32(u_wobject.global_id), 20) +
+        pick_pack(billboard_decode_glyph_index(varyings.glyph_index_parts), 26) +
+        pick_pack(0u, 18)
+    );
+    $$ endif
     return out;
 }

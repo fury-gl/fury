@@ -6,10 +6,145 @@ Simple tests for billboard creation and basic rendering functionality.
 
 import numpy as np
 import numpy.testing as npt
+import pytest
 
 from fury import actor, window
-from fury.lib import MeshPhongMaterial
+from fury.lib import MeshPhongMaterial, OrthographicCamera
 from fury.material import BillboardSphereMaterial
+
+
+def _create_billboard_pick_manager(billboards):
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+    scene.add(billboards)
+    camera = OrthographicCamera(8, 8, depth_range=(0.1, 100))
+    show_m = window.ShowManager(
+        scene=scene,
+        camera=camera,
+        size=(256, 256),
+        pixel_ratio=1,
+        window_type="offscreen",
+    )
+    show_m.render()
+    show_m.window.draw()
+    # ShowManager initially frames the scene, including explicitly supplied cameras.
+    camera.width = 8
+    camera.height = 8
+    camera.local.position = (0, 0, 10)
+    camera.look_at((0, 0, 0))
+    return show_m
+
+
+@pytest.mark.parametrize(
+    "factory, actor_kwargs",
+    [
+        pytest.param(actor.billboard, {"sizes": (2, 2)}, id="billboard"),
+        pytest.param(actor.billboard_sphere, {"radii": 1}, id="billboard_sphere"),
+        pytest.param(actor.sphere, {"radii": 1, "impostor": True}, id="sphere"),
+    ],
+)
+@pytest.mark.parametrize("enable_picking", [True, False], ids=["pick", "no_pick"])
+def test_billboard_pick_surface(factory, actor_kwargs, enable_picking):
+    """Pick retained glyph fragments, not the background or masked quad corners."""
+    billboards = factory(
+        [[-2, 0, 0], [2, 0, 0]],
+        colors=[[1, 0, 0], [0, 1, 0]],
+        enable_picking=enable_picking,
+        **actor_kwargs,
+    )
+    show_m = _create_billboard_pick_manager(billboards)
+    try:
+        show_m.render()
+        show_m.window.draw()
+        image = show_m.snapshot(fname=None)
+        assert image.shape[:2] == (256, 256)
+        for glyph_index, x in enumerate((64, 192)):
+            assert image[128, x, glyph_index] > 50
+            pick = show_m.renderer.get_pick_info((x, 128))
+            if enable_picking:
+                assert pick["world_object"] is billboards
+                assert pick["glyph_index"] == glyph_index
+            else:
+                assert pick["world_object"] is None
+
+        assert show_m.renderer.get_pick_info((16, 16))["world_object"] is None
+        if factory is not actor.billboard:
+            # Each point lies inside the quad but outside its unit-radius sphere.
+            for x in (64, 192):
+                for dx in (-26, 26):
+                    for dy in (-26, 26):
+                        pick = show_m.renderer.get_pick_info((x + dx, 128 + dy))
+                        assert pick["world_object"] is None
+    finally:
+        show_m.close()
+
+
+@pytest.mark.parametrize(
+    "factory, actor_kwargs",
+    [
+        pytest.param(actor.billboard, {"sizes": (2, 2)}, id="billboard"),
+        pytest.param(actor.billboard_sphere, {"radii": 1}, id="billboard_sphere"),
+    ],
+)
+def test_billboard_pick_glyph_index_split(factory, actor_kwargs):
+    """Preserve low and high ID components across both triangles of each glyph."""
+    glyph_indices = (8191, 8192, 8193)
+    centers = np.full((8194, 3), (20, 0, 0), dtype=np.float32)
+    centers[list(glyph_indices)] = [[-2, 0, 0], [0, 0, 0], [2, 0, 0]]
+    billboards = factory(centers, colors=(1, 0, 0), **actor_kwargs)
+    show_m = _create_billboard_pick_manager(billboards)
+    try:
+        show_m.render()
+        show_m.window.draw()
+        for glyph_index, x in zip(glyph_indices, (64, 128, 192), strict=True):
+            for dx in (-8, 0, 8):
+                for dy in (-8, 0, 8):
+                    pick = show_m.renderer.get_pick_info((x + dx, 128 + dy))
+                    assert pick["world_object"] is billboards
+                    assert pick["glyph_index"] == glyph_index
+    finally:
+        show_m.close()
+
+
+@pytest.mark.parametrize(
+    "factory, actor_kwargs",
+    [
+        pytest.param(actor.billboard_sphere, {}, id="billboard_sphere"),
+        pytest.param(actor.sphere, {"impostor": True}, id="sphere"),
+    ],
+)
+@pytest.mark.parametrize(
+    "large_center_z, expected_glyph",
+    [
+        pytest.param(0, 0, id="farther_center_nearer_surface"),
+        pytest.param(-1, 1, id="nearer_center_nearer_surface"),
+    ],
+)
+def test_billboard_sphere_pick_overlap(
+    factory, actor_kwargs, large_center_z, expected_glyph
+):
+    """Resolve overlapping glyphs using analytic surface depth, not quad depth."""
+    billboards = factory(
+        [[0, 0, large_center_z], [0, 0, 1], [20, 0, 0]],
+        radii=[2, 0.5, 1],
+        colors=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+        **actor_kwargs,
+    )
+    show_m = _create_billboard_pick_manager(billboards)
+    try:
+        show_m.render()
+        show_m.window.draw()
+        image = show_m.snapshot(fname=None)
+        # At x=0 and x=0.25 both spheres intersect the ray. The larger sphere's
+        # center is behind the smaller one, but its surface can still be in front.
+        for x in (128, 136):
+            assert image[128, x, expected_glyph] > 50
+            assert image[128, x, expected_glyph] > image[128, x, 1 - expected_glyph]
+            pick = show_m.renderer.get_pick_info((x, 128))
+            assert pick["world_object"] is billboards
+            assert pick["glyph_index"] == expected_glyph
+    finally:
+        show_m.close()
 
 
 def test_basic_billboard(interactive: bool = False):

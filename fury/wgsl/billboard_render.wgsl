@@ -1,5 +1,6 @@
 {$ include 'pygfx.std.wgsl' $}
 {$ include 'fury.utils.wgsl' $}
+{$ include 'fury.billboard_common.wgsl' $}
 
 struct VertexInput {
     @builtin(vertex_index) index : u32,
@@ -10,18 +11,7 @@ fn vs_main(in: VertexInput) -> Varyings {
     // Generate quad vertices for billboard
     // Each billboard uses 6 vertices (2 triangles to form a quad)
     let billboard_index = i32(in.index) / 6;
-    let vertex_in_quad = i32(in.index) % 6;
-
-    // Quad vertices in local space (counter-clockwise winding)
-    var local_pos: vec2<f32>;
-    switch vertex_in_quad {
-        case 0: { local_pos = vec2<f32>(-0.5, -0.5); } // bottom left
-        case 1: { local_pos = vec2<f32>(0.5, -0.5); }  // bottom right
-        case 2: { local_pos = vec2<f32>(-0.5, 0.5); }  // top left
-        case 3: { local_pos = vec2<f32>(0.5, -0.5); }  // bottom right
-        case 4: { local_pos = vec2<f32>(0.5, 0.5); }   // top right
-        default: { local_pos = vec2<f32>(-0.5, 0.5); } // top left
-    }
+    let local_pos = billboard_quad_corner(in.index);
 
     // Load billboard center position from storage buffer. Each center is
     // duplicated 6 times in the geometry buffer, so pick the first occurrence.
@@ -47,6 +37,7 @@ fn vs_main(in: VertexInput) -> Varyings {
     var varyings: Varyings;
     varyings.position = vec4<f32>(clip_pos);
     varyings.world_pos = vec3<f32>(world_pos);
+    varyings.glyph_index_parts = vec2<f32>(billboard_encode_glyph_index(u32(billboard_index)));
 
     // Load color if available - colors are duplicated 6x like positions
     $$ if color_buffer_channels == 4
@@ -72,10 +63,18 @@ fn fs_main(varyings: Varyings) -> FragmentOutput {
     let color = varyings.color;
     let physical_color = srgb2physical(color.rgb);
     let opacity = color.a * u_material.opacity;
+    do_alpha_test(opacity);
     let out_color = vec4<f32>(physical_color, opacity);
 
     var out: FragmentOutput;
     out.color = out_color;
+    $$ if write_pick
+    out.pick = (
+        pick_pack(u32(u_wobject.global_id), 20) +
+        pick_pack(billboard_decode_glyph_index(varyings.glyph_index_parts), 26) +
+        pick_pack(0u, 18)
+    );
+    $$ endif
 
     return out;
 }

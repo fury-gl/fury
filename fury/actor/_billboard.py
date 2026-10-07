@@ -145,6 +145,36 @@ class BillboardActor(Mesh):
         self._billboard_centers = np.empty((0, 3), dtype=np.float32)
         self._billboard_sizes = np.empty((0, 2), dtype=np.float32)
 
+    def _wgpu_get_pick_info(self, pick_value):
+        """
+        Decode a billboard glyph index from GPU picking readback.
+
+        Parameters
+        ----------
+        pick_value : int
+            Packed 64-bit picking value written by the billboard shader.
+
+        Returns
+        -------
+        dict
+            The zero-based ``glyph_index`` of the picked billboard.
+
+        Notes
+        -----
+        The low 20 bits identify the object; the next 26 identify the glyph.
+        Shifting right by 20 removes the object ID. ``(1 << 26) - 1`` has
+        exactly 26 low bits set, so the mask keeps only the glyph ID.
+        The renderer resolves the object separately. Mesh face indices and
+        barycentric coordinates do not apply to billboard picking.
+
+        The shaders carry glyph IDs between stages as two 13-bit float
+        components, preserving IDs that a single float32 cannot represent.
+        All vertices of a glyph carry the same pair. The fragment shader
+        rounds and reconstructs the integer before packing the pick value,
+        so this decoder receives the integer field, not the float pair.
+        """
+        return {"glyph_index": (int(pick_value) >> 20) & ((1 << 26) - 1)}
+
     def get_bounding_box(self):
         """
         Compute the axis-aligned bounding box including billboard visual size.
