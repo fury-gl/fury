@@ -5,9 +5,8 @@ from tempfile import TemporaryDirectory as InTemporaryDirectory
 # from PIL import Image
 import numpy as np
 import numpy.testing as npt
-
-# import pytest
 import polyxios as px
+import pytest
 
 # from fury.decorators import skip_osx
 from fury.data import fetch_viz_cubemaps, read_viz_cubemap
@@ -50,12 +49,35 @@ def test_load_cube_map_texture():
     npt.assert_equal(type(texture), Texture)
 
 
-def test_load_image_texture():
-    fetch_viz_cubemaps()
-    texture_files = read_viz_cubemap("skybox")
-    texture = load_image_texture(texture_files[0])
+@pytest.mark.parametrize("shape", [(3, 5), (5, 3), (3, 3)])
+@pytest.mark.parametrize("channels", [1, 3, 4])
+def test_load_image_texture(tmp_path, shape, channels):
+    height, width = shape
+    data = np.arange(height * width * channels, dtype=np.uint8).reshape(
+        height, width, channels
+    )
+    image = data[:, :, 0] if channels == 1 else data
+    filename = str(tmp_path / "texture.png")
+    save_image(image, filename)
+
+    texture = load_image_texture(filename)
 
     npt.assert_equal(type(texture), Texture)
+    npt.assert_equal(texture.size, (width, height, 1))
+    npt.assert_array_equal(texture.view[0], data)
+    assert texture.generate_mipmaps
+
+
+def test_load_image_texture_explicit_size(tmp_path):
+    data = np.arange(3 * 5 * 4, dtype=np.uint8).reshape(3, 5, 4)
+    filename = str(tmp_path / "texture.png")
+    save_image(data, filename)
+
+    texture = load_image_texture(filename, size=(3, 5), generate_mipmaps=False)
+
+    npt.assert_equal(texture.size, (3, 5, 1))
+    npt.assert_array_equal(texture.view[0], data.reshape(5, 3, 4))
+    assert not texture.generate_mipmaps
 
 
 def test_load_image_as_wgpu_texture_view_uses_show_manager_device():

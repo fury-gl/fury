@@ -67,7 +67,7 @@ def load_image_texture(fname, *, size=None, generate_mipmaps=True):
     image = load_image(fname)
 
     if size is None:
-        size = image.shape[:2]
+        size = image.shape[1], image.shape[0]
 
     return Texture(image, dim=2, size=size, generate_mipmaps=generate_mipmaps)
 
