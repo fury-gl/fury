@@ -15,6 +15,7 @@ from fury.actor import (
     create_mesh,
     read_buffer,
 )
+from fury.actor._billboard import _BillboardEllipsoid
 from fury.colormap import normalize_colors
 from fury.geometry import buffer_to_geometry, line_buffer_separator
 from fury.lib import (
@@ -39,6 +40,8 @@ from fury.shader import (
     _StreamtubeBakingShader,
     _StreamtubeRenderShader,
 )
+
+logger = logging.getLogger(__name__)
 
 numba, have_numba, _ = optional_package("numba")
 
@@ -201,22 +204,22 @@ def ellipsoid(
     smooth=True,
     wireframe=False,
     wireframe_thickness=1.0,
+    impostor=True,
 ):
     """
     Create ellipsoid actor(s) with specified orientation and scaling.
 
     Parameters
     ----------
-    centers : ndarray (N, 3)
+    centers : ndarray, shape (N, 3) or (3,)
         Centers of the ellipsoids.
     orientation_matrices : ndarray, shape (N, 3, 3) or (3, 3), optional
-        Orthonormal rotation matrices defining the orientation of each ellipsoid.
-        Each 3×3 matrix represents a local coordinate frame, with columns
-        corresponding to the ellipsoid’s x-, y-, and z-axes in world coordinates.
-        Must be right-handed and orthonormal. If a single (3, 3) matrix is
-        provided, it is broadcast to all ellipsoids.
+        Orthonormal matrices whose columns define the local semi-axis directions.
+        Either handedness gives the same ellipsoid. A single matrix, including
+        shape (1, 3, 3), is broadcast to all ellipsoids.
     lengths : ndarray (N, 3) or (3,) or tuple (3,), optional
-        Scaling factors along each axis.
+        Nonnegative semi-axis lengths, not diameters. A single triple is
+        broadcast to all ellipsoids; zero-axis glyphs have no renderable volume.
     colors : array-like or tuple, optional
         RGB or RGBA colors. Accepts values in [0, 255] (int), [0, 1] (float),
         or hex strings (e.g. "#FF0000"). Values above 1.0 are treated as
@@ -226,9 +229,9 @@ def ellipsoid(
         1 (opaque). If both `opacity` and RGBA are provided, the final alpha
         will be: final_alpha = alpha_in_RGBA * opacity.
     phi : int, optional
-        The number of segments in the longitude direction.
+        Number of longitude segments for the mesh branch only.
     theta : int, optional
-        The number of segments in the latitude direction.
+        Number of latitude segments for the mesh branch only.
     material : str, optional
         The material type for the ellipsoids. Options are 'phong', 'basic',
         'standard' and 'physical'. The last two are physically based (PBR)
@@ -245,11 +248,22 @@ def ellipsoid(
         Whether to render the mesh as a wireframe.
     wireframe_thickness : float, optional
         The thickness of the wireframe lines.
+    impostor : bool, optional
+        Render smooth Phong ellipsoids as compact billboard impostors by default.
+        Other materials, nonempty ``material_params``, wireframe, or faceted
+        shading retain the requested appearance through the mesh branch, with
+        a warning.
 
     Returns
     -------
     Actor
-        A mesh actor containing the generated ellipsoids.
+        An actor containing the generated ellipsoids.
+
+    Notes
+    -----
+    Impostor rendering logs a warning because it provides no mesh surface vertices
+    or faces, ignores ``phi`` and ``theta``, and picks ``glyph_index`` instead of
+    mesh face coordinates. Use ``impostor=False`` to retain mesh behavior.
 
     Examples
     --------
@@ -262,6 +276,28 @@ def ellipsoid(
     >>> ellipsoid = actor.ellipsoid(centers=centers, lengths=lengths, colors=colors)
     >>> window.show([ellipsoid])
     """
+
+    if impostor and (material != "phong" or material_params or wireframe or not smooth):
+        logger.warning(
+            "impostor ellipsoids require smooth phong shading without wireframe "
+            "or material_params; falling back to impostor=False."
+        )
+        impostor = False
+
+    if impostor:
+        logger.warning(
+            "impostor=True uses analytic billboard ellipsoids instead of a triangle "
+            "mesh: phi and theta are ignored, and picking returns glyph_index "
+            "instead of mesh face coordinates. Use impostor=False for mesh behavior."
+        )
+        return _BillboardEllipsoid(
+            centers,
+            orientation_matrices=orientation_matrices,
+            lengths=lengths,
+            colors=colors,
+            opacity=opacity,
+            enable_picking=enable_picking,
+        )
 
     centers = np.asarray(centers)
 
