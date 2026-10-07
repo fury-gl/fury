@@ -285,7 +285,7 @@ def _make_fetcher(
 
     def fetcher():
         files = {}
-        for i, (f, n) in enumerate(zip(remote_fnames, local_fnames)):
+        for i, (f, n) in enumerate(zip(remote_fnames, local_fnames,strict=True)):
             files[n] = (baseurl + f, sha_list[i] if sha_list is not None else None)
         fetch_data(files, folder, data_size=data_size)
 
@@ -420,7 +420,7 @@ async def _fetch_gltf(name, mode):
         sizes = [file["size"] for file in urls]
         f_names = [url.split("/")[-1] for url in d_urls]
         f_paths = [pjoin(folder, name) for name in f_names]
-        zip_url = zip(d_urls, f_paths, sizes)
+        zip_url = zip(d_urls, f_paths, sizes,strict=True)
 
         async with aiohttp.ClientSession() as session:
             await asyncio.gather(
