@@ -1,3 +1,4 @@
+from PIL import Image
 import numpy as np
 import numpy.testing as npt
 import pytest
@@ -261,6 +262,19 @@ def test_image():
     assert image_actor.visible
 
     scene.remove(image_actor)
+
+
+def test_image_from_16bit_file(tmp_path):
+    data = np.array([[0, 255, 256], [257, 32768, 65535]], dtype=np.uint16)
+    filename = tmp_path / "image.png"
+    Image.fromarray(data).save(filename)
+
+    image_actor = actor.image(image=str(filename), clim=(0, 65535 / 255))
+
+    npt.assert_equal(image_actor.geometry.grid.size, (3, 2, 1))
+    npt.assert_array_equal(
+        image_actor.geometry.grid.data, np.flipud(data).astype(np.float32) / 255
+    )
 
 
 def test_star():

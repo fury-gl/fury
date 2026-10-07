@@ -5,9 +5,8 @@ from tempfile import TemporaryDirectory as InTemporaryDirectory
 from PIL import Image
 import numpy as np
 import numpy.testing as npt
-
-# import pytest
 import polyxios as px
+import pytest
 
 # from fury.decorators import skip_osx
 from fury.data import fetch_viz_cubemaps, read_viz_cubemap
@@ -74,20 +73,23 @@ def test_load_image_as_wgpu_texture_view_uses_show_manager_device():
     npt.assert_array_equal(texture_view.texture.size, (8, 8, 1))
     assert texture_view.texture._device is show_m.device
 
-def test_load_16bit_image():
-    with InTemporaryDirectory() as odir:
-        # Create a 16-bit grayscale image
-        data = np.random.randint(0, 65535, size=(64, 128), dtype=np.uint16)
-        fname_path = pjoin(odir, "test_16bit.png")
 
-        img = Image.fromarray(data)
-        img.save(fname_path)
+@pytest.mark.parametrize(
+    "dtype, extension", [("<u2", "png"), ("<u2", "tiff"), (">u2", "tiff")]
+)
+def test_load_16bit_image(tmp_path, dtype, extension):
+    data = np.array([[0, 255, 256], [257, 32768, 65535]], dtype=dtype)
+    filename = tmp_path / f"image.{extension}"
+    Image.fromarray(data).save(filename)
 
-        # Load and verify shape is preserved (not flattened to 1D)
-        out_image = load_image(fname_path)
-        npt.assert_equal(out_image.ndim, 2)
-        npt.assert_equal(out_image.shape, (64, 128))
-        npt.assert_array_equal(out_image, data)
+    out_image = load_image(str(filename))
+
+    npt.assert_equal(out_image.shape, data.shape)
+    npt.assert_array_equal(out_image, data)
+    assert out_image.dtype.isnative
+    if extension == "tiff":
+        npt.assert_equal(out_image.dtype, np.dtype("uint16"))
+
 
 # def test_save_and_load_polydata():
 #     l_ext = ["vtk", "fib", "ply", "xml"]

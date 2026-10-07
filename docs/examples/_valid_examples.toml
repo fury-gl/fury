@@ -21,7 +21,8 @@ files = [
     "viz_multi_screen.py",
     "viz_show.py",
     "viz_imgui.py",
-    "viz_text.py"
+    "viz_text.py",
+    "viz_16bit_image.py",
 
 ]
 
