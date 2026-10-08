@@ -2,12 +2,11 @@ import os
 from os.path import join as pjoin
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 
-# from PIL import Image
+from PIL import Image
 import numpy as np
 import numpy.testing as npt
-
-# import pytest
 import polyxios as px
+import pytest
 
 # from fury.decorators import skip_osx
 from fury.data import fetch_viz_cubemaps, read_viz_cubemap
@@ -286,6 +285,21 @@ def test_read_lines_without_line_elements():
 
     npt.assert_equal(out_lines, [])
     npt.assert_equal(out_colors, None)
+
+
+@pytest.mark.parametrize("shape", [(3, 4, 1), (1, 4, 1), (3, 1, 1)])
+@pytest.mark.parametrize("dtype", [np.uint8, np.uint16])
+@pytest.mark.parametrize("extension", ["png", "tiff"])
+def test_save_image_single_channel(tmp_path, shape, dtype, extension):
+    data = np.linspace(0, np.iinfo(dtype).max, num=np.prod(shape), dtype=dtype)
+    data = data.reshape(shape)
+    fname = tmp_path / f"grayscale.{extension}"
+
+    save_image(data, str(fname))
+
+    with Image.open(fname) as image:
+        npt.assert_array_equal(np.asarray(image), data[..., 0])
+    assert data.shape == shape
 
 
 def test_save_load_image():

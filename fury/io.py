@@ -240,6 +240,9 @@ def save_image(
             f"Impossible to save the file {filename}: Unknown extension {extension}"
         )
 
+    if arr.ndim == 3 and arr.shape[-1] == 1:
+        arr = arr[..., 0]
+
     im = Image.fromarray(arr)
 
     save_kwargs = {"dpi": dpi}
