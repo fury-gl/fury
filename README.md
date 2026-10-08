@@ -25,6 +25,7 @@
   <a href="#installation">Installation</a> •
   <a href="#how-to-use">How to use</a> •
   <a href="#credits">Credits</a> •
+  <a href="#friends--support">Friends &amp; Support</a> •
   <a href="#contribute">Contribute</a> •
   <a href="#citing">Citing</a>
 </p>
@@ -116,6 +117,15 @@ There are many ways to start using FURY:
 # Credits
 
 Please, go to [contributors page](https://github.com/fury-gl/fury/graphs/contributors) to see who have been involved in the development of FURY.
+
+
+# Friends & Support
+
+- [DIPY](https://dipy.org/)
+- [Polyxios](https://polyxios.org)
+- [Intelligent Systems Engineering, IU](https://engineering.indiana.edu/)
+- [NSF award #1720625](https://www.nsf.gov/awardsearch/showAward?AWD_ID=1720625)
+- [Google Summer of Code](https://summerofcode.withgoogle.com/)
 
 
 # Contribute
