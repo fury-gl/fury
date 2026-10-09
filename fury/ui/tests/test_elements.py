@@ -2168,51 +2168,143 @@ def test_ui_combobox_2d_drag_events():
 #         event_counter.check_counts(expected)
 
 
-# def test_ui_spinbox(interactive=False):
-#     filename = "test_ui_spinbox"
-#     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-#     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+def test_spinbox_initialization():
+    """Test SpinBox initial value clamping and child components."""
+    fetch_viz_icons()
 
-#     spinbox = ui.SpinBox(size=(300, 200), min_val=-20, max_val=10, step=2)
-#     npt.assert_equal(spinbox.value, 10)
+    spinbox = ui.SpinBox(size=(300, 200), min_val=-20, max_val=10, step=2)
 
-#     spinbox.value = 5
-#     npt.assert_equal(spinbox.value, 5)
-#     spinbox.value = 50
-#     npt.assert_equal(spinbox.value, 10)
-#     spinbox.value = -50
-#     npt.assert_equal(spinbox.value, -20)
+    npt.assert_equal(spinbox.value, 10)
+    npt.assert_equal(spinbox.textbox._message, "10")
+    npt.assert_equal(spinbox.size, [300, 200])
+    npt.assert_equal(isinstance(spinbox.textbox, ui.TextBox2D), True)
+    npt.assert_equal(isinstance(spinbox.increment_button, ui.TexturedButton2D), True)
+    npt.assert_equal(isinstance(spinbox.decrement_button, ui.TexturedButton2D), True)
 
-#     spinbox.min_val = -100
-#     spinbox.max_val = 100
 
-#     spinbox.value = 5
-#     npt.assert_equal(spinbox.value, 5)
-#     spinbox.value = 50
-#     npt.assert_equal(spinbox.value, 50)
-#     spinbox.value = -50
-#     npt.assert_equal(spinbox.value, -50)
+def test_spinbox_value_clamping():
+    """Test that SpinBox values are clamped to [min_val, max_val]."""
+    fetch_viz_icons()
 
-#     # Assign the counter callback to every possible event.
-#     event_counter = EventCounter()
-#     event_counter.monitor(spinbox)
+    spinbox = ui.SpinBox(size=(300, 200), min_val=-20, max_val=10, step=2)
 
-#     current_size = (800, 800)
-#     show_manager = window.ShowManager(size=current_size, title="SpinBox UI Example")
-#     show_manager.scene.add(spinbox)
+    spinbox.value = 5
+    npt.assert_equal(spinbox.value, 5)
+    spinbox.value = 50
+    npt.assert_equal(spinbox.value, 10)
+    spinbox.value = -50
+    npt.assert_equal(spinbox.value, -20)
 
-#     if interactive:
-#         show_manager.record_events_to_file(recording_filename)
-#         print(list(event_counter.events_counts.items()))
-#         event_counter.save(expected_events_counts_filename)
-#     else:
-#         show_manager.play_events_from_file(recording_filename)
-#         expected = EventCounter.load(expected_events_counts_filename)
-#         event_counter.check_counts(expected)
+    spinbox.min_val = -100
+    spinbox.max_val = 100
 
-#     spinbox.resize((450, 200))
-#     npt.assert_equal((315, 160), spinbox.textbox_size)
-#     npt.assert_equal((90, 60), spinbox.button_size)
+    spinbox.value = 5
+    npt.assert_equal(spinbox.value, 5)
+    spinbox.value = 50
+    npt.assert_equal(spinbox.value, 50)
+    spinbox.value = -50
+    npt.assert_equal(spinbox.value, -50)
+    npt.assert_equal(spinbox.textbox._message, "-50")
+
+
+def test_spinbox_buttons():
+    """Test increment and decrement buttons step the value and fire on_change."""
+    fetch_viz_icons()
+
+    spinbox = ui.SpinBox(min_val=0, max_val=10, initial_val=4, step=3)
+    changes = []
+    spinbox.on_change = lambda sb: changes.append(sb.value)
+
+    spinbox.increment_button.do_click()
+    npt.assert_equal(spinbox.value, 7)
+    spinbox.increment_button.do_click()
+    npt.assert_equal(spinbox.value, 10)
+
+    spinbox.decrement_button.do_click()
+    npt.assert_equal(spinbox.value, 7)
+    npt.assert_equal(changes, [7, 10, 7])
+
+
+def test_spinbox_textbox_input():
+    """Test typed textbox input updates the value when focus is lost."""
+    fetch_viz_icons()
+
+    spinbox = ui.SpinBox(min_val=0, max_val=100, initial_val=50)
+    changes = []
+    spinbox.on_change = lambda sb: changes.append(sb.value)
+
+    spinbox.textbox.set_message("42")
+    spinbox.textbox.on_blur(None)
+    npt.assert_equal(spinbox.value, 42)
+
+    spinbox.textbox.set_message("500")
+    spinbox.textbox.on_blur(None)
+    npt.assert_equal(spinbox.value, 100)
+
+    spinbox.textbox.set_message("abc")
+    spinbox.textbox.on_blur(None)
+    npt.assert_equal(spinbox.value, 100)
+    npt.assert_equal(spinbox.textbox._message, "100")
+    npt.assert_equal(changes, [42, 100, 100])
+
+
+def test_spinbox_textbox_signed_and_invalid_input():
+    """Test negative, whitespace and non-integer typed input."""
+    fetch_viz_icons()
+
+    spinbox = ui.SpinBox(min_val=-20, max_val=20, initial_val=0)
+
+    spinbox.textbox.set_message("-5")
+    spinbox.textbox.on_blur(None)
+    npt.assert_equal(spinbox.value, -5)
+
+    spinbox.textbox.set_message("-99")
+    spinbox.textbox.on_blur(None)
+    npt.assert_equal(spinbox.value, -20)
+
+    spinbox.textbox.set_message(" 4")
+    spinbox.textbox.on_blur(None)
+    npt.assert_equal(spinbox.value, 4)
+
+    for invalid in ["3.5", "", "-", "²"]:
+        spinbox.textbox.set_message(invalid)
+        spinbox.textbox.on_blur(None)
+        npt.assert_equal(spinbox.value, 4)
+
+
+def test_spinbox_resize():
+    """Test SpinBox resize updates child sizes and layout."""
+    fetch_viz_icons()
+
+    spinbox = ui.SpinBox(size=(160, 40), padding=4)
+
+    spinbox.resize((200, 50))
+    npt.assert_equal(spinbox.size, [200, 50])
+    # Buttons are squares as tall as the textbox: 50 - 2 * 4 = 42.
+    npt.assert_equal((42, 42), spinbox.button_size)
+    npt.assert_equal((200 - 4 * 4 - 2 * 42, 42), spinbox.textbox_size)
+
+    # Textbox, decrement and increment sit side by side on one row.
+    offsets = {id(e): off for e, off in spinbox.panel.element_offsets}
+    npt.assert_equal(offsets[id(spinbox.textbox)], (4, 4))
+    npt.assert_equal(offsets[id(spinbox.decrement_button)], (4 + 100 + 4, 4))
+    npt.assert_equal(offsets[id(spinbox.increment_button)], (4 + 100 + 4 + 42 + 4, 4))
+
+
+def test_spinbox_padding():
+    """Test that the padding argument sets the gaps instead of being overwritten."""
+    fetch_viz_icons()
+
+    spinbox = ui.SpinBox(size=(160, 40), padding=8)
+    npt.assert_equal(spinbox.padding, 8)
+    npt.assert_equal((24, 24), spinbox.button_size)
+    npt.assert_equal((160 - 4 * 8 - 2 * 24, 24), spinbox.textbox_size)
+
+    offsets = {id(e): off for e, off in spinbox.panel.element_offsets}
+    npt.assert_equal(offsets[id(spinbox.textbox)], (8, 8))
+    # The increment button ends one padding before the right edge.
+    inc_x = offsets[id(spinbox.increment_button)][0]
+    npt.assert_equal(inc_x + 24 + 8, 160)
 
 
 def test_listbox_2d_functional_initialization():
