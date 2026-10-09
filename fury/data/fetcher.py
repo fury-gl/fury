@@ -285,7 +285,7 @@ def _make_fetcher(
 
     def fetcher():
         files = {}
-        for i, (f, n) in enumerate(zip(remote_fnames, local_fnames,strict=True)):
+        for i, (f, n) in enumerate(zip(remote_fnames, local_fnames, strict=True)):
             files[n] = (baseurl + f, sha_list[i] if sha_list is not None else None)
         fetch_data(files, folder, data_size=data_size)
 
