@@ -1,5 +1,6 @@
 """Test for components module."""
 
+import os
 from os.path import join as pjoin
 import warnings
 
@@ -2341,6 +2342,152 @@ def test_listbox_2d_resize():
     npt.assert_equal(listbox.slot_width, expected_slot_width)
 
     npt.assert_equal(len(listbox.slots), listbox.nb_slots)
+
+
+def _make_file_menu_fixture(tmp_path):
+    """
+    Create a small directory tree for FileMenu2D tests.
+
+    root/
+        sub_dir/
+        a.txt
+        b.py
+        c.txt
+    """
+    sub_dir = tmp_path / "sub_dir"
+    sub_dir.mkdir()
+    (tmp_path / "a.txt").write_text("a")
+    (tmp_path / "b.py").write_text("b")
+    (tmp_path / "c.txt").write_text("c")
+    return tmp_path
+
+
+def test_file_menu_2d_lists_directory_contents(tmp_path):
+    root = _make_file_menu_fixture(tmp_path)
+    menu = ui.FileMenu2D(str(root), size=(200, 200))
+
+    npt.assert_equal(menu.directory_contents[0], ("../", "directory"))
+    npt.assert_equal(
+        [entry for entry in menu.directory_contents if entry[1] == "directory"],
+        [("../", "directory"), ("sub_dir", "directory")],
+    )
+    npt.assert_equal(
+        sorted(entry[0] for entry in menu.directory_contents if entry[1] == "file"),
+        ["a.txt", "b.py", "c.txt"],
+    )
+
+
+def test_file_menu_2d_extension_filter(tmp_path):
+    root = _make_file_menu_fixture(tmp_path)
+    menu = ui.FileMenu2D(str(root), extensions=["txt"], size=(200, 200))
+
+    file_names = sorted(
+        entry[0] for entry in menu.directory_contents if entry[1] == "file"
+    )
+    npt.assert_equal(file_names, ["a.txt", "c.txt"])
+
+
+def test_file_menu_2d_slot_colors_by_entry_type(tmp_path):
+    root = _make_file_menu_fixture(tmp_path)
+    menu = ui.FileMenu2D(str(root), size=(200, 200))
+
+    for idx, entry in enumerate(menu.directory_contents):
+        slot = menu.listbox.slots[idx]
+        if entry[1] == "directory":
+            npt.assert_array_almost_equal(slot.textblock.color, [0, 0.6, 0])
+        else:
+            npt.assert_array_almost_equal(slot.textblock.color, [0, 0, 0.7])
+
+
+def test_file_menu_2d_navigates_into_directory(tmp_path):
+    root = _make_file_menu_fixture(tmp_path)
+    (root / "sub_dir" / "nested.txt").write_text("nested")
+    menu = ui.FileMenu2D(str(root), size=(200, 200))
+
+    sub_dir_idx = menu.directory_contents.index(("sub_dir", "directory"))
+    menu.listbox.select(menu.listbox.slots[sub_dir_idx])
+
+    npt.assert_equal(menu.current_directory, os.path.join(str(root), "sub_dir"))
+    npt.assert_equal(menu.directory_contents[0], ("../", "directory"))
+    npt.assert_equal(
+        [entry[0] for entry in menu.directory_contents if entry[1] == "file"],
+        ["nested.txt"],
+    )
+
+
+def test_file_menu_2d_navigates_to_parent_directory(tmp_path):
+    root = _make_file_menu_fixture(tmp_path)
+    menu = ui.FileMenu2D(str(root / "sub_dir"), size=(200, 200))
+
+    parent_idx = menu.directory_contents.index(("../", "directory"))
+    menu.listbox.select(menu.listbox.slots[parent_idx])
+
+    npt.assert_equal(menu.current_directory, os.path.normpath(str(root)))
+
+
+def test_file_menu_2d_selecting_file_does_not_navigate(tmp_path):
+    root = _make_file_menu_fixture(tmp_path)
+    menu = ui.FileMenu2D(str(root), size=(200, 200))
+
+    file_idx = menu.directory_contents.index(("a.txt", "file"))
+    menu.listbox.select(menu.listbox.slots[file_idx])
+
+    npt.assert_equal(menu.current_directory, str(root))
+    npt.assert_equal(menu.listbox.selected, ["a.txt"])
+
+
+def test_file_menu_2d_resize(tmp_path):
+    root = _make_file_menu_fixture(tmp_path)
+    menu = ui.FileMenu2D(str(root), size=(100, 200))
+
+    npt.assert_equal(menu.size, [100, 200])
+
+    menu.resize((200, 400))
+    npt.assert_equal(menu.size, [200, 400])
+    npt.assert_equal(menu.listbox.panel.size, (200, 400))
+
+
+def test_file_menu_2d_range_select_after_navigation(tmp_path):
+    for name in "abcdef":
+        (tmp_path / name).mkdir()
+    (tmp_path / "f" / "x.txt").write_text("x")
+    (tmp_path / "f" / "y.txt").write_text("y")
+    menu = ui.FileMenu2D(str(tmp_path), size=(200, 400))
+
+    f_idx = menu.directory_contents.index(("f", "directory"))
+    menu.listbox.select(menu.listbox.slots[f_idx])
+    # The range must start in the new, shorter directory, not at the index
+    # of "f" in the previous one.
+    menu.listbox.select(menu.listbox.slots[2], range_select=True)
+
+    npt.assert_equal(menu.listbox.selected, ["../", "x.txt", "y.txt"])
+
+
+def test_file_menu_2d_overlapping_extensions(tmp_path):
+    (tmp_path / "data.tar.gz").write_text("")
+    (tmp_path / "notes.txt").write_text("")
+    menu = ui.FileMenu2D(str(tmp_path), extensions=["gz", "tar.gz"], size=(200, 200))
+
+    file_names = [entry[0] for entry in menu.directory_contents if entry[1] == "file"]
+    npt.assert_equal(file_names, ["data.tar.gz"])
+
+
+def test_file_menu_2d_slot_colors_after_scroll(tmp_path):
+    for i in range(30):
+        (tmp_path / f"file_{i:02d}.txt").write_text("")
+    (tmp_path / "dir_a").mkdir()
+    menu = ui.FileMenu2D(str(tmp_path), size=(200, 200))
+
+    for _ in range(3):
+        menu.listbox.scroll_down()
+
+    npt.assert_equal(menu.listbox.view_offset, 3)
+    for idx, slot in enumerate(menu.listbox.slots):
+        if slot.element is None:
+            continue
+        entry = menu.directory_contents[menu.listbox.view_offset + idx]
+        expected = [0, 0.6, 0] if entry[1] == "directory" else [0, 0, 0.7]
+        npt.assert_array_almost_equal(slot.textblock.color, expected)
 
 
 def test_ui_card2d_initialization():
