@@ -29,6 +29,36 @@ fn is_point_on_plane_equation(plane: vec4<f32>, point: vec3<f32>, scale: f32) ->
     return abs(normalizedDistance) <= scale / 2.0;
 }
 
+fn snap_cross_section_center(
+    center: vec3<f32>,
+    cross_section: vec3<f32>,
+    world_transform: mat4x4<f32>
+) -> vec3<f32> {
+    var snapped_center = center;
+    if (is_point_on_plane_equation(
+        vec4<f32>(-1.0, 0.0, 0.0, cross_section.x),
+        center,
+        abs(world_transform[0][0])
+    )) {
+        snapped_center.x = cross_section.x;
+    }
+    if (is_point_on_plane_equation(
+        vec4<f32>(0.0, -1.0, 0.0, cross_section.y),
+        center,
+        abs(world_transform[1][1])
+    )) {
+        snapped_center.y = cross_section.y;
+    }
+    if (is_point_on_plane_equation(
+        vec4<f32>(0.0, 0.0, -1.0, cross_section.z),
+        center,
+        abs(world_transform[2][2])
+    )) {
+        snapped_center.z = cross_section.z;
+    }
+    return snapped_center;
+}
+
 fn crosssect_plane(plane: vec4<f32>, p0: vec3<f32>, p1: vec3<f32>) -> f32 {
     let num = -1 * (plane.x * p0.x + plane.y * p0.y + plane.z * p0.z + plane.w);
     let denom = plane.x * (p1.x - p0.x) + plane.y * (p1.y - p0.y) + plane.z * (p1.z - p0.z);

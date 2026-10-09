@@ -7,6 +7,7 @@ from fury.actor import (
     apply_affine_to_actor,
     apply_affine_to_group,
     data_slicer,
+    ellipsoid_slicer,
     get_slices,
     line_projection,
     set_group_opacity,
@@ -15,6 +16,7 @@ from fury.actor import (
     show_slices,
     vector_field_slicer,
 )
+from fury.actor.slicer import _create_chunked_ellipsoid_field
 import fury.actor.utils as actor_utils
 from fury.lib import (
     AffineTransform,
@@ -150,18 +152,17 @@ def test_get_slices_type_error():
         get_slices("not a group")
 
 
-def test_get_slices_value_error(actor):
-    group = Group(name="Slicer")
-    group.add(actor, Mesh())
-    with pytest.raises(ValueError):
+@pytest.mark.parametrize("count", [1, 2, 4])
+def test_slice_groups_reject_invalid_plane_counts(
+    group_slicer, group_line_projection, count
+):
+    group = Group(name="Renamed planes")
+    planes = (*group_slicer.children, group_line_projection.children[0])
+    group.add(*planes[:count])
+    with pytest.raises(ValueError, match="exactly 3"):
         get_slices(group)
-
-
-def test_get_slices_attribute_error(actor):
-    group = Group(name="Slicer")
-    group.add(actor, Mesh(), Mesh())
-    with pytest.raises(AttributeError):
-        get_slices(group)
+    with pytest.raises(ValueError, match="exactly 3"):
+        show_slices(group, (1, 2, 3))
 
 
 def test_get_slices_valid(group_slicer):
@@ -172,28 +173,42 @@ def test_get_slices_valid(group_slicer):
     assert np.array_equal(result, expected)
 
 
-def test_get_slices_vector_field_slicer_group():
-    """get_slices reads cross_section from the first VectorField child."""
-    field = np.random.rand(3, 3, 3, 3).astype(np.float32)
-    group = vector_field_slicer(field, cross_section=[1, 1, 1])
-    assert group.name == "VectorFieldSlicer"
+@pytest.mark.parametrize("factory", [vector_field_slicer, ellipsoid_slicer])
+def test_get_slices_field_group(factory):
+    field = np.ones((3, 3, 3, 3), dtype=np.float32)
+    group = factory(field, cross_section=[1, 1, 1])
+    group.name = "Renamed field"
     np.testing.assert_array_equal(get_slices(group), np.array([1, 1, 1]))
 
 
-def test_show_slices_vector_field_slicer_group():
-    """show_slices sets the same cross_section on every chunked VectorField."""
-    field = np.random.rand(3, 3, 3, 3).astype(np.float32)
-    group = vector_field_slicer(field, cross_section=[0, 1, 2])
+@pytest.mark.parametrize("factory", [vector_field_slicer, ellipsoid_slicer])
+def test_show_slices_field_group(factory):
+    field = np.ones((3, 3, 3, 3), dtype=np.float32)
+    group = factory(field, cross_section=[0, 1, 2])
+    group.name = "Arbitrary slice group"
     show_slices(group, [2, 2, 2])
     for child in group.children:
         np.testing.assert_array_equal(child.cross_section, np.array([2, 2, 2]))
 
 
-def test_get_slices_vector_field_slicer_validates_cross_section():
-    group = Group(name="VectorFieldSlicer")
-    group.add(Mesh(Geometry(), Material()))
-    with pytest.raises(AttributeError, match="cross_section"):
+@pytest.mark.parametrize("child_index", [0, 1, 2])
+@pytest.mark.parametrize("invalid_child", ["material", "missing_material", "group"])
+def test_slice_groups_validate_every_plane_child(
+    group_slicer, child_index, invalid_child
+):
+    children = list(group_slicer.children)
+    if invalid_child == "material":
+        children[child_index] = Mesh(Geometry(), Material())
+    elif invalid_child == "missing_material":
+        children[child_index] = Mesh()
+    else:
+        children[child_index] = Group()
+    group = Group(name="Unrelated name")
+    group.add(*children)
+    with pytest.raises(AttributeError, match="plane"):
         get_slices(group)
+    with pytest.raises(AttributeError, match="plane"):
+        show_slices(group, (1, 2, 3))
 
 
 def test_show_slices_type_error():
@@ -228,6 +243,63 @@ def test_show_slices_with_list(group_slicer):
     show_slices(group_slicer, position)
     for i, child in enumerate(group_slicer.children):
         assert child.material.plane[-1] == position[i] + 1e-3
+
+
+def test_ellipsoid_group_slices_preserve_hidden_chunks():
+    lengths = np.full((2, 3, 4, 3), 0.3, dtype=np.float32)
+    group = _create_chunked_ellipsoid_field(
+        lengths,
+        orientation_matrices=None,
+        mask=None,
+        colors=(1, 1, 1),
+        actor_params={"cross_section": (0, 0, 0)},
+        max_glyphs=5,
+    )
+    group.name = "Renamed ellipsoids"
+    group.children[-1].visible = False
+    show_slices(group, (1, 2, 3))
+    np.testing.assert_array_equal(get_slices(group), (1, 2, 3))
+    for child in group.children:
+        np.testing.assert_array_equal(child.cross_section, (1, 2, 3))
+    assert not group.children[-1].visible
+
+
+@pytest.mark.parametrize("incomplete", [False, True])
+@pytest.mark.parametrize("field_first", [False, True])
+def test_slice_groups_reject_mixed_child_interfaces(
+    group_slicer, incomplete, field_first
+):
+    fields = ellipsoid_slicer(np.ones((1, 1, 1, 3), dtype=np.float32))
+    children = [fields.children[0], group_slicer.children[0]]
+    if incomplete:
+        children.append(Mesh(Geometry(), Material()))
+    if not field_first:
+        children.reverse()
+    group = Group()
+    group.add(*children)
+    with pytest.raises(AttributeError, match="cross_section"):
+        get_slices(group)
+    with pytest.raises(AttributeError, match="cross_section"):
+        show_slices(group, (0, 0, 0))
+
+
+def test_empty_slice_group():
+    group = Group()
+    with pytest.raises(ValueError, match="at least one"):
+        get_slices(group)
+    with pytest.raises(ValueError, match="at least one"):
+        show_slices(group, (0, 0, 0))
+
+
+def test_plane_slices_route_each_child(group_slicer, group_line_projection):
+    group = Group(name="Renamed planes")
+    group.add(
+        group_slicer.children[0],
+        group_line_projection.children[1],
+        group_slicer.children[2],
+    )
+    show_slices(group, (2, 4, 6))
+    np.testing.assert_allclose(get_slices(group), np.array((2, 4, 6)) + 1e-3)
 
 
 def test_apply_affine_to_actor_valid_input():

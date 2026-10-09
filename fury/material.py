@@ -1432,7 +1432,115 @@ class BillboardSphereMaterial(MeshPhongMaterial):
 
 
 class BillboardEllipsoidMaterial(BillboardSphereMaterial):
-    """Phong-lit material for analytic ellipsoid impostors."""
+    """
+    Phong-lit ellipsoid impostors with optional world-space slice selection.
+
+    Parameters
+    ----------
+    cross_section : array-like, shape (3,), optional
+        World-space slice positions, converted to integers.
+    visibility : array-like of bool, shape (3,), optional
+        Enabled X, Y, and Z slice planes. None disables slice selection.
+    **material_kwargs : dict
+        Keyword arguments propagated to
+        :class:`~fury.material.BillboardSphereMaterial`.
+    """
+
+    uniform_type = dict(
+        BillboardSphereMaterial.uniform_type,
+        cross_section="4xf4",
+        visibility="4xi4",
+    )
+
+    def __init__(self, *, cross_section=(0, 0, 0), visibility=None, **material_kwargs):
+        """
+        Initialize the ellipsoid impostor material.
+
+        Parameters
+        ----------
+        cross_section : array-like, shape (3,), optional
+            World-space slice positions, converted to integers.
+        visibility : array-like of bool, shape (3,), optional
+            Enabled X, Y, and Z slice planes. None disables slice selection.
+        **material_kwargs : dict
+            Keyword arguments propagated to
+            :class:`~fury.material.BillboardSphereMaterial`.
+        """
+        super().__init__(**material_kwargs)
+        self.cross_section = cross_section
+        self.visibility = visibility
+
+    @property
+    def cross_section(self):
+        """
+        Get the world-space slice positions.
+
+        Returns
+        -------
+        ndarray, shape (3,)
+            Integer-converted slice positions stored in the material uniform.
+        """
+        return self.uniform_buffer.data["cross_section"][:3]
+
+    @cross_section.setter
+    def cross_section(self, cross_section):
+        """
+        Set the world-space slice positions.
+
+        Parameters
+        ----------
+        cross_section : array-like, shape (3,)
+            Slice positions, converted to integers.
+        """
+        if len(cross_section) != 3:
+            raise ValueError("cross_section must have exactly 3 dimensions.")
+        self.uniform_buffer.data["cross_section"] = np.asarray(
+            [*cross_section, 0], dtype=np.int32
+        )
+        self.uniform_buffer.update_full()
+
+    @property
+    def visibility(self):
+        """
+        Get the enabled slice planes.
+
+        Returns
+        -------
+        list of bool or None
+            Enabled X, Y, and Z planes, or None when slice selection is disabled.
+        """
+        visibility = self.uniform_buffer.data["visibility"][:3]
+        if all(visibility == (-1, -1, -1)):
+            return None
+        return [bool(value) for value in visibility]
+
+    @visibility.setter
+    def visibility(self, visibility):
+        """
+        Set the enabled slice planes.
+
+        Parameters
+        ----------
+        visibility : array-like of bool, shape (3,), or None
+            Enabled X, Y, and Z planes. None disables slice selection.
+        """
+        if visibility is None:
+            self.uniform_buffer.data["visibility"] = np.asarray(
+                [-1, -1, -1, 0], dtype=np.int32
+            )
+        else:
+            if len(visibility) != 3:
+                raise ValueError("visibility must have exactly 3 dimensions.")
+            if not all(
+                isinstance(value, bool)
+                or (hasattr(value, "item") and isinstance(value.item(), bool))
+                for value in visibility
+            ):
+                raise ValueError("visibility must contain only booleans.")
+            self.uniform_buffer.data["visibility"] = np.asarray(
+                [*visibility, 0], dtype=np.int32
+            )
+        self.uniform_buffer.update_full()
 
 
 class NetworkMaterial(PointsMaterial):

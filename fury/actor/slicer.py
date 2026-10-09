@@ -11,6 +11,7 @@ from fury.actor import (
     set_group_visibility,
     show_slices,
 )
+from fury.actor._billboard import _BillboardEllipsoid, _max_ellipsoids_per_chunk
 from fury.colormap import normalize_colors
 from fury.geometry import buffer_to_geometry
 from fury.lib import (
@@ -551,6 +552,396 @@ def vector_field_slicer(
         chunk_actor_postprocess=lambda actor, _: setattr(
             actor, "cross_section", cross_section.copy()
         ),
+    )
+
+
+class _EllipsoidField(_BillboardEllipsoid):
+    """
+    Render a resident ellipsoid tile retaining its original CPU field views.
+
+    Parameters
+    ----------
+    lengths : ndarray, shape (X, Y, Z, 3)
+        Tile view of the original semi-axis lengths.
+    orientation_matrices : ndarray or None
+        Uniform orientation or a spatial tile view of the orientation field.
+    mask : ndarray or None
+        Tile view of the boolean active-voxel mask.
+    colors : str, tuple, list, ndarray or None
+        Original uniform color or tile view of the spatial color field.
+    normalized_colors : ndarray
+        Uniform or tile-local float32 RGB(A) colors for GPU packing.
+    voxel_origin : tuple
+        Integer XYZ origin of the tile in the full field.
+    bounds : ndarray, shape (2, 3)
+        Full-field world-space voxel-center bounds for slice clamping.
+    cross_section : list, tuple or ndarray, optional
+        World-space slice positions.
+    opacity : float, optional
+        Material opacity multiplier.
+    visibility : tuple, optional
+        Visibility of the X, Y and Z slice planes.
+    enable_picking : bool, optional
+        Whether retained surface fragments write picking information.
+
+    Attributes
+    ----------
+    field_shape : tuple
+        Spatial dimensions of the tile, used for C-order pick decoding.
+    voxel_origin : tuple
+        Original XYZ voxel coordinates of the tile's first slot.
+    bounds : ndarray
+        Shared full-field center bounds, independent of glyph extents.
+    """
+
+    def __init__(
+        self,
+        lengths,
+        *,
+        orientation_matrices,
+        mask,
+        colors,
+        normalized_colors,
+        voxel_origin,
+        bounds,
+        cross_section=None,
+        opacity=1.0,
+        visibility=(True, True, True),
+        enable_picking=True,
+    ):
+        field_shape = lengths.shape[:3]
+        centers = np.empty((*field_shape, 3), dtype=np.float32)
+        centers[..., 0] = (
+            np.arange(field_shape[0], dtype=np.float32) + voxel_origin[0]
+        )[:, None, None]
+        centers[..., 1] = (
+            np.arange(field_shape[1], dtype=np.float32) + voxel_origin[1]
+        )[None, :, None]
+        centers[..., 2] = (
+            np.arange(field_shape[2], dtype=np.float32) + voxel_origin[2]
+        )[None, None, :]
+        packed_lengths = (
+            lengths if mask is None else np.where(mask[..., None], lengths, 0)
+        )
+        orientations = orientation_matrices
+        if orientations is not None and orientations.ndim == 5:
+            orientations = orientations.reshape(-1, 3, 3)
+        super().__init__(
+            centers.reshape(-1, 3),
+            orientation_matrices=orientations,
+            lengths=packed_lengths.reshape(-1, 3),
+            colors=normalized_colors,
+            opacity=opacity,
+            enable_picking=enable_picking,
+        )
+        self.lengths = lengths
+        self.orientation_matrices = orientation_matrices
+        self.mask = mask
+        self.colors = colors
+        self.field_shape = field_shape
+        self.voxel_origin = voxel_origin
+        self.bounds = bounds
+        self.visibility = visibility
+        self.cross_section = (
+            (np.asarray(bounds[1], dtype=np.int32) + 1) // 2
+            if cross_section is None
+            else cross_section
+        )
+
+    @property
+    def cross_section(self):
+        """
+        Get the world-space slice positions shared by every field tile.
+
+        Returns
+        -------
+        ndarray, shape (3,)
+            Integer positions of the X, Y and Z slice planes.
+        """
+        return self.material.cross_section
+
+    @cross_section.setter
+    def cross_section(self, value):
+        """
+        Set slice positions within the full field's world center bounds.
+
+        Parameters
+        ----------
+        value : list, tuple or ndarray, shape (3,)
+            World-space plane positions, clamped before conversion to int32.
+        """
+        if not isinstance(value, (list, tuple, np.ndarray)):
+            raise ValueError("Cross section must be a list, tuple, or ndarray.")
+        value = np.asarray(value, dtype=np.float32)
+        if value.shape != (3,):
+            raise ValueError("Cross section must have length 3.")
+        value = np.maximum(np.asarray(self.bounds[0], dtype=np.float32), value)
+        value = np.minimum(np.asarray(self.bounds[1], dtype=np.float32), value)
+        self.material.cross_section = value.astype(np.int32)
+
+    @property
+    def visibility(self):
+        """
+        Get slice-plane visibility, independent of object visibility.
+
+        Returns
+        -------
+        list of bool
+            Visibility of the X, Y and Z planes.
+        """
+        return self.material.visibility
+
+    @visibility.setter
+    def visibility(self, value):
+        """
+        Set which slice planes contribute to the visible union.
+
+        Parameters
+        ----------
+        value : list or tuple
+            Three booleans controlling the X, Y and Z planes.
+        """
+        if not isinstance(value, (list, tuple)) or len(value) != 3:
+            raise ValueError("Visibility must be a tuple of three boolean values.")
+        self.material.visibility = value
+
+    def _wgpu_get_pick_info(self, pick_value):
+        """
+        Decode a tile glyph index into its original full-field voxel.
+
+        Parameters
+        ----------
+        pick_value : int
+            Packed picking value written by the ellipsoid shader.
+
+        Returns
+        -------
+        dict
+            Tile-local ``glyph_index`` and global XYZ ``voxel_index`` tuple.
+        """
+        info = super()._wgpu_get_pick_info(pick_value)
+        local_index = np.unravel_index(info["glyph_index"], self.field_shape, order="C")
+        info["voxel_index"] = tuple(
+            int(index) + origin
+            for index, origin in zip(local_index, self.voxel_origin, strict=True)
+        )
+        return info
+
+
+def _iter_ellipsoid_tiles(shape, max_glyphs):
+    """
+    Yield deterministic spatial tiles whose voxel counts fit the capacity.
+
+    Parameters
+    ----------
+    shape : tuple
+        Positive spatial dimensions in XYZ order.
+    max_glyphs : int
+        Positive maximum number of glyph records in one tile.
+
+    Yields
+    ------
+    tuple
+        Three spatial slices, traversed in XYZ order.
+    """
+    if (
+        isinstance(max_glyphs, (bool, np.bool_))
+        or not isinstance(max_glyphs, (int, np.integer))
+        or max_glyphs <= 0
+    ):
+        raise ValueError("max_glyphs must be a positive integer.")
+    x_size, y_size, z_size = shape
+    tz = min(z_size, max_glyphs)
+    ty = min(y_size, max_glyphs // tz)
+    tx = min(x_size, max_glyphs // (ty * tz))
+    for x_start in range(0, x_size, tx):
+        for y_start in range(0, y_size, ty):
+            for z_start in range(0, z_size, tz):
+                yield (
+                    slice(x_start, min(x_start + tx, x_size)),
+                    slice(y_start, min(y_start + ty, y_size)),
+                    slice(z_start, min(z_start + tz, z_size)),
+                )
+
+
+def _create_chunked_ellipsoid_field(
+    lengths,
+    *,
+    orientation_matrices,
+    mask,
+    colors,
+    actor_params,
+    max_glyphs=None,
+):
+    """
+    Validate a field and pack bounded tiles without copying the full volume.
+
+    Parameters
+    ----------
+    lengths : array-like, shape (X, Y, Z, 3)
+        Nonnegative semi-axis lengths at integer voxel centers.
+    orientation_matrices : array-like or None
+        Uniform (3, 3) orientation or an (X, Y, Z, 3, 3) field.
+    mask : ndarray or None
+        Boolean (X, Y, Z) active-voxel mask.
+    colors : str, tuple, list, ndarray or None
+        Uniform RGB(A) color or an (X, Y, Z, 3/4) color field.
+    actor_params : dict
+        Slice, opacity, visibility and picking options for every tile.
+    max_glyphs : int, optional
+        Positive private tile capacity, limited by the hardware capacity.
+
+    Returns
+    -------
+    Group
+        Flat group of resident tiles retaining the original CPU input views.
+    """
+    lengths = np.asarray(lengths)
+    if lengths.ndim != 4 or lengths.shape[-1] != 3:
+        raise ValueError("Lengths must have shape (X, Y, Z, 3).")
+    shape = lengths.shape[:3]
+    if any(size == 0 for size in shape):
+        raise ValueError("Field spatial dimensions must be positive.")
+    if orientation_matrices is not None:
+        orientation_matrices = np.asarray(orientation_matrices)
+        if orientation_matrices.shape not in ((3, 3), (*shape, 3, 3)):
+            raise ValueError(
+                "Orientation matrices must have shape (3, 3) or (X, Y, Z, 3, 3)."
+            )
+    if mask is not None:
+        mask = np.asarray(mask)
+        if mask.shape != shape or mask.dtype != np.bool_:
+            raise ValueError("Mask must be a boolean array with shape (X, Y, Z).")
+    if max_glyphs is not None and (
+        isinstance(max_glyphs, (bool, np.bool_))
+        or not isinstance(max_glyphs, (int, np.integer))
+        or max_glyphs <= 0
+    ):
+        raise ValueError("max_glyphs must be a positive integer.")
+
+    color_field = None
+    if colors is not None and not isinstance(colors, str):
+        color_array = np.asarray(colors)
+        if color_array.ndim == 4:
+            if color_array.shape[:3] != shape or color_array.shape[-1] not in (3, 4):
+                raise ValueError("Color fields must have shape (X, Y, Z, 3 or 4).")
+            color_field = color_array
+        elif color_array.ndim == 0 or color_array.ndim > 2:
+            raise ValueError("Colors must be a uniform color or a spatial color field.")
+    if color_field is None:
+        uniform_color = normalize_colors(colors)
+        if uniform_color.ndim != 2 or uniform_color.shape[0] != 1:
+            raise ValueError("Colors must be a uniform color or a spatial color field.")
+
+    limits = gfx_wgpu.get_shared().device.limits
+    capacity = _max_ellipsoids_per_chunk(
+        max_buffer_size=limits["max-buffer-size"],
+        max_storage_buffer_binding_size=limits["max-storage-buffer-binding-size"],
+    )
+    if max_glyphs is not None:
+        capacity = min(capacity, int(max_glyphs))
+    scale_colors = False
+    if color_field is not None:
+        # Choose the convention once, including tiles with only low-valued colors.
+        for tile in _iter_ellipsoid_tiles(shape, capacity):
+            if np.any(color_field[tile] > 1):
+                scale_colors = True
+                break
+
+    bounds = np.asarray(
+        ((0, 0, 0), tuple(size - 1 for size in shape)), dtype=np.float32
+    )
+    params = dict(actor_params)
+    if params.get("cross_section") is None:
+        params["cross_section"] = np.asarray(shape, dtype=np.int32) // 2
+    group = Group(name="EllipsoidFieldSlicer")
+    group.bounds = bounds
+    for tile in _iter_ellipsoid_tiles(shape, capacity):
+        tile_colors = colors if color_field is None else color_field[tile]
+        if color_field is None:
+            packed_colors = uniform_color
+        else:
+            packed_colors = np.asarray(tile_colors, dtype=np.float32)
+            if scale_colors:
+                packed_colors = packed_colors / 255.0
+            packed_colors = packed_colors.reshape(-1, color_field.shape[-1])
+        tile_orientations = orientation_matrices
+        if orientation_matrices is not None and orientation_matrices.ndim == 5:
+            tile_orientations = orientation_matrices[tile]
+        child = _EllipsoidField(
+            lengths[tile],
+            orientation_matrices=tile_orientations,
+            mask=None if mask is None else mask[tile],
+            colors=tile_colors,
+            normalized_colors=packed_colors,
+            voxel_origin=tuple(int(axis.start) for axis in tile),
+            bounds=bounds,
+            **params,
+        )
+        group.add(child)
+    return group
+
+
+def ellipsoid_slicer(
+    lengths,
+    *,
+    orientation_matrices=None,
+    mask=None,
+    colors=(1, 1, 1),
+    cross_section=None,
+    opacity=1.0,
+    visibility=(True, True, True),
+    enable_picking=True,
+):
+    """
+    Render an ellipsoid field on the union of enabled world-space slice planes.
+
+    Parameters
+    ----------
+    lengths : ndarray, shape (X, Y, Z, 3)
+        Nonnegative semi-axis lengths at integer voxel centers. Zero axes have
+        no renderable volume.
+    orientation_matrices : ndarray, optional
+        Orthonormal columns defining the semi-axes, as a uniform (3, 3) matrix
+        or a field with shape (X, Y, Z, 3, 3). Either handedness is supported.
+    mask : ndarray, shape (X, Y, Z), optional
+        Boolean active-voxel mask. Masked lengths and orientations may contain
+        invalid background values.
+    colors : str, tuple, list or ndarray, optional
+        Uniform RGB(A) or hex color, or an (X, Y, Z, 3/4) RGB(A) field.
+        Numeric colors accept the [0, 1] and [0, 255] conventions.
+    cross_section : list, tuple or ndarray, optional
+        Three world-space plane positions, clamped to full-field center bounds
+        and converted to integers. None selects the voxel-shape midpoint.
+    opacity : float, optional
+        Material opacity in [0, 1].
+    visibility : tuple, optional
+        Visibility of the X, Y and Z slice planes.
+    enable_picking : bool, optional
+        Enable surface picking with the original full-field voxel index.
+
+    Returns
+    -------
+    Group
+        A flat group of material-bearing resident ellipsoid tiles.
+
+    Notes
+    -----
+    Slice changes update uniforms without repacking glyphs. Chunks satisfy
+    individual device buffer limits; total GPU residency grows with the field.
+    Plane selection and center snapping follow vector-field distance semantics.
+    """
+    return _create_chunked_ellipsoid_field(
+        lengths,
+        orientation_matrices=orientation_matrices,
+        mask=mask,
+        colors=colors,
+        actor_params={
+            "cross_section": cross_section,
+            "opacity": opacity,
+            "visibility": visibility,
+            "enable_picking": enable_picking,
+        },
     )
 
 

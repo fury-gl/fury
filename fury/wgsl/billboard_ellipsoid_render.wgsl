@@ -1,5 +1,6 @@
 {$ include 'pygfx.std.wgsl' $}
 {$ include 'pygfx.light_phong.wgsl' $}
+{$ include 'fury.utils.wgsl' $}
 {$ include 'fury.billboard_common.wgsl' $}
 
 struct VertexInput {
@@ -10,7 +11,14 @@ struct VertexInput {
 @vertex
 fn vs_main(in: VertexInput) -> Varyings {
     let glyph = i32(in.glyph_index);
-    let center = (u_wobject.world_transform * vec4<f32>(load_s_positions(glyph), 1.0)).xyz;
+    var center = (u_wobject.world_transform * vec4<f32>(load_s_positions(glyph), 1.0)).xyz;
+    let cross_section = u_material.cross_section.xyz;
+    let visibility = u_material.visibility.xyz;
+    var slice_visible = true;
+    if (!all(visibility == vec3<i32>(-1))) {
+        center = snap_cross_section_center(center, cross_section, u_wobject.world_transform);
+        slice_visible = visible_cross_section(center, cross_section, visibility);
+    }
     let axis0 = (u_wobject.world_transform * vec4<f32>(load_s_ellipsoid_axes(glyph * 3).xyz, 0.0)).xyz;
     let axis1 = (u_wobject.world_transform * vec4<f32>(load_s_ellipsoid_axes(glyph * 3 + 1).xyz, 0.0)).xyz;
     let axis2 = (u_wobject.world_transform * vec4<f32>(load_s_ellipsoid_axes(glyph * 3 + 2).xyz, 0.0)).xyz;
@@ -68,7 +76,7 @@ fn vs_main(in: VertexInput) -> Varyings {
         screen_min = max(screen_min, vec2<f32>(-1.0));
         screen_max = min(screen_max, vec2<f32>(1.0));
     }
-    let culled = determinant == 0.0 || outside_left || outside_right ||
+    let culled = !slice_visible || determinant == 0.0 || outside_left || outside_right ||
         outside_bottom || outside_top || outside_near || outside_far || outside_camera;
     if (culled) {
         screen_min = vec2<f32>(-2.0);

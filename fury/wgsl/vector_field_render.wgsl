@@ -229,35 +229,11 @@ fn vs_main(in: VertexInput) -> Varyings {
     let diff = pos_w_node.xyz - w_center.xyz;
 
     if (!all(visibility == vec3<i32>(-1))) {
-        let is_near_x_plane = is_point_on_plane_equation(
-            vec4<f32>(-1.0, 0.0, 0.0, f32(cross_section.x)),
-            vec3<f32>(w_center.xyz),
-            abs(world_transform[0][0])
+        w_center = vec4<f32>(
+            snap_cross_section_center(w_center.xyz, cross_section, world_transform),
+            w_center.w
         );
-        if is_near_x_plane {
-            pos_w_node.x = f32(cross_section.x) + diff.x;
-            w_center.x = f32(cross_section.x);
-        }
-
-        let is_near_y_plane = is_point_on_plane_equation(
-            vec4<f32>(0.0, -1.0, 0.0, f32(cross_section.y)),
-            vec3<f32>(w_center.xyz),
-            abs(world_transform[1][1])
-        );
-        if is_near_y_plane {
-            pos_w_node.y = f32(cross_section.y) + diff.y;
-            w_center.y = f32(cross_section.y);
-        }
-
-        let is_near_z_plane = is_point_on_plane_equation(
-            vec4<f32>(0.0, 0.0, -1.0, f32(cross_section.z)),
-            vec3<f32>(w_center.xyz),
-            abs(world_transform[2][2])
-        );
-        if is_near_z_plane {
-            pos_w_node.z = f32(cross_section.z) + diff.z;
-            w_center.z = f32(cross_section.z);
-        }
+        pos_w_node = vec4<f32>(w_center.xyz + diff, pos_w_node.w);
     }
 
     $$ if line_type == 'infsegment'
