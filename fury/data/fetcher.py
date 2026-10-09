@@ -420,7 +420,7 @@ async def _fetch_gltf(name, mode):
         sizes = [file["size"] for file in urls]
         f_names = [url.split("/")[-1] for url in d_urls]
         f_paths = [pjoin(folder, name) for name in f_names]
-        zip_url = zip(d_urls, f_paths, sizes,strict=True)
+        zip_url = zip(d_urls, f_paths, sizes, strict=True)
 
         async with aiohttp.ClientSession() as session:
             await asyncio.gather(
