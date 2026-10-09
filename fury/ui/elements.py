@@ -5025,7 +5025,7 @@ class SpinBox(UI):
     size : (int, int), optional
         Width and height in pixels of this UI component.
     padding : int, optional
-        Distance between TextBox and Buttons.
+        Gap in pixels around and between the textbox and the buttons.
     panel_color : (float, float, float), optional
         Panel color of SpinBox.
     min_val : int, optional
@@ -5057,8 +5057,8 @@ class SpinBox(UI):
         self,
         *,
         position=(350, 400),
-        size=(300, 100),
-        padding=10,
+        size=(160, 40),
+        padding=4,
         panel_color=(1, 1, 1),
         min_val=0,
         max_val=100,
@@ -5120,30 +5120,29 @@ class SpinBox(UI):
             SpinBox size(width, height) in pixels.
         """
         self.panel_size = size
-        self.textbox_size = (int(0.7 * size[0]), int(0.8 * size[1]))
-        self.button_size = (int(0.2 * size[0]), int(0.3 * size[1]))
-        self.padding = int(0.03 * self.panel_size[0])
+        width, height = size
+        pad = self.padding
+
+        # Square buttons as tall as the textbox, side by side on the right:
+        # [pad] textbox [pad] decrement [pad] increment [pad]
+        inner_height = max(int(height - 2 * pad), 0)
+        self.button_size = (inner_height, inner_height)
+        self.textbox_size = (
+            max(int(width - 4 * pad - 2 * inner_height), 0),
+            inner_height,
+        )
 
         self.panel.resize(size)
         self.textbox.text.resize(self.textbox_size)
         self.increment_button.resize(self.button_size)
         self.decrement_button.resize(self.button_size)
 
-        # Panel coordinates are offsets from its top-left corner, so the
-        # increment button sits in the upper half and decrement in the lower.
-        textbox_pos = (self.padding, int((size[1] - self.textbox_size[1]) / 2))
-        inc_btn_pos = (
-            size[0] - self.padding - self.button_size[0],
-            int((0.5 * size[1] - self.button_size[1]) / 2),
-        )
-        dec_btn_pos = (
-            size[0] - self.padding - self.button_size[0],
-            int((1.5 * size[1] - self.button_size[1]) / 2),
-        )
-
-        self.panel.update_element(self.textbox, textbox_pos)
-        self.panel.update_element(self.increment_button, inc_btn_pos)
-        self.panel.update_element(self.decrement_button, dec_btn_pos)
+        # Panel coordinates are offsets from its top-left corner.
+        dec_x = pad + self.textbox_size[0] + pad
+        inc_x = dec_x + inner_height + pad
+        self.panel.update_element(self.textbox, (pad, pad))
+        self.panel.update_element(self.decrement_button, (dec_x, pad))
+        self.panel.update_element(self.increment_button, (inc_x, pad))
 
     def _get_actors(self):
         """

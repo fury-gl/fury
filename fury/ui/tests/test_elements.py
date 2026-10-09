@@ -2276,17 +2276,35 @@ def test_spinbox_resize():
     """Test SpinBox resize updates child sizes and layout."""
     fetch_viz_icons()
 
-    spinbox = ui.SpinBox(size=(300, 200))
+    spinbox = ui.SpinBox(size=(160, 40), padding=4)
 
-    spinbox.resize((450, 200))
-    npt.assert_equal(spinbox.size, [450, 200])
-    npt.assert_equal((315, 160), spinbox.textbox_size)
-    npt.assert_equal((90, 60), spinbox.button_size)
+    spinbox.resize((200, 50))
+    npt.assert_equal(spinbox.size, [200, 50])
+    # Buttons are squares as tall as the textbox: 50 - 2 * 4 = 42.
+    npt.assert_equal((42, 42), spinbox.button_size)
+    npt.assert_equal((200 - 4 * 4 - 2 * 42, 42), spinbox.textbox_size)
+
+    # Textbox, decrement and increment sit side by side on one row.
+    offsets = {id(e): off for e, off in spinbox.panel.element_offsets}
+    npt.assert_equal(offsets[id(spinbox.textbox)], (4, 4))
+    npt.assert_equal(offsets[id(spinbox.decrement_button)], (4 + 100 + 4, 4))
+    npt.assert_equal(offsets[id(spinbox.increment_button)], (4 + 100 + 4 + 42 + 4, 4))
+
+
+def test_spinbox_padding():
+    """Test that the padding argument sets the gaps instead of being overwritten."""
+    fetch_viz_icons()
+
+    spinbox = ui.SpinBox(size=(160, 40), padding=8)
+    npt.assert_equal(spinbox.padding, 8)
+    npt.assert_equal((24, 24), spinbox.button_size)
+    npt.assert_equal((160 - 4 * 8 - 2 * 24, 24), spinbox.textbox_size)
 
     offsets = {id(e): off for e, off in spinbox.panel.element_offsets}
-    inc_y = offsets[id(spinbox.increment_button)][1]
-    dec_y = offsets[id(spinbox.decrement_button)][1]
-    npt.assert_equal(inc_y < dec_y, True)
+    npt.assert_equal(offsets[id(spinbox.textbox)], (8, 8))
+    # The increment button ends one padding before the right edge.
+    inc_x = offsets[id(spinbox.increment_button)][0]
+    npt.assert_equal(inc_x + 24 + 8, 160)
 
 
 def test_listbox_2d_functional_initialization():

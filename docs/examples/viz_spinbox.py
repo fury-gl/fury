@@ -31,8 +31,7 @@ scene = Scene()
 # Create a SpinBox with a range of [-20, 20] that moves in steps of 2.
 
 spinbox = SpinBox(
-    position=(200, 250),
-    size=(300, 100),
+    position=(270, 250),
     min_val=-20,
     max_val=20,
     initial_val=0,
@@ -45,7 +44,7 @@ scene.add(spinbox)
 
 label = TextBlock2D(
     text=f"Value: {spinbox.value}",
-    position=(200, 400),
+    position=(270, 310),
     font_size=24,
     color=(1, 1, 1),
     dynamic_bbox=True,
