@@ -1,6 +1,7 @@
 """UI components module."""
 
 __all__ = [
+    "Loader2D",
     "TexturedButton2D",
     "TextButton2D",
     "TextBox2D",
@@ -29,10 +30,14 @@ import warnings
 from PIL import UnidentifiedImageError
 import numpy as np
 
+from fury.actor import create_mesh
 from fury.colormap import normalize_colors
 from fury.data import read_viz_icons
+from fury.geometry import buffer_to_geometry
 from fury.io import get_extension, load_image, load_image_texture
 from fury.lib import EventType
+from fury.material import _create_mesh_material
+from fury.primitive import prim_ring
 from fury.ui.containers import ImageContainer2D, Panel2D
 from fury.ui.context import UIContext
 from fury.ui.core import (
@@ -51,6 +56,250 @@ TWO_PI = 2.0 * np.pi
 LOWERS = r"`1234567890-=[]\;',./"
 UPPERS = r'~!@#$%^&*()_+{}|:"<>?'
 SHIFT_TRANS = str.maketrans(LOWERS, UPPERS)
+
+
+class Loader2D(UI):
+    """
+    A three-arc spinner with a dimming overlay and optional message.
+
+    Parameters
+    ----------
+    size : (float, float)
+        Width and height in logical pixels.
+    position : (float, float)
+        Top-left corner in logical pixels.
+    message : str or None
+        Text displayed beneath the spinner. None clears the text.
+
+    Notes
+    -----
+    The outer arc has a maximum radius of 72 logical pixels, capped at one
+    quarter of the smaller loader dimension.
+
+    Three-arc loader design inspired by Karandeep Singh Juneja (@karandeepSJ),
+    FURY PR #19: https://github.com/fury-gl/fury/pull/19.
+    """
+
+    def __init__(self, *, size=(800, 800), position=(0, 0), message=None):
+        """Initialize the loader's visuals, message, and animation phase."""
+        if message is not None and not isinstance(message, str):
+            raise TypeError("message must be a string or None")
+        self._dims = self._validate_size(size)
+        self._message = message or ""
+        self._phase = 0.0
+        self._visible = True
+        super().__init__(position=position)
+        self.set_visibility(True)
+
+    @staticmethod
+    def _validate_size(size):
+        """
+        Validate and normalize the loader dimensions.
+
+        Parameters
+        ----------
+        size : (float, float)
+            Width and height in logical pixels.
+
+        Returns
+        -------
+        ndarray
+            Two positive finite dimensions.
+        """
+        try:
+            dimensions = np.asarray(size, dtype=float)
+        except (TypeError, ValueError, OverflowError):
+            raise ValueError("size must contain two positive finite values") from None
+        if (
+            dimensions.shape != (2,)
+            or not np.all(np.isfinite(dimensions))
+            or np.any(dimensions <= 0)
+        ):
+            raise ValueError("size must contain two positive finite values")
+        return dimensions
+
+    def _setup(self):
+        """Create the overlay, message, and three arc meshes."""
+        self.overlay = Rectangle2D(size=self._dims, color=(0, 0, 0), opacity=0.5)
+        self.text = TextBlock2D(
+            text=self._message,
+            font_size=18,
+            size=(1, 1),
+            justification="center",
+            color=(1, 1, 1),
+        )
+        self._children.extend((self.overlay, self.text))
+        self.arcs = []
+        for radius, triangles, color in zip(
+            (1.0, 0.8, 0.6),
+            (54, 48, 42),
+            ((0, 0, 1), (1, 0, 0), (1, 1, 0)),
+            strict=True,
+        ):
+            positions, indices = prim_ring(
+                inner_radius=radius - 0.08,
+                outer_radius=radius,
+                circumferential_segments=108,
+                radial_segments=1,
+            )
+            geometry = buffer_to_geometry(
+                positions=positions, indices=indices[:triangles]
+            )
+            material = _create_mesh_material(
+                material="basic", mode="auto", alpha_mode="blend", depth_write=False
+            )
+            material.color = (*color, 1)
+            self.arcs.append(create_mesh(geometry=geometry, material=material))
+        for actor in (
+            self.overlay.actor,
+            *self.arcs,
+            self.text.actor,
+            self.text.background.actor,
+        ):
+            actor.material.alpha_mode = "blend"
+            actor.material.depth_test = False
+            actor.material.depth_write = False
+            actor.material.pick_write = False
+        self._update_rotations()
+
+    def _get_actors(self):
+        """
+        Return the directly owned arc meshes.
+
+        Returns
+        -------
+        list
+            Arc meshes, excluding the overlay and text actors.
+        """
+        return self.arcs
+
+    def _get_size(self):
+        """
+        Return the loader dimensions in logical pixels.
+
+        Returns
+        -------
+        ndarray
+            Width and height.
+        """
+        return self._dims
+
+    def _update_actors_position(self):
+        """Position and scale the overlay, arcs, and message bounding box."""
+        width, height = self._dims
+        position = self.get_position()
+        center = position + self._dims / 2
+        radius = min(72, width / 4, height / 4)
+        self.overlay.set_position(position)
+        self.set_actor_position(self.overlay.actor, center, self.z_order, sub_order=0)
+        for order, arc in enumerate(self.arcs, start=1):
+            arc.local.scale = (radius, radius, 1)
+            self.set_actor_position(arc, center, self.z_order, sub_order=order)
+        self.text.resize((max(1, width - 32), max(1, height / 2 - radius - 28)))
+        self.text.set_position(
+            (center[0] - self.text.size[0] / 2, center[1] + radius + 12)
+        )
+        self.update_layout()
+
+    def update_layout(self):
+        """Update message alignment while preserving overlay ordering."""
+        self.text.update_layout()
+        text_position = (
+            self.text.actor.local.x,
+            UIContext.canvas_size[1] - self.text.actor.local.y,
+        )
+        self.set_actor_position(
+            self.text.actor, text_position, self.z_order, sub_order=4
+        )
+        self.set_actor_position(
+            self.overlay.actor,
+            self.get_position() + self._dims / 2,
+            self.z_order,
+            sub_order=0,
+        )
+
+    def resize(self, size):
+        """
+        Resize the overlay and spinner in logical pixels.
+
+        Parameters
+        ----------
+        size : (float, float)
+            Positive finite width and height in logical pixels.
+        """
+        dimensions = self._validate_size(size)
+        self._dims = dimensions
+        self.overlay.resize(dimensions)
+        self._update_actors_position()
+
+    def _update_rotations(self):
+        """Apply the shared animation phase and each arc's initial offset."""
+        for arc, offset in zip(self.arcs, (0, 30, 60), strict=True):
+            half_angle = np.deg2rad(self._phase + offset) / 2
+            arc.local.rotation = (0, 0, np.sin(half_angle), np.cos(half_angle))
+
+    def advance(self, delta_time):
+        """
+        Advance rotation by elapsed seconds without changing geometry.
+
+        Parameters
+        ----------
+        delta_time : float
+            Finite, non-negative elapsed time in seconds.
+        """
+        try:
+            delta_time = float(delta_time)
+        except (TypeError, ValueError, OverflowError):
+            raise ValueError("delta_time must be finite and non-negative") from None
+        if not np.isfinite(delta_time) or delta_time < 0:
+            raise ValueError("delta_time must be finite and non-negative")
+        if delta_time:
+            # Reduce by one turn before multiplication to avoid overflow.
+            self._phase = (self._phase + 200 * (delta_time % 1.8)) % 360
+            self._update_rotations()
+
+    @property
+    def message(self):
+        """
+        Get or set the message; None clears it.
+
+        Returns
+        -------
+        str
+            Displayed text, or an empty string when cleared.
+        """
+        return self._message
+
+    @message.setter
+    def message(self, message):
+        """
+        Set the message without revealing a hidden loader.
+
+        Parameters
+        ----------
+        message : str or None
+            Text beneath the arcs; None clears it.
+        """
+        if message is not None and not isinstance(message, str):
+            raise TypeError("message must be a string or None")
+        self._message = message or ""
+        self.text.message = self._message
+        self.text.update_alignment()
+        self.update_layout()
+        self.text.set_visibility(self._visible and bool(self._message))
+
+    def set_visibility(self, visibility):
+        """
+        Show or hide the composite, keeping empty messages hidden.
+
+        Parameters
+        ----------
+        visibility : bool
+            Whether to show the overlay, arcs, and non-empty message.
+        """
+        self._visible = bool(visibility)
+        super().set_visibility(self._visible)
+        self.text.set_visibility(self._visible and bool(self._message))
 
 
 class TexturedButton2D(Button2D):

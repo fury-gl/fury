@@ -2943,3 +2943,127 @@ def test_radio_button_visual_snapshot():
     arr = window.snapshot(scene=scene, fname=None, return_array=True)
     report = window.analyze_snapshot(arr, find_objects=True)
     assert report.objects >= 1
+
+
+def test_loader_rendering_message_and_visibility():
+    """A reusable loader dims its scene without dimming its arcs or message."""
+    scene = window.Scene(background=(0.3, 0.4, 0.2))
+    show_m = window.ShowManager(
+        scene=scene, size=(320, 240), pixel_ratio=1, window_type="offscreen"
+    )
+    try:
+        show_m.window.draw()
+        original = show_m.snapshot()
+        loader = ui.Loader2D(size=(320, 240), message="Reading\nvolume")
+        scene.add(loader)
+        show_m.window.draw()
+        initial = show_m.snapshot()
+
+        assert np.all(initial[8:20, 8:20, :3] > 0)
+        assert np.all(initial[8:20, 8:20, :3] < original[8:20, 8:20, :3])
+        text_region = initial[180:, :, :3]
+        assert np.count_nonzero(np.all(text_region > 220, axis=-1)) > 20
+        blue_pixels = (
+            (initial[..., 2] > 240) & (initial[..., 0] < 20) & (initial[..., 1] < 20)
+        )
+        blue_y, blue_x = np.nonzero(blue_pixels)
+        blue_distances = np.hypot(blue_x + 0.5 - 160, blue_y + 0.5 - 120)
+        assert blue_distances.min() > 54
+        assert 59 < blue_distances.max() < 61
+        geometry = [arc.geometry for arc in loader.arcs]
+        positions = [arc.local.position.copy() for arc in loader.arcs]
+        overlay_position = loader.overlay.actor.local.position.copy()
+        text_position = loader.text.actor.local.position.copy()
+
+        loader.advance(0.25)
+        show_m.window.draw()
+        advanced = show_m.snapshot()
+        assert not np.array_equal(initial[68:173, 108:213], advanced[68:173, 108:213])
+        npt.assert_array_equal(initial[:40], advanced[:40])
+        npt.assert_array_equal(initial[180:], advanced[180:])
+        for arc, previous_geometry, previous_position in zip(
+            loader.arcs, geometry, positions, strict=True
+        ):
+            assert arc.geometry is previous_geometry
+            npt.assert_array_equal(arc.local.position, previous_position)
+        npt.assert_array_equal(loader.overlay.actor.local.position, overlay_position)
+        npt.assert_array_equal(loader.text.actor.local.position, text_position)
+
+        loader.message = None
+        show_m.window.draw()
+        empty = show_m.snapshot()
+        assert loader.message == ""
+        assert not np.any(np.all(empty[180:, :, :3] > 220, axis=-1))
+        npt.assert_array_equal(empty[:173], advanced[:173])
+        loader.message = ""
+        show_m.window.draw()
+        npt.assert_array_equal(show_m.snapshot(), empty)
+
+        loader.set_visibility(False)
+        loader.message = "Ready\nagain"
+        show_m.window.draw()
+        npt.assert_array_equal(show_m.snapshot(), original)
+        assert all(not arc.visible for arc in loader.arcs)
+        assert not loader.overlay.actor.visible
+        assert not loader.text.actor.visible
+
+        loader.set_visibility(True)
+        show_m.window.draw()
+        restored = show_m.snapshot()
+        npt.assert_array_equal(restored[:173], advanced[:173])
+        assert np.count_nonzero(np.all(restored[180:, :, :3] > 220, axis=-1)) > 20
+    finally:
+        show_m.close()
+
+
+def test_loader_validation_preserves_rendered_content():
+    """Invalid edits leave size, message, phase, and visible content unchanged."""
+    size_error = "size must contain two positive finite values"
+    message_error = "message must be a string or None"
+    time_error = "delta_time must be finite and non-negative"
+    invalid_sizes = (
+        (0, 240),
+        (-1, 240),
+        (np.nan, 240),
+        (320, np.inf),
+        (320,),
+        [[1, 2]],
+        None,
+    )
+    for size in invalid_sizes:
+        with npt.assert_raises_regex(ValueError, size_error):
+            ui.Loader2D(size=size)
+    with npt.assert_raises_regex(TypeError, message_error):
+        ui.Loader2D(message=12)
+
+    scene = window.Scene(background=(0.3, 0.4, 0.2))
+    show_m = window.ShowManager(
+        scene=scene, size=(320, 240), pixel_ratio=1, window_type="offscreen"
+    )
+    try:
+        loader = ui.Loader2D(size=(320, 240), message="Still reading")
+        scene.add(loader)
+        show_m.window.draw()
+        show_m.window.draw()
+        original = show_m.snapshot()
+        rotations = [arc.local.rotation.copy() for arc in loader.arcs]
+
+        for size in invalid_sizes:
+            with npt.assert_raises_regex(ValueError, size_error):
+                loader.resize(size)
+        for message in (1, [], {"message": "invalid"}):
+            with npt.assert_raises_regex(TypeError, message_error):
+                loader.message = message
+        for delta_time in (-0.1, np.nan, np.inf, None, "invalid"):
+            with npt.assert_raises_regex(ValueError, time_error):
+                loader.advance(delta_time)
+        loader.advance(0)
+
+        npt.assert_array_equal(loader.size, (320, 240))
+        assert loader.message == "Still reading"
+        for arc, rotation in zip(loader.arcs, rotations, strict=True):
+            npt.assert_array_equal(arc.local.rotation, rotation)
+        show_m.window.draw()
+        npt.assert_array_equal(show_m.snapshot(), original)
+    finally:
+        show_m.close()
