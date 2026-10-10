@@ -11,13 +11,18 @@ import numpy as np
 from fury.actor import Mesh
 from fury.colormap import normalize_colors
 from fury.geometry import buffer_to_geometry
-from fury.lib import register_wgpu_render_function
+from fury.lib import gfx_wgpu, register_wgpu_render_function
 from fury.material import (
+    BillboardEllipsoidMaterial,
     BillboardMaterial,
     BillboardSphereMaterial,
     validate_opacity,
 )
-from fury.shader import BillboardShader, BillboardSphereShader
+from fury.shader import (
+    BillboardEllipsoidShader,
+    BillboardShader,
+    BillboardSphereShader,
+)
 
 
 def _create_billboard_actor(
@@ -282,6 +287,230 @@ class BillboardActor(Mesh):
 Billboard = BillboardActor
 
 
+def _max_ellipsoids_per_chunk(*, max_buffer_size, max_storage_buffer_binding_size):
+    """
+    Return the capacity of the largest per-glyph buffer and pick index.
+
+    Parameters
+    ----------
+    max_buffer_size : int
+        Maximum size of an individual GPU buffer, in bytes.
+    max_storage_buffer_binding_size : int
+        Maximum size of a storage buffer binding, in bytes.
+
+    Returns
+    -------
+    int
+        Maximum glyph count allowed by both buffer limits and 26-bit picking.
+
+    Raises
+    ------
+    ValueError
+        If the buffer limits cannot hold one ellipsoid.
+    """
+    capacity = min(
+        max_buffer_size // 48,
+        max_storage_buffer_binding_size // 48,
+        1 << 26,
+    )
+    if capacity < 1:
+        raise ValueError("Device buffer limits cannot hold one ellipsoid.")
+    return capacity
+
+
+class _BillboardEllipsoid(Mesh):
+    """
+    Render ellipsoids from one compact parameter record per glyph.
+
+    Parameters
+    ----------
+    centers : array-like, shape (N, 3) or (3,)
+        Model-space centers of the ellipsoids.
+    orientation_matrices : array-like, optional
+        Orthonormal matrices with axes as columns, shaped (3, 3), (1, 3, 3),
+        or (N, 3, 3). A single matrix is broadcast to all glyphs.
+    lengths : array-like, optional
+        Nonnegative semi-axis lengths, shaped (3,), (1, 3), or (N, 3).
+        A single triple is broadcast; zero-axis glyphs are not rendered.
+    colors : array-like or str, optional
+        One RGB/RGBA color or one per glyph. Hex strings are also accepted.
+    opacity : float, optional
+        Material opacity multiplier applied to each color's alpha.
+    enable_picking : bool, optional
+        Whether retained surface fragments write glyph picking information.
+    """
+
+    def __init__(
+        self,
+        centers,
+        *,
+        orientation_matrices=None,
+        lengths=(4, 2, 2),
+        colors=(1, 0, 0),
+        opacity=None,
+        enable_picking=True,
+    ):
+        super().__init__()
+        self.local.state_basis = "matrix"
+        centers = np.asarray(centers)
+        if centers.shape == (3,):
+            centers = centers.reshape(1, 3)
+        if centers.ndim != 2 or centers.shape[1] != 3:
+            raise ValueError("Centers must be (N, 3) array")
+        count = len(centers)
+
+        orientations = np.asarray(
+            np.eye(3) if orientation_matrices is None else orientation_matrices
+        )
+        if orientations.shape == (3, 3):
+            orientations = orientations[np.newaxis]
+        if (
+            orientations.ndim != 3
+            or orientations.shape[1:] != (3, 3)
+            or orientations.shape[0] not in (1, count)
+        ):
+            raise ValueError("Axes must be (3, 3), (1, 3, 3), or (N, 3, 3) array")
+        orientations = np.broadcast_to(orientations, (count, 3, 3))
+
+        lengths = np.asarray(lengths)
+        if lengths.shape == (3,):
+            lengths = lengths[np.newaxis]
+        if (
+            lengths.ndim != 2
+            or lengths.shape[1] != 3
+            or lengths.shape[0] not in (1, count)
+        ):
+            raise ValueError("Lengths must be (3,), (1, 3), or (N, 3) array")
+        lengths = np.broadcast_to(lengths, (count, 3))
+        if not np.isfinite(lengths).all() or np.any(lengths < 0):
+            raise ValueError("Lengths must be finite and nonnegative.")
+        active = np.all(lengths > 0, axis=1)
+        if not np.isfinite(centers).all() or np.any(
+            np.abs(centers) > np.finfo(np.float32).max
+        ):
+            raise ValueError("Centers must be finite and fit in float32 buffers.")
+        if np.any(active & ~np.isfinite(orientations).all(axis=(1, 2))):
+            raise ValueError("Active orientation matrices must be finite.")
+        for column in range(3):
+            column_scale = np.max(np.abs(orientations[:, :, column]), axis=1).astype(
+                np.float64, copy=False
+            )
+            with np.errstate(over="ignore", invalid="ignore"):
+                overflow = column_scale * lengths[:, column] > np.finfo(np.float32).max
+            if np.any(active & overflow):
+                raise ValueError("Ellipsoid parameters must fit in float32 buffers.")
+
+        if (
+            isinstance(colors, np.ndarray)
+            and colors.dtype == np.float32
+            and colors.ndim in (1, 2)
+            and colors.shape[-1] in (3, 4)
+            and not colors.max(initial=0) > 1
+        ):
+            colors = colors.reshape(-1, colors.shape[-1])
+        else:
+            colors = normalize_colors(colors)
+        if (
+            colors.ndim != 2
+            or colors.shape[1] not in (3, 4)
+            or colors.shape[0] not in (1, count)
+        ):
+            raise ValueError("Colors must contain one color or one per ellipsoid.")
+        colors = np.broadcast_to(colors, (count, colors.shape[1]))
+        if np.any(active & ~np.isfinite(colors).all(axis=1)):
+            raise ValueError("Active colors must be finite.")
+        opacity = validate_opacity(opacity)
+
+        limits = gfx_wgpu.get_shared().device.limits
+        capacity = _max_ellipsoids_per_chunk(
+            max_buffer_size=limits["max-buffer-size"],
+            max_storage_buffer_binding_size=limits["max-storage-buffer-binding-size"],
+        )
+        if count > capacity:
+            raise ValueError("Ellipsoid count exceeds the device buffer limit.")
+
+        # Keep one backing record for empty actors; no instances use it.
+        backing_count = max(count, 1)
+        positions = (
+            np.ascontiguousarray(centers, dtype=np.float32)
+            if count
+            else np.zeros((1, 3), dtype=np.float32)
+        )
+        rgba = np.zeros((backing_count, 4), dtype=np.float32)
+        axes = np.zeros((backing_count, 3, 4), dtype=np.float32)
+        np.copyto(
+            rgba[:count, : colors.shape[1]],
+            colors,
+            where=active[:, np.newaxis],
+        )
+        if colors.shape[1] == 3:
+            rgba[:count, 3] = 1
+        np.multiply(
+            orientations.swapaxes(1, 2),
+            lengths[:, :, np.newaxis],
+            out=axes[:count, :, :3],
+            where=active[:, np.newaxis, np.newaxis],
+            dtype=np.result_type(orientations.dtype, lengths.dtype, np.float32),
+        )
+
+        geometry = buffer_to_geometry(
+            positions=positions,
+            colors=rgba,
+            ellipsoid_axes=axes.reshape(-1, 4),
+        )
+        material = BillboardEllipsoidMaterial(
+            color_mode="vertex",
+            opacity=opacity,
+            pick_write=enable_picking,
+            side="both",
+        )
+        self.geometry = geometry
+        self.material = material
+        self.glyph_count = count
+
+    def _wgpu_get_pick_info(self, pick_value):
+        """
+        Decode the integer-packed glyph field from GPU picking readback.
+
+        Parameters
+        ----------
+        pick_value : int
+            Packed 64-bit picking value written by the ellipsoid shader.
+
+        Returns
+        -------
+        dict
+            The zero-based ``glyph_index`` of the picked ellipsoid.
+
+        Notes
+        -----
+        The shader transports the ID as two exact 13-bit float components
+        between stages, then reconstructs the integer before packing it.
+        The low 20 bits identify the object and the next 26 identify the glyph;
+        this decoder receives that packed integer, not the float pair.
+        """
+        return {"glyph_index": (int(pick_value) >> 20) & ((1 << 26) - 1)}
+
+    def get_bounding_box(self):
+        """
+        Return model-space bounds including each ellipsoid's semi-axes.
+
+        Returns
+        -------
+        ndarray, shape (2, 3), or None
+            Lower and upper bounding-box corners, or None for an empty actor.
+        """
+        if self.glyph_count == 0:
+            return None
+        centers = self.geometry.positions.data[: self.glyph_count]
+        columns = self.geometry.ellipsoid_axes.data.reshape(-1, 3, 4)[:, :, :3]
+        extents = np.einsum("ncr,ncr->nr", columns, columns, dtype=np.float64)
+        np.sqrt(extents, out=extents)
+        return np.stack(
+            ((centers - extents).min(axis=0), (centers + extents).max(axis=0))
+        )
+
+
 def billboard(
     centers,
     *,
@@ -402,3 +631,21 @@ def register_billboard_sphere_render_function(wobject):
         :class:`~fury.shader.BillboardSphereShader`.
     """
     return (BillboardSphereShader(wobject),)
+
+
+@register_wgpu_render_function(_BillboardEllipsoid, BillboardEllipsoidMaterial)
+def register_billboard_ellipsoid_render_function(wobject):
+    """
+    Register the pipeline for compact ellipsoid impostors.
+
+    Parameters
+    ----------
+    wobject : _BillboardEllipsoid
+        Ellipsoid world object to bind to the shader pipeline.
+
+    Returns
+    -------
+    tuple
+        Tuple containing the configured BillboardEllipsoidShader instance.
+    """
+    return (BillboardEllipsoidShader(wobject),)

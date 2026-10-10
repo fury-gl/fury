@@ -1,18 +1,83 @@
 """Shared helpers for actor module tests."""
 
+from contextlib import contextmanager
+
 from PIL import Image
 import numpy as np
 import numpy.testing as npt
 import pytest
 
 from fury import actor, window
-from fury.lib import MeshPhysicalMaterial, MeshStandardMaterial
+from fury.lib import (
+    MeshPhysicalMaterial,
+    MeshStandardMaterial,
+    OrthographicCamera,
+    PerspectiveCamera,
+)
 from fury.material import DEFAULT_PBR_ROUGHNESS
 
 # --- Shared real inputs for visibility/snapshot tests -----------------------
 
 CENTERS = np.array([[0.0, 0.0, 0.0]], dtype=np.float32)
 LINES = [np.array([[0, 0, 0], [1, 1, 1], [2, 0, 0]], dtype=np.float32)]
+
+
+@contextmanager
+def render_manager(
+    *objects,
+    perspective=False,
+    position=(0, 0, 10),
+    target=(0, 0, 0),
+    near=0.1,
+    width=8,
+):
+    """Yield a fixed-camera offscreen manager and close it on exit."""
+    scene = window.Scene()
+    scene.background = (0, 0, 0)
+    scene.add(*objects)
+    camera = (
+        PerspectiveCamera(50, depth_range=(near, 100))
+        if perspective
+        else OrthographicCamera(width, width, depth_range=(near, 100))
+    )
+    show_m = window.ShowManager(
+        scene=scene,
+        camera=camera,
+        size=(256, 256),
+        pixel_ratio=1,
+        window_type="offscreen",
+    )
+    try:
+        show_m.render()
+        show_m.window.draw()
+        # The initial draw resizes and frames even explicitly supplied cameras.
+        if not perspective:
+            camera.width = width
+            camera.height = width
+        camera.local.position = position
+        camera.look_at(target)
+        yield show_m
+    finally:
+        show_m.close()
+
+
+def render_snapshot(show_m):
+    """Render and read back a manager without replacing its configured camera."""
+    show_m.render()
+    show_m.window.draw()
+    return show_m.snapshot(fname=None)
+
+
+def snapshot_mask(image):
+    """Identify foreground pixels in a snapshot with a black background."""
+    return np.max(image[..., :3], axis=-1) > 5
+
+
+def snapshot_extents(mask):
+    """Return the pixel width and height of a nonempty foreground mask."""
+    y, x = np.nonzero(mask)
+    assert len(x)
+    return np.array([x.max() - x.min() + 1, y.max() - y.min() + 1])
 
 
 def gradient_image(n=64):

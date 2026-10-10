@@ -9,6 +9,7 @@ import numpy.testing as npt
 import pytest
 
 from fury import actor, window
+from fury.actor._billboard import _BillboardEllipsoid, _max_ellipsoids_per_chunk
 from fury.lib import MeshPhongMaterial, OrthographicCamera
 from fury.material import BillboardSphereMaterial
 
@@ -84,6 +85,7 @@ def test_billboard_pick_surface(factory, actor_kwargs, enable_picking):
     [
         pytest.param(actor.billboard, {"sizes": (2, 2)}, id="billboard"),
         pytest.param(actor.billboard_sphere, {"radii": 1}, id="billboard_sphere"),
+        pytest.param(actor.ellipsoid, {"lengths": (1, 1, 1)}, id="ellipsoid"),
     ],
 )
 def test_billboard_pick_glyph_index_split(factory, actor_kwargs):
@@ -400,3 +402,48 @@ def test_billboard_bounding_box_camera_framing():
     _assert_red_visible(arr)
 
     scene.clear()
+
+
+@pytest.mark.parametrize(
+    ("allocation_limit", "storage_limit", "expected"),
+    [
+        (48, 48, 1),
+        (48, 48 * 11, 1),
+        (48 * 11, 48, 1),
+        (48 * 11 + 47, 48 * 7 + 47, 7),
+        (48 * 3 + 47, 48 * 11 + 47, 3),
+        (48 * (1 << 27), 48 * (1 << 27), 1 << 26),
+    ],
+)
+def test_max_ellipsoids_per_chunk(allocation_limit, storage_limit, expected):
+    """Allocation, storage binding, and picking independently cap glyph count."""
+    assert (
+        _max_ellipsoids_per_chunk(
+            max_buffer_size=allocation_limit,
+            max_storage_buffer_binding_size=storage_limit,
+        )
+        == expected
+    )
+
+
+@pytest.mark.parametrize("limits", [(47, 48), (48, 47), (0, 48), (48, 0)])
+def test_max_ellipsoids_per_chunk_insufficient_limits(limits):
+    with pytest.raises(ValueError, match="cannot hold one ellipsoid"):
+        _max_ellipsoids_per_chunk(
+            max_buffer_size=limits[0], max_storage_buffer_binding_size=limits[1]
+        )
+
+
+@pytest.mark.parametrize("orientation_shape", [(3, 3), (1, 3, 3), (2, 3, 3)])
+@pytest.mark.parametrize("length_shape", [(3,), (1, 3), (2, 3)])
+def test_billboard_ellipsoid_broadcast_bounds(orientation_shape, length_shape):
+    """Broadcasted semi-axes retain model-space bounds under object transforms."""
+    orientations = np.broadcast_to(np.eye(3), orientation_shape)
+    lengths = np.broadcast_to((2, 1, 0.5), length_shape)
+    ellipsoids = _BillboardEllipsoid(
+        [[0, 0, 0], [4, 0, 0]],
+        orientation_matrices=orientations,
+        lengths=lengths,
+    )
+    ellipsoids.local.position = (10, 0, 0)
+    npt.assert_allclose(ellipsoids.get_bounding_box(), [[-2, -1, -0.5], [6, 1, 0.5]])
