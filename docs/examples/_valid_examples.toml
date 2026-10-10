@@ -62,6 +62,7 @@ files = [
     "viz_panel.py",
     "viz_sliders.py",
     "viz_button.py",
+    "viz_loader.py",
     "viz_playback_panel.py",
     "viz_tab_ui.py",
     "viz_card.py",
