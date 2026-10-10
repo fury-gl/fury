@@ -342,6 +342,152 @@ def test_streamlines_roi_metadata_and_reset():
     )
 
 
+def test_streamlines_scalar_thickness_is_backward_compatible():
+    lines = [
+        np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]], dtype=np.float32),
+        np.array([[0.0, 1.0, 0.0], [1.0, 1.0, 0.0]], dtype=np.float32),
+    ]
+
+    wobj = actor.streamlines(lines, thickness=3.0)
+
+    assert wobj.material.thickness == 3.0
+    assert wobj.thicknesses is None
+    assert wobj._line_thicknesses_buffer is None
+    scene = window.Scene()
+    scene.add(wobj)
+    image = window.snapshot(scene=scene, fname=None, return_array=True)
+    red_pixels = (image[:, :, 0] > image[:, :, 1] * 1.5) & (
+        image[:, :, 0] > image[:, :, 2] * 1.5
+    )
+    assert red_pixels.any()
+    with pytest.raises(ValueError, match="created with per-streamline"):
+        wobj.update_thicknesses([1.0, 2.0])
+
+
+def test_streamlines_per_line_thickness_aligns_with_positions_and_updates_buffer():
+    lines = [
+        np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]], dtype=np.float32),
+        np.array(
+            [[0.0, 1.0, 0.0], [0.5, 1.0, 0.0], [1.0, 1.0, 0.0]],
+            dtype=np.float32,
+        ),
+    ]
+    wobj = actor.streamlines(lines, thickness=[2.0, 4.0])
+    buffer = wobj._line_thicknesses_buffer
+    geometry = wobj.geometry
+
+    assert np.allclose(
+        buffer.data, np.array([2.0, 2.0, np.nan, 4.0, 4.0, 4.0]), equal_nan=True
+    )
+    assert np.array_equal(wobj.thicknesses, [2.0, 4.0])
+
+    wobj.update_thicknesses([5.0, 7.0])
+
+    assert wobj._line_thicknesses_buffer is buffer
+    assert wobj.geometry is geometry
+    assert np.allclose(
+        buffer.data, np.array([5.0, 5.0, np.nan, 7.0, 7.0, 7.0]), equal_nan=True
+    )
+    assert np.array_equal(wobj.thicknesses, [5.0, 7.0])
+    with pytest.raises(ValueError):
+        wobj.update_thicknesses([5.0, np.inf])
+    assert np.allclose(
+        buffer.data, np.array([5.0, 5.0, np.nan, 7.0, 7.0, 7.0]), equal_nan=True
+    )
+
+
+def test_streamlines_rejects_invalid_per_line_thickness():
+    lines = [
+        np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]], dtype=np.float32),
+        np.array([[0.0, 1.0, 0.0], [1.0, 1.0, 0.0]], dtype=np.float32),
+    ]
+
+    invalid_values = [
+        [1.0],
+        [1.0, 2.0, 3.0],
+        [[1.0, 2.0], [3.0, 4.0]],
+        [0.0, 1.0],
+        [-1.0, 1.0],
+        [1.0, np.nan],
+        [1.0, np.inf],
+    ]
+
+    for thickness in invalid_values:
+        with pytest.raises(ValueError):
+            actor.streamlines(lines, thickness=thickness)
+
+
+def test_streamlines_rejects_invalid_scalar_thickness():
+    lines = [
+        np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]], dtype=np.float32)
+    ]
+
+    invalid_values = [
+        0.0,
+        -1.0,
+        np.nan,
+        np.inf,
+        np.finfo(np.float64).max,
+        np.nextafter(np.float64(0.0), np.float64(1.0)),
+    ]
+
+    for thickness in invalid_values:
+        with pytest.raises(ValueError):
+            actor.streamlines(lines, thickness=thickness)
+
+
+def test_streamlines_renders_distinct_per_line_thicknesses():
+    points = np.linspace(-2.0, 2.0, 30, dtype=np.float32)
+    lines = [
+        np.column_stack(
+            [points, np.full_like(points, -0.5), np.zeros_like(points)]
+        ),
+        np.column_stack([points, np.full_like(points, 0.5), np.zeros_like(points)]),
+    ]
+    wobj = actor.streamlines(
+        lines,
+        colors=np.array([[1.0, 0.0, 0.0], [0.0, 0.0, 1.0]], dtype=np.float32),
+        thickness=[2.0, 12.0],
+        outline_thickness=0.0,
+    )
+    scene = window.Scene()
+    scene.add(wobj)
+
+    image = window.snapshot(scene=scene, fname=None, return_array=True)
+    red_pixels = (image[:, :, 0] > image[:, :, 1] * 1.5) & (
+        image[:, :, 0] > image[:, :, 2] * 1.5
+    )
+    blue_pixels = (image[:, :, 2] > image[:, :, 0] * 1.5) & (
+        image[:, :, 2] > image[:, :, 1] * 1.5
+    )
+
+    assert blue_pixels.sum() > red_pixels.sum() * 2
+
+    wobj.update_thicknesses([12.0, 2.0])
+    updated_image = window.snapshot(scene=scene, fname=None, return_array=True)
+    updated_red = (updated_image[:, :, 0] > updated_image[:, :, 1] * 1.5) & (
+        updated_image[:, :, 0] > updated_image[:, :, 2] * 1.5
+    )
+    updated_blue = (updated_image[:, :, 2] > updated_image[:, :, 0] * 1.5) & (
+        updated_image[:, :, 2] > updated_image[:, :, 1] * 1.5
+    )
+
+    assert updated_red.sum() > updated_blue.sum() * 2
+
+    wobj.material.dash_pattern = (2.0, 2.0)
+    dashed_image = window.snapshot(scene=scene, fname=None, return_array=True)
+    dashed_red = (dashed_image[:, :, 0] > dashed_image[:, :, 1] * 1.5) & (
+        dashed_image[:, :, 0] > dashed_image[:, :, 2] * 1.5
+    )
+    dashed_blue = (dashed_image[:, :, 2] > dashed_image[:, :, 0] * 1.5) & (
+        dashed_image[:, :, 2] > dashed_image[:, :, 1] * 1.5
+    )
+
+    assert dashed_red.any()
+    assert dashed_blue.any()
+
+
+
 def test_streamlines_roi_origin_updates_needs_update_flag():
     """Changing ROI origin sets compute update when a mask is present."""
     lines = [
