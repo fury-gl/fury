@@ -1249,6 +1249,8 @@ class TextBlock2D(UI):
         is drawn.
     position : (float, float), optional
         Absolute coordinates (x, y) for placement.
+    padding : float, optional
+        Inset in pixels between the text and the bounding box edges.
     dynamic_bbox : bool, optional
         If True, resizes the bounding box to fit the content.
     """
@@ -1268,6 +1270,7 @@ class TextBlock2D(UI):
         bg_color=None,
         position=(0, 0),
         dynamic_bbox=False,
+        padding=0,
     ):
         """Initialize the text block instance."""
         self.boundingbox = [0, 0, 0, 0]
@@ -1283,6 +1286,7 @@ class TextBlock2D(UI):
 
         self._justification = justification
         self._vertical_justification = vertical_justification
+        self._padding = 0.0
         super(TextBlock2D, self).__init__(position=position)
         self.have_bg = bool(bg_color)
         self.color = color
@@ -1294,6 +1298,7 @@ class TextBlock2D(UI):
         self.font_size = font_size
 
         self.update_bounding_box()
+        self.padding = padding
 
     def _setup(self):
         """Set up this UI component."""
@@ -1734,34 +1739,89 @@ class TextBlock2D(UI):
         if flag:
             self.update_bounding_box()
 
+    @property
+    def padding(self):
+        """Get the inset between the text and the bounding box edges."""
+        return self._padding
+
+    @padding.setter
+    def padding(self, padding):
+        """Set a non-negative inset in pixels and realign the text."""
+        try:
+            padding = float(padding)
+        except (TypeError, ValueError) as exc:
+            msg = "Text padding must be a finite non-negative number."
+            raise ValueError(msg) from exc
+
+        if not np.isfinite(padding) or padding < 0:
+            raise ValueError("Text padding must be a finite non-negative number.")
+
+        self._padding = padding
+        if self.dynamic_bbox:
+            self.update_bounding_box()
+        else:
+            self.update_alignment()
+
     def update_alignment(self):
         """Update the text actor alignment within the bounding box."""
         updated_text_position = [0, 0]
         text_actor_size = self.get_text_actor_size()
+        left = self.boundingbox[0] + self.padding
+        right = self.boundingbox[2] - self.padding
+        top = self.boundingbox[1] + self.padding
+        bottom = self.boundingbox[3] - self.padding
 
         if self.justification.lower() == "left":
             self.actor.text_align = "left"
-            updated_text_position[0] = self.boundingbox[0] + text_actor_size[0] // 2
+            if self.padding:
+                updated_text_position[0] = left + text_actor_size[0] / 2
+            else:
+                updated_text_position[0] = (
+                    self.boundingbox[0] + text_actor_size[0] // 2
+                )
         elif self.justification.lower() == "center":
             self.actor.text_align = "center"
-            updated_text_position[0] = (
-                self.boundingbox[0] + (self.boundingbox[2] - self.boundingbox[0]) // 2
-            )
+            if self.padding:
+                updated_text_position[0] = (left + right) / 2
+            else:
+                updated_text_position[0] = (
+                    self.boundingbox[0]
+                    + (self.boundingbox[2] - self.boundingbox[0]) // 2
+                )
         elif self.justification.lower() == "right":
             self.actor.text_align = "right"
-            updated_text_position[0] = self.boundingbox[2] - text_actor_size[0] // 2
+            if self.padding:
+                updated_text_position[0] = right - text_actor_size[0] / 2
+            else:
+                updated_text_position[0] = (
+                    self.boundingbox[2] - text_actor_size[0] // 2
+                )
         else:
             msg = "Text can only be justified left, center and right."
             raise ValueError(msg)
 
         if self.vertical_justification.lower() == "top":
-            updated_text_position[1] = self.boundingbox[1] + text_actor_size[1] // 2
+            if self.padding:
+                updated_text_position[1] = top + text_actor_size[1] / 2
+            else:
+                updated_text_position[1] = (
+                    self.boundingbox[1] + text_actor_size[1] // 2
+                )
         elif self.vertical_justification.lower() == "middle":
-            updated_text_position[1] = (
-                self.boundingbox[1] + (self.boundingbox[3] - self.boundingbox[1]) // 2
-            )
+            if self.padding:
+                updated_text_position[1] = (top + bottom) / 2
+            else:
+                updated_text_position[1] = (
+                    self.boundingbox[1]
+                    + (self.boundingbox[3] - self.boundingbox[1]) // 2
+                )
         elif self.vertical_justification.lower() == "bottom":
-            updated_text_position[1] = self.boundingbox[3] - text_actor_size[1] // 2
+            if self.padding:
+                updated_text_position[1] = bottom - text_actor_size[1] / 2
+            else:
+                updated_text_position[1] = (
+                    self.boundingbox[3] - text_actor_size[1] // 2
+                )
         else:
             msg = "Vertical justification must be: top, middle or bottom."
             raise ValueError(msg)
@@ -1823,7 +1883,10 @@ class TextBlock2D(UI):
             The current size of the text block.
         """
         if self.dynamic_bbox:
-            return self.get_text_actor_size()
+            text_size = self.get_text_actor_size()
+            if self.padding:
+                return tuple(size + 2 * self.padding for size in text_size)
+            return text_size
         else:
             return self._bg_size
 
