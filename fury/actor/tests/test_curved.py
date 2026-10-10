@@ -433,7 +433,7 @@ def test_streamlines_rejects_invalid_scalar_thickness():
 
     for thickness in invalid_values:
         with pytest.raises(ValueError):
-            actor.streamlines(lines, thickness=thickness)v
+            actor.streamlines(lines, thickness=thickness)
 
 
 def test_streamlines_renders_distinct_per_line_thicknesses():
