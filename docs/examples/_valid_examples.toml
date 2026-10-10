@@ -42,6 +42,7 @@ files = [
     "viz_spherical_harmonics.py",
     "viz_line_projections.py",
     "viz_streamlines_roi.py",
+    "viz_streamlines_thickness.py",
     "viz_contour.py",
     "viz_brownian_motion.py",
     "viz_network.py",

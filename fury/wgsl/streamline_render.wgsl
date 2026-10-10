@@ -289,15 +289,19 @@ fn vs_main(in: VertexInput) -> Varyings {
             let thickness_ratio = (1.0 / shift_factor) * 0.5 * (distance(pos_w_node.xyz, pos_w_node_shiftedx.xyz) + distance(pos_w_node.xyz, pos_w_node_shiftedy.xyz));
         $$ endif
     $$ endif
+    var line_thickness = u_material.thickness;
+    $$ if per_line_thickness
+        line_thickness = s_thicknesses[u32(node_index)];
+    $$ endif
     let min_size_for_pixel = 1.415 / l2p;  // For minimum pixel coverage. Use sqrt(2) to take diagonals into account.
     $$ if aa
-    let total_thickness:f32 = (u_material.thickness + u_material.outline_thickness * 2.0) / thickness_ratio;  // Logical pixels
+    let total_thickness:f32 = (line_thickness + u_material.outline_thickness * 2.0) / thickness_ratio;  // Logical pixels
     let half_thickness = 0.5 * max(min_size_for_pixel, total_thickness + 1.0 / l2p);  // add 0.5 physical pixel on each side.
     $$ else
-    let total_thickness:f32 = (u_material.thickness + u_material.outline_thickness * 2.0) / thickness_ratio;  // non-aa lines get no thinner than 1 px
+    let total_thickness:f32 = (line_thickness + u_material.outline_thickness * 2.0) / thickness_ratio;  // non-aa lines get no thinner than 1 px
     let half_thickness = 0.5 * max(min_size_for_pixel, total_thickness);
     $$ endif
-    let thickness:f32 = u_material.thickness / thickness_ratio;
+    let thickness:f32 = line_thickness / thickness_ratio;
 
     // Declare vertex cords (x along segment, y perpendicular to it).
     // The coords 1 and 5 have a positive y coord, the coords 2 and 6 negative.
@@ -822,8 +826,7 @@ fn fs_main(varyings: Varyings, @builtin(front_facing) is_front: bool) -> Fragmen
             cumdist_per_pixel = varyings.cumdist_per_pixel * varyings.w;
         $$ endif
 
-        // Define dash pattern, scale with (uniform) thickness.
-        // Note how the pattern is templated (triggering recompilation when it changes), whereas the thickness is a uniform.
+        // Define dash pattern, scaled by the line thickness.
         var stroke_sizes = array<f32,dash_count>{{dash_pattern[::2]}};
         var gap_sizes = array<f32,dash_count>{{dash_pattern[1::2]}};
         for (var i=0; i<dash_count; i+=1) {
@@ -842,7 +845,16 @@ fn fs_main(varyings: Varyings, @builtin(front_facing) is_front: bool) -> Fragmen
 
         // Calculate dash_progress, a number 0..dash_size, indicating the phase of the dash.
         // Except that we shift it, so that half of the final gap gets in front (as a negative number).
-        let cumdist_corrected = cumdist_continuous / u_material.thickness + u_material.dash_offset % dash_size;
+        var dash_thickness = u_material.thickness;
+        $$ if per_line_thickness
+            $$ if thickness_space == 'screen'
+                let l2p = u_stdinfo.physical_size.x / u_stdinfo.logical_size.x;
+                dash_thickness = varyings.thickness_pw / (varyings.w * l2p);
+            $$ else
+                dash_thickness = varyings.thickness_pw / varyings.w * cumdist_per_pixel;
+            $$ endif
+        $$ endif
+        let cumdist_corrected = cumdist_continuous / dash_thickness + u_material.dash_offset % dash_size;
         let dash_progress = (cumdist_corrected + 0.5 * last_gap) % dash_size - 0.5 * last_gap;
 
         // Its looks a bit like this. Now we select the nearest stroke, and calculate the
@@ -878,7 +890,7 @@ fn fs_main(varyings: Varyings, @builtin(front_facing) is_front: bool) -> Fragmen
         let dist_to_dash = max(0.0, max(dist_to_begin, dist_to_end));
 
         // Convert to (physical) pixel units
-        let dashdist_to_physical = u_material.thickness / cumdist_per_pixel;
+        let dashdist_to_physical = dash_thickness / cumdist_per_pixel;
         let dist_to_begin_p = dist_to_begin * dashdist_to_physical;
         let dist_to_end_p = dist_to_end * dashdist_to_physical;
         let dist_to_dash_p = dist_to_dash * dashdist_to_physical;
