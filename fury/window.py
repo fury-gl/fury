@@ -11,6 +11,7 @@ from functools import reduce
 import logging
 import os
 import sys
+import time
 from typing import Iterable
 
 from PIL.Image import fromarray as image_from_array
@@ -53,7 +54,8 @@ from fury.lib import (
 )
 from fury.motion import Animation, CameraAnimation, Timeline
 from fury.optpkg import optional_package
-from fury.ui import UI, UIContext
+from fury.ui import UI, Loader2D, UIContext
+from fury.ui.core import Button2D
 
 cv2, have_cv2, _ = optional_package(
     "cv2",
@@ -576,7 +578,7 @@ def update_viewports(screens, screen_bbs):
         update_camera(screen.camera, screen.size, screen.scene)
 
 
-def render_screens(renderer, screens, stats=None, is_dirty=False):
+def render_screens(renderer, screens, stats=None, is_dirty=False, *, overlay=None):
     """
     Render multiple screens within a single renderer update cycle.
 
@@ -590,6 +592,8 @@ def render_screens(renderer, screens, stats=None, is_dirty=False):
         Stats helper to display FPS overlay.
     is_dirty : bool, optional
         If True, triggers layout recalculations for UI elements.
+    overlay : Scene, optional
+        Full-canvas UI scene drawn above the screens and FPS stats.
     """
     if stats is not None:
         stats.start()
@@ -608,6 +612,9 @@ def render_screens(renderer, screens, stats=None, is_dirty=False):
     if stats is not None:
         stats.stop()
         stats.render(flush=False)
+
+    if overlay is not None:
+        renderer.render(overlay.ui_scene, overlay.ui_camera, flush=False)
 
     renderer.flush()
 
@@ -807,13 +814,171 @@ class ShowManager:
         self._stats = None
         self._stats_initialized = False
 
+        self._loader = None
+        self._loader_scene = None
+        self._loader_callback_name = None
+        self._loader_generation = 0
+        self._loader_last_time = None
+        self._loader_controller_states = None
+        # Wildcard canvas handlers run after type-specific input handlers.
+        self.window.add_event_handler(
+            self._handle_canvas_event,
+            "pointer_down",
+            "pointer_up",
+            "pointer_move",
+            "pointer_enter",
+            "pointer_leave",
+            "double_click",
+            "wheel",
+            "key_down",
+            "key_up",
+            "char",
+            "close",
+            order=-100,
+        )
         self._imgui = None
         if imgui:
             self.enable_imgui(imgui_draw_function=imgui_draw_function)
 
         self.enable_events = enable_events
+        if not enable_events:
+            self.set_enable_events(False)
         self._on_resize = lambda _size: None
         self._resize(self._size)
+
+    def show_loader(self, message=None):
+        """
+        Show one modal loader over the entire canvas.
+
+        Parameters
+        ----------
+        message : str or None
+            Text beneath the spinner. None clears any previous message.
+
+        Notes
+        -----
+        Animation uses the GUI callback scheduler. Application work must yield
+        to the event loop; this method does not run work in the background.
+        Repeated calls update the message without restarting the animation.
+        """
+        if message is not None and not isinstance(message, str):
+            raise TypeError("message must be a string or None")
+        if self.window.get_closed():
+            raise RuntimeError("cannot show loader on a closed canvas")
+        if self._loader is None:
+            size = self.renderer.logical_size
+            if not all(value > 0 for value in size):
+                size = tuple(max(1, value) for value in self.size)
+            self._loader = Loader2D(size=size, message=message)
+            self._loader_scene = Scene()
+            self._loader_scene.add(self._loader)
+            self._loader.set_visibility(False)
+        else:
+            self._loader.message = message
+        if self._loader_callback_name is not None:
+            self.render()
+            return
+
+        self._loader_generation += 1
+        name = f"_fury_loader_{id(self)}_{self._loader_generation}"
+        while name in self.callbacks:
+            self._loader_generation += 1
+            name = f"_fury_loader_{id(self)}_{self._loader_generation}"
+        self._loader_callback_name = name
+        self._loader_controller_states = [
+            (screen.controller, screen.controller.enabled) for screen in self.screens
+        ]
+        for controller, _ in self._loader_controller_states:
+            controller.enabled = False
+        try:
+            self._reset_interaction_state()
+            self._loader_last_time = time.perf_counter()
+            self.register_callback(
+                self._update_loader, time=1 / 60, repeat=True, name=name
+            )
+        except Exception:
+            self._stop_loader(redraw=False)
+            raise
+        self._loader.set_visibility(True)
+        self.render()
+
+    def hide_loader(self):
+        """Hide the loader and restore the saved controller states."""
+        self._stop_loader(redraw=True)
+
+    def _stop_loader(self, *, redraw=False):
+        """
+        Stop loader animation and restore the saved controller states.
+
+        Parameters
+        ----------
+        redraw : bool, optional
+            Request a frame after cleanup if the canvas is still open.
+        """
+        name = self._loader_callback_name
+        if name is None:
+            return
+        self._loader_callback_name = None
+        self.cancel_callback(name)
+        self._loader.set_visibility(False)
+        for controller, enabled in self._loader_controller_states:
+            controller.enabled = enabled
+        self._loader_controller_states = None
+        self._loader_last_time = None
+        if redraw and not self.window.get_closed():
+            self.render()
+
+    def _update_loader(self):
+        """Advance the active loader using elapsed time and request a frame."""
+        if self._loader_callback_name is None:
+            return
+        if self.window.get_closed():
+            self._stop_loader(redraw=False)
+            return
+        now = time.perf_counter()
+        self._loader.advance(now - self._loader_last_time)
+        self._loader_last_time = now
+        self.render()
+
+    def _reset_interaction_state(self):
+        """Release held input across this canvas's UI tree without changing focus."""
+        self._repeat_key_event = None
+        self._is_dragging = False
+        self._drag_target = None
+        for screen in self.screens:
+            pending = list(screen.scene.ui_elements)
+            while pending:
+                element = pending.pop()
+                element.left_button_state = "released"
+                element.right_button_state = "released"
+                element.middle_button_state = "released"
+                if isinstance(element, Button2D) and (
+                    element.is_pressed or element.is_hovered
+                ):
+                    element.is_pressed = False
+                    element.is_hovered = False
+                    element.update_visual_state()
+                pending.extend(element._children)
+        UIContext.hot_ui = None
+        if self._imgui is not None:
+            io = self._imgui.backend.io
+            io.clear_events_queue()
+            io.clear_input_keys()
+            io.clear_input_mouse()
+
+    def _handle_canvas_event(self, event):
+        """
+        Block disabled or modal canvas input and clean up the loader on close.
+
+        Parameters
+        ----------
+        event : dict
+            Raw input or close event supplied by the canvas.
+        """
+        if event["event_type"] == "close":
+            self._stop_loader(redraw=False)
+        elif not self.enable_events or self._loader_callback_name is not None:
+            event["stop_propagation"] = True
 
     def _handle_drag(self, event):
         """
@@ -854,6 +1019,8 @@ class ShowManager:
         event : PointerEvent
             The PyGfx pointer event object.
         """
+        if not self.enable_events or self._loader_callback_name is not None:
+            return
         if event.type == EventType.POINTER_DOWN:
             self._is_dragging = True
             self._drag_target = event.target
@@ -878,11 +1045,17 @@ class ShowManager:
         event : KeyboardEvent
             The PyGfx keyboard event object.
         """
-        if not UIContext.active_ui:
+        if (
+            not self.enable_events
+            or self._loader_callback_name is not None
+            or not UIContext.active_ui
+        ):
             return
 
         if event.type == EventType.KEY_DOWN:
             UIContext.active_ui.on_key_press(event)
+            if not self.enable_events or self._loader_callback_name is not None:
+                return
 
             self._repeat_key_event = event
             call_later(0.6, self._do_key_repeat, event)
@@ -1044,6 +1217,13 @@ class ShowManager:
             calculate_screen_sizes(self._screen_config, self.renderer.logical_size),
         )
         reposition_ui(self.screens)
+        logical_size = self.renderer.logical_size
+        if self._loader is not None and all(value > 0 for value in logical_size):
+            UIContext.canvas_size = logical_size
+            if not np.array_equal(self._loader._get_size(), logical_size):
+                self._loader.resize(logical_size)
+            else:
+                self._loader._update_actors_position()
         self.render()
 
     def _on_repeat_callback(self, func, time, name, *args):
@@ -1699,14 +1879,24 @@ class ShowManager:
         ----------
         value : bool
             Set to True to enable events, False to disable them.
+
+        Notes
+        -----
+        Input is gated at the canvas boundary without changing renderer event
+        registration. Resize and close events remain enabled. A visible loader
+        keeps input blocked until it is hidden.
         """
         self.enable_events = value
-        if value:
-            self.renderer.enable_events()
-        else:
-            self.renderer.disable_events()
-        for s in self.screens:
-            s.controller.enabled = value
+        if not value:
+            self._reset_interaction_state()
+        if self._loader_callback_name is not None:
+            self._loader_controller_states = [
+                (controller, value) for controller, _ in self._loader_controller_states
+            ]
+        for screen in self.screens:
+            screen.controller.enabled = (
+                value if self._loader_callback_name is None else False
+            )
 
     def get_fps(self):
         """
@@ -1924,10 +2114,24 @@ class ShowManager:
 
         self._frame_count += 1
         update_layout = True if self._frame_count == 2 else False
+        overlay = None
+        if self._loader_callback_name is not None:
+            logical_size = self.renderer.logical_size
+            if all(value > 0 for value in logical_size):
+                UIContext.canvas_size = logical_size
+                if not np.array_equal(self._loader._get_size(), logical_size):
+                    self._loader.resize(logical_size)
+                self._loader.update_layout()
+                overlay = self._loader_scene
         render_screens(
-            self.renderer, self.screens, stats=self._stats, is_dirty=update_layout
+            self.renderer,
+            self.screens,
+            stats=self._stats,
+            is_dirty=update_layout,
+            overlay=overlay,
         )
-        self._imgui and self._imgui.render()
+        if self._imgui is not None and self._loader_callback_name is None:
+            self._imgui.render()
         self.window.request_draw()
 
     def _draw_canvas(self):
@@ -1985,6 +2189,7 @@ class ShowManager:
         """
         Close the rendering window and terminate the application if necessary.
         """
+        self._stop_loader(redraw=False)
         self.window.close()
 
 
