@@ -791,9 +791,7 @@ class StreamlinesActor(Line):
         scalar_thickness, line_thicknesses = _validate_streamline_thickness(
             thickness, self.n_lines
         )
-        self._line_thicknesses = (
-            None if line_thicknesses is None else line_thicknesses.copy()
-        )
+        self._line_thicknesses = line_thicknesses
         self._out_capacity = int(positions_arr.shape[0])
         self._color_channels = int(colors_arr.shape[1]) if colors_arr.ndim == 2 else 3
 
@@ -815,11 +813,7 @@ class StreamlinesActor(Line):
             "outline_color": outline_color,
             "pick_write": enable_picking,
             "opacity": opacity,
-            "thickness": (
-                scalar_thickness
-                if scalar_thickness is not None
-                else float(line_thicknesses[0])
-            ),
+            "thickness": scalar_thickness,
             "color_mode": "vertex",
         }
 
@@ -855,7 +849,7 @@ class StreamlinesActor(Line):
         """Return a copy of the per-streamline thickness values, if set."""
         if self._line_thicknesses is None:
             return None
-        return self._line_thicknesses.copy()
+        return self._line_thicknesses
 
     def update_thicknesses(self, thicknesses):
         """
@@ -883,7 +877,7 @@ class StreamlinesActor(Line):
         )
         self._line_thicknesses_buffer.data[...] = expanded
         self._line_thicknesses_buffer.update_full()
-        self._line_thicknesses = values.copy()
+        self._line_thicknesses = values
 
     @property
     def roi_mask(self):
