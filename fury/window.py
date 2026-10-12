@@ -598,9 +598,6 @@ def render_screens(renderer, screens, stats=None, is_dirty=False):
         scene_root = screen.scene
 
         for ui_element in scene_root.ui_elements:
-            # Text dimensions can change after the initial layout (for example,
-            # when TextBlock2D.font_size or message is updated). Keep these
-            # components' bounds and backgrounds in sync with the rendered text.
             if hasattr(ui_element, "update_layout") and (
                 is_dirty or hasattr(ui_element, "dynamic_bbox")
             ):
