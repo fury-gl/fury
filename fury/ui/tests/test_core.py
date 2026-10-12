@@ -3,6 +3,7 @@
 from PIL import Image
 import numpy as np
 import numpy.testing as npt
+import pytest
 
 from fury import ui, window
 from fury.actor import Mesh
@@ -582,6 +583,92 @@ def test_textblock2d_resize():
 
     npt.assert_equal(tb.boundingbox[2] - tb.boundingbox[0], new_size[0])
     npt.assert_equal(tb.boundingbox[3] - tb.boundingbox[1], new_size[1])
+
+
+@pytest.mark.parametrize("dynamic_bbox", [False, True])
+@pytest.mark.parametrize(
+    "justification, vertical_justification",
+    [("left", "top"), ("center", "middle"), ("right", "bottom")],
+)
+def test_textblock2d_first_frame_layout(
+    dynamic_bbox, justification, vertical_justification
+):
+    """Text and background must be aligned on the first frame after a change."""
+    block = ui.TextBlock2D(
+        text="HUD",
+        position=(24, 24),
+        size=None if dynamic_bbox else (560, 160),
+        dynamic_bbox=dynamic_bbox,
+        font_size=18,
+        justification=justification,
+        vertical_justification=vertical_justification,
+        color=(1, 1, 1),
+        bg_color=(1, 0, 0),
+    )
+    scene = window.Scene(background=(0, 0, 0, 1))
+    scene.add(block)
+    show_m = window.ShowManager(
+        scene=scene, size=(640, 240), pixel_ratio=1, window_type="offscreen"
+    )
+
+    def capture_masks():
+        window.render_screens(show_m.renderer, show_m.screens, is_dirty=False)
+        pixels = show_m.snapshot(fname=None)[:, :, :3]
+        foreground = np.all(pixels > 180, axis=2)
+        background = (
+            (pixels[:, :, 0] > 180) & (pixels[:, :, 1] < 80) & (pixels[:, :, 2] < 80)
+        )
+        return foreground, background
+
+    def check_first_frame():
+        first_foreground, first_background = capture_masks()
+        next_foreground, next_background = capture_masks()
+        npt.assert_array_equal(first_foreground, next_foreground)
+        npt.assert_array_equal(first_background, next_background)
+
+        foreground_y, foreground_x = np.where(first_foreground)
+        background_y, background_x = np.where(first_background)
+        x, y = block.get_position(Anchor.LEFT, Anchor.TOP)
+        expected_size = block.get_text_actor_size() if dynamic_bbox else (560, 160)
+        npt.assert_allclose(
+            (
+                background_x.max() - background_x.min() + 1,
+                background_y.max() - background_y.min() + 1,
+            ),
+            expected_size,
+            atol=1,
+        )
+        npt.assert_allclose((background_x.min(), background_y.min()), (x, y), atol=1)
+        assert 0 < foreground_x.min() <= foreground_x.max() < 639
+        assert 0 < foreground_y.min() <= foreground_y.max() < 239
+        assert foreground_x.min() >= background_x.min() - 1
+        assert foreground_x.max() <= background_x.max() + 1
+        assert foreground_y.min() >= background_y.min() - 1
+        assert foreground_y.max() <= background_y.max() + 1
+        if justification == "left" and vertical_justification == "top":
+            assert x - 1 <= foreground_x.min() <= x + 10
+
+    try:
+        check_first_frame()
+        block.message = "HUD: a longer status"
+        check_first_frame()
+        block.message = "HUD"
+        check_first_frame()
+        block.message = "HUD: a longer status"
+        check_first_frame()
+        block.font_size = 28
+        check_first_frame()
+        block.message = "HUD: moved status"
+        block.set_position((40, 35))
+        check_first_frame()
+        block.set_position((24, 24))
+        block.message = "HUD"
+        check_first_frame()
+        block.set_position((40, 35))
+        block.message = "HUD: a longer status"
+        check_first_frame()
+    finally:
+        show_m.window.close()
 
 
 def test_textblock2d_visual_snapshot():

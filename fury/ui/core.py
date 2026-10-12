@@ -1808,6 +1808,7 @@ class TextBlock2D(UI):
         (float, float)
             The (width, height) of the rendered text.
         """
+        self.actor._update_object()
         return (
             self.actor._aabb[1][0] - self.actor._aabb[0][0],
             self.actor._aabb[1][1] - self.actor._aabb[0][1],
