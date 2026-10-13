@@ -1056,37 +1056,70 @@ Streamlines = StreamlinesActor
 
 
 def _validate_streamline_thickness(thickness, n_lines):
-    """Validate scalar or per-line streamline thickness values."""
-    values = np.asarray(thickness)
-    if values.ndim == 0:
-        if values.dtype.kind not in "fiub":
-            raise ValueError("thickness must be a positive finite number")
-        scalar = float(values)
-        with np.errstate(over="ignore", under="ignore", invalid="ignore"):
-            gpu_scalar = np.float32(scalar)
-        if not np.isfinite(gpu_scalar) or gpu_scalar <= 0:
-            raise ValueError("thickness must be a positive finite number")
-        return scalar, None
+    """Validate scalar or per-streamline thickness values.
 
-    if values.ndim != 1 or values.dtype.kind not in "fiu":
+    Parameters
+    ----------
+    thickness : scalar or array-like
+        Thickness value or one thickness value per streamline.
+    n_lines : int
+        Number of streamlines.
+
+    Returns
+    -------
+    scalar : float or None
+        Valid scalar thickness, or None for per-streamline thickness.
+    values : numpy.ndarray or None
+        Valid per-streamline thickness values, or None for scalar thickness.
+    """
+    values = np.asarray(thickness, dtype=np.float32)
+
+    if values.ndim == 0:
+        if not np.isfinite(values) or values <= 0:
+            raise ValueError(
+                "thickness must be a positive finite number"
+            )
+        return float(values), None
+
+    if values.ndim != 1:
         raise ValueError(
-            "thickness must be a scalar or a 1D array with one value per streamline"
+            "thickness must be a scalar or a 1D array with one value per "
+            "streamline"
         )
+
     if len(values) != n_lines:
         raise ValueError(
             f"thickness must contain one value per streamline; "
             f"expected {n_lines}, got {len(values)}"
         )
 
-    with np.errstate(over="ignore", under="ignore", invalid="ignore"):
-        values = values.astype(np.float32)
-    if not np.isfinite(values).all() or np.any(values <= 0):
-        raise ValueError("all thickness values must be positive and finite")
+    if not np.isfinite(values).all() or (values <= 0).any():
+        raise ValueError(
+            "all thickness values must be positive and finite"
+        )
+
     return None, values
 
 
 def _expand_streamline_thicknesses(thicknesses, line_lengths, line_offsets, size):
-    """Expand per-line values to a point-aligned buffer with NaN separators."""
+    """Expand per-streamline thickness values to per-point values.
+
+    Parameters
+    ----------
+    thicknesses : numpy.ndarray
+        One thickness value for each streamline.
+    line_lengths : numpy.ndarray
+        Number of points in each streamline.
+    line_offsets : numpy.ndarray
+        Starting offset of each streamline in the combined buffer.
+    size : int
+        Size of the output buffer.
+
+    Returns
+    -------
+    numpy.ndarray
+        Thickness value for each point, with separator entries left as NaN.
+    """
     expanded = np.full(size, np.nan, dtype=np.float32)
     for value, offset, length in zip(
         thicknesses, line_offsets, line_lengths, strict=True
