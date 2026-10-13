@@ -938,13 +938,20 @@ class TextBox2D(UI):
             z_order=z_order,
         )
 
-    def _setup(self):
-        """
-        Setup this UI component.
+    @property
+    def font_size(self):
+        """Get the text font size."""
+        return self._font_size
 
-        Create the TextBlock2D component used for the textbox.
-        Uses dynamic_bbox so the bounding box adapts as the user types.
-        """
+    @font_size.setter
+    def font_size(self, size):
+        """Set the text font size and resize the fixed text box."""
+        self._font_size = size
+        self.text.font_size = size
+        self.text.resize(self._get_background_size())
+
+    def _get_background_size(self):
+        """Calculate the fixed background size from the textbox capacity."""
         bold_factor = 1.25 if self._bold else 1.0
         italic_factor = 1.1 if self._italic else 1.0
 
@@ -952,7 +959,14 @@ class TextBox2D(UI):
             self._width * self._font_size * 0.5 * bold_factor * italic_factor
         )
         bg_height = int(self._height * self._font_size * 1.5) + 10
+        return bg_width, bg_height
 
+    def _setup(self):
+        """
+        Setup this UI component.
+
+        Create the fixed-size TextBlock2D component used for the textbox.
+        """
         self.text = TextBlock2D(
             text=self._message,
             font_size=self._font_size,
@@ -960,7 +974,7 @@ class TextBox2D(UI):
             justification=self._justification,
             vertical_justification="middle",
             dynamic_bbox=False,
-            size=(bg_width, bg_height),
+            size=self._get_background_size(),
         )
         self.text.color = self._color
         self.text.bold = self._bold
