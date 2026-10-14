@@ -338,6 +338,9 @@ class _BillboardEllipsoid(Mesh):
         Material opacity multiplier applied to each color's alpha.
     enable_picking : bool, optional
         Whether retained surface fragments write glyph picking information.
+    color_axis_indices : array-like of int, shape (N,), optional
+        Model-space axes used for directional coloring. None selects the first
+        maximum of each original semi-axis length triple before float32 packing.
     """
 
     def __init__(
@@ -349,6 +352,7 @@ class _BillboardEllipsoid(Mesh):
         colors=(1, 0, 0),
         opacity=None,
         enable_picking=True,
+        color_axis_indices=None,
     ):
         super().__init__()
         self.local.state_basis = "matrix"
@@ -358,6 +362,18 @@ class _BillboardEllipsoid(Mesh):
         if centers.ndim != 2 or centers.shape[1] != 3:
             raise ValueError("Centers must be (N, 3) array")
         count = len(centers)
+        if color_axis_indices is not None:
+            color_axis_indices = np.asarray(color_axis_indices)
+            if (
+                color_axis_indices.shape != (count,)
+                or not np.issubdtype(color_axis_indices.dtype, np.integer)
+                or np.any(color_axis_indices < 0)
+                or np.any(color_axis_indices > 2)
+            ):
+                raise ValueError(
+                    "color_axis_indices must have shape (N,) and contain "
+                    "integers in [0, 2]."
+                )
 
         orientations = np.asarray(
             np.eye(3) if orientation_matrices is None else orientation_matrices
@@ -451,6 +467,12 @@ class _BillboardEllipsoid(Mesh):
             out=axes[:count, :, :3],
             where=active[:, np.newaxis, np.newaxis],
             dtype=np.result_type(orientations.dtype, lengths.dtype, np.float32),
+        )
+        # Reuse the first axis record's padding for its original longest-axis index.
+        axes[:count, 0, 3] = (
+            np.argmax(lengths, axis=1)
+            if color_axis_indices is None
+            else color_axis_indices
         )
 
         geometry = buffer_to_geometry(

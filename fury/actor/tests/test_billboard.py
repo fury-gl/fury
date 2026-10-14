@@ -447,3 +447,25 @@ def test_billboard_ellipsoid_broadcast_bounds(orientation_shape, length_shape):
     )
     ellipsoids.local.position = (10, 0, 0)
     npt.assert_allclose(ellipsoids.get_bounding_box(), [[-2, -1, -0.5], [6, 1, 0.5]])
+
+
+@pytest.mark.parametrize(
+    "indices",
+    [1, [1], [[0], [1]], [-1, 0], [0, 3], [0.5, 2], [np.nan, 0], [True, False]],
+)
+def test_billboard_ellipsoid_invalid_color_axis_indices(indices):
+    """
+    Reject invalid directional-color indices at the buffer boundary.
+
+    Parameters
+    ----------
+    indices : array-like
+        Invalid shape, dtype, or axis selection for two glyphs.
+
+    Returns
+    -------
+    None
+        Assertions check the validation error.
+    """
+    with pytest.raises(ValueError, match="color_axis_indices"):
+        _BillboardEllipsoid([[0, 0, 0], [1, 0, 0]], color_axis_indices=indices)

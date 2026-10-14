@@ -4,7 +4,7 @@ Ellipsoid Field Slicing
 =======================
 
 Visualize one Z slice of an ellipsoid field. Press Up/Down to move the slice.
-Each voxel stores three semi-axis lengths; orientations default to X, Y, Z.
+Across Z, the longest axes rotate from X (red) to Z (blue).
 """
 
 import numpy as np
@@ -12,17 +12,28 @@ import numpy as np
 from fury import actor, window
 
 ###############################################################################
-# Define an 8x8x8 field. The X semi-axis grows along Z to make slice changes visible.
+# Define an 8x8x8 field whose first semi-axis grows along Z.
 
 lengths = np.empty((8, 8, 8, 3), dtype=np.float32)
 lengths[..., 0] = np.linspace(0.15, 0.4, 8)
 lengths[..., 1:] = 0.15
 
+# Each matrix's columns define the glyph axes. Rotate the longest axis from X to Z.
+rotations = np.empty((8, 3, 3), dtype=np.float32)
+for z, angle in enumerate(np.linspace(0, np.pi / 2, 8)):
+    cosine, sine = np.cos(angle), np.sin(angle)
+    rotations[z] = [[cosine, 0, -sine], [0, 1, 0], [sine, 0, cosine]]
+orientations = np.broadcast_to(rotations, (*lengths.shape[:3], 3, 3))
+
 ###############################################################################
-# Display only the Z plane, initially at the center of the field.
+# Show the central Z plane. Scale only the glyphs; default colors follow their
+# longest axes, not the slice position or later world transforms.
 
 slicer = actor.ellipsoid_slicer(
-    lengths, colors=(0.0, 0.7, 1.0), visibility=(False, False, True)
+    lengths,
+    orientation_matrices=orientations,
+    scale=0.8,
+    visibility=(False, False, True),
 )
 scene = window.Scene()
 scene.add(slicer)

@@ -569,12 +569,15 @@ class _EllipsoidField(_BillboardEllipsoid):
         Tile view of the boolean active-voxel mask.
     colors : str, tuple, list, ndarray or None
         Original uniform color or tile view of the spatial color field.
-    normalized_colors : ndarray
-        Uniform or tile-local float32 RGB(A) colors for GPU packing.
+    normalized_colors : ndarray or None
+        Uniform or tile-local float32 RGB(A) colors for GPU packing. None
+        enables shader direction coloring with a white RGB multiplier.
     voxel_origin : tuple
         Integer XYZ origin of the tile in the full field.
     bounds : ndarray, shape (2, 3)
         Full-field world-space voxel-center bounds for slice clamping.
+    scale : float, optional
+        Validated finite nonnegative scalar applied only during tile packing.
     cross_section : list, tuple or ndarray, optional
         World-space slice positions.
     opacity : float, optional
@@ -604,6 +607,7 @@ class _EllipsoidField(_BillboardEllipsoid):
         normalized_colors,
         voxel_origin,
         bounds,
+        scale=1.0,
         cross_section=None,
         opacity=1.0,
         visibility=(True, True, True),
@@ -620,9 +624,25 @@ class _EllipsoidField(_BillboardEllipsoid):
         centers[..., 2] = (
             np.arange(field_shape[2], dtype=np.float32) + voxel_origin[2]
         )[None, None, :]
-        packed_lengths = (
-            lengths if mask is None else np.where(mask[..., None], lengths, 0)
-        )
+        orientation_colors = normalized_colors is None
+        if orientation_colors:
+            normalized_colors = (1, 1, 1)
+        packed_lengths = lengths
+        if scale != 1 or mask is not None:
+            packed_lengths = np.zeros(
+                lengths.shape,
+                dtype=np.result_type(
+                    lengths.dtype, np.min_scalar_type(scale), np.float32
+                ),
+            )
+            with np.errstate(over="ignore", invalid="ignore"):
+                np.multiply(
+                    lengths,
+                    scale,
+                    out=packed_lengths,
+                    dtype=packed_lengths.dtype,
+                    where=True if mask is None else mask[..., None],
+                )
         orientations = orientation_matrices
         if orientations is not None and orientations.ndim == 5:
             orientations = orientations.reshape(-1, 3, 3)
@@ -631,9 +651,11 @@ class _EllipsoidField(_BillboardEllipsoid):
             orientation_matrices=orientations,
             lengths=packed_lengths.reshape(-1, 3),
             colors=normalized_colors,
+            color_axis_indices=np.argmax(lengths, axis=-1).reshape(-1),
             opacity=opacity,
             enable_picking=enable_picking,
         )
+        self.material.orientation_colors = orientation_colors
         self.lengths = lengths
         self.orientation_matrices = orientation_matrices
         self.mask = mask
@@ -771,6 +793,7 @@ def _create_chunked_ellipsoid_field(
     mask,
     colors,
     actor_params,
+    scale=1.0,
     max_glyphs=None,
 ):
     """
@@ -785,9 +808,12 @@ def _create_chunked_ellipsoid_field(
     mask : ndarray or None
         Boolean (X, Y, Z) active-voxel mask.
     colors : str, tuple, list, ndarray or None
-        Uniform RGB(A) color or an (X, Y, Z, 3/4) color field.
+        Uniform RGB(A) color or an (X, Y, Z, 3/4) color field. None enables
+        WGSL ``orient2rgb`` coloring of the first longest original axes.
     actor_params : dict
         Slice, opacity, visibility and picking options for every tile.
+    scale : float, optional
+        Finite nonnegative real scalar multiplying semi-axis lengths only.
     max_glyphs : int, optional
         Positive private tile capacity, limited by the hardware capacity.
 
@@ -796,6 +822,14 @@ def _create_chunked_ellipsoid_field(
     Group
         Flat group of resident tiles retaining the original CPU input views.
     """
+    if isinstance(scale, np.ndarray) and scale.ndim == 0:
+        scale = scale.item()
+    try:
+        scale = float(scale)
+    except OverflowError as error:
+        raise ValueError("Scale must be a finite, nonnegative scalar.") from error
+    if not np.isfinite(scale) or scale < 0:
+        raise ValueError("Scale must be a finite, nonnegative scalar.")
     lengths = np.asarray(lengths)
     if lengths.ndim != 4 or lengths.shape[-1] != 3:
         raise ValueError("Lengths must have shape (X, Y, Z, 3).")
@@ -828,7 +862,8 @@ def _create_chunked_ellipsoid_field(
             color_field = color_array
         elif color_array.ndim == 0 or color_array.ndim > 2:
             raise ValueError("Colors must be a uniform color or a spatial color field.")
-    if color_field is None:
+    uniform_color = None
+    if colors is not None and color_field is None:
         uniform_color = normalize_colors(colors)
         if uniform_color.ndim != 2 or uniform_color.shape[0] != 1:
             raise ValueError("Colors must be a uniform color or a spatial color field.")
@@ -868,14 +903,37 @@ def _create_chunked_ellipsoid_field(
         tile_orientations = orientation_matrices
         if orientation_matrices is not None and orientation_matrices.ndim == 5:
             tile_orientations = orientation_matrices[tile]
+        tile_lengths = lengths[tile]
+        tile_mask = None if mask is None else mask[tile]
+        valid_lengths = np.isfinite(tile_lengths).all(axis=-1) & np.all(
+            tile_lengths >= 0, axis=-1
+        )
+        if np.any(~valid_lengths if tile_mask is None else tile_mask & ~valid_lengths):
+            raise ValueError("Lengths must be finite and nonnegative.")
+        if tile_orientations is not None:
+            active = np.all(tile_lengths > 0, axis=-1)
+            if tile_mask is not None:
+                active &= tile_mask
+            valid_orientations = np.isfinite(tile_orientations).all(axis=(-2, -1))
+            if np.any(active & ~valid_orientations):
+                raise ValueError("Active orientation matrices must be finite.")
+        if scale > 0:
+            max_length = np.max(
+                tile_lengths,
+                initial=0,
+                where=True if tile_mask is None else tile_mask[..., None],
+            )
+            if float(max_length) > float(np.finfo(np.float32).max) / scale:
+                raise ValueError("Ellipsoid parameters must fit in float32 buffers.")
         child = _EllipsoidField(
-            lengths[tile],
+            tile_lengths,
             orientation_matrices=tile_orientations,
-            mask=None if mask is None else mask[tile],
+            mask=tile_mask,
             colors=tile_colors,
             normalized_colors=packed_colors,
             voxel_origin=tuple(int(axis.start) for axis in tile),
             bounds=bounds,
+            scale=scale,
             **params,
         )
         group.add(child)
@@ -887,7 +945,8 @@ def ellipsoid_slicer(
     *,
     orientation_matrices=None,
     mask=None,
-    colors=(1, 1, 1),
+    colors=None,
+    scale=1.0,
     cross_section=None,
     opacity=1.0,
     visibility=(True, True, True),
@@ -910,6 +969,13 @@ def ellipsoid_slicer(
     colors : str, tuple, list or ndarray, optional
         Uniform RGB(A) or hex color, or an (X, Y, Z, 3/4) RGB(A) field.
         Numeric colors accept the [0, 1] and [0, 255] conventions.
+        None uses WGSL ``orient2rgb`` on the longest unscaled semi-axis's
+        input/model-frame orientation column. Ties select the first axis.
+    scale : float, optional
+        Finite nonnegative real scalar multiplying semi-axis lengths without
+        changing centers, slice bounds or directional colors. Zero hides all
+        glyphs without excusing invalid unmasked input lengths or orientations.
+        All unmasked scaled semi-axis lengths must fit in float32 buffers.
     cross_section : list, tuple or ndarray, optional
         Three world-space plane positions, clamped to full-field center bounds
         and converted to integers. None selects the voxel-shape midpoint.
@@ -936,6 +1002,7 @@ def ellipsoid_slicer(
         orientation_matrices=orientation_matrices,
         mask=mask,
         colors=colors,
+        scale=scale,
         actor_params={
             "cross_section": cross_section,
             "opacity": opacity,

@@ -1441,6 +1441,8 @@ class BillboardEllipsoidMaterial(BillboardSphereMaterial):
         World-space slice positions, converted to integers.
     visibility : array-like of bool, shape (3,), optional
         Enabled X, Y, and Z slice planes. None disables slice selection.
+    orientation_colors : bool, optional
+        Multiply RGB by the selected model-space semi-axis direction color.
     **material_kwargs : dict
         Keyword arguments propagated to
         :class:`~fury.material.BillboardSphereMaterial`.
@@ -1450,9 +1452,17 @@ class BillboardEllipsoidMaterial(BillboardSphereMaterial):
         BillboardSphereMaterial.uniform_type,
         cross_section="4xf4",
         visibility="4xi4",
+        orientation_colors="i4",
     )
 
-    def __init__(self, *, cross_section=(0, 0, 0), visibility=None, **material_kwargs):
+    def __init__(
+        self,
+        *,
+        cross_section=(0, 0, 0),
+        visibility=None,
+        orientation_colors=False,
+        **material_kwargs,
+    ):
         """
         Initialize the ellipsoid impostor material.
 
@@ -1462,6 +1472,8 @@ class BillboardEllipsoidMaterial(BillboardSphereMaterial):
             World-space slice positions, converted to integers.
         visibility : array-like of bool, shape (3,), optional
             Enabled X, Y, and Z slice planes. None disables slice selection.
+        orientation_colors : bool, optional
+            Multiply RGB by the selected model-space semi-axis direction color.
         **material_kwargs : dict
             Keyword arguments propagated to
             :class:`~fury.material.BillboardSphereMaterial`.
@@ -1469,6 +1481,32 @@ class BillboardEllipsoidMaterial(BillboardSphereMaterial):
         super().__init__(**material_kwargs)
         self.cross_section = cross_section
         self.visibility = visibility
+        self.orientation_colors = orientation_colors
+
+    @property
+    def orientation_colors(self):
+        """
+        Get whether model-space directional coloring is enabled.
+
+        Returns
+        -------
+        bool
+            Whether the selected semi-axis direction multiplies RGB.
+        """
+        return bool(self.uniform_buffer.data["orientation_colors"])
+
+    @orientation_colors.setter
+    def orientation_colors(self, orientation_colors):
+        """
+        Set whether model-space directional coloring is enabled.
+
+        Parameters
+        ----------
+        orientation_colors : bool
+            Whether the selected semi-axis direction multiplies RGB.
+        """
+        self.uniform_buffer.data["orientation_colors"] = bool(orientation_colors)
+        self.uniform_buffer.update_full()
 
     @property
     def cross_section(self):

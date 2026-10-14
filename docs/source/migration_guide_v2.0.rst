@@ -156,7 +156,7 @@ the following sub-modules:
      - ``contour_from_volume``, ``surface``
    * - ``bio.py``
      - ``contour_from_roi``, ``contour_from_label``, ``peaks_slicer``,
-       ``volume_slicer``
+       ``tensor_slicer``, ``volume_slicer``
    * - ``_billboard.py``
      - ``Billboard``, ``billboard``, ``billboard_sphere``
    * - ``utils.py``
@@ -246,6 +246,8 @@ PyGfx under the same or a renamed API. They are not new capabilities:
    * - ``actor.volume_slicer``
      - Renamed from 0.12.x's ``slicer``; rewritten on PyGfx with added
        affine support :ghpull:`996`
+   * - ``actor.tensor_slicer``
+     - Same name in 0.12.x; rewritten on PyGfx with ellipsoid impostors
    * - ``actor.surface``
      - Same name in 0.12.x; rewritten on PyGfx :ghpull:`997`,
        :ghpull:`1040`
@@ -277,6 +279,19 @@ object. Two helper utilities act on these groups:
 Blend-mode is now available on the slicer actor. (Ref: :ghpull:`1068`)
 Slicer flickering in nearest interpolation mode is fixed.
 (Ref: :ghpull:`1075`)
+
+``actor.tensor_slicer`` delegates shared field validation to
+``actor.ellipsoid_slicer``. Unmasked eigenvalues must be finite; invalid
+orientations are ignored for masked or degenerate glyphs.
+
+Compared with FURY 0.12.x, ``actor.tensor_slicer`` has these parameter changes:
+
+* Rename ``scalar_colors`` to ``colors``; the old keyword is no longer accepted.
+* Remove ``sphere``; analytic ellipsoid impostors do not use a tessellated sphere.
+* New ``visibility`` controls the enabled X, Y and Z slice planes.
+* New ``cross_section`` sets the initial world-space slice positions.
+* New ``enable_picking`` controls surface picking.
+* The default ``scale`` changed from ``2.2`` to ``1.0``.
 
 
 8. ``fury.window`` Module
