@@ -100,38 +100,30 @@ def validate_slices_group(group):
     TypeError
         If the group is not an instance of Group.
     ValueError
-        If the group does not contain exactly 3 children.
+        If the group is empty or a plane group does not contain three children.
     AttributeError
-        If the children do not have the required material plane attribute.
+        If children expose mixed or incomplete slice interfaces.
     """
     if not isinstance(group, GfxGroup):
         raise TypeError("group must be an instance of Group.")
 
-    if group.name == "VectorFieldSlicer":
-        if not hasattr(group, "children"):
-            raise AttributeError("Group must have a children attribute.")
-        elif not isinstance(group.children, (list, tuple)):
-            raise TypeError("Group must have a children attribute that is a list.")
-        elif not len(group.children) >= 1:
-            raise ValueError("Group must contain at least one child.")
-        elif not hasattr(group.children[0], "cross_section"):
-            raise AttributeError(
-                "Children do not have the required cross_section attribute."
-            )
-
-    elif group.name == "Slicer":
-        if len(group.children) != 3:
-            raise ValueError(
-                f"Group must contain exactly 3 children. {len(group.children)}"
-            )
-
-        if not (
-            hasattr(group.children[0].material, "plane")
-            or hasattr(group.children[0], "plane")
-        ):
-            raise AttributeError(
-                "Children do not have the required material plane attribute for slices."
-            )
+    children = group.children
+    if not children:
+        raise ValueError("Group must contain at least one child.")
+    cross_sections = [hasattr(child, "cross_section") for child in children]
+    if all(cross_sections):
+        return
+    if any(cross_sections):
+        raise AttributeError("Every child must expose cross_section.")
+    if len(children) != 3:
+        raise ValueError(
+            f"Plane slice groups must contain exactly 3 children. {len(children)}"
+        )
+    if not all(
+        hasattr(child, "plane") or hasattr(getattr(child, "material", None), "plane")
+        for child in children
+    ):
+        raise AttributeError("Every child must expose a direct or material plane.")
 
 
 def get_slices(group):
@@ -149,22 +141,21 @@ def get_slices(group):
         An array containing the current positions of the slices.
     """
     validate_slices_group(group)
-    if group.name == "Slicer":
-        return np.asarray([child.material.plane[-1] for child in group.children])
-    elif group.name == "VectorFieldSlicer":
+    if hasattr(group.children[0], "cross_section"):
         return np.asarray(group.children[0].cross_section)
-    else:
-        raise ValueError(
-            f"Group {group.name} is not a valid slices group. "
-            "Must be either 'Slicer' or 'VectorFieldSlicer'."
-        )
+    return np.asarray(
+        [
+            (child.plane if hasattr(child, "plane") else child.material.plane)[-1]
+            for child in group.children
+        ]
+    )
 
 
 def show_slices(group, position):
     """
     Show the slices at the specified position.
 
-    Added with a small offset to avoid boundary issues.
+    Plane positions include a small offset to avoid boundary issues.
 
     Parameters
     ----------
@@ -175,7 +166,10 @@ def show_slices(group, position):
     """
     validate_slices_group(group)
 
-    if group.name == "Slicer":
+    if hasattr(group.children[0], "cross_section"):
+        for child in group.children:
+            child.cross_section = position
+    else:
         for i, child in enumerate(group.children):
             if hasattr(child, "plane"):
                 a, b, c, _ = child.plane
@@ -183,10 +177,6 @@ def show_slices(group, position):
             else:
                 a, b, c, _ = child.material.plane
                 child.material.plane = (a, b, c, position[i] + 1e-3)
-
-    elif group.name == "VectorFieldSlicer":
-        for child in group.children:
-            child.cross_section = position
 
 
 def apply_affine_to_group(group, affine):

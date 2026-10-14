@@ -22,35 +22,13 @@ fn vs_main(in: VertexInput) -> Varyings {
     let diff = wpos.xyz - w_center.xyz;
 
     if (!all(visibility == vec3<i32>(-1))) {
-        let is_near_x_plane = is_point_on_plane_equation(
-            vec4<f32>(-1.0, 0.0, 0.0, f32(cross_section.x)),
-            vec3<f32>(w_center.xyz),
-            abs(u_wobject.world_transform[0][0])
+        w_center = vec4<f32>(
+            snap_cross_section_center(
+                w_center.xyz, cross_section, u_wobject.world_transform
+            ),
+            w_center.w
         );
-        if is_near_x_plane {
-            wpos.x = f32(cross_section.x) + diff.x;
-            w_center.x = f32(cross_section.x);
-        }
-
-        let is_near_y_plane = is_point_on_plane_equation(
-            vec4<f32>(0.0, -1.0, 0.0, f32(cross_section.y)),
-            vec3<f32>(w_center.xyz),
-            abs(u_wobject.world_transform[1][1])
-        );
-        if is_near_y_plane {
-            wpos.y = f32(cross_section.y) + diff.y;
-            w_center.y = f32(cross_section.y);
-        }
-
-        let is_near_z_plane = is_point_on_plane_equation(
-            vec4<f32>(0.0, 0.0, -1.0, f32(cross_section.z)),
-            vec3<f32>(w_center.xyz),
-            abs(u_wobject.world_transform[2][2])
-        );
-        if is_near_z_plane {
-            wpos.z = f32(cross_section.z) + diff.z;
-            w_center.z = f32(cross_section.z);
-        }
+        wpos = vec4<f32>(w_center.xyz + diff, wpos.w);
     }
 
     let npos = u_stdinfo.projection_transform * u_stdinfo.cam_transform * wpos;
