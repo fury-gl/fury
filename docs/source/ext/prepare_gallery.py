@@ -4,13 +4,9 @@ import os
 from pathlib import Path
 import shutil
 import sys
+import tomllib
 
 from sphinx.util import logging
-
-try:
-    import tomllib
-except ImportError:
-    import tomli as tomllib
 
 logger = logging.getLogger(__name__)
 

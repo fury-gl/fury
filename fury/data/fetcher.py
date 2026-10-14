@@ -452,10 +452,18 @@ def fetch_gltf(*, name=None, mode="glTF"):
     -------
     filenames : tuple
         tuple of feteched filenames (list) and folder (str) path.
+
+    Notes
+    -----
+    On Windows, downloads use a selector event loop without changing the
+    process-wide asyncio event-loop policy.
     """
-    if platform.system().lower() == "windows":
-        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-    filenames = asyncio.run(_fetch_gltf(name, mode))
+    loop_factory = (
+        asyncio.SelectorEventLoop
+        if platform.system().lower() == "windows"
+        else None
+    )
+    filenames = asyncio.run(_fetch_gltf(name, mode), loop_factory=loop_factory)
     return filenames
 
 

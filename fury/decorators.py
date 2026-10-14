@@ -9,7 +9,6 @@ from functools import wraps
 from inspect import signature
 import platform
 import re
-import sys
 from warnings import warn
 
 from packaging import version
@@ -19,7 +18,6 @@ import fury
 skip_linux = is_linux = platform.system().lower() == "linux"
 skip_osx = is_osx = platform.system().lower() == "darwin"
 skip_win = is_win = platform.system().lower() == "windows"
-is_py35 = sys.version_info.major == 3 and sys.version_info.minor == 5
 SKIP_RE = re.compile(r"(\s*>>>.*?)(\s*)#\s*skip\s+if\s+(.*)$")
 
 
