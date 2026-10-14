@@ -50,6 +50,7 @@ files = [
     "viz_solar_system.py",
     "viz_helical_solar_system.py",
     "viz_billboard_spheres.py",
+    "viz_ellipsoids.py",
     "viz_streamtube.py",
 ]
 

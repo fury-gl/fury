@@ -1004,6 +1004,91 @@ class BillboardSphereShader(MeshShader):
         return load_wgsl("billboard_sphere_render.wgsl", package_name="fury.wgsl")
 
 
+class BillboardEllipsoidShader(BillboardSphereShader):
+    """Render packed ellipsoid parameters as analytic, instanced impostors."""
+
+    def get_bindings(self, wobject, shared, _scene):
+        """
+        Bind glyph parameters without mesh indices or normals.
+
+        Parameters
+        ----------
+        wobject : Mesh
+            Ellipsoid world object containing packed glyph buffers.
+        shared : Shared
+            Renderer-wide GPU resources, including the standard uniform buffer.
+        _scene : Scene
+            Scene argument required by the shader interface; unused here.
+
+        Returns
+        -------
+        dict
+            Bind groups keyed by group index, containing indexed bindings.
+        """
+        geometry = wobject.geometry
+        storage = "buffer/read_only_storage"
+        bindings = [
+            Binding("u_stdinfo", "buffer/uniform", shared.uniform_buffer),
+            Binding("u_wobject", "buffer/uniform", wobject.uniform_buffer),
+            Binding("u_material", "buffer/uniform", wobject.material.uniform_buffer),
+            Binding("s_positions", storage, geometry.positions, "VERTEX"),
+            Binding("s_colors", storage, geometry.colors, "VERTEX"),
+            Binding("s_ellipsoid_axes", storage, geometry.ellipsoid_axes, "VERTEX"),
+        ]
+        bindings = dict(enumerate(bindings))
+        self.define_bindings(0, bindings)
+        return {0: bindings}
+
+    def get_pipeline_info(self, wobject, shared):
+        """
+        Keep the screen rectangle visible under mirrored transforms.
+
+        Parameters
+        ----------
+        wobject : Mesh
+            Ellipsoid world object to configure.
+        shared : Shared
+            Renderer-wide GPU resources used by the mesh shader.
+
+        Returns
+        -------
+        dict
+            Pipeline settings with face culling disabled.
+        """
+        pipeline_info = super().get_pipeline_info(wobject, shared)
+        pipeline_info["cull_mode"] = "none"
+        return pipeline_info
+
+    def get_render_info(self, wobject, _shared):
+        """
+        Draw one six-vertex rectangle per packed glyph.
+
+        Parameters
+        ----------
+        wobject : Mesh
+            Ellipsoid world object providing the glyph count.
+        _shared : Shared
+            Renderer-wide GPU resources; unused for instance counts.
+
+        Returns
+        -------
+        dict
+            Draw parameters containing six vertices per ellipsoid instance.
+        """
+        return {"indices": (6, wobject.glyph_count, 0, 0)}
+
+    def get_code(self):
+        """
+        Return the analytic ellipsoid shader.
+
+        Returns
+        -------
+        str
+            WGSL source for the ellipsoid renderer.
+        """
+        return load_wgsl("billboard_ellipsoid_render.wgsl", package_name="fury.wgsl")
+
+
 class NetworkComputeShader(BaseShader):
     """
     Compute Shader implementing Fruchterman-Reingold layout.

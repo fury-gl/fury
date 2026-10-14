@@ -1431,6 +1431,10 @@ class BillboardSphereMaterial(MeshPhongMaterial):
         super().__init__(**material_kwargs)
 
 
+class BillboardEllipsoidMaterial(BillboardSphereMaterial):
+    """Phong-lit material for analytic ellipsoid impostors."""
+
+
 class NetworkMaterial(PointsMaterial):
     """
     Material handling simulation parameters for the Network.
