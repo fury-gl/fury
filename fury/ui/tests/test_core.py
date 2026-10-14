@@ -497,41 +497,167 @@ def test_textblock2d_alignment_invalid():
     with npt.assert_raises(ValueError):
         tb.vertical_justification = "sideways"
 
-def test_textblock2d_padding_keeps_text_inside_background():
-    """Text padding offsets glyph bounds from the background edge (tracker #838)."""
-    from fury.ui import UIContext
 
-    default_tb = ui.TextBlock2D(text="HI", size=(300, 150))
-    default_text_height = default_tb.get_text_actor_size()[1]
-    npt.assert_equal(
-        default_tb.actor.local.y,
-        UIContext.canvas_size[1]
-        - (default_tb.boundingbox[1] + default_text_height // 2),
+def test_textblock2d_padding_zero_preserves_alignment():
+    """Zero padding preserves the existing TextBlock2D alignment (tracker #838)."""
+    tb = ui.TextBlock2D(text="HI", size=(300, 150), position=(30, 40))
+    text_width, text_height = tb.get_text_actor_size()
+
+    assert tb.padding == 0
+    assert (
+        tb.padding_left,
+        tb.padding_right,
+        tb.padding_top,
+        tb.padding_bottom,
+    ) == (0, 0, 0, 0)
+
+    for justification, expected_x in (
+        ("left", tb.boundingbox[0] + text_width // 2),
+        ("center", tb.boundingbox[0] + (tb.boundingbox[2] - tb.boundingbox[0]) // 2),
+        ("right", tb.boundingbox[2] - text_width // 2),
+    ):
+        tb.justification = justification
+        npt.assert_equal(tb.actor.local.x, expected_x)
+
+    canvas_height = ui.UIContext.canvas_size[1]
+    for justification, expected_y in (
+        ("top", tb.boundingbox[1] + text_height // 2),
+        (
+            "middle",
+            tb.boundingbox[1] + (tb.boundingbox[3] - tb.boundingbox[1]) // 2,
+        ),
+        ("bottom", tb.boundingbox[3] - text_height // 2),
+    ):
+        tb.vertical_justification = justification
+        npt.assert_equal(tb.actor.local.y, canvas_height - expected_y)
+
+
+def test_textblock2d_uniform_padding_shorthand():
+    """Constructor padding applies to all edges unless individually overridden."""
+    tb = ui.TextBlock2D(text="HI", size=(300, 150), padding=12)
+
+    assert tb.padding == 12
+    assert (
+        tb.padding_left,
+        tb.padding_right,
+        tb.padding_top,
+        tb.padding_bottom,
+    ) == (12, 12, 12, 12)
+
+    tb.padding = 20
+    assert tb.padding == 20
+    assert (
+        tb.padding_left,
+        tb.padding_right,
+        tb.padding_top,
+        tb.padding_bottom,
+    ) == (20, 20, 20, 20)
+
+    overridden = ui.TextBlock2D(
+        text="HI",
+        size=(300, 150),
+        padding=20,
+        padding_right=50,
     )
+    assert (
+        overridden.padding_left,
+        overridden.padding_right,
+        overridden.padding_top,
+        overridden.padding_bottom,
+    ) == (20, 50, 20, 20)
 
-    padding = 4
+
+def test_textblock2d_individual_padding_and_justification():
+    """Each side-specific inset is respected by the matching alignment."""
     tb = ui.TextBlock2D(
         text="HI",
         size=(300, 150),
-        bg_color=(0.5, 0.5, 0.5),
-        padding=padding,
+        position=(30, 40),
     )
-    _, text_height = tb.get_text_actor_size()
-    text_left = tb.actor.local.x + tb.actor._aabb[0][0]
-    text_top = UIContext.canvas_size[1] - tb.actor.local.y - text_height / 2
+    tb.padding_left = 8
+    tb.padding_right = 12
+    tb.padding_top = 16
+    tb.padding_bottom = 20
 
-    npt.assert_allclose(text_left - tb.boundingbox[0], padding)
-    npt.assert_allclose(text_top - tb.boundingbox[1], padding)
+    assert tb.padding == (8, 12, 16, 20)
+    text_width, text_height = tb.get_text_actor_size()
 
-    tb.padding = 8
-    text_top = UIContext.canvas_size[1] - tb.actor.local.y - text_height / 2
-    npt.assert_allclose(text_top - tb.boundingbox[1], 8)
+    tb.justification = "left"
+    npt.assert_allclose(
+        tb.actor.local.x,
+        tb.boundingbox[0] + tb.padding_left + text_width / 2,
+    )
+    tb.justification = "right"
+    npt.assert_allclose(
+        tb.actor.local.x,
+        tb.boundingbox[2] - tb.padding_right - text_width / 2,
+    )
+    tb.justification = "center"
+    npt.assert_allclose(
+        tb.actor.local.x,
+        (
+            tb.boundingbox[0]
+            + tb.padding_left
+            + tb.boundingbox[2]
+            - tb.padding_right
+        )
+        / 2,
+    )
 
-    dynamic_tb = ui.TextBlock2D(text="HI", dynamic_bbox=True, padding=padding)
-    text_size = dynamic_tb.get_text_actor_size()
+    canvas_height = ui.UIContext.canvas_size[1]
+    tb.vertical_justification = "top"
+    npt.assert_allclose(
+        tb.actor.local.y,
+        canvas_height - tb.boundingbox[1] - tb.padding_top - text_height / 2,
+    )
+    tb.vertical_justification = "bottom"
+    npt.assert_allclose(
+        tb.actor.local.y,
+        canvas_height - tb.boundingbox[3] + tb.padding_bottom + text_height / 2,
+    )
+    tb.vertical_justification = "middle"
+    npt.assert_allclose(
+        tb.actor.local.y,
+        canvas_height
+        - (
+            tb.boundingbox[1]
+            + tb.padding_top
+            + tb.boundingbox[3]
+            - tb.padding_bottom
+        )
+        / 2,
+    )
+
+
+def test_textblock2d_padding_rejects_invalid_values():
+    """All padding properties reject negative and non-finite values."""
+    tb = ui.TextBlock2D(text="HI", size=(300, 150))
+
+    for property_name in (
+        "padding",
+        "padding_left",
+        "padding_right",
+        "padding_top",
+        "padding_bottom",
+    ):
+        for invalid_value in (-1, np.nan, np.inf, -np.inf):
+            with npt.assert_raises(ValueError):
+                setattr(tb, property_name, invalid_value)
+
+
+def test_textblock2d_dynamic_bbox_includes_side_padding():
+    """Dynamic bounds include the sum of the corresponding side insets."""
+    tb = ui.TextBlock2D(text="HI", dynamic_bbox=True)
+    text_width, text_height = tb.get_text_actor_size()
+
+    tb.padding_left = 4
+    tb.padding_right = 8
+    tb.padding_top = 12
+    tb.padding_bottom = 16
+
     npt.assert_array_equal(
-        dynamic_tb.size,
-        np.asarray([dimension + 2 * padding for dimension in text_size], dtype=int),
+        tb.size,
+        np.asarray((text_width + 12, text_height + 28), dtype=int),
     )
 
 def test_textblock2d_color_property():

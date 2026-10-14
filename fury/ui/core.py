@@ -1250,7 +1250,11 @@ class TextBlock2D(UI):
     position : (float, float), optional
         Absolute coordinates (x, y) for placement.
     padding : float, optional
-        Inset in pixels between the text and the bounding box edges.
+        Default inset in pixels for all four sides. Side-specific values
+        override this value when provided.
+    padding_left, padding_right, padding_top, padding_bottom : float, optional
+        Insets in pixels for the corresponding bounding-box edge. If omitted,
+        the value of ``padding`` is used.
     dynamic_bbox : bool, optional
         If True, resizes the bounding box to fit the content.
     """
@@ -1271,6 +1275,10 @@ class TextBlock2D(UI):
         position=(0, 0),
         dynamic_bbox=False,
         padding=0,
+        padding_left=None,
+        padding_right=None,
+        padding_top=None,
+        padding_bottom=None,
     ):
         """Initialize the text block instance."""
         self.boundingbox = [0, 0, 0, 0]
@@ -1286,7 +1294,10 @@ class TextBlock2D(UI):
 
         self._justification = justification
         self._vertical_justification = vertical_justification
-        self._padding = 0.0
+        self._padding_left = 0.0
+        self._padding_right = 0.0
+        self._padding_top = 0.0
+        self._padding_bottom = 0.0
         super(TextBlock2D, self).__init__(position=position)
         self.have_bg = bool(bg_color)
         self.color = color
@@ -1298,7 +1309,12 @@ class TextBlock2D(UI):
         self.font_size = font_size
 
         self.update_bounding_box()
-        self.padding = padding
+        self._set_padding_values(
+            padding if padding_left is None else padding_left,
+            padding if padding_right is None else padding_right,
+            padding if padding_top is None else padding_top,
+            padding if padding_bottom is None else padding_bottom,
+        )
 
     def _setup(self):
         """Set up this UI component."""
@@ -1741,22 +1757,170 @@ class TextBlock2D(UI):
 
     @property
     def padding(self):
-        """Get the inset between the text and the bounding box edges."""
-        return self._padding
+        """
+        Get the common inset, or all four insets if they differ.
+
+        Returns
+        -------
+        float or tuple
+            The common padding value when all sides are equal. Otherwise, a
+            tuple containing left, right, top, and bottom padding.
+        """
+        padding = (
+            self.padding_left,
+            self.padding_right,
+            self.padding_top,
+            self.padding_bottom,
+        )
+        if padding.count(padding[0]) == len(padding):
+            return padding[0]
+        return padding
 
     @padding.setter
     def padding(self, padding):
-        """Set a non-negative inset in pixels and realign the text."""
+        """
+        Set the same non-negative inset on all four sides.
+
+        Parameters
+        ----------
+        padding : float
+            The inset in pixels to apply to every side.
+        """
+        self._set_padding_values(padding, padding, padding, padding)
+
+    @property
+    def padding_left(self):
+        """
+        Get the inset between the text and the left bounding-box edge.
+
+        Returns
+        -------
+        float
+            The left inset in pixels.
+        """
+        return self._padding_left
+
+    @padding_left.setter
+    def padding_left(self, padding):
+        """
+        Set the inset from the left bounding-box edge.
+
+        Parameters
+        ----------
+        padding : float
+            A finite, non-negative inset in pixels.
+        """
+        self._set_padding_values(
+            padding, self.padding_right, self.padding_top, self.padding_bottom
+        )
+
+    @property
+    def padding_right(self):
+        """
+        Get the inset between the text and the right bounding-box edge.
+
+        Returns
+        -------
+        float
+            The right inset in pixels.
+        """
+        return self._padding_right
+
+    @padding_right.setter
+    def padding_right(self, padding):
+        """
+        Set the inset from the right bounding-box edge.
+
+        Parameters
+        ----------
+        padding : float
+            A finite, non-negative inset in pixels.
+        """
+        self._set_padding_values(
+            self.padding_left, padding, self.padding_top, self.padding_bottom
+        )
+
+    @property
+    def padding_top(self):
+        """
+        Get the inset between the text and the top bounding-box edge.
+
+        Returns
+        -------
+        float
+            The top inset in pixels.
+        """
+        return self._padding_top
+
+    @padding_top.setter
+    def padding_top(self, padding):
+        """
+        Set the inset from the top bounding-box edge.
+
+        Parameters
+        ----------
+        padding : float
+            A finite, non-negative inset in pixels.
+        """
+        self._set_padding_values(
+            self.padding_left, self.padding_right, padding, self.padding_bottom
+        )
+
+    @property
+    def padding_bottom(self):
+        """
+        Get the inset between the text and the bottom bounding-box edge.
+
+        Returns
+        -------
+        float
+            The bottom inset in pixels.
+        """
+        return self._padding_bottom
+
+    @padding_bottom.setter
+    def padding_bottom(self, padding):
+        """
+        Set the inset from the bottom bounding-box edge.
+
+        Parameters
+        ----------
+        padding : float
+            A finite, non-negative inset in pixels.
+        """
+        self._set_padding_values(
+            self.padding_left, self.padding_right, self.padding_top, padding
+        )
+
+    def _set_padding_values(self, left, right, top, bottom):
+        """
+        Validate and apply the four padding values.
+
+        Parameters
+        ----------
+        left, right, top, bottom : float
+            Finite, non-negative insets in pixels for the corresponding edges.
+
+        Raises
+        ------
+        ValueError
+            If any padding value is not finite or is negative.
+        """
         try:
-            padding = float(padding)
-        except (TypeError, ValueError) as exc:
-            msg = "Text padding must be a finite non-negative number."
+            values = tuple(float(value) for value in (left, right, top, bottom))
+        except (TypeError, ValueError, OverflowError) as exc:
+            msg = "Text padding values must be finite, non-negative numbers."
             raise ValueError(msg) from exc
 
-        if not np.isfinite(padding) or padding < 0:
-            raise ValueError("Text padding must be a finite non-negative number.")
+        if any(not np.isfinite(value) or value < 0 for value in values):
+            raise ValueError("Text padding values must be finite, non-negative numbers.")
 
-        self._padding = padding
+        (
+            self._padding_left,
+            self._padding_right,
+            self._padding_top,
+            self._padding_bottom,
+        ) = values
         if self.dynamic_bbox:
             self.update_bounding_box()
         else:
@@ -1766,62 +1930,60 @@ class TextBlock2D(UI):
         """Update the text actor alignment within the bounding box."""
         updated_text_position = [0, 0]
         text_actor_size = self.get_text_actor_size()
-        left = self.boundingbox[0] + self.padding
-        right = self.boundingbox[2] - self.padding
-        top = self.boundingbox[1] + self.padding
-        bottom = self.boundingbox[3] - self.padding
+        left = self.boundingbox[0] + self.padding_left
+        right = self.boundingbox[2] - self.padding_right
+        top = self.boundingbox[1] + self.padding_top
+        bottom = self.boundingbox[3] - self.padding_bottom
+        half_text_width_left = (
+            text_actor_size[0] / 2
+            if self.padding_left
+            else text_actor_size[0] // 2
+        )
+        half_text_width_right = (
+            text_actor_size[0] / 2
+            if self.padding_right
+            else text_actor_size[0] // 2
+        )
+        half_text_height_top = (
+            text_actor_size[1] / 2
+            if self.padding_top
+            else text_actor_size[1] // 2
+        )
+        half_text_height_bottom = (
+            text_actor_size[1] / 2
+            if self.padding_bottom
+            else text_actor_size[1] // 2
+        )
+        center_x = (
+            (left + right) / 2
+            if self.padding_left or self.padding_right
+            else left + (right - left) // 2
+        )
+        center_y = (
+            (top + bottom) / 2
+            if self.padding_top or self.padding_bottom
+            else top + (bottom - top) // 2
+        )
 
         if self.justification.lower() == "left":
             self.actor.text_align = "left"
-            if self.padding:
-                updated_text_position[0] = left + text_actor_size[0] / 2
-            else:
-                updated_text_position[0] = (
-                    self.boundingbox[0] + text_actor_size[0] // 2
-                )
+            updated_text_position[0] = left + half_text_width_left
         elif self.justification.lower() == "center":
             self.actor.text_align = "center"
-            if self.padding:
-                updated_text_position[0] = (left + right) / 2
-            else:
-                updated_text_position[0] = (
-                    self.boundingbox[0]
-                    + (self.boundingbox[2] - self.boundingbox[0]) // 2
-                )
+            updated_text_position[0] = center_x
         elif self.justification.lower() == "right":
             self.actor.text_align = "right"
-            if self.padding:
-                updated_text_position[0] = right - text_actor_size[0] / 2
-            else:
-                updated_text_position[0] = (
-                    self.boundingbox[2] - text_actor_size[0] // 2
-                )
+            updated_text_position[0] = right - half_text_width_right
         else:
             msg = "Text can only be justified left, center and right."
             raise ValueError(msg)
 
         if self.vertical_justification.lower() == "top":
-            if self.padding:
-                updated_text_position[1] = top + text_actor_size[1] / 2
-            else:
-                updated_text_position[1] = (
-                    self.boundingbox[1] + text_actor_size[1] // 2
-                )
+            updated_text_position[1] = top + half_text_height_top
         elif self.vertical_justification.lower() == "middle":
-            if self.padding:
-                updated_text_position[1] = (top + bottom) / 2
-            else:
-                updated_text_position[1] = (
-                    self.boundingbox[1]
-                    + (self.boundingbox[3] - self.boundingbox[1]) // 2
-                )
+            updated_text_position[1] = center_y
         elif self.vertical_justification.lower() == "bottom":
-            if self.padding:
-                updated_text_position[1] = bottom - text_actor_size[1] / 2
-            else:
-                updated_text_position[1] = (
-                    self.boundingbox[3] - text_actor_size[1] // 2
-                )
+            updated_text_position[1] = bottom - half_text_height_bottom
         else:
             msg = "Vertical justification must be: top, middle or bottom."
             raise ValueError(msg)
@@ -1884,8 +2046,18 @@ class TextBlock2D(UI):
         """
         if self.dynamic_bbox:
             text_size = self.get_text_actor_size()
-            if self.padding:
-                return tuple(size + 2 * self.padding for size in text_size)
+            if any(
+                (
+                    self.padding_left,
+                    self.padding_right,
+                    self.padding_top,
+                    self.padding_bottom,
+                )
+            ):
+                return (
+                    text_size[0] + self.padding_left + self.padding_right,
+                    text_size[1] + self.padding_top + self.padding_bottom,
+                )
             return text_size
         else:
             return self._bg_size
