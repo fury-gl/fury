@@ -165,7 +165,7 @@ def test_superquadric_primitives():
     # Check superquadric geometric properties and bounds
     npt.assert_almost_equal(np.mean(sq_verts), 0.0, decimal=1)
     npt.assert_almost_equal(sq_verts.min(), -1.0, decimal=1)
-    npt.assert_almost_equal(sq_verts.max(), 1.0, decimal=1) 
+    npt.assert_almost_equal(sq_verts.max(), 1.0, decimal=1)
 
 
 def test_cylinder_primitive():
