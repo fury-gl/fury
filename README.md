@@ -74,6 +74,7 @@
 **Step 1.** Get the latest source by cloning this repo:
 
     git clone https://github.com/fury-gl/fury.git
+    cd fury
 
 **Step 2.** Install requirements:
 
@@ -97,11 +98,11 @@ For more information, see also [installation page on fury.gl](https://fury.gl/la
 
 ## Testing
 
-After installation, you can install test suite requirements:
+From the repository root (the directory containing `pyproject.toml`), install test suite requirements:
 
     pip install -r requirements/test.txt
 
-And to launch test suite:
+Launch the test suite from the same repository root:
 
     pytest -svv fury
 

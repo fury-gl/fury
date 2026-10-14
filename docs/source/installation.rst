@@ -12,16 +12,29 @@ Dependencies
 
 The mandatory dependencies are:
 
-- numpy >= 1.7.1
-- vtk >= 8.1.0
-- scipy >= 0.9
+- NumPy >= 2.0
+- SciPy >= 1.13.0
+- Pillow >= 10.4.0
+- packaging >= 23.0
+- lazy_loader >= 0.4
+- pygfx >= 0.16.0
+- GLFW >= 2.7.0
 - aiohttp
-- pygltflib
+- polyxios >= 0.2.0
 
-The optional dependencies are:
+Optional dependencies are available as extras:
 
-- matplotlib >= 2.0.0
-- dipy >= 0.16.0
+- ``window``: PySide6, jupyter-rfb, and imgui_bundle (on Python 3.12 or newer).
+- ``plot``: Matplotlib >= 3.9.
+- ``medical``: DIPY and nibabel.
+- ``compute``: Numba.
+- ``optional``: all of the above, plus OpenCV (opencv-python).
+
+For example, to install the window backends:
+
+.. code-block:: shell
+
+    pip install "fury[window]"
 
 
 Installation with PyPi
@@ -50,6 +63,7 @@ Installation via Source
 .. code-block:: shell
 
     git clone https://github.com/fury-gl/fury.git
+    cd fury
 
 **Step 2.** Install requirements
 
@@ -85,59 +99,63 @@ This command will give you important information about FURY's installation. The 
 Running the Tests
 -----------------
 
-Let's install all required packages for the running the test
+From the repository root (the directory containing ``pyproject.toml``), install
+the requirements for running the tests:
 
 .. code-block:: shell
 
     pip install -r requirements/default.txt
     pip install -r requirements/test.txt
 
-There are two ways to run FURY tests:
+Examples, all run from the repository root:
 
-- From the command line. You need to be on the FURY package folder
+- Run the full test suite:
 
 .. code-block:: shell
 
     pytest -svv fury
 
-- To run a specific test file
+- Run a specific test file:
 
 .. code-block:: shell
 
-    pytest -svv fury/tests/test_actor.py
+    pytest -svv fury/tests/test_window.py
 
-- To run a specific test directory
-
-.. code-block:: shell
-
-    pytest -svv fury/tests
-
-- To run a specific test function
+- Run a specific test directory:
 
 .. code-block:: shell
 
-    pytest -svv -k "test_my_function_name"
+    pytest -svv fury/actor/tests
+
+- Run a specific test function:
+
+.. code-block:: shell
+
+    pytest -svv fury/tests/test_window.py::test_scene_initialization_default
 
 Running the Tests Offscreen
 ---------------------------
 
-FURY is based on VTK which uses OpenGL for all its rendering. For a headless rendering, we recommend to install and use Xvfb software on linux or OSX.
-Since Xvfb will require an X server (we also recommend to install XQuartz package on OSX). After Xvfb is installed you have 2 options to run FURY tests:
+FURY renders with pygfx and WebGPU through WGPU. Offscreen rendering still
+requires a working graphics backend; it does not remove the need for compatible
+graphics drivers.
 
-- First option
+For an existing scene, explicitly request an offscreen image with
+``window.snapshot(scene=scene, fname="output.png")``, or create an offscreen
+manager with ``window.ShowManager(scene=scene, window_type="offscreen")``.
+In contrast, setting ``FURY_OFFSCREEN=true`` changes the capture behavior of
+``ShowManager.start()`` but does not replace a windowed canvas with an offscreen
+canvas.
+
+For full headless tests on Ubuntu, install Mesa Vulkan drivers, Xvfb, and the
+GLFW/Qt libraries. See `ci/setup_headless.sh
+<https://github.com/fury-gl/fury/blob/master/ci/setup_headless.sh>`_ for the
+complete CI package list; that GitHub Actions-specific provisioning script is
+not a local installation command. From the repository root, run:
 
 .. code-block:: shell
 
-    export DISPLAY=:0
-    Xvfb :0 -screen 1920x1080x24 > /dev/null 2>1 &
-    pytest -svv fury
-
-- Second option
-
-.. code-block:: shell
-
-    export DISPLAY=:0
-    xvfb-run --server-args="-screen 0 1920x1080x24" pytest -svv fury
+    QT_QPA_PLATFORM=offscreen FURY_OFFSCREEN=true xvfb-run -a --server-args="-screen 0 1024x768x24" pytest -svv fury
 
 Coding style
 ------------
@@ -174,37 +192,35 @@ Populating our Documentation
 Folder Structure
 ~~~~~~~~~~~~~~~~
 
-Let’s start by showcasing the ``docs`` folder structure:
+The relevant repository folders are:
 
-| fury
-| ├── docs
-| │   ├── build
-| │   ├── make.bat
-| │   ├── Makefile
-| │   ├── Readme.md
-| │   ├── upload_to_gh-pages.py
-| │   ├── examples
-| │   ├── experimental
-| │   └── source
-| ├── requirements.txt
-| ├── fury
-| │   ├── actor.py
-| │   ├── ...
-| │
-| │── ...
-|
-|
+.. code-block:: text
 
-In our ``docs`` folder structure above:
+    fury/
+    ├── docs/
+    │   ├── build/                 # Generated documentation output
+    │   ├── examples/              # Maintained gallery inputs
+    │   ├── examples_revamped/     # Generated/prepared gallery examples
+    │   ├── source/                # Documentation prose and configuration
+    │   ├── make.bat
+    │   ├── Makefile
+    │   └── README.md
+    ├── requirements/              # Generated dependency requirements
+    └── fury/
+        ├── actor/                 # Runtime actor package
+        └── ...
 
-- ``source`` is the folder that contains all ``*.rst`` files.
-- ``examples`` is the directory where we have all python scripts that describe how to use the library.
-- ``experimental`` directory contains experimental Python scripts. The goal is to keep a trace of experimental work.
+``docs/examples/`` contains the maintained Python gallery scripts.
+``docs/examples/_valid_examples.toml`` selects which inputs are prepared for the
+gallery in ``docs/examples_revamped/``; do not edit those generated/prepared
+files. Maintain prose and configuration in ``docs/source/``. Documentation
+builds write their output to ``docs/build/``.
 
 Building the documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Step 1.** Install all required packages for the documentation generation
+**Step 1.** From the repository root, install all required packages for
+documentation generation:
 
 .. code-block:: shell
 
@@ -212,7 +228,13 @@ Building the documentation
     pip install -U -r requirements/optional.txt
     pip install -U -r requirements/doc.txt
 
-**Step 2.** Go to the ``docs`` folder and run the following command to generate it (Linux and macOS)
+**Step 2.** Change to the ``docs`` folder:
+
+.. code-block:: shell
+
+    cd docs
+
+Generate the documentation on Linux and macOS:
 
 .. code-block:: shell
 
@@ -228,15 +250,15 @@ or under Windows
 
 .. code-block:: shell
 
-    make clean
-    make html
+    .\make.bat clean
+    .\make.bat html
 
 To generate the documentation without running the examples under Windows
 
 .. code-block:: shell
 
-    make clean
-    make html-no-examples
+    .\make.bat clean
+    .\make.bat html-no-examples
 
 
 **Step 3.** Congratulations! the ``build`` folder has been generated! Go to ``build/html`` and open with browser ``index.html`` to see your generated documentation.
