@@ -2249,7 +2249,7 @@ def test_spinbox_textbox_input():
 
 
 def test_spinbox_textbox_signed_and_invalid_input():
-    """Test negative, whitespace and non-integer typed input."""
+    """Test negative, whitespace and invalid typed input."""
     fetch_viz_icons()
 
     spinbox = ui.SpinBox(min_val=-20, max_val=20, initial_val=0)
@@ -2266,10 +2266,36 @@ def test_spinbox_textbox_signed_and_invalid_input():
     spinbox.textbox.on_blur(None)
     npt.assert_equal(spinbox.value, 4)
 
-    for invalid in ["3.5", "", "-", "²"]:
+    for invalid in ["", "-", "²", "abc", "nan", "inf"]:
         spinbox.textbox.set_message(invalid)
         spinbox.textbox.on_blur(None)
         npt.assert_equal(spinbox.value, 4)
+
+
+def test_spinbox_float_values():
+    """Test float bounds, step and typed input."""
+    fetch_viz_icons()
+
+    spinbox = ui.SpinBox(min_val=-1.5, max_val=2.5, initial_val=0.5, step=0.5)
+
+    spinbox.increment_button.do_click()
+    npt.assert_equal(spinbox.value, 1.0)
+    spinbox.decrement_button.do_click()
+    spinbox.decrement_button.do_click()
+    npt.assert_equal(spinbox.value, 0.0)
+
+    spinbox.textbox.set_message("-1.25")
+    spinbox.textbox.on_blur(None)
+    npt.assert_equal(spinbox.value, -1.25)
+
+    spinbox.textbox.set_message("9.75")
+    spinbox.textbox.on_blur(None)
+    npt.assert_equal(spinbox.value, 2.5)
+
+    spinbox.textbox.set_message("2")
+    spinbox.textbox.on_blur(None)
+    npt.assert_equal(spinbox.value, 2)
+    npt.assert_equal(spinbox.textbox._message, "2")
 
 
 def test_spinbox_resize():

@@ -5028,13 +5028,13 @@ class SpinBox(UI):
         Gap in pixels around and between the textbox and the buttons.
     panel_color : (float, float, float), optional
         Panel color of SpinBox.
-    min_val : int, optional
+    min_val : int or float, optional
         Minimum value of SpinBox.
-    max_val : int, optional
+    max_val : int or float, optional
         Maximum value of SpinBox.
-    initial_val : int, optional
+    initial_val : int or float, optional
         Initial value of SpinBox.
-    step : int, optional
+    step : int or float, optional
         Step value of SpinBox.
     max_column : int, optional
         Max number of characters in a line.
@@ -5204,7 +5204,7 @@ class SpinBox(UI):
 
         Returns
         -------
-        int
+        int or float
             The current value.
         """
         return self._value
@@ -5216,7 +5216,7 @@ class SpinBox(UI):
 
         Parameters
         ----------
-        value : int
+        value : int or float
             The new value.
         """
         if value >= self.max_val:
@@ -5230,7 +5230,7 @@ class SpinBox(UI):
 
     def validate_value(self, value):
         """
-        Validate and convert the given value into integer.
+        Validate and convert the given value into a number.
 
         Parameters
         ----------
@@ -5239,15 +5239,18 @@ class SpinBox(UI):
 
         Returns
         -------
-        int
-            If valid return converted integer else the previous value.
+        int or float
+            The converted number if valid, otherwise the previous value.
         """
-        # int() accepts a leading sign, which str.isnumeric() rejects, and
-        # raises for characters like "²" that isnumeric() accepts.
         try:
             return int(value)
         except ValueError:
+            pass
+        try:
+            number = float(value)
+        except ValueError:
             return self.value
+        return number if np.isfinite(number) else self.value
 
     def increment(self):
         """Increment the current value by the step."""
