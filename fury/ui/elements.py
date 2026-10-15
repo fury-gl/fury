@@ -5036,6 +5036,9 @@ class SpinBox(UI):
         Initial value of SpinBox.
     step : int or float, optional
         Step value of SpinBox.
+    precision : int or None, optional
+        Number of decimal places float values are rounded to. ``None`` keeps
+        full precision. Integer values are not affected.
     max_column : int, optional
         Max number of characters in a line.
     max_line : int, optional
@@ -5064,6 +5067,7 @@ class SpinBox(UI):
         max_val=100,
         initial_val=50,
         step=1,
+        precision=2,
         max_column=10,
         max_line=2,
     ):
@@ -5074,6 +5078,7 @@ class SpinBox(UI):
         self.min_val = min_val
         self.max_val = max_val
         self.step = step
+        self.precision = precision
         self.max_column = max_column
         self.max_line = max_line
 
@@ -5214,6 +5219,8 @@ class SpinBox(UI):
         """
         Set the value, clamped to ``[min_val, max_val]``.
 
+        Float values are rounded to ``precision`` decimal places.
+
         Parameters
         ----------
         value : int or float
@@ -5225,6 +5232,9 @@ class SpinBox(UI):
             self._value = self.min_val
         else:
             self._value = value
+
+        if isinstance(self._value, float) and self.precision is not None:
+            self._value = round(self._value, self.precision)
 
         self.textbox.set_message(str(self._value))
 

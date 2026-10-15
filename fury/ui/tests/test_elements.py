@@ -2298,6 +2298,30 @@ def test_spinbox_float_values():
     npt.assert_equal(spinbox.textbox._message, "2")
 
 
+def test_spinbox_precision():
+    """Test float values are rounded to ``precision`` decimal places."""
+    fetch_viz_icons()
+
+    spinbox = ui.SpinBox(min_val=0, max_val=1, initial_val=0.1, step=0.1)
+    spinbox.increment_button.do_click()
+    spinbox.increment_button.do_click()
+    npt.assert_equal(spinbox.value, 0.3)
+    npt.assert_equal(spinbox.textbox._message, "0.3")
+
+    spinbox.textbox.set_message("0.4567")
+    spinbox.textbox.on_blur(None)
+    npt.assert_equal(spinbox.textbox._message, "0.46")
+
+    spinbox = ui.SpinBox(min_val=0, max_val=10, initial_val=3.14159, precision=3)
+    npt.assert_equal(spinbox.textbox._message, "3.142")
+
+    spinbox = ui.SpinBox(
+        min_val=0, max_val=1, initial_val=0.1, step=0.2, precision=None
+    )
+    spinbox.increment_button.do_click()
+    npt.assert_equal(spinbox.textbox._message, str(0.1 + 0.2))
+
+
 def test_spinbox_resize():
     """Test SpinBox resize updates child sizes and layout."""
     fetch_viz_icons()
