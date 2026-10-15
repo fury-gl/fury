@@ -1,6 +1,6 @@
 <h1 align="center">
   <br>
-  <a href="https://www.fury.gl"><img src="https://raw.githubusercontent.com/fury-gl/fury/refs/heads/master/docs/source/_static/images/logo.svg" alt="FURY" width="200"></a>
+  <a href="https://fury.gl/"><img src="https://raw.githubusercontent.com/fury-gl/fury/refs/heads/master/docs/source/_static/images/logo.svg" alt="FURY" width="200"></a>
   <br>Free Unified Rendering in Python<br>
 
 </h1>
@@ -9,13 +9,10 @@
 </h4>
 
 <p align="center">
-<a href="https://dev.azure.com/fury-gl/fury/_build/latest?definitionId=1&branchName=master"><img src="https://dev.azure.com/fury-gl/fury/_apis/build/status/fury-gl.fury?branchName=master">
-</a>
-<a href="https://pypi.python.org/pypi/fury"><img src="https://img.shields.io/pypi/v/fury.svg"></a>
-<a href="https://anaconda.org/conda-forge/fury"><img src="https://anaconda.org/conda-forge/fury/badges/version.svg"></a>
-<a href="https://codecov.io/gh/fury-gl/fury"><img src="https://codecov.io/gh/fury-gl/fury/branch/master/graph/badge.svg"></a>
-<a href="https://app.codacy.com/app/fury-gl/fury?utm_source=github.com&utm_medium=referral&utm_content=fury-gl/fury&utm_campaign=Badge_Grade_Dashboard"><img src="https://api.codacy.com/project/badge/Grade/922600af9f94445ead5a12423b813576"></a>
-<a href="https://doi.org/10.21105/joss.03384"><img src="https://joss.theoj.org/papers/10.21105/joss.03384/status.svg"></a>
+<a href="https://github.com/fury-gl/fury/actions/workflows/test.yml"><img src="https://github.com/fury-gl/fury/actions/workflows/test.yml/badge.svg?branch=master" alt="FURY Tests"></a>
+<a href="https://pypi.org/project/fury/"><img src="https://img.shields.io/pypi/v/fury.svg" alt="PyPI version"></a>
+<a href="https://anaconda.org/conda-forge/fury"><img src="https://anaconda.org/conda-forge/fury/badges/version.svg" alt="Conda-forge version"></a>
+<a href="https://doi.org/10.21105/joss.03384"><img src="https://joss.theoj.org/papers/10.21105/joss.03384/status.svg" alt="JOSS paper"></a>
 
 </p>
 
@@ -30,46 +27,60 @@
   <a href="#citing">Citing</a>
 </p>
 
-|         |         |         |
-|:--------|:--------|:--------|
-| <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/ws_smaller.gif" alt="FURY Networks" width="400px"></a> | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/swarming_simulation.gif" alt="swarming simulation" width="400px"></a> | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/shaders_horse.gif" alt="shaders horse" width="400px"></a> |
-| *Network Visualization*          | *Swarming/flocking simulation based on simple boids rules*  |  *Easy shader effect integration.*  |
-| <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/shaders_sdf.gif" alt="sdf" width="400px"></a>  | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/collides_simulation.gif" alt="Collides simulation" width="400px"></a> | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/physics_bricks_fast.gif" alt="Physics bricks" width="400px"></a> |
-| *Ray Marching and Signed Distance Functions* | *Particle collisions* | *Interoperability with the [pyBullet](https://pybullet.org/wordpress/) library.*  |
-| <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/ui_tab.gif" alt="UI Tabs" width="400px"></a>  | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/shaders_dragon_skybox.gif" alt="Shaders dragon skybox" width="400px"></a>  | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/picking_engine.gif" alt="Picking object" width="400px"></a> |
-| *Custom User Interfaces* |  *Shaders and SkyBox integration*  | *Easy picking manager* |
+<div align="center">
 
+<table align="center">
+  <tr>
+    <th align="center">Interactive 3D Flight Simulator</th>
+    <th align="center">Rotating 4D Tesseract</th>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://fury.gl/latest/auto_examples/04_demos/viz_flight_simulator.html"><img src="https://fury.gl/latest/_images/sphx_glr_viz_flight_simulator_001.gif" alt="FURY flight simulator with an aircraft, runway, and procedural landscape" width="420"></a></td>
+    <td align="center"><a href="https://fury.gl/latest/auto_examples/04_demos/viz_tesseract.html"><img src="https://fury.gl/latest/_images/sphx_glr_viz_tesseract_001.gif" alt="Animated projection of a rotating four-dimensional tesseract in FURY" width="420"></a></td>
+  </tr>
+</table>
+
+Click a demo to explore its tutorial and source code.
+
+</div>
 
 # General Information
 
 - **Website and Documentation:** https://fury.gl
-- **Tutorials:** https://fury.gl/latest/auto_tutorials/index.html
-- **Demos:** https://fury.gl/latest/auto_examples/index.html
+- **Tutorials and examples:** https://fury.gl/latest/auto_examples/index.html
 - **Blog:**  https://fury.gl/latest/blog.html
-- **Mailing list:** https://mail.python.org/mailman3/lists/fury.python.org
-- **Official source code repo:** https://github.com/fury-gl/fury.git
+- **Mailing list:** https://mail.python.org/mailman3/lists/fury.python.org/
+- **Official source code repo:** https://github.com/fury-gl/fury
 - **Download releases:** https://pypi.org/project/fury/
 - **Issue tracker:** https://github.com/fury-gl/fury/issues
-- **Free software:** 3-clause BSD license
+- **Free software:** [3-clause BSD license](LICENSE)
 - **Community:** Come to chat on [Discord](https://discord.gg/6btFPPj)
 
 # Key Features
 
-- Custom User Interfaces
-- Physics Engines API
-- Custom Shaders
-- Interactive local and Remote rendering in Jupyter Notebooks
-- Large amount of Tutorials and Examples
+- GPU-accelerated scientific visualization with pygfx and WebGPU.
+- NumPy-based 3D actors and interactive volume slices.
+- Built-in user interface components.
+- Keyframe, camera, and timeline animation.
+- GPU-based force-directed network visualization.
+- Mesh, point, and line loading powered by [Polyxios](https://polyxios.org/), with an extensive range of 3D mesh and geometry file extensions, including `.obj`, `.ply`, `.stl`, `.off`, `.vtk`, `.vtp`, and `.vtu`. See the [full list of Polyxios-supported formats and extensions](https://polyxios.org/stable/formats/index.html) for format details and requirements.
 
 # Installation
 
-FURY requires Python 3.12 or newer. Python 3.12, 3.13, and 3.14 are
+The current development version of FURY requires Python 3.12 or newer.
+Python 3.12, 3.13, and 3.14 are
 supported stable versions, tested in blocking Linux, macOS, and Windows CI.
 Python 3.12 support will be removed in an upcoming FURY release.
 
 ## Releases
 
 `pip install fury` or `conda install -c conda-forge fury`
+
+Published releases may have different Python requirements; see the package metadata for the release you install.
+
+For optional Qt, Jupyter, and ImGui window backends:
+
+    pip install "fury[window]"
 
 ## Development
 
@@ -86,11 +97,11 @@ Python 3.12 support will be removed in an upcoming FURY release.
 
 **Step 3.** Install fury
 
-As a [local project installation](https://pip.pypa.io/en/stable/reference/pip_install/#id44) using:
+As a [local project installation](https://pip.pypa.io/en/stable/topics/local-project-installs/#regular-installs) using:
 
     pip install .
 
-Or as an ["editable" installation](https://pip.pypa.io/en/stable/reference/pip_install/#id44) using:
+Or as an ["editable" installation](https://pip.pypa.io/en/stable/topics/local-project-installs/#editable-installs) using:
 
     pip install -e .
 
@@ -98,7 +109,7 @@ Or as an ["editable" installation](https://pip.pypa.io/en/stable/reference/pip_i
 
 **Step 4:** Enjoy!
 
-For more information, see also [installation page on fury.gl](https://fury.gl/latest/installation.html)
+For more information, see the [development installation guide](docs/source/installation.rst).
 
 ## Testing
 
@@ -113,10 +124,24 @@ Launch the test suite from the same repository root:
 
 # How to use
 
-There are many ways to start using FURY:
+Start with Quick Visualization below.
 
-- Go to [Getting Started](https://fury.gl/latest/getting_started.html)
-- Explore our [Tutorials](https://fury.gl/latest/auto_tutorials/index.html) or [Demos](https://fury.gl/latest/auto_examples/index.html).
+<div align="center">
+
+| Tutorial | Description |
+|:--------:|:-----------:|
+| [Quick Visualization](https://fury.gl/latest/auto_examples/01_introductory/viz_show.html) | Create and display a first 3D scene |
+| [Force-Directed Network Visualization](https://fury.gl/latest/auto_examples/04_demos/viz_network.html) | Explore a GPU-based network layout |
+| [3D Image Slicer](https://fury.gl/latest/auto_examples/04_demos/viz_slicer.html) | Display and interact with volume slices |
+| [UI Sliders](https://fury.gl/latest/auto_examples/07_ui/viz_sliders.html) | Add interactive controls |
+| [Keyframe Animation](https://fury.gl/latest/auto_examples/10_animation/viz_fury_animation.html) | Animate camera movement and opacity |
+
+</div>
+
+Explore the full [tutorials and examples gallery](https://fury.gl/latest/auto_examples/index.html).
+Some examples require optional dependencies or download example data; follow the instructions in each tutorial.
+
+Upgrading from VTK-based FURY 0.12.x? See the [FURY 2 migration guide](https://fury.gl/latest/migration_guide_v2.0.html).
 
 
 # Credits
@@ -127,9 +152,8 @@ Please, go to [contributors page](https://github.com/fury-gl/fury/graphs/contrib
 # Friends & Support
 
 - [DIPY](https://dipy.org/)
-- [Polyxios](https://polyxios.org)
-- [Intelligent Systems Engineering, IU](https://engineering.indiana.edu/)
-- [NSF award #1720625](https://www.nsf.gov/awardsearch/showAward?AWD_ID=1720625)
+- [Polyxios](https://polyxios.org/)
+- [Intelligent Systems Engineering, IU](https://luddy.iu.edu/academics/units/ise.html)
 - [Google Summer of Code](https://summerofcode.withgoogle.com/)
 
 
@@ -138,6 +162,8 @@ Please, go to [contributors page](https://github.com/fury-gl/fury/graphs/contrib
 We love contributions!
 
 You've discovered a bug or something else you want to change - excellent! Create an [issue](https://github.com/fury-gl/fury/issues/new)!
+
+See the [contribution guide](CONTRIBUTING.rst) for development setup and contribution guidelines.
 
 # Citing
 
@@ -149,7 +175,7 @@ If you are using FURY in your work then do cite [this paper](https://doi.org/10.
     https://doi.org/10.21105/joss.03384
 
 
-```css
+```bibtex
     @article{Garyfallidis2021,
         doi = {10.21105/joss.03384},
         url = {https://doi.org/10.21105/joss.03384},
