@@ -2,26 +2,35 @@
 
 ## Index
 
--   ``source``: Contains main *.rst files
--   ``tutorials``: python script describe how to use the api
--   ``examples``: Fury app showcases
--   ``build``: Contains the generated documentation
+-   `docs/source/`: Maintained prose, Sphinx configuration, and templates.
+-   `docs/examples/`: Maintained Python gallery inputs.
+-   `docs/examples_revamped/`: Generated/prepared gallery examples; do not edit these files.
+-   `docs/build/`: Generated documentation output.
+-   `fury/actor/`: Runtime actor implementations.
+-   `requirements/`: Dependency requirement files.
+-   `docs/README.md`: This documentation build guide.
+
+`docs/examples/_valid_examples.toml` selects the gallery inputs to prepare.
 
 ## Doc generation steps:
 
 ### Installing requirements
 
+Run these commands from the repository root in your activated development environment.
+
 ```bash
 $ pip install -U -r requirements/default.txt
 $ pip install -U -r requirements/optional.txt
 $ pip install -U -r requirements/doc.txt
+$ cd docs
 ```
 
 ### Generate all the Documentation
 
-Go to the `docs` folder and run the following commands to generate it.
+After installing the requirements and entering `docs` as shown above, run the
+following commands.
 
-#### Under Linux and OSX
+#### Under Linux and macOS
 
 ```bash
 $ make -C . clean && make -C . html
@@ -35,15 +44,15 @@ $ make -C . clean && make -C . html-no-examples
 #### Under Windows
 
 ```bash
-$ make clean
-$ make html
+$ .\make.bat clean
+$ .\make.bat html
 ```
 
 To generate the documentation without running the examples:
 
 ```bash
-$ make clean
-$ make html-no-examples
+$ .\make.bat clean
+$ .\make.bat html-no-examples
 ```
 
 ### Serve the Documentation Locally

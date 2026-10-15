@@ -17,31 +17,35 @@
 
 ## Examples
 
+These examples use Python 3.12. Run the commands from the repository root in the activated development environment.
+See [CONTRIBUTING.rst](../CONTRIBUTING.rst) for setup instructions.
+Create and activate the environment before running pip:
+
+```bash
+conda create --name fury-dev --override-channels --channel conda-forge python=3.12 pip
+conda activate fury-dev
+```
+
+These generated requirements files use pip syntax; install them with pip rather
+than `conda install --file`.
+
 ### Installing requirements
 
 ```bash
 pip install -U -r requirements/default.txt
 pip install -U -r requirements/optional.txt
+pip install -e .
 ```
 
-or
-
-```bash
-conda install --yes --file=requirements/default.txt --file=requirements/optional.txt
-```
 
 ### Running the tests
 
 ```bash
 pip install -U -r requirements/default.txt
 pip install -U -r requirements/test.txt
+pip install -e .
 ```
 
-or
-
-```bash
-conda install --yes --file=requirements/default.txt --file=requirements/test.txt
-```
 
 ### Running the Docs
 
@@ -49,4 +53,5 @@ conda install --yes --file=requirements/default.txt --file=requirements/test.txt
 pip install -U -r requirements/default.txt
 pip install -U -r requirements/optional.txt
 pip install -U -r requirements/doc.txt
+pip install -e .
 ```

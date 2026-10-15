@@ -61,10 +61,18 @@ Get Started!
 
 Ready to contribute? Here's how to set up `FURY` for local development.
 
+We recommend the open-source `Miniforge
+<https://github.com/conda-forge/miniforge/releases/latest>`_ installers for Conda.
+If Conda is already installed, use your existing installation.
+
+Run the development commands below from the repository root inside the
+``fury-dev`` environment once it is activated.
+
 1. Fork the `FURY` repo on GitHub.
 2. Clone your fork locally::
 
     $ git clone https://github.com/your_name_here/fury.git
+    $ cd fury
 
 3. Add a tracking branch which can always have the last version of `FURY`::
 
@@ -78,9 +86,15 @@ Ready to contribute? Here's how to set up `FURY` for local development.
 
     $ git checkout -b name-of-your-bugfix-or-feature
 
-5. Install it locally::
+5. Create and activate a Conda environment, then install FURY in editable mode::
 
-    $ pip install --user -e .
+    $ conda create --name fury-dev --override-channels --channel conda-forge python=3.12 pip
+    $ conda activate fury-dev
+    $ pip install -e .
+
+   These examples use Python 3.12; other supported versions are listed in the
+   Pull Request Guidelines below. If ``fury-dev`` already exists, use it only
+   if compatible or choose another name. Do not install into ``base``.
 
 6. Now you can make your changes locally::
 

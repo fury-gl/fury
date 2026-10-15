@@ -5,91 +5,85 @@ Getting Started
 .. meta::
    :description: A quick-start guide to building your first scientific visualization scene with FURY in Python.
 
-Start by importing FURY.
+This example builds a scene containing the Suzanne model, two cylinders, and
+a text label. Install FURY first using the :doc:`installation` guide.
+
+Import the current scene, actor, UI, and array-based I/O APIs:
 
 .. code-block:: python
+
+    from pathlib import Path
 
     import numpy as np
-    from fury import window, actor, ui, io, utils
 
-To import a model, use :py:func:`.io.load_polydata`. Currently supported formats include OBJ, VTK, FIB, PLY, STL and XML.
-
-Here we are going to use ``suzanne`` model used by Blender. You can find more detail about what is suzanne model `here <https://en.wikipedia.org/wiki/Blender_(software)#:~:text=A%20low-polygon%20model%20with%20only%20500%20faces%2C%20Suzanne,gives%20out%20an%20award%20called%20the%20Suzanne%20Award.).>`_.
-
-We can download the model by
-
-.. code-block:: python
-
+    from fury import actor, io, ui, window
     from fury.data import fetch_viz_models
-    fetch_viz_models()
 
-The models will be downloaded in ``~/.fury/models`` directory.
-
-If you store the return value to ``models``, you can find the detailed information about models in the dictionary. The directory of the ``suzanne`` model will be in ``models[1]``.
-
-.. code-block:: python
-
-    models = fetch_viz_models()
-    print(models[1])
-
-To get the path of suzanne
+Download the example models once. This requires network access on the first
+run; subsequent runs reuse the cached files. The fetcher returns file
+information and the model directory:
 
 .. code-block:: python
 
-    import os
-    path_suzanne = os.path.join(models[1], 'suzanne.obj')
-    print(path_suzanne)
+    _, model_dir = fetch_viz_models()
+    path_suzanne = Path(model_dir) / "suzanne.obj"
 
-Now we can include the ``suzanne`` model used by Blender:
-
-.. code-block:: python
-
-    suzanne = io.load_polydata(path_suzanne)
-    suzanne = utils.get_polymapper_from_polydata(suzanne)
-    suzanne = utils.get_actor_from_polymapper(suzanne)
-
-Set the opacity of the model::
-
-    suzanne.GetProperty().SetOpacity(0.5)
-
-Let's create some random variables for the cylinder parameters
+Read the mesh as NumPy arrays and create a partially transparent surface.
+The Suzanne model has triangle faces; a point-only file cannot be used for
+this surface example:
 
 .. code-block:: python
 
-    centers = np.random.rand(2, 3)
-    directions = np.random.rand(2, 3)
-    heights = np.random.rand(2)
-    colors = np.random.rand(2, 3)
+    vertices, faces, colors = io.read_mesh(str(path_suzanne))
+    if faces is None:
+        raise ValueError("The Suzanne example requires a triangle mesh.")
+    suzanne = actor.surface(vertices, faces, colors=colors, opacity=0.5)
 
-Now, we create a cylinder::
+Create two cylinders with explicit positions, directions, heights, and colors:
 
-    cylinders = actor.cylinder(centers, directions, colors, heights=heights)
+.. code-block:: python
 
-Anything that has to be rendered needs to be added to the scene so let's create a :py:class:`~fury.window.Scene`::
+    centers = np.array([[2., 0., 0.], [-2., 0., 0.]])
+    directions = np.array([[0., 1., 0.], [0., 1., 0.]])
+    heights = np.array([1., 1.5])
+    colors = np.array([[1., 0., 0.], [0., 0., 1.]])
+    cylinders = actor.cylinder(
+        centers, directions=directions, colors=colors, height=heights, radii=0.2
+    )
 
+Add a dynamically sized text label and all actors to the scene before creating
+the rendering window:
+
+.. code-block:: python
+
+    tb = ui.TextBlock2D(
+        text="Hello FURY", position=(20, 20), font_size=23, dynamic_bbox=True
+    )
     scene = window.Scene()
-
-We set the window scene variables e.g. (width, height)::
-
-    showm = window.ShowManager(scene, size=(1024,720), reset_camera=False)
-    showm.initialize()
-
-We add a text block to add some information::
-
-    tb = ui.TextBlock2D(position=(450, 550), font_size=23)
-    tb.message = "Hello Fury"
-
-The function :py:meth:`~fury.window.Scene.add` is used to add the created objects to the scene to be rendered::
-
     scene.add(suzanne)
     scene.add(cylinders)
     scene.add(tb)
 
-Start the rendering of the scene::
+Interactive rendering
+---------------------
 
+Create the manager using keyword arguments and start the event loop. Close the
+window to return to Python:
+
+.. code-block:: python
+
+    showm = window.ShowManager(scene=scene, size=(1024, 720))
     showm.start()
 
+Offscreen alternative
+---------------------
 
-.. image:: _static/images/suzanne.png
-    :alt: suzanne fury
-    :align: center
+Instead of the interactive manager and ``start()`` block above, save the scene
+directly to an image:
+
+.. code-block:: python
+
+    window.snapshot(scene=scene, fname="getting_started.png")
+
+Offscreen rendering still requires a working graphics backend. See
+:doc:`installation` for graphics requirements and headless testing guidance.
