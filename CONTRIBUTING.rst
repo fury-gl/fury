@@ -130,9 +130,11 @@ Before you submit a pull request, check that it meets these guidelines:
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and add the
    feature to the list in README.md.
-3. The pull request should work for supported Python versions (3.10+). Check
-   https://github.com/fury-gl/fury/actions
-   and make sure that the tests pass for all supported Python versions.
+3. FURY requires Python 3.12 or newer. Python 3.12, 3.13, and 3.14 are
+   supported stable versions, tested in blocking Linux, macOS, and Windows CI.
+   Python 3.12 support will be removed in an upcoming FURY release.
+   Check https://github.com/fury-gl/fury/actions
+   and make sure that tests pass for every Python version in the matrix.
 
 Publishing Releases
 --------------------

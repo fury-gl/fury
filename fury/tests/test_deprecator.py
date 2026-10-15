@@ -5,7 +5,6 @@ import numpy.testing as npt
 import pytest
 
 import fury
-from fury.decorators import is_py35, skip_win
 from fury.deprecator import (
     ArgsDeprecationWarning,
     ExpiredDeprecationError,
@@ -18,11 +17,6 @@ from fury.deprecator import (
 from fury.testing import assert_true, clear_and_catch_warnings
 
 
-@pytest.mark.skipif(
-    skip_win and is_py35,
-    reason="Issue with setuptools, check "
-    "https://github.com/pypa/setuptools/issues/1903",
-)
 def test_cmp_pkg_version():
     # Test version comparator
     npt.assert_equal(cmp_pkg_version(fury.__version__), 0)
@@ -86,11 +80,6 @@ def test__add_dep_doc():
     )
 
 
-@pytest.mark.skipif(
-    skip_win and is_py35,
-    reason="Issue with setuptools, check "
-    "https://github.com/pypa/setuptools/issues/1903",
-)
 def test_deprecate_with_version():
     def func_no_doc():
         pass

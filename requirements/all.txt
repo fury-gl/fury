@@ -16,7 +16,6 @@ numpydoc
 sphinx >=6.1.2,<9.0.0
 ablog >=0.11.1
 texext
-tomli; python_version < "3.11"
 sphinx-copybutton
 sphinx-gallery>=0.10.0
 pydata-sphinx-theme==0.15.2
@@ -27,6 +26,6 @@ nibabel
 matplotlib>=3.9.0
 PySide6
 jupyter-rfb
-imgui_bundle; python_version >= "3.12"
+imgui_bundle
 numba
 opencv-python

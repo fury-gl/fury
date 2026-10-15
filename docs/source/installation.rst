@@ -5,7 +5,9 @@ Installation
 .. meta::
    :description: Install FURY, the open-source Python library for scientific visualization and 3D animations, via pip or conda.
 
-FURY supports Python 3.5+. You can currently still use Python 2.7 but it will soon stop being supported as the Python 2.7 end of life is on December 31st 2019.
+FURY requires Python 3.12 or newer. Python 3.12, 3.13, and 3.14 are
+supported stable versions, tested in blocking Linux, macOS, and Windows CI.
+Python 3.12 support will be removed in an upcoming FURY release.
 
 Dependencies
 ------------

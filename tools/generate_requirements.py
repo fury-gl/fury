@@ -2,15 +2,7 @@
 """Generate requirements/*.txt files from pyproject.toml."""
 
 from pathlib import Path
-import sys
-
-try:  # standard module since Python 3.11
-    import tomllib as toml
-except ImportError:
-    try:  # available for older Python via pip
-        import tomli as toml
-    except ImportError:
-        sys.exit("Please install `tomli` first: `pip install tomli`")
+import tomllib as toml
 
 script_pth = Path(__file__)
 repo_dir = script_pth.parent.parent

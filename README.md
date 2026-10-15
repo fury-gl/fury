@@ -63,6 +63,10 @@
 
 # Installation
 
+FURY requires Python 3.12 or newer. Python 3.12, 3.13, and 3.14 are
+supported stable versions, tested in blocking Linux, macOS, and Windows CI.
+Python 3.12 support will be removed in an upcoming FURY release.
+
 ## Releases
 
 `pip install fury` or `conda install -c conda-forge fury`

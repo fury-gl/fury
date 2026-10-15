@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name =  "fury"
 description = "FURY - Free Unified Rendering in pYthon. A free and open-source software library for Scientific Visualization and 3D animations"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 license.file="LICENSE"
 keywords = ["Scientific Visualization", "shaders", "animation", "simulation",
             "Physically based rendering", "3D", "3D rendering", "networks",
@@ -35,10 +35,9 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering",
 ]
 
@@ -64,7 +63,7 @@ Tracker = "https://github.com/fury-gl/fury/issues"
 [project.optional-dependencies]
 
 all = ["fury[optional, dev, doc, style, typing, test]"]
-window = ["PySide6", "jupyter-rfb", "imgui_bundle; python_version >= \"3.12\""]
+window = ["PySide6", "jupyter-rfb", "imgui_bundle"]
 plot = ["matplotlib>=3.9.0"]
 medical = ["dipy", "nibabel"]
 compute = ["numba"]
@@ -80,7 +79,6 @@ doc = [
     "sphinx >=6.1.2,<9.0.0",
     "ablog >=0.11.1",
     "texext",
-    "tomli; python_version < \"3.11\"",
     "sphinx-copybutton",
     "sphinx-gallery>=0.10.0",
     "pydata-sphinx-theme==0.15.2",
