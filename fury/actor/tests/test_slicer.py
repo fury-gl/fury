@@ -1,4 +1,5 @@
 import re
+import warnings
 
 import numpy as np
 import pytest
@@ -10,7 +11,11 @@ from fury.actor.slicer import (
     _iter_ellipsoid_tiles,
     _max_voxels_per_chunk,
 )
-from fury.actor.tests._helpers import render_manager, render_snapshot, snapshot_mask
+from fury.actor.tests._helpers import (
+    render_manager,
+    render_snapshot,
+    snapshot_mask,
+)
 from fury.actor.utils import (
     get_slices,
     set_group_opacity,
@@ -546,8 +551,9 @@ def _ellipsoid_field_pick(show_m, camera, center, voxel):
     return point
 
 
-def test_ellipsoid_slicer_chunk_boundaries():
-    """Bounded XYZ tiles retain strided CPU views and render seamless picks."""
+@pytest.mark.parametrize("default_colors", [False, True])
+def test_ellipsoid_slicer_chunk_boundaries(default_colors):
+    """Scaled XYZ tiles retain unscaled strided views and seamless surface picks."""
     shape = (3, 5, 7)
     lengths = np.full((6, 10, 14, 3), 0.2, dtype=np.float32)[::2, ::2, ::2]
     lengths[..., 0] = 0.25
@@ -555,6 +561,7 @@ def test_ellipsoid_slicer_chunk_boundaries():
         np.eye(3, dtype=np.float32), (6, 10, 14, 3, 3)
     ).copy()[::2, ::2, ::2]
     orientations[1, ..., :2, :2] = [[0, -1], [1, 0]]
+    orientations[1, :, 4:] = [[0, 0, -1], [0, 1, 0], [1, 0, 0]]
     mask = np.ones((6, 10, 14), dtype=bool)[::2, ::2, ::2]
     mask[1, 2, 3] = False
     mask[2, 4, 6] = False
@@ -566,6 +573,8 @@ def test_ellipsoid_slicer_chunk_boundaries():
     colors[1, 0] = (1, 0, 0)
     lengths[~mask] = np.nan
     orientations[~mask] = np.nan
+    if default_colors:
+        colors = None
     options = {
         "cross_section": (1, 2, 3),
         "visibility": (True, False, False),
@@ -592,6 +601,7 @@ def test_ellipsoid_slicer_chunk_boundaries():
             colors=colors,
             actor_params=options,
             max_glyphs=capacity,
+            scale=0.65,
         )
         assert isinstance(group, Group)
         assert group.name == "EllipsoidFieldSlicer"
@@ -613,6 +623,9 @@ def test_ellipsoid_slicer_chunk_boundaries():
                 ("mask", mask),
                 ("colors", colors),
             ):
+                if original is None:
+                    assert getattr(child, attribute) is None
+                    continue
                 retained = getattr(child, attribute)
                 assert np.shares_memory(retained, original)
                 np.testing.assert_array_equal(retained, original[tile])
@@ -631,10 +644,16 @@ def test_ellipsoid_slicer_chunk_boundaries():
                 )["world_object"]
                 is None
             )
-            low_color = _ellipsoid_field_pixel(camera, (1, 0, 3))
-            assert image[low_color[1], low_color[0], :3].max() <= 3
-            bright_color = _ellipsoid_field_pixel(camera, (1, 4, 6))
-            assert image[bright_color[1], bright_color[0], :3].max() > 20
+            first_color = _ellipsoid_field_pixel(camera, (1, 0, 3))
+            last_color = _ellipsoid_field_pixel(camera, (1, 4, 6))
+            if default_colors:
+                first_rgb = image[first_color[1], first_color[0], :3]
+                last_rgb = image[last_color[1], last_color[0], :3]
+                assert first_rgb[1] > 2 * max(int(first_rgb[0]), int(first_rgb[2]))
+                assert last_rgb[2] > 2 * max(int(last_rgb[0]), int(last_rgb[1]))
+            else:
+                assert image[first_color[1], first_color[0], :3].max() <= 3
+                assert image[last_color[1], last_color[0], :3].max() > 20
             picked_voxels.append(voxels)
     for image, voxels in zip(images[1:], picked_voxels[1:], strict=True):
         np.testing.assert_allclose(image, images[0], atol=1)
@@ -912,29 +931,47 @@ def test_ellipsoid_slicer_defaults_uniform_orientation_and_disabled_picking():
         assert show_m.renderer.get_pick_info(point)["world_object"] is None
 
 
+@pytest.mark.parametrize("scale", [0.0, 1.0])
 @pytest.mark.parametrize("value", [-0.1, np.nan, np.inf])
-def test_ellipsoid_slicer_invalid_active_lengths(value):
-    """Unmasked lengths must be finite and nonnegative."""
+def test_ellipsoid_slicer_invalid_active_lengths(value, scale):
+    """Invalid original lengths cannot become valid through zero scaling."""
     lengths = np.full((2, 2, 1, 3), 0.2)
     lengths[1, 1, 0, 0] = value
-    with pytest.raises(ValueError):
-        actor.ellipsoid_slicer(lengths)
+    with (
+        warnings.catch_warnings(),
+        np.errstate(invalid="raise", divide="raise", over="raise"),
+    ):
+        warnings.simplefilter("error", RuntimeWarning)
+        with pytest.raises(ValueError):
+            actor.ellipsoid_slicer(lengths, scale=scale)
 
 
-def test_ellipsoid_slicer_invalid_active_orientation():
-    """Unmasked nondegenerate orientations must be finite."""
+@pytest.mark.parametrize("value", [np.nan, np.inf])
+@pytest.mark.parametrize("scale", [0.0, 1.0])
+def test_ellipsoid_slicer_invalid_active_orientation(value, scale):
+    """Invalid active directions fail before color arithmetic emits warnings."""
     lengths = np.full((2, 2, 1, 3), 0.2)
     orientations = np.broadcast_to(np.eye(3), (2, 2, 1, 3, 3)).copy()
-    orientations[1, 1, 0, 0, 0] = np.nan
-    with pytest.raises(ValueError):
-        actor.ellipsoid_slicer(lengths, orientation_matrices=orientations)
+    orientations[1, 1, 0, 0, 0] = value
+    with (
+        warnings.catch_warnings(),
+        np.errstate(invalid="raise", divide="raise", over="raise"),
+    ):
+        warnings.simplefilter("error", RuntimeWarning)
+        with pytest.raises(ValueError):
+            actor.ellipsoid_slicer(
+                lengths, orientation_matrices=orientations, scale=scale
+            )
 
 
 def test_ellipsoid_slicer_rgba_field_colors():
     """Spatial RGBA colors and alpha are observable on real picked surfaces."""
     lengths = np.full((2, 1, 1, 3), 0.3, dtype=np.float32)
     colors = np.array([[[[255, 0, 0, 255]]], [[[0, 0, 255, 128]]]], dtype=np.uint8)
-    group = actor.ellipsoid_slicer(lengths, colors=colors)
+    orientation = np.array([[0, -1, 0], [1, 0, 0], [0, 0, 1]], dtype=np.float32)
+    group = actor.ellipsoid_slicer(
+        lengths, orientation_matrices=orientation, colors=colors
+    )
     with render_manager(
         group, target=(0.5, 0, 0), position=(0.5, 0, 10), width=4
     ) as show_m:
@@ -947,3 +984,388 @@ def test_ellipsoid_slicer_rgba_field_colors():
         assert pixels[0][0] > 2 * max(int(pixels[0][1]), int(pixels[0][2]))
         assert pixels[1][2] > 2 * max(int(pixels[1][0]), int(pixels[1][1]))
         assert 0 < pixels[1][2] < pixels[0][0]
+
+
+@pytest.mark.parametrize("scale", [0.0, np.float64(0.5), np.array(1.5)])
+def test_ellipsoid_slicer_scalar_scale(scale):
+    """Scaling changes glyph bounds and silhouettes, never centers or CPU views."""
+    lengths = np.broadcast_to(
+        np.array((0.24, 0.12, 0.08), dtype=np.float32), (2, 1, 1, 3)
+    )
+    original_lengths = lengths.copy()
+    group = actor.ellipsoid_slicer(lengths, scale=scale)
+    center_bounds = np.array([[0, 0, 0], [1, 0, 0]])
+    np.testing.assert_array_equal(group.bounds, center_bounds)
+    np.testing.assert_array_equal(get_slices(group), [1, 0, 0])
+    assert len(group.children) == 1
+    child = group.children[0]
+    assert np.shares_memory(child.lengths, lengths)
+    np.testing.assert_array_equal(child.lengths, original_lengths)
+    np.testing.assert_array_equal(child.bounds, center_bounds)
+    # Match the field input precision before comparing rendered pixels.
+    radii = original_lengths[0, 0, 0] * float(scale)
+    np.testing.assert_allclose(
+        child.get_bounding_box(),
+        [center_bounds[0] - radii, center_bounds[1] + radii],
+        atol=1e-7,
+    )
+
+    with render_manager(
+        group, target=(0.5, 0, 0), position=(0.5, 0, 10), width=4
+    ) as show_m:
+        camera = show_m.screens[0].camera
+        image = render_snapshot(show_m)
+        foreground = snapshot_mask(image)
+        if scale == 0:
+            assert not foreground.any()
+        for x in range(2):
+            center = (x, 0, 0)
+            point = _ellipsoid_field_pixel(camera, center)
+            if scale == 0:
+                assert show_m.renderer.get_pick_info(point)["world_object"] is None
+                continue
+            _ellipsoid_field_pick(show_m, camera, center, center)
+            region = foreground[:, x * 128 : (x + 1) * 128]
+            rows, columns = np.nonzero(region)
+            silhouette_center = (
+                (columns.min() + columns.max()) / 2 + x * 128,
+                (rows.min() + rows.max()) / 2,
+            )
+            np.testing.assert_allclose(silhouette_center, point, atol=1)
+            rgb = image[point[1], point[0], :3]
+            assert rgb[0] > 2 * max(int(rgb[1]), int(rgb[2]))
+    reference = actor.ellipsoid(
+        [[0, 0, 0], [1, 0, 0]], lengths=radii, colors=(1, 0, 0), impostor=True
+    )
+    with render_manager(
+        reference, target=(0.5, 0, 0), position=(0.5, 0, 10), width=4
+    ) as show_m:
+        np.testing.assert_allclose(render_snapshot(show_m), image, atol=1)
+    np.testing.assert_array_equal(lengths, original_lengths)
+
+
+@pytest.mark.parametrize(
+    "magnitude,dtype,scale", [(1e38, np.float32, 10), (1e300, np.float64, 1e100)]
+)
+def test_ellipsoid_slicer_scaled_length_range(magnitude, dtype, scale):
+    """
+    Reject oversized products before scaling arithmetic.
+
+    Parameters
+    ----------
+    magnitude : float
+        Finite original semi-axis length.
+    dtype : type
+        Input floating-point dtype.
+    scale : float
+        Multiplier making the product unrepresentable.
+
+    Returns
+    -------
+    None
+        Assertions check the representability error without arithmetic overflow.
+    """
+    lengths = np.full((1, 1, 1, 3), magnitude, dtype=dtype)
+    with np.errstate(over="raise", invalid="raise"):
+        with pytest.raises(ValueError, match="fit in float32"):
+            actor.ellipsoid_slicer(lengths, scale=scale)
+
+
+@pytest.mark.parametrize(
+    "magnitude,dtype,scale", [(1e-30, np.float32, 1e40), (1e300, np.float64, 1e-300)]
+)
+def test_ellipsoid_slicer_extreme_scale_bounds(magnitude, dtype, scale):
+    """
+    Preserve valid extreme products and the original CPU view.
+
+    Parameters
+    ----------
+    magnitude : float
+        Original semi-axis length.
+    dtype : type
+        Input floating-point dtype.
+    scale : float
+        Multiplier producing finite float32-representable bounds.
+
+    Returns
+    -------
+    None
+        Assertions check geometric bounds and input ownership.
+    """
+    lengths = np.full((1, 1, 1, 3), magnitude, dtype=dtype)
+    original = lengths.copy()
+    radii = original[0, 0, 0].astype(np.float64) * scale
+    group = actor.ellipsoid_slicer(lengths, scale=scale)
+    child = group.children[0]
+    bounds = child.get_bounding_box()
+    assert np.isfinite(bounds).all()
+    np.testing.assert_allclose(bounds, [-radii, radii], rtol=1e-6)
+    np.testing.assert_array_equal(lengths, original)
+    assert np.shares_memory(child.lengths, lengths)
+
+
+@pytest.mark.parametrize("background", [np.nan, np.inf, 1e300])
+def test_ellipsoid_slicer_scaled_masked_background(background):
+    """
+    Exclude masked invalid lengths from scaling and rendered surfaces.
+
+    Parameters
+    ----------
+    background : float
+        Invalid or oversized masked semi-axis length.
+
+    Returns
+    -------
+    None
+        Assertions check active radii, picking, and all-masked omission.
+    """
+    lengths = np.array([[0.2, 0.1, 0.1], [background] * 3])[:, None, None, :]
+    mask = np.array([True, False])[:, None, None]
+    group = actor.ellipsoid_slicer(
+        lengths,
+        mask=mask,
+        scale=2,
+        colors=(0, 1, 0),
+        visibility=(False, False, True),
+    )
+    with render_manager(group, width=4) as show_m:
+        camera = show_m.screens[0].camera
+        image = render_snapshot(show_m)
+        px, py = _ellipsoid_field_pick(show_m, camera, (0, 0, 0), (0, 0, 0))
+        assert image[py, px, 1] > 50
+        point = _ellipsoid_field_pixel(camera, (1, 0, 0))
+        assert not np.any(image[point[1], point[0], :3])
+        assert show_m.renderer.get_pick_info(point)["world_object"] is None
+    reference = actor.ellipsoid(
+        [[0, 0, 0]], lengths=(0.4, 0.2, 0.2), colors=(0, 1, 0), impostor=True
+    )
+    with render_manager(reference, width=4) as show_m:
+        np.testing.assert_allclose(render_snapshot(show_m), image, atol=1)
+    group = actor.ellipsoid_slicer(lengths, mask=np.zeros_like(mask), scale=1e300)
+    with render_manager(group, width=4) as show_m:
+        assert not snapshot_mask(render_snapshot(show_m)).any()
+        for x in (0, 1):
+            point = _ellipsoid_field_pixel(show_m.screens[0].camera, (x, 0, 0))
+            assert show_m.renderer.get_pick_info(point)["world_object"] is None
+
+
+@pytest.mark.parametrize("scale", [-0.1, np.nan, np.inf, -np.inf])
+def test_ellipsoid_slicer_invalid_scalar_scale(scale):
+    """Even an empty-volume field rejects negative and nonfinite scale."""
+    with pytest.raises(ValueError):
+        actor.ellipsoid_slicer(np.zeros((1, 1, 1, 3)), scale=scale)
+    with pytest.raises(ValueError):
+        _create_chunked_ellipsoid_field(
+            np.zeros((1, 1, 1, 3)),
+            orientation_matrices=None,
+            mask=None,
+            colors=None,
+            scale=scale,
+            actor_params={},
+            max_glyphs=1,
+        )
+
+
+@pytest.mark.parametrize("orientation_kind", ["identity", "uniform", "field"])
+def test_ellipsoid_slicer_principal_direction_colors(orientation_kind):
+    """Unsorted and tied axes use normalized absolute input-frame columns."""
+    lengths = np.array(
+        [
+            (0.32, 0.16, 0.12),
+            (0.12, 0.32, 0.16),
+            (0.12, 0.16, 0.32),
+            (0.32, 0.32, 0.12),
+        ],
+        dtype=np.float32,
+    ).reshape(4, 1, 1, 3)
+    frame = np.column_stack(
+        (
+            np.array((1, 2, 3)) / np.sqrt(14),
+            np.array((2, -1, 0)) / np.sqrt(5),
+            np.array((3, 6, -5)) / np.sqrt(70),
+        )
+    )
+    if orientation_kind == "identity":
+        orientations = None
+        expected_colors = np.array([(1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 0, 0)])
+        flipped_orientations = np.diag((-1.0, 1.0, 1.0))
+    elif orientation_kind == "uniform":
+        orientations = frame
+        expected_colors = np.array(
+            [
+                np.array((1, 2, 3)) / np.sqrt(14),
+                np.array((2, 1, 0)) / np.sqrt(5),
+                np.array((3, 6, 5)) / np.sqrt(70),
+                np.array((1, 2, 3)) / np.sqrt(14),
+            ]
+        )
+        flipped_orientations = frame * (-1, 1, 1)
+    else:
+        orientations = np.broadcast_to(np.eye(3), (4, 1, 1, 3, 3)).copy()
+        orientations[0, 0, 0] = frame
+        orientations[2, 0, 0] = [[0, 0, 1], [0, 1, 0], [-1, 0, 0]]
+        orientations[3, 0, 0] = np.array(
+            [[1, -1, 0], [1, 1, 0], [0, 0, np.sqrt(2)]]
+        ) / np.sqrt(2)
+        expected_colors = np.array(
+            [
+                np.array((1, 2, 3)) / np.sqrt(14),
+                (0, 1, 0),
+                (1, 0, 0),
+                np.array((1, 1, 0)) / np.sqrt(2),
+            ]
+        )
+        flipped_orientations = orientations * (-1, 1, 1)
+    original_lengths = lengths.copy()
+    original_orientations = None if orientations is None else orientations.copy()
+    groups = (
+        actor.ellipsoid_slicer(lengths, orientation_matrices=orientations),
+        actor.ellipsoid_slicer(
+            lengths,
+            orientation_matrices=orientations,
+            colors=expected_colors.reshape(4, 1, 1, 3),
+        ),
+        actor.ellipsoid_slicer(lengths, orientation_matrices=flipped_orientations),
+    )
+    images = []
+    for group in groups:
+        with render_manager(
+            group, target=(1.5, 0, 0), position=(1.5, 0, 10), width=5
+        ) as show_m:
+            camera = show_m.screens[0].camera
+            image = render_snapshot(show_m)
+            images.append(image)
+            for x in range(4):
+                voxel = (x, 0, 0)
+                point = _ellipsoid_field_pick(show_m, camera, voxel, voxel)
+                assert image[point[1], point[0], :3].max() > 20
+    np.testing.assert_allclose(images[0], images[1], atol=1)
+    np.testing.assert_allclose(images[0], images[2], atol=1)
+    np.testing.assert_array_equal(lengths, original_lengths)
+    if orientations is not None:
+        np.testing.assert_array_equal(orientations, original_orientations)
+
+
+def test_ellipsoid_slicer_direction_colors_under_world_transform():
+    """A fully 3D world transform changes shape, not model-frame directional RGB."""
+    lengths = np.array([[[[0.4, 0.25, 0.15]]]])
+    orientation = np.column_stack(
+        (
+            np.array((1, 2, 3)) / np.sqrt(14),
+            np.array((2, -1, 0)) / np.sqrt(5),
+            np.array((3, 6, -5)) / np.sqrt(70),
+        )
+    )
+    transform = np.array(
+        [
+            [0.8, -0.6, 0.3, 0],
+            [0.5, 1.1, -0.4, 0],
+            [-0.7, 0.2, 1.2, 0],
+            [0, 0, 0, 1],
+        ]
+    )
+    images = []
+    for colors in (None, np.array((1, 2, 3)) / np.sqrt(14)):
+        group = actor.ellipsoid_slicer(
+            lengths, orientation_matrices=orientation, colors=colors
+        )
+        for child in group.children:
+            child.local.state_basis = "matrix"
+            child.local.matrix = transform
+        with render_manager(group, width=3) as show_m:
+            image = render_snapshot(show_m)
+            camera = show_m.screens[0].camera
+            point = _ellipsoid_field_pick(show_m, camera, (0, 0, 0), (0, 0, 0))
+            assert image[point[1], point[0], :3].max() > 20
+            images.append(image)
+    np.testing.assert_allclose(images[0], images[1], atol=1)
+
+
+def test_ellipsoid_slicer_direction_colors_original_float64_lengths():
+    """Scaling and float32 packing cannot turn an original longest axis into a tie."""
+    lengths = np.array([[[[0.3, 0.3 + 1e-9, 0.15]]]], dtype=np.float64)
+    assert lengths[0, 0, 0, 1] > lengths[0, 0, 0, 0]
+    assert np.float32(lengths[0, 0, 0, 0]) == np.float32(lengths[0, 0, 0, 1])
+    images = []
+    for colors in (None, (0, 1, 0)):
+        group = actor.ellipsoid_slicer(lengths, scale=1.7, colors=colors)
+        with render_manager(group, width=3) as show_m:
+            image = render_snapshot(show_m)
+            camera = show_m.screens[0].camera
+            point = _ellipsoid_field_pick(show_m, camera, (0, 0, 0), (0, 0, 0))
+            rgb = image[point[1], point[0], :3]
+            assert rgb[1] > 20
+            assert rgb[1] > 2 * max(int(rgb[0]), int(rgb[2]))
+            images.append(image)
+    np.testing.assert_allclose(images[0], images[1], atol=1)
+
+
+def test_ellipsoid_slicer_uniform_color_precedence():
+    """Explicit hex, RGB and RGBA override principal-axis colors and retain alpha."""
+    lengths = np.array([[[[0.3, 0.2, 0.15]]]], dtype=np.float32)
+    images = []
+    pixels = []
+    for colors in ("#00ffff", (0, 255, 255), (0, 1, 1, 0.25)):
+        group = actor.ellipsoid_slicer(lengths, colors=colors)
+        with render_manager(group, width=3) as show_m:
+            camera = show_m.screens[0].camera
+            image = render_snapshot(show_m)
+            point = _ellipsoid_field_pick(show_m, camera, (0, 0, 0), (0, 0, 0))
+            rgb = image[point[1], point[0], :3]
+            assert min(int(rgb[1]), int(rgb[2])) > 2 * int(rgb[0])
+            images.append(image)
+            pixels.append(rgb)
+    np.testing.assert_allclose(images[0], images[1], atol=1)
+    assert 0 < pixels[2][1] < 0.7 * pixels[0][1]
+    assert 0 < pixels[2][2] < 0.7 * pixels[0][2]
+
+
+@pytest.mark.parametrize("colors", [None, "#00ffff"])
+def test_ellipsoid_slicer_inactive_direction_placeholders(colors):
+    """Masked and zero-axis invalid frames stay warning-free and never pick."""
+    lengths = np.full((5, 1, 1, 3), (0.15, 0.3, 0.1), dtype=np.float32)
+    orientations = np.broadcast_to(np.eye(3), (5, 1, 1, 3, 3)).copy()
+    mask = np.ones((5, 1, 1), dtype=bool)
+    mask[1, 0, 0] = False
+    lengths[1, 0, 0] = (np.nan, -np.inf, np.inf)
+    lengths[2, 0, 0, 1] = 0
+    lengths[3, 0, 0] = 0
+    orientations[1:3] = np.nan
+    orientations[1, 0, 0, 0, 0] = np.inf
+    orientations[3] = np.inf
+    originals = [value.copy() for value in (lengths, orientations, mask)]
+    with (
+        warnings.catch_warnings(),
+        np.errstate(invalid="raise", divide="raise", over="raise"),
+    ):
+        warnings.simplefilter("error", RuntimeWarning)
+        group = _create_chunked_ellipsoid_field(
+            lengths,
+            orientation_matrices=orientations,
+            mask=mask,
+            colors=colors,
+            scale=0.8,
+            actor_params={},
+            max_glyphs=2,
+        )
+    with render_manager(
+        group, target=(2, 0, 0), position=(2, 0, 10), width=7
+    ) as show_m:
+        camera = show_m.screens[0].camera
+        image = render_snapshot(show_m)
+        for x in range(5):
+            voxel = (x, 0, 0)
+            point = _ellipsoid_field_pixel(camera, voxel)
+            if x in (0, 4):
+                _ellipsoid_field_pick(show_m, camera, voxel, voxel)
+                rgb = image[point[1], point[0], :3]
+                assert rgb[1] > 2 * int(rgb[0])
+                if colors is None:
+                    assert rgb[1] > 2 * int(rgb[2])
+                else:
+                    assert rgb[2] > 2 * int(rgb[0])
+            else:
+                assert show_m.renderer.get_pick_info(point)["world_object"] is None
+                assert image[point[1], point[0], :3].max() <= 5
+    for value, original in zip((lengths, orientations, mask), originals, strict=True):
+        np.testing.assert_array_equal(value, original)

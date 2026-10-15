@@ -7,6 +7,7 @@ from fury.actor import (
     apply_affine_to_group,
     contour_from_volume,
     data_slicer,
+    ellipsoid_slicer,
     show_slices,
     vector_field_slicer,
 )
@@ -146,6 +147,143 @@ def peaks_slicer(
             child.bounds = obj.bounds
         show_slices(obj, np.asarray(obj.bounds).mean(axis=0))
 
+    return obj
+
+
+def tensor_slicer(
+    evals,
+    evecs,
+    *,
+    affine=None,
+    mask=None,
+    colors=None,
+    scale=1.0,
+    norm=True,
+    cross_section=None,
+    opacity=1.0,
+    visibility=(True, True, True),
+    enable_picking=True,
+):
+    """
+    Render tensor eigenpairs as a sliced ellipsoid field.
+
+    Parameters
+    ----------
+    evals : ndarray, shape (X, Y, Z, 3)
+        Eigenvalues paired with the corresponding eigenvector columns.
+        Negative values are clipped to zero; zero axes have no renderable volume.
+    evecs : ndarray, shape (X, Y, Z, 3, 3)
+        Orthonormal eigenvector columns. Eigenpairs need not be sorted, and
+        either handedness is supported.
+    affine : ndarray, shape (4, 4), optional
+        Finite affine transforming voxel placement and glyph shape.
+    mask : ndarray, shape (X, Y, Z), optional
+        Converted to boolean: zero is inactive and nonzero is active. Must match
+        the exact spatial shape. Masked eigenpairs may contain invalid values.
+    colors : str, tuple, list or ndarray, optional
+        Uniform RGB(A) or hex color, or an (X, Y, Z, 3/4) color field.
+        Numeric colors accept [0, 1] and [0, 255]. None uses shader ``orient2rgb``
+        of the principal eigenvector, weighted by fractional anisotropy in the
+        input data frame; ties select the first maximum nonnegative eigenvalue.
+    scale : float, optional
+        Finite, nonnegative semi-axis multiplier, validated and applied by
+        ``ellipsoid_slicer``.
+    norm : bool, optional
+        Normalize each voxel's nonnegative eigenvalues by their maximum before
+        scaling. If False, preserve eigenvalue magnitudes.
+    cross_section : list, tuple or ndarray, optional
+        Three world-space plane positions, clamped to transformed voxel-center
+        bounds and converted to integers. None selects the center-bounds
+        midpoint after an affine, or the voxel-shape midpoint without one.
+    opacity : float, optional
+        Material opacity in [0, 1].
+    visibility : tuple, optional
+        Visibility of the X, Y and Z slice planes.
+    enable_picking : bool, optional
+        Enable surface picking with the original full-field voxel index.
+
+    Returns
+    -------
+    Group
+        A flat group of material-bearing resident ellipsoid tiles.
+
+    Notes
+    -----
+    Inputs are not modified. Unmasked eigenvalues must be finite.
+
+    FA is computed on eigenvalues already clipped to be nonnegative. Noisy
+    DTI voxels with a negative eigenvalue get a different FA than
+    ``dipy.reconst.dti.fractional_anisotropy(evals)``, so the default colors
+    do not match DIPY's. For matching FA, compute it from the raw finite
+    eigenvalues (masked entries zeroed), then clip only the glyph lengths.
+    Any voxel with a nonpositive eigenvalue is omitted after clipping: a zero
+    semi-axis makes the entire glyph inactive, rather than rendering a flat disc.
+    """
+    evals = np.asarray(evals)
+    evecs = np.asarray(evecs)
+    if evals.ndim != 4 or evals.shape[-1] != 3 or evecs.shape != (*evals.shape, 3):
+        raise ValueError("Eigenvalues and eigenvectors have incompatible shapes.")
+    if mask is not None:
+        mask = np.asarray(mask, dtype=bool)
+        if mask.shape != evals.shape[:3]:
+            raise ValueError("Mask must have shape (X, Y, Z).")
+    if affine is not None:
+        affine = np.asarray(affine)
+        if affine.shape != (4, 4) or not np.isfinite(affine).all():
+            raise ValueError("Affine must be a finite (4, 4) matrix.")
+
+    lengths = np.array(evals, dtype=np.result_type(evals.dtype, np.float32), copy=True)
+    if mask is not None:
+        np.copyto(lengths, 0, where=~mask[..., None])
+    if not np.isfinite(lengths).all():
+        raise ValueError("Unmasked eigenvalues must be finite.")
+    np.maximum(lengths, 0, out=lengths)
+    orientation_colors = colors is None
+    if norm or orientation_colors:
+        maxima = lengths.max(axis=-1)
+        normalized = lengths if norm else lengths.copy()
+        np.divide(
+            normalized,
+            maxima[..., None],
+            out=normalized,
+            where=maxima[..., None] > 0,
+        )
+    if orientation_colors:
+        ev1, ev2, ev3 = np.moveaxis(normalized, -1, 0)
+        denominator = ev1**2 + ev2**2 + ev3**2
+        all_zero = denominator == 0
+        fa = np.sqrt(
+            0.5
+            * ((ev1 - ev2) ** 2 + (ev2 - ev3) ** 2 + (ev3 - ev1) ** 2)
+            / (denominator + all_zero)
+        )
+        np.clip(fa, 0, 1, out=fa)
+        colors = np.broadcast_to(fa[..., None], lengths.shape)
+
+    obj = ellipsoid_slicer(
+        lengths,
+        orientation_matrices=evecs,
+        mask=mask,
+        colors=colors,
+        scale=scale,
+        cross_section=None if affine is not None else cross_section,
+        opacity=opacity,
+        visibility=visibility,
+        enable_picking=enable_picking,
+    )
+    if orientation_colors:
+        for child in obj.children:
+            child.material.orientation_colors = True
+    if affine is not None:
+        bounds = get_transformed_cube_bounds(affine, obj.bounds[0], obj.bounds[1])
+        obj.bounds = bounds
+        for child in obj.children:
+            child.local.matrix = affine @ child.local.matrix
+            child.bounds = bounds
+        show_slices(
+            obj,
+            np.asarray(bounds).mean(axis=0) if cross_section is None else cross_section,
+        )
     return obj
 
 

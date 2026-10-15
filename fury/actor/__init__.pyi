@@ -41,6 +41,7 @@ __all__ = [
     "VectorField",
     "volume_slicer",
     "peaks_slicer",
+    "tensor_slicer",
     "streamlines",
     "line_projection",
     "create_mesh",
@@ -71,7 +72,13 @@ __all__ = [
 ]
 
 from ._billboard import Billboard, billboard, billboard_sphere
-from .bio import contour_from_label, contour_from_roi, peaks_slicer, volume_slicer
+from .bio import (
+    contour_from_label,
+    contour_from_roi,
+    peaks_slicer,
+    tensor_slicer,
+    volume_slicer,
+)
 from .core import (
     Actor,
     Group,

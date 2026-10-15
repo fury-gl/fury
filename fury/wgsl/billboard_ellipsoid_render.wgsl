@@ -93,7 +93,20 @@ fn vs_main(in: VertexInput) -> Varyings {
     varyings.inverse_row0 = vec3<f32>(inverse_row0);
     varyings.inverse_row1 = vec3<f32>(inverse_row1);
     varyings.inverse_row2 = vec3<f32>(inverse_row2);
-    varyings.color = vec4<f32>(load_s_colors(glyph));
+    var color = load_s_colors(glyph);
+    if (u_material.orientation_colors != 0) {
+        let color_axis_index = i32(load_s_ellipsoid_axes(glyph * 3).w);
+        let color_axis = load_s_ellipsoid_axes(glyph * 3 + color_axis_index).xyz;
+        // Scaling first keeps orient2rgb's squared norm within float32 range.
+        let color_axis_scale = max(max(abs(color_axis.x), abs(color_axis.y)), abs(color_axis.z));
+        if (color_axis_scale > 0.0) {
+            color = vec4<f32>(
+                color.rgb * orient2rgb(color_axis / color_axis_scale),
+                color.a
+            );
+        }
+    }
+    varyings.color = vec4<f32>(color);
     // Each vertex carries the same two exact 13-bit float components. A single
     // f32 cannot represent all 26-bit IDs; decode and round before integer packing.
     varyings.glyph_index_parts = vec2<f32>(billboard_encode_glyph_index(in.glyph_index));
