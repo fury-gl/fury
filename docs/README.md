@@ -57,10 +57,45 @@ $ .\make.bat html-no-examples
 
 ### Serve the Documentation Locally
 
-To view the generated documentation and test features like the version switcher (which require a local server to bypass CORS policies), run:
+To view the generated documentation over HTTP, run from `docs`:
 
 ```bash
 $ make serve
 ```
 
 This will start an HTTP server at `http://localhost:8000` and open it in your default web browser. Press `Ctrl+C` to stop the server.
+
+### Version Switcher
+
+The switcher reads `https://fury.gl/_static/versions_switcher.json`, maintained
+in `fury-website`. `FURY_DOCS_VERSION` selects an exact manifest ID, such as `dev`
+or `v2.0.0`. Without it, development/post-release builds select `dev`; releases
+select `v<release>`.
+
+To build documentation identified as `dev`, run from `docs`:
+
+```bash
+$ FURY_DOCS_VERSION=dev make html-no-examples
+```
+
+Or in PowerShell:
+
+```powershell
+$env:FURY_DOCS_VERSION = "dev"
+.\make.bat html-no-examples
+```
+
+Only when testing unpublished manifest changes, set `FURY_SWITCHER_JSON_URL`
+to the test manifest's HTTP URL and serve it from the same origin as the docs.
+
+### Publish a Release in the Version Switcher
+
+In `fury-website`:
+
+1. Publish the series directory, such as `v2.1.x/`.
+2. Update its manifest entry with the latest release ID/name and series URL.
+   Only the stable entry gets `"preferred": true` and the `(stable)` suffix.
+3. For a new stable series, repoint `latest` and `stable` to it.
+
+Publish the manifest before documentation that depends on it. Release builds
+must unset `FURY_DOCS_VERSION` or set the exact release ID, not `dev`.
