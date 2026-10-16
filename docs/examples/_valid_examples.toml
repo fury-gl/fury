@@ -69,6 +69,8 @@ files = [
     "viz_card.py",
     "viz_image_container_2d.py",
     "viz_textblock.py",
+    "viz_spinbox.py",
+    "viz_textbox.py",
 ]
 
 [animation]

@@ -82,7 +82,7 @@ current_size = (800, 700)
 show_manager = ShowManager(
     scene=scene,
     size=current_size,
-    title="FURY: Text Box Example",
+    title="FURY Text Box Example",
 )
 
 ##############################################################################
