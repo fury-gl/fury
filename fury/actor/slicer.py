@@ -1248,8 +1248,9 @@ def sph_glyph(
         The spherical harmonics coefficients. X, Y, Z denotes the position and N
         represents the number of coefficients.
     sphere : {str, tuple}, optional
-        The name of the sphere to use or a tuple containing the phi and theta
-        segments for a custom sphere.
+        The name of the sphere to use or a custom sphere tuple ``(phi, theta)``,
+        where phi is the number of latitude segments and theta is the number of
+        longitude segments: ``(latitude_segments, longitude_segments)``.
         Available options for the named spheres:
         * 'symmetric362'
         * 'symmetric642'

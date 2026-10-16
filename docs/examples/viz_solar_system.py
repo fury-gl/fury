@@ -12,7 +12,6 @@ to simulate orbital motion.
 import numpy as np
 from scipy.spatial.transform import Rotation as Rot
 from fury import actor, window
-from fury.primitive import prim_sphere
 from fury.ui import PlaybackPanel
 from fury.data import fetch_viz_textures, read_viz_textures
 
@@ -91,37 +90,6 @@ planets_data = [
 fetch_viz_textures()
 
 ##############################################################################
-# Create Textured Spheres and adding to the Scene
-
-
-def make_textured_sphere(planet_file, scale, position=None):
-    verts, faces = prim_sphere(phi=60, theta=60)
-
-    norms = np.linalg.norm(verts, axis=1, keepdims=True)
-    norms[norms == 0] = 1.0
-    normalized = verts / norms
-
-    x = normalized[:, 0]
-    y = normalized[:, 1]
-    z = normalized[:, 2]
-
-    # Standard Mercator mapping:
-    # longitude u: [-pi, pi] -> [0, 1]
-    # latitude v: [-pi/2, pi/2] -> [0, 1]
-    u = np.arctan2(x, z) / (2.0 * np.pi) + 0.5
-    v = 0.5 - np.arcsin(y) / np.pi
-    uvs = np.column_stack((u, v))
-
-    planet_actor = actor.surface(verts, faces, texture=planet_file, texture_coords=uvs)
-
-    planet_actor.local.scale = scale
-    if position is not None:
-        planet_actor.local.position = position
-
-    return planet_actor
-
-
-##############################################################################
 # Initialize all planet actors.
 
 planets = []
@@ -134,7 +102,9 @@ for p_data in planets_data:
     planet_file = read_viz_textures(filename)
 
     initial_pos = [float(pos), 0.0, 0.0]
-    actor_obj = make_textured_sphere(planet_file, scale, position=initial_pos)
+    actor_obj = actor.texture_on_sphere(planet_file, theta=60, phi=60)
+    actor_obj.local.scale = scale
+    actor_obj.local.position = initial_pos
     scene.add(actor_obj)
 
     is_ring = "saturn_ring" in filename
