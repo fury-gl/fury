@@ -60,6 +60,9 @@ extensions = [
     "sphinxext.opengraph",
 ]
 
+# Exact Sphinx document names (without .rst) that intentionally use Jinja.
+rstjinja_documents = ["community"]
+
 html_baseurl = os.environ.get("SPHINX_HTML_BASE_URL", "https://fury.gl/latest/")
 
 # Open Graph configuration
@@ -146,16 +149,14 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.
 html_theme = "pydata_sphinx_theme"
 
-# Define the json_url for our version switcher.
-json_url = "https://fury.gl/latest/_static/versions_switcher.json"
-
-
-if "dev" in release:
-    version_match = "latest"
-    # Use a relative path in dev; serve locally with `make serve` to avoid CORS issues.
-    json_url = "_static/versions_switcher.json"
-else:
-    version_match = "v" + release
+# Define the shared manifest and the documentation build's version identity.
+json_url = os.environ.get(
+    "FURY_SWITCHER_JSON_URL", "https://fury.gl/_static/versions_switcher.json"
+)
+default_version_match = (
+    "dev" if "dev" in release or "post" in release else "v" + release
+)
+version_match = os.environ.get("FURY_DOCS_VERSION", default_version_match)
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
@@ -209,11 +210,7 @@ github_project_url = "https://github.com/fury-gl/fury"
 
 import github_tools as ght
 
-# Skip GitHub fetching for now
-all_versions = []  # ght.get_all_versions(ignore="micro")
 html_context = {
-    "all_versions": all_versions,
-    "versions_list": ["dev", "latest"] + all_versions,
     "basic_stats": ght.fetch_basic_stats(),
     "contributors": ght.fetch_contributor_stats(),
     "default_mode": "light",

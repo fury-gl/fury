@@ -46,6 +46,8 @@ jobs:
     - name: Install FURY
       run: pip install .
     - name: Build docs
+      env:
+        FURY_DOCS_VERSION: dev
       run: |
         cd docs
         make -C . html SPHINXOPTS="-W --keep-going"

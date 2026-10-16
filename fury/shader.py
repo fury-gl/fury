@@ -1017,7 +1017,7 @@ class BillboardEllipsoidShader(BillboardSphereShader):
             Ellipsoid world object containing packed glyph buffers.
         shared : Shared
             Renderer-wide GPU resources, including the standard uniform buffer.
-        _scene : Scene
+        _scene : fury.lib.Scene
             Scene argument required by the shader interface; unused here.
 
         Returns
