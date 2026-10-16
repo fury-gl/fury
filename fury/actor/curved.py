@@ -86,9 +86,9 @@ def sphere(
         Sphere radius. Can be a single value for all spheres or an array of
         radii for each sphere.
     phi : int, optional
-        The number of segments in the longitude direction.
-    theta : int, optional
         The number of segments in the latitude direction.
+    theta : int, optional
+        The number of segments in the longitude direction.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque).
         If both `opacity` and RGBA are provided, the final alpha will be:
@@ -229,9 +229,9 @@ def ellipsoid(
         1 (opaque). If both `opacity` and RGBA are provided, the final alpha
         will be: final_alpha = alpha_in_RGBA * opacity.
     phi : int, optional
-        Number of longitude segments for the mesh branch only.
-    theta : int, optional
         Number of latitude segments for the mesh branch only.
+    theta : int, optional
+        Number of longitude segments for the mesh branch only.
     material : str, optional
         The material type for the ellipsoids. Options are 'phong', 'basic',
         'standard' and 'physical'. The last two are physically based (PBR)
