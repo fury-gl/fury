@@ -436,9 +436,9 @@ def prim_sphere(*, name="symmetric362", gen_faces=False, phi=None, theta=None):
         If True, triangulate a set of vertices on the sphere to get the faces.
         Otherwise, load the saved faces from a file.
     phi : int, optional
-        Number of points in the latitude direction.
+        Number of segments in the latitude direction.
     theta : int, optional
-        Number of points in the longitude direction.
+        Number of segments in the longitude direction.
 
     Returns
     -------
@@ -471,31 +471,31 @@ def prim_sphere(*, name="symmetric362", gen_faces=False, phi=None, theta=None):
         phi = phi if phi >= 3 else 3
         theta = theta if theta >= 3 else 3
 
-        u = np.linspace(0, 1, phi + 1)
-        v = np.linspace(0, 1, theta + 1)
+        u = np.linspace(0, 1, theta + 1)
+        v = np.linspace(0, 1, phi + 1)
 
         U, V = np.meshgrid(u, v)
 
-        phi_angle = U * 2.0 * np.pi - np.pi
-        theta_angle = V * np.pi - (np.pi / 2.0)
+        longitude = U * 2.0 * np.pi - np.pi
+        latitude = V * np.pi - (np.pi / 2.0)
 
-        x = np.cos(theta_angle) * np.sin(phi_angle)
-        y = np.sin(theta_angle)
-        z = np.cos(theta_angle) * np.cos(phi_angle)
+        x = np.cos(latitude) * np.sin(longitude)
+        y = np.sin(latitude)
+        z = np.cos(latitude) * np.cos(longitude)
 
         verts = np.column_stack((x.ravel(), y.ravel(), z.ravel()))
 
         faces = []
-        for i in range(theta):
-            for j in range(phi):
-                p1 = i * (phi + 1) + j
+        for i in range(phi):
+            for j in range(theta):
+                p1 = i * (theta + 1) + j
                 p2 = p1 + 1
-                p3 = (i + 1) * (phi + 1) + j
+                p3 = (i + 1) * (theta + 1) + j
                 p4 = p3 + 1
 
                 if i != 0:
                     faces.append([p1, p3, p2])
-                if i != theta - 1:
+                if i != phi - 1:
                     faces.append([p2, p3, p4])
 
         faces = np.array(faces, dtype=np.uint32)
