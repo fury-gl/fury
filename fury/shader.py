@@ -185,6 +185,20 @@ class VectorFieldShader(LineShader):
 class StreamlinesShader(LineShader):
     """Shader for StreamlineActor."""
 
+    def __init__(self, wobject):
+        super().__init__(wobject)
+        self["per_line_thickness"] = wobject._line_thicknesses_buffer is not None
+
+    def get_bindings(self, wobject, shared, scene):
+        bindings = super().get_bindings(wobject, shared, scene)
+        thickness_buffer = wobject._line_thicknesses_buffer
+        if thickness_buffer is not None:
+            bindings[0][max(bindings[0]) + 1] = Binding(
+                "s_thicknesses", "buffer/read_only_storage", thickness_buffer, "VERTEX"
+            )
+            self.define_bindings(0, bindings[0])
+        return bindings
+
     def get_render_info(self, wobject, shared):
         """
         Get render information for the streamline shader.
