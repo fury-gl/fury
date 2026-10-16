@@ -71,6 +71,7 @@ In the upcoming week, I plan to:
 
 - Continue addressing review comments on the Tree UI PR.
 - Work on fury website SEO and image optimization.
+
 Connect with Me
 ---------------
 

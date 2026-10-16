@@ -8,7 +8,7 @@ Quick Overview
 --------------
 
 * First stable release of FURY built on `pygfx`/`wgpu`, replacing the legacy VTK-based rendering pipeline.
-* Added a :doc:`migration guide <../migration_guide_v2.0>` to help users transition from FURY 0.12.x to v2.0.0.
+* Added a :doc:`migration guide </migration_guide_v2.0>` to help users transition from FURY 0.12.x to v2.0.0.
 * Completed the UI framework port to the v2 architecture: ``TextBox2D``, ``ComboBox2D``, ``ListBox2D``, ``Card2D``, ``TabUI``, ``ImageContainer2D``, ``RangeSlider``, ``LineDoubleSlider2D``, ``RingSlider2D``, ``PlaybackPanel``, and ``Radio Button/Checkbox`` components.
 * Ported the Animation ``Timeline and Camera Animation`` systems from VTK to `pygfx`.
 * Added new actors and features, including Network Visualization, per-instance geometry parameters for actors, and a chunked Vector Field actor for large datasets.
