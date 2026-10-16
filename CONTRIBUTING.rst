@@ -166,8 +166,8 @@ Checklist before Releasing
   * It checks (and updates if needed) the copyright year range in ``LICENSE``.
   * It asks for the new version number, then generates the release notes by
     running ``docs/source/ext/github_tools.py`` for you, creating
-    ``release_notes/releasev<version>.rst``. It will pause for you to manually
-    fill in the "Quick overview" section of that file.
+    ``docs/source/release_notes/releasev<version>.rst``. It will pause for you to
+    manually fill in the "Quick overview" section of that file.
   * It updates ``release-history.rst`` to include the newly generated release
     notes file.
   * It creates a release announcement blog post stub under
@@ -175,9 +175,12 @@ Checklist before Releasing
   * It asks you to confirm that deprecated functions/modules have been
     checked before continuing.
   * It runs the test suite (``pytest -svv --doctest-modules fury``) and builds
-    the documentation (``make -C docs html``), then asks you to confirm the
-    generated docs look correct - looping back through tests/docs until you
-    confirm.
+    the documentation (``make -C docs html``). It then runs the platform's
+    ``serve`` target, opening a browser at ``http://localhost:8000``. Review the
+    generated docs, then press Ctrl+C in the terminal to stop the preview and
+    answer the confirmation prompt. On Windows, confirm batch termination if
+    prompted. Answering no to the documentation confirmation repeats the tests,
+    build, and preview until you confirm the docs look correct.
 
 * The release should now be ready.
 
