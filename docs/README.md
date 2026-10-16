@@ -99,3 +99,9 @@ In `fury-website`:
 
 Publish the manifest before documentation that depends on it. Release builds
 must unset `FURY_DOCS_VERSION` or set the exact release ID, not `dev`.
+
+### RST Documents That Use Jinja
+
+Only documents listed in `rstjinja_documents` in `source/conf.py` are templated
+for HTML builds; currently just `community`. Other sources remain literal,
+preserving braces in code examples. Selected-template errors still fail the build.

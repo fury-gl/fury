@@ -60,6 +60,9 @@ extensions = [
     "sphinxext.opengraph",
 ]
 
+# Exact Sphinx document names (without .rst) that intentionally use Jinja.
+rstjinja_documents = ["community"]
+
 html_baseurl = os.environ.get("SPHINX_HTML_BASE_URL", "https://fury.gl/latest/")
 
 # Open Graph configuration
