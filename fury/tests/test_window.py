@@ -25,9 +25,10 @@ from fury.lib import (
     TrackballController,
     have_imgui_bundle,
     have_py_side6,
+    imgui_bundle,
 )
 from fury.motion import Animation, CameraAnimation, Timeline
-from fury.ui import Rectangle2D, UIContext
+from fury.ui import Rectangle2D, TextButton2D, UIContext
 from fury.window import (
     Scene,
     ShowManager,
@@ -500,18 +501,69 @@ def test_show_manager_calculate_screen_sizes_invalid_bounding_boxes(caplog):
     assert "Invalid screen bounding box format" in caplog.text
 
 
-def test_show_manager_set_enable_events():
-    """Test enabling and disabling events."""
-    show_m = ShowManager(window_type="offscreen")
-    show_m.set_enable_events(False)
-    assert show_m.enable_events is False
-    for screen in show_m.screens:
-        assert screen.controller.enabled is False
+@pytest.mark.parametrize("enable_events", [True, False])
+def test_show_manager_set_enable_events(enable_events):
+    """Input gating survives repeated toggles without duplicate click delivery."""
+    scene = Scene()
+    button = TextButton2D(label="Count", position=(20, 20), size=(100, 40))
+    clicks = []
+    button.on_clicked = clicks.append
+    scene.add(button)
+    show_m = ShowManager(
+        scene=scene,
+        size=(160, 120),
+        pixel_ratio=1,
+        enable_events=enable_events,
+        window_type="offscreen",
+    )
+    previous_active = UIContext.active_ui
+    previous_hot = UIContext.hot_ui
+    try:
+        _loader_draw(show_m)
+        expected = [button] if enable_events else []
+        _loader_click(show_m, 50, 40)
+        assert clicks == expected
 
-    show_m.set_enable_events(True)
-    assert show_m.enable_events is True
-    for screen in show_m.screens:
-        assert screen.controller.enabled is True
+        for _ in range(2):
+            show_m.set_enable_events(False)
+            show_m.set_enable_events(False)
+            _loader_click(show_m, 50, 40)
+            assert clicks == expected
+            assert not show_m.screens[0].controller.enabled
+
+            resize_calls = []
+            show_m.resize_callback(resize_calls.append)
+            show_m.window.set_logical_size(200, 160)
+            _loader_draw(show_m)
+            assert (200, 160) in resize_calls
+            show_m.window.set_logical_size(160, 120)
+            _loader_draw(show_m)
+            assert (160, 120) in resize_calls
+
+            show_m.set_enable_events(True)
+            show_m.set_enable_events(True)
+            _loader_click(show_m, 50, 40)
+            expected.append(button)
+            assert clicks == expected
+            assert show_m.screens[0].controller.enabled
+
+        def disable_from_click(element):
+            """Disable input during an event that is still bubbling."""
+            clicks.append(element)
+            show_m.set_enable_events(False)
+
+        button.on_clicked = disable_from_click
+        _loader_click(show_m, 50, 40)
+        expected.append(button)
+        assert clicks == expected
+        assert not show_m.screens[0].controller.enabled
+        assert not show_m._is_dragging
+        _loader_click(show_m, 50, 40)
+        assert clicks == expected
+    finally:
+        show_m.close()
+        UIContext.active_ui = previous_active
+        UIContext.hot_ui = previous_hot
 
 
 def test_show_manager_update_camera(sample_actor):
@@ -1282,3 +1334,516 @@ def test_skybox_actually_lights_a_metal():
 
     assert unlit < 10
     assert lit > 200
+
+
+def _loader_draw(show_m):
+    """Process submitted canvas events and capture the rendered frame."""
+    show_m.window._process_events()
+    show_m.window.draw()
+    return show_m.snapshot()
+
+
+def _loader_pointer(show_m, event_type, x, y, *, button=0, buttons=()):
+    """Submit a complete pointer event and draw its observable effects."""
+    show_m.window.submit_event(
+        {
+            "event_type": event_type,
+            "x": x,
+            "y": y,
+            "button": button,
+            "buttons": buttons,
+            "modifiers": (),
+            "ntouches": 0,
+            "touches": {},
+        }
+    )
+    show_m.window._process_events()
+    show_m.window.draw()
+
+
+def _loader_click(show_m, x, y):
+    """Submit a pointer move followed by a complete left-button click."""
+    _loader_pointer(show_m, "pointer_move", x, y)
+    _loader_pointer(show_m, "pointer_down", x, y, button=1, buttons=(1,))
+    _loader_pointer(show_m, "pointer_up", x, y, button=1)
+
+
+def _loader_assert_dimmed(original, loading):
+    """Check both screens and all corners without assuming an sRGB ratio."""
+    height, width = loading.shape[:2]
+    for y, x in (
+        (8, 8),
+        (8, width - 20),
+        (height - 20, 8),
+        (height - 20, width - 20),
+        (height // 2, width // 4),
+        (height // 2, 3 * width // 4),
+    ):
+        before = original[y : y + 12, x : x + 12, :3].astype(float)
+        during = loading[y : y + 12, x : x + 12, :3].astype(float)
+        assert np.all(during > 0)
+        assert np.all(during < before - 5)
+
+
+def _loader_assert_arc_pixels(image, *, center=(320, 180), pixel_ratio=1):
+    """Only one undimmed blue/red/yellow spinner occupies the canvas center."""
+    rgb = image[..., :3]
+    color_masks = (
+        (rgb[..., 2] > 240) & (rgb[..., 0] < 20) & (rgb[..., 1] < 20),
+        (rgb[..., 0] > 240) & (rgb[..., 1] < 20) & (rgb[..., 2] < 20),
+        (rgb[..., 0] > 240) & (rgb[..., 1] > 240) & (rgb[..., 2] < 20),
+    )
+    for mask, radius in zip(color_masks, (72, 57.6, 43.2), strict=True):
+        y, x = np.nonzero(mask)
+        assert len(x) > 10 * pixel_ratio
+        distances = np.hypot(
+            (x + 0.5) / pixel_ratio - center[0],
+            (y + 0.5) / pixel_ratio - center[1],
+        )
+        assert np.all(distances > radius - 6)
+        assert np.all(distances < radius + 2)
+
+
+def test_loader_full_canvas_composition():
+    scenes = [
+        Scene(background=(0.2, 0.55, 0.3)),
+        Scene(background=(0.6, 0.2, 0.45)),
+    ]
+    show_m = ShowManager(
+        scene=scenes,
+        screen_config=[1, 1],
+        size=(640, 360),
+        pixel_ratio=1,
+        window_type="offscreen",
+    )
+    try:
+        original = _loader_draw(show_m)
+        assert not np.array_equal(original[20, 20], original[20, -20])
+        show_m.show_loader()
+        loading = _loader_draw(show_m)
+        _loader_assert_dimmed(original, loading)
+        _loader_assert_arc_pixels(loading, center=(320, 180), pixel_ratio=1)
+        assert show_m._loader.message == ""
+        assert not show_m._loader.text.actor.visible
+        assert show_m._loader_scene is not scenes[0]
+        assert show_m._loader_scene is not scenes[1]
+        assert not any(show_m._loader in scene.ui_elements for scene in scenes)
+
+        show_m.hide_loader()
+        np.testing.assert_array_equal(_loader_draw(show_m), original)
+    finally:
+        show_m.close()
+
+
+@pytest.mark.parametrize("pixel_ratio", [1, 2])
+def test_loader_resize_pixel_ratio_and_wrapped_message(pixel_ratio):
+    scenes = [
+        Scene(background=(0.2, 0.55, 0.3)),
+        Scene(background=(0.6, 0.2, 0.45)),
+    ]
+    show_m = ShowManager(
+        scene=scenes,
+        screen_config=[1, 1],
+        size=(640, 360),
+        pixel_ratio=pixel_ratio,
+        window_type="offscreen",
+    )
+    message = "Reading " + "generated volume data " * 9 + "\nPreparing display"
+    try:
+        show_m.show_loader(message)
+        loader = show_m._loader
+        overlay_scene = show_m._loader_scene
+        _loader_draw(show_m)
+        resize_calls = []
+        show_m.resize_callback(resize_calls.append)
+        show_m.window.set_logical_size(800, 400)
+        loading = _loader_draw(show_m)
+
+        assert (800, 400) in resize_calls
+        assert show_m._loader is loader
+        assert show_m._loader_scene is overlay_scene
+        assert loading.shape[:2] == (400 * pixel_ratio, 800 * pixel_ratio)
+        np.testing.assert_array_equal(loader.size, (800, 400))
+        np.testing.assert_array_equal(loader.overlay.size, (800, 400))
+        for arc in loader.arcs:
+            np.testing.assert_allclose(arc.local.position[:2], (400, 200))
+        assert loader.message == message
+        assert loader.text.message == message
+        assert loader.text.actor.max_width == 768
+        text_pixels = np.all(loading[..., :3] > 220, axis=-1)
+        text_rows = np.flatnonzero(np.any(text_pixels, axis=1)) / pixel_ratio
+        assert len(text_rows) > 0
+        assert text_rows.min() >= 260
+        assert text_rows.max() - text_rows.min() > 30
+        _loader_assert_arc_pixels(loading, center=(400, 200), pixel_ratio=pixel_ratio)
+
+        show_m.hide_loader()
+        original = _loader_draw(show_m)
+        _loader_assert_dimmed(original, loading)
+
+        # The offscreen canvas clamps a zero request to one physical pixel.
+        show_m.show_loader()
+        show_m.window.set_logical_size(0, 0)
+        _loader_draw(show_m)
+        assert np.all(show_m._loader.size > 0)
+        show_m.window.set_logical_size(800, 400)
+        resumed = _loader_draw(show_m)
+        np.testing.assert_array_equal(loader.size, (800, 400))
+        _loader_assert_dimmed(original, resumed)
+        _loader_assert_arc_pixels(resumed, center=(400, 200), pixel_ratio=pixel_ratio)
+    finally:
+        show_m.close()
+
+
+def test_loader_modal_input_controller_and_event_state_restoration():
+    scene = Scene()
+    button = TextButton2D(label="Count", position=(30, 30), size=(120, 50))
+    clicks = []
+    key_events = []
+    button.on_clicked = lambda element: clicks.append(element)
+    button.on_key_press = lambda event: key_events.append(event.key)
+    scene.add(button)
+    show_m = ShowManager(
+        scene=[scene, Scene()],
+        screen_config=[1, 1],
+        size=(640, 360),
+        pixel_ratio=1,
+        window_type="offscreen",
+    )
+    previous_active = UIContext.active_ui
+    previous_hot = UIContext.hot_ui
+    try:
+        _loader_draw(show_m)
+        _loader_click(show_m, 60, 55)
+        assert clicks == [button]
+        UIContext.active_ui = button
+        show_m.window.submit_event(
+            {"event_type": "key_down", "key": "a", "modifiers": ()}
+        )
+        show_m.window._process_events()
+        show_m.window.draw()
+        assert key_events
+        key_events.clear()
+        _loader_pointer(show_m, "pointer_down", 60, 55, button=1, buttons=(1,))
+        assert button.is_pressed
+        assert show_m._is_dragging
+        focused_ui = UIContext.active_ui
+        show_m.screens[0].controller.enabled = True
+        show_m.screens[1].controller.enabled = False
+        camera_matrices = [
+            screen.camera.local.matrix.copy() for screen in show_m.screens
+        ]
+        resize_calls = []
+        show_m.resize_callback(resize_calls.append)
+        canvas_input = []
+        show_m.window.add_event_handler(
+            lambda event: canvas_input.append(event["event_type"]),
+            "pointer_down",
+            "pointer_up",
+            "pointer_move",
+            "pointer_enter",
+            "pointer_leave",
+            "double_click",
+            "wheel",
+            "key_down",
+            "key_up",
+            "char",
+            order=-98,
+        )
+
+        show_m.show_loader("Working")
+        assert show_m.enable_events
+        assert all(not screen.controller.enabled for screen in show_m.screens)
+        assert show_m._repeat_key_event is None
+        assert not show_m._is_dragging
+        assert show_m._drag_target is None
+        assert UIContext.hot_ui is None
+        assert UIContext.active_ui is focused_ui
+        assert button.left_button_state == "released"
+        assert not button.is_pressed
+
+        _loader_click(show_m, 60, 55)
+        _loader_pointer(show_m, "pointer_down", 220, 160, button=1, buttons=(1,))
+        _loader_pointer(show_m, "pointer_move", 280, 210, buttons=(1,))
+        _loader_pointer(show_m, "pointer_up", 280, 210, button=1)
+        for event_type in ("pointer_enter", "pointer_leave", "double_click"):
+            _loader_pointer(show_m, event_type, 60, 55)
+        for event in (
+            {
+                "event_type": "wheel",
+                "dx": 0,
+                "dy": -100,
+                "x": 220,
+                "y": 160,
+                "buttons": (),
+                "modifiers": (),
+            },
+            {"event_type": "key_down", "key": "a", "modifiers": ()},
+            {"event_type": "key_up", "key": "a", "modifiers": ()},
+            {"event_type": "char", "data": "a", "char_str": "a", "modifiers": ()},
+        ):
+            show_m.window.submit_event(event)
+            show_m.window._process_events()
+            show_m.window.draw()
+        assert clicks == [button]
+        assert not key_events
+        assert not canvas_input
+        for screen, matrix in zip(show_m.screens, camera_matrices, strict=True):
+            np.testing.assert_array_equal(screen.camera.local.matrix, matrix)
+            assert not screen.controller.enabled
+
+        show_m.window.set_logical_size(800, 400)
+        _loader_draw(show_m)
+        assert (800, 400) in resize_calls
+        show_m.hide_loader()
+        assert [screen.controller.enabled for screen in show_m.screens] == [True, False]
+        _loader_pointer(show_m, "pointer_up", 60, 55, button=1)
+        assert clicks == [button]
+        _loader_click(show_m, 60, 55)
+        assert clicks == [button, button]
+        assert canvas_input
+
+        show_m.show_loader()
+        show_m.set_enable_events(False)
+        assert not show_m.enable_events
+        assert all(not screen.controller.enabled for screen in show_m.screens)
+        show_m.hide_loader()
+        assert all(not screen.controller.enabled for screen in show_m.screens)
+        _loader_click(show_m, 60, 55)
+        assert clicks == [button, button]
+
+        show_m.show_loader()
+        show_m.set_enable_events(True)
+        assert show_m.enable_events
+        assert all(not screen.controller.enabled for screen in show_m.screens)
+        show_m.hide_loader()
+        assert all(screen.controller.enabled for screen in show_m.screens)
+        _loader_click(show_m, 60, 55)
+        assert clicks == [button, button, button]
+    finally:
+        show_m.close()
+        UIContext.active_ui = previous_active
+        UIContext.hot_ui = previous_hot
+
+
+def test_loader_idempotence_stale_wakeups_and_user_callback():
+    show_m = ShowManager(size=(320, 240), pixel_ratio=1, window_type="offscreen")
+    user_calls = []
+    try:
+        show_m.hide_loader()
+        assert show_m._loader is None
+        show_m.register_callback(user_calls.append, 60, True, "user", "tick")
+        show_m.show_loader("First")
+        loader = show_m._loader
+        overlay_scene = show_m._loader_scene
+        old_name = show_m._loader_callback_name
+        old_callback = show_m.callbacks[old_name]
+        saved_controllers = show_m._loader_controller_states
+        initial_rotations = [arc.local.rotation.copy() for arc in loader.arcs]
+        show_m.show_loader("Second")
+        assert show_m._loader_callback_name == old_name
+        assert show_m.callbacks[old_name] is old_callback
+        assert show_m._loader_controller_states is saved_controllers
+        assert set(show_m.callbacks) == {"user", old_name}
+        assert loader.message == "Second"
+        for arc, rotation in zip(loader.arcs, initial_rotations, strict=True):
+            np.testing.assert_array_equal(arc.local.rotation, rotation)
+        show_m.show_loader()
+        assert loader.message == ""
+        assert show_m._loader_callback_name == old_name
+
+        show_m.hide_loader()
+        show_m.hide_loader()
+        assert set(show_m.callbacks) == {"user"}
+        assert show_m._loader_last_time is None
+        assert show_m._loader_controller_states is None
+        show_m.show_loader("Resumed")
+        name = show_m._loader_callback_name
+        assert name != old_name
+        assert show_m._loader is loader
+        assert show_m._loader_scene is overlay_scene
+        for arc, rotation in zip(loader.arcs, initial_rotations, strict=True):
+            np.testing.assert_array_equal(arc.local.rotation, rotation)
+        before = _loader_draw(show_m)
+        func, interval, repeat, args = old_callback
+        assert repeat
+        show_m._on_repeat_callback(func, interval, old_name, *args)
+        np.testing.assert_array_equal(_loader_draw(show_m), before)
+        for arc, rotation in zip(loader.arcs, initial_rotations, strict=True):
+            np.testing.assert_array_equal(arc.local.rotation, rotation)
+
+        # Advance the real clock-driven callback deterministically, without sleep.
+        show_m._loader_last_time -= 0.25
+        func, interval, repeat, args = show_m.callbacks[name]
+        show_m._on_repeat_callback(func, interval, name, *args)
+        after = _loader_draw(show_m)
+        assert not np.array_equal(before[68:173, 108:213], after[68:173, 108:213])
+        assert any(
+            not np.array_equal(arc.local.rotation, rotation)
+            for arc, rotation in zip(loader.arcs, initial_rotations, strict=True)
+        )
+        func, interval, repeat, args = show_m.callbacks["user"]
+        show_m._on_repeat_callback(func, interval, "user", *args)
+        assert user_calls == ["tick"]
+        show_m.close()
+        assert show_m._loader_callback_name is None
+        assert set(show_m.callbacks) == {"user"}
+        assert all(not arc.visible for arc in loader.arcs)
+        show_m._update_loader()
+        assert set(show_m.callbacks) == {"user"}
+    finally:
+        show_m.close()
+
+
+@pytest.mark.parametrize("direct_canvas_close", [False, True])
+def test_loader_message_validation_and_close_cleanup(direct_canvas_close):
+    show_m = ShowManager(
+        scene=Scene(background=(0.2, 0.55, 0.3)),
+        size=(320, 240),
+        pixel_ratio=1,
+        window_type="offscreen",
+    )
+    try:
+        with pytest.raises(TypeError, match="message must be a string or None"):
+            show_m.show_loader(1)
+        assert show_m._loader is None
+        assert show_m._loader_callback_name is None
+        assert show_m.screens[0].controller.enabled
+        show_m.show_loader("Unchanged")
+        name = show_m._loader_callback_name
+        _loader_draw(show_m)
+        original = _loader_draw(show_m)
+        with pytest.raises(TypeError, match="message must be a string or None"):
+            show_m.show_loader([])
+        assert show_m._loader.message == "Unchanged"
+        assert show_m._loader_callback_name == name
+        np.testing.assert_array_equal(_loader_draw(show_m), original)
+
+        if direct_canvas_close:
+            show_m.window.close()
+        else:
+            show_m.close()
+        assert show_m.window.get_closed()
+        assert show_m._loader_callback_name is None
+        assert name not in show_m.callbacks
+        assert show_m._loader_controller_states is None
+        assert show_m._loader_last_time is None
+        assert show_m.screens[0].controller.enabled
+        show_m.hide_loader()
+        with pytest.raises(RuntimeError, match="cannot show loader on a closed canvas"):
+            show_m.show_loader()
+        with pytest.raises(TypeError, match="message must be a string or None"):
+            show_m.show_loader(1)
+    finally:
+        show_m.close()
+
+
+@pytest.mark.skipif(not have_imgui_bundle, reason="Needs ImGui Bundle")
+def test_loader_imgui_pause_resume_and_modal_input():
+    imgui = imgui_bundle.imgui
+    state = {"draws": 0, "checked": False, "changes": 0, "position": None}
+
+    def draw_gui():
+        state["draws"] += 1
+        imgui.set_next_window_pos((10, 10))
+        imgui.set_next_window_size((220, 120))
+        imgui.begin(
+            "Loader input regression",
+            flags=imgui.WindowFlags_.no_saved_settings
+            | imgui.WindowFlags_.no_resize
+            | imgui.WindowFlags_.no_move,
+        )
+        changed, state["checked"] = imgui.checkbox("Enabled", state["checked"])
+        state["changes"] += int(changed)
+        minimum = imgui.get_item_rect_min()
+        maximum = imgui.get_item_rect_max()
+        state["position"] = (
+            (minimum.x + maximum.x) / 2,
+            (minimum.y + maximum.y) / 2,
+        )
+        imgui.end()
+
+    show_m = ShowManager(
+        size=(320, 240),
+        pixel_ratio=1,
+        window_type="offscreen",
+        imgui=True,
+        imgui_draw_function=draw_gui,
+    )
+    try:
+        _loader_draw(show_m)
+        _loader_draw(show_m)
+        assert state["draws"] >= 2
+        renderer = show_m._imgui
+        callback = renderer._update_gui_function
+        x, y = state["position"]
+        _loader_click(show_m, x, y)
+        assert state["checked"]
+        assert state["changes"] == 1
+
+        _loader_pointer(show_m, "pointer_down", x, y, button=1, buttons=(1,))
+        show_m.window.submit_event(
+            {"event_type": "key_down", "key": "a", "modifiers": ()}
+        )
+        _loader_draw(show_m)
+        assert imgui.is_key_down(imgui.Key.a)
+        show_m.window.submit_event(
+            {"event_type": "key_down", "key": "b", "modifiers": ()}
+        )
+        show_m.window._process_events()
+        show_m.show_loader("Working")
+        draws_before = state["draws"]
+        _loader_click(show_m, x, y)
+        for event in (
+            {"event_type": "key_down", "key": "Enter", "modifiers": ()},
+            {"event_type": "key_up", "key": "Enter", "modifiers": ()},
+            {"event_type": "char", "data": "x", "char_str": "x", "modifiers": ()},
+            {
+                "event_type": "wheel",
+                "dx": 0,
+                "dy": -100,
+                "x": x,
+                "y": y,
+                "buttons": (),
+                "modifiers": (),
+            },
+        ):
+            show_m.window.submit_event(event)
+            show_m.window._process_events()
+            show_m.window.draw()
+        assert state["draws"] == draws_before
+        assert state["checked"]
+        assert state["changes"] == 1
+        assert show_m._imgui is renderer
+        assert renderer._update_gui_function is callback
+
+        show_m.hide_loader()
+        _loader_draw(show_m)
+        _loader_pointer(show_m, "pointer_up", x, y, button=1)
+        _loader_draw(show_m)
+        assert state["draws"] > draws_before
+        assert state["checked"]
+        assert state["changes"] == 1
+        assert not renderer.backend.io.mouse_down[0]
+        assert not imgui.is_key_down(imgui.Key.a)
+        assert not imgui.is_key_down(imgui.Key.b)
+        assert show_m._imgui is renderer
+        assert renderer._update_gui_function is callback
+        _loader_click(show_m, x, y)
+        assert not state["checked"]
+        assert state["changes"] == 2
+
+        _loader_pointer(show_m, "pointer_down", x, y, button=1, buttons=(1,))
+        show_m.set_enable_events(False)
+        _loader_pointer(show_m, "pointer_up", x, y, button=1)
+        _loader_click(show_m, x, y)
+        assert not state["checked"]
+        assert state["changes"] == 2
+        show_m.set_enable_events(True)
+        _loader_pointer(show_m, "pointer_up", x, y, button=1)
+        assert state["changes"] == 2
+        _loader_click(show_m, x, y)
+        assert state["checked"]
+        assert state["changes"] == 3
+    finally:
+        show_m.close()
