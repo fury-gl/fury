@@ -3,6 +3,7 @@
 gitpython
 twine
 build
+pypandoc_binary
 ruff
 pre-commit
 coverage

@@ -216,20 +216,34 @@ def check_license_year():
 
 
 def create_release_announcement(
-    *, author="skoudoro", name="Serge Koudoro", version="0.11.0"
+    *, release_type, author="skoudoro", name="Serge Koudoro", version="0.11.0"
 ):
     """
     Create a release announcement blog post.
 
     Parameters
     ----------
+    release_type : {"features", "maintenance"}
+        The confirmed release type used in the announcement.
     author : str, optional
         The author of the blog post.
     name : str, optional
         The name of the author.
     version : str, optional
         The version of the release.
+
+    Raises
+    ------
+    ValueError
+        If release_type is not "features" or "maintenance".
     """
+    if release_type not in ("features", "maintenance"):
+        raise ValueError("release_type must be 'features' or 'maintenance'.")
+    release_description = (
+        "This release includes new features and improvements."
+        if release_type == "features"
+        else "This release focuses on maintenance."
+    )
     print("--- Creating release announcement blog post... ---")
     author_id = author
     author = input(f"Enter blog post author (e.g., {author}): ").strip()
@@ -269,7 +283,7 @@ FURY is a free and open source software library for scientific visualization and
 
 You can show your support by `adding a star <https://github.com/fury-gl/fury/stargazers>`_ on FURY github project.
 
-This Release is mainly a maintenance release. The **major highlights** of this release are:
+{release_description} The **major highlights** of this release are:
 
 .. include:: ../../release_notes/releasev{version}.rst
     :start-after: --------------
@@ -291,7 +305,7 @@ or::
 **Questions or suggestions?**
 
 For any questions go to http://fury.gl, or send an e-mail to fury@python.org
-We can also join our `discord community <https://discord.gg/6btFPPj>`_
+You can also join our `discord community <https://discord.gg/6btFPPj>`_
 
 We would like to thanks to :ref:`all contributors <community>` for this release:
 
@@ -305,7 +319,7 @@ On behalf of the :ref:`FURY developers <community>`,
 - {author_name}
 """  # noqa
 
-    with open(file_path, "w", encoding="utf-8") as f:
+    with open(file_path, "w", encoding="utf-8", newline="\n") as f:
         f.write(content)
 
     print(f"→ Created blog post at {file_path}")
@@ -339,6 +353,65 @@ def get_new_version(default_version):
             )
             continue
         return new_version
+
+
+def get_release_type(notes_path):
+    """
+    Suggest a release type from pull requests and request confirmation.
+
+    Parameters
+    ----------
+    notes_path : str or path-like
+        Path to the UTF-8 release notes to review.
+
+    Returns
+    -------
+    {"features", "maintenance"}
+        The release type confirmed by the maintainer.
+
+    Raises
+    ------
+    OSError
+        If the release notes cannot be read.
+    UnicodeDecodeError
+        If the release notes are not valid UTF-8.
+    """
+    feature_prs = []
+    in_pull_requests = False
+    with open(notes_path, encoding="utf-8") as notes:
+        for line in notes:
+            if re.fullmatch(r"Pull Requests \(\d+\):", line.strip()):
+                in_pull_requests = True
+                continue
+            if not in_pull_requests:
+                continue
+            if re.fullmatch(r"Issues \(\d+\):", line.strip()):
+                break
+            match = re.match(r"^\s*\*\s+:(?:ghissue|ghpull):`(\d+)`:\s*(.*)$", line)
+            if match and re.match(r"^(?:NF|ENH)\s*:", match[2], re.IGNORECASE):
+                feature_prs.append((match[1], match[2]))
+        else:
+            feature_prs.clear()
+
+    if feature_prs:
+        for number, title in feature_prs:
+            print(f"* #{number}: {title}")
+        print("Suggested release type: features.")
+        prompt = "Release type [features/maintenance] (Enter accepts features): "
+    else:
+        print(
+            "No feature-prefixed pull requests found; "
+            "review the release notes and choose a release type."
+        )
+        prompt = "Release type [features/maintenance]: "
+
+    while True:
+        answer = input(prompt).strip().lower()
+        if not answer and feature_prs:
+            return "features"
+        if answer in ("features", "maintenance"):
+            return answer
+        print("Please enter 'features' or 'maintenance'.")
 
 
 def is_powershell():
@@ -385,23 +458,24 @@ def main():
 
     new_version_v = get_new_version(proposed_version)
     new_version = new_version_v.lstrip("v")
+    notes_path = os.path.join(
+        "docs", "source", "release_notes", f"releasev{new_version}.rst"
+    )
     print(f"--- Generating release notes for {new_version_v} ---")
     run(
         f"python docs/source/ext/github_tools.py --tag={last} "
         f"--save --version={new_version}"
     )
     print("→ Release notes created")
-    print(
-        f"Please, go to docs/release_notes/release{new_version_v}.rst and update"
-        " 'Quick overview' section."
-    )
+    print(f"Please, go to {notes_path} and update 'Quick overview' section.")
     input("Press Enter when done...")
 
     # 5. Remind to update release-history.rst
     update_release_history()
 
     # 6. Prepare blog post
-    create_release_announcement(version=new_version)
+    release_type = get_release_type(notes_path)
+    create_release_announcement(version=new_version, release_type=release_type)
 
     # 7.  Check deprecations
     print("--- Deprecation cycles ---")
@@ -432,6 +506,17 @@ def main():
             else:
                 run("make clean")
                 run("make -C . html")
+            print(
+                "Review the documentation at http://localhost:8000. "
+                "Press Ctrl+C to stop the preview and continue."
+            )
+            try:
+                if platform.system().lower() == "windows":
+                    run(".\\make.bat serve")
+                else:
+                    run("make serve")
+            except KeyboardInterrupt:
+                print("Documentation preview stopped.")
         finally:
             os.chdir(original_dir)
             os.environ["FURY_OFFSCREEN"] = "0"
