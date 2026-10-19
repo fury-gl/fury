@@ -153,7 +153,7 @@ the following sub-modules:
      - ``VectorField``, ``SphGlyph``, ``data_slicer``, ``sph_glyph``,
        ``vector_field``, ``vector_field_slicer``
    * - ``topology.py``
-     - ``contour_from_volume``, ``surface``
+     - ``contour_from_volume``, ``surface``, ``texture_on_sphere``
    * - ``bio.py``
      - ``contour_from_roi``, ``contour_from_label``, ``peaks_slicer``,
        ``tensor_slicer``, ``volume_slicer``
@@ -251,6 +251,8 @@ PyGfx under the same or a renamed API. They are not new capabilities:
    * - ``actor.surface``
      - Same name in 0.12.x; rewritten on PyGfx :ghpull:`997`,
        :ghpull:`1040`
+   * - ``actor.texture_on_sphere``
+     - Same name in 0.12.x; rewritten on PyGfx / WGPU :ghpull:`1370`
    * - ``actor.contour_from_roi``
      - Same name in 0.12.x; rewritten on PyGfx :ghpull:`1053`
    * - ``actor.sph_glyph``
@@ -259,6 +261,50 @@ PyGfx under the same or a renamed API. They are not new capabilities:
 
 The ``actor.image`` actor now supports directional parameters.
 (Ref: :ghpull:`1001`)
+
+``texture_on_sphere``: images and PBR spheres
+---------------------------------------------
+
+**Summary** (Ref: :ghpull:`1370`)
+
+``actor.texture_on_sphere`` now returns a PyGfx-backed FURY ``Mesh``.
+Rename ``rgb`` to ``texture`` and replace ``interpolate=True/False`` with
+``interpolation="linear"/"nearest"``. Positional uint8 RGB/RGBA arrays remain
+supported.
+
+.. code-block:: python
+
+   # FURY 0.12.x
+   globe = actor.texture_on_sphere(rgb=image, interpolate=True)
+
+   # FURY 2.0
+   globe = actor.texture_on_sphere(texture=image, interpolation="linear")
+   globe.opacity = 0.8
+   globe.local.position = (2, 0, 0)
+
+Sphere resolution naming is now consistent: ``primitive.prim_sphere``,
+``actor.texture_on_sphere``, and the mesh branches of ``actor.sphere`` and
+``actor.ellipsoid`` use ``phi`` for latitude segments and ``theta`` for
+longitude segments. Sphere and ellipsoid impostors ignore these tessellation
+controls.
+
+In 0.12, ``prim_sphere`` implemented the opposite of its documentation and
+the VTK actors. Swap unequal ``phi``/``theta`` values only in code relying
+on that reversed procedural behavior, including the pre-correction PyGfx
+mesh actors, to preserve angular resolution. This is not required for all
+VTK actor callers. Equal values need no change.
+
+Custom ``actor.sph_glyph`` tuples follow the same convention:
+``sphere=(a, b)`` means ``a`` latitude segments and ``b`` longitude segments.
+Callers relying on pre-correction PyGfx sampling must use ``sphere=(b, a)``
+to preserve the former angular resolution when the values differ. Named
+spheres and equal tuple values need no change.
+
+The sphere now has radius **1** and Y-axis poles, versus radius **0.5**
+and Z-axis poles in VTK. Use ``globe.local.scale = 0.5`` for the old radius.
+See :func:`fury.actor.texture_on_sphere` for image orientation, filename
+inputs and PBR material options.
+
 
 
 7. Slicer API: ``get_slices`` / ``show_slices``

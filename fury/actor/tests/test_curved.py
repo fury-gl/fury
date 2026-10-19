@@ -71,6 +71,61 @@ def test_ellipsoid(impostor, broadcast):
         assert not snapshot_mask(render_snapshot(show_m)).any()
 
 
+@pytest.mark.parametrize("actor_type", ["sphere", "ellipsoid"])
+def test_curved_mesh_latitude_longitude_resolution(actor_type):
+    """
+    Honor latitude and longitude segment counts in curved mesh actors.
+
+    Parameters
+    ----------
+    actor_type : str
+        Curved actor factory to exercise.
+
+    Returns
+    -------
+    None
+        Assertions validate the generated mesh surface.
+    """
+    if actor_type == "sphere":
+        mesh = actor.sphere([[0, 0, 0]], radii=2.0, phi=4, theta=8, impostor=False)
+        scales = (2.0, 2.0, 2.0)
+    else:
+        scales = (2.0, 1.0, 0.5)
+        mesh = actor.ellipsoid(
+            [[0, 0, 0]],
+            lengths=scales,
+            orientation_matrices=np.eye(3),
+            phi=4,
+            theta=8,
+            impostor=False,
+        )
+
+    positions = mesh.geometry.positions.data
+    indices = mesh.geometry.indices.data
+    assert positions.shape == (45, 3)
+    assert indices.shape == (48, 3)
+
+    normalized = positions / scales
+    grid = normalized.reshape(5, 9, 3)
+    latitude = np.linspace(-np.pi / 2, np.pi / 2, 5)
+    longitude = np.linspace(-np.pi, np.pi, 9)
+    np.testing.assert_allclose(
+        grid[:, :, 1],
+        np.broadcast_to(np.sin(latitude)[:, None], grid.shape[:2]),
+        atol=1e-6,
+    )
+    np.testing.assert_allclose(grid[2, :, 0], np.sin(longitude), atol=1e-6)
+    np.testing.assert_allclose(grid[2, :, 2], np.cos(longitude), atol=1e-6)
+    np.testing.assert_allclose(grid[:, 0], grid[:, -1], atol=1e-6)
+    np.testing.assert_allclose(np.linalg.norm(normalized, axis=1), 1, atol=1e-6)
+
+    triangles = normalized[indices]
+    normals = np.cross(
+        triangles[:, 1] - triangles[:, 0], triangles[:, 2] - triangles[:, 0]
+    )
+    assert np.all(np.sum(normals * triangles.mean(axis=1), axis=1) > 0)
+
+
 def test_streamtube():
     lines = [np.array([[0, 0, 0], [1, 1, 1]])]
     colors = np.array([[1, 0, 0]])
