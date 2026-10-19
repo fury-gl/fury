@@ -182,6 +182,31 @@ Checklist before Releasing
     prompted. Answering no to the documentation confirmation repeats the tests,
     build, and preview until you confirm the docs look correct.
 
+* Before tagging, commit ``.github/workflows/release.yml``,
+  ``tools/github_release.py``, and the prepared
+  ``docs/source/release_notes/releasev<version>.rst``. Verify its
+  ``Release notes v<version>`` title, nonempty ``Quick Overview``, and previous
+  tag in the ``GitHub stats`` line. Both tags must exist when the workflow runs.
+
+* Install the development dependencies (including bundled Pandoc) and preview
+  a prepared release locally::
+
+    pip install -e ".[dev]"
+    python tools/github_release.py --tag v2.0.0 --preview --output-file RELEASE_PREVIEW.md
+
+  Inspect the Markdown in your editor, including links and formatting.
+  This works offline without authentication or release creation. Omit
+  ``--preview`` to generate only the introduction used by the workflow.
+
+  Add ``--previous-tag v0.12.0`` to override the recorded baseline. This changes
+  the comparison link and printed metadata, not the prepared PR list or source
+  notes. GitHub adds final PR author mentions and ``New Contributors`` during
+  publication; the local preview uses prepared PRs and contributor names.
+
+  Use explicitly labelled ``:doc:`` links in the overview; replace other Sphinx
+  roles with ordinary RST links or inline literals. The helper prefers system
+  Pandoc over the bundled copy; the workflow installs its own.
+
 * The release should now be ready.
 
 Doing the release
@@ -214,10 +239,31 @@ Doing the release
   first 7 characters of the hash of the current commit. The letter g stands for “git”. This is all managed
   automatically by versioneer and in accordance with the specification in PEP 440.
 
-* Push the new commit and the tag to master::
+* Push the new commit and the tag to the upstream ``fury-gl/fury`` repository
+  (the following assumes ``origin`` points there)::
 
     git push origin master
     git push origin vX.Y.Z
+
+  The ``Release`` workflow publishes a GitHub release immediately, not a draft.
+  It runs only for upstream tag pushes; pushing a tag to a fork does not
+  publish an upstream release. Supported tags are ``vMAJOR.MINOR.PATCH`` with
+  optional ``aN``, ``bN``, or ``rcN`` suffixes. Suffixed versions are marked
+  as prereleases and are not selected as latest.
+
+  The release title is the tag. Its body contains the curated Quick Overview,
+  a link to the full tagged release notes, and GitHub-generated ``What's
+  Changed`` entries comparing against the notes' recorded previous tag.
+  The workflow uploads no assets and does not publish to PyPI or deploy the
+  website; the package publication steps below remain separate.
+
+  Check the Actions run and the published release. Missing or malformed notes,
+  missing tags, conversion failures, and API/permission errors fail the run.
+  Infrastructure failures before publication can be retried. An existing
+  release is never overwritten: rerunning after successful publication fails
+  with a conflict and leaves it unchanged. Do not move a published tag to fix
+  release preparation.
+
 
 * Register for a PyPI account and Install twine, a tool for uploading packages to PyPI::
 

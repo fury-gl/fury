@@ -1,0 +1,74 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.repository }}-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  release:
+    if: github.repository == 'fury-gl/fury' && github.event_name == 'push' && github.ref_type == 'tag' && github.event.deleted == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        ref: ${{ github.sha }}
+        fetch-depth: 0
+        persist-credentials: false
+    - uses: actions/setup-python@v7
+      with:
+        python-version: '3.12'
+    - name: Install Pandoc
+      run: |
+        sudo apt-get update
+        sudo apt-get install --yes --no-install-recommends pandoc
+    - name: Prepare release introduction
+      id: notes
+      env:
+        RELEASE_TAG: ${{ github.ref_name }}
+      run: |
+        python tools/github_release.py --tag "$RELEASE_TAG" --output-file "$RUNNER_TEMP/release-overview.md" >> "$GITHUB_OUTPUT"
+    - name: Verify tag commits
+      env:
+        RELEASE_TAG: ${{ github.ref_name }}
+        PREVIOUS_TAG: ${{ steps.notes.outputs.previous_tag }}
+      run: |
+        current_commit=$(git rev-parse --verify "refs/tags/$RELEASE_TAG^{commit}")
+        git rev-parse --verify "refs/tags/$PREVIOUS_TAG^{commit}"
+        head_commit=$(git rev-parse --verify HEAD)
+        if [[ "$head_commit" != "$current_commit" ]]; then
+          echo "Checked-out HEAD does not match release tag $RELEASE_TAG" >&2
+          exit 1
+        fi
+    - name: Publish GitHub release
+      env:
+        GH_TOKEN: ${{ github.token }}
+        RELEASE_TAG: ${{ github.ref_name }}
+        PREVIOUS_TAG: ${{ steps.notes.outputs.previous_tag }}
+        PRERELEASE: ${{ steps.notes.outputs.prerelease }}
+      run: |
+        args=(
+          "$RELEASE_TAG"
+          --repo fury-gl/fury
+          --verify-tag
+          --title "$RELEASE_TAG"
+          --generate-notes
+          --notes-start-tag "$PREVIOUS_TAG"
+          --notes-file "$RUNNER_TEMP/release-overview.md"
+        )
+        if [[ "$PRERELEASE" == "true" ]]; then
+          args+=(--prerelease --latest=false)
+        fi
+        gh release create "${args[@]}"
