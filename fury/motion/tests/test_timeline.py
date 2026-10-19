@@ -2,8 +2,11 @@ import time
 
 import numpy as np
 import numpy.testing as npt
+import pytest
 
+import fury
 from fury.motion import Animation, Timeline
+import fury.motion.timeline as timeline_module
 
 
 def assert_not_equal(x, y):
@@ -176,3 +179,39 @@ def test_timeline_add_and_remove_from_scene():
 
     assert tl._scene is None
     assert anim._added_to_scene is False
+
+
+@pytest.mark.parametrize("loop", [False, True])
+@pytest.mark.parametrize("speed", [0.5, 2.0])
+@pytest.mark.parametrize("state", ["new", "playing", "paused", "stopped", "ended"])
+def test_timeline_restart_resets_actor(monkeypatch, loop, speed, state):
+    """Restart resets both the playback clock and animated scene immediately."""
+    clock = [100.0]
+    monkeypatch.setattr(timeline_module, "perf_counter", lambda: clock[0])
+    box = fury.actor.box(np.array([[0.0, 0.0, 0.0]]))
+    animation = Animation(actors=box, loop=False)
+    animation.set_position(0, [1, 0, 0])
+    animation.set_position(10, [11, 0, 0])
+    timeline = Timeline(animations=animation, loop=loop)
+    timeline.speed = speed
+    if state != "new":
+        timeline.play()
+        clock[0] += 3 / speed
+        timeline.update()
+        if state == "paused":
+            timeline.pause()
+        elif state == "stopped":
+            timeline.stop()
+        elif state == "ended":
+            clock[0] += 12 / speed
+            timeline.update()
+    clock[0] += 2 / speed
+
+    timeline.restart()
+
+    assert timeline.playing
+    assert timeline.current_timestamp == 0
+    npt.assert_array_equal(box.local.position, [1, 0, 0])
+    clock[0] += 0.5
+    timeline.update()
+    npt.assert_allclose(box.local.position, [1 + 0.5 * speed, 0, 0])
