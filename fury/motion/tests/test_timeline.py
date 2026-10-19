@@ -2,8 +2,11 @@ import time
 
 import numpy as np
 import numpy.testing as npt
+import pytest
 
+import fury
 from fury.motion import Animation, Timeline
+import fury.motion.timeline as timeline_module
 
 
 def assert_not_equal(x, y):
@@ -176,3 +179,41 @@ def test_timeline_add_and_remove_from_scene():
 
     assert tl._scene is None
     assert anim._added_to_scene is False
+
+
+@pytest.mark.parametrize("loop", [False, True])
+@pytest.mark.parametrize("force", [False, True])
+@pytest.mark.parametrize("length", [6.0, 10.0])
+@pytest.mark.parametrize("playback_panel", [False, True])
+def test_timeline_update_applies_boundary_frame(
+    monkeypatch, loop, force, length, playback_panel
+):
+    """The frame at a wrap or stop must match the resolved timeline time."""
+    clock = [100.0]
+    monkeypatch.setattr(timeline_module, "perf_counter", lambda: clock[0])
+    box = fury.actor.box(np.array([[0.0, 0.0, 0.0]]))
+    animation = Animation(actors=box)
+    animation.set_position(0, [-3, 0, 0])
+    animation.set_position(10, [3, 0, 0])
+    observed_times = []
+    animation.add_update_callback(observed_times.append)
+    timeline = Timeline(
+        animations=animation, length=length, loop=loop, playback_panel=playback_panel
+    )
+    timeline.play()
+    timeline.update()
+    clock[0] += length + 0.25
+
+    timeline.update(force=force)
+
+    expected_time = 0 if loop else length
+    assert timeline.current_timestamp == expected_time
+    if playback_panel:
+        assert timeline.playback_panel.current_time == expected_time
+    assert timeline.playing is loop
+    assert observed_times[-1] == expected_time
+    npt.assert_allclose(box.local.position, [-3 + 0.6 * expected_time, 0, 0])
+    if not loop:
+        count = len(observed_times)
+        timeline.update()
+        assert len(observed_times) == count
