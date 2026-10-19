@@ -3,7 +3,7 @@ FURY 2.1.0 Released
 ===================
 
 
-.. post:: October 16, 2026
+.. post:: October 19, 2026
    :author: maharshi-gor
    :tags: fury
    :category: release

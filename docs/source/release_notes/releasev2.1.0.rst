@@ -13,15 +13,16 @@ Quick Overview
 * Added shader-based rounded rectangles.
 * Fixed the documentation version switcher and refreshed installation guidance.
 * Raised the minimum supported Python version to 3.12.
+* Added seam free sphere texture mapping.
 
 Details
 --------
 
-GitHub stats for 2026/08/04 - 2026/10/16 (tag: v2.0.0)
+GitHub stats for 2026/08/04 - 2026/10/19 (tag: v2.0.0)
 
 These lists are automatically generated, and may be incomplete or contain duplicates.
 
-The following 9 authors contributed 70 commits.
+The following 9 authors contributed 76 commits.
 
 * Anshu kashyap
 * Eleftherios Garyfallidis
@@ -34,12 +35,14 @@ The following 9 authors contributed 70 commits.
 * Serge Koudoro
 
 
-We closed a total of 35 issues, 28 pull requests and 7 regular issues;
+We closed a total of 37 issues, 30 pull requests and 7 regular issues;
 this is the full list (generated with the script
 :file:`tools/github_stats.py`):
 
-Pull Requests (28):
+Pull Requests (30):
 
+* :ghissue:`1370`: NF: Add seam-safe texture_on_sphere actor
+* :ghissue:`1372`: Update pre-commit hooks
 * :ghissue:`1369`: Version switcher fix
 * :ghissue:`1346`: test: add bounds and center validation for superquadric primitive
 * :ghissue:`1341`: NF: Port SpinBox to v2
