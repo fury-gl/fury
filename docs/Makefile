@@ -7,12 +7,14 @@ SPHINXBUILD   = sphinx-build
 SPHINXPROJ    = FURY
 SOURCEDIR     = source
 BUILDDIR      = build
+PYTHON ?= python
+UPLOAD_OPTS ?=
 
 # Put it first so that "make" without argument is like "make help".
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-.PHONY: help Makefile
+.PHONY: help Makefile upload
 
 clean:
 	rm -rf "$(SOURCEDIR)/api"
@@ -46,7 +48,7 @@ serve:
 	@python -m http.server 8000 --directory "$(BUILDDIR)/html"
 
 upload:
-	python upload_to_gh-pages.py
+	$(PYTHON) upload_to_gh-pages.py --html-dir "$(BUILDDIR)/html" $(UPLOAD_OPTS)
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
