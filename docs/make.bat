@@ -1,6 +1,6 @@
 @ECHO OFF
 
-pushd %~dp0
+pushd "%~dp0"
 
 REM Command file for Sphinx documentation
 
@@ -12,6 +12,7 @@ set BUILDDIR=build
 set SPHINXPROJ=FURY
 
 if "%1" == "" goto help
+if "%1" == "upload" goto upload
 
 %SPHINXBUILD% >NUL 2>NUL
 if errorlevel 9009 (
@@ -37,12 +38,6 @@ if "%1" == "clean" (
 	del /q /s %SOURCEDIR%\\api %SOURCEDIR%\\auto_examples %SOURCEDIR%\\auto_tutorials %SOURCEDIR%\\reference
 	rmdir %SOURCEDIR%\\api %SOURCEDIR%\\auto_examples %SOURCEDIR%\\auto_tutorials %SOURCEDIR%\\reference
 	%SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% clean
-	exit /B
-)
-
-if "%1" == "upload" (
-	:upload
-	python upload_to_gh-pages.py
 	exit /B
 )
 
@@ -73,6 +68,13 @@ if "%1" == "serve" (
 
 %SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS%
 goto end
+
+:upload
+if not defined PYTHON set PYTHON=python
+%PYTHON% upload_to_gh-pages.py --html-dir "%BUILDDIR%\html" %UPLOAD_OPTS%
+set "UPLOAD_STATUS=%ERRORLEVEL%"
+popd
+exit /b %UPLOAD_STATUS%
 
 :end
 popd

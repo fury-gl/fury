@@ -319,9 +319,17 @@ Doing the release
 Other stuff that needs doing for the release
 ============================================
 
-* Checkout the tagged release, build the html docs and upload them to
-  the github pages website::
+* Checkout the tagged release, build the HTML docs, then publish the existing
+  build with Python 3.12 or newer (from ``docs``)::
 
+    make html
     make upload
+
+  On Windows use ``.\make.bat html`` and ``.\make.bat upload``. Upload does not rebuild
+  or require Sphinx. It uses the build's embedded version, updates the website
+  switcher and stable aliases, commits, and pushes using your configured Git
+  identity and credentials. The local ``docs/gh-pages`` checkout is disposable:
+  any existing staging changes are discarded before upload, and successful
+  publication removes the checkout. See ``docs/README.md`` for upload options.
 
 * Announce to the mailing lists.  With fear and trembling.
