@@ -5,8 +5,12 @@ import numpy.testing as npt
 import pytest
 
 import fury
+from fury.actor.tests._helpers import (
+    render_manager,
+    render_snapshot,
+    snapshot_mask,
+)
 from fury.motion import Animation, Timeline
-import fury.motion.timeline as timeline_module
 
 
 def assert_not_equal(x, y):
@@ -185,13 +189,11 @@ def test_timeline_add_and_remove_from_scene():
 @pytest.mark.parametrize("force", [False, True])
 @pytest.mark.parametrize("length", [6.0, 10.0])
 @pytest.mark.parametrize("playback_panel", [False, True])
-def test_timeline_update_applies_boundary_frame(
-    monkeypatch, loop, force, length, playback_panel
-):
-    """The frame at a wrap or stop must match the resolved timeline time."""
-    clock = [100.0]
-    monkeypatch.setattr(timeline_module, "perf_counter", lambda: clock[0])
+def test_timeline_update_applies_boundary_frame(loop, force, length, playback_panel):
+    """Render a real playback boundary and continue from the resolved time."""
     box = fury.actor.box(np.array([[0.0, 0.0, 0.0]]))
+    reference = fury.actor.box(np.array([[0.0, 0.0, 0.0]]))
+    reference.visible = False
     animation = Animation(actors=box)
     animation.set_position(0, [-3, 0, 0])
     animation.set_position(10, [3, 0, 0])
@@ -200,20 +202,64 @@ def test_timeline_update_applies_boundary_frame(
     timeline = Timeline(
         animations=animation, length=length, loop=loop, playback_panel=playback_panel
     )
-    timeline.play()
-    timeline.update()
-    clock[0] += length + 0.25
 
-    timeline.update(force=force)
+    with render_manager(box, reference) as show_m:
 
-    expected_time = 0 if loop else length
-    assert timeline.current_timestamp == expected_time
-    if playback_panel:
-        assert timeline.playback_panel.current_time == expected_time
-    assert timeline.playing is loop
-    assert observed_times[-1] == expected_time
-    npt.assert_allclose(box.local.position, [-3 + 0.6 * expected_time, 0, 0])
-    if not loop:
-        count = len(observed_times)
+        def compare_frame(position):
+            actual = render_snapshot(show_m)
+            box.visible = False
+            reference.local.position = position
+            reference.visible = True
+            expected = render_snapshot(show_m)
+            reference.visible = False
+            box.visible = True
+            bounds = []
+            for frame in (actual, expected):
+                y, x = np.nonzero(snapshot_mask(frame))
+                assert len(x)
+                bounds.append([x.min(), x.max(), y.min(), y.max()])
+            npt.assert_allclose(bounds[0], bounds[1], rtol=0, atol=1)
+
+        # Seek through the public API, then cross the boundary on the real clock.
+        timeline.seek(length - 0.02)
+        timeline.play()
+        time.sleep(0.04)
+        before_update = time.perf_counter()
+        timeline.update(force=force)
+        assert timeline.playing is loop
+        expected_time = 0 if loop else length
+        assert observed_times[-1] == expected_time
+        if playback_panel:
+            assert timeline.playback_panel.current_time == expected_time
+        if loop:
+            timeline.pause()
+            assert (
+                0
+                <= timeline.current_timestamp
+                <= (time.perf_counter() - before_update + 1e-6)
+            )
+        else:
+            assert timeline.current_timestamp == length
+        position = [-3 + 0.6 * expected_time, 0, 0]
+        npt.assert_allclose(box.local.position, position, rtol=0, atol=1e-8)
+        compare_frame(position)
+
+        if not loop:
+            count = len(observed_times)
+            timeline.update()
+            assert len(observed_times) == count
+            timeline.update(force=True)
+            assert len(observed_times) == count + 1
+            assert observed_times[-1] == length
+
+        timeline.play()
+        time.sleep(0.01)
+        before_time = timeline.current_timestamp
         timeline.update()
-        assert len(observed_times) == count
+        timeline.pause()
+        after_time = timeline.current_timestamp
+        sample_time = observed_times[-1]
+        assert 0 < before_time <= sample_time <= after_time < length
+        position = [-3 + 0.6 * sample_time, 0, 0]
+        npt.assert_allclose(box.local.position, position, rtol=0, atol=1e-8)
+        compare_frame(position)

@@ -397,6 +397,8 @@ class Timeline:
                     self.playback_panel.pause()
                 else:
                     self.pause()
+                # Pausing samples the live clock; hold the resolved endpoint.
+                self._current_timestamp = time
         if self.has_playback_panel:
             self.playback_panel.current_time = time
         if should_update:
