@@ -411,9 +411,51 @@ def test_sph_glyph_custom_sphere():
     glyph = actor.sph_glyph(coeffs, sphere="symmetric724")
     assert glyph.sphere.shape[0] == 724
 
-    # Custom sphere
-    glyph = actor.sph_glyph(coeffs, sphere=(36, 72))
-    assert hasattr(glyph, "indices")
+
+@pytest.mark.parametrize("latitude_segments, longitude_segments", [(4, 8), (8, 4)])
+def test_sph_glyph_latitude_longitude_resolution(latitude_segments, longitude_segments):
+    """
+    Honor custom glyph latitude and longitude sampling with outward pole fans.
+
+    Parameters
+    ----------
+    latitude_segments : int
+        Number of segments between the poles.
+    longitude_segments : int
+        Number of segments around the equator.
+    """
+    coeffs = np.zeros((1, 1, 1, 9), dtype=np.float32)
+    coeffs[..., 0] = 1.0
+    glyph = actor.sph_glyph(coeffs, sphere=(latitude_segments, longitude_segments))
+
+    vertices = glyph.sphere
+    grid = vertices.reshape(latitude_segments + 1, longitude_segments + 1, 3)
+    latitude = np.linspace(-np.pi / 2, np.pi / 2, latitude_segments + 1)
+    longitude = np.linspace(-np.pi, np.pi, longitude_segments + 1)
+    np.testing.assert_allclose(
+        grid[:, :, 1],
+        np.broadcast_to(np.sin(latitude)[:, None], grid.shape[:2]),
+        atol=1e-6,
+    )
+    np.testing.assert_allclose(
+        grid[latitude_segments // 2, :, 0], np.sin(longitude), atol=1e-6
+    )
+    np.testing.assert_allclose(
+        grid[latitude_segments // 2, :, 2], np.cos(longitude), atol=1e-6
+    )
+    np.testing.assert_allclose(grid[:, 0], grid[:, -1], atol=1e-6)
+    np.testing.assert_allclose(np.linalg.norm(vertices, axis=1), 1, atol=1e-6)
+
+    faces = glyph.indices.reshape(-1, 3)
+    expected_faces = 2 * longitude_segments * (latitude_segments - 1)
+    assert faces.shape == (expected_faces, 3)
+    assert glyph.faces_per_glyph == expected_faces
+    triangles = vertices[faces]
+    normals = np.cross(
+        triangles[:, 1] - triangles[:, 0], triangles[:, 2] - triangles[:, 0]
+    )
+    assert np.all(np.linalg.norm(normals, axis=1) > 1e-7)
+    assert np.all(np.sum(normals * triangles.mean(axis=1), axis=1) > 0)
 
 
 def test_sph_glyph_parameter_combinations():
