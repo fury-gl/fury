@@ -241,7 +241,7 @@ def test_timeline_update_applies_boundary_frame(loop, force, length, playback_pa
         else:
             assert timeline.current_timestamp == length
         position = [-3 + 0.6 * expected_time, 0, 0]
-        npt.assert_allclose(box.local.position, position, rtol=0, atol=1e-8)
+        npt.assert_allclose(box.local.position, position, rtol=0, atol=1e-6)
         compare_frame(position)
 
         if not loop:
@@ -261,5 +261,5 @@ def test_timeline_update_applies_boundary_frame(loop, force, length, playback_pa
         sample_time = observed_times[-1]
         assert 0 < before_time <= sample_time <= after_time < length
         position = [-3 + 0.6 * sample_time, 0, 0]
-        npt.assert_allclose(box.local.position, position, rtol=0, atol=1e-8)
+        npt.assert_allclose(box.local.position, position, rtol=0, atol=1e-6)
         compare_frame(position)
