@@ -5,8 +5,12 @@ import numpy.testing as npt
 import pytest
 
 import fury
+from fury.actor.tests._helpers import (
+    render_manager,
+    render_snapshot,
+    snapshot_mask,
+)
 from fury.motion import Animation, Timeline
-import fury.motion.timeline as timeline_module
 
 
 def assert_not_equal(x, y):
@@ -184,34 +188,72 @@ def test_timeline_add_and_remove_from_scene():
 @pytest.mark.parametrize("loop", [False, True])
 @pytest.mark.parametrize("speed", [0.5, 2.0])
 @pytest.mark.parametrize("state", ["new", "playing", "paused", "stopped", "ended"])
-def test_timeline_restart_resets_actor(monkeypatch, loop, speed, state):
-    """Restart resets both the playback clock and animated scene immediately."""
-    clock = [100.0]
-    monkeypatch.setattr(timeline_module, "perf_counter", lambda: clock[0])
+def test_timeline_restart_resets_actor(loop, speed, state):
+    """Restart resets the real playback clock and the rendered actor."""
     box = fury.actor.box(np.array([[0.0, 0.0, 0.0]]))
+    reference = fury.actor.box(np.array([[0.0, 0.0, 0.0]]))
+    reference.visible = False
     animation = Animation(actors=box, loop=False)
-    animation.set_position(0, [1, 0, 0])
-    animation.set_position(10, [11, 0, 0])
+    animation.set_position(0, [-2, 0, 0])
+    animation.set_position(10, [2, 0, 0])
     timeline = Timeline(animations=animation, loop=loop)
     timeline.speed = speed
-    if state != "new":
-        timeline.play()
-        clock[0] += 3 / speed
-        timeline.update()
-        if state == "paused":
-            timeline.pause()
-        elif state == "stopped":
-            timeline.stop()
-        elif state == "ended":
-            clock[0] += 12 / speed
+
+    with render_manager(box, reference) as show_m:
+
+        def compare_frame(position, position_tolerance):
+            image = render_snapshot(show_m)
+            box.visible = False
+            reference.local.position = position
+            reference.visible = True
+            expected = render_snapshot(show_m)
+            reference.visible = False
+            box.visible = True
+
+            bounds = []
+            for frame in (image, expected):
+                y, x = np.nonzero(snapshot_mask(frame))
+                assert len(x)
+                bounds.append([x.min(), x.max(), y.min(), y.max()])
+            # Account for real elapsed time and pixel-boundary rounding.
+            pixel_tolerance = np.ceil(position_tolerance * image.shape[1] / 8) + 1
+            npt.assert_allclose(bounds[0], bounds[1], rtol=0, atol=pixel_tolerance)
+
+        if state != "new":
+            timeline.play()
+            timeline.seek(3)
             timeline.update()
-    clock[0] += 2 / speed
+            if state == "paused":
+                timeline.pause()
+            elif state == "stopped":
+                timeline.stop()
+            elif state == "ended":
+                timeline.seek(timeline.duration)
+                timeline.update()
+        time.sleep(0.01)
 
-    timeline.restart()
+        before_restart = time.perf_counter()
+        timeline.restart()
+        assert timeline.playing
+        timeline.pause()
+        elapsed = time.perf_counter() - before_restart
+        assert 0 <= timeline.current_timestamp <= elapsed * speed + 1e-6
+        assert -2 - 1e-6 <= box.local.position[0] <= -2 + 0.4 * elapsed * speed + 1e-6
+        npt.assert_array_equal(box.local.position[1:], [0, 0])
+        compare_frame([-2, 0, 0], 0.4 * elapsed * speed)
 
-    assert timeline.playing
-    assert timeline.current_timestamp == 0
-    npt.assert_array_equal(box.local.position, [1, 0, 0])
-    clock[0] += 0.5
-    timeline.update()
-    npt.assert_allclose(box.local.position, [1 + 0.5 * speed, 0, 0])
+        paused_time = timeline.current_timestamp
+        paused_position = box.local.position[0]
+        timeline.play()
+        time.sleep(0.01)
+        before_update = timeline.current_timestamp
+        timeline.update()
+        timeline.pause()
+        after_update = timeline.current_timestamp
+        assert after_update > paused_time
+        assert box.local.position[0] > paused_position
+        assert -2 + 0.4 * before_update - 1e-6 <= box.local.position[0]
+        assert box.local.position[0] <= -2 + 0.4 * after_update + 1e-6
+        compare_frame(
+            [-2 + 0.4 * after_update, 0, 0], 0.4 * (after_update - before_update)
+        )
