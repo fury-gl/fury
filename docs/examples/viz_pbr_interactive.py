@@ -41,7 +41,7 @@ import numpy as np
 
 from fury.data import fetch_viz_cubemaps, read_viz_cubemap
 from fury.io import load_cube_map_texture
-from fury.lib import AmbientLight, Buffer, DirectionalLight
+from fury.lib import AmbientLight, DirectionalLight
 from fury.ui import LineSlider2D, TabUI, TextBlock2D, TextButton2D
 from fury.window import Scene, ShowManager
 import fury.actor as actor
@@ -130,72 +130,23 @@ def gated(name, value):
     return value
 
 
-sphere_actor = actor.sphere(
-    np.zeros((1, 3)),
-    colors=(0.97, 0.96, 0.92),
-    radii=8.0,
+# The public factory supplies smooth radial normals, split UV endpoints and
+# pole-safe tangents. Without an image, material color and environment reflections
+# remain in control, including when anisotropy is enabled by a preset.
+sphere_actor = actor.texture_on_sphere(
     phi=96,
     theta=96,
-    impostor=False,
     material="physical",
     material_params={name: gated(name, value) for name, value in INITIAL.items()},
 )
-sphere_actor.material.flat_shading = False
-###############################################################################
-# ``actor.sphere`` bakes the colour into a vertex buffer. Switching the material
-# to ``color_mode="auto"`` hands control to ``material.color`` instead, so the
-# presets below can restage the sphere -- a metal, a dark bubble, a dyed cloth --
-# rather than only nudging its reflectance.
+sphere_actor.local.scale = 8.0
 
 # Silver: near-white reflectance, very slightly warm. On a metal the base
 # colour *is* the reflectance, so this is what tints every reflection.
 BASE_COLOR = (0.97, 0.96, 0.92, 1.0)
-sphere_actor.material.color_mode = "auto"
 sphere_actor.material.color = BASE_COLOR
 sphere_actor.material.sheen_color = (1.0, 1.0, 1.0)
 sphere_actor.material.emissive = (0.35, 0.12, 0.5)
-
-###############################################################################
-# ``prim_sphere`` closes the sphere by repeating its first column of vertices at
-# longitude +180, so the seam is two coincident rows of *separate* vertices.
-# Handed no normals, pygfx averages the face normals meeting at each vertex, and
-# each copy of the seam only sees the faces on its own side -- the two disagree
-# by half a segment, 5 degrees at the resolution used here. On something mirror
-# smooth that reads as the reflection being cut and shoved sideways down one
-# meridian, round the back of the default view. A sphere's normals are known
-# exactly, so hand them over rather than let them be inferred: centred on the
-# origin, the normal is the normalised position.
-
-unit = sphere_actor.geometry.positions.data
-unit = unit / np.linalg.norm(unit, axis=1, keepdims=True)
-sphere_actor.geometry.normals = Buffer(unit.astype(np.float32))
-
-###############################################################################
-# Anisotropy stretches the highlight along the surface's tangent direction, and
-# something has to supply that direction. With nothing else to go on pygfx
-# derives it from the screen-space derivatives of the texture coordinates, which
-# are constant across a triangle -- so the highlight breaks into facets -- and
-# which jump a whole turn where the longitude wraps, drawing a bright seam down
-# the sphere. It also cannot read the 3-component texcoords ``actor.sphere``
-# leaves behind, and fails shader validation outright.
-#
-# A ``tangents`` attribute replaces all of that guesswork. The direction wanted
-# is the one along which longitude increases, ``cross(up, n)`` normalised, which
-# works out as ``(cos, 0, -sin)`` of the longitude alone. Taking it from the
-# longitude rather than from the cross product matters at the poles: there the
-# cross product vanishes and has to be replaced by something, and any single
-# stand-in direction leaves the fan triangle on the far side interpolating its
-# tangent from that stand-in to its opposite -- straight through zero, which
-# collapses the tangent frame and lights a speck at each pole on every material.
-# The longitude survives at the pole vertices, held in x and z at around 1e-16,
-# so each copy still caps its own fan and the tangent stays well defined. The
-# fourth component picks the handedness of the bitangent.
-
-lon = np.arctan2(unit[:, 0], unit[:, 2])
-tangents = np.column_stack([np.cos(lon), np.zeros_like(lon), -np.sin(lon)])
-sphere_actor.geometry.tangents = Buffer(
-    np.column_stack([tangents, np.ones(len(tangents))]).astype(np.float32)
-)
 
 scene.add(sphere_actor)
 

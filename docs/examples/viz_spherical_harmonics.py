@@ -45,7 +45,7 @@ coefficients[6, 0, 0, 15] = 1.0
 
 #############################################################################
 # Now we can create a spherical glyph actor to visualize these coefficients.
-# Update the `sphere` parameter to change the resolution of the sph glyphs.
+# Set `sphere=(latitude_segments, longitude_segments)` to change glyph resolution.
 
 sph_glyph = actor.sph_glyph(coefficients, sphere=(50, 50))
 

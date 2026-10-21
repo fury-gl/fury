@@ -31,6 +31,7 @@ Contributors
 * Aman Soni
 * Amit Chaudhari
 * Anand Shivam
+* Anshu kashyap
 * Antriksh Misri
 * Ariel Rokem
 * Bago Amirbekian
@@ -84,6 +85,7 @@ Contributors
 * Meha Bhalodiya
 * Melina Raglin
 * Mohamed Agour
+* Mohit Kumar
 * Naman Bansal
 * Nasim Anousheh
 * Omar Ocegueda
@@ -93,9 +95,11 @@ Contributors
 * Prashil
 * PrayasJ
 * Ranveer Aggarwal
+* Rishika Sharma
 * Robin Roy
 * Rohit Kharsan
 * Sajag Swami
+* Sampat
 * Samuel St-Jean
 * Sanjay Marreddi
 * Sara Hamza

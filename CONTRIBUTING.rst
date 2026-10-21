@@ -166,8 +166,8 @@ Checklist before Releasing
   * It checks (and updates if needed) the copyright year range in ``LICENSE``.
   * It asks for the new version number, then generates the release notes by
     running ``docs/source/ext/github_tools.py`` for you, creating
-    ``release_notes/releasev<version>.rst``. It will pause for you to manually
-    fill in the "Quick overview" section of that file.
+    ``docs/source/release_notes/releasev<version>.rst``. It will pause for you to
+    manually fill in the "Quick overview" section of that file.
   * It updates ``release-history.rst`` to include the newly generated release
     notes file.
   * It creates a release announcement blog post stub under
@@ -175,9 +175,37 @@ Checklist before Releasing
   * It asks you to confirm that deprecated functions/modules have been
     checked before continuing.
   * It runs the test suite (``pytest -svv --doctest-modules fury``) and builds
-    the documentation (``make -C docs html``), then asks you to confirm the
-    generated docs look correct - looping back through tests/docs until you
-    confirm.
+    the documentation (``make -C docs html``). It then runs the platform's
+    ``serve`` target, opening a browser at ``http://localhost:8000``. Review the
+    generated docs, then press Ctrl+C in the terminal to stop the preview and
+    answer the confirmation prompt. On Windows, confirm batch termination if
+    prompted. Answering no to the documentation confirmation repeats the tests,
+    build, and preview until you confirm the docs look correct.
+
+* Before tagging, commit ``.github/workflows/release.yml``,
+  ``tools/github_release.py``, and the prepared
+  ``docs/source/release_notes/releasev<version>.rst``. Verify its
+  ``Release notes v<version>`` title, nonempty ``Quick Overview``, and previous
+  tag in the ``GitHub stats`` line. Both tags must exist when the workflow runs.
+
+* Install the development dependencies (including bundled Pandoc) and preview
+  a prepared release locally::
+
+    pip install -e ".[dev]"
+    python tools/github_release.py --tag v2.0.0 --preview --output-file RELEASE_PREVIEW.md
+
+  Inspect the Markdown in your editor, including links and formatting.
+  This works offline without authentication or release creation. Omit
+  ``--preview`` to generate only the introduction used by the workflow.
+
+  Add ``--previous-tag v0.12.0`` to override the recorded baseline. This changes
+  the comparison link and printed metadata, not the prepared PR list or source
+  notes. GitHub adds final PR author mentions and ``New Contributors`` during
+  publication; the local preview uses prepared PRs and contributor names.
+
+  Use explicitly labelled ``:doc:`` links in the overview; replace other Sphinx
+  roles with ordinary RST links or inline literals. The helper prefers system
+  Pandoc over the bundled copy; the workflow installs its own.
 
 * The release should now be ready.
 
@@ -211,10 +239,31 @@ Doing the release
   first 7 characters of the hash of the current commit. The letter g stands for “git”. This is all managed
   automatically by versioneer and in accordance with the specification in PEP 440.
 
-* Push the new commit and the tag to master::
+* Push the new commit and the tag to the upstream ``fury-gl/fury`` repository
+  (the following assumes ``origin`` points there)::
 
     git push origin master
     git push origin vX.Y.Z
+
+  The ``Release`` workflow publishes a GitHub release immediately, not a draft.
+  It runs only for upstream tag pushes; pushing a tag to a fork does not
+  publish an upstream release. Supported tags are ``vMAJOR.MINOR.PATCH`` with
+  optional ``aN``, ``bN``, or ``rcN`` suffixes. Suffixed versions are marked
+  as prereleases and are not selected as latest.
+
+  The release title is the tag. Its body contains the curated Quick Overview,
+  a link to the full tagged release notes, and GitHub-generated ``What's
+  Changed`` entries comparing against the notes' recorded previous tag.
+  The workflow uploads no assets and does not publish to PyPI or deploy the
+  website; the package publication steps below remain separate.
+
+  Check the Actions run and the published release. Missing or malformed notes,
+  missing tags, conversion failures, and API/permission errors fail the run.
+  Infrastructure failures before publication can be retried. An existing
+  release is never overwritten: rerunning after successful publication fails
+  with a conflict and leaves it unchanged. Do not move a published tag to fix
+  release preparation.
+
 
 * Register for a PyPI account and Install twine, a tool for uploading packages to PyPI::
 
@@ -270,9 +319,17 @@ Doing the release
 Other stuff that needs doing for the release
 ============================================
 
-* Checkout the tagged release, build the html docs and upload them to
-  the github pages website::
+* Checkout the tagged release, build the HTML docs, then publish the existing
+  build with Python 3.12 or newer (from ``docs``)::
 
+    make html
     make upload
+
+  On Windows use ``.\make.bat html`` and ``.\make.bat upload``. Upload does not rebuild
+  or require Sphinx. It uses the build's embedded version, updates the website
+  switcher and stable aliases, commits, and pushes using your configured Git
+  identity and credentials. The local ``docs/gh-pages`` checkout is disposable:
+  any existing staging changes are discarded before upload, and successful
+  publication removes the checkout. See ``docs/README.md`` for upload options.
 
 * Announce to the mailing lists.  With fear and trembling.

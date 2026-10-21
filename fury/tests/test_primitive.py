@@ -132,8 +132,8 @@ def test_spheres_primitives():
     l_primitives = [
         (10, 10, 121, 180),
         (20, 20, 441, 760),
-        (10, 12, 143, 220),
-        (22, 20, 483, 836),
+        (10, 12, 143, 216),
+        (22, 20, 483, 840),
     ]
 
     for nb_phi, nb_theta, nb_verts, nb_triangles in l_primitives:
@@ -145,6 +145,31 @@ def test_spheres_primitives():
         # vertices unreferenced at the poles
         referenced_verts = set(np.concatenate(faces, axis=None))
         npt.assert_equal(len(referenced_verts), len(verts) - 2)
+
+
+def test_sphere_latitude_longitude_resolution():
+    """Honor unequal latitude and longitude resolutions, including pole fans."""
+    phi, theta = 4, 8
+    vertices, faces = fp.prim_sphere(phi=phi, theta=theta)
+    grid = vertices.reshape(phi + 1, theta + 1, 3)
+    latitude = np.linspace(-np.pi / 2, np.pi / 2, phi + 1)
+    longitude = np.linspace(-np.pi, np.pi, theta + 1)
+    npt.assert_allclose(
+        grid[:, :, 1],
+        np.broadcast_to(np.sin(latitude)[:, None], grid.shape[:2]),
+        atol=1e-15,
+    )
+    npt.assert_allclose(grid[:, 0], grid[:, -1], atol=1e-15)
+    npt.assert_allclose(grid[phi // 2, :, 0], np.sin(longitude), atol=1e-15)
+    npt.assert_allclose(grid[phi // 2, :, 2], np.cos(longitude), atol=1e-15)
+    npt.assert_allclose(np.linalg.norm(vertices, axis=1), 1, atol=1e-15)
+    assert faces.shape == (2 * theta * (phi - 1), 3)
+    triangles = vertices[faces]
+    normals = np.cross(
+        triangles[:, 1] - triangles[:, 0], triangles[:, 2] - triangles[:, 0]
+    )
+    assert np.all(np.linalg.norm(normals, axis=1) > 1e-15)
+    assert np.all(np.sum(normals * triangles.mean(axis=1), axis=1) > 0)
 
 
 def test_superquadric_primitives():
