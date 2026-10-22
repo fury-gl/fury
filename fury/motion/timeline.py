@@ -161,6 +161,7 @@ class Timeline:
         Reset the timeline to the beginning and start playing.
         """
         self._current_timestamp = 0
+        self._last_started_time = perf_counter()
         self._playing = True
         self.update(force=True)
 
