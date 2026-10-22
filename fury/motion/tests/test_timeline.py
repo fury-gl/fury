@@ -264,6 +264,7 @@ def test_timeline_update_applies_boundary_frame(loop, force, length, playback_pa
         npt.assert_allclose(box.local.position, position, rtol=0, atol=1e-6)
         compare_frame(position)
 
+
 @pytest.mark.parametrize("loop", [False, True])
 @pytest.mark.parametrize("speed", [0.5, 2.0])
 @pytest.mark.parametrize("state", ["new", "playing", "paused", "stopped", "ended"])
