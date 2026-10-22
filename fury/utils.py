@@ -281,9 +281,9 @@ def normals_from_v_f(vertices, faces):
     tris = vertices[faces]
     n = np.cross(tris[::, 1] - tris[::, 0], tris[::, 2] - tris[::, 0])
     normalize_v3(n)
-    norm[faces[:, 0]] += n
-    norm[faces[:, 1]] += n
-    norm[faces[:, 2]] += n
+    np.add.at(norm, faces[:, 0], n)
+    np.add.at(norm, faces[:, 1], n)
+    np.add.at(norm, faces[:, 2], n)
     normalize_v3(norm)
     return norm
 
