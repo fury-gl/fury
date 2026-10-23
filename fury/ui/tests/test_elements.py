@@ -519,6 +519,39 @@ def test_textbox_static_background():
     npt.assert_equal(tb.text.background.size, initial_bg_size)
 
 
+def test_textbox_font_size_resizes_background():
+    """Changing the font size should scale the fixed background."""
+    width, height = 10, 2
+    initial_font_size, updated_font_size = 20, 40
+    bold, italic = True, True
+    textbox = ui.TextBox2D(
+        width=width,
+        height=height,
+        font_size=initial_font_size,
+        text="Hello",
+        bold=bold,
+        italic=italic,
+    )
+
+    initial_size = textbox.text.background.size.copy()
+    textbox.font_size = updated_font_size
+    updated_size = textbox.text.background.size
+
+    assert textbox.font_size == updated_font_size
+    assert textbox.text.font_size == updated_font_size
+    assert textbox.text.dynamic_bbox is False
+    assert updated_size[0] > initial_size[0]
+    assert updated_size[1] > initial_size[1]
+
+    bold_factor = 1.25 if bold else 1.0
+    italic_factor = 1.1 if italic else 1.0
+    expected_size = (
+        int(width * updated_font_size * 0.5 * bold_factor * italic_factor),
+        int(height * updated_font_size * 1.5) + 10,
+    )
+    npt.assert_equal(updated_size, expected_size)
+
+
 def test_textbox_shift_uppercase():
     """Shift modifier should produce uppercase letters."""
     tb = ui.TextBox2D(width=10, height=1, text="")
