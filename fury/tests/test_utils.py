@@ -802,3 +802,22 @@ def test_normals_from_v_f_regular_mesh():
     normals = normals_from_v_f(v_tet, f_tet)
     ideal = v_tet / np.linalg.norm(v_tet, axis=1, keepdims=True)
     assert np.allclose(normals, ideal)
+
+
+def test_normals_from_v_f_empty_mesh():
+    """Test normals_from_v_f with empty vertices or faces."""
+    # Empty vertices
+    v_empty = np.zeros((0, 3), dtype=np.float64)
+    f_empty = np.zeros((0, 3), dtype=int)
+    assert normals_from_v_f(v_empty, f_empty).shape == (0, 3)
+
+    # Empty faces (point cloud)
+    v = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+    res = normals_from_v_f(v, f_empty)
+    assert res.shape == (3, 3)
+    assert np.all(res == 0.0)
+
+    # Untyped empty faces array
+    res_untyped = normals_from_v_f(v, np.array([]))
+    assert res_untyped.shape == (3, 3)
+    assert np.all(res_untyped == 0.0)
