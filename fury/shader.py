@@ -183,13 +183,37 @@ class VectorFieldShader(LineShader):
 
 
 class StreamlinesShader(LineShader):
-    """Shader for StreamlineActor."""
+    """
+    Shader for StreamlineActor.
+
+    Parameters
+    ----------
+    wobject : Streamlines
+        The streamline object rendered by this shader.
+    """
 
     def __init__(self, wobject):
         super().__init__(wobject)
         self["per_line_thickness"] = wobject._line_thicknesses_buffer is not None
 
     def get_bindings(self, wobject, shared, scene):
+        """
+        Get resource bindings for the streamline shader.
+
+        Parameters
+        ----------
+        wobject : Streamlines
+            The streamline object being rendered.
+        shared : dict
+            Shared rendering information.
+        scene : fury.window.Scene
+            The current rendering scene.
+
+        Returns
+        -------
+        dict
+            Resource bindings used by the shader.
+        """
         bindings = super().get_bindings(wobject, shared, scene)
         thickness_buffer = wobject._line_thicknesses_buffer
         if thickness_buffer is not None:

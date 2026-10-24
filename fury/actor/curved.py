@@ -788,9 +788,8 @@ class StreamlinesActor(Line):
             positions_arr, line_lengths=line_lengths, line_offsets=line_offsets
         )
         self.n_lines = int(self._line_lengths.size)
-        scalar_thickness, line_thicknesses = _validate_streamline_thickness(
-            thickness, self.n_lines
-        )
+        thickness = _validate_streamline_thickness(thickness, self.n_lines)
+        line_thicknesses = None if np.isscalar(thickness) else thickness
         self._line_thicknesses = line_thicknesses
         self._out_capacity = int(positions_arr.shape[0])
         self._color_channels = int(colors_arr.shape[1]) if colors_arr.ndim == 2 else 3
@@ -813,7 +812,7 @@ class StreamlinesActor(Line):
             "outline_color": outline_color,
             "pick_write": enable_picking,
             "opacity": opacity,
-            "thickness": scalar_thickness,
+            "thickness": thickness if line_thicknesses is None else 2.0,
             "color_mode": "vertex",
         }
 
@@ -846,7 +845,15 @@ class StreamlinesActor(Line):
 
     @property
     def thicknesses(self):
-        """Return a copy of the per-streamline thickness values, if set."""
+        """
+        Get the per-streamline thickness values.
+
+        Returns
+        -------
+        ndarray or None
+            The per-streamline thickness values, or None when scalar
+            thickness is used.
+        """
         if self._line_thicknesses is None:
             return None
         return self._line_thicknesses
@@ -871,7 +878,9 @@ class StreamlinesActor(Line):
                 "update_thicknesses requires an actor created with per-streamline "
                 "thickness values"
             )
-        _, values = _validate_streamline_thickness(thicknesses, self.n_lines)
+        values = _validate_streamline_thickness(thicknesses, self.n_lines)
+        if np.isscalar(values):
+            raise ValueError("thicknesses must contain one value per streamline")
         expanded = _expand_streamline_thicknesses(
             values, self._line_lengths, self._line_offsets, self._out_capacity
         )
@@ -1056,69 +1065,78 @@ Streamlines = StreamlinesActor
 
 
 def _validate_streamline_thickness(thickness, n_lines):
-    """Validate scalar or per-streamline thickness values.
+    """
+    Validate scalar or per-line streamline thickness values.
 
     Parameters
     ----------
-    thickness : scalar or array-like
-        Thickness value or one thickness value per streamline.
+    thickness : float or array_like
+        A positive finite scalar or a 1D array with one value per streamline.
     n_lines : int
         Number of streamlines.
 
     Returns
     -------
-    scalar : float or None
-        Valid scalar thickness, or None for per-streamline thickness.
-    values : numpy.ndarray or None
-        Valid per-streamline thickness values, or None for scalar thickness.
+    float or ndarray
+        The validated scalar thickness or per-line thicknesses as float32.
     """
-    values = np.asarray(thickness, dtype=np.float32)
-
+    values = np.asarray(thickness)
     if values.ndim == 0:
-        if not np.isfinite(values) or values <= 0:
-            raise ValueError(
-                "thickness must be a positive finite number"
-            )
-        return float(values), None
+        if values.dtype.kind not in "fiub":
+            raise ValueError("thickness must be a positive finite number")
 
-    if values.ndim != 1:
+        scalar = float(values)
+        if not np.isfinite(scalar) or scalar <= 0:
+            raise ValueError("thickness must be a positive finite number")
+
+        float32_limits = np.finfo(np.float32)
+        max_thickness = float(float32_limits.max)
+        min_thickness = float(np.nextafter(np.float32(0), np.float32(1)))
+
+        if scalar > max_thickness or scalar < min_thickness:
+            raise ValueError("thickness must be representable as float32")
+
+        return float(np.float32(scalar))
+
+    if values.ndim != 1 or values.dtype.kind not in "fiu":
         raise ValueError(
-            "thickness must be a scalar or a 1D array with one value per "
-            "streamline"
+            "thickness must be a scalar or a 1D array with one value per streamline"
         )
-
     if len(values) != n_lines:
         raise ValueError(
             f"thickness must contain one value per streamline; "
             f"expected {n_lines}, got {len(values)}"
         )
 
-    if not np.isfinite(values).all() or (values <= 0).any():
-        raise ValueError(
-            "all thickness values must be positive and finite"
-        )
-
-    return None, values
+    if not np.isfinite(values).all() or np.any(values <= 0):
+        raise ValueError("all thickness values must be positive and finite")
+    float32_limits = np.finfo(np.float32)
+    max_thickness = float(float32_limits.max)
+    min_thickness = float(np.nextafter(np.float32(0), np.float32(1)))
+    if np.any(values > max_thickness) or np.any(values < min_thickness):
+        raise ValueError("thickness values must be representable as float32")
+    return values.astype(np.float32)
 
 
 def _expand_streamline_thicknesses(thicknesses, line_lengths, line_offsets, size):
-    """Expand per-streamline thickness values to per-point values.
+    """
+    Expand per-line thicknesses to a point-aligned buffer.
 
     Parameters
     ----------
-    thicknesses : numpy.ndarray
-        One thickness value for each streamline.
-    line_lengths : numpy.ndarray
+    thicknesses : ndarray
+        One thickness value per streamline.
+    line_lengths : ndarray
         Number of points in each streamline.
-    line_offsets : numpy.ndarray
-        Starting offset of each streamline in the combined buffer.
+    line_offsets : ndarray
+        Starting position of each streamline in the flattened buffer.
     size : int
-        Size of the output buffer.
+        Number of entries in the flattened positions buffer.
 
     Returns
     -------
-    numpy.ndarray
-        Thickness value for each point, with separator entries left as NaN.
+    ndarray
+        Float32 thickness values aligned with positions, with NaN separators.
     """
     expanded = np.full(size, np.nan, dtype=np.float32)
     for value, offset, length in zip(
