@@ -277,13 +277,16 @@ def normals_from_v_f(vertices, faces):
     The normal for each face is calculated and then accumulated for each
     vertex. The final normals are normalized to unit length.
     """
+    if len(vertices) == 0 or len(faces) == 0:
+        return np.zeros(vertices.shape, dtype=vertices.dtype)
+
     norm = np.zeros(vertices.shape, dtype=vertices.dtype)
     tris = vertices[faces]
     n = np.cross(tris[::, 1] - tris[::, 0], tris[::, 2] - tris[::, 0])
     normalize_v3(n)
-    norm[faces[:, 0]] += n
-    norm[faces[:, 1]] += n
-    norm[faces[:, 2]] += n
+    np.add.at(norm, faces[:, 0], n)
+    np.add.at(norm, faces[:, 1], n)
+    np.add.at(norm, faces[:, 2], n)
     normalize_v3(norm)
     return norm
 
