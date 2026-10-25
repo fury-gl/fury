@@ -29,6 +29,120 @@ def test_timeline_playback_panel():
     assert tl.playback_panel.on_pause.__func__ is tl.pause.__func__
 
 
+def test_timeline_playback_panel_sync():
+    """Test synchronization between Timeline and PlaybackPanel."""
+    tl = Timeline(playback_panel=True, length=10)
+
+    assert tl.playing is False
+    assert tl.playback_panel._playing is False
+    assert tl.playback_panel._play_pause_btn.toggled is False
+
+    # Programmatic play synchronizes panel state and button
+    tl.play()
+    assert tl.playing is True
+    assert tl.playback_panel._playing is True
+    assert tl.playback_panel._play_pause_btn.toggled is True
+
+    # First panel click after programmatic playback pauses correctly
+    tl.playback_panel._play_pause_btn.do_click()
+    assert tl.playing is False
+    assert tl.playback_panel._playing is False
+    assert tl.playback_panel._play_pause_btn.toggled is False
+
+    # Second UI click resumes playback
+    tl.playback_panel._play_pause_btn.do_click()
+    assert tl.playing is True
+    assert tl.playback_panel._playing is True
+    assert tl.playback_panel._play_pause_btn.toggled is True
+
+    # Programmatic pause synchronizes panel state and button
+    tl.pause()
+    assert tl.playing is False
+    assert tl.playback_panel._playing is False
+    assert tl.playback_panel._play_pause_btn.toggled is False
+
+    # Programmatic restart synchronizes panel state and button
+    tl.restart()
+    assert tl.playing is True
+    assert tl.playback_panel._playing is True
+    assert tl.playback_panel._play_pause_btn.toggled is True
+
+    # Programmatic stop synchronizes panel state and button
+    tl.stop()
+    assert tl.playing is False
+    assert tl.playback_panel._playing is False
+    assert tl.playback_panel._play_pause_btn.toggled is False
+    npt.assert_almost_equal(tl.playback_panel.current_time, 0)
+
+
+def test_timeline_playback_panel_callbacks_no_recursion():
+    """Test callback invocation behavior and ensure no recursion occurs."""
+    tl = Timeline(playback_panel=True, length=10)
+    call_counts = {"play": 0, "pause": 0, "stop": 0}
+    orig_on_play = tl.playback_panel.on_play
+    orig_on_pause = tl.playback_panel.on_pause
+    orig_on_stop = tl.playback_panel.on_stop
+
+    def tracked_on_play():
+        """Track on_play callback calls."""
+        call_counts["play"] += 1
+        orig_on_play()
+
+    def tracked_on_pause():
+        """Track on_pause callback calls."""
+        call_counts["pause"] += 1
+        orig_on_pause()
+
+    def tracked_on_stop():
+        """Track on_stop callback calls."""
+        call_counts["stop"] += 1
+        orig_on_stop()
+
+    tl.playback_panel.on_play = tracked_on_play
+    tl.playback_panel.on_pause = tracked_on_pause
+    tl.playback_panel.on_stop = tracked_on_stop
+
+    # Programmatic play does not invoke panel on_play callback
+    tl.play()
+    assert call_counts["play"] == 0
+
+    # UI click invokes on_pause exactly once
+    tl.playback_panel._play_pause_btn.do_click()
+    assert call_counts["pause"] == 1
+
+    # Next UI click invokes on_play exactly once
+    tl.playback_panel._play_pause_btn.do_click()
+    assert call_counts["play"] == 1
+
+    # Programmatic pause does not invoke on_pause callback
+    tl.pause()
+    assert call_counts["pause"] == 1
+
+    # Programmatic stop does not invoke on_stop callback
+    tl.stop()
+    assert call_counts["stop"] == 0
+
+
+def test_timeline_without_playback_panel():
+    """Test timeline playback lifecycle without a playback panel."""
+    tl = Timeline(playback_panel=False, length=10)
+    assert tl.has_playback_panel is False
+    assert tl.playback_panel is None
+
+    tl.play()
+    assert tl.playing is True
+
+    tl.pause()
+    assert tl.playing is False
+
+    tl.restart()
+    assert tl.playing is True
+
+    tl.stop()
+    assert tl.playing is False
+    assert tl.stopped is True
+
+
 def test_timeline_add_animation():
     tl = Timeline()
     anim = Animation()
