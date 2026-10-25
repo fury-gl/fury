@@ -92,6 +92,7 @@ def test_timeline_playback():
     tl = Timeline(length=10)
 
     assert tl.stopped is True
+    assert tl.paused is False
     assert tl.playing is False
 
     tl.play()
@@ -104,7 +105,11 @@ def test_timeline_playback():
 
     tl.stop()
     assert tl.stopped is True
+    assert tl.paused is False
     npt.assert_almost_equal(tl.current_timestamp, 0)
+
+    tl.seek(5)
+    assert tl.paused is True
 
 
 def test_timeline_play_updates_time():
