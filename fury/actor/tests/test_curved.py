@@ -352,7 +352,7 @@ def test_streamlines_scalar_thickness_is_backward_compatible():
 
     assert wobj.material.thickness == 3.0
     assert wobj.thicknesses is None
-    assert wobj._line_thicknesses_buffer is None
+    assert wobj._line_thicknesses_data is None
     scene = window.Scene()
     scene.add(wobj)
     image = window.snapshot(scene=scene, fname=None, return_array=True)
@@ -370,7 +370,7 @@ def test_streamlines_scalar_thickness_is_backward_compatible():
         wobj.update_thicknesses([1.0, 2.0])
 
 
-def test_streamlines_per_line_thickness_aligns_with_positions_and_updates_buffer():
+def test_streamlines_per_line_thickness_aligns_with_positions_and_updates_data():
     lines = [
         np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]], dtype=np.float32),
         np.array(
@@ -383,11 +383,12 @@ def test_streamlines_per_line_thickness_aligns_with_positions_and_updates_buffer
     input_thicknesses[0] = 100.0
     assert np.array_equal(wobj.thicknesses, [2.0, 4.0])
 
-    buffer = wobj._line_thicknesses_buffer
     geometry = wobj.geometry
 
     assert np.allclose(
-        buffer.data, np.array([2.0, 2.0, np.nan, 4.0, 4.0, 4.0]), equal_nan=True
+        wobj._line_thicknesses_data,
+        np.array([2.0, 2.0, np.nan, 4.0, 4.0, 4.0]),
+        equal_nan=True,
     )
     assert np.array_equal(wobj.thicknesses, [2.0, 4.0])
 
@@ -395,10 +396,11 @@ def test_streamlines_per_line_thickness_aligns_with_positions_and_updates_buffer
     wobj.update_thicknesses(updated_thicknesses)
     updated_thicknesses[0] = 100.0
 
-    assert wobj._line_thicknesses_buffer is buffer
     assert wobj.geometry is geometry
     assert np.allclose(
-        buffer.data, np.array([5.0, 5.0, np.nan, 7.0, 7.0, 7.0]), equal_nan=True
+        wobj._line_thicknesses_data,
+        np.array([5.0, 5.0, np.nan, 7.0, 7.0, 7.0]),
+        equal_nan=True,
     )
     assert np.array_equal(wobj.thicknesses, [5.0, 7.0])
     with pytest.raises(ValueError):
@@ -406,7 +408,9 @@ def test_streamlines_per_line_thickness_aligns_with_positions_and_updates_buffer
     with pytest.raises(ValueError):
         wobj.update_thicknesses(5.0)
     assert np.allclose(
-        buffer.data, np.array([5.0, 5.0, np.nan, 7.0, 7.0, 7.0]), equal_nan=True
+        wobj._line_thicknesses_data,
+        np.array([5.0, 5.0, np.nan, 7.0, 7.0, 7.0]),
+        equal_nan=True,
     )
 
 

@@ -827,16 +827,14 @@ class StreamlinesActor(Line):
         self._line_offsets_buffer = Buffer(self._line_offsets.astype(np.uint32))
         self._line_positions_in = Buffer(positions_arr.astype(np.float32).ravel())
         self._line_colors_in = Buffer(colors_arr.astype(np.float32).ravel())
-        self._line_thicknesses_buffer = (
+        self._line_thicknesses_data = (
             None
             if line_thicknesses is None
-            else Buffer(
-                _expand_streamline_thicknesses(
-                    line_thicknesses,
-                    self._line_lengths,
-                    self._line_offsets,
-                    self._out_capacity,
-                )
+            else _expand_streamline_thicknesses(
+                line_thicknesses,
+                self._line_lengths,
+                self._line_offsets,
+                self._out_capacity,
             )
         )
         self._roi_mask_buffer = None
@@ -873,7 +871,7 @@ class StreamlinesActor(Line):
             If this actor was created with scalar thickness or the values are
             not a positive finite 1D array with one value per streamline.
         """
-        if self._line_thicknesses_buffer is None:
+        if self._line_thicknesses_data is None:
             raise ValueError(
                 "update_thicknesses requires an actor created with per-streamline "
                 "thickness values"
@@ -884,8 +882,7 @@ class StreamlinesActor(Line):
         expanded = _expand_streamline_thicknesses(
             values, self._line_lengths, self._line_offsets, self._out_capacity
         )
-        self._line_thicknesses_buffer.data[...] = expanded
-        self._line_thicknesses_buffer.update_full()
+        self._line_thicknesses_data = expanded
         self._line_thicknesses = values
 
     @property
