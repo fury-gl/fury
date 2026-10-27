@@ -455,6 +455,110 @@ def read_lines(file_path, *, format=None):
     return lines, colors
 
 
+def read_gltf(file_path, *, format=None):
+    """
+    Read a glTF 2.0 or GLB file as a single surface mesh using polyxios.
+
+    The node transforms of the default scene are applied and all of its meshes
+    are merged into one. Materials, textures, skins and animations are ignored.
+
+    Parameters
+    ----------
+    file_path : str
+        The path to the ``.gltf`` or ``.glb`` file.
+    format : str, optional
+        The specific file format override (e.g. '.glb'). Inferred from the file
+        extension when None.
+
+    Returns
+    -------
+    tuple
+        A tuple containing:
+
+        - vertices (np.ndarray): Shape (N, 3) float32 array of world-space vertex
+          positions.
+        - faces (np.ndarray or None): Shape (M, 3) int32 array of triangle face
+          indices, or None when the scene has no surface primitives.
+        - colors (np.ndarray or None): Shape (N, 3) float32 array of per-vertex
+          RGB colors in [0, 1], or None when no mesh has vertex colors. Vertices
+          of meshes without colors are white.
+        - normals (np.ndarray or None): Shape (N, 3) float32 array of per-vertex
+          normals, or None when any mesh lacks normals.
+    """
+    poly = px.read_scene(file_path, fmt=format).to_polydata()
+
+    vertices = np.asarray(poly.vertices, dtype=np.float32)
+
+    faces = poly.faces
+    if faces is not None:
+        faces = np.asarray(faces, dtype=np.int32)
+
+    colors = poly.vertex_attrs.get("colors")
+    if colors is not None:
+        colors = np.asarray(colors[:, :3], dtype=np.float32)
+        colors[np.isnan(colors).any(axis=1)] = 1.0
+
+    normals = poly.vertex_attrs.get("normals")
+    if normals is not None:
+        normals = np.asarray(normals, dtype=np.float32)
+        if not np.isfinite(normals).all():
+            normals = None
+
+    return vertices, faces, colors, normals
+
+
+def save_gltf(vertices, faces, file_path, *, colors=None, normals=None, format=None):
+    """
+    Save a triangle surface as a glTF 2.0 or GLB file using polyxios.
+
+    The surface is written as a single mesh attached to one node of the default
+    scene. No materials, textures, skins or animations are written.
+
+    Parameters
+    ----------
+    vertices : ndarray, shape (N, 3)
+        The vertex positions.
+    faces : ndarray, shape (M, 3)
+        The indices of the vertices that form each triangular face.
+    file_path : str
+        The output path. A ``.glb`` path writes a single binary file and a
+        ``.gltf`` path writes JSON plus a ``.bin`` buffer next to it.
+    colors : ndarray, shape (N, 3) or (N, 4), optional
+        Per-vertex RGB(A) colors in [0, 1], written as the glTF ``COLOR_0``
+        attribute.
+    normals : ndarray, shape (N, 3), optional
+        Per-vertex normals.
+    format : str, optional
+        The specific file format override (e.g. '.glb'). Inferred from the file
+        extension when None.
+
+    Raises
+    ------
+    ValueError
+        If ``colors`` or ``normals`` do not have one row per vertex.
+    polyxios.UnsupportedFormatError
+        If the format is not a glTF format.
+    """
+    vertices = np.asarray(vertices, dtype=np.float32)
+    faces = np.asarray(faces, dtype=np.int32)
+
+    vertex_attrs = {}
+    for name, values in (("colors", colors), ("normals", normals)):
+        if values is None:
+            continue
+        values = np.asarray(values, dtype=np.float32)
+        if len(values) != len(vertices):
+            raise ValueError(
+                f"{name} must have one row per vertex, got {len(values)} rows "
+                f"for {len(vertices)} vertices."
+            )
+        vertex_attrs[name] = values
+
+    poly = px.make_polydata(vertices, [("triangle", faces)], vertex_attrs=vertex_attrs)
+    scene = px.SceneData(meshes=(poly,), nodes=(px.SceneNode(mesh=0),), scenes=((0,),))
+    px.write_scene(scene, file_path, fmt=format)
+
+
 # def load_polydata(file_name):
 #     """Load a vtk polydata to a supported format file.
 
