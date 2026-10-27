@@ -646,8 +646,9 @@ class StreamlinesActor(Line):
         The positions of the points along the streamline.
     colors : ndarray, shape (N, 3) or (N, 4), optional
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
-    thickness : float, optional
-        The thickness of the streamline.
+    thickness : float or array_like, optional
+        A positive finite thickness for all streamlines, or a 1D array with
+        one positive finite thickness per streamline.
     opacity : float, optional
         The opacity of the streamline.
     outline_thickness : float, optional
@@ -767,8 +768,9 @@ class StreamlinesActor(Line):
             The positions of the points along the streamline.
         colors : ndarray, shape (N, 3) or (N, 4), optional
             RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
-        thickness : float, optional
-            The thickness of the streamline.
+        thickness : float or array_like, optional
+            A positive finite thickness for all streamlines, or a 1D array with
+            one positive finite thickness per streamline.
         opacity : float, optional
             The opacity of the streamline.
         outline_thickness : float, optional
@@ -793,9 +795,6 @@ class StreamlinesActor(Line):
             NaN separators.
         """
         super().__init__()
-
-        if not isinstance(thickness, (int, float)) or thickness <= 0:
-            raise ValueError("thickness must be a positive number")
 
         opacity = validate_opacity(opacity)
 
@@ -825,6 +824,9 @@ class StreamlinesActor(Line):
             positions_arr, line_lengths=line_lengths, line_offsets=line_offsets
         )
         self.n_lines = int(self._line_lengths.size)
+        thickness = _validate_streamline_thickness(thickness, self.n_lines)
+        line_thicknesses = None if np.isscalar(thickness) else thickness
+        self._line_thicknesses = line_thicknesses
         self._out_capacity = int(positions_arr.shape[0])
         self._color_channels = int(colors_arr.shape[1]) if colors_arr.ndim == 2 else 3
 
@@ -846,7 +848,7 @@ class StreamlinesActor(Line):
             "outline_color": outline_color,
             "pick_write": enable_picking,
             "opacity": opacity,
-            "thickness": thickness,
+            "thickness": thickness if line_thicknesses is None else 2.0,
             "color_mode": "vertex",
         }
 
@@ -861,9 +863,63 @@ class StreamlinesActor(Line):
         self._line_offsets_buffer = Buffer(self._line_offsets.astype(np.uint32))
         self._line_positions_in = Buffer(positions_arr.astype(np.float32).ravel())
         self._line_colors_in = Buffer(colors_arr.astype(np.float32).ravel())
+        self._line_thicknesses_data = (
+            None
+            if line_thicknesses is None
+            else _expand_streamline_thicknesses(
+                line_thicknesses,
+                self._line_lengths,
+                self._line_offsets,
+                self._out_capacity,
+            )
+        )
         self._roi_mask_buffer = None
         self._roi_auto_detach = True
         self.roi_mask = roi_mask
+
+    @property
+    def thicknesses(self):
+        """
+        Get the per-streamline thickness values.
+
+        Returns
+        -------
+        ndarray or None
+            The per-streamline thickness values, or None when scalar
+            thickness is used.
+        """
+        if self._line_thicknesses is None:
+            return None
+        return self._line_thicknesses
+
+    def update_thicknesses(self, thicknesses):
+        """
+        Update per-streamline thickness values without rebuilding geometry.
+
+        Parameters
+        ----------
+        thicknesses : array_like, shape (n_streamlines,)
+            Positive finite thickness for each streamline.
+
+        Raises
+        ------
+        ValueError
+            If this actor was created with scalar thickness or the values are
+            not a positive finite 1D array with one value per streamline.
+        """
+        if self._line_thicknesses_data is None:
+            raise ValueError(
+                "update_thicknesses requires an actor created with per-streamline "
+                "thickness values"
+            )
+        values = _validate_streamline_thickness(thicknesses, self.n_lines)
+        if np.isscalar(values):
+            raise ValueError("thicknesses must contain one value per streamline")
+        expanded = _expand_streamline_thicknesses(
+            values, self._line_lengths, self._line_offsets, self._out_capacity
+        )
+        self._line_thicknesses_data = expanded
+        self._line_thicknesses = values
 
     @property
     def roi_mask(self):
@@ -1041,6 +1097,88 @@ class StreamlinesActor(Line):
 Streamlines = StreamlinesActor
 
 
+def _validate_streamline_thickness(thickness, n_lines):
+    """
+    Validate scalar or per-line streamline thickness values.
+
+    Parameters
+    ----------
+    thickness : float or array_like
+        A positive finite scalar or a 1D array with one value per streamline.
+    n_lines : int
+        Number of streamlines.
+
+    Returns
+    -------
+    float or ndarray
+        The validated scalar thickness or per-line thicknesses as float32.
+    """
+    values = np.asarray(thickness)
+    if values.ndim == 0:
+        if values.dtype.kind not in "fiub":
+            raise ValueError("thickness must be a positive finite number")
+
+        scalar = float(values)
+        if not np.isfinite(scalar) or scalar <= 0:
+            raise ValueError("thickness must be a positive finite number")
+
+        float32_limits = np.finfo(np.float32)
+        max_thickness = float(float32_limits.max)
+        min_thickness = float(np.nextafter(np.float32(0), np.float32(1)))
+
+        if scalar > max_thickness or scalar < min_thickness:
+            raise ValueError("thickness must be representable as float32")
+
+        return float(np.float32(scalar))
+
+    if values.ndim != 1 or values.dtype.kind not in "fiu":
+        raise ValueError(
+            "thickness must be a scalar or a 1D array with one value per streamline"
+        )
+    if len(values) != n_lines:
+        raise ValueError(
+            f"thickness must contain one value per streamline; "
+            f"expected {n_lines}, got {len(values)}"
+        )
+
+    if not np.isfinite(values).all() or np.any(values <= 0):
+        raise ValueError("all thickness values must be positive and finite")
+    float32_limits = np.finfo(np.float32)
+    max_thickness = float(float32_limits.max)
+    min_thickness = float(np.nextafter(np.float32(0), np.float32(1)))
+    if np.any(values > max_thickness) or np.any(values < min_thickness):
+        raise ValueError("thickness values must be representable as float32")
+    return values.astype(np.float32)
+
+
+def _expand_streamline_thicknesses(thicknesses, line_lengths, line_offsets, size):
+    """
+    Expand per-line thicknesses to a point-aligned buffer.
+
+    Parameters
+    ----------
+    thicknesses : ndarray
+        One thickness value per streamline.
+    line_lengths : ndarray
+        Number of points in each streamline.
+    line_offsets : ndarray
+        Starting position of each streamline in the flattened buffer.
+    size : int
+        Number of entries in the flattened positions buffer.
+
+    Returns
+    -------
+    ndarray
+        Float32 thickness values aligned with positions, with NaN separators.
+    """
+    expanded = np.full(size, np.nan, dtype=np.float32)
+    for value, offset, length in zip(
+        thicknesses, line_offsets, line_lengths, strict=True
+    ):
+        expanded[offset : offset + length] = value
+    return expanded
+
+
 def streamlines(
     lines,
     *,
@@ -1063,8 +1201,9 @@ def streamlines(
     colors : str, tuple, list or ndarray, optional
         A hex string, RGB(A) in [0, 1], RGB(A) in [0, 255], or a per-line /
         per-vertex array of such colors. See :func:`normalize_colors`.
-    thickness : float, optional
-        The thickness of the streamline.
+    thickness : float or array_like, optional
+        A positive finite thickness for all streamlines, or a 1D array with
+        one positive finite thickness per streamline.
     opacity : float, optional
         The opacity of the streamline.
     outline_thickness : float, optional
