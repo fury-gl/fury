@@ -22,7 +22,7 @@ The mandatory dependencies are:
 - pygfx >= 0.16.0
 - GLFW >= 2.7.0
 - aiohttp
-- polyxios >= 0.2.0
+- polyxios >= 0.5.1
 
 Optional dependencies are available as extras:
 

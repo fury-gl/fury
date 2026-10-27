@@ -1,6 +1,7 @@
 import os
 from os.path import join as pjoin
 from tempfile import TemporaryDirectory as InTemporaryDirectory
+import warnings
 
 # from PIL import Image
 import numpy as np
@@ -21,9 +22,11 @@ from fury.io import (
     # load_polydata,
     # load_sprite_sheet,
     # load_text,
+    read_gltf,
     read_lines,
     read_mesh,
     read_points,
+    save_gltf,
     save_image,
     save_network,
 )
@@ -286,6 +289,135 @@ def test_read_lines_without_line_elements():
 
     npt.assert_equal(out_lines, [])
     npt.assert_equal(out_colors, None)
+
+
+def test_read_gltf_applies_node_transforms():
+    vertices = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0]], dtype=np.float64)
+    faces = np.array([[0, 1, 2], [1, 3, 2]], dtype=np.int32)
+    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 0]], dtype=np.float64)
+    normals = np.tile([0.0, 0.0, 1.0], (4, 1))
+
+    poly = px.make_polydata(
+        vertices,
+        [("triangle", faces)],
+        vertex_attrs={"colors": colors, "normals": normals},
+    )
+    matrix = np.eye(4)
+    matrix[:3, 3] = [2, 0, 0]
+    scene = px.SceneData(
+        meshes=(poly,),
+        nodes=(px.SceneNode(mesh=0, matrix=matrix),),
+        scenes=((0,),),
+    )
+
+    for ext in ("glb", "gltf"):
+        with InTemporaryDirectory() as odir:
+            fname_path = pjoin(odir, f"temp-scene.{ext}")
+            px.write_scene(scene, fname_path)
+
+            with warnings.catch_warnings():
+                warnings.simplefilter("error")
+                out_vertices, out_faces, out_colors, out_normals = read_gltf(fname_path)
+
+        assert out_vertices.dtype == np.float32
+        npt.assert_allclose(out_vertices, vertices + [2, 0, 0], atol=1e-6)
+        assert out_faces.dtype == np.int32
+        npt.assert_equal(out_faces, faces)
+        npt.assert_allclose(out_colors, colors, atol=1e-6)
+        npt.assert_allclose(out_normals, normals, atol=1e-6)
+
+
+def test_read_gltf_partial_vertex_attributes():
+    vertices = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]], dtype=np.float64)
+    faces = np.array([[0, 1, 2]], dtype=np.int32)
+    attrs = {
+        "colors": np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=np.float64),
+        "normals": np.tile([0.0, 0.0, 1.0], (3, 1)),
+    }
+
+    with_attrs = px.make_polydata(vertices, [("triangle", faces)], vertex_attrs=attrs)
+    without_attrs = px.make_polydata(vertices, [("triangle", faces)])
+    scene = px.SceneData(
+        meshes=(with_attrs, without_attrs),
+        nodes=(px.SceneNode(mesh=0), px.SceneNode(mesh=1)),
+        scenes=((0, 1),),
+    )
+
+    with InTemporaryDirectory() as odir:
+        fname_path = pjoin(odir, "temp-partial.glb")
+        px.write_scene(scene, fname_path)
+        out_vertices, out_faces, out_colors, out_normals = read_gltf(fname_path)
+
+    npt.assert_equal(out_vertices.shape, (6, 3))
+    npt.assert_equal(out_faces, [[0, 1, 2], [3, 4, 5]])
+    npt.assert_allclose(out_colors[:3], attrs["colors"], atol=1e-6)
+    npt.assert_equal(out_colors[3:], np.ones((3, 3)))
+    assert out_normals is None
+
+
+def test_save_gltf_round_trip():
+    vertices = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0]], dtype=np.float32)
+    faces = np.array([[0, 1, 2], [1, 3, 2]], dtype=np.int32)
+    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 0]], dtype=np.float32)
+    normals = np.tile(np.array([0, 0, 1], dtype=np.float32), (4, 1))
+
+    for ext in ("glb", "gltf"):
+        with InTemporaryDirectory() as odir:
+            fname_path = pjoin(odir, f"temp-surface.{ext}")
+            save_gltf(vertices, faces, fname_path, colors=colors, normals=normals)
+
+            with warnings.catch_warnings():
+                warnings.simplefilter("error")
+                poly = px.read_scene(fname_path).to_polydata()
+
+        npt.assert_allclose(poly.vertices, vertices, atol=1e-6)
+        npt.assert_equal(poly.faces, faces)
+        npt.assert_allclose(poly.vertex_attrs["colors"], colors, atol=1e-6)
+        npt.assert_allclose(poly.vertex_attrs["normals"], normals, atol=1e-6)
+
+
+def test_save_gltf_without_optional_attributes():
+    vertices = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]], dtype=np.float32)
+    faces = np.array([[0, 1, 2]], dtype=np.int32)
+
+    with InTemporaryDirectory() as odir:
+        fname_path = pjoin(odir, "temp-plain.glb")
+        save_gltf(vertices, faces, fname_path)
+        poly = px.read_scene(fname_path).to_polydata()
+
+    npt.assert_equal(poly.faces, faces)
+    assert "colors" not in poly.vertex_attrs
+    assert "normals" not in poly.vertex_attrs
+
+
+def test_save_gltf_invalid_inputs():
+    vertices = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]], dtype=np.float32)
+    faces = np.array([[0, 1, 2]], dtype=np.int32)
+
+    with InTemporaryDirectory() as odir:
+        npt.assert_raises(
+            ValueError,
+            save_gltf,
+            vertices,
+            faces,
+            pjoin(odir, "temp-bad-colors.glb"),
+            colors=np.ones((2, 3)),
+        )
+        npt.assert_raises(
+            ValueError,
+            save_gltf,
+            vertices,
+            faces,
+            pjoin(odir, "temp-bad-normals.glb"),
+            normals=np.ones((4, 3)),
+        )
+        npt.assert_raises(
+            px.UnsupportedFormatError,
+            save_gltf,
+            vertices,
+            faces,
+            pjoin(odir, "temp-surface.obj"),
+        )
 
 
 def test_save_load_image():
