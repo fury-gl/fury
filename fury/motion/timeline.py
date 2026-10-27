@@ -134,6 +134,9 @@ class Timeline:
                 perf_counter() - self._current_timestamp / self.speed
             )
             self._playing = True
+            if self.has_playback_panel:
+                self.playback_panel._playing = True
+                self.playback_panel._play_pause_btn.toggled = True
 
     def pause(self):
         """
@@ -143,6 +146,9 @@ class Timeline:
         """
         self._current_timestamp = self.current_timestamp
         self._playing = False
+        if self.has_playback_panel:
+            self.playback_panel._playing = False
+            self.playback_panel._play_pause_btn.toggled = False
 
     def stop(self):
         """
@@ -152,6 +158,9 @@ class Timeline:
         """
         self._current_timestamp = 0
         self._playing = False
+        if self.has_playback_panel:
+            self.playback_panel._playing = False
+            self.playback_panel._play_pause_btn.toggled = False
         self.update(force=True)
 
     def restart(self):
@@ -163,6 +172,9 @@ class Timeline:
         self._current_timestamp = 0
         self._last_started_time = perf_counter()
         self._playing = True
+        if self.has_playback_panel:
+            self.playback_panel._playing = True
+            self.playback_panel._play_pause_btn.toggled = True
         self.update(force=True)
 
     @property
