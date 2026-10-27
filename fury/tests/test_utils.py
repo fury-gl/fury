@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 from scipy.ndimage import generate_binary_structure
 
+from fury.primitive import prim_tetrahedron
 from fury.utils import (
     create_sh_basis_matrix,
     extract_surface_voxels,
@@ -10,6 +11,7 @@ from fury.utils import (
     get_lmax,
     get_n_coeffs,
     get_transformed_cube_bounds,
+    normals_from_v_f,
     voxel_mesh_by_object,
 )
 
@@ -706,3 +708,116 @@ def test_voxel_mesh_by_object_hollow_object():
 
     assert verts.shape[0] > 0
     assert faces.shape[0] > 0
+
+
+def test_normals_from_v_f_shared_vertices():
+    """
+    Test that normals_from_v_f correctly accumulates contributions for
+    shared vertices across multiple faces.
+    """
+    vertices = np.array(
+        [
+            [0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, 1.0],
+        ],
+        dtype=np.float64,
+    )
+    # Face 0 (in XY plane): vertices [0, 1, 2] -> normal [0, 0, 1]
+    # Face 1 (in YZ plane): vertices [0, 2, 3] -> normal [1, 0, 0]
+    # Vertex 0 and 2 are shared along the hinge (Y-axis).
+    faces = np.array([[0, 1, 2], [0, 2, 3]])
+
+    normals = normals_from_v_f(vertices, faces)
+
+    expected_shared = np.array([1.0 / np.sqrt(2.0), 0.0, 1.0 / np.sqrt(2.0)])
+    assert np.allclose(normals[0], expected_shared)
+    assert np.allclose(normals[2], expected_shared)
+    assert np.allclose(normals[1], [0.0, 0.0, 1.0])
+    assert np.allclose(normals[3], [1.0, 0.0, 0.0])
+
+
+def test_normals_from_v_f_column_permutations():
+    """
+    Test that shared vertex normal accumulation is independent of the
+    face column in which a vertex appears.
+    """
+    vertices = np.array(
+        [
+            [0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, 1.0],
+        ],
+        dtype=np.float64,
+    )
+    expected_shared = np.array([1.0 / np.sqrt(2.0), 0.0, 1.0 / np.sqrt(2.0)])
+
+    # Permute vertex orders cyclically to preserve winding/orientation:
+    # (0, 1, 2) -> (1, 2, 0) -> (2, 0, 1)
+    # (0, 2, 3) -> (2, 3, 0) -> (3, 0, 2)
+    permutations = [
+        ([0, 1, 2], [0, 2, 3]),  # v0 in col 0, col 0
+        ([1, 2, 0], [0, 2, 3]),  # v0 in col 2, col 0
+        ([2, 0, 1], [3, 0, 2]),  # v0 in col 1, col 1
+        ([1, 2, 0], [2, 3, 0]),  # v0 in col 2, col 2
+    ]
+
+    for face0, face1 in permutations:
+        faces = np.array([face0, face1])
+        normals = normals_from_v_f(vertices, faces)
+        assert np.allclose(normals[0], expected_shared)
+        assert np.allclose(normals[2], expected_shared)
+
+
+def test_normals_from_v_f_dtypes():
+    """Test that normals_from_v_f preserves input floating-point dtype."""
+    vertices = np.array(
+        [
+            [0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, 1.0],
+        ]
+    )
+    faces = np.array([[0, 1, 2], [0, 2, 3]])
+    expected_shared = np.array([1.0 / np.sqrt(2.0), 0.0, 1.0 / np.sqrt(2.0)])
+
+    for dtype in (np.float32, np.float64):
+        v_typed = vertices.astype(dtype)
+        normals = normals_from_v_f(v_typed, faces)
+        assert normals.dtype == dtype
+        assert np.allclose(normals[0], expected_shared.astype(dtype), atol=1e-6)
+
+
+def test_normals_from_v_f_regular_mesh():
+    """
+    Test normals_from_v_f on a closed regular polyhedron (tetrahedron).
+
+    For a regular polyhedron centered at the origin, the exact analytical
+    vertex normal points radially outward along the vertex position vector.
+    """
+    v_tet, f_tet = prim_tetrahedron()
+    normals = normals_from_v_f(v_tet, f_tet)
+    ideal = v_tet / np.linalg.norm(v_tet, axis=1, keepdims=True)
+    assert np.allclose(normals, ideal)
+
+
+def test_normals_from_v_f_empty_mesh():
+    """Test normals_from_v_f with empty vertices or faces."""
+    # Empty vertices
+    v_empty = np.zeros((0, 3), dtype=np.float64)
+    f_empty = np.zeros((0, 3), dtype=int)
+    assert normals_from_v_f(v_empty, f_empty).shape == (0, 3)
+
+    # Empty faces (point cloud)
+    v = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+    res = normals_from_v_f(v, f_empty)
+    assert res.shape == (3, 3)
+    assert np.all(res == 0.0)
+
+    # Untyped empty faces array
+    res_untyped = normals_from_v_f(v, np.array([]))
+    assert res_untyped.shape == (3, 3)
+    assert np.all(res_untyped == 0.0)
