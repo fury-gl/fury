@@ -215,9 +215,8 @@ class StreamlinesShader(LineShader):
             Resource bindings used by the shader.
         """
         bindings = super().get_bindings(wobject, shared, scene)
-        thickness_data = wobject._line_thicknesses_data
-        if thickness_data is not None:
-            thickness_buffer = Buffer(thickness_data)
+        thickness_buffer = wobject._line_thicknesses_buffer
+        if thickness_buffer is not None:
             bindings[0][max(bindings[0]) + 1] = Binding(
                 "s_thicknesses", "buffer/read_only_storage", thickness_buffer, "VERTEX"
             )

@@ -552,6 +552,36 @@ def test_streamlines_renders_distinct_per_line_thicknesses():
     assert dashed_blue.any()
 
 
+@pytest.mark.parametrize("with_roi", [False, True])
+def test_streamlines_updates_thicknesses_in_live_window(with_roi):
+    points = np.linspace(-2.0, 2.0, 30, dtype=np.float32)
+    lines = [
+        np.column_stack([points, np.full_like(points, y), np.zeros_like(points)])
+        for y in (-0.5, 0.5)
+    ]
+    wobj = actor.streamlines(
+        lines,
+        colors=np.array([[1, 0, 0], [0, 0, 1]], dtype=np.float32),
+        thickness=[2.0, 12.0],
+        outline_thickness=0.0,
+        roi_mask=np.ones((8, 8, 8), dtype=np.uint8) if with_roi else None,
+        roi_origin=(-4, -4, -4),
+    )
+    with render_manager(wobj) as show_m:
+        initial = render_snapshot(show_m)
+        for thicknesses in ([12.0, 2.0], [2.0, 12.0]):
+            wobj.update_thicknesses(thicknesses)
+            image = render_snapshot(show_m)
+            red = np.count_nonzero(image[..., 0] > image[..., 2])
+            blue = np.count_nonzero(image[..., 2] > image[..., 0])
+            assert min(red, blue) > 0
+            if thicknesses[0] > thicknesses[1]:
+                assert red > blue * 2
+            else:
+                assert blue > red * 2
+                np.testing.assert_array_equal(image, initial)
+
+
 def test_streamlines_roi_origin_updates_needs_update_flag():
     """Changing ROI origin sets compute update when a mask is present."""
     lines = [
