@@ -262,7 +262,7 @@ class Timeline:
             True if the Timeline is paused (not playing but at a non-zero timestamp),
             False otherwise.
         """
-        return not self.playing and self._current_timestamp is not None
+        return not self.playing and self._current_timestamp != 0
 
     @property
     def speed(self):
