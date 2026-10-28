@@ -6,6 +6,7 @@ windows using PyGfx. It includes classes and functions for handling
 scenes, cameras, controllers, and rendering multiple screens.
 """
 
+from contextlib import ExitStack, contextmanager
 from dataclasses import dataclass
 from functools import reduce
 import logging
@@ -1289,58 +1290,55 @@ class ShowManager:
         if scene is None and self.screens:
             scene = self.screens[0].scene
 
-        show_m = ShowManager(
-            scene=scene, size=size, window_type="offscreen", pixel_ratio=1.0
-        )
-        if getattr(animation, "_scene", None) is None:
-            animation.add_to_scene(show_m.screens[0].scene)
-        camera_changes = self._setup_camera_animations(
-            animation, show_m.screens[0].camera, force=True
-        )
-
-        duration = animation.update_duration()
-        timestamps = [0.0]
-        if duration > 0:
-            timestamps = np.arange(0, duration, speed / fps).tolist()
-
-        frames = [] if return_frames else None
-        writer = None
-        timeline_state = None
-        if isinstance(animation, Timeline):
-            timeline_state = (animation.playing, animation.current_timestamp)
-            if animation.playing:
-                animation.pause()
-        try:
-            writer = cv2.VideoWriter(
-                fname,
-                cv2.VideoWriter_fourcc(*"mp4v"),
-                fps,
-                size,
+        with _temporary_show_manager(scene=scene, size=size, pixel_ratio=1.0) as show_m:
+            if getattr(animation, "_scene", None) is None:
+                animation.add_to_scene(show_m.screens[0].scene)
+            camera_changes = self._setup_camera_animations(
+                animation, show_m.screens[0].camera, force=True
             )
-            if not writer.isOpened():
-                raise RuntimeError(f"Could not open video writer for {fname!r}.")
 
-            for timestamp in timestamps:
-                if isinstance(animation, Timeline):
-                    animation.seek(timestamp)
-                else:
-                    animation.update_animation(time=timestamp)
-                render_screens(show_m.renderer, show_m.screens)
-                frame = show_m.snapshot(fname=None)
-                if return_frames:
-                    frames.append(frame)
-                writer.write(cv2.cvtColor(frame[:, :, :3], cv2.COLOR_RGB2BGR))
-        finally:
-            if writer is not None:
-                writer.release()
-            for camera_animation, camera in camera_changes:
-                camera_animation.camera = camera
-            if timeline_state is not None:
-                was_playing, current_timestamp = timeline_state
-                animation.seek(current_timestamp)
-                if was_playing:
-                    animation.play()
-            show_m.window.close()
+            duration = animation.update_duration()
+            timestamps = [0.0]
+            if duration > 0:
+                timestamps = np.arange(0, duration, speed / fps).tolist()
+
+            frames = [] if return_frames else None
+            writer = None
+            timeline_state = None
+            if isinstance(animation, Timeline):
+                timeline_state = (animation.playing, animation.current_timestamp)
+                if animation.playing:
+                    animation.pause()
+            try:
+                writer = cv2.VideoWriter(
+                    fname,
+                    cv2.VideoWriter_fourcc(*"mp4v"),
+                    fps,
+                    size,
+                )
+                if not writer.isOpened():
+                    raise RuntimeError(f"Could not open video writer for {fname!r}.")
+
+                for timestamp in timestamps:
+                    if isinstance(animation, Timeline):
+                        animation.seek(timestamp)
+                    else:
+                        animation.update_animation(time=timestamp)
+                    render_screens(show_m.renderer, show_m.screens)
+                    frame = show_m.snapshot(fname=None)
+                    if return_frames:
+                        frames.append(frame)
+                    writer.write(cv2.cvtColor(frame[:, :, :3], cv2.COLOR_RGB2BGR))
+            finally:
+                if writer is not None:
+                    writer.release()
+                for camera_animation, camera in camera_changes:
+                    camera_animation.camera = camera
+                if timeline_state is not None:
+                    was_playing, current_timestamp = timeline_state
+                    animation.seek(current_timestamp)
+                    if was_playing:
+                        animation.play()
 
         return frames
 
@@ -1989,6 +1987,43 @@ class ShowManager:
         self.window.close()
 
 
+@contextmanager
+def _temporary_show_manager(
+    *, scene=None, screen_config=None, size=(800, 800), pixel_ratio=None
+):
+    """
+    Render with an offscreen manager whose cameras are temporary.
+
+    Parameters
+    ----------
+    scene : Scene or list of Scene, optional
+        The scenes to render.
+    screen_config : list, optional
+        The screen layout configuration.
+    size : tuple, optional
+        The offscreen window size.
+    pixel_ratio : float, optional
+        The render buffer pixel ratio.
+
+    Yields
+    ------
+    ShowManager
+        The offscreen manager, with automatically created cameras.
+    """
+    with ExitStack() as cleanup:
+        show_m = ShowManager(
+            scene=scene,
+            screen_config=screen_config,
+            size=size,
+            window_type="offscreen",
+            pixel_ratio=pixel_ratio,
+        )
+        cleanup.callback(show_m.window.close)
+        for screen in show_m.screens:
+            cleanup.callback(screen.scene.remove, screen.camera)
+        yield show_m
+
+
 def snapshot(
     *,
     scene=None,
@@ -2030,12 +2065,10 @@ def snapshot(
         scene = Scene()
         scene.add(*actors)
 
-    show_m = ShowManager(
-        scene=scene, screen_config=screen_config, window_type="offscreen"
-    )
-    show_m.render()
-    show_m.window.draw()
-    arr = show_m.snapshot(fname=fname)
+    with _temporary_show_manager(scene=scene, screen_config=screen_config) as show_m:
+        show_m.render()
+        show_m.window.draw()
+        arr = show_m.snapshot(fname=fname)
 
     if return_array:
         return arr

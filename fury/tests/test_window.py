@@ -69,6 +69,7 @@ def test_show_manager_record_animation(tmp_path):
     camera_animation.set_focal(0.2, np.array([0, 0, 0]))
     timeline.add_animation([animation, camera_animation])
     show_m.add_animation(timeline)
+    original_objects = tuple(scene.main_scene.iter())
 
     try:
         fname = tmp_path / "animation.mp4"
@@ -81,6 +82,7 @@ def test_show_manager_record_animation(tmp_path):
         assert not np.array_equal(frames[0], frames[1])
         assert camera_animation.camera is original_camera
         assert timeline.playing
+        assert tuple(scene.main_scene.iter()) == original_objects
     finally:
         show_m.window.close()
 
@@ -95,6 +97,58 @@ def test_show_manager_record_animation_validates_params():
 
         with pytest.raises(ValueError, match="speed"):
             show_m.record_animation(anim, "animation.mp4", speed=0)
+    finally:
+        show_m.window.close()
+
+
+@pytest.mark.skipif(not window.have_cv2, reason="OpenCV is required for mp4 export")
+def test_record_animation_preserves_scene_lighting(tmp_path):
+    scene = Scene()
+    ball = sphere(np.zeros((1, 3)), colors=(0.5, 0.5, 0.5))
+    scene.add(ball)
+    show_m = ShowManager(scene=scene, size=(64, 64), window_type="offscreen")
+    animation = Animation(actors=ball)
+    show_m.add_animation(animation)
+    original_objects = tuple(scene.main_scene.iter())
+    try:
+        show_m.render()
+        show_m.window.draw()
+        before = show_m.snapshot(fname=None).copy()
+        assert np.any(before[..., :3] > 0)
+        assert np.unique(before[..., 0]).size > 2
+        with pytest.raises(RuntimeError, match="Could not open video writer"):
+            show_m.record_animation(animation, tmp_path / "missing" / "animation.mp4")
+        assert tuple(scene.main_scene.iter()) == original_objects
+        for _ in range(2):
+            frames = show_m.record_animation(
+                animation, tmp_path / "animation.mp4", return_frames=True
+            )
+            assert len(frames) == 1
+            assert np.any(frames[0][..., :3] > 0)
+            assert tuple(scene.main_scene.iter()) == original_objects
+            show_m.render()
+            show_m.window.draw()
+            np.testing.assert_array_equal(show_m.snapshot(fname=None), before)
+    finally:
+        show_m.window.close()
+
+
+@pytest.mark.skipif(not window.have_cv2, reason="OpenCV is required for mp4 export")
+def test_record_animation_setup_error_releases_camera(tmp_path, monkeypatch):
+    scene = Scene()
+    show_m = ShowManager(scene=scene, size=(64, 64), window_type="offscreen")
+    animation = Animation()
+    show_m.add_animation(animation)
+    original_objects = tuple(scene.main_scene.iter())
+
+    def fail_setup(*args, **kwargs):
+        raise RuntimeError("camera setup failed")
+
+    monkeypatch.setattr(show_m, "_setup_camera_animations", fail_setup)
+    try:
+        with pytest.raises(RuntimeError, match="camera setup failed"):
+            show_m.record_animation(animation, tmp_path / "animation.mp4")
+        assert tuple(scene.main_scene.iter()) == original_objects
     finally:
         show_m.window.close()
 
@@ -580,6 +634,98 @@ def test_show_manager_snapshot_multiple_screens(tmpdir, sample_actor):
     report = analyze_snapshot(str(fname), colors=[(255, 0, 0)])
     assert report.colors_found == [True]
     assert report.objects == 2
+
+
+@pytest.mark.parametrize("live_manager", [False, True])
+def test_snapshot_preserves_scene(live_manager):
+    scene = Scene()
+    scene.add(sphere(np.zeros((1, 3)), colors=(0.5, 0.5, 0.5)))
+    show_m = (
+        ShowManager(scene=scene, size=(64, 64), window_type="offscreen")
+        if live_manager
+        else None
+    )
+    original_objects = tuple(scene.main_scene.iter())
+    try:
+        images = [
+            window.snapshot(scene=scene, fname=None, return_array=True)
+            for _ in range(3)
+        ]
+        assert tuple(scene.main_scene.iter()) == original_objects
+        assert np.any(images[0][..., :3] > 0)
+        for image in images[1:]:
+            np.testing.assert_array_equal(image, images[0])
+    finally:
+        if show_m is not None:
+            show_m.window.close()
+
+
+@pytest.mark.parametrize("shared_scene", [False, True])
+def test_snapshot_preserves_multiple_scenes(shared_scene):
+    scenes = [Scene(), Scene()]
+    for scene in scenes:
+        scene.add(sphere(np.zeros((1, 3))))
+    if shared_scene:
+        scenes[1] = scenes[0]
+    original_objects = [tuple(scene.main_scene.iter()) for scene in scenes]
+    image = window.snapshot(
+        scene=scenes, screen_config=[2], fname=None, return_array=True
+    )
+    assert np.any(image[..., :3] > 0)
+    for scene, objects in zip(scenes, original_objects, strict=True):
+        assert tuple(scene.main_scene.iter()) == objects
+
+
+def test_snapshot_save_error_releases_temporary_camera(tmp_path, monkeypatch):
+    scene = Scene()
+    scene.add(sphere(np.zeros((1, 3))))
+    original_objects = tuple(scene.main_scene.iter())
+    closed = []
+    saved = []
+    close = OffscreenCanvas.close
+    save = ShowManager.snapshot
+
+    def record_close(canvas):
+        closed.append(canvas)
+        close(canvas)
+
+    def record_save(manager, **kwargs):
+        saved.append(manager.window)
+        return save(manager, **kwargs)
+
+    monkeypatch.setattr(OffscreenCanvas, "close", record_close)
+    monkeypatch.setattr(ShowManager, "snapshot", record_save)
+    with pytest.raises(FileNotFoundError):
+        window.snapshot(scene=scene, fname=tmp_path / "missing" / "snapshot.png")
+    assert tuple(scene.main_scene.iter()) == original_objects
+    assert closed.count(saved[0]) == 1
+    assert saved[0].get_closed()
+    image = window.snapshot(scene=scene, fname=None, return_array=True)
+    assert np.any(image[..., :3] > 0)
+    assert tuple(scene.main_scene.iter()) == original_objects
+
+
+def test_temporary_manager_closes_after_camera_cleanup_error(monkeypatch):
+    scenes = [Scene(), Scene()]
+    original_objects = tuple(scenes[0].main_scene.iter())
+    closed = []
+    close = OffscreenCanvas.close
+
+    def record_close(canvas):
+        closed.append(canvas)
+        close(canvas)
+
+    def fail_remove(*objects):
+        raise RuntimeError("camera cleanup failed")
+
+    monkeypatch.setattr(OffscreenCanvas, "close", record_close)
+    monkeypatch.setattr(scenes[1], "remove", fail_remove)
+    with pytest.raises(RuntimeError, match="camera cleanup failed"):
+        with window._temporary_show_manager(scene=scenes, screen_config=[2]) as show_m:
+            pass
+    assert tuple(scenes[0].main_scene.iter()) == original_objects
+    assert closed.count(show_m.window) == 1
+    assert show_m.window.get_closed()
 
 
 def test_show_manager_invalid_window_type():
