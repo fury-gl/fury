@@ -2041,7 +2041,7 @@ def snapshot(
         return arr
 
 
-def analyze_snapshot(im, *, colors=None, find_objects=True, strel=None):
+def analyze_snapshot(im, *, colors=None, bg_color=None, find_objects=True, strel=None):
     """
     Analyze snapshot from memory or file.
 
@@ -2053,6 +2053,8 @@ def analyze_snapshot(im, *, colors=None, find_objects=True, strel=None):
         or (X, Y, 4) where the last dimensions are the RGB or RGBA values.
     colors : tuple or list of tuples, optional
         List of colors to search in the image.
+    bg_color : tuple or array, optional
+        Background RGB color. If None, the pixel at the top-left corner is used.
     find_objects : bool, optional
         If True it will calculate the number of objects that are different
         from the background and return their position in a new image.
@@ -2102,9 +2104,9 @@ def analyze_snapshot(im, *, colors=None, find_objects=True, strel=None):
         report.colors_found = flags
 
     if find_objects is True:
-        weights = [0.299, 0.587, 0.144]
+        weights = [0.299, 0.587, 0.114]
         gray = np.dot(im[..., :3], weights)
-        bg_color2 = im[0, 0][:3]
+        bg_color2 = im[0, 0][:3] if bg_color is None else np.asarray(bg_color)[:3]
         background = np.dot(bg_color2, weights)
 
         if strel is None:
