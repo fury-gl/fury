@@ -2041,9 +2041,7 @@ def snapshot(
         return arr
 
 
-def analyze_snapshot(
-    im, *, colors=None, bg_color=None, find_objects=True, strel=None
-):
+def analyze_snapshot(im, *, colors=None, bg_color=None, find_objects=True, strel=None):
     """
     Analyze snapshot from memory or file.
 
