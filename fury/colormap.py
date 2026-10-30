@@ -385,7 +385,15 @@ def get_cmap(name):
     return simple_cmap
 
 
-def create_colormap(v, *, name="plasma", auto=True):
+def create_colormap(
+    v,
+    *,
+    name="plasma",
+    auto=True,
+    hue=None,
+    saturation=None,
+    value=None,
+):
     """
     Create colors from a specific colormap.
 
@@ -399,11 +407,17 @@ def create_colormap(v, *, name="plasma", auto=True):
     name : str, optional
         Name of the colormap. Currently implemented: 'jet', 'blues',
         'accent', 'bone' and matplotlib colormaps if matplotlib is
-        installed. For example, we suggest using 'plasma', 'viridis' or
-        'inferno'. Default is 'plasma'.
+        installed. Use 'custom' to create an HSV colormap from the ``hue``,
+        ``saturation`` and ``value`` ranges. For example, we suggest using
+        'plasma', 'viridis' or 'inferno'. Default is 'plasma'.
     auto : bool, optional
         If True, v is interpolated to [0, 1] from v.min() to v.max().
         Default is True.
+    hue, saturation, value : float or 2-tuple of float, optional
+        HSV values or ranges in [0, 1] used when ``name='custom'``. A scalar
+        produces a constant component; a 2-tuple linearly interpolates the
+        component from its first to its second value. Defaults are
+        ``(0, 1)``, ``(1, 1)`` and ``(1, 1)``, respectively.
 
     Returns
     -------
@@ -415,7 +429,9 @@ def create_colormap(v, *, name="plasma", auto=True):
     FURY supports a few colormaps for those who do not use Matplotlib, for
     more colormaps consider downloading Matplotlib (see matplotlib.org).
     """
-    if not have_matplotlib:
+    custom = name.lower() == "custom"
+
+    if not have_matplotlib and not custom:
         msg = "You do not have Matplotlib installed. Some colormaps"
         msg += " might not work for you. Consider downloading Matplotlib."
         warn(msg, stacklevel=2)
@@ -433,6 +449,31 @@ def create_colormap(v, *, name="plasma", auto=True):
         v = np.interp(v, [v.min(), v.max()], [0, 1])
     else:
         v = np.clip(v, 0, 1)
+
+    if custom:
+
+        def hsv_range(component, default, component_name):
+            if component is None:
+                component = default
+            component = np.asarray(component, dtype=float)
+            if component.ndim == 0:
+                component = np.repeat(component, 2)
+            if component.shape != (2,) or not np.all(np.isfinite(component)):
+                msg = f"{component_name} must be a scalar or a 2-tuple of floats"
+                raise ValueError(msg)
+            if np.any((component < 0) | (component > 1)):
+                msg = f"{component_name} values must be between 0 and 1"
+                raise ValueError(msg)
+            return component
+
+        hsv = np.column_stack(
+            [
+                np.interp(v, [0, 1], hsv_range(hue, (0, 1), "hue")),
+                np.interp(v, [0, 1], hsv_range(saturation, (1, 1), "saturation")),
+                np.interp(v, [0, 1], hsv_range(value, (1, 1), "value")),
+            ]
+        )
+        return hsv2rgb(hsv)
 
     # For backwards compatibility with lowercase names
     newname = lowercase_cm_name.get(name) or name
