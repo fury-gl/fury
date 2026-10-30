@@ -94,6 +94,29 @@ def test_create_colormap():
             npt.assert_raises(ValueError, colormap.create_colormap, value)
 
 
+def test_create_custom_colormap():
+    value = np.array([0.0, 0.5, 1.0])
+    colors = colormap.create_colormap(
+        value,
+        name="custom",
+        hue=(0.0, 2 / 3),
+        saturation=1.0,
+        value=1.0,
+    )
+
+    expected = np.array(
+        [
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, 1.0],
+        ]
+    )
+    npt.assert_allclose(colors, expected)
+
+    with pytest.raises(ValueError, match="hue values must be between 0 and 1"):
+        colormap.create_colormap(value, name="custom", hue=(0.0, 2.0))
+
+
 def test_lab_delta():
     color = np.c_[100, 127, 128]
     delta = np.c_[0, 0, 0]
