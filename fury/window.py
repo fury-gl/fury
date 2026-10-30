@@ -770,7 +770,7 @@ class ShowManager:
         self._is_initial_resize = None
         self._show_fps = show_fps
         self._max_fps = max_fps
-        self._frame_count = 0
+        self._layout_dirty = True
         self._window_type = self._setup_window(window_type)
         self._is_dragging = False
         self._drag_target = None
@@ -1040,6 +1040,7 @@ class ShowManager:
         """
         self._on_resize(size)
         UIContext.canvas_size = size
+        self._layout_dirty = True
         update_viewports(
             self.screens,
             calculate_screen_sizes(self._screen_config, self.renderer.logical_size),
@@ -1239,6 +1240,30 @@ class ShowManager:
             animation._set_record_callback(None)
         if self.screens:
             animation.remove_from_scene(self.screens[0].scene)
+
+    @property
+    def layout_dirty(self):
+        """
+        Check if layout recalculation is requested.
+
+        Returns
+        -------
+        bool
+            True if the layout is dirty and requires recalculation, False otherwise.
+        """
+        return self._layout_dirty
+
+    @layout_dirty.setter
+    def layout_dirty(self, value):
+        """
+        Mark layout as dirty to trigger recalculation on the next frame.
+
+        Parameters
+        ----------
+        value : bool
+            The boolean flag indicating if the layout should be marked dirty.
+        """
+        self._layout_dirty = bool(value)
 
     def record_animation(
         self, animation, fname, *, fps=30, speed=1.0, size=None, return_frames=False
@@ -1923,11 +1948,15 @@ class ShowManager:
             self._stats = Stats(self.renderer)
             self._stats_initialized = True
 
-        self._frame_count += 1
-        update_layout = True if self._frame_count == 2 else False
+        should_update_layout = self._layout_dirty
         render_screens(
-            self.renderer, self.screens, stats=self._stats, is_dirty=update_layout
+            self.renderer,
+            self.screens,
+            stats=self._stats,
+            is_dirty=should_update_layout,
         )
+        if should_update_layout:
+            self._layout_dirty = False
         self._imgui and self._imgui.render()
         self.window.request_draw()
 
