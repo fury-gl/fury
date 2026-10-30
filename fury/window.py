@@ -1243,12 +1243,26 @@ class ShowManager:
 
     @property
     def layout_dirty(self):
-        """Check if layout recalculation is requested."""
+        """
+        Check if layout recalculation is requested.
+
+        Returns
+        -------
+        bool
+            True if the layout is dirty and requires recalculation, False otherwise.
+        """
         return self._layout_dirty
 
     @layout_dirty.setter
     def layout_dirty(self, value):
-        """Mark layout as dirty to trigger recalculation on the next frame."""
+        """
+        Mark layout as dirty to trigger recalculation on the next frame.
+
+        Parameters
+        ----------
+        value : bool
+            The boolean flag indicating if the layout should be marked dirty.
+        """
         self._layout_dirty = bool(value)
 
     def record_animation(
