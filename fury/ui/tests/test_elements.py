@@ -1927,8 +1927,8 @@ def test_ui_combobox_2d_collapsed_allows_click_on_underlying_widget():
     scene = window.Scene()
     underlying_clicked = []
     underlying_btn = ui.Rectangle2D(position=(150, 150), size=(100, 40))
-    underlying_btn.on_left_mouse_button_clicked = (
-        lambda event: underlying_clicked.append(True)
+    underlying_btn.on_left_mouse_button_clicked = lambda event: (
+        underlying_clicked.append(True)
     )
 
     cb = ui.ComboBox2D(
