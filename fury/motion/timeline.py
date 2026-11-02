@@ -385,19 +385,24 @@ class Timeline:
             which may use more resources. Default is False.
         """
         time = self.current_timestamp
-        if self.has_playback_panel:
-            self.playback_panel.current_time = time
+        should_update = self.playing or force
         if time > self.duration:
             if self._loop:
                 self.seek(0)
+                time = 0
             else:
                 self.seek(self.duration)
+                time = self.duration
                 # Doing this will pause both the timeline and the panel.
                 if self.has_playback_panel:
                     self.playback_panel.pause()
                 else:
                     self.pause()
-        if self.playing or force:
+                # Pausing samples the live clock; hold the resolved endpoint.
+                self._current_timestamp = time
+        if self.has_playback_panel:
+            self.playback_panel.current_time = time
+        if should_update:
             [anim.update_animation(time=time) for anim in self._animations]
 
     def record(self, fname, *, fps=30, speed=1.0, size=None, return_frames=False):
