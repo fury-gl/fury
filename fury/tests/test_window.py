@@ -845,6 +845,13 @@ def test_analyze_snapshot(tmpdir):
     assert report.labels.shape == (20, 20)
     assert not report.colors_found
 
+    # An explicit background color should be honored instead of the top-left pixel.
+    shifted_bg = np.full((20, 20, 3), 255, dtype=np.uint8)
+    shifted_bg[2:6, 2:6] = [255, 0, 0]
+    shifted_bg[10:15, 10:15] = [0, 255, 0]
+    report = analyze_snapshot(shifted_bg, bg_color=(255, 255, 255))
+    assert report.objects == 2
+
     # Test 2: Find specific colors
     report = analyze_snapshot(
         img, colors=[(255, 0, 0), (0, 0, 255)], find_objects=False
