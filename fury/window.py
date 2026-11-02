@@ -55,11 +55,11 @@ from fury.motion import Animation, CameraAnimation, Timeline
 from fury.optpkg import optional_package
 from fury.ui import UI, UIContext
 
-cv2, have_cv2, _ = optional_package(
-    "cv2",
+imageio, have_imageio, _ = optional_package(
+    "imageio",
     trip_msg=(
-        "OpenCV has to be installed to record animations as mp4. "
-        "Install it with `pip install fury[optional]`."
+        "ImageIO with FFmpeg is required to record animations as mp4. "
+        "Install it with `pip install 'imageio[ffmpeg]>=2.0.0'`."
     ),
 )
 
@@ -1274,10 +1274,10 @@ class ShowManager:
             raise ValueError("fps must be greater than 0.")
         if speed <= 0:
             raise ValueError("speed must be greater than 0.")
-        if not have_cv2:
+        if not have_imageio:
             raise ImportError(
-                "OpenCV has to be installed to record animations as mp4. "
-                "Install it with `pip install fury[optional]`."
+                "ImageIO with FFmpeg is required to record animations as mp4. "
+                "Install it with `pip install 'imageio[ffmpeg]>=2.0.0'`."
             )
 
         fname = str(fname)
@@ -1311,28 +1311,28 @@ class ShowManager:
             if animation.playing:
                 animation.pause()
         try:
-            writer = cv2.VideoWriter(
+            with imageio.get_writer(
                 fname,
-                cv2.VideoWriter_fourcc(*"mp4v"),
-                fps,
-                size,
-            )
-            if not writer.isOpened():
-                raise RuntimeError(f"Could not open video writer for {fname!r}.")
+                format="ffmpeg",
+                mode="I",
+                fps=fps,
+                codec="libx264",
+                pixelformat="yuv420p",
+            ) as writer:
+                for timestamp in timestamps:
+                    if isinstance(animation, Timeline):
+                        animation.seek(timestamp)
+                    else:
+                        animation.update_animation(time=timestamp)
 
-            for timestamp in timestamps:
-                if isinstance(animation, Timeline):
-                    animation.seek(timestamp)
-                else:
-                    animation.update_animation(time=timestamp)
-                render_screens(show_m.renderer, show_m.screens)
-                frame = show_m.snapshot(fname=None)
-                if return_frames:
-                    frames.append(frame)
-                writer.write(cv2.cvtColor(frame[:, :, :3], cv2.COLOR_RGB2BGR))
+                    render_screens(show_m.renderer, show_m.screens)
+                    frame = show_m.snapshot(fname=None)
+
+                    if return_frames:
+                        frames.append(frame)
+
+                    writer.append_data(frame[:, :, :3])
         finally:
-            if writer is not None:
-                writer.release()
             for camera_animation, camera in camera_changes:
                 camera_animation.camera = camera
             if timeline_state is not None:
