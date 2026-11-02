@@ -2944,6 +2944,8 @@ class ComboBox2D(UI):
         )
 
         self.panel = Panel2D(self.panel_size, opacity=0.0)
+        self.panel.background.actor.material.pick_write = False
+        self.panel.background.actor.material.depth_write = False
         self.panel.add_element(self.selection_box, self._sel_pos)
         self.panel.add_element(self.drop_down_button, self._btn_pos)
         self.panel.add_element(self.drop_down_menu, self._menu_pos)
