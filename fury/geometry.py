@@ -161,12 +161,12 @@ def prune_colinear(arr, colinear_threshold=0.9999):
     for i in range(1, len(arr) - 1):
         v1 = arr[i] - keep[-1]
         v2 = arr[i + 1] - arr[i]
-        if np.linalg.norm(v1) < 1e-6 or np.linalg.norm(v2) < 1e-6:
+        norm_v1 = np.linalg.norm(v1)
+        norm_v2 = np.linalg.norm(v2)
+        if norm_v1 < 1e-6 or norm_v2 < 1e-6:
             continue
-        if (
-            np.linalg.norm(v1 / np.linalg.norm(v1) - v2 / np.linalg.norm(v2))
-            >= colinear_threshold
-        ):
+        cosine = np.dot(v1, v2) / (norm_v1 * norm_v2)
+        if cosine < colinear_threshold:
             keep.append(arr[i])
     keep.append(arr[-1])
     return np.stack(keep)
