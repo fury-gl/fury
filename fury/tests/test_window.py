@@ -1282,3 +1282,28 @@ def test_skybox_actually_lights_a_metal():
 
     assert unlit < 10
     assert lit > 200
+
+
+def test_show_manager_layout_dirty():
+    scene = Scene()
+    show_m = ShowManager(scene=scene, window_type="offscreen")
+
+    # 1. Initialization ke time layout_dirty True hona chahiye
+    assert show_m.layout_dirty is True
+
+    # 2. Getter/setter functionality test
+    show_m.layout_dirty = False
+    assert show_m.layout_dirty is False
+
+    show_m.layout_dirty = True
+    assert show_m.layout_dirty is True
+
+    # 3. Draw function trigger hone ke baad dirty flag reset hona chahiye
+    show_m._draw_function()
+    assert show_m.layout_dirty is False
+
+    # 4. Window resize hone par layout_dirty wapas True set hona chahiye
+    show_m._resize(size=(900, 900))
+    assert show_m.layout_dirty is True
+
+    show_m.close()
