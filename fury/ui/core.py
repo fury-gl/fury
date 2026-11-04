@@ -1249,14 +1249,14 @@ class TextBlock2D(UI):
         is drawn.
     position : (float, float), optional
         Absolute coordinates (x, y) for placement.
+    dynamic_bbox : bool, optional
+        If True, resizes the bounding box to fit the content.
     padding : float, optional
         Default inset in pixels for all four sides. Side-specific values
         override this value when provided.
     padding_left, padding_right, padding_top, padding_bottom : float, optional
         Insets in pixels for the corresponding bounding-box edge. If omitted,
         the value of ``padding`` is used.
-    dynamic_bbox : bool, optional
-        If True, resizes the bounding box to fit the content.
     """
 
     def __init__(
@@ -1913,7 +1913,9 @@ class TextBlock2D(UI):
             raise ValueError(msg) from exc
 
         if any(not np.isfinite(value) or value < 0 for value in values):
-            raise ValueError("Text padding values must be finite, non-negative numbers.")
+            raise ValueError(
+                "Text padding values must be finite, non-negative numbers."
+            )
 
         (
             self._padding_left,
@@ -1935,24 +1937,16 @@ class TextBlock2D(UI):
         top = self.boundingbox[1] + self.padding_top
         bottom = self.boundingbox[3] - self.padding_bottom
         half_text_width_left = (
-            text_actor_size[0] / 2
-            if self.padding_left
-            else text_actor_size[0] // 2
+            text_actor_size[0] / 2 if self.padding_left else text_actor_size[0] // 2
         )
         half_text_width_right = (
-            text_actor_size[0] / 2
-            if self.padding_right
-            else text_actor_size[0] // 2
+            text_actor_size[0] / 2 if self.padding_right else text_actor_size[0] // 2
         )
         half_text_height_top = (
-            text_actor_size[1] / 2
-            if self.padding_top
-            else text_actor_size[1] // 2
+            text_actor_size[1] / 2 if self.padding_top else text_actor_size[1] // 2
         )
         half_text_height_bottom = (
-            text_actor_size[1] / 2
-            if self.padding_bottom
-            else text_actor_size[1] // 2
+            text_actor_size[1] / 2 if self.padding_bottom else text_actor_size[1] // 2
         )
         center_x = (
             (left + right) / 2

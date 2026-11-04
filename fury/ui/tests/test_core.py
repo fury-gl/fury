@@ -595,12 +595,7 @@ def test_textblock2d_individual_padding_and_justification():
     tb.justification = "center"
     npt.assert_allclose(
         tb.actor.local.x,
-        (
-            tb.boundingbox[0]
-            + tb.padding_left
-            + tb.boundingbox[2]
-            - tb.padding_right
-        )
+        (tb.boundingbox[0] + tb.padding_left + tb.boundingbox[2] - tb.padding_right)
         / 2,
     )
 
@@ -619,12 +614,7 @@ def test_textblock2d_individual_padding_and_justification():
     npt.assert_allclose(
         tb.actor.local.y,
         canvas_height
-        - (
-            tb.boundingbox[1]
-            + tb.padding_top
-            + tb.boundingbox[3]
-            - tb.padding_bottom
-        )
+        - (tb.boundingbox[1] + tb.padding_top + tb.boundingbox[3] - tb.padding_bottom)
         / 2,
     )
 
@@ -659,6 +649,7 @@ def test_textblock2d_dynamic_bbox_includes_side_padding():
         tb.size,
         np.asarray((text_width + 12, text_height + 28), dtype=int),
     )
+
 
 def test_textblock2d_color_property():
     """Test text color getter and setter."""

@@ -295,7 +295,7 @@ def _make_fetcher(
             for f in local_fnames:
                 ext1 = get_extension(f)
                 if ext1 == "gz" or ext1 == "bz2":
-                    root1 = f[:-(len(ext1)+1)] if f.endswith(f".{ext1}") else f
+                    root1 = f[: -(len(ext1) + 1)] if f.endswith(f".{ext1}") else f
                     ext2 = get_extension(root1)
                     if ext2 == "tar":
                         ar = tarfile.open(pjoin(folder, f))
