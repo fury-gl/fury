@@ -249,13 +249,14 @@ def save_image(
     if dtype is not None:
         target_dtype = np.dtype(dtype)
         if arr.dtype != target_dtype:
-            if np.issubdtype(arr.dtype, np.floating) and np.issubdtype(
-                target_dtype, np.integer
-            ):
-                if arr.max() <= 1.0 and arr.min() >= 0.0 and arr.max() > 0.0:
+            if np.issubdtype(arr.dtype, np.floating):
+                if arr.size > 0 and arr.min() >= 0.0 and arr.max() <= 1.0:
                     arr = (arr * 255).round()
-                if target_dtype == np.uint8:
-                    arr = np.clip(arr, 0, 255)
+
+            if np.issubdtype(target_dtype, np.integer):
+                info = np.iinfo(target_dtype)
+                arr = np.clip(arr, info.min, info.max)
+
             arr = arr.astype(target_dtype)
 
     im = Image.fromarray(arr)

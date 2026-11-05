@@ -432,6 +432,14 @@ def test_save_image_dtype():
         fname_none = pjoin(odir, "test_none.png")
         npt.assert_raises(TypeError, save_image, data_f64, fname_none, dtype=None)
 
+        # 5. Non-uint8 integer array clips to [0, 255]
+        data_i32 = np.array([[[-10, 150, 300]]], dtype=np.int32)
+        fname_i32 = pjoin(odir, "test_i32.png")
+        save_image(data_i32, fname_i32)
+        loaded_i32 = load_image(fname_i32)
+        npt.assert_equal(loaded_i32.dtype, np.uint8)
+        npt.assert_equal(loaded_i32[0, 0], [0, 150, 255])
+
 
 # @pytest.mark.skipif(
 #     skip_osx,
