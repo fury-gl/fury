@@ -294,7 +294,7 @@ def contour_from_roi(
     color=(1, 0, 0),
     opacity=0.5,
     material="phong",
-    smooth_iterations=0,
+    iterations=0,
 ):
     """
     Generate surface actor from a binary ROI.
@@ -313,7 +313,7 @@ def contour_from_roi(
         Takes values from 0 (fully transparent) to 1 (opaque).
     material : str, optional
         The material type for the contour mesh. Options are 'phong' and 'basic'.
-    smooth_iterations : int, optional
+    iterations : int, optional
         Number of Taubin smoothing passes applied to the contour; 0 keeps the
         voxel surface.
 
@@ -327,7 +327,7 @@ def contour_from_roi(
         color=color,
         opacity=opacity,
         material=material,
-        smooth_iterations=smooth_iterations,
+        iterations=iterations,
     )
 
     if affine is not None:
@@ -336,9 +336,42 @@ def contour_from_roi(
     return contours
 
 
-def contour_from_label(
-    data, *, affine=None, colors=None, opacities=None, smooth_iterations=0
+def smooth_contour_from_roi(
+    data, *, affine=None, color=(1, 0, 0), opacity=0.5, iterations=20
 ):
+    """
+    Generate a smooth surface actor from a binary ROI.
+
+    Parameters
+    ----------
+    data : ndarray, shape (X, Y, Z)
+        ROI volume; voxels with a value above zero are displayed.
+    affine : ndarray, shape (4, 4), optional
+        Affine mapping voxel coordinates to world coordinates.
+    color : str, tuple, list or ndarray, optional
+        Contour color (hex string, RGB in [0, 1] or in [0, 255]).
+    opacity : float, optional
+        Opacity from 0 (transparent) to 1 (opaque).
+    iterations : int, optional
+        Number of smoothing passes. Use 0 to keep the blocky voxel surface.
+
+    Returns
+    -------
+    Group
+        One surface actor per connected object of the ROI.
+
+    Notes
+    -----
+    :func:`contour_from_roi` draws the voxel faces, which looks staircased on
+    anatomical ROIs. This function smooths that surface with Taubin smoothing,
+    which does not shrink the ROI.
+    """
+    return contour_from_roi(
+        data, affine=affine, color=color, opacity=opacity, iterations=iterations
+    )
+
+
+def contour_from_label(data, *, affine=None, colors=None, opacities=None, iterations=0):
     """
     Generate surface actor from a labeled volume.
 
@@ -357,7 +390,7 @@ def contour_from_label(
         The opacities of the contours.
         Takes values from 0 (fully transparent) to 1 (opaque). It will be overridden
         if RGBA colors are provided.
-    smooth_iterations : int, optional
+    iterations : int, optional
         Number of Taubin smoothing passes applied to each label contour; 0
         keeps the voxel surface.
 
@@ -396,7 +429,7 @@ def contour_from_label(
             affine=affine,
             color=colors[i],
             opacity=opacities[i],
-            smooth_iterations=smooth_iterations,
+            iterations=iterations,
         )
         unique_roi_surfaces.add(roi_surface)
 

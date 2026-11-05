@@ -4,7 +4,6 @@ from scipy.ndimage import generate_binary_structure
 
 from fury.primitive import prim_tetrahedron
 from fury.utils import (
-    _taubin_smooth,
     create_sh_basis_matrix,
     extract_surface_voxels,
     face_generation,
@@ -13,6 +12,7 @@ from fury.utils import (
     get_n_coeffs,
     get_transformed_cube_bounds,
     normals_from_v_f,
+    taubin_smooth,
     voxel_mesh_by_object,
 )
 
@@ -863,7 +863,7 @@ def test_taubin_smooth_zero_iterations_returns_unchanged_copy():
     vertices, faces = _bumpy_grid()
     original = vertices.copy()
 
-    smoothed = _taubin_smooth(vertices, faces, 0)
+    smoothed = taubin_smooth(vertices, faces, 0)
 
     np.testing.assert_array_equal(smoothed, original)
     smoothed += 1.0
@@ -876,7 +876,7 @@ def test_taubin_smooth_flattens_bump_progressively():
     original = vertices.copy()
 
     heights = [
-        np.abs(_taubin_smooth(vertices, faces, passes)[:, 2]).max()
+        np.abs(taubin_smooth(vertices, faces, passes)[:, 2]).max()
         for passes in (1, 5, 20)
     ]
 
@@ -890,6 +890,34 @@ def test_taubin_smooth_keeps_flat_mesh_in_plane():
     vertices, faces = _bumpy_grid()
     vertices[:, 2] = 0.0
 
-    smoothed = _taubin_smooth(vertices, faces, 10)
+    smoothed = taubin_smooth(vertices, faces, 10)
 
     np.testing.assert_allclose(smoothed[:, 2], 0.0, atol=1e-12)
+
+
+def test_taubin_smooth_leaves_unreferenced_vertices_unchanged():
+    """Vertices that belong to no face stay put and never become NaN."""
+    vertices, faces = _bumpy_grid()
+    vertices = np.vstack((vertices, [[40.0, -3.0, 7.0]]))
+
+    smoothed = taubin_smooth(vertices, faces, 10)
+
+    np.testing.assert_array_equal(smoothed[-1], vertices[-1])
+
+
+def test_taubin_smooth_supports_quads():
+    """Quad meshes are smoothed along their edges like triangle meshes."""
+    vertices, _ = _bumpy_grid()
+    ids = np.arange(49).reshape(7, 7)
+    quads = np.column_stack(
+        (
+            ids[:-1, :-1].ravel(),
+            ids[:-1, 1:].ravel(),
+            ids[1:, 1:].ravel(),
+            ids[1:, :-1].ravel(),
+        )
+    )
+
+    smoothed = taubin_smooth(vertices, quads, 5)
+
+    assert 0.0 < np.abs(smoothed[:, 2]).max() < 1.0

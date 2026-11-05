@@ -12,7 +12,7 @@ from fury.io import load_image, load_image_texture
 from fury.lib import Texture, TextureMap
 from fury.material import _create_mesh_material, validate_opacity
 from fury.primitive import prim_sphere
-from fury.utils import _taubin_smooth, generate_planar_uvs, voxel_mesh_by_object
+from fury.utils import generate_planar_uvs, taubin_smooth, voxel_mesh_by_object
 
 
 def surface(
@@ -302,7 +302,7 @@ def contour_from_volume(
     opacity=0.5,
     material="phong",
     material_params=None,
-    smooth_iterations=0,
+    iterations=0,
 ):
     """
     Generate surface actor from a binary ROI.
@@ -325,7 +325,7 @@ def contour_from_volume(
         Extra properties forwarded to the material, e.g.
         ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
         :func:`fury.material._create_mesh_material` for the supported keys.
-    smooth_iterations : int, optional
+    iterations : int, optional
         Number of Taubin smoothing passes applied to each contour mesh; 0 keeps
         the voxel surface. Smoothing also enables smooth shading unless
         ``material_params`` sets ``flat_shading``.
@@ -338,8 +338,7 @@ def contour_from_volume(
     Raises
     ------
     ValueError
-        If ``color`` is None or ``smooth_iterations`` is not a non-negative
-        integer.
+        If ``color`` is None or ``iterations`` is not a non-negative integer.
 
     Notes
     -----
@@ -350,22 +349,24 @@ def contour_from_volume(
     color = normalize_colors(color)[0][:3]
 
     if (
-        isinstance(smooth_iterations, bool)
-        or not isinstance(smooth_iterations, (int, np.integer))
-        or smooth_iterations < 0
+        isinstance(iterations, bool)
+        or not isinstance(iterations, (int, np.integer))
+        or iterations < 0
     ):
-        raise ValueError("smooth_iterations must be a non-negative integer.")
-    if smooth_iterations:
+        raise ValueError("iterations must be a non-negative integer.")
+    if iterations:
         material_params = {"flat_shading": False, **(material_params or {})}
 
-    surface_data = voxel_mesh_by_object(data, connectivity=1)
+    surface_data = voxel_mesh_by_object(
+        data, connectivity=1, triangulate=bool(iterations)
+    )
 
     contours = Group()
 
     for surf in surface_data.values():
         vertices = surf["verts"]
-        if smooth_iterations:
-            vertices = _taubin_smooth(vertices, surf["faces"], smooth_iterations)
+        if iterations:
+            vertices = taubin_smooth(vertices, surf["faces"], iterations)
         surface_actor = surface(
             vertices,
             surf["faces"],
