@@ -235,6 +235,40 @@ def test_contour_from_label_errors(colors, opacities, error_msg):
         contour_from_label(data, colors=colors, opacities=opacities)
 
 
+def test_contour_from_roi_smooths_before_affine():
+    """Smoothing happens in voxel space, so the affine maps the bounds directly."""
+    roi = np.zeros((12, 20, 12), dtype=np.uint8)
+    roi[5:8, 3:17, 4:9] = 1
+    affine = np.diag([2.0, 1.0, 0.5, 1.0])
+    affine[:3, 3] = (10, -5, 2)
+
+    plain = contour_from_roi(roi, smooth_iterations=20)
+    moved = contour_from_roi(roi, affine=affine, smooth_iterations=20)
+
+    assert np.allclose(
+        moved.get_world_bounding_box(),
+        plain.get_world_bounding_box() * [2.0, 1.0, 0.5] + [10, -5, 2],
+        atol=1e-4,
+    )
+
+
+def test_contour_from_label_smooths_each_label():
+    """Every label contour is smoothed, not just the first."""
+    data = np.zeros((12, 12, 12), dtype=int)
+    data[2:5, 2:5, 2:5] = 1
+    data[7:10, 7:10, 7:10] = 2
+    colors = np.array([[1, 0, 0], [0, 1, 0]])
+
+    blocky = contour_from_label(data, colors=colors)
+    smooth = contour_from_label(data, colors=colors, smooth_iterations=20)
+
+    for i in range(2):
+        assert not np.allclose(
+            smooth.children[i].children[0].geometry.positions.data,
+            blocky.children[i].children[0].geometry.positions.data,
+        )
+
+
 def _tensor_pixel(camera, center):
     clip = camera.camera_matrix @ np.append(center, 1)
     ndc = clip[:2] / clip[3]
