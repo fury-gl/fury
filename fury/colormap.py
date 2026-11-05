@@ -8,50 +8,9 @@ import numpy as np
 from scipy import linalg
 
 from fury.data import DATA_DIR
-
-# from fury.lib import LookupTable
-# Allow import, but disable doctests if we don't have matplotlib
 from fury.optpkg import optional_package
 
 cm, have_matplotlib, _ = optional_package("matplotlib.cm")
-
-
-# def colormap_lookup_table(
-#     *,
-#     scale_range=(0, 1),
-#     hue_range=(0.8, 0),
-#     saturation_range=(1, 1),
-#     value_range=(0.8, 0.8),
-# ):
-#     """Lookup table for the colormap.
-#
-#     Parameters
-#     ----------
-#     scale_range : tuple
-#         It can be anything e.g. (0, 1) or (0, 255). Usually it is the minimum
-#         and maximum value of your data. Default is (0, 1).
-#     hue_range : tuple of floats
-#         HSV values (min 0 and max 1). Default is (0.8, 0).
-#     saturation_range : tuple of floats
-#         HSV values (min 0 and max 1). Default is (1, 1).
-#     value_range : tuple of floats
-#         HSV value (min 0 and max 1). Default is (0.8, 0.8).
-#
-#     Returns
-#     -------
-#     lookup_table : LookupTable
-#
-#     """
-#     lookup_table = LookupTable()
-#     lookup_table.SetRange(scale_range)
-#     lookup_table.SetTableRange(scale_range)
-#
-#     lookup_table.SetHueRange(hue_range)
-#     lookup_table.SetSaturationRange(saturation_range)
-#     lookup_table.SetValueRange(value_range)
-#
-#     lookup_table.Build()
-#     return lookup_table
 
 
 def cc(na, nd):
@@ -385,7 +344,7 @@ def get_cmap(name):
     return simple_cmap
 
 
-def create_colormap(v, *, name="plasma", auto=True):
+def create_colormap(v, *, name="plasma", auto=True, hsv_range=None):
     """
     Create colors from a specific colormap.
 
@@ -394,45 +353,66 @@ def create_colormap(v, *, name="plasma", auto=True):
 
     Parameters
     ----------
-    v : (N,) array
-        Vector of values to be mapped to RGB colors according to colormap.
+    v : ndarray
+        Values to map to RGB colors. Must be 1D unless ``hsv_range`` is given.
     name : str, optional
         Name of the colormap. Currently implemented: 'jet', 'blues',
         'accent', 'bone' and matplotlib colormaps if matplotlib is
         installed. For example, we suggest using 'plasma', 'viridis' or
-        'inferno'. Default is 'plasma'.
+        'inferno'. Default is 'plasma'. Ignored when ``hsv_range`` is given.
     auto : bool, optional
         If True, v is interpolated to [0, 1] from v.min() to v.max().
         Default is True.
+    hsv_range : tuple of three (low, high) pairs, optional
+        Hue, saturation and value ramps, each in [0, 1], from ``v = 0`` to
+        ``v = 1``. Replaces ``name`` when given.
 
     Returns
     -------
-    ndarray, shape (N, 3)
-        Array of RGB colors corresponding to the input values.
+    ndarray, shape (N, 3) or v.shape + (3,)
+        RGB colors corresponding to the input values; N-D shapes only with
+        ``hsv_range``.
+
+    Raises
+    ------
+    ValueError
+        If ``hsv_range`` is not three ramps, if ``v`` is not 1D for a named
+        colormap, or if the named colormap does not exist.
 
     Notes
     -----
     FURY supports a few colormaps for those who do not use Matplotlib, for
     more colormaps consider downloading Matplotlib (see matplotlib.org).
     """
-    if not have_matplotlib:
-        msg = "You do not have Matplotlib installed. Some colormaps"
-        msg += " might not work for you. Consider downloading Matplotlib."
-        warn(msg, stacklevel=2)
+    if hsv_range is None:
+        if not have_matplotlib:
+            msg = "You do not have Matplotlib installed. Some colormaps"
+            msg += " might not work for you. Consider downloading Matplotlib."
+            warn(msg, stacklevel=2)
 
-    if name.lower() == "jet":
-        msg = "Jet is a popular colormap but can often be misleading"
-        msg += "Use instead plasma, viridis, hot or inferno."
-        warn(msg, PendingDeprecationWarning, stacklevel=2)
+        if name.lower() == "jet":
+            msg = "Jet is a popular colormap but can often be misleading"
+            msg += "Use instead plasma, viridis, hot or inferno."
+            warn(msg, PendingDeprecationWarning, stacklevel=2)
 
-    if v.ndim > 1:
-        msg = "This function works only with 1d arrays. Use ravel()"
-        raise ValueError(msg)
+        if v.ndim > 1:
+            msg = "This function works only with 1d arrays. Use ravel()"
+            raise ValueError(msg)
+    elif len(hsv_range) != 3:
+        raise ValueError(
+            f"hsv_range must hold hue, saturation and value ramps, got {hsv_range}."
+        )
+    else:
+        v = np.asarray(v, dtype=float)
 
     if auto:
         v = np.interp(v, [v.min(), v.max()], [0, 1])
     else:
         v = np.clip(v, 0, 1)
+
+    if hsv_range is not None:
+        hsv = np.stack([np.interp(v, [0, 1], ramp) for ramp in hsv_range], axis=-1)
+        return hsv2rgb(hsv)
 
     # For backwards compatibility with lowercase names
     newname = lowercase_cm_name.get(name) or name
@@ -445,6 +425,80 @@ def create_colormap(v, *, name="plasma", auto=True):
     rgba = colormap(v)
     rgb = rgba[:, :3].copy()
     return rgb
+
+
+def scalars_to_lut_indices(values, clim, n_colors):
+    """
+    Map scalar values to the nearest index of an evenly spaced lookup table.
+
+    Parameters
+    ----------
+    values : array_like
+        Values outside ``clim``, including infinities, are clipped to the first
+        or last index.
+    clim : tuple of float
+        Finite ``(low, high)`` mapped to the first and last index.
+    n_colors : int
+        Number of lookup-table entries.
+
+    Returns
+    -------
+    ndarray of int
+        Lookup-table indices with the shape of ``values``.
+
+    Raises
+    ------
+    ValueError
+        If ``clim`` is not finite or ``low > high``, if ``n_colors`` is lower
+        than 1, or if ``values`` contains NaN.
+
+    Notes
+    -----
+    When ``low == high`` every value maps to the first index.
+    """
+    low, high = clim
+    if not (np.isfinite(low) and np.isfinite(high) and low <= high):
+        raise ValueError(f"clim must be finite with low <= high, got {clim}.")
+    if n_colors < 1:
+        raise ValueError(f"n_colors must be at least 1, got {n_colors}.")
+    values = np.asarray(values, dtype=float)
+    if np.isnan(values).any():
+        raise ValueError("values must not contain NaN.")
+    if low == high:
+        return np.zeros(values.shape, dtype=np.intp)
+    fraction = np.clip((values - low) / (high - low), 0, 1)
+    return np.rint(fraction * (n_colors - 1)).astype(np.intp)
+
+
+def map_scalars_to_lut(values, clim, lut):
+    """
+    Map scalar values to the nearest color of an evenly spaced lookup table.
+
+    Parameters
+    ----------
+    values : array_like
+        Values outside ``clim`` are clipped.
+    clim : tuple of float
+        Finite ``(low, high)`` mapped to the first and last color.
+    lut : ndarray, shape (M, 3)
+        RGB colors ordered from low to high values.
+
+    Returns
+    -------
+    ndarray, shape values.shape + (3,)
+        RGB colors of ``values``.
+
+    Raises
+    ------
+    ValueError
+        If ``clim`` is not finite or ``low > high``, if ``lut`` is empty, or if
+        ``values`` contains NaN.
+
+    See Also
+    --------
+    scalars_to_lut_indices : Lookup-table indices of scalar values.
+    """
+    return lut[scalars_to_lut_indices(values, clim, len(lut))]
 
 
 def _lab_delta(x, y):
