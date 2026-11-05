@@ -4,6 +4,7 @@ from scipy.ndimage import generate_binary_structure
 
 from fury.primitive import prim_tetrahedron
 from fury.utils import (
+    _taubin_smooth,
     create_sh_basis_matrix,
     extract_surface_voxels,
     face_generation,
@@ -821,3 +822,74 @@ def test_normals_from_v_f_empty_mesh():
     res_untyped = normals_from_v_f(v, np.array([]))
     assert res_untyped.shape == (3, 3)
     assert np.all(res_untyped == 0.0)
+
+
+def _bumpy_grid(*, size=7):
+    """
+    Build a flat triangulated square grid with a unit bump at its center.
+
+    Parameters
+    ----------
+    size : int, optional
+        Number of vertices along each side of the grid.
+
+    Returns
+    -------
+    vertices : ndarray, shape (size*size, 3)
+        Grid vertices in the z=0 plane, except the center vertex at z=1.
+    faces : ndarray, shape (2*(size-1)**2, 3)
+        Triangle vertex indices.
+    """
+    xs, ys = np.meshgrid(np.arange(size, dtype=float), np.arange(size, dtype=float))
+    vertices = np.column_stack((xs.ravel(), ys.ravel(), np.zeros(size * size)))
+    vertices[(size // 2) * size + size // 2, 2] = 1.0
+
+    ids = np.arange(size * size).reshape(size, size)
+    lower_left = ids[:-1, :-1].ravel()
+    lower_right = ids[:-1, 1:].ravel()
+    upper_left = ids[1:, :-1].ravel()
+    upper_right = ids[1:, 1:].ravel()
+    faces = np.concatenate(
+        (
+            np.column_stack((lower_left, lower_right, upper_right)),
+            np.column_stack((lower_left, upper_right, upper_left)),
+        )
+    )
+    return vertices, faces
+
+
+def test_taubin_smooth_zero_iterations_returns_unchanged_copy():
+    """Zero passes return equal values in a new array."""
+    vertices, faces = _bumpy_grid()
+    original = vertices.copy()
+
+    smoothed = _taubin_smooth(vertices, faces, 0)
+
+    np.testing.assert_array_equal(smoothed, original)
+    smoothed += 1.0
+    np.testing.assert_array_equal(vertices, original)
+
+
+def test_taubin_smooth_flattens_bump_progressively():
+    """More passes flatten the bump further and never modify the input."""
+    vertices, faces = _bumpy_grid()
+    original = vertices.copy()
+
+    heights = [
+        np.abs(_taubin_smooth(vertices, faces, passes)[:, 2]).max()
+        for passes in (1, 5, 20)
+    ]
+
+    assert heights[0] < 1.0
+    assert heights[0] > heights[1] > heights[2]
+    np.testing.assert_array_equal(vertices, original)
+
+
+def test_taubin_smooth_keeps_flat_mesh_in_plane():
+    """A planar mesh stays planar after smoothing."""
+    vertices, faces = _bumpy_grid()
+    vertices[:, 2] = 0.0
+
+    smoothed = _taubin_smooth(vertices, faces, 10)
+
+    np.testing.assert_allclose(smoothed[:, 2], 0.0, atol=1e-12)
