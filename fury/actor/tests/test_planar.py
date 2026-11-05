@@ -7,8 +7,13 @@ from fury.actor import Group
 from fury.actor.tests._helpers import (
     assert_rejects_pbr_params_on_phong,
     assert_supports_pbr,
+    render_snapshot,
     validate_actors,
 )
+from fury.colormap import create_colormap
+from fury.optpkg import optional_package
+
+_, have_matplotlib, _ = optional_package("matplotlib")
 
 
 def test_square():
@@ -650,3 +655,155 @@ def test_planar_actors_support_pbr(actor_name, mesh_material):
 @pytest.mark.parametrize("actor_name", PLANAR_PBR_ACTORS)
 def test_planar_actors_reject_pbr_params_on_phong(actor_name):
     assert_rejects_pbr_params_on_phong(actor_name)
+
+
+RED_TO_BLUE = ((0.0, 2 / 3), (1.0, 1.0), (1.0, 1.0))
+
+
+def _render_ui(ui_actor):
+    """
+    Render a UI actor offscreen and return its RGB snapshot.
+
+    Parameters
+    ----------
+    ui_actor : Group or WorldObject
+        Actor added to the UI scene of a 200x200 offscreen manager.
+
+    Returns
+    -------
+    ndarray, shape (H, W, 3)
+        Rendered RGB pixels.
+    """
+    show_m = window.ShowManager(size=(200, 200), window_type="offscreen")
+    try:
+        show_m.screens[0].scene.ui_scene.add(ui_actor)
+        return render_snapshot(show_m)[..., :3]
+    finally:
+        show_m.close()
+
+
+def _end_colors(name):
+    """
+    Return the first and last colors of a named colormap in [0, 255].
+
+    Parameters
+    ----------
+    name : str
+        Colormap name.
+
+    Returns
+    -------
+    ndarray, shape (2, 3)
+        RGB colors scaled to [0, 255].
+    """
+    return 255 * create_colormap(np.array([0.0, 1.0]), name=name, auto=False)
+
+
+@pytest.mark.skipif(not have_matplotlib, reason="Requires MatplotLib")
+def test_scalar_bar_horizontal_runs_from_low_to_high_color():
+    bar = actor.scalar_bar(
+        cmap="plasma", orientation="horizontal", length=100, thickness=10, num_ticks=2
+    )
+    pixels = _render_ui(bar)
+    ratio = pixels.shape[0] / 200
+    row = pixels.shape[0] - 1 - int(65 * ratio)
+    left = pixels[row, int(60 * ratio) + 2]
+    right = pixels[row, int(160 * ratio) - 3]
+    low, high = _end_colors("plasma")
+    npt.assert_allclose(left, low, atol=12)
+    npt.assert_allclose(right, high, atol=12)
+
+
+def test_scalar_bar_hsv_range_replaces_named_colormap():
+    bar = actor.scalar_bar(hsv_range=RED_TO_BLUE, length=100, thickness=10, num_ticks=2)
+    pixels = _render_ui(bar)
+    ratio = pixels.shape[0] / 200
+    row = pixels.shape[0] - 1 - int(65 * ratio)
+    npt.assert_allclose(pixels[row, int(60 * ratio) + 2], [255, 0, 0], atol=12)
+    npt.assert_allclose(pixels[row, int(160 * ratio) - 3], [0, 0, 255], atol=12)
+
+
+def test_scalar_bar_map_values_uses_bar_colors_and_clips():
+    bar = actor.scalar_bar(clim=(10.0, 20.0), hsv_range=RED_TO_BLUE)
+    rgb = bar.map_values(np.array([0.0, 10.0, 20.0, 99.0]))
+    npt.assert_allclose(rgb[:2], [[1, 0, 0], [1, 0, 0]], atol=1e-6)
+    npt.assert_allclose(rgb[2:], [[0, 0, 1], [0, 0, 1]], atol=1e-6)
+    npt.assert_allclose(bar.map_values(np.array([15.0]))[0], [0, 1, 0], atol=0.05)
+
+
+def test_scalar_bar_vertical_runs_from_bottom_to_top():
+    bar = actor.scalar_bar(
+        hsv_range=RED_TO_BLUE,
+        orientation="vertical",
+        length=100,
+        thickness=10,
+        num_ticks=2,
+        position=(20, 20),
+    )
+    pixels = _render_ui(bar)
+    ratio = pixels.shape[0] / 200
+    col = int(25 * ratio)
+    bottom = pixels[pixels.shape[0] - 1 - int(20 * ratio) - 2, col]
+    top = pixels[pixels.shape[0] - 1 - int(120 * ratio) + 3, col]
+    npt.assert_allclose(bottom, [255, 0, 0], atol=12)
+    npt.assert_allclose(top, [0, 0, 255], atol=12)
+
+
+def test_scalar_bar_title_is_drawn_above_the_bar():
+    kwargs = {
+        "hsv_range": RED_TO_BLUE,
+        "length": 100,
+        "thickness": 10,
+        "num_ticks": 2,
+        "position": (20, 20),
+    }
+    ratio = _render_ui(actor.scalar_bar(**kwargs)).shape[0] / 200
+
+    def above_bar(pixels):
+        """
+        Select the pixel rows above the bar and its title margin.
+
+        Parameters
+        ----------
+        pixels : ndarray, shape (H, W, 3)
+            Rendered RGB pixels.
+
+        Returns
+        -------
+        ndarray
+            Rows of ``pixels`` above the bar.
+        """
+        return pixels[: pixels.shape[0] - int(36 * ratio)]
+
+    assert not above_bar(_render_ui(actor.scalar_bar(**kwargs))).any()
+    assert above_bar(_render_ui(actor.scalar_bar(title="CCI", **kwargs))).any()
+
+
+@pytest.mark.parametrize(
+    "kwargs, match",
+    [
+        ({"orientation": "diagonal"}, "orientation"),
+        ({"clim": (1.0, 1.0)}, "clim"),
+        ({"clim": (2.0, 1.0)}, "clim"),
+        ({"clim": (np.nan, 1.0)}, "clim"),
+        ({"clim": (0.0, np.inf)}, "clim"),
+        ({"num_ticks": 1}, "num_ticks"),
+    ],
+    ids=[
+        "bad-orientation",
+        "equal-clim",
+        "reversed-clim",
+        "nan-clim",
+        "inf-clim",
+        "one-tick",
+    ],
+)
+def test_scalar_bar_rejects_invalid_arguments(kwargs, match):
+    with pytest.raises(ValueError, match=match):
+        actor.scalar_bar(**kwargs)
+
+
+def test_scalar_bar_map_values_rejects_nan():
+    bar = actor.scalar_bar(clim=(0.0, 1.0), hsv_range=RED_TO_BLUE)
+    with pytest.raises(ValueError, match="NaN"):
+        bar.map_values(np.array([0.5, np.nan]))
