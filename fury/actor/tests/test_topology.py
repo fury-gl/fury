@@ -511,7 +511,7 @@ def test_contour_from_volume_smoothing_rounds_corners_without_shrinking():
     """Smoothing rounds the corners while the mesh keeps its overall extent."""
     roi = _slab_roi()
     blocky_group = contour_from_volume(roi)
-    smooth_group = contour_from_volume(roi, smooth_iterations=20)
+    smooth_group = contour_from_volume(roi, iterations=20)
     blocky = np.vstack([c.geometry.positions.data for c in blocky_group.children])
     smooth = np.vstack([c.geometry.positions.data for c in smooth_group.children])
 
@@ -526,13 +526,13 @@ def test_contour_from_volume_smoothing_keeps_one_actor_per_object():
     roi = _slab_roi()
     roi[0:2, 0:2, 0:2] = 1
 
-    contours = contour_from_volume(roi, smooth_iterations=20)
+    contours = contour_from_volume(roi, iterations=20)
 
     assert len(contours.children) == 2
 
 
 @pytest.mark.parametrize(
-    "smooth_iterations, material_params, flat",
+    "iterations, material_params, flat",
     [
         (0, None, True),
         (20, None, False),
@@ -540,26 +540,22 @@ def test_contour_from_volume_smoothing_keeps_one_actor_per_object():
     ],
     ids=["blocky", "smoothed", "user-override"],
 )
-def test_contour_from_volume_smoothing_sets_shading(
-    smooth_iterations, material_params, flat
-):
+def test_contour_from_volume_smoothing_sets_shading(iterations, material_params, flat):
     """Smoothing switches to smooth shading unless the user says otherwise."""
     contours = contour_from_volume(
         _slab_roi(),
-        smooth_iterations=smooth_iterations,
+        iterations=iterations,
         material_params=material_params,
     )
 
     assert contours.children[0].material.flat_shading is flat
 
 
-@pytest.mark.parametrize("smooth_iterations", [-1, 1.5, True])
-def test_contour_from_volume_rejects_invalid_smooth_iterations(smooth_iterations):
+@pytest.mark.parametrize("iterations", [-1, 1.5, True])
+def test_contour_from_volume_rejects_invalid_iterations(iterations):
     """Only non-negative integers are valid smoothing pass counts."""
-    with pytest.raises(
-        ValueError, match="smooth_iterations must be a non-negative integer"
-    ):
-        contour_from_volume(_slab_roi(), smooth_iterations=smooth_iterations)
+    with pytest.raises(ValueError, match="iterations must be a non-negative integer"):
+        contour_from_volume(_slab_roi(), iterations=iterations)
 
 
 def test_texture_on_sphere_uv_and_tangent_frame():

@@ -840,7 +840,7 @@ def voxel_mesh_by_object(
     return objects
 
 
-def _taubin_smooth(vertices, faces, iterations, *, lam=0.5, mu=-0.53):
+def taubin_smooth(vertices, faces, iterations, *, lam=0.5, mu=-0.53):
     """
     Smooth a polygon mesh with Taubin (shrink-free) Laplacian smoothing.
 
@@ -865,8 +865,9 @@ def _taubin_smooth(vertices, faces, iterations, *, lam=0.5, mu=-0.53):
 
     Notes
     -----
-    Every vertex must belong to at least one face.
+    Vertices that belong to no face are left unchanged.
     """
+    faces = np.asarray(faces)
     n_vertices = len(vertices)
     starts = faces.ravel()
     ends = np.roll(faces, -1, axis=1).ravel()
@@ -879,7 +880,12 @@ def _taubin_smooth(vertices, faces, iterations, *, lam=0.5, mu=-0.53):
     ).tocsr()
     # Shared edges are summed by tocsr; every neighbor must weigh the same.
     adjacency.data[:] = 1
-    neighbor_mean = sparse.diags(1 / np.ravel(adjacency.sum(axis=1))) @ adjacency
+    degree = np.ravel(adjacency.sum(axis=1))
+    isolated = degree == 0
+    # A self-loop makes the neighbor mean of an isolated vertex be itself.
+    adjacency = adjacency + sparse.diags(isolated.astype(np.float64))
+    degree[isolated] = 1
+    neighbor_mean = sparse.diags(1 / degree) @ adjacency
 
     smoothed = np.array(vertices, dtype=np.float64)
     for _ in range(iterations):
