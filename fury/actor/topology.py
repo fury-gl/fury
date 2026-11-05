@@ -5,14 +5,14 @@ import os
 
 import numpy as np
 
-from fury.actor import Group, create_mesh
+from fury.actor import Group, create_mesh, taubin_smooth
 from fury.colormap import normalize_colors
 from fury.geometry import buffer_to_geometry
 from fury.io import load_image, load_image_texture
 from fury.lib import Texture, TextureMap
 from fury.material import _create_mesh_material, validate_opacity
 from fury.primitive import prim_sphere
-from fury.utils import generate_planar_uvs, taubin_smooth, voxel_mesh_by_object
+from fury.utils import generate_planar_uvs, voxel_mesh_by_object
 
 
 def surface(
