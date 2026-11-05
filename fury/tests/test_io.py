@@ -400,6 +400,39 @@ def test_save_load_image():
     )
 
 
+def test_save_image_dtype():
+    """Test saving images with different dtypes and auto-conversion."""
+    with InTemporaryDirectory() as odir:
+        # 1. Float64 RGB array with values 0-255 (Issue #733)
+        data_f64 = np.zeros((20, 20, 3), dtype=np.float64)
+        data_f64[:, :, 0] = 200.0
+        data_f64[:, :, 1] = 100.0
+        fname_f64 = pjoin(odir, "test_f64.png")
+        save_image(data_f64, fname_f64)
+        loaded = load_image(fname_f64)
+        npt.assert_equal(loaded.dtype, np.uint8)
+        npt.assert_equal(loaded[0, 0, :2], [200, 100])
+
+        # 2. Normalized float32 RGB in [0.0, 1.0] scales to [0, 255]
+        data_norm = np.ones((20, 20, 3), dtype=np.float32)
+        fname_norm = pjoin(odir, "test_norm.png")
+        save_image(data_norm, fname_norm)
+        loaded_norm = load_image(fname_norm)
+        npt.assert_equal(loaded_norm.dtype, np.uint8)
+        npt.assert_equal(loaded_norm[0, 0], [255, 255, 255])
+
+        # 3. Explicit dtype=np.uint8
+        fname_explicit = pjoin(odir, "test_explicit.png")
+        save_image(data_f64, fname_explicit, dtype=np.uint8)
+        loaded_explicit = load_image(fname_explicit)
+        npt.assert_equal(loaded_explicit.dtype, np.uint8)
+        npt.assert_equal(loaded_explicit[0, 0, :2], [200, 100])
+
+        # 4. Explicit dtype=None with float64 RGB should raise TypeError from PIL
+        fname_none = pjoin(odir, "test_none.png")
+        npt.assert_raises(TypeError, save_image, data_f64, fname_none, dtype=None)
+
+
 # @pytest.mark.skipif(
 #     skip_osx,
 #     reason="This test does not work on OSX due to "

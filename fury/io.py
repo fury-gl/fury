@@ -207,6 +207,7 @@ def save_image(
     compression_quality=75,
     compression_type="deflation",
     dpi=(72, 72),
+    dtype=np.uint8,
 ):
     """
     Save a 2D or 3D image to a file.
@@ -224,7 +225,12 @@ def save_image(
     dpi : float or tuple of float, optional
         Dots per inch (dpi) for saved image.
         Single values are applied as dpi for both dimensions.
+    dtype : numpy.dtype or type or None, optional
+        Data type to which the array will be converted before saving.
+        Default is np.uint8. If None, the array's original dtype is preserved.
     """
+    arr = np.asarray(arr)
+
     if arr.ndim > 3:
         raise OSError("Image Dimensions should be <=3")
 
@@ -239,6 +245,18 @@ def save_image(
         raise OSError(
             f"Impossible to save the file {filename}: Unknown extension {extension}"
         )
+
+    if dtype is not None:
+        target_dtype = np.dtype(dtype)
+        if arr.dtype != target_dtype:
+            if np.issubdtype(arr.dtype, np.floating) and np.issubdtype(
+                target_dtype, np.integer
+            ):
+                if arr.max() <= 1.0 and arr.min() >= 0.0 and arr.max() > 0.0:
+                    arr = (arr * 255).round()
+                if target_dtype == np.uint8:
+                    arr = np.clip(arr, 0, 255)
+            arr = arr.astype(target_dtype)
 
     im = Image.fromarray(arr)
 
