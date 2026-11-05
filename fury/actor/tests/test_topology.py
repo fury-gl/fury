@@ -493,6 +493,71 @@ def test_contour_from_volume_supports_pbr(mesh_material):
         assert child.material.metalness == pytest.approx(1.0)
 
 
+def _slab_roi():
+    """
+    Build a thin slab ROI used by the smoothing tests.
+
+    Returns
+    -------
+    ndarray, shape (12, 20, 12)
+        Volume with a 3x14x5 block of ones.
+    """
+    roi = np.zeros((12, 20, 12), dtype=np.uint8)
+    roi[5:8, 3:17, 4:9] = 1
+    return roi
+
+
+def test_contour_from_volume_smoothing_rounds_corners_without_shrinking():
+    """Smoothing rounds the corners while the mesh keeps its overall extent."""
+    roi = _slab_roi()
+    blocky_group = contour_from_volume(roi)
+    smooth_group = contour_from_volume(roi, iterations=20)
+    blocky = np.vstack([c.geometry.positions.data for c in blocky_group.children])
+    smooth = np.vstack([c.geometry.positions.data for c in smooth_group.children])
+
+    assert not np.allclose(blocky, smooth)
+    np.testing.assert_array_less(smooth.min(axis=0), blocky.min(axis=0) + 1.5)
+    np.testing.assert_array_less(blocky.max(axis=0) - 1.5, smooth.max(axis=0))
+    np.testing.assert_allclose(smooth.mean(axis=0), blocky.mean(axis=0), atol=0.2)
+
+
+def test_contour_from_volume_smoothing_keeps_one_actor_per_object():
+    """Smoothing does not merge or split the disjoint contour objects."""
+    roi = _slab_roi()
+    roi[0:2, 0:2, 0:2] = 1
+
+    contours = contour_from_volume(roi, iterations=20)
+
+    assert len(contours.children) == 2
+
+
+@pytest.mark.parametrize(
+    "iterations, material_params, flat",
+    [
+        (0, None, True),
+        (20, None, False),
+        (20, {"flat_shading": True}, True),
+    ],
+    ids=["blocky", "smoothed", "user-override"],
+)
+def test_contour_from_volume_smoothing_sets_shading(iterations, material_params, flat):
+    """Smoothing switches to smooth shading unless the user says otherwise."""
+    contours = contour_from_volume(
+        _slab_roi(),
+        iterations=iterations,
+        material_params=material_params,
+    )
+
+    assert contours.children[0].material.flat_shading is flat
+
+
+@pytest.mark.parametrize("iterations", [-1, 1.5, True])
+def test_contour_from_volume_rejects_invalid_iterations(iterations):
+    """Only non-negative integers are valid smoothing pass counts."""
+    with pytest.raises(ValueError, match="iterations must be a non-negative integer"):
+        contour_from_volume(_slab_roi(), iterations=iterations)
+
+
 def test_texture_on_sphere_uv_and_tangent_frame():
     """Keep the split meridian and the image-oriented frame valid at the poles."""
     theta, phi = 12, 6
