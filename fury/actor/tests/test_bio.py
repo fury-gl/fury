@@ -11,7 +11,6 @@ from fury.actor import (
     set_group_opacity,
     set_group_visibility,
     show_slices,
-    smooth_contour_from_roi,
     tensor_slicer,
     volume_slicer,
 )
@@ -268,30 +267,6 @@ def test_contour_from_label_smooths_each_label():
             smooth.children[i].children[0].geometry.positions.data,
             blocky.children[i].children[0].geometry.positions.data,
         )
-
-
-def test_smooth_contour_from_roi_defaults_to_twenty_passes():
-    """Without arguments it smooths 20 passes; 0 passes keeps the voxel surface."""
-    roi = np.zeros((12, 20, 12), dtype=np.uint8)
-    roi[5:8, 3:17, 4:9] = 1
-    affine = np.diag([2.0, 1.0, 0.5, 1.0])
-
-    smooth = smooth_contour_from_roi(roi, affine=affine)
-    reference = contour_from_roi(roi, affine=affine, iterations=20)
-    unsmoothed = smooth_contour_from_roi(roi, affine=affine, iterations=0)
-    blocky = contour_from_roi(roi, affine=affine)
-
-    smooth_v = smooth.children[0].geometry.positions.data
-    reference_v = reference.children[0].geometry.positions.data
-    assert np.allclose(smooth_v, reference_v)
-    assert np.allclose(
-        smooth.get_world_bounding_box(), reference.get_world_bounding_box()
-    )
-    assert np.allclose(
-        unsmoothed.children[0].geometry.positions.data,
-        blocky.children[0].geometry.positions.data,
-    )
-    assert not np.allclose(smooth_v, unsmoothed.children[0].geometry.positions.data)
 
 
 def _tensor_pixel(camera, center):

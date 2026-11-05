@@ -11,7 +11,6 @@ manipulating 3D data structures, such as meshes and point clouds.
 import logging
 
 import numpy as np
-from scipy import sparse
 from scipy.ndimage import (
     binary_erosion,
     find_objects,
@@ -838,57 +837,3 @@ def voxel_mesh_by_object(
         logging.info("No objects were extracted from the volume.")
 
     return objects
-
-
-def taubin_smooth(vertices, faces, iterations, *, lam=0.5, mu=-0.53):
-    """
-    Smooth a polygon mesh with Taubin (shrink-free) Laplacian smoothing.
-
-    Parameters
-    ----------
-    vertices : ndarray, shape (N, 3)
-        Mesh vertices.
-    faces : ndarray, shape (M, K)
-        Polygon vertex indices, e.g. triangles (K=3) or quads (K=4); each row
-        is a closed loop.
-    iterations : int
-        Number of smoothing passes.
-    lam : float, optional
-        Positive (shrinking) step.
-    mu : float, optional
-        Negative (inflating) step, slightly larger in magnitude than ``lam``.
-
-    Returns
-    -------
-    ndarray, shape (N, 3)
-        Smoothed vertices, as a new float64 array.
-
-    Notes
-    -----
-    Vertices that belong to no face are left unchanged.
-    """
-    faces = np.asarray(faces)
-    n_vertices = len(vertices)
-    starts = faces.ravel()
-    ends = np.roll(faces, -1, axis=1).ravel()
-    adjacency = sparse.coo_matrix(
-        (
-            np.ones(2 * starts.size),
-            (np.concatenate((starts, ends)), np.concatenate((ends, starts))),
-        ),
-        shape=(n_vertices, n_vertices),
-    ).tocsr()
-    # Shared edges are summed by tocsr; every neighbor must weigh the same.
-    adjacency.data[:] = 1
-    degree = np.ravel(adjacency.sum(axis=1))
-    isolated = degree == 0
-    # A self-loop makes the neighbor mean of an isolated vertex be itself.
-    adjacency = adjacency + sparse.diags(isolated.astype(np.float64))
-    degree[isolated] = 1
-    neighbor_mean = sparse.diags(1 / degree) @ adjacency
-
-    smoothed = np.array(vertices, dtype=np.float64)
-    for _ in range(iterations):
-        smoothed += lam * (neighbor_mean @ smoothed - smoothed)
-        smoothed += mu * (neighbor_mean @ smoothed - smoothed)
-    return smoothed
