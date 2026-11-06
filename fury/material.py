@@ -796,6 +796,7 @@ class SphGlyphMaterial(MeshPhongMaterial):
 
     def __init__(
         self,
+        *,
         n_coeffs=-1,
         scale=1,
         shininess=30,
@@ -912,6 +913,7 @@ class StreamlinesMaterial(LineMaterial):
 
     def __init__(
         self,
+        *,
         outline_thickness=0.0,
         outline_color=(0, 0, 0),
         roi_enabled=None,
@@ -1101,7 +1103,7 @@ class RoundedRectangleMaterial(MeshBasicMaterial):
         corner_radius="f4",
     )
 
-    def __init__(self, size=(100.0, 100.0), corner_radius=10.0, **kwargs):
+    def __init__(self, *, size=(100.0, 100.0), corner_radius=10.0, **kwargs):
         """
         Initialize the material and forward arguments to the base class.
 
@@ -1611,6 +1613,7 @@ class NetworkMaterial(PointsMaterial):
 
     def __init__(
         self,
+        *,
         k=10.0,
         damping=0.9,
         speed=1.0,

@@ -44,6 +44,7 @@ class Network(WorldObject, Actor):
         self,
         nodes,
         edges,
+        *,
         colors=None,
         k=10.0,
         damping=0.9,

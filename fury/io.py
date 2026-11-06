@@ -30,10 +30,7 @@ def load_cube_map_texture(fnames, *, size=None, generate_mipmaps=True):
     Texture
         PyGfx Texture object.
     """
-    images = []
-
-    for fname in fnames:
-        images.append(load_image(fname))
+    images = [load_image(fname) for fname in fnames]
 
     if size is None:
         min_side = min(*images[0].shape[:2])
@@ -285,7 +282,7 @@ def get_extension(file_path):
     return ext
 
 
-def load_network(file_path, format=None):
+def load_network(file_path, *, format=None):
     """
     Load a network from a file.
 
@@ -308,13 +305,13 @@ def load_network(file_path, format=None):
         _, ext = os.path.splitext(file_path)
         format = ext.lstrip(".").lower()
 
-    with open(file_path, "r", encoding="utf-8") as f:
+    with open(file_path, encoding="utf-8") as f:
         data = f.read()
 
     return parse_network(data, format)
 
 
-def save_network(network_data, file_path, format=None):
+def save_network(network_data, file_path, *, format=None):
     """
     Save a network to a file.
 

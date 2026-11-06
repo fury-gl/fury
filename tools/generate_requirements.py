@@ -25,7 +25,9 @@ def generate_requirement_file(name, req_list):
         Requirements to place after the generated header.
     """
     req_fname = repo_dir / "requirements" / f"{name}.txt"
-    req_fname.write_text("\n".join(header + req_list) + "\n")
+    req_fname.write_text(
+        "\n".join(header + req_list) + "\n", encoding="utf-8", newline="\n"
+    )
 
 
 def deduplicate(items):

@@ -1,11 +1,11 @@
 """Helper variable or function for UI Elements."""
 
-from enum import Enum
+from enum import StrEnum
 
 import numpy as np
 
 
-class Anchor(str, Enum):
+class Anchor(StrEnum):
     """Enum for Position Anchor Points."""
 
     LEFT = "LEFT"

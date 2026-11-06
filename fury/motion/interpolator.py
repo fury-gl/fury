@@ -286,9 +286,7 @@ def slerp(keyframes):
     """
     timestamps = get_timestamps_from_keyframes(keyframes)
 
-    quat_rots = []
-    for ts in timestamps:
-        quat_rots.append(keyframes.get(ts).get("value"))
+    quat_rots = [keyframes.get(ts).get("value") for ts in timestamps]
     rotations = transform.Rotation.from_quat(quat_rots)
     # if only one keyframe specified, linear interpolator is used.
     if len(timestamps) == 1:
@@ -311,7 +309,7 @@ def slerp(keyframes):
         np.ndarray
             Interpolated rotation value in quaternion form.
         """
-        t = min_t if t < min_t else max_t if t > max_t else t
+        t = min_t if t < min_t else min(t, max_t)
         v = slerp_interp(t)
         q = v.as_quat()
         return q

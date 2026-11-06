@@ -15,7 +15,7 @@ from packaging.version import parse
 
 
 def abort(error):
-    print("*WARNING* API documentation not generated: %s" % error)
+    print(f"*WARNING* API documentation not generated: {error}")
     exit()
 
 
@@ -52,7 +52,7 @@ def generate_api_reference_rst(
 
     docwriter.write_api_docs(outdir)
     docwriter.write_index(outdir, "index", relative_to=outdir)
-    print("%d files written" % len(docwriter.written_modules))
+    print(f"{len(docwriter.written_modules)} files written")
 
 
 def setup(app):

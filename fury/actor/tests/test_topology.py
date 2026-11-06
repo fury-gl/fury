@@ -570,7 +570,7 @@ def test_texture_on_sphere_image_orientation(tmp_path, position, expected):
     Image.fromarray(pixels).save(filename)
     frames = []
     for texture in (pixels, filename):
-        mesh = texture_on_sphere(texture, material="basic")
+        mesh = texture_on_sphere(texture=texture, material="basic")
         with render_manager(mesh, width=3, position=position) as show_m:
             frame = render_snapshot(show_m)
         np.testing.assert_allclose(
@@ -593,7 +593,7 @@ def test_texture_on_sphere_rgba(tmp_path):
     pixels[:] = (255, 0, 0, 128)
     filename = tmp_path / "rgba.png"
     Image.fromarray(pixels).save(filename)
-    mesh = texture_on_sphere(filename, material="basic")
+    mesh = texture_on_sphere(texture=filename, material="basic")
     with render_manager(mesh, width=3) as show_m:
         show_m.scene.background = (0, 0, 1)
         frame = render_snapshot(show_m)
@@ -661,4 +661,4 @@ def test_texture_on_sphere_missing_file(tmp_path):
         Temporary directory with no image file.
     """
     with pytest.raises(FileNotFoundError, match="Texture file"):
-        texture_on_sphere(tmp_path / "missing.png")
+        texture_on_sphere(texture=tmp_path / "missing.png")

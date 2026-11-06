@@ -35,8 +35,7 @@ def test_frame_rate_and_anti_aliasing():
 
     all_st = []
     all_st.append(st)
-    for i in range(1000):
-        all_st.append(st + i * np.array([0.0, 0.5, 0]))
+    all_st.extend(st + i * np.array([0.0, 0.5, 0]) for i in range(1000))
 
     # st_actor = actor.line(all_st, linewidth=1)
     # TODO: textblock disappears when lod=True
