@@ -190,14 +190,20 @@ def axes_for_dir(d, prev_x=None):
     y : ndarray, shape (3,)
         The y-axis vector.
     """
-    d /= np.linalg.norm(d)
-    if prev_x is None:
+    d = d / np.linalg.norm(d)
+    x = None
+    if prev_x is not None:
+        proj = prev_x - d * np.dot(prev_x, d)
+        norm_proj = np.linalg.norm(proj)
+        if norm_proj > 1e-6:
+            x = proj / norm_proj
+
+    if x is None:
         up = np.array([0, 0, 1], dtype=np.float32)
         if abs(np.dot(d, up)) > 0.9:
             up = np.array([0, 1, 0], dtype=np.float32)
         x = np.cross(up, d)
-    else:
-        x = prev_x - d * np.dot(prev_x, d)
-    x /= np.linalg.norm(x)
+        x /= np.linalg.norm(x)
+
     y = np.cross(d, x)
     return x, y
