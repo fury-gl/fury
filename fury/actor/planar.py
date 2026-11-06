@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Planar actors for rendering 2D shapes in 3D space."""
 
 import logging
@@ -279,7 +278,7 @@ def disk(
     >>> show_manager.start()
     """
     n_centers = len(centers)
-    radii_arr = fp._normalize_geom_param(radii, n_centers, "radii")
+    radii_arr = fp._normalize_geom_param(radii, n_centers, param_name="radii")
 
     all_uniform = np.all(radii_arr == radii_arr[0])
 
@@ -893,8 +892,12 @@ def ring(
     >>> show_manager.start()
     """
     n_centers = len(centers)
-    inner_arr = fp._normalize_geom_param(inner_radius, n_centers, "inner_radius")
-    outer_arr = fp._normalize_geom_param(outer_radius, n_centers, "outer_radius")
+    inner_arr = fp._normalize_geom_param(
+        inner_radius, n_centers, param_name="inner_radius"
+    )
+    outer_arr = fp._normalize_geom_param(
+        outer_radius, n_centers, param_name="outer_radius"
+    )
 
     all_uniform = np.all(inner_arr == inner_arr[0]) and np.all(
         outer_arr == outer_arr[0]

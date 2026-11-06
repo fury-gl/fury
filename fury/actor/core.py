@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Core actor functionality for FURY."""
 
 import numpy as np
@@ -596,10 +595,16 @@ def arrow(
     """
 
     n_centers = len(centers)
-    height_arr = fp._normalize_geom_param(height, n_centers, "height")
-    tip_length_arr = fp._normalize_geom_param(tip_length, n_centers, "tip_length")
-    tip_radius_arr = fp._normalize_geom_param(tip_radius, n_centers, "tip_radius")
-    shaft_radius_arr = fp._normalize_geom_param(shaft_radius, n_centers, "shaft_radius")
+    height_arr = fp._normalize_geom_param(height, n_centers, param_name="height")
+    tip_length_arr = fp._normalize_geom_param(
+        tip_length, n_centers, param_name="tip_length"
+    )
+    tip_radius_arr = fp._normalize_geom_param(
+        tip_radius, n_centers, param_name="tip_radius"
+    )
+    shaft_radius_arr = fp._normalize_geom_param(
+        shaft_radius, n_centers, param_name="shaft_radius"
+    )
 
     all_uniform = (
         np.all(height_arr == height_arr[0])

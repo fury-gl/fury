@@ -98,7 +98,7 @@ def _add_dep_doc(old_doc, dep_doc):
     return "\n".join(new_lines + dep_lines + old_lines[next_line:]) + "\n"
 
 
-def cmp_pkg_version(version_str, pkg_version_str=__version__):
+def cmp_pkg_version(version_str, *, pkg_version_str=__version__):
     """
     Compare ``version_str`` to current package version.
 
@@ -117,9 +117,9 @@ def cmp_pkg_version(version_str, pkg_version_str=__version__):
 
     Examples
     --------
-    >>> cmp_pkg_version('1.2.1', '1.2.0')
+    >>> cmp_pkg_version('1.2.1', pkg_version_str='1.2.0')
     1
-    >>> cmp_pkg_version('1.2.0dev', '1.2.0')
+    >>> cmp_pkg_version('1.2.0dev', pkg_version_str='1.2.0')
     -1
     """
     version_cmp = version.parse
@@ -135,7 +135,7 @@ def cmp_pkg_version(version_str, pkg_version_str=__version__):
         return -1
 
 
-def is_bad_version(version_str, version_comparator=cmp_pkg_version):
+def is_bad_version(version_str, *, version_comparator=cmp_pkg_version):
     """
     Return True if `version_str` is too high.
 
@@ -156,6 +156,7 @@ def is_bad_version(version_str, version_comparator=cmp_pkg_version):
 
 def deprecate_with_version(
     message,
+    *,
     since="",
     until="",
     version_comparator=cmp_pkg_version,
@@ -206,7 +207,7 @@ def deprecate_with_version(
         messages.append("* deprecated from version: " + since)
     if until:
         messages.append(
-            "* {0} {1} as of version: {2}".format(
+            "* {} {} as of version: {}".format(
                 "Raises" if is_bad_version(until) else "Will raise", error_class, until
             )
         )
@@ -244,7 +245,7 @@ def deprecate_with_version(
             any
                 Result of the function call.
             """
-            if until and is_bad_version(until, version_comparator):
+            if until and is_bad_version(until, version_comparator=version_comparator):
                 raise error_class(message)
             warnings.warn(message, warn_class, stacklevel=2)
             return func(*args, **kwargs)
@@ -257,6 +258,7 @@ def deprecate_with_version(
 
 def deprecated_params(
     old_name,
+    *,
     new_name=None,
     since="",
     until="",
@@ -334,7 +336,7 @@ def deprecated_params(
     The deprecation warnings are not shown in the following examples.
     To deprecate a positional or keyword argument::
     >>> from fury.deprecator import deprecated_params
-    >>> @deprecated_params('sig', 'sigma', '0.3')
+    >>> @deprecated_params('sig', new_name='sigma', since='0.3')
     ... def test(sigma):
     ...     return sigma
     >>> test(2)
@@ -347,8 +349,8 @@ def deprecated_params(
     It is also possible to replace multiple arguments. The ``old_name``,
     ``new_name`` and ``since`` have to be `tuple` or `list` and contain the
     same number of entries::
-    >>> @deprecated_params(['a', 'b'], ['alpha', 'beta'],
-    ...                    ['0.2', 0.4])
+    >>> @deprecated_params(['a', 'b'], new_name=['alpha', 'beta'],
+    ...                    since=['0.2', 0.4])
     ... def test(alpha, beta):
     ...     return alpha, beta
     >>> test(a=2, b=3)  # doctest: +SKIP
@@ -463,7 +465,7 @@ def deprecated_params(
                     messages.append("* deprecated from version: " + str(since[i]))
                 if until[i]:
                     messages.append(
-                        "* {0} {1} as of version: {2}".format(
+                        "* {} {} as of version: {}".format(
                             "Raises" if is_bad_version(until[i]) else "Will raise",
                             error_class,
                             until[i],
@@ -499,7 +501,9 @@ def deprecated_params(
                     elif alternative:
                         message += f"* Use {alternative} instead."
 
-                    if until[i] and is_bad_version(until[i], version_comparator):
+                    if until[i] and is_bad_version(
+                        until[i], version_comparator=version_comparator
+                    ):
                         raise error_class(message)
                     warnings.warn(message, warn_class, stacklevel=2)
 
@@ -508,7 +512,9 @@ def deprecated_params(
                 elif not n_name and positions[i] and len(args) > positions[i]:
                     if alternative:
                         message += f"* Use {alternative} instead."
-                    if until[i] and is_bad_version(until[i], version_comparator):
+                    if until[i] and is_bad_version(
+                        until[i], version_comparator=version_comparator
+                    ):
                         raise error_class(message)
 
                     warnings.warn(message, warn_class, stacklevel=2)

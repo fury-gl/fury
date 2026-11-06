@@ -40,7 +40,7 @@ def test_callback():
 
     class SimplestUI(UI):
         def __init__(self):
-            super(SimplestUI, self).__init__()
+            super().__init__()
 
         def _setup(self):
             self.actor = Actor2D()

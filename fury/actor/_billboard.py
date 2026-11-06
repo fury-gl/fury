@@ -143,7 +143,7 @@ class BillboardActor(Mesh):
         Additional keyword arguments forwarded to :class:`Mesh`.
     """
 
-    def __init__(self, geometry=None, material=None, **kwargs):
+    def __init__(self, *, geometry=None, material=None, **kwargs):
         """Initialize a Billboard actor."""
         super().__init__(geometry=geometry, material=material, **kwargs)
         self._billboard_count = 0
