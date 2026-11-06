@@ -196,7 +196,8 @@ def axes_for_dir(d, *, prev_x=None):
     d : ndarray, shape (3,)
         The direction vector.
     prev_x : ndarray, shape (3,), optional
-        The previous x-axis vector.
+        The previous x-axis vector. If None, containing NaNs, zero, or parallel
+        to `d`, `prev_x` is ignored and the default up-based axis is used.
 
     Returns
     -------
@@ -205,14 +206,22 @@ def axes_for_dir(d, *, prev_x=None):
     y : ndarray, shape (3,)
         The y-axis vector.
     """
-    d /= np.linalg.norm(d)
-    if prev_x is None:
+    d = d / np.linalg.norm(d)
+    x = None
+    if prev_x is not None:
+        prev_x = np.asarray(prev_x)
+        if not np.isnan(prev_x).any():
+            proj = prev_x - d * np.dot(prev_x, d)
+            norm_proj = np.linalg.norm(proj)
+            if norm_proj > 1e-6:
+                x = proj / norm_proj
+
+    if x is None:
         up = np.array([0, 0, 1], dtype=np.float32)
         if abs(np.dot(d, up)) > 0.9:
             up = np.array([0, 1, 0], dtype=np.float32)
         x = np.cross(up, d)
-    else:
-        x = prev_x - d * np.dot(prev_x, d)
-    x /= np.linalg.norm(x)
+        x /= np.linalg.norm(x)
+
     y = np.cross(d, x)
     return x, y

@@ -226,6 +226,35 @@ def test_axes_for_dir():
     x, y = geometry.axes_for_dir(d.copy())
     assert _is_orthonormal(d, x, y)
 
+    # When prev_x is provided and orthogonal / non-parallel to d
+    prev_x = np.array([1.0, 0.0, 0.0])
+    d2 = np.array([0.0, 0.0, 1.0])
+    x, y = geometry.axes_for_dir(d2, prev_x=prev_x)
+    assert _is_orthonormal(d2, x, y)
+    npt.assert_allclose(x, [1.0, 0.0, 0.0], atol=1e-6)
+    npt.assert_allclose(y, [0.0, 1.0, 0.0], atol=1e-6)
+
+    # When prev_x is parallel (or antiparallel) or zero vector
+    for parallel_prev_x in [d2, -d2, 2.0 * d2, np.zeros(3)]:
+        x, y = geometry.axes_for_dir(d2, prev_x=parallel_prev_x)
+        assert _is_orthonormal(d2, x, y)
+        assert not np.isnan(x).any()
+        assert not np.isnan(y).any()
+
+    # When prev_x contains NaN
+    x_default, y_default = geometry.axes_for_dir(d2, prev_x=None)
+    for nan_prev_x in [
+        np.array([np.nan, 0.0, 1.0]),
+        np.full(3, np.nan),
+        [np.nan, 1.0, 0.0],
+    ]:
+        x, y = geometry.axes_for_dir(d2, prev_x=nan_prev_x)
+        assert _is_orthonormal(d2, x, y)
+        assert not np.isnan(x).any()
+        assert not np.isnan(y).any()
+        npt.assert_allclose(x, x_default)
+        npt.assert_allclose(y, y_default)
+
 
 def test_rotate_vector():
     v = np.array([1.0, 0.0, 0.0])
