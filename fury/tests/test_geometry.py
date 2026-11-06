@@ -182,6 +182,16 @@ def test_prune_colinear():
     expected = np.array([[0, 0, 0], [3, 0, 0]], dtype=float)
     npt.assert_array_equal(pruned, expected)
 
+    # Edge cases: 0, 1, and 2 points
+    empty_arr = np.empty((0, 3), dtype=float)
+    npt.assert_array_equal(geometry.prune_colinear(empty_arr), empty_arr)
+
+    single_point = np.array([[1.0, 2.0, 3.0]])
+    npt.assert_array_equal(geometry.prune_colinear(single_point), single_point)
+
+    two_points = np.array([[0.0, 0.0, 0.0], [1.0, 1.0, 1.0]])
+    npt.assert_array_equal(geometry.prune_colinear(two_points), two_points)
+
 
 def test_axes_for_dir():
     d = np.array([1, 1, 1], dtype=float) / np.sqrt(3)

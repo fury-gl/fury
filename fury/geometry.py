@@ -154,9 +154,13 @@ def prune_colinear(arr, *, colinear_threshold=0.9999):
 
     Returns
     -------
-    ndarray, shape (3,)
+    ndarray, shape (M, 3)
         The pruned array with colinear points removed.
     """
+    arr = np.asarray(arr)
+    if len(arr) <= 2:
+        return arr.copy()
+
     keep = [arr[0]]
     for i in range(1, len(arr) - 1):
         v1 = arr[i] - keep[-1]
