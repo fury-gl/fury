@@ -18,14 +18,23 @@ select = [
   "I",
   "D213", # Multi-line docstring summary should start at the second line (GL01)
   "D209", # Multi-line docstring closing quotes should be on a separate line (GL02)
+  "ISC",
+  "FLY",
+  "PERF",
+  "UP",
+  "FURB",
 ]
 ignore = [
   "C901",
+  "B905",
+  "FURB171",
 ]
 
 [lint.extend-per-file-ignores]
 "docs/examples/**" = ["I001"]
 "docs/source/conf.py" = ["E402"]
+# Class re-exports typed as TypeAlias for mypy; PEP 695 ``type`` would break instantiation and isinstance.
+"fury/lib.py" = ["UP040"]
 
 [lint.flake8-quotes]
 inline-quotes = "double"
