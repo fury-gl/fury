@@ -1,5 +1,6 @@
 import numpy as np
 import numpy.testing as npt
+import pytest
 
 from fury import geometry
 
@@ -191,6 +192,33 @@ def test_prune_colinear():
 
     two_points = np.array([[0.0, 0.0, 0.0], [1.0, 1.0, 1.0]])
     npt.assert_array_equal(geometry.prune_colinear(two_points), two_points)
+
+    # Sequence inputs (list and tuple)
+    list_pts = [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, 0, 0]]
+    npt.assert_array_equal(geometry.prune_colinear(list_pts), expected)
+
+    tuple_pts = ((0, 0, 0), (1, 0, 0), (2, 0, 0), (3, 0, 0))
+    npt.assert_array_equal(geometry.prune_colinear(tuple_pts), expected)
+
+    assert geometry.prune_colinear([]).shape == (0, 3)
+    assert geometry.prune_colinear(()).shape == (0, 3)
+
+    # Invalid input types
+    with pytest.raises(ValueError, match=r"arr must be a list, tuple, or ndarray"):
+        geometry.prune_colinear("invalid")
+
+    with pytest.raises(ValueError, match=r"arr must be a list, tuple, or ndarray"):
+        geometry.prune_colinear(123)
+
+    # Invalid array dimensions
+    with pytest.raises(ValueError, match=r"arr must have shape \(N, 3\)"):
+        geometry.prune_colinear([1, 2, 3])
+
+    with pytest.raises(ValueError, match=r"arr must have shape \(N, 3\)"):
+        geometry.prune_colinear([[1, 2], [3, 4]])
+
+    with pytest.raises(ValueError, match=r"arr must have shape \(N, 3\)"):
+        geometry.prune_colinear(np.ones((2, 2, 3)))
 
 
 def test_axes_for_dir():

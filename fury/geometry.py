@@ -146,8 +146,8 @@ def prune_colinear(arr, colinear_threshold=0.9999):
 
     Parameters
     ----------
-    arr : ndarray, shape (N, 3)
-        The input array of points.
+    arr : list, tuple, or ndarray, shape (N, 3)
+        The input sequence or array of points.
     colinear_threshold : float, optional
         The threshold for colinearity. Points are considered colinear if the
         cosine of the angle between them is greater than or equal to this value.
@@ -157,7 +157,18 @@ def prune_colinear(arr, colinear_threshold=0.9999):
     ndarray, shape (M, 3)
         The pruned array with colinear points removed.
     """
+    if not isinstance(arr, (list, tuple, np.ndarray)):
+        raise ValueError(
+            f"arr must be a list, tuple, or ndarray. Got {type(arr).__name__}."
+        )
+
     arr = np.asarray(arr)
+    if arr.ndim == 1 and arr.size == 0:
+        arr = arr.reshape((0, 3))
+
+    if arr.ndim != 2 or arr.shape[1] != 3:
+        raise ValueError(f"arr must have shape (N, 3), but got shape {arr.shape}.")
+
     if len(arr) <= 2:
         return arr.copy()
 
