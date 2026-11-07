@@ -2,8 +2,8 @@
 
 import os
 from urllib.request import urlretrieve
+import warnings
 
-# import warnings
 from PIL import Image
 import numpy as np
 import polyxios as px
@@ -106,7 +106,7 @@ def load_image(filename):
             else:
                 pil_image = pil_image.convert("RGB")
 
-        if pil_image.mode in ["RGBA", "RGB", "L"]:
+        if pil_image.mode in ["RGBA", "RGB", "L", "F"]:
             image = np.asarray(pil_image)
         elif pil_image.mode.startswith("I;16"):
             raw = pil_image.tobytes("raw", pil_image.mode)
@@ -231,8 +231,11 @@ def save_image(
     """
     arr = np.asarray(arr)
 
-    if arr.ndim > 3:
-        raise OSError("Image Dimensions should be <=3")
+    if arr.size == 0:
+        raise ValueError("Cannot save an empty image array.")
+
+    if arr.ndim < 2 or arr.ndim > 3:
+        raise OSError("Image Dimensions should be <=3 and >=2")
 
     if isinstance(dpi, (float, int)):
         dpi = (dpi, dpi)
@@ -248,11 +251,59 @@ def save_image(
 
     if dtype is not None:
         target_dtype = np.dtype(dtype)
-        if arr.dtype != target_dtype:
-            if np.issubdtype(arr.dtype, np.floating):
-                if arr.size > 0 and arr.min() >= 0.0 and arr.max() <= 1.0:
-                    arr = (arr * 255).round()
 
+        if not (
+            np.issubdtype(target_dtype, np.integer)
+            or np.issubdtype(target_dtype, np.floating)
+        ):
+            raise ValueError(
+                f"Unsupported target dtype '{target_dtype}' for image saving."
+            )
+
+        if not (
+            np.issubdtype(arr.dtype, np.number)
+            or np.issubdtype(arr.dtype, np.bool_)
+        ):
+            raise ValueError(
+                f"Cannot save image with unsupported array dtype '{arr.dtype}'."
+            )
+
+        if arr.dtype != target_dtype:
+            warnings.warn(
+                f"Image data of dtype '{arr.dtype}' is being converted to "
+                f"'{target_dtype}'.",
+                UserWarning,
+                stacklevel=2,
+            )
+
+            # If input is floating
+            if np.issubdtype(arr.dtype, np.floating):
+                # Scale normalized float data [0.0, 1.0] ONLY when saving to integer
+                if np.issubdtype(target_dtype, np.integer):
+                    if arr.min() >= 0.0 and arr.max() <= 1.0:
+                        arr = (arr * 255).round()
+                    elif arr.min() < 0.0 or arr.max() > 255.0:
+                        warnings.warn(
+                            "Floating-point image data contains values outside [0, 255]; "
+                            "values will be clipped.",
+                            UserWarning,
+                            stacklevel=2,
+                        )
+                # Float-to-float conversions preserve values without scaling
+
+            # If input is integer
+            elif np.issubdtype(arr.dtype, np.integer):
+                if np.issubdtype(target_dtype, np.integer):
+                    info = np.iinfo(target_dtype)
+                    if arr.min() < info.min or arr.max() > info.max:
+                        warnings.warn(
+                            f"Integer image data contains values outside "
+                            f"[{info.min}, {info.max}]; values will be clipped.",
+                            UserWarning,
+                            stacklevel=2,
+                        )
+
+            # If target is integer, clip values within valid range
             if np.issubdtype(target_dtype, np.integer):
                 info = np.iinfo(target_dtype)
                 arr = np.clip(arr, info.min, info.max)

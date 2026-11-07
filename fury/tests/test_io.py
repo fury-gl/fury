@@ -6,7 +6,7 @@ from tempfile import TemporaryDirectory as InTemporaryDirectory
 import numpy as np
 import numpy.testing as npt
 
-# import pytest
+import pytest
 import polyxios as px
 
 # from fury.decorators import skip_osx
@@ -439,6 +439,36 @@ def test_save_image_dtype():
         loaded_i32 = load_image(fname_i32)
         npt.assert_equal(loaded_i32.dtype, np.uint8)
         npt.assert_equal(loaded_i32[0, 0], [0, 150, 255])
+
+        # 6. Float-to-float preserves values in [0.0, 1.0] without scaling
+        data_f64_norm = np.array([[0.0, 0.5, 1.0]], dtype=np.float64)
+        fname_f32 = pjoin(odir, "test_f32.tiff")
+        save_image(data_f64_norm, fname_f32, dtype=np.float32)
+        loaded_f32 = load_image(fname_f32)
+        npt.assert_equal(loaded_f32.dtype, np.float32)
+        npt.assert_allclose(loaded_f32, [[0.0, 0.5, 1.0]], atol=1e-6)
+
+        # 7. Float with values outside [0, 255] clips
+        data_oob_float = np.array([[[-10.0, 100.0, 300.0]]], dtype=np.float64)
+        fname_oob_float = pjoin(odir, "test_oob_float.png")
+        save_image(data_oob_float, fname_oob_float)
+        loaded_oob = load_image(fname_oob_float)
+        npt.assert_equal(loaded_oob.dtype, np.uint8)
+        npt.assert_equal(loaded_oob[0, 0], [0, 100, 255])
+
+        # 8. Empty array raises ValueError
+        empty_arr = np.zeros((0, 0, 3), dtype=np.uint8)
+        npt.assert_raises(ValueError, save_image, empty_arr, pjoin(odir, "empty.png"))
+
+        # 9. Unsupported dtype raises ValueError
+        complex_arr = np.zeros((10, 10), dtype=np.complex64)
+        npt.assert_raises(
+            ValueError, save_image, complex_arr, pjoin(odir, "complex.png")
+        )
+
+        # 10. Dtype conversion emits UserWarning
+        with pytest.warns(UserWarning, match="is being converted to"):
+            save_image(data_f64, pjoin(odir, "test_warn.png"))
 
 
 # @pytest.mark.skipif(
