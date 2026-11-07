@@ -5,9 +5,8 @@ from tempfile import TemporaryDirectory as InTemporaryDirectory
 # from PIL import Image
 import numpy as np
 import numpy.testing as npt
-
-import pytest
 import polyxios as px
+import pytest
 
 # from fury.decorators import skip_osx
 from fury.data import fetch_viz_cubemaps, read_viz_cubemap
@@ -408,7 +407,8 @@ def test_save_image_dtype():
         data_f64[:, :, 0] = 200.0
         data_f64[:, :, 1] = 100.0
         fname_f64 = pjoin(odir, "test_f64.png")
-        save_image(data_f64, fname_f64)
+        with pytest.warns(UserWarning, match="is being converted to"):
+            save_image(data_f64, fname_f64)
         loaded = load_image(fname_f64)
         npt.assert_equal(loaded.dtype, np.uint8)
         npt.assert_equal(loaded[0, 0, :2], [200, 100])
@@ -416,14 +416,16 @@ def test_save_image_dtype():
         # 2. Normalized float32 RGB in [0.0, 1.0] scales to [0, 255]
         data_norm = np.ones((20, 20, 3), dtype=np.float32)
         fname_norm = pjoin(odir, "test_norm.png")
-        save_image(data_norm, fname_norm)
+        with pytest.warns(UserWarning, match="is being converted to"):
+            save_image(data_norm, fname_norm)
         loaded_norm = load_image(fname_norm)
         npt.assert_equal(loaded_norm.dtype, np.uint8)
         npt.assert_equal(loaded_norm[0, 0], [255, 255, 255])
 
         # 3. Explicit dtype=np.uint8
         fname_explicit = pjoin(odir, "test_explicit.png")
-        save_image(data_f64, fname_explicit, dtype=np.uint8)
+        with pytest.warns(UserWarning, match="is being converted to"):
+            save_image(data_f64, fname_explicit, dtype=np.uint8)
         loaded_explicit = load_image(fname_explicit)
         npt.assert_equal(loaded_explicit.dtype, np.uint8)
         npt.assert_equal(loaded_explicit[0, 0, :2], [200, 100])
@@ -435,7 +437,8 @@ def test_save_image_dtype():
         # 5. Non-uint8 integer array clips to [0, 255]
         data_i32 = np.array([[[-10, 150, 300]]], dtype=np.int32)
         fname_i32 = pjoin(odir, "test_i32.png")
-        save_image(data_i32, fname_i32)
+        with pytest.warns(UserWarning):
+            save_image(data_i32, fname_i32)
         loaded_i32 = load_image(fname_i32)
         npt.assert_equal(loaded_i32.dtype, np.uint8)
         npt.assert_equal(loaded_i32[0, 0], [0, 150, 255])
@@ -443,7 +446,8 @@ def test_save_image_dtype():
         # 6. Float-to-float preserves values in [0.0, 1.0] without scaling
         data_f64_norm = np.array([[0.0, 0.5, 1.0]], dtype=np.float64)
         fname_f32 = pjoin(odir, "test_f32.tiff")
-        save_image(data_f64_norm, fname_f32, dtype=np.float32)
+        with pytest.warns(UserWarning, match="is being converted to"):
+            save_image(data_f64_norm, fname_f32, dtype=np.float32)
         loaded_f32 = load_image(fname_f32)
         npt.assert_equal(loaded_f32.dtype, np.float32)
         npt.assert_allclose(loaded_f32, [[0.0, 0.5, 1.0]], atol=1e-6)
@@ -451,7 +455,8 @@ def test_save_image_dtype():
         # 7. Float with values outside [0, 255] clips
         data_oob_float = np.array([[[-10.0, 100.0, 300.0]]], dtype=np.float64)
         fname_oob_float = pjoin(odir, "test_oob_float.png")
-        save_image(data_oob_float, fname_oob_float)
+        with pytest.warns(UserWarning):
+            save_image(data_oob_float, fname_oob_float)
         loaded_oob = load_image(fname_oob_float)
         npt.assert_equal(loaded_oob.dtype, np.uint8)
         npt.assert_equal(loaded_oob[0, 0], [0, 100, 255])

@@ -106,8 +106,10 @@ def load_image(filename):
             else:
                 pil_image = pil_image.convert("RGB")
 
-        if pil_image.mode in ["RGBA", "RGB", "L", "F"]:
+        if pil_image.mode in ["RGBA", "RGB", "L"]:
             image = np.asarray(pil_image)
+        elif pil_image.mode == "F":
+            image = np.array(pil_image, dtype=np.float32)
         elif pil_image.mode.startswith("I;16"):
             raw = pil_image.tobytes("raw", pil_image.mode)
             dtype = ">u2" if pil_image.mode.endswith("B") else "<u2"
@@ -261,7 +263,8 @@ def save_image(
             )
 
         if not (
-            np.issubdtype(arr.dtype, np.number)
+            np.issubdtype(arr.dtype, np.integer)
+            or np.issubdtype(arr.dtype, np.floating)
             or np.issubdtype(arr.dtype, np.bool_)
         ):
             raise ValueError(
@@ -284,8 +287,8 @@ def save_image(
                         arr = (arr * 255).round()
                     elif arr.min() < 0.0 or arr.max() > 255.0:
                         warnings.warn(
-                            "Floating-point image data contains values outside [0, 255]; "
-                            "values will be clipped.",
+                            "Floating-point image data contains values "
+                            "outside [0, 255]; values will be clipped.",
                             UserWarning,
                             stacklevel=2,
                         )
@@ -315,7 +318,7 @@ def save_image(
     save_kwargs = {"dpi": dpi}
 
     if extension in ("tiff", "tif"):
-        if compression_type is not None:
+        if compression_type is not None and im.mode != "F":
             compression_map = {
                 "lzw": "tiff_lzw",
                 "deflation": "tiff_deflate",
