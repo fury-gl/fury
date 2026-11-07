@@ -2,8 +2,8 @@
 
 import os
 from urllib.request import urlretrieve
+import warnings
 
-# import warnings
 from PIL import Image
 import numpy as np
 import polyxios as px
@@ -108,6 +108,8 @@ def load_image(filename):
 
         if pil_image.mode in ["RGBA", "RGB", "L"]:
             image = np.asarray(pil_image)
+        elif pil_image.mode == "F":
+            image = np.array(pil_image, dtype=np.float32)
         elif pil_image.mode.startswith("I;16"):
             raw = pil_image.tobytes("raw", pil_image.mode)
             dtype = ">u2" if pil_image.mode.endswith("B") else "<u2"
@@ -207,6 +209,7 @@ def save_image(
     compression_quality=75,
     compression_type="deflation",
     dpi=(72, 72),
+    dtype=np.uint8,
 ):
     """
     Save a 2D or 3D image to a file.
@@ -224,9 +227,17 @@ def save_image(
     dpi : float or tuple of float, optional
         Dots per inch (dpi) for saved image.
         Single values are applied as dpi for both dimensions.
+    dtype : numpy.dtype or type or None, optional
+        Data type to which the array will be converted before saving.
+        Default is np.uint8. If None, the array's original dtype is preserved.
     """
-    if arr.ndim > 3:
-        raise OSError("Image Dimensions should be <=3")
+    arr = np.asarray(arr)
+
+    if arr.size == 0:
+        raise ValueError("Cannot save an empty image array.")
+
+    if arr.ndim < 2 or arr.ndim > 3:
+        raise OSError("Image Dimensions should be <=3 and >=2")
 
     if isinstance(dpi, (float, int)):
         dpi = (dpi, dpi)
@@ -240,12 +251,74 @@ def save_image(
             f"Impossible to save the file {filename}: Unknown extension {extension}"
         )
 
+    if dtype is not None:
+        target_dtype = np.dtype(dtype)
+
+        if not (
+            np.issubdtype(target_dtype, np.integer)
+            or np.issubdtype(target_dtype, np.floating)
+        ):
+            raise ValueError(
+                f"Unsupported target dtype '{target_dtype}' for image saving."
+            )
+
+        if not (
+            np.issubdtype(arr.dtype, np.integer)
+            or np.issubdtype(arr.dtype, np.floating)
+            or np.issubdtype(arr.dtype, np.bool_)
+        ):
+            raise ValueError(
+                f"Cannot save image with unsupported array dtype '{arr.dtype}'."
+            )
+
+        if arr.dtype != target_dtype:
+            warnings.warn(
+                f"Image data of dtype '{arr.dtype}' is being converted to "
+                f"'{target_dtype}'.",
+                UserWarning,
+                stacklevel=2,
+            )
+
+            # If input is floating
+            if np.issubdtype(arr.dtype, np.floating):
+                # Scale normalized float data [0.0, 1.0] ONLY when saving to integer
+                if np.issubdtype(target_dtype, np.integer):
+                    if arr.min() >= 0.0 and arr.max() <= 1.0:
+                        arr = (arr * 255).round()
+                    elif arr.min() < 0.0 or arr.max() > 255.0:
+                        warnings.warn(
+                            "Floating-point image data contains values "
+                            "outside [0, 255]; values will be clipped.",
+                            UserWarning,
+                            stacklevel=2,
+                        )
+                # Float-to-float conversions preserve values without scaling
+
+            # If input is integer
+            elif np.issubdtype(arr.dtype, np.integer):
+                if np.issubdtype(target_dtype, np.integer):
+                    info = np.iinfo(target_dtype)
+                    if arr.min() < info.min or arr.max() > info.max:
+                        warnings.warn(
+                            f"Integer image data contains values outside "
+                            f"[{info.min}, {info.max}]; values will be clipped.",
+                            UserWarning,
+                            stacklevel=2,
+                        )
+
+            # If target is integer, clip values within valid range
+            if np.issubdtype(target_dtype, np.integer):
+                info = np.iinfo(target_dtype)
+                arr = np.clip(arr, info.min, info.max)
+
+            arr = arr.astype(target_dtype)
+
     im = Image.fromarray(arr)
 
     save_kwargs = {"dpi": dpi}
 
     if extension in ("tiff", "tif"):
-        if compression_type is not None:
+        if compression_type is not None and im.mode != "F":
             compression_map = {
                 "lzw": "tiff_lzw",
                 "deflation": "tiff_deflate",
