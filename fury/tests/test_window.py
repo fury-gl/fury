@@ -535,6 +535,50 @@ def test_show_manager_update_camera(sample_actor):
     assert show_m.screens[0].camera.height != 800
 
 
+def test_update_camera_forwards_view_dir_and_view_up(sample_actor):
+    """update_camera must forward view_dir and view_up to show_object."""
+    scene = Scene()
+    scene.add(sample_actor)
+    show_m = ShowManager(scene=scene, window_type="offscreen")
+    cam = show_m.screens[0].camera
+
+    with patch.object(cam, "show_object", wraps=cam.show_object) as spy:
+        update_camera(
+            cam,
+            show_m.size,
+            scene,
+            view_dir=(0, 0, -1),
+            view_up=(0, 1, 0),
+        )
+        spy.assert_called_once()
+        _, kw = spy.call_args
+        assert kw["view_dir"] == (0, 0, -1)
+        assert kw["up"] == (0, 1, 0)
+
+    with patch.object(cam, "show_object", wraps=cam.show_object) as spy:
+        update_camera(cam, show_m.size, scene)
+        _, kw = spy.call_args
+        assert kw["view_dir"] is None
+        assert kw["up"] is None
+
+    # Top-down orientation must actually take effect.
+    update_camera(cam, show_m.size, scene, view_dir=(0, -1, 0), view_up=(0, 0, -1))
+    np.testing.assert_array_almost_equal(cam.world.forward, [0, -1, 0])
+    np.testing.assert_array_almost_equal(cam.world.reference_up, [0, 0, -1])
+
+
+def test_update_camera_view_up_on_empty_scene():
+    """view_up should apply even when the scene has no objects."""
+    scene = Scene()
+    show_m = ShowManager(scene=scene, window_type="offscreen")
+    cam = show_m.screens[0].camera
+
+    # Default is Y-up; change to X-up on an empty scene.
+    np.testing.assert_array_almost_equal(cam.world.reference_up, [0, 1, 0])
+    update_camera(cam, show_m.size, scene, view_up=(1, 0, 0))
+    np.testing.assert_array_almost_equal(cam.world.reference_up, [1, 0, 0])
+
+
 def test_show_manager_snapshot(tmpdir, sample_actor):
     """Test taking a snapshot of the scene."""
     fname = tmpdir.join("snapshot.png")

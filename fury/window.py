@@ -439,13 +439,17 @@ def create_screen(
     return screen
 
 
-def update_camera(camera, size, target):
+def update_camera(camera, size, target, *, view_dir=None, view_up=None):
     """
     Update the camera's view to encompass the target object or scene.
 
     If the target is a non-empty scene or another object, the camera adjusts
-    to show it. If the target is an empty scene, the camera's aspect ratio
+    to show it.  If the target is an empty scene, the camera's aspect ratio
     is updated based on the provided size.
+
+    When *view_dir* or *view_up* are given they are forwarded to
+    ``camera.show_object`` so the caller can control the camera orientation
+    (see :func:`pygfx.PerspectiveCamera.show_object`).
 
     Parameters
     ----------
@@ -455,6 +459,15 @@ def update_camera(camera, size, target):
         The size (width, height) of the viewport, used if the target is empty.
     target : Object or Scene
         The PyGfx object or scene the camera should focus on.
+    view_dir : array-like of float, optional
+        The direction from which the camera looks at the target as an
+        ``(x, y, z)`` sequence.  For example ``(0, 0, -1)`` looks along the
+        negative-Z axis (front view).  When *None* the current camera
+        direction is kept.
+    view_up : array-like of float, optional
+        The reference up direction as an ``(x, y, z)`` sequence.  For example
+        ``(0, 1, 0)`` treats the positive-Y axis as up.  When *None* the
+        current reference up is kept.
     """
     if isinstance(target, Scene):
         target = target.main_scene
@@ -464,10 +477,13 @@ def update_camera(camera, size, target):
     )
 
     if has_object and target.get_world_bounding_sphere() is not None:
-        camera.show_object(target)
-    elif size is not None:
-        camera.width = size[0]
-        camera.height = size[1]
+        camera.show_object(target, view_dir=view_dir, up=view_up)
+    else:
+        if size is not None:
+            camera.width = size[0]
+            camera.height = size[1]
+        if view_up is not None:
+            camera.world.reference_up = view_up
 
 
 def _get_scene_center(camera, scene):
