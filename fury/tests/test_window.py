@@ -535,6 +535,35 @@ def test_show_manager_update_camera(sample_actor):
     assert show_m.screens[0].camera.height != 800
 
 
+def test_update_camera_view_dir_and_view_up(sample_actor):
+    """Test that update_camera forwards view_dir and view_up to show_object."""
+    scene = Scene()
+    scene.add(sample_actor)
+    show_m = ShowManager(scene=scene, window_type="offscreen")
+    camera = show_m.screens[0].camera
+
+    # Front view: look along -Z, Y is up.
+    update_camera(camera, show_m.size, scene, view_dir=(0, 0, -1), view_up=(0, 1, 0))
+    forward = tuple(np.round(camera.world.forward, 6))
+    assert forward == (0.0, 0.0, -1.0), f"Expected front view_dir, got {forward}"
+
+    ref_up = tuple(np.round(camera.world.reference_up, 6))
+    assert ref_up == (0.0, 1.0, 0.0), f"Expected Y-up, got {ref_up}"
+
+    # Top view: look along -Y, -Z is up.
+    update_camera(camera, show_m.size, scene, view_dir=(0, -1, 0), view_up=(0, 0, -1))
+    forward = tuple(np.round(camera.world.forward, 6))
+    assert forward == (0.0, -1.0, 0.0), f"Expected top view_dir, got {forward}"
+
+    ref_up = tuple(np.round(camera.world.reference_up, 6))
+    assert ref_up == (0.0, 0.0, -1.0), f"Expected -Z up, got {ref_up}"
+
+    # Passing neither should not raise and should preserve orientation.
+    update_camera(camera, show_m.size, scene)
+    forward_after = tuple(np.round(camera.world.forward, 6))
+    assert forward_after == forward, "Orientation changed when no view_dir given"
+
+
 def test_show_manager_snapshot(tmpdir, sample_actor):
     """Test taking a snapshot of the scene."""
     fname = tmpdir.join("snapshot.png")

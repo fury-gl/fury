@@ -439,7 +439,7 @@ def create_screen(
     return screen
 
 
-def update_camera(camera, size, target):
+def update_camera(camera, size, target, *, view_dir=None, view_up=None):
     """
     Update the camera's view to encompass the target object or scene.
 
@@ -455,6 +455,15 @@ def update_camera(camera, size, target):
         The size (width, height) of the viewport, used if the target is empty.
     target : Object or Scene
         The PyGfx object or scene the camera should focus on.
+    view_dir : tuple of float, optional
+        The direction from which the camera looks at the target, as a
+        3-element tuple ``(x, y, z)``.  For example ``(0, 0, -1)`` looks
+        along the negative-Z axis (front view).  When *None* the current
+        camera direction is kept.
+    view_up : tuple of float, optional
+        The reference up direction, as a 3-element tuple ``(x, y, z)``.
+        For example ``(0, 1, 0)`` treats the positive-Y axis as up.
+        When *None* the current reference up is kept.
     """
     if isinstance(target, Scene):
         target = target.main_scene
@@ -464,7 +473,7 @@ def update_camera(camera, size, target):
     )
 
     if has_object and target.get_world_bounding_sphere() is not None:
-        camera.show_object(target)
+        camera.show_object(target, view_dir=view_dir, up=view_up)
     elif size is not None:
         camera.width = size[0]
         camera.height = size[1]
