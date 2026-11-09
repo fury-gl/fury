@@ -4,8 +4,10 @@ import logging
 
 import numpy as np
 
+from fury.actor import create_mesh
 from fury.io import load_image
-from fury.lib import Texture
+from fury.lib import Texture, plane_geometry
+from fury.material import _create_mesh_material
 from fury.ui.core import UI, Anchor, Rectangle2D, TextBlock2D
 
 
@@ -1874,7 +1876,9 @@ class ImageContainer2D(Rectangle2D):
         """
         self._img_path = img_path
 
-        super(ImageContainer2D, self).__init__(size=size, position=position)
+        super(ImageContainer2D, self).__init__(
+            size=size, position=position, corner_radius=0.0
+        )
 
         if isinstance(img_path, np.ndarray):
             self.img = img_path
@@ -1882,6 +1886,34 @@ class ImageContainer2D(Rectangle2D):
             self.img = load_image(img_path)
 
         self.set_img(self.img)
+
+    def _setup(self):
+        """
+        Set up this UI component.
+
+        Override to use plain MeshBasicMaterial instead of the SDF-based
+        RoundedRectangleMaterial, since the SDF shader does not sample
+        textures.
+        """
+        geo = plane_geometry(width=1, height=1)
+        mat = _create_mesh_material(material="basic", alpha_mode="auto", mode="auto")
+        self.actor = create_mesh(geometry=geo, material=mat)
+
+        self.handle_events(self.actor)
+
+    def resize(self, size):
+        """
+        Set the image container size.
+
+        Parameters
+        ----------
+        size : (float, float)
+            Size (width, height) in pixels.
+        """
+        w = max(size[0], 1)
+        h = max(size[1], 1)
+        self.actor.geometry = plane_geometry(width=w, height=h)
+        self._update_actors_position()
 
     def scale(self, factor):
         """
