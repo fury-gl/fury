@@ -8,3 +8,4 @@ PySide6
 jupyter-rfb
 imgui_bundle
 opencv-python
+imageio[ffmpeg]>=2.0.0
