@@ -304,7 +304,7 @@ def test_repeat_primitive_function():
     phi_theta = np.array([[1, 1], [1, 2], [2, 1]])
 
     _ = fp.repeat_primitive_function(
-        fp.prim_superquadric,
+        lambda roundness=(1, 1): fp.prim_superquadric(roundness=roundness),
         centers,
         func_args=phi_theta,
         directions=dirs,
@@ -458,51 +458,51 @@ def test_normalize_geom_param():
     import pytest
 
     # Scalar float broadcasts to all centers
-    result = fp._normalize_geom_param(0.5, 3, "test")
+    result = fp._normalize_geom_param(0.5, 3, param_name="test")
     npt.assert_array_equal(result, [0.5, 0.5, 0.5])
     assert result.shape == (3,)
 
     # Scalar int
-    result = fp._normalize_geom_param(2, 4, "test")
+    result = fp._normalize_geom_param(2, 4, param_name="test")
     npt.assert_array_equal(result, [2.0, 2.0, 2.0, 2.0])
 
     # Numpy scalar
-    result = fp._normalize_geom_param(np.float64(1.5), 2, "test")
+    result = fp._normalize_geom_param(np.float64(1.5), 2, param_name="test")
     npt.assert_array_equal(result, [1.5, 1.5])
 
     # Single-element list broadcasts
-    result = fp._normalize_geom_param([0.7], 3, "test")
+    result = fp._normalize_geom_param([0.7], 3, param_name="test")
     npt.assert_array_equal(result, [0.7, 0.7, 0.7])
 
     # Single-element tuple broadcasts
-    result = fp._normalize_geom_param((0.7,), 3, "test")
+    result = fp._normalize_geom_param((0.7,), 3, param_name="test")
     npt.assert_array_equal(result, [0.7, 0.7, 0.7])
 
     # Single-element ndarray broadcasts
-    result = fp._normalize_geom_param(np.array([0.7]), 3, "test")
+    result = fp._normalize_geom_param(np.array([0.7]), 3, param_name="test")
     npt.assert_array_equal(result, [0.7, 0.7, 0.7])
 
     # Array of correct length returned as-is
-    result = fp._normalize_geom_param(np.array([1.0, 2.0, 3.0]), 3, "test")
+    result = fp._normalize_geom_param(np.array([1.0, 2.0, 3.0]), 3, param_name="test")
     npt.assert_array_equal(result, [1.0, 2.0, 3.0])
 
     # List of correct length
-    result = fp._normalize_geom_param([1.0, 2.0], 2, "test")
+    result = fp._normalize_geom_param([1.0, 2.0], 2, param_name="test")
     npt.assert_array_equal(result, [1.0, 2.0])
 
     # N=1 with scalar
-    result = fp._normalize_geom_param(0.5, 1, "test")
+    result = fp._normalize_geom_param(0.5, 1, param_name="test")
     npt.assert_array_equal(result, [0.5])
 
     # Wrong-size array raises ValueError with param name
     with pytest.raises(ValueError, match="my_param"):
-        fp._normalize_geom_param(np.array([1.0, 2.0]), 3, "my_param")
+        fp._normalize_geom_param(np.array([1.0, 2.0]), 3, param_name="my_param")
 
     with pytest.raises(ValueError, match="radius"):
-        fp._normalize_geom_param([1.0, 2.0, 3.0], 5, "radius")
+        fp._normalize_geom_param([1.0, 2.0, 3.0], 5, param_name="radius")
 
     # dtype is float64
-    result = fp._normalize_geom_param(1, 2, "test")
+    result = fp._normalize_geom_param(1, 2, param_name="test")
     assert result.dtype == np.float64
 
 

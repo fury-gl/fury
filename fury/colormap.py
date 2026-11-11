@@ -342,8 +342,8 @@ def get_cmap(name):
     if name.lower() == "accent":
         warn(
             "The `Accent` colormap is deprecated as of version"
-            + " 0.2 of Fury and will be removed in a future "
-            + "version. Please use another colormap",
+            " 0.2 of Fury and will be removed in a future "
+            "version. Please use another colormap",
             PendingDeprecationWarning,
             stacklevel=2,
         )
@@ -826,7 +826,7 @@ def hex_to_rgb(color):
     return np.array([r, g, b])
 
 
-def normalize_colors(colors, n_points=None):
+def normalize_colors(colors, *, n_points=None):
     """
     Normalize colors to float32 arrays in [0, 1] range.
 
@@ -1290,7 +1290,7 @@ def lab2xyz(lab, *, illuminant="D65", observer="2"):
     if np.any(z < 0):
         invalid = np.nonzero(z < 0)
         warn(
-            "Color data out of range: Z < 0 in %s pixels" % invalid[0].size,
+            f"Color data out of range: Z < 0 in {invalid[0].size} pixels",
             stacklevel=2,
         )
         z[invalid] = 0

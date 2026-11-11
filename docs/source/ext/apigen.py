@@ -234,7 +234,7 @@ class ApiDocWriter:
 
         """
         mod = import_module(uri)
-        patterns = "(?:{0})".format("|".join(self.object_skip_patterns))
+        patterns = "(?:{})".format("|".join(self.object_skip_patterns))
         pat = re.compile(patterns)
 
         # Prefer __all__ for lazy-loaded modules.
@@ -362,7 +362,7 @@ class ApiDocWriter:
 
         # Make a shorter version of the uri that omits the package name for
         # titles
-        uri_short = re.sub(r"^%s\." % self.package_name, "", uri)
+        uri_short = re.sub(rf"^{self.package_name}\.", "", uri)
 
         head = ".. AUTO-GENERATED FILE -- DO NOT EDIT!\n\n"
         body = ""
@@ -437,7 +437,7 @@ class ApiDocWriter:
         elif match_type == "package":
             patterns = self.package_skip_patterns
         else:
-            raise ValueError('Cannot interpret match type "%s"' % match_type)
+            raise ValueError(f'Cannot interpret match type "{match_type}"')
         # Match to URI without package name
         L = len(self.package_name)
         if matchstr[:L] == self.package_name:
@@ -492,7 +492,7 @@ class ApiDocWriter:
             ]
 
             for subpkg_name in dirnames + filenames:
-                package_uri = ".".join((root_uri, subpkg_name))
+                package_uri = f"{root_uri}.{subpkg_name}"
                 package_path = self._uri2path(package_uri)
                 if package_path and self._survives_exclude(package_uri, "package"):
                     modules.append(package_uri)
@@ -519,7 +519,7 @@ class ApiDocWriter:
         written_modules = []
 
         for ulm, mods in module_by_ulm.items():
-            print("Generating docs for %s:" % ulm)
+            print(f"Generating docs for {ulm}:")
             document_head = []
             document_body = []
 
@@ -603,5 +603,5 @@ class ApiDocWriter:
         w("=" * len(title) + "\n\n")
         w(".. toctree::\n\n")
         for f in self.written_modules:
-            w("   %s\n" % os.path.join(relpath, f))
+            w(f"   {os.path.join(relpath, f)}\n")
         idx.close()

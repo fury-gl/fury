@@ -1,4 +1,6 @@
 exclude: ".*/(data|docs/experimental)/.*"
+default_install_hook_types: [pre-commit, commit-msg]
+default_stages: [pre-commit]
 repos:
 # Relax this rule for now because it creates too many PRs conflicts.
 # A GH actions will checkout this weekly instead
@@ -13,6 +15,7 @@ repos:
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
     -   id: mixed-line-ending
+        args: ['--fix=lf']
     -   id: check-yaml
     -   id: check-json
     -   id: check-toml
@@ -48,8 +51,8 @@ repos:
     rev: v0.17.4
     hooks:
       # Run the linter
-    -   id: ruff
-        args: [--fix]
+    -   id: ruff-check
+        args: ["--fix", "--show-fixes"]
       # Run the formatter
     -   id: ruff-format
 -   repo: https://github.com/numpy/numpydoc
@@ -69,3 +72,19 @@ repos:
         language: system
         entry: python tools/generate_requirements.py
         files: "pyproject.toml|requirements/.*\\.txt|tools/generate_requirements.py"
+    -   id: enforce-pep3102-defaults
+        name: Enforce keyword-only default arguments (PEP 3102)
+        entry: python tools/check_pep3102.py
+        language: python
+        types: [python]
+        # docs/ and tests are exempt, as in DIPY.
+        exclude: |
+          (?x)^(
+            docs/|
+            fury/(.*/)?tests/
+          )
+    -   id: fury-commit-msg
+        name: fury-commit-msg
+        entry: python tools/hooks/commit-msg.py
+        language: python
+        stages: [commit-msg]

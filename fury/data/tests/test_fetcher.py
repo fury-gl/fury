@@ -48,7 +48,7 @@ def tests_fetch_gltf():
     npt.assert_equal(os.listdir(path), filenames)
 
     gltf = pjoin(boxtex, "BoxTextured.gltf")
-    with open(gltf, "r") as f:
+    with open(gltf) as f:
         gltf = json.loads(f.read())
     validate_gltf = gltf.get("asset")
     npt.assert_equal(validate_gltf["version"], str(2.0))

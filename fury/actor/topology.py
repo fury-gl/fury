@@ -158,8 +158,8 @@ def surface(
 
 
 def texture_on_sphere(
-    texture=None,
     *,
+    texture=None,
     theta=60,
     phi=60,
     interpolation="linear",
@@ -221,7 +221,7 @@ def texture_on_sphere(
     >>> import numpy as np
     >>> from fury import actor
     >>> image = np.full((32, 64, 3), 255, dtype=np.uint8)
-    >>> globe = actor.texture_on_sphere(image)
+    >>> globe = actor.texture_on_sphere(texture=image)
     >>> globe.local.scale = 2.0
     """
     for name, resolution in (("theta", theta), ("phi", phi)):

@@ -79,7 +79,7 @@ def update_progressbar(progress, total_length):
         bar_length = 20
 
     block = int(round(bar_length * progress))
-    size_string = "{0:.2f} MB".format(float(total_length) / (1024 * 1024))
+    size_string = f"{float(total_length) / (1024 * 1024):.2f} MB"
 
     line = (
         f"Download Progress: "
@@ -115,7 +115,7 @@ def copyfileobj_withprogress(fsrc, fdst, total_length, *, length=16 * 1024):
 def _already_there_msg(folder):
     """Print a message indicating that dataset is already in place."""
     msg = "Dataset is already in place. If you want to fetch it again "
-    msg += "please first remove the folder %s " % folder
+    msg += f"please first remove the folder {folder} "
     print(msg)
 
 
@@ -156,16 +156,16 @@ def check_sha(filename, *, stored_sha256=None):
     if stored_sha256 is not None:
         computed_sha256 = _get_file_sha(filename)
         if stored_sha256.lower() != computed_sha256:
-            msg = """The downloaded file, %s,
+            msg = f"""The downloaded file, {filename},
              does not have the expected sha
-            checksum of "%s".
-             Instead, the sha checksum was: "%s".
+            checksum of "{stored_sha256}".
+             Instead, the sha checksum was: "{computed_sha256}".
              This could mean that
             something is wrong with the file
              or that the upstream file has been updated.
             You can try downloading the file again
              or updating to the newest version of
-            Fury.""" % (filename, stored_sha256, computed_sha256)
+            Fury."""
             raise FetcherError(msg)
 
 
@@ -209,11 +209,11 @@ def fetch_data(files, folder, *, data_size=None):
         value. The downloaded file is not deleted when this error is raised.
     """
     if not os.path.exists(folder):
-        print("Creating new folder %s" % (folder))
+        print(f"Creating new folder {folder}")
         os.makedirs(folder)
 
     if data_size is not None:
-        print("Data size is approximately %s" % data_size)
+        print(f"Data size is approximately {data_size}")
 
     all_skip = True
     for f in files:
@@ -222,13 +222,13 @@ def fetch_data(files, folder, *, data_size=None):
         if os.path.exists(fullpath) and (_get_file_sha(fullpath) == sha.lower()):
             continue
         all_skip = False
-        print('Downloading "%s" to %s' % (f, folder))
+        print(f'Downloading "{f}" to {folder}')
         _get_file_data(fullpath, url)
         check_sha(fullpath, stored_sha256=sha)
     if all_skip:
         _already_there_msg(folder)
     else:
-        print("Files successfully downloaded to %s" % (folder))
+        print(f"Files successfully downloaded to {folder}")
 
 
 @warn_on_args_to_kwargs()
@@ -295,7 +295,7 @@ def _make_fetcher(
             for f in local_fnames:
                 ext1 = get_extension(f)
                 if ext1 == "gz" or ext1 == "bz2":
-                    root1 = f[:-(len(ext1)+1)] if f.endswith(f".{ext1}") else f
+                    root1 = f[: -(len(ext1) + 1)] if f.endswith(f".{ext1}") else f
                     ext2 = get_extension(root1)
                     if ext2 == "tar":
                         ar = tarfile.open(pjoin(folder, f))
@@ -402,7 +402,7 @@ async def _fetch_gltf(name, mode):
     else:
         path = f"{name}/{mode}"
         DATA_DIR = pjoin(dirname(__file__), "files")
-        with open(pjoin(DATA_DIR, "KhronosGltfSamples.json"), "r") as f:
+        with open(pjoin(DATA_DIR, "KhronosGltfSamples.json")) as f:
             models = json.loads(f.read())
 
         urls = models.get(path, None)
@@ -459,9 +459,7 @@ def fetch_gltf(*, name=None, mode="glTF"):
     process-wide asyncio event-loop policy.
     """
     loop_factory = (
-        asyncio.SelectorEventLoop
-        if platform.system().lower() == "windows"
-        else None
+        asyncio.SelectorEventLoop if platform.system().lower() == "windows" else None
     )
     filenames = asyncio.run(_fetch_gltf(name, mode), loop_factory=loop_factory)
     return filenames
@@ -758,11 +756,8 @@ def read_viz_cubemap(name, *, suffix_type=1, ext=".jpg"):
     else:
         warnings.warn("read_viz_cubemap(): Invalid suffix_type.", stacklevel=2)
         return None
-    cubemap_fnames = []
     folder = pjoin(fury_home, "cubemaps")
-    for dir_conv in conv:
-        cubemap_fnames.append(pjoin(folder, name + dir_conv + ext))
-    return cubemap_fnames
+    return [pjoin(folder, name + dir_conv + ext) for dir_conv in conv]
 
 
 @warn_on_args_to_kwargs()
@@ -893,7 +888,7 @@ def list_gltf_sample_models():
         https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0
     """
     DATA_DIR = pjoin(dirname(__file__), "files")
-    with open(pjoin(DATA_DIR, "KhronosGltfSamples.json"), "r") as f:
+    with open(pjoin(DATA_DIR, "KhronosGltfSamples.json")) as f:
         models = json.loads(f.read())
     models = models.keys()
     model_modes = [model.split("/")[0] for model in models]

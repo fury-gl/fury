@@ -36,7 +36,7 @@ def buffer_to_geometry(positions, **kwargs):
     return geo
 
 
-def line_buffer_separator(line_vertices, color=None):
+def line_buffer_separator(line_vertices, *, color=None):
     """
     Create a line buffer with separators between segments.
 
@@ -140,7 +140,7 @@ def rotate_vector(v, axis, angle):
     )
 
 
-def prune_colinear(arr, colinear_threshold=0.9999):
+def prune_colinear(arr, *, colinear_threshold=0.9999):
     """
     Prune colinear points from the array.
 
@@ -172,7 +172,7 @@ def prune_colinear(arr, colinear_threshold=0.9999):
     return np.stack(keep)
 
 
-def axes_for_dir(d, prev_x=None):
+def axes_for_dir(d, *, prev_x=None):
     """
     Compute the axes for a given direction vector.
 
