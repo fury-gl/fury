@@ -192,6 +192,7 @@ from .data import (
     fetch_viz_cubemaps as fetch_viz_cubemaps,
     fetch_viz_dmri as fetch_viz_dmri,
     fetch_viz_icons as fetch_viz_icons,
+    fetch_viz_lucide_icons as fetch_viz_lucide_icons,
     fetch_viz_models as fetch_viz_models,
     fetch_viz_new_icons as fetch_viz_new_icons,
     fetch_viz_textures as fetch_viz_textures,

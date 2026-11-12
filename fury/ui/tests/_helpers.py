@@ -1,12 +1,23 @@
 """Shared helpers for UI module tests."""
 
 from fury import ui
-from fury.data import fetch_viz_icons, read_viz_icons
+from fury.data import read_viz_icons
 
 
-def icon(fname="play3.png"):
-    """Return a real icon image path, fetching the asset set on first use."""
-    fetch_viz_icons()
+def icon(fname="play.png"):
+    """
+    Return a real Lucide icon image path, fetching the pack on first use.
+
+    Parameters
+    ----------
+    fname : str
+        Filename of the icon in the Lucide pack.
+
+    Returns
+    -------
+    str
+        Complete path of the icon.
+    """
     return read_viz_icons(fname=fname)
 
 
@@ -21,7 +32,7 @@ def list_box_item():
 # a fresh element (with real inputs) on every call.
 ELEMENT_FACTORIES = {
     "textured_button_2d": lambda: ui.TexturedButton2D(
-        states={"default": icon("play3.png")},
+        states={"default": icon("play.png")},
         position=(100, 100),
         size=(50, 50),
     ),
@@ -66,7 +77,7 @@ ELEMENT_FACTORIES = {
     ),
     "list_box_item_2d": list_box_item,
     "card_2d": lambda: ui.Card2D(
-        image_path=icon("play3.png"),
+        image_path=icon("play.png"),
         title_text="Test Title",
         body_text="Test Body",
         size=(400, 400),
@@ -83,6 +94,7 @@ ELEMENT_FACTORIES = {
         startup_tab_id=1,
     ),
     "image_container_2d": lambda: ui.ImageContainer2D(
-        img_path=icon("home3.png"), size=(100, 100)
+        img_path=icon("house.png"), size=(100, 100)
     ),
+    "icon_2d": lambda: ui.Icon2D("house", position=(100, 100), size=(48, 48)),
 }

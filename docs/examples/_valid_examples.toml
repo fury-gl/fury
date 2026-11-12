@@ -69,6 +69,7 @@ files = [
     "viz_tab_ui.py",
     "viz_card.py",
     "viz_image_container_2d.py",
+    "viz_icon.py",
     "viz_textblock.py",
     "viz_spinbox.py",
     "viz_textbox.py",
