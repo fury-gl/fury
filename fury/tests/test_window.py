@@ -25,9 +25,10 @@ from fury.lib import (
     TrackballController,
     have_imgui_bundle,
     have_py_side6,
+    imgui_bundle,
 )
 from fury.motion import Animation, CameraAnimation, Timeline
-from fury.ui import Rectangle2D, UIContext
+from fury.ui import Rectangle2D, TextBlock2D, TextBox2D, TextButton2D, UIContext
 from fury.window import (
     Scene,
     ShowManager,
@@ -36,6 +37,7 @@ from fury.window import (
     analyze_snapshot,
     calculate_screen_sizes,
     create_screen,
+    render_screens,
     set_camera_from_axis,
     show,
     update_camera,
@@ -338,6 +340,18 @@ def test_screen_bounding_box():
     assert screen.bounding_box == (100, 100, 600, 600)
 
 
+def test_render_screens_positional_options_warn(recwarn):
+    """Passing stats or is_dirty positionally still renders but warns."""
+    renderer = Renderer(OffscreenCanvas())
+    screens = [create_screen(renderer)]
+
+    render_screens(renderer, screens, stats=None, is_dirty=True)
+    assert not [w for w in recwarn if "render_screens" in str(w.message)]
+
+    with pytest.warns(UserWarning, match="render_screens"):
+        render_screens(renderer, screens, None, True)
+
+
 def test_show_manager_initialization_default():
     """Test ShowManager initialization with default parameters."""
     show_m = ShowManager(window_type="offscreen")
@@ -500,18 +514,29 @@ def test_show_manager_calculate_screen_sizes_invalid_bounding_boxes(caplog):
     assert "Invalid screen bounding box format" in caplog.text
 
 
-def test_show_manager_set_enable_events():
-    """Test enabling and disabling events."""
-    show_m = ShowManager(window_type="offscreen")
-    show_m.set_enable_events(False)
-    assert show_m.enable_events is False
-    for screen in show_m.screens:
-        assert screen.controller.enabled is False
+def test_show_manager_set_enable_events(ui_context):
+    """Disabled events block UI clicks and camera control until re-enabled."""
+    scene = Scene()
+    button = TextButton2D(label="Count", position=(20, 20), size=(100, 40))
+    clicks = []
+    button.on_clicked = clicks.append
+    scene.add(button)
+    show_m = ShowManager(
+        scene=scene, size=(160, 120), pixel_ratio=1, window_type="offscreen"
+    )
+    try:
+        _loader_draw(show_m)
+        show_m.set_enable_events(False)
+        _loader_click(show_m, 50, 40)
+        assert clicks == []
+        assert not show_m.screens[0].controller.enabled
 
-    show_m.set_enable_events(True)
-    assert show_m.enable_events is True
-    for screen in show_m.screens:
-        assert screen.controller.enabled is True
+        show_m.set_enable_events(True)
+        _loader_click(show_m, 50, 40)
+        assert clicks == [button]
+        assert show_m.screens[0].controller.enabled
+    finally:
+        show_m.close()
 
 
 def test_show_manager_update_camera(sample_actor):
@@ -1282,3 +1307,407 @@ def test_skybox_actually_lights_a_metal():
 
     assert unlit < 10
     assert lit > 200
+
+
+@pytest.fixture
+def ui_context():
+    """
+    Restore global UI focus, hover, and canvas size after a test.
+
+    Yields
+    ------
+    UIContextClass
+        The global UI context shared by all managers.
+    """
+    active, hot = UIContext.active_ui, UIContext.hot_ui
+    size = np.array(UIContext.canvas_size, copy=True)
+    yield UIContext
+    UIContext.active_ui = active
+    UIContext.hot_ui = hot
+    UIContext.canvas_size = size
+
+
+def _loader_draw(show_m):
+    """
+    Process submitted canvas events and capture the rendered frame.
+
+    Parameters
+    ----------
+    show_m : ShowManager
+        Manager whose canvas is drawn.
+
+    Returns
+    -------
+    ndarray
+        Rendered snapshot.
+    """
+    show_m.window._process_events()
+    show_m.window.draw()
+    return show_m.snapshot()
+
+
+def _loader_pointer(show_m, event_type, x, y, *, button=0, buttons=()):
+    """
+    Submit a complete pointer event and draw its observable effects.
+
+    Parameters
+    ----------
+    show_m : ShowManager
+        Manager receiving the raw event.
+    event_type : str
+        Pointer event type.
+    x, y : float
+        Pointer position in logical pixels.
+    button : int, optional
+        Button that triggered the event.
+    buttons : tuple of int, optional
+        Buttons held during the event.
+    """
+    show_m.window.submit_event(
+        {
+            "event_type": event_type,
+            "x": x,
+            "y": y,
+            "button": button,
+            "buttons": buttons,
+            "modifiers": (),
+            "ntouches": 0,
+            "touches": {},
+        }
+    )
+    show_m.window._process_events()
+    show_m.window.draw()
+
+
+def _loader_click(show_m, x, y):
+    """
+    Submit a pointer move followed by a complete left-button click.
+
+    Parameters
+    ----------
+    show_m : ShowManager
+        Manager receiving the raw events.
+    x, y : float
+        Click position in logical pixels.
+    """
+    _loader_pointer(show_m, "pointer_move", x, y)
+    _loader_pointer(show_m, "pointer_down", x, y, button=1, buttons=(1,))
+    _loader_pointer(show_m, "pointer_up", x, y, button=1)
+
+
+def _loader_key(show_m, event_type, key, *, modifiers=()):
+    """
+    Dispatch keyboard input through the canvas and render its effects.
+
+    Parameters
+    ----------
+    show_m : ShowManager
+        Manager receiving the raw event.
+    event_type : str
+        Keyboard press or release event type.
+    key : str
+        Key name supplied by the canvas.
+    modifiers : tuple of str, optional
+        Physically held modifiers reported with this event.
+    """
+    show_m.window.submit_event(
+        {"event_type": event_type, "key": key, "modifiers": modifiers}
+    )
+    _loader_draw(show_m)
+
+
+def _loader_assert_arc_pixels(image, *, center, pixel_ratio=1, outer_radius=72):
+    """
+    Require all three undimmed arcs at the expected logical center and radii.
+
+    Parameters
+    ----------
+    image : ndarray
+        Rendered RGB or RGBA snapshot.
+    center : tuple of float
+        Expected spinner center in logical coordinates.
+    pixel_ratio : float, optional
+        Physical pixels per logical pixel.
+    outer_radius : float, optional
+        Expected outer arc radius in logical pixels.
+
+    Raises
+    ------
+    AssertionError
+        An arc is absent or lies outside its expected annulus.
+    """
+    rgb = image[..., :3]
+    color_masks = (
+        (rgb[..., 2] > 240) & (rgb[..., 0] < 20) & (rgb[..., 1] < 20),
+        (rgb[..., 0] > 240) & (rgb[..., 1] < 20) & (rgb[..., 2] < 20),
+        (rgb[..., 0] > 240) & (rgb[..., 1] > 240) & (rgb[..., 2] < 20),
+    )
+    for mask, multiplier in zip(color_masks, (1.0, 0.8, 0.6), strict=True):
+        radius = outer_radius * multiplier
+        y, x = np.nonzero(mask)
+        assert len(x) > 10 * pixel_ratio
+        distances = np.hypot(
+            (x + 0.5) / pixel_ratio - center[0],
+            (y + 0.5) / pixel_ratio - center[1],
+        )
+        assert np.all(distances > radius - 6)
+        assert np.all(distances < radius + 2)
+
+
+def test_loader_dims_canvas_blocks_input_and_restores(ui_context):
+    """The loader dims every screen, blocks input, and leaves no trace when hidden."""
+    scenes = [Scene(background=(0.2, 0.55, 0.3)), Scene(background=(0.6, 0.2, 0.45))]
+    button = TextButton2D(label="Count", position=(30, 30), size=(120, 50))
+    clicks = []
+    button.on_clicked = clicks.append
+    scenes[0].add(button)
+    show_m = ShowManager(
+        scene=scenes,
+        screen_config=[1, 1],
+        size=(640, 360),
+        pixel_ratio=1,
+        window_type="offscreen",
+    )
+    try:
+        original = _loader_draw(show_m)
+        show_m.show_loader()
+        loading = _loader_draw(show_m)
+        for y, x in ((8, 8), (8, 628), (350, 8), (350, 628)):
+            assert np.all(loading[y, x, :3] < original[y, x, :3])
+        _loader_assert_arc_pixels(loading, center=(320, 180))
+
+        _loader_click(show_m, 60, 55)
+        assert clicks == []
+        assert not any(screen.controller.enabled for screen in show_m.screens)
+
+        show_m.hide_loader()
+        np.testing.assert_array_equal(_loader_draw(show_m), original)
+        assert all(screen.controller.enabled for screen in show_m.screens)
+        _loader_click(show_m, 60, 55)
+        assert clicks == [button]
+
+        show_m.show_loader()
+        show_m.window.set_logical_size(800, 400)
+        _loader_assert_arc_pixels(_loader_draw(show_m), center=(400, 200))
+    finally:
+        show_m.close()
+
+
+def test_loader_textbox_shift_released_while_blocked(ui_context):
+    """A Shift release swallowed by the loader does not leave the textbox shifted."""
+    scene = Scene()
+    textbox = TextBox2D(width=20, height=3, text="", position=(20, 20))
+    scene.add(textbox)
+    show_m = ShowManager(
+        scene=scene, size=(400, 300), pixel_ratio=1, window_type="offscreen"
+    )
+    try:
+        _loader_draw(show_m)
+        x, y = textbox.text.get_position()
+        _loader_click(show_m, x + 5, y + 5)
+        assert textbox._has_focus
+
+        _loader_key(show_m, "key_down", "Shift", modifiers=("Shift",))
+        show_m.show_loader()
+        _loader_key(show_m, "key_up", "Shift")
+        show_m.hide_loader()
+
+        _loader_key(show_m, "key_down", "a")
+        _loader_key(show_m, "key_up", "a")
+        assert textbox._message == "a"
+        assert ui_context.active_ui is textbox.text
+    finally:
+        show_m.close()
+
+
+def test_loader_hover_recovers_on_same_button(ui_context):
+    """Hover cleared by the loader returns on the next move over the same button."""
+    scene = Scene()
+    button = TextButton2D(
+        label="MMMM",
+        position=(30, 30),
+        size=(160, 60),
+        states={"default": (1, 0, 0), "hover": (0, 1, 0), "pressed": (0, 0, 1)},
+    )
+    scene.add(button)
+    show_m = ShowManager(
+        scene=scene, size=(400, 300), pixel_ratio=1, window_type="offscreen"
+    )
+    try:
+        _loader_draw(show_m)
+        _loader_pointer(show_m, "pointer_move", 35, 35)
+        hovered = _loader_draw(show_m)
+        assert button.is_hovered
+        np.testing.assert_array_equal(hovered[35, 35, :3], (0, 255, 0))
+
+        show_m.show_loader()
+        _loader_draw(show_m)
+        show_m.hide_loader()
+        assert not button.is_hovered
+
+        _loader_pointer(show_m, "pointer_move", 36, 35)
+        recovered = _loader_draw(show_m)
+        assert button.is_hovered
+        np.testing.assert_array_equal(recovered[35, 35], hovered[35, 35])
+    finally:
+        show_m.close()
+
+
+def test_loader_press_without_move_blurs_textbox(ui_context):
+    """A press right after the loader hides targets the button and blurs the textbox."""
+    scene = Scene()
+    textbox = TextBox2D(width=20, height=1, text="Value", position=(20, 20))
+    button = TextButton2D(label="Go", position=(220, 30), size=(120, 50))
+    clicks = []
+    button.on_clicked = clicks.append
+    scene.add(textbox, button)
+    show_m = ShowManager(
+        scene=scene, size=(400, 300), pixel_ratio=1, window_type="offscreen"
+    )
+    try:
+        _loader_draw(show_m)
+        x, y = textbox.text.get_position()
+        _loader_click(show_m, x + 5, y + 5)
+        assert textbox._has_focus
+
+        _loader_pointer(show_m, "pointer_move", 260, 55)
+        show_m.show_loader()
+        _loader_draw(show_m)
+        show_m.hide_loader()
+        _loader_pointer(show_m, "pointer_down", 260, 55, button=1, buttons=(1,))
+        _loader_pointer(show_m, "pointer_up", 260, 55, button=1)
+        assert clicks == [button]
+        assert not textbox._has_focus
+
+        _loader_key(show_m, "key_down", "a")
+        _loader_key(show_m, "key_up", "a")
+        assert textbox._message == "Value"
+    finally:
+        show_m.close()
+
+
+def test_loader_two_managers_use_own_canvas_size(ui_context):
+    """Each manager centers its loader and draws UI with its own canvas size."""
+    scene_b = Scene(background=(0, 0, 0))
+    text = TextBlock2D(
+        text="Hi", position=(10, 10), size=(120, 30), font_size=16, color=(1, 1, 1)
+    )
+    scene_b.add(text)
+    managers = [
+        ShowManager(
+            scene=Scene(background=(0.4, 0.4, 0.4)),
+            size=(400, 300),
+            pixel_ratio=1,
+            window_type="offscreen",
+        ),
+        ShowManager(
+            scene=scene_b, size=(200, 100), pixel_ratio=1, window_type="offscreen"
+        ),
+    ]
+    manager_a, manager_b = managers
+    try:
+        _loader_draw(manager_a)
+        _loader_draw(manager_b)
+        _loader_draw(manager_b)
+
+        manager_a.show_loader(message="Preparing")
+        _loader_assert_arc_pixels(_loader_draw(manager_a), center=(200, 150))
+        manager_b.show_loader()
+        _loader_assert_arc_pixels(
+            _loader_draw(manager_b), center=(100, 50), outer_radius=25
+        )
+        _loader_assert_arc_pixels(_loader_draw(manager_a), center=(200, 150))
+
+        manager_b.hide_loader()
+        text.message = "Hello there"
+        _loader_draw(manager_a)
+        image = _loader_draw(manager_b)
+        rows = np.flatnonzero(np.all(image[..., :3] > 200, axis=-1).any(axis=1))
+        assert rows.size > 0
+        assert rows.min() >= 10
+        assert rows.max() <= 40
+    finally:
+        for manager in managers:
+            manager.close()
+
+
+def test_loader_show_hide_lifecycle():
+    """Loader callbacks are registered once, replaced on reuse, and cleaned up."""
+    show_m = ShowManager(size=(320, 240), pixel_ratio=1, window_type="offscreen")
+    try:
+        show_m.hide_loader()
+        assert not show_m.callbacks
+
+        with pytest.raises(TypeError, match="message must be a string or None"):
+            show_m.show_loader(message=1)
+        assert not show_m.callbacks
+
+        show_m.show_loader(message="First")
+        names = set(show_m.callbacks)
+        assert len(names) == 1
+        show_m.show_loader(message="Second")
+        assert set(show_m.callbacks) == names
+        assert show_m._loader.message == "Second"
+
+        show_m.hide_loader()
+        show_m.hide_loader()
+        assert not show_m.callbacks
+
+        show_m.show_loader()
+        show_m.close()
+        assert not show_m.callbacks
+        with pytest.raises(RuntimeError, match="cannot show loader on a closed canvas"):
+            show_m.show_loader()
+    finally:
+        show_m.close()
+
+
+@pytest.mark.skipif(not have_imgui_bundle, reason="Needs ImGui Bundle")
+def test_loader_blocks_imgui_input():
+    """ImGui widgets ignore clicks while the loader is visible and resume afterwards."""
+    imgui = imgui_bundle.imgui
+    state = {"checked": False, "position": None}
+
+    def draw_gui():
+        """Draw one fixed ImGui window with a checkbox."""
+        imgui.set_next_window_pos((10, 10))
+        imgui.set_next_window_size((220, 120))
+        imgui.begin(
+            "Loader input regression",
+            flags=imgui.WindowFlags_.no_saved_settings
+            | imgui.WindowFlags_.no_resize
+            | imgui.WindowFlags_.no_move,
+        )
+        _, state["checked"] = imgui.checkbox("Enabled", state["checked"])
+        minimum = imgui.get_item_rect_min()
+        maximum = imgui.get_item_rect_max()
+        state["position"] = (
+            (minimum.x + maximum.x) / 2,
+            (minimum.y + maximum.y) / 2,
+        )
+        imgui.end()
+
+    show_m = ShowManager(
+        size=(320, 240),
+        pixel_ratio=1,
+        window_type="offscreen",
+        imgui=True,
+        imgui_draw_function=draw_gui,
+    )
+    try:
+        _loader_draw(show_m)
+        _loader_draw(show_m)
+        x, y = state["position"]
+        _loader_click(show_m, x, y)
+        assert state["checked"]
+
+        show_m.show_loader(message="Working")
+        _loader_click(show_m, x, y)
+        assert state["checked"]
+
+        show_m.hide_loader()
+        _loader_draw(show_m)
+        _loader_click(show_m, x, y)
+        assert not state["checked"]
+    finally:
+        show_m.close()
