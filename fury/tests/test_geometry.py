@@ -182,6 +182,10 @@ def test_prune_colinear():
     expected = np.array([[0, 0, 0], [3, 0, 0]], dtype=float)
     npt.assert_array_equal(pruned, expected)
 
+    bent = np.array([[0, 0, 0], [1, 0, 0], [2, 1, 0], [3, 1, 0]], dtype=float)
+    retained = geometry.prune_colinear(bent, colinear_threshold=0.9999)
+    npt.assert_array_equal(retained, bent)
+
 
 def test_axes_for_dir():
     d = np.array([1, 1, 1], dtype=float) / np.sqrt(3)
