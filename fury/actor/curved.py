@@ -26,10 +26,10 @@ from fury.lib import (
 )
 from fury.material import (
     PBR_MATERIALS,
+    StreamlineBakedMaterial,
     StreamlinesMaterial,
-    _StreamlineBakedMaterial,
-    _StreamtubeBakedMaterial,
-    _create_mesh_material,
+    StreamtubeBakedMaterial,
+    create_mesh_material,
     validate_opacity,
 )
 from fury.optpkg import optional_package
@@ -100,7 +100,7 @@ def sphere(
     material_params : dict, optional
         Extra properties forwarded to the material, e.g.
         ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
-        :func:`fury.material._create_mesh_material` for the supported keys.
+        :func:`fury.material.create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the spheres should be pickable in a 3D scene.
     smooth : bool, optional
@@ -239,7 +239,7 @@ def ellipsoid(
     material_params : dict, optional
         Extra properties forwarded to the material, e.g.
         ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
-        :func:`fury.material._create_mesh_material` for the supported keys.
+        :func:`fury.material.create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Allow picking of the ellipsoids in a 3D scene.
     smooth : bool, optional
@@ -428,7 +428,7 @@ def cylinder(
     material_params : dict, optional
         Extra properties forwarded to the material, e.g.
         ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
-        :func:`fury.material._create_mesh_material` for the supported keys.
+        :func:`fury.material.create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the cylinders should be pickable in a 3D scene.
     wireframe : bool, optional
@@ -560,7 +560,7 @@ def cone(
     material_params : dict, optional
         Extra properties forwarded to the material, e.g.
         ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
-        :func:`fury.material._create_mesh_material` for the supported keys.
+        :func:`fury.material.create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the cones should be pickable in a 3D scene.
     wireframe : bool, optional
@@ -856,7 +856,7 @@ class StreamlinesActor(Line):
             self.material = StreamlinesMaterial(**material_kwargs)
             self._needs_gpu_update = False
         else:
-            self.material = _StreamlineBakedMaterial(**material_kwargs)
+            self.material = StreamlineBakedMaterial(**material_kwargs)
             self._needs_gpu_update = True
 
         self._line_lengths_buffer = Buffer(self._line_lengths.astype(np.uint32))
@@ -952,7 +952,7 @@ class StreamlinesActor(Line):
             self._roi_origin = self._resolve_roi_origin(None)
             self._needs_gpu_update = False
             self._restore_full_geometry()
-            if isinstance(self.material, _StreamlineBakedMaterial):
+            if isinstance(self.material, StreamlineBakedMaterial):
                 self.material = StreamlinesMaterial(
                     outline_thickness=self.material.outline_thickness,
                     outline_color=self.material.outline_color,
@@ -1036,9 +1036,9 @@ class StreamlinesActor(Line):
 
     def _ensure_baked_material(self):
         """Ensure baked material is active when ROI filtering is requested."""
-        if isinstance(self.material, _StreamlineBakedMaterial):
+        if isinstance(self.material, StreamlineBakedMaterial):
             return
-        self.material = _StreamlineBakedMaterial(
+        self.material = StreamlineBakedMaterial(
             outline_thickness=self.material.outline_thickness,
             outline_color=self.material.outline_color,
             pick_write=self.material.pick_write,
@@ -1281,7 +1281,7 @@ def _register_render_streamline(wobject):
     return StreamlinesShader(wobject)
 
 
-@register_wgpu_render_function(Streamlines, _StreamlineBakedMaterial)
+@register_wgpu_render_function(Streamlines, StreamlineBakedMaterial)
 def _register_streamline_baking_shaders(wobject):
     """
     Register the streamline baking shaders.
@@ -1697,7 +1697,7 @@ def _create_streamtube_baked(
             colors=np.zeros((0, 3), dtype=np.float32),
             indices=np.zeros((0, 3), dtype=np.uint32),
         )
-        material_obj = _StreamtubeBakedMaterial(
+        material_obj = StreamtubeBakedMaterial(
             opacity=opacity,
             pick_write=enable_picking,
             flat_shading=flat_shading,
@@ -1876,7 +1876,7 @@ def _create_streamtube_baked(
         indices=indices_data,
     )
 
-    material_obj = _StreamtubeBakedMaterial(
+    material_obj = StreamtubeBakedMaterial(
         opacity=opacity,
         pick_write=enable_picking,
         flat_shading=flat_shading,
@@ -2054,7 +2054,7 @@ def _create_streamtube_cpu(
     flat_shading : bool
         When ``True`` use flat shading; otherwise smooth shading.
     material : str
-        Material name forwarded to :func:`_create_mesh_material`.
+        Material name forwarded to :func:`create_mesh_material`.
     enable_picking : bool
         Whether the actor writes to the picking buffer.
 
@@ -2084,7 +2084,7 @@ def _create_streamtube_cpu(
             positions=np.zeros((0, 3), dtype=np.float32),
             colors=np.zeros((0, 4), dtype=np.float32),
         )
-        mat = _create_mesh_material()
+        mat = create_mesh_material()
         return create_mesh(geometry=geo, material=mat)
 
     for verts, tris in results:
@@ -2125,7 +2125,7 @@ def _create_streamtube_cpu(
         colors=vertex_colors.astype("float32"),
     )
 
-    mat = _create_mesh_material(
+    mat = create_mesh_material(
         material=material,
         opacity=opacity,
         enable_picking=enable_picking,
@@ -2353,7 +2353,7 @@ def streamtube(
     return group
 
 
-@register_wgpu_render_function(Mesh, _StreamtubeBakedMaterial)
+@register_wgpu_render_function(Mesh, StreamtubeBakedMaterial)
 def _register_streamtube_baking_shaders(wobject):
     """
     Internal: Create compute and render shaders for GPU streamtubes.

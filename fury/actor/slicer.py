@@ -28,7 +28,7 @@ from fury.material import (
     VectorFieldArrowMaterial,
     VectorFieldLineMaterial,
     VectorFieldThinLineMaterial,
-    _create_vector_field_material,
+    create_vector_field_material,
     validate_opacity,
 )
 import fury.primitive as fp
@@ -228,7 +228,7 @@ class VectorField(WorldObject, Actor):
 
         colors = np.tile(colors, (total_vectors * pnts_per_vector, 1))
         self.geometry = buffer_to_geometry(positions=pts, colors=colors)
-        self.material = _create_vector_field_material(
+        self.material = create_vector_field_material(
             (0, 0, 0),
             visibility=visibility,
             material=actor_type,

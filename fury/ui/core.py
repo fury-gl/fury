@@ -12,7 +12,7 @@ from fury.lib import (
     plane_geometry,
     register_wgpu_render_function,
 )
-from fury.material import RoundedRectangleMaterial, _create_mesh_material
+from fury.material import RoundedRectangleMaterial, create_mesh_material
 from fury.primitive import prim_ring
 from fury.shader import RoundedRectangleShader
 from fury.ui import UIContext
@@ -650,7 +650,7 @@ class Rectangle2D(UI):
         Create the plane actor used internally.
         """
         geo = plane_geometry(width=1, height=1)
-        mat = _create_mesh_material(material="basic", alpha_mode="auto", mode="auto")
+        mat = create_mesh_material(material="basic", alpha_mode="auto", mode="auto")
         self.actor = create_mesh(geometry=geo, material=mat)
 
         self.handle_events(self.actor)
@@ -1072,7 +1072,7 @@ class Disk2D(UI):
             inner_radius=self.inner_radius, outer_radius=self.outer_radius
         )
         geo = buffer_to_geometry(positions=positions, indices=indices)
-        mat = _create_mesh_material(material="basic", alpha_mode="auto")
+        mat = create_mesh_material(material="basic", alpha_mode="auto")
         self.actor = create_mesh(geometry=geo, material=mat)
 
         self.handle_events(self.actor)

@@ -3,6 +3,7 @@
 import numpy as np
 
 from fury.colormap import normalize_colors
+from fury.deprecator import deprecate_with_version
 from fury.lib import (
     ImageBasicMaterial,
     LineArrowMaterial,
@@ -90,7 +91,7 @@ PBR_MATERIALS = ("standard", "physical")
 DEFAULT_PBR_ROUGHNESS = 0.5
 
 
-def _create_mesh_material(
+def create_mesh_material(
     *,
     material="phong",
     enable_picking=True,
@@ -271,7 +272,7 @@ def _create_mesh_material(
         raise ValueError(f"Unsupported material type: {material}")
 
 
-def _create_line_material(
+def create_line_material(
     *,
     material="basic",
     enable_picking=True,
@@ -359,7 +360,7 @@ def _create_line_material(
         raise ValueError(f"Unsupported material type: {material}")
 
 
-def _create_vector_field_material(
+def create_vector_field_material(
     cross_section,
     *,
     visibility=None,
@@ -433,7 +434,7 @@ def _create_vector_field_material(
         raise ValueError(f"Unsupported material type: {material}")
 
 
-def _create_points_material(
+def create_points_material(
     *,
     material="basic",
     color=(1.0, 1.0, 1.0),
@@ -524,7 +525,7 @@ def _create_points_material(
         raise ValueError(f"Unsupported material type: {material}")
 
 
-def _create_text_material(
+def create_text_material(
     *,
     color=(0, 0, 0),
     opacity=1.0,
@@ -590,7 +591,7 @@ def _create_text_material(
     )
 
 
-def _create_image_material(
+def create_image_material(
     *,
     clim=None,
     map=None,
@@ -633,6 +634,49 @@ def _create_image_material(
         alpha_mode=alpha_mode,
         depth_write=depth_write,
     )
+
+
+_create_mesh_material = deprecate_with_version(
+    "fury.material._create_mesh_material is deprecated, use "
+    "fury.material.create_mesh_material instead.",
+    since="2.2.0",
+    until="2.4.0",
+)(create_mesh_material)
+
+_create_line_material = deprecate_with_version(
+    "fury.material._create_line_material is deprecated, use "
+    "fury.material.create_line_material instead.",
+    since="2.2.0",
+    until="2.4.0",
+)(create_line_material)
+
+_create_vector_field_material = deprecate_with_version(
+    "fury.material._create_vector_field_material is deprecated, use "
+    "fury.material.create_vector_field_material instead.",
+    since="2.2.0",
+    until="2.4.0",
+)(create_vector_field_material)
+
+_create_points_material = deprecate_with_version(
+    "fury.material._create_points_material is deprecated, use "
+    "fury.material.create_points_material instead.",
+    since="2.2.0",
+    until="2.4.0",
+)(create_points_material)
+
+_create_text_material = deprecate_with_version(
+    "fury.material._create_text_material is deprecated, use "
+    "fury.material.create_text_material instead.",
+    since="2.2.0",
+    until="2.4.0",
+)(create_text_material)
+
+_create_image_material = deprecate_with_version(
+    "fury.material._create_image_material is deprecated, use "
+    "fury.material.create_image_material instead.",
+    since="2.2.0",
+    until="2.4.0",
+)(create_image_material)
 
 
 class VectorFieldThinLineMaterial(LineMaterial):
@@ -1056,9 +1100,9 @@ class StreamlinesMaterial(LineMaterial):
         self.uniform_buffer.update_full()
 
 
-class _StreamlineBakedMaterial(StreamlinesMaterial):
+class StreamlineBakedMaterial(StreamlinesMaterial):
     """
-    Initialize the internal baked streamline material.
+    Initialize the streamline material with GPU compute baking.
 
     Parameters
     ----------
@@ -1070,7 +1114,7 @@ class _StreamlineBakedMaterial(StreamlinesMaterial):
 
     def __init__(self, *, auto_detach=True, **kwargs):
         """
-        Initialize the internal baked streamline material.
+        Initialize the streamline material with GPU compute baking.
 
         Parameters
         ----------
@@ -1221,14 +1265,12 @@ class StreamtubeMaterial(MeshPhongMaterial):
         super().__init__(**kwargs)
 
 
-class _StreamtubeBakedMaterial(MeshPhongMaterial):
+class StreamtubeBakedMaterial(MeshPhongMaterial):
     """
-    Internal material for compute-shader-based streamtubes with auto-baking.
+    Material for compute-shader-based streamtubes with auto-baking.
 
-    This material is used internally by the streamtube actor when GPU compute
-    shaders are available. Users should not instantiate this directly; instead
-    use the ``streamtube()`` function which will automatically select the
-    appropriate implementation.
+    The ``streamtube()`` actor selects this material automatically when GPU
+    compute shaders are available.
 
     Parameters
     ----------
@@ -1242,11 +1284,6 @@ class _StreamtubeBakedMaterial(MeshPhongMaterial):
         If True, automatically switch to render-only material after baking.
     **kwargs : dict, optional
         Additional arguments forwarded to :class:`MeshPhongMaterial`.
-
-    Notes
-    -----
-    This is an internal class marked with a leading underscore. It should not
-    be used directly by end users.
     """
 
     uniform_type = dict(
@@ -1744,3 +1781,54 @@ class NetworkMaterial(PointsMaterial):
         """
         self.uniform_buffer.data["repulsion_strength"] = v
         self.uniform_buffer.update_full()
+
+
+_DEPRECATED_CLASS_ALIASES = {
+    "_StreamlineBakedMaterial": "StreamlineBakedMaterial",
+    "_StreamtubeBakedMaterial": "StreamtubeBakedMaterial",
+}
+
+
+def __getattr__(name):
+    """
+    Resolve deprecated private material class names.
+
+    Parameters
+    ----------
+    name : str
+        Attribute requested from the module.
+
+    Returns
+    -------
+    type
+        The public material class replacing the deprecated name.
+
+    Raises
+    ------
+    AttributeError
+        If ``name`` is not a deprecated alias.
+    ExpiredDeprecationError
+        If the deprecation period of the alias has ended.
+    """
+    if name not in _DEPRECATED_CLASS_ALIASES:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    new_name = _DEPRECATED_CLASS_ALIASES[name]
+
+    @deprecate_with_version(
+        f"fury.material.{name} is deprecated, use fury.material.{new_name} instead.",
+        since="2.2.0",
+        until="2.4.0",
+        stacklevel=3,
+    )
+    def resolve_alias():
+        """
+        Return the public class for the deprecated alias.
+
+        Returns
+        -------
+        type
+            Public material class.
+        """
+        return globals()[new_name]
+
+    return resolve_alias()

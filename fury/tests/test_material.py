@@ -4,6 +4,7 @@ import pytest
 from fury import material, window
 from fury.actor import create_mesh
 from fury.data import read_viz_cubemap
+from fury.deprecator import FuryDeprecationWarning
 from fury.geometry import buffer_to_geometry
 from fury.io import load_cube_map_texture
 from fury.lib import (
@@ -24,21 +25,21 @@ from fury.lib import (
 )
 from fury.material import (
     SphGlyphMaterial,
+    StreamlineBakedMaterial,
     StreamlinesMaterial,
+    StreamtubeBakedMaterial,
     VectorFieldArrowMaterial,
     VectorFieldLineMaterial,
     VectorFieldThinLineMaterial,
-    _StreamlineBakedMaterial,
-    _StreamtubeBakedMaterial,
-    _create_mesh_material,
-    _create_vector_field_material,
+    create_mesh_material,
+    create_vector_field_material,
 )
 from fury.primitive import prim_sphere
 
 
 def test_create_mesh_material():
     color = (1, 0, 0)
-    mat = material._create_mesh_material(
+    mat = material.create_mesh_material(
         material="phong", color=color, opacity=0.5, mode="auto"
     )
     assert isinstance(mat, material.MeshPhongMaterial)
@@ -48,7 +49,7 @@ def test_create_mesh_material():
     assert mat.depth_write is True
 
     color = (1, 0, 0, 0.5)
-    mat = material._create_mesh_material(
+    mat = material.create_mesh_material(
         material="phong", color=color, opacity=0.5, mode="auto", flat_shading=False
     )
     assert isinstance(mat, material.MeshPhongMaterial)
@@ -57,7 +58,7 @@ def test_create_mesh_material():
     assert mat.flat_shading is False
 
     color = (1, 0, 0)
-    mat = material._create_mesh_material(
+    mat = material.create_mesh_material(
         material="phong", color=color, opacity=0.5, mode="vertex"
     )
     assert isinstance(mat, material.MeshPhongMaterial)
@@ -65,7 +66,7 @@ def test_create_mesh_material():
     assert mat.color_mode == "vertex"
 
     color = (1, 0, 0)
-    mat = material._create_mesh_material(
+    mat = material.create_mesh_material(
         material="basic",
         color=color,
         mode="vertex",
@@ -86,7 +87,7 @@ def test_create_mesh_material():
         colors=np.ones_like(verts).astype("float32"),
     )
 
-    mat = _create_mesh_material(
+    mat = create_mesh_material(
         material="phong", enable_picking=False, flat_shading=False
     )
 
@@ -98,34 +99,32 @@ def test_create_mesh_material():
 
 
 def test_create_material_custom_alpha_depth():
-    mat = material._create_mesh_material(alpha_mode="weighted_blend", depth_write=False)
+    mat = material.create_mesh_material(alpha_mode="weighted_blend", depth_write=False)
     assert mat.alpha_mode == "weighted_blend"
     assert mat.depth_write is False
 
-    mat = material._create_line_material(alpha_mode="weighted_blend", depth_write=False)
+    mat = material.create_line_material(alpha_mode="weighted_blend", depth_write=False)
     assert mat.alpha_mode == "weighted_blend"
     assert mat.depth_write is False
 
-    mat = material._create_points_material(
+    mat = material.create_points_material(
         alpha_mode="weighted_blend", depth_write=False
     )
     assert mat.alpha_mode == "weighted_blend"
     assert mat.depth_write is False
 
-    mat = material._create_text_material(alpha_mode="weighted_blend", depth_write=False)
+    mat = material.create_text_material(alpha_mode="weighted_blend", depth_write=False)
     assert mat.alpha_mode == "weighted_blend"
     assert mat.depth_write is False
 
-    mat = material._create_image_material(
-        alpha_mode="weighted_blend", depth_write=False
-    )
+    mat = material.create_image_material(alpha_mode="weighted_blend", depth_write=False)
     assert mat.alpha_mode == "weighted_blend"
     assert mat.depth_write is False
 
 
 def test_create_point_material():
     color = (1, 0, 0)
-    mat = material._create_points_material(material="basic", color=color, mode="auto")
+    mat = material.create_points_material(material="basic", color=color, mode="auto")
     assert isinstance(mat, PointsMaterial)
     assert mat.color == color
     assert mat.color_mode == "auto"
@@ -133,7 +132,7 @@ def test_create_point_material():
     assert mat.depth_write is True
 
     color = (1, 0, 0)
-    mat = material._create_points_material(
+    mat = material.create_points_material(
         material="gaussian", color=color, opacity=0.5, mode="auto"
     )
     assert isinstance(mat, PointsGaussianBlobMaterial)
@@ -142,7 +141,7 @@ def test_create_point_material():
     assert np.round(mat.opacity, 1) == 0.5
 
     color = (1, 0, 0)
-    mat = material._create_points_material(
+    mat = material.create_points_material(
         material="marker", color=color, opacity=0.5, mode="auto"
     )
     assert isinstance(mat, PointsMarkerMaterial)
@@ -150,7 +149,7 @@ def test_create_point_material():
     assert mat.color_mode == "auto"
 
     color = (1, 0, 0, 0.5)
-    mat = material._create_points_material(
+    mat = material.create_points_material(
         material="basic", color=color, opacity=0.5, mode="auto"
     )
     assert isinstance(mat, PointsMaterial)
@@ -158,7 +157,7 @@ def test_create_point_material():
     assert mat.color_mode == "auto"
 
     color = (1, 0, 0)
-    mat = material._create_points_material(
+    mat = material.create_points_material(
         material="basic", color=color, opacity=0.5, mode="vertex"
     )
     assert isinstance(mat, PointsMaterial)
@@ -168,7 +167,7 @@ def test_create_point_material():
 
 def test_create_text_material():
     color = (1, 0, 0)
-    mat = material._create_text_material(color=color, opacity=0.5)
+    mat = material.create_text_material(color=color, opacity=0.5)
     assert isinstance(mat, TextMaterial)
     assert mat.color == color + (0.5,)
     assert mat.outline_color == (0, 0, 0)
@@ -179,7 +178,7 @@ def test_create_text_material():
     assert mat.depth_write is True
 
     color = (1, 0, 0, 0.5)
-    mat = material._create_text_material(color=color, opacity=0.5)
+    mat = material.create_text_material(color=color, opacity=0.5)
     assert isinstance(mat, TextMaterial)
     assert mat.color == (1, 0, 0, 0.25)
     assert mat.outline_color == (0, 0, 0)
@@ -190,7 +189,7 @@ def test_create_text_material():
 
 def test_create_line_material():
     color = (1, 0, 0)
-    mat = material._create_line_material(
+    mat = material.create_line_material(
         material="basic", color=color, opacity=0.5, mode="auto"
     )
     assert isinstance(mat, LineMaterial)
@@ -200,7 +199,7 @@ def test_create_line_material():
     assert mat.depth_write is True
 
     color = (1, 0, 0)
-    mat = material._create_line_material(
+    mat = material.create_line_material(
         material="arrow", color=color, opacity=0.5, mode="auto"
     )
     assert isinstance(mat, LineArrowMaterial)
@@ -208,7 +207,7 @@ def test_create_line_material():
     assert mat.color_mode == "auto"
 
     color = (1, 0, 0)
-    mat = material._create_line_material(
+    mat = material.create_line_material(
         material="thin", color=color, opacity=0.5, mode="auto"
     )
     assert isinstance(mat, LineThinMaterial)
@@ -216,7 +215,7 @@ def test_create_line_material():
     assert mat.color_mode == "auto"
 
     color = (1, 0, 0)
-    mat = material._create_line_material(
+    mat = material.create_line_material(
         material="thin_segment", color=color, opacity=0.5, mode="auto"
     )
     assert isinstance(mat, LineThinSegmentMaterial)
@@ -224,7 +223,7 @@ def test_create_line_material():
     assert mat.color_mode == "auto"
 
     color = (1, 0, 0)
-    mat = material._create_line_material(
+    mat = material.create_line_material(
         material="segment", color=color, opacity=0.5, mode="auto"
     )
     assert isinstance(mat, LineSegmentMaterial)
@@ -233,7 +232,7 @@ def test_create_line_material():
 
 
 def test_create_image_material():
-    mat = material._create_image_material()
+    mat = material.create_image_material()
     assert isinstance(mat, ImageBasicMaterial)
     assert mat.clim == (0.0, 1.0)
     assert mat.map is None
@@ -243,7 +242,7 @@ def test_create_image_material():
     assert mat.depth_write is True
 
     texture = Texture(np.random.rand(256, 256).astype(np.float32), dim=2)
-    mat = material._create_image_material(
+    mat = material.create_image_material(
         map=TextureMap(texture), gamma=0.5, clim=(0.2, 0.8), interpolation="linear"
     )
     assert isinstance(mat, ImageBasicMaterial)
@@ -378,7 +377,7 @@ def test_VectorFieldThinLineMaterial_edge_cases():
 def test_create_vector_field_material_thin_line():
     """Test creating a thin line material with default parameters."""
     cross_section = [1, 2, 3]
-    material = _create_vector_field_material(cross_section, material="thin_line")
+    material = create_vector_field_material(cross_section, material="thin_line")
 
     assert isinstance(material, VectorFieldThinLineMaterial)
     assert material.pick_write is True
@@ -394,7 +393,7 @@ def test_create_vector_field_material_thin_line():
 def test_create_vector_field_material_line():
     """Test creating a line material with custom parameters."""
     cross_section = [4, 5, 6]
-    material = _create_vector_field_material(
+    material = create_vector_field_material(
         cross_section,
         material="line",
         enable_picking=False,
@@ -418,7 +417,7 @@ def test_create_vector_field_material_line():
 def test_create_vector_field_material_arrow():
     """Test creating an arrow material with custom parameters."""
     cross_section = [7, 8, 9]
-    material = _create_vector_field_material(
+    material = create_vector_field_material(
         cross_section,
         material="arrow",
         opacity=0.8,
@@ -439,7 +438,7 @@ def test_create_vector_field_material_arrow():
 def test_visibility_none():
     """Test setting visibility to None."""
     cross_section = [7, 8, 9]
-    material = _create_vector_field_material(
+    material = create_vector_field_material(
         cross_section,
         material="arrow",
         opacity=0.8,
@@ -453,7 +452,7 @@ def test_visibility_none():
         np.array([-1, -1, -1, 0], dtype=np.int32),  # As per implementation
     )
 
-    material = _create_vector_field_material(
+    material = create_vector_field_material(
         cross_section,
         visibility=(True, False, True),
         material="arrow",
@@ -472,28 +471,28 @@ def test_create_vector_field_material_invalid_type():
     """Test creating a material with invalid type raises error."""
     cross_section = [1, 1, 1]
     with pytest.raises(ValueError, match="Unsupported material type: invalid"):
-        _create_vector_field_material(cross_section, material="invalid")
+        create_vector_field_material(cross_section, material="invalid")
 
 
 def test_create_vector_field_material_edge_cases():
     """Test edge cases for material creation."""
     # Test with zero opacity
-    material = _create_vector_field_material([1, 1, 1], opacity=0.0)
+    material = create_vector_field_material([1, 1, 1], opacity=0.0)
     assert material.opacity == 0.0
 
     # Test with zero thickness
-    material = _create_vector_field_material([1, 1, 1], thickness=0.0)
+    material = create_vector_field_material([1, 1, 1], thickness=0.0)
     assert material.thickness == 0.0
 
     # Test with negative thickness (should not work)
-    material = _create_vector_field_material([1, 1, 1], thickness=-1.0)
+    material = create_vector_field_material([1, 1, 1], thickness=-1.0)
     assert material.thickness == 0.0
 
 
 def test_create_vector_field_material_thickness_spaces():
     """Test different thickness space options."""
     for space in ["screen", "world", "model"]:
-        material = _create_vector_field_material(
+        material = create_vector_field_material(
             [1, 1, 1],
             thickness_space=space,
         )
@@ -502,19 +501,19 @@ def test_create_vector_field_material_thickness_spaces():
 
 def test_create_vector_field_material_anti_aliasing():
     """Test anti-aliasing parameter."""
-    material = _create_vector_field_material([1, 1, 1], anti_aliasing=False)
+    material = create_vector_field_material([1, 1, 1], anti_aliasing=False)
     assert material.aa is False
 
-    material = _create_vector_field_material([1, 1, 1], anti_aliasing=True)
+    material = create_vector_field_material([1, 1, 1], anti_aliasing=True)
     assert material.aa is True
 
 
 def test_create_vector_field_material_picking():
     """Test enable_picking parameter."""
-    material = _create_vector_field_material([1, 1, 1], enable_picking=False)
+    material = create_vector_field_material([1, 1, 1], enable_picking=False)
     assert material.pick_write is False
 
-    material = _create_vector_field_material([1, 1, 1], enable_picking=True)
+    material = create_vector_field_material([1, 1, 1], enable_picking=True)
     assert material.pick_write is True
 
 
@@ -780,8 +779,8 @@ def test_StreamlinesMaterial_edge_cases():
 
 
 def test_StreamlineBakedMaterial_defaults_and_properties():
-    """_StreamlineBakedMaterial defaults and property wiring."""
-    mat = _StreamlineBakedMaterial()
+    """StreamlineBakedMaterial defaults and property wiring."""
+    mat = StreamlineBakedMaterial()
     assert isinstance(mat, StreamlinesMaterial)
     assert mat.auto_detach is True
     assert mat.roi_enabled is False
@@ -793,10 +792,10 @@ def test_StreamlineBakedMaterial_defaults_and_properties():
 
 def test_StreamtubeBakedMaterial_defaults():
     """
-    _StreamtubeBakedMaterial: Test default initialization populates
+    StreamtubeBakedMaterial: Test default initialization populates
     uniforms.
     """
-    mat = _StreamtubeBakedMaterial()
+    mat = StreamtubeBakedMaterial()
 
     assert isinstance(mat, material.MeshPhongMaterial)
     assert mat.radius == pytest.approx(0.2)
@@ -810,8 +809,8 @@ def test_StreamtubeBakedMaterial_defaults():
 
 
 def test_StreamtubeBakedMaterial_parameter_updates():
-    """_StreamtubeBakedMaterial: Test property setters update uniforms."""
-    mat = _StreamtubeBakedMaterial(radius=0.4, segments=12, end_caps=False)
+    """StreamtubeBakedMaterial: Test property setters update uniforms."""
+    mat = StreamtubeBakedMaterial(radius=0.4, segments=12, end_caps=False)
 
     assert mat.radius == pytest.approx(0.4)
     assert mat.uniform_buffer.data["tube_radius"] == pytest.approx(0.4)
@@ -836,8 +835,8 @@ def test_StreamtubeBakedMaterial_parameter_updates():
 
 
 def test_StreamtubeBakedMaterial_uniform_type():
-    """_StreamtubeBakedMaterial: Uniform layout extends MeshPhongMaterial."""
-    uniform_type = _StreamtubeBakedMaterial.uniform_type
+    """StreamtubeBakedMaterial: Uniform layout extends MeshPhongMaterial."""
+    uniform_type = StreamtubeBakedMaterial.uniform_type
 
     assert uniform_type["tube_radius"] == "f4"
     assert uniform_type["tube_segments"] == "u4"
@@ -848,8 +847,8 @@ def test_StreamtubeBakedMaterial_uniform_type():
 
 
 def test_StreamtubeBakedMaterial_setup_compute_shader():
-    """_StreamtubeBakedMaterial: Compute shader config stores parameters."""
-    mat = _StreamtubeBakedMaterial(radius=0.3, segments=6, end_caps=True)
+    """StreamtubeBakedMaterial: Compute shader config stores parameters."""
+    mat = StreamtubeBakedMaterial(radius=0.3, segments=6, end_caps=True)
 
     mat._setup_compute_shader(line_count=5, max_line_length=18, tube_segments=20)
 
@@ -859,12 +858,12 @@ def test_StreamtubeBakedMaterial_setup_compute_shader():
 
 
 def test_create_mesh_material_standard():
-    mat = _create_mesh_material(material="standard")
+    mat = create_mesh_material(material="standard")
     assert isinstance(mat, MeshStandardMaterial)
     assert mat.metalness == 0.0
     assert mat.roughness == pytest.approx(material.DEFAULT_PBR_ROUGHNESS)
 
-    mat = _create_mesh_material(
+    mat = create_mesh_material(
         material="standard",
         color=(1, 0, 0),
         mode="auto",
@@ -881,7 +880,7 @@ def test_create_mesh_material_standard():
 
 
 def test_create_mesh_material_physical():
-    mat = _create_mesh_material(
+    mat = create_mesh_material(
         material="physical",
         metalness=1.0,
         roughness=0.2,
@@ -900,12 +899,12 @@ def test_create_mesh_material_physical():
 @pytest.mark.parametrize("mesh_material", ["phong", "basic"])
 def test_create_mesh_material_pbr_props_rejected(mesh_material):
     with pytest.raises(ValueError, match="not supported by material"):
-        _create_mesh_material(material=mesh_material, metalness=1.0)
+        create_mesh_material(material=mesh_material, metalness=1.0)
 
 
 def test_create_mesh_material_standard_rejects_physical_props():
     with pytest.raises(ValueError, match="Use material='physical'"):
-        _create_mesh_material(material="standard", clearcoat=1.0)
+        create_mesh_material(material="standard", clearcoat=1.0)
 
 
 def test_create_mesh_accepts_pbr_material():
@@ -917,7 +916,7 @@ def test_create_mesh_accepts_pbr_material():
     )
     for mesh_material in ("standard", "physical"):
         obj = create_mesh(
-            geometry=geo, material=_create_mesh_material(material=mesh_material)
+            geometry=geo, material=create_mesh_material(material=mesh_material)
         )
         scene = window.Scene()
         scene.add(obj)
@@ -926,10 +925,10 @@ def test_create_mesh_accepts_pbr_material():
 def test_create_mesh_material_pbr_roughness_default():
     # pygfx defaults roughness to 1.0, at which a metal renders as a flat disc.
     for mesh_material in ("standard", "physical"):
-        mat = _create_mesh_material(material=mesh_material)
+        mat = create_mesh_material(material=mesh_material)
         assert mat.roughness == pytest.approx(material.DEFAULT_PBR_ROUGHNESS)
 
-    mat = _create_mesh_material(material="standard", roughness=0.9)
+    mat = create_mesh_material(material="standard", roughness=0.9)
     assert mat.roughness == pytest.approx(0.9)
 
 
@@ -937,7 +936,7 @@ def test_scene_skybox_supplies_env_map():
     cube_map = load_cube_map_texture(read_viz_cubemap("skybox"))
     scene = window.Scene(skybox=cube_map)
 
-    mat = _create_mesh_material(material="standard", metalness=1.0)
+    mat = create_mesh_material(material="standard", metalness=1.0)
     assert mat.env_map is None
 
     verts, faces = prim_sphere()
@@ -953,7 +952,7 @@ def test_scene_skybox_supplies_env_map():
 
 
 def test_scene_without_skybox_leaves_env_map_unset():
-    mat = _create_mesh_material(material="standard")
+    mat = create_mesh_material(material="standard")
     verts, faces = prim_sphere()
     geo = buffer_to_geometry(
         indices=faces.astype("int32"),
@@ -968,7 +967,7 @@ def test_scene_preserves_explicit_env_map():
     scene_map = load_cube_map_texture(read_viz_cubemap("skybox"))
     own_map = load_cube_map_texture(read_viz_cubemap("skybox"))
 
-    mat = _create_mesh_material(material="standard", env_map=own_map)
+    mat = create_mesh_material(material="standard", env_map=own_map)
     verts, faces = prim_sphere()
     geo = buffer_to_geometry(
         indices=faces.astype("int32"),
@@ -986,7 +985,7 @@ def test_scene_preserves_explicit_env_map():
 
 def test_set_skybox_applies_env_map_retroactively():
     cube_map = load_cube_map_texture(read_viz_cubemap("skybox"))
-    mat = _create_mesh_material(material="standard")
+    mat = create_mesh_material(material="standard")
     verts, faces = prim_sphere()
     geo = buffer_to_geometry(
         indices=faces.astype("int32"),
@@ -1013,7 +1012,7 @@ def test_physical_material_is_a_standard_material():
 @pytest.mark.parametrize("mesh_material", ["standard", "physical"])
 def test_pbr_materials_accept_shared_properties(mesh_material):
     texture = TextureMap(Texture(np.random.rand(8, 8).astype(np.float32), dim=2))
-    mat = _create_mesh_material(
+    mat = create_mesh_material(
         material=mesh_material,
         metalness=0.7,
         roughness=0.3,
@@ -1051,10 +1050,42 @@ def test_pbr_materials_accept_shared_properties(mesh_material):
     ],
 )
 def test_physical_only_properties_pass_through(param, value):
-    mat = _create_mesh_material(material="physical", **{param: value})
+    mat = create_mesh_material(material="physical", **{param: value})
     assert isinstance(mat, MeshPhysicalMaterial)
     assert getattr(mat, param) == pytest.approx(value)
 
     # The same property must be refused by 'standard', which cannot express it.
     with pytest.raises(ValueError, match="Use material='physical'"):
-        _create_mesh_material(material="standard", **{param: value})
+        create_mesh_material(material="standard", **{param: value})
+
+
+@pytest.mark.parametrize(
+    "name, args",
+    [
+        ("mesh", ()),
+        ("line", ()),
+        ("vector_field", ((0, 0, 0),)),
+        ("points", ()),
+        ("text", ()),
+        ("image", ()),
+    ],
+)
+def test_deprecated_create_material_functions(name, args):
+    deprecated = getattr(material, f"_create_{name}_material")
+    public = getattr(material, f"create_{name}_material")
+    with pytest.warns(
+        FuryDeprecationWarning, match=f"create_{name}_material instead"
+    ) as record:
+        mat = deprecated(*args)
+    assert type(mat) is type(public(*args))
+    assert record[0].filename == __file__
+
+
+@pytest.mark.parametrize("name", ["StreamlineBakedMaterial", "StreamtubeBakedMaterial"])
+def test_deprecated_baked_material_aliases(name):
+    with pytest.warns(FuryDeprecationWarning, match=f"{name} instead") as record:
+        alias = getattr(material, f"_{name}")
+    assert alias is getattr(material, name)
+    assert record[0].filename == __file__
+    with pytest.raises(AttributeError):
+        _ = material.NotAMaterial

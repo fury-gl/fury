@@ -25,9 +25,9 @@ from fury.lib import (
     register_wgpu_render_function,
 )
 from fury.material import (
-    _create_image_material,
-    _create_points_material,
-    _create_text_material,
+    create_image_material,
+    create_points_material,
+    create_text_material,
     validate_opacity,
 )
 import fury.primitive as fp
@@ -74,7 +74,7 @@ def square(
     material_params : dict, optional
         Extra properties forwarded to the material, e.g.
         ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
-        :func:`fury.material._create_mesh_material` for the supported keys.
+        :func:`fury.material.create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the squares should be pickable in a 3D scene.
     wireframe : bool, optional
@@ -160,7 +160,7 @@ def star(
     material_params : dict, optional
         Extra properties forwarded to the material, e.g.
         ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
-        :func:`fury.material._create_mesh_material` for the supported keys.
+        :func:`fury.material.create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the stars should be pickable in a 3D scene.
     wireframe : bool, optional
@@ -251,7 +251,7 @@ def disk(
     material_params : dict, optional
         Extra properties forwarded to the material, e.g.
         ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
-        :func:`fury.material._create_mesh_material` for the supported keys.
+        :func:`fury.material.create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the disk should be pickable in a 3D scene.
     wireframe : bool, optional
@@ -361,7 +361,7 @@ def triangle(
     material_params : dict, optional
         Extra properties forwarded to the material, e.g.
         ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
-        :func:`fury.material._create_mesh_material` for the supported keys.
+        :func:`fury.material.create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the triangles should be pickable in a 3D scene.
     wireframe : bool, optional
@@ -465,7 +465,7 @@ def point(
         colors=colors,
     )
 
-    mat = _create_points_material(
+    mat = create_points_material(
         size=size,
         material=material,
         map=map,
@@ -540,7 +540,7 @@ def marker(
         colors=colors,
     )
 
-    mat = _create_points_material(
+    mat = create_points_material(
         material="marker",
         size=size,
         marker=marker,
@@ -669,7 +669,7 @@ def text(
 
         group = Group()
         for t, c, p in zip(text, colors_list, position_list, strict=True):
-            mat = _create_text_material(
+            mat = create_text_material(
                 color=c,
                 opacity=opacity,
                 outline_color=outline_color,
@@ -692,7 +692,7 @@ def text(
     if not isinstance(text, str):
         raise TypeError("text must be a string.")
 
-    mat = _create_text_material(
+    mat = create_text_material(
         color=colors,
         opacity=opacity,
         outline_color=outline_color,
@@ -766,7 +766,7 @@ def image(
     >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
     >>> show_manager.start()
     """
-    mat = _create_image_material(
+    mat = create_image_material(
         clim=clim,
         map=map,
         gamma=gamma,
@@ -869,7 +869,7 @@ def ring(
     material_params : dict, optional
         Extra properties forwarded to the material, e.g.
         ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
-        :func:`fury.material._create_mesh_material` for the supported keys.
+        :func:`fury.material.create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the rings should be pickable in a 3D scene.
 

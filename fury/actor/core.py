@@ -23,7 +23,7 @@ from fury.lib import (
     Texture,
     gfx,
 )
-from fury.material import _create_line_material, _create_mesh_material
+from fury.material import create_line_material, create_mesh_material
 import fury.primitive as fp
 from fury.transform import rotate, scale, translate
 
@@ -443,7 +443,7 @@ def actor_from_primitive(
     material_params : dict, optional
         Extra properties forwarded to the material, e.g.
         ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
-        :func:`fury.material._create_mesh_material` for the supported keys.
+        :func:`fury.material.create_mesh_material` for the supported keys.
 
     Returns
     -------
@@ -496,7 +496,7 @@ def actor_from_primitive(
         colors=big_colors.astype("float32"),
     )
 
-    mat = _create_mesh_material(
+    mat = create_mesh_material(
         material=material,
         enable_picking=enable_picking,
         flat_shading=not smooth,
@@ -571,7 +571,7 @@ def arrow(
     material_params : dict, optional
         Extra properties forwarded to the material, e.g.
         ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
-        :func:`fury.material._create_mesh_material` for the supported keys.
+        :func:`fury.material.create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the arrows should be pickable in a 3D scene.
 
@@ -923,7 +923,7 @@ def line(
         colors=lines_colors.astype("float32"),
     )
 
-    mat = _create_line_material(
+    mat = create_line_material(
         material=material,
         enable_picking=enable_picking,
         mode="vertex",
