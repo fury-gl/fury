@@ -10,7 +10,7 @@ from fury.colormap import normalize_colors
 from fury.geometry import buffer_to_geometry
 from fury.io import load_image, load_image_texture
 from fury.lib import Texture, TextureMap
-from fury.material import _create_mesh_material, validate_opacity
+from fury.material import create_mesh_material, validate_opacity
 from fury.primitive import prim_sphere
 from fury.utils import generate_planar_uvs, voxel_mesh_by_object
 
@@ -44,7 +44,7 @@ def surface(
     material_params : dict, optional
         Extra properties forwarded to the material, e.g.
         ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
-        :func:`fury.material._create_mesh_material` for the supported keys.
+        :func:`fury.material.create_mesh_material` for the supported keys.
     colors : str, tuple, list or ndarray, optional
         A per-vertex ``(N, 3)``/``(N, 4)`` array, or a single color as a hex
         string, RGB(A) in [0, 1], or RGB(A) in [0, 255].
@@ -92,7 +92,7 @@ def surface(
                 colors=colors,
                 normals=normals.astype("float32") if normals is not None else None,
             )
-            mat = _create_mesh_material(
+            mat = create_mesh_material(
                 material=material, mode="vertex", opacity=opacity, **material_params
             )
         elif isinstance(colors, (tuple, list, np.ndarray)) and len(colors) == 3:
@@ -101,7 +101,7 @@ def surface(
                 indices=faces.astype("int32"),
                 normals=normals.astype("float32") if normals is not None else None,
             )
-            mat = _create_mesh_material(
+            mat = create_mesh_material(
                 material=material,
                 mode="auto",
                 opacity=opacity,
@@ -138,7 +138,7 @@ def surface(
             texcoords=texture_coords.astype("float32"),
             normals=normals.astype("float32") if normals is not None else None,
         )
-        mat = _create_mesh_material(
+        mat = create_mesh_material(
             material=material,
             texture=tex,
             opacity=opacity,
@@ -149,7 +149,7 @@ def surface(
         geo = buffer_to_geometry(
             positions=vertices.astype("float32"), indices=faces.astype("int32")
         )
-        mat = _create_mesh_material(
+        mat = create_mesh_material(
             material=material, opacity=opacity, **material_params
         )
 
@@ -185,7 +185,7 @@ def texture_on_sphere(
         Mesh material: 'phong', 'basic', 'standard' or 'physical'.
     material_params : dict, optional
         Extra material properties, including PBR parameters. See
-        :func:`fury.material._create_mesh_material`.
+        :func:`fury.material.create_mesh_material`.
     opacity : float, optional
         Opacity from 0 (transparent) to 1 (opaque).
 
@@ -285,7 +285,7 @@ def texture_on_sphere(
         tangents=tangents.reshape(-1, 4),
     )
     params = {"flat_shading": False, **(material_params or {})}
-    mesh_material = _create_mesh_material(
+    mesh_material = create_mesh_material(
         material=material,
         texture=texture_map,
         mode="auto",
@@ -318,7 +318,7 @@ def contour_from_volume(
     material_params : dict, optional
         Extra properties forwarded to the material, e.g.
         ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
-        :func:`fury.material._create_mesh_material` for the supported keys.
+        :func:`fury.material.create_mesh_material` for the supported keys.
 
     Returns
     -------

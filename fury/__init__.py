@@ -8,6 +8,7 @@ import warnings
 
 import lazy_loader as lazy
 
+from fury.deprecator import FuryDeprecationWarning
 from fury.optpkg import optional_package
 from fury.pkg_info import __version__, pkg_commit_hash
 
@@ -106,9 +107,10 @@ def disable_warnings(*, warnings_origin=None):
         warnings.filterwarnings("ignore")
 
 
-# Disable warnings in release mode
+# Disable warnings in release mode, except FURY's own deprecations
 if "post" not in __version__ and "dev" not in __version__:
     disable_warnings()
+    warnings.filterwarnings("default", category=FuryDeprecationWarning)
 
 # Suppress known NumPy future warning
 warnings.filterwarnings(

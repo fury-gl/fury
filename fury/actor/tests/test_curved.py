@@ -23,9 +23,9 @@ from fury.actor.tests._helpers import (
 )
 from fury.lib import BufferUsage
 from fury.material import (
+    StreamlineBakedMaterial,
     StreamlinesMaterial,
-    _StreamlineBakedMaterial,
-    _StreamtubeBakedMaterial,
+    StreamtubeBakedMaterial,
 )
 
 
@@ -166,7 +166,7 @@ def test_streamtube_gpu_geometry_and_buffers():
         backend="gpu",
     )
 
-    assert isinstance(mesh.material, _StreamtubeBakedMaterial)
+    assert isinstance(mesh.material, StreamtubeBakedMaterial)
     assert mesh.n_lines == len(lines)
 
     line_lengths = np.array([line.shape[0] for line in lines], dtype=np.uint32)
@@ -239,7 +239,7 @@ def test_streamtube_gpu_color_broadcast_and_material_flags():
     assert np.allclose(mesh.color_buffer.data, expected_colors)
     assert mesh.color_components == 3
 
-    assert isinstance(mesh.material, _StreamtubeBakedMaterial)
+    assert isinstance(mesh.material, StreamtubeBakedMaterial)
     assert mesh.material.pick_write is False
     assert mesh.material.flat_shading is False
     assert mesh.material.end_caps is False
@@ -374,7 +374,7 @@ def test_streamlines_roi_metadata_and_reset():
 
     assert np.array_equal(wobj._line_lengths, np.array([2, 2], dtype=np.uint32))
     assert np.array_equal(wobj._line_offsets, np.array([0, 3], dtype=np.uint32))
-    assert isinstance(wobj.material, _StreamlineBakedMaterial)
+    assert isinstance(wobj.material, StreamlineBakedMaterial)
     assert wobj.material.roi_enabled is True
     assert wobj.material.roi_dim == roi_mask.shape
     assert np.allclose(wobj.roi_origin, (0.0, 0.0, 0.0))

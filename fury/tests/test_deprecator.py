@@ -8,6 +8,7 @@ import fury
 from fury.deprecator import (
     ArgsDeprecationWarning,
     ExpiredDeprecationError,
+    FuryDeprecationWarning,
     _add_dep_doc,
     _ensure_cr,
     cmp_pkg_version,
@@ -103,7 +104,7 @@ def test_deprecate_with_version():
         warnings.simplefilter("always")
         npt.assert_equal(func(), None)
         npt.assert_equal(len(w), 1)
-        assert_true(w[0].category is DeprecationWarning)
+        assert_true(w[0].category is FuryDeprecationWarning)
     npt.assert_equal(func.__doc__, "foo\n")
     func = dec("foo")(func_doc)
     with clear_and_catch_warnings(record=True, modules=[my_mod]) as w:
@@ -191,7 +192,7 @@ def test_deprecate_with_version():
         warnings.simplefilter("always")
         npt.assert_equal(func(), None)
         npt.assert_equal(len(w), 1)
-        assert_true(w[0].category is DeprecationWarning)
+        assert_true(w[0].category is FuryDeprecationWarning)
 
     func = dec("foo", until="0.3", error_class=CustomError)(func_no_doc)
     npt.assert_raises(CustomError, func)
