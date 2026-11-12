@@ -1,5 +1,6 @@
 """Planar actors for rendering 2D shapes in 3D space."""
 
+from functools import partial
 import logging
 
 import numpy as np
@@ -13,7 +14,7 @@ from fury.actor import (
     create_point,
     create_text,
 )
-from fury.colormap import normalize_colors
+from fury.colormap import create_colormap, map_scalars_to_lut, normalize_colors
 from fury.geometry import (
     buffer_to_geometry,
     line_buffer_separator,
@@ -32,6 +33,8 @@ from fury.material import (
 )
 import fury.primitive as fp
 from fury.shader import LineProjectionComputeShader
+
+_SCALAR_BAR_SAMPLES = 256
 
 
 def square(
@@ -815,6 +818,148 @@ def image(
 
     obj.local.rotation = rot.as_quat()
     return obj
+
+
+def scalar_bar(
+    *,
+    clim=(0.0, 1.0),
+    cmap="plasma",
+    hsv_range=None,
+    orientation="horizontal",
+    length=300,
+    thickness=20,
+    num_ticks=5,
+    tick_format=".3g",
+    title=None,
+    font_size=14,
+    color=(1.0, 1.0, 1.0),
+    position=(60, 60),
+):
+    """
+    Create a color bar showing how scalar values map to colors.
+
+    Parameters
+    ----------
+    clim : tuple of float, optional
+        Scalar values ``(low, high)`` mapped to the first and last colors.
+    cmap : str, optional
+        Name of the colormap, as accepted by :func:`fury.colormap.create_colormap`.
+    hsv_range : tuple of three (low, high) pairs, optional
+        Hue, saturation and value ramps, each in [0, 1], from the first to the
+        last color. Replaces ``cmap`` when given.
+    orientation : {"horizontal", "vertical"}, optional
+        Bar orientation. Low values are on the left or at the bottom.
+    length : float, optional
+        Bar length in pixels.
+    thickness : float, optional
+        Bar thickness in pixels.
+    num_ticks : int, optional
+        Number of evenly spaced tick labels, including both ends.
+    tick_format : str, optional
+        Format specification applied to each tick value. The default ``".3g"``
+        rounds to three significant digits, so tight ranges at large offsets
+        need a fixed-point format such as ``".2f"``.
+    title : str, optional
+        Text drawn above the bar.
+    font_size : float, optional
+        Font size of the labels in pixels.
+    color : tuple of float, optional
+        RGB color of the labels.
+    position : tuple of float, optional
+        Bottom-left corner of the bar in pixels from the bottom-left of the
+        screen viewport.
+
+    Returns
+    -------
+    Group
+        Color bar to add to a screen's UI scene. Its ``map_values`` attribute
+        maps scalar values to the RGB colors of the bar, clipping values outside
+        ``clim``.
+
+    Raises
+    ------
+    ValueError
+        If ``orientation`` is not ``"horizontal"`` or ``"vertical"``, if
+        ``clim`` is not finite with ``low < high``, if ``num_ticks`` is lower
+        than 2, or if ``hsv_range`` does not have three (low, high) pairs.
+
+    Notes
+    -----
+    Add it with ``show_manager.screens[0].scene.ui_scene.add(bar)``.
+
+    Examples
+    --------
+    >>> from fury import actor
+    >>> bar = actor.scalar_bar(clim=(0, 100), title="Intensity")
+
+    With ``clim=(10000, 10001)`` the default format labels every tick
+    ``1e+04``. Use a fixed-point format to tell the ticks apart:
+
+    >>> bar = actor.scalar_bar(clim=(10000, 10001), tick_format=".2f")
+    """
+    if orientation not in ("horizontal", "vertical"):
+        raise ValueError(
+            f"orientation must be 'horizontal' or 'vertical', got {orientation!r}."
+        )
+    low, high = clim
+    if not (np.isfinite(clim).all() and low < high):
+        raise ValueError(f"clim must be finite with low < high, got {clim}.")
+    if num_ticks < 2:
+        raise ValueError(f"num_ticks must be at least 2, got {num_ticks}.")
+
+    horizontal = orientation == "horizontal"
+    colors = create_colormap(
+        np.linspace(0, 1, _SCALAR_BAR_SAMPLES),
+        name=cmap,
+        auto=False,
+        hsv_range=hsv_range,
+    )
+    num_colors = len(colors)
+    gradient = colors[None] if horizontal else colors[:, None]
+    texel_size = [
+        length / num_colors if horizontal else thickness,
+        thickness if horizontal else length / num_colors,
+        1,
+    ]
+    gradient_actor = image(gradient, interpolation="linear")
+    gradient_actor.local.scale = texel_size
+    # Image texels are centered on integer coordinates; shift the first one
+    # so the bar starts exactly at the group origin.
+    gradient_actor.local.position = [0.5 * texel_size[0], 0.5 * texel_size[1], 0]
+
+    bar = Group()
+    bar.local.position = [position[0], position[1], 0]
+    bar.add(gradient_actor)
+
+    margin = 4
+    values = np.linspace(low, high, num_ticks)
+    offsets = np.linspace(0, length, num_ticks)
+    for value, offset in zip(values, offsets, strict=True):
+        label_position = (
+            (offset, -margin, 0) if horizontal else (thickness + margin, offset, 0)
+        )
+        bar.add(
+            text(
+                format(value, tick_format),
+                colors=color,
+                position=label_position,
+                font_size=font_size,
+                anchor="top-center" if horizontal else "middle-left",
+            )
+        )
+    if title is not None:
+        title_y = thickness + margin if horizontal else length + margin
+        bar.add(
+            text(
+                title,
+                colors=color,
+                position=(0, title_y, 0),
+                font_size=font_size,
+                anchor="bottom-left",
+            )
+        )
+    bar.map_values = partial(map_scalars_to_lut, clim=clim, lut=colors)
+    return bar
 
 
 def ring(
