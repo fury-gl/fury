@@ -50,7 +50,7 @@ dependencies = [
     "pygfx>=0.16.0",
     "glfw>=2.7.0",
     "aiohttp",
-    "polyxios>=0.2.0",
+    "polyxios>=0.5.1",
 ]
 
 dynamic = ["version"]
