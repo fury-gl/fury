@@ -212,6 +212,7 @@ from .decorators import (
 from .deprecator import (
     ArgsDeprecationWarning as ArgsDeprecationWarning,
     ExpiredDeprecationError as ExpiredDeprecationError,
+    FuryDeprecationWarning as FuryDeprecationWarning,
     _ensure_cr as _ensure_cr,
     cmp_pkg_version as cmp_pkg_version,
     deprecate_with_version as deprecate_with_version,

@@ -15,7 +15,7 @@ import warnings
 
 from packaging import version
 
-from fury import __version__
+from fury.pkg_info import __version__
 
 _LEADING_WHITE = re.compile(r"^(\s*)")
 
@@ -31,7 +31,18 @@ class ExpiredDeprecationError(RuntimeError):
     pass
 
 
-class ArgsDeprecationWarning(DeprecationWarning):
+class FuryDeprecationWarning(DeprecationWarning):
+    """
+    Base warning for deprecations in FURY.
+
+    Unlike plain ``DeprecationWarning``, it stays visible in release builds,
+    where FURY silences all other warnings on import.
+    """
+
+    pass
+
+
+class ArgsDeprecationWarning(FuryDeprecationWarning):
     """
     Warning for args deprecation.
 
@@ -160,8 +171,9 @@ def deprecate_with_version(
     since="",
     until="",
     version_comparator=cmp_pkg_version,
-    warn_class=DeprecationWarning,
+    warn_class=FuryDeprecationWarning,
     error_class=ExpiredDeprecationError,
+    stacklevel=2,
 ):
     """
     Return decorator function for deprecation warning or error.
@@ -190,10 +202,14 @@ def deprecate_with_version(
         the ``version_comparator`` may compare the input version string to the
         current package version string.
     warn_class : class, optional
-        Class of warning to generate for deprecation. Default is DeprecationWarning.
+        Class of warning to generate for deprecation. Default is
+        FuryDeprecationWarning.
     error_class : class, optional
         Class of error to generate when ``version_comparator`` returns 1 for a
         given argument of ``until``. Default is ExpiredDeprecationError.
+    stacklevel : int, optional
+        Stack level of the warning, counted from the decorated callable's
+        caller. Increase it when that caller is itself a forwarding helper.
 
     Returns
     -------
@@ -247,7 +263,7 @@ def deprecate_with_version(
             """
             if until and is_bad_version(until, version_comparator=version_comparator):
                 raise error_class(message)
-            warnings.warn(message, warn_class, stacklevel=2)
+            warnings.warn(message, warn_class, stacklevel=stacklevel)
             return func(*args, **kwargs)
 
         deprecated_func.__doc__ = _add_dep_doc(deprecated_func.__doc__, message)
