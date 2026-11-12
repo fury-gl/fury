@@ -288,7 +288,13 @@ def tensor_slicer(
 
 
 def contour_from_roi(
-    data, *, affine=None, color=(1, 0, 0), opacity=0.5, material="phong"
+    data,
+    *,
+    affine=None,
+    color=(1, 0, 0),
+    opacity=0.5,
+    material="phong",
+    iterations=0,
 ):
     """
     Generate surface actor from a binary ROI.
@@ -307,6 +313,9 @@ def contour_from_roi(
         Takes values from 0 (fully transparent) to 1 (opaque).
     material : str, optional
         The material type for the contour mesh. Options are 'phong' and 'basic'.
+    iterations : int, optional
+        Number of Taubin smoothing passes applied to the contour; 0 keeps the
+        voxel surface.
 
     Returns
     -------
@@ -314,7 +323,11 @@ def contour_from_roi(
         A group of actors containing the generated contours of ROI from the volume data.
     """
     contours = contour_from_volume(
-        data, color=color, opacity=opacity, material=material
+        data,
+        color=color,
+        opacity=opacity,
+        material=material,
+        iterations=iterations,
     )
 
     if affine is not None:
@@ -323,7 +336,7 @@ def contour_from_roi(
     return contours
 
 
-def contour_from_label(data, *, affine=None, colors=None, opacities=None):
+def contour_from_label(data, *, affine=None, colors=None, opacities=None, iterations=0):
     """
     Generate surface actor from a labeled volume.
 
@@ -342,6 +355,9 @@ def contour_from_label(data, *, affine=None, colors=None, opacities=None):
         The opacities of the contours.
         Takes values from 0 (fully transparent) to 1 (opaque). It will be overridden
         if RGBA colors are provided.
+    iterations : int, optional
+        Number of Taubin smoothing passes applied to each label contour; 0
+        keeps the voxel surface.
 
     Returns
     -------
@@ -374,7 +390,11 @@ def contour_from_label(data, *, affine=None, colors=None, opacities=None):
     for i, roi_id in enumerate(unique_roi_id):
         roi_data = np.isin(data, roi_id).astype(int)
         roi_surface = contour_from_roi(
-            roi_data, affine=affine, color=colors[i], opacity=opacities[i]
+            roi_data,
+            affine=affine,
+            color=colors[i],
+            opacity=opacities[i],
+            iterations=iterations,
         )
         unique_roi_surfaces.add(roi_surface)
 
