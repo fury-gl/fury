@@ -48,6 +48,7 @@ from fury.lib import (
     display_jupyter_widget,
     get_app,
     linalg,
+    loop,
     qcall_later,
     run,
 )
@@ -1976,6 +1977,10 @@ class ShowManager:
             self._qt_app.exec()
         else:
             run()
+            # Work around pygfx/rendercanvas#267: a close event can request
+            # another paint and leave the shared loop bound to a closed loop.
+            if self.window.get_closed():
+                loop.stop()
 
         if self._window_type == "jupyter":
             display_jupyter_widget(self.window)

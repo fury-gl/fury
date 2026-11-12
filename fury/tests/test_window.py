@@ -1,6 +1,6 @@
 import logging
 import os
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import numpy as np
 import pytest
@@ -923,6 +923,44 @@ def test_show_manager_register_drag():
     assert show_m._drag_target is None
     for screen in show_m.screens:
         assert screen.controller.enabled is True
+
+
+@pytest.mark.parametrize("closed", [True, False])
+@pytest.mark.parametrize("window_type", ["glfw", "jupyter", "qt"])
+def test_start_resets_closed_rendercanvas_loop(monkeypatch, closed, window_type):
+    monkeypatch.delenv("FURY_OFFSCREEN", raising=False)
+    show_m = Mock(spec=ShowManager)
+    show_m._is_qt = window_type == "qt"
+    show_m._window_type = window_type
+    show_m._qt_app = Mock()
+    show_m.window = Mock()
+    show_m.window.get_closed.return_value = False
+
+    def finish_run():
+        show_m.window.get_closed.return_value = closed
+
+    show_m._qt_app.exec.side_effect = finish_run
+
+    with (
+        patch.object(window, "run", side_effect=finish_run) as run,
+        patch("fury.lib.loop.stop") as stop,
+        patch.object(window, "display_jupyter_widget") as display,
+    ):
+        ShowManager.start(show_m)
+        show_m.render.assert_called_once_with()
+        if window_type == "qt":
+            show_m._qt_app.exec.assert_called_once_with()
+            run.assert_not_called()
+        else:
+            run.assert_called_once_with()
+        if closed and window_type != "qt":
+            stop.assert_called_once_with()
+        else:
+            stop.assert_not_called()
+        if window_type == "jupyter":
+            display.assert_called_once_with(show_m.window)
+        else:
+            display.assert_not_called()
 
 
 def test_offscreen_animation_recording(tmp_path):
