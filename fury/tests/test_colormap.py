@@ -94,6 +94,71 @@ def test_create_colormap():
             npt.assert_raises(ValueError, colormap.create_colormap, value)
 
 
+def test_create_colormap_hsv_range():
+    ramp = ((0, 0), (1, 1), (0, 1))
+    red_ramp = np.array([[0, 0, 0], [0.5, 0, 0], [1, 0, 0]])
+
+    hue = colormap.create_colormap(
+        np.array([0.0, 0.5, 1.0]), hsv_range=((0, 2 / 3), (1, 1), (1, 1))
+    )
+    npt.assert_array_almost_equal(hue, [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+
+    rescaled = colormap.create_colormap(np.array([10.0, 15.0, 20.0]), hsv_range=ramp)
+    npt.assert_array_almost_equal(rescaled, red_ramp)
+
+    clipped = colormap.create_colormap(
+        np.array([-1.0, 0.5, 2.0]), auto=False, hsv_range=ramp
+    )
+    npt.assert_array_almost_equal(clipped, red_ramp)
+
+    nd = colormap.create_colormap(
+        np.array([[0.0], [0.5], [1.0]]), name="fake", hsv_range=ramp
+    )
+    npt.assert_equal(nd.shape, (3, 1, 3))
+    npt.assert_array_almost_equal(nd, red_ramp[:, None, :])
+
+    with pytest.raises(ValueError, match="hsv_range must hold"):
+        colormap.create_colormap(np.array([0.0, 1.0]), hsv_range=((0, 1), (0, 1)))
+
+
+def test_scalars_to_lut_indices():
+    indices = colormap.scalars_to_lut_indices(
+        np.array([-1.0, 0.0, 2.5, 5.0, 10.0, np.inf]), (0, 5), 11
+    )
+    npt.assert_array_equal(indices, [0, 0, 5, 10, 10, 10])
+    assert indices.dtype == np.intp
+
+    flat = colormap.scalars_to_lut_indices(np.ones((2, 2)), (1, 1), 4)
+    npt.assert_array_equal(flat, np.zeros((2, 2), dtype=np.intp))
+
+
+@pytest.mark.parametrize(
+    "values, clim, n_colors, match",
+    [
+        ([0.0], (5, 0), 3, "clim must be finite"),
+        ([0.0], (0, np.inf), 3, "clim must be finite"),
+        ([0.0], (0, 1), 0, "n_colors must be at least 1"),
+        ([np.nan], (0, 1), 3, "values must not contain NaN"),
+    ],
+    ids=["reversed-clim", "infinite-clim", "no-colors", "nan-values"],
+)
+def test_scalars_to_lut_indices_errors(values, clim, n_colors, match):
+    with pytest.raises(ValueError, match=match):
+        colormap.scalars_to_lut_indices(values, clim, n_colors)
+
+
+def test_map_scalars_to_lut():
+    lut = np.array([[0.0, 0.0, 0.0], [0.5, 0.5, 0.5], [1.0, 1.0, 1.0]])
+    colors = colormap.map_scalars_to_lut(
+        np.array([[0.0, 0.4], [0.6, 1.0]]), (0, 1), lut
+    )
+    npt.assert_equal(colors.shape, (2, 2, 3))
+    npt.assert_array_equal(colors, lut[[[0, 1], [1, 2]]])
+
+    with pytest.raises(ValueError, match="n_colors must be at least 1"):
+        colormap.map_scalars_to_lut([0.5], (0, 1), np.empty((0, 3)))
+
+
 def test_lab_delta():
     color = np.c_[100, 127, 128]
     delta = np.c_[0, 0, 0]
