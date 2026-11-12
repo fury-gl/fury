@@ -1,7 +1,8 @@
 """I/O functions for loading and saving images, textures."""
 
+from io import BytesIO
 import os
-from urllib.request import urlretrieve
+from urllib.request import urlopen
 
 # import warnings
 from PIL import Image
@@ -93,8 +94,8 @@ def load_image(filename):
         if not get_extension(image_name):
             raise OSError(f"{filename} is not a valid image URL")
 
-        urlretrieve(filename, image_name)
-        filename = image_name
+        with urlopen(filename) as response:
+            filename = BytesIO(response.read())
 
     with Image.open(filename) as pil_image:
         if pil_image.mode == "P":
@@ -117,8 +118,6 @@ def load_image(filename):
                 raise RuntimeError(f"Unknown image mode {pil_image.mode}") from err
             image = np.asarray(pil_image)
 
-    if is_url:
-        os.remove(filename)
     return image
 
 

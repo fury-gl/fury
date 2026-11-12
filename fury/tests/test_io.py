@@ -1,6 +1,9 @@
+from functools import partial
+from http.server import HTTPServer, SimpleHTTPRequestHandler
 import os
 from os.path import join as pjoin
 from tempfile import TemporaryDirectory as InTemporaryDirectory
+from threading import Thread
 
 # from PIL import Image
 import numpy as np
@@ -8,6 +11,7 @@ import numpy.testing as npt
 
 # import pytest
 import polyxios as px
+import pytest
 
 # from fury.decorators import skip_osx
 from fury.data import fetch_viz_cubemaps, read_viz_cubemap
@@ -286,6 +290,42 @@ def test_read_lines_without_line_elements():
 
     npt.assert_equal(out_lines, [])
     npt.assert_equal(out_colors, None)
+
+
+@pytest.mark.parametrize("valid_image", [True, False])
+def test_load_image_url_preserves_local_file(tmp_path, monkeypatch, valid_image):
+    served = tmp_path / "served"
+    served.mkdir()
+    data = np.full((2, 3, 3), 127, dtype=np.uint8)
+    remote = served / "picture.png"
+    if valid_image:
+        save_image(data, str(remote))
+    else:
+        remote.write_bytes(b"not an image")
+
+    monkeypatch.chdir(tmp_path)
+    local = tmp_path / "picture.png"
+    original = b"existing local content"
+    local.write_bytes(original)
+    server = HTTPServer(
+        ("127.0.0.1", 0),
+        partial(SimpleHTTPRequestHandler, directory=str(served)),
+    )
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        url = f"http://127.0.0.1:{server.server_port}/picture.png"
+        if valid_image:
+            npt.assert_array_equal(load_image(url), data)
+        else:
+            with pytest.raises(OSError):
+                load_image(url)
+        assert local.read_bytes() == original
+        assert set(tmp_path.iterdir()) == {served, local}
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join()
 
 
 def test_save_load_image():
