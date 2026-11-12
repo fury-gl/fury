@@ -43,6 +43,39 @@ def test_timeline_add_animation():
     assert tl.duration == 5
 
 
+def test_timeline_add_pre_keyframed_child_to_attached_parent():
+    parent = Animation()
+    timeline = Timeline(animations=parent)
+
+    child = Animation()
+    child.set_position(0, [0, 0, 0])
+    child.set_position(5, [1, 1, 1])
+
+    parent.add_child_animation(child)
+
+    assert child.timeline is timeline
+    assert child.duration == 5
+    assert parent.duration == 5
+    assert timeline.duration == 5
+
+
+def test_timeline_updates_duration_for_later_child_keyframes():
+    parent = Animation()
+    timeline = Timeline(animations=parent)
+
+    child = Animation()
+    parent.add_child_animation(child)
+
+    assert child.timeline is timeline
+
+    child.set_position(0, [0, 0, 0])
+    child.set_position(5, [1, 1, 1])
+
+    assert child.duration == 5
+    assert parent.duration == 5
+    assert timeline.duration == 5
+
+
 def test_timeline_with_animations_param():
     anim = Animation()
     anim.set_position(0, np.array([0, 0, 0]))
