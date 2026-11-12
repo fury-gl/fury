@@ -30,3 +30,4 @@ jupyter-rfb
 imgui_bundle
 numba
 opencv-python
+imageio[ffmpeg]>=2.0.0
