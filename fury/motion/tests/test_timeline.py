@@ -93,6 +93,13 @@ def test_timeline_playback():
 
     assert tl.stopped is True
     assert tl.playing is False
+    assert tl.paused is False
+
+    tl.seek(1)
+    assert tl.paused is True
+
+    tl.stop()
+    assert tl.paused is False
 
     tl.play()
     assert tl.playing is True
