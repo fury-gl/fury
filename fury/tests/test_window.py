@@ -521,18 +521,72 @@ def test_show_manager_update_camera(sample_actor):
     """
     scene = Scene()
     show_m = ShowManager(scene=scene, window_type="offscreen")
-    update_camera(show_m.screens[0].camera, None, None)
+    with pytest.raises(ValueError):
+        update_camera(show_m.screens[0].camera)
 
     scene = Scene()
     show_m = ShowManager(scene=scene, window_type="offscreen")
-    update_camera(show_m.screens[0].camera, show_m.size, scene)
+    update_camera(show_m.screens[0].camera, size=show_m.size, target=scene)
     assert show_m.screens[0].camera.width == 800
     assert show_m.screens[0].camera.height == 800
 
     scene.add(sample_actor)
-    update_camera(show_m.screens[0].camera, show_m.size, scene)
+    update_camera(show_m.screens[0].camera, size=show_m.size, target=scene)
     assert show_m.screens[0].camera.width != 800
     assert show_m.screens[0].camera.height != 800
+
+
+def test_update_camera_forwards_view_dir_and_view_up(sample_actor):
+    """view_dir and view_up must change the camera orientation."""
+    scene = Scene()
+    scene.add(sample_actor)
+    show_m = ShowManager(scene=scene, window_type="offscreen")
+    cam = show_m.screens[0].camera
+
+    # Front view.
+    update_camera(
+        cam, size=show_m.size, target=scene, view_dir=(0, 0, -1), view_up=(0, 1, 0)
+    )
+    np.testing.assert_array_almost_equal(cam.world.forward, [0, 0, -1])
+    np.testing.assert_array_almost_equal(cam.world.reference_up, [0, 1, 0])
+
+    # Without them the orientation is kept.
+    forward_before = np.array(cam.world.forward)
+    up_before = np.array(cam.world.reference_up)
+    update_camera(cam, size=show_m.size, target=scene)
+    np.testing.assert_array_almost_equal(cam.world.forward, forward_before)
+    np.testing.assert_array_almost_equal(cam.world.reference_up, up_before)
+
+    # Top-down orientation must also take effect.
+    update_camera(
+        cam, size=show_m.size, target=scene, view_dir=(0, -1, 0), view_up=(0, 0, -1)
+    )
+    np.testing.assert_array_almost_equal(cam.world.forward, [0, -1, 0])
+    np.testing.assert_array_almost_equal(cam.world.reference_up, [0, 0, -1])
+
+
+def test_update_camera_view_up_on_empty_scene():
+    """view_up should apply even when the scene has no objects."""
+    scene = Scene()
+    show_m = ShowManager(scene=scene, window_type="offscreen")
+    cam = show_m.screens[0].camera
+
+    # Default is Y-up; change to X-up on an empty scene.
+    np.testing.assert_array_almost_equal(cam.world.reference_up, [0, 1, 0])
+    update_camera(cam, size=show_m.size, target=scene, view_up=(1, 0, 0))
+    np.testing.assert_array_almost_equal(cam.world.reference_up, [1, 0, 0])
+
+
+def test_update_camera_warns_on_positional_size_and_target(sample_actor):
+    """A positional call warns but is still remapped to keywords."""
+    scene = Scene()
+    scene.add(sample_actor)
+    show_m = ShowManager(scene=scene, window_type="offscreen")
+    cam = show_m.screens[0].camera
+
+    with pytest.warns(UserWarning, match="no longer accept the way you call"):
+        update_camera(cam, show_m.size, scene)
+    assert cam.width != 800
 
 
 def test_show_manager_snapshot(tmpdir, sample_actor):

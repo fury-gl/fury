@@ -19,6 +19,7 @@ from scipy import ndimage
 
 from fury.actor import Group
 from fury.actor.core import create_axes_helper
+from fury.decorators import warn_on_args_to_kwargs
 from fury.io import load_image
 from fury.lib import (
     AmbientLight,
@@ -435,27 +436,51 @@ def create_screen(
         controller = TrackballController(camera, register_events=vp)
 
     screen = Screen(vp, scene, camera, controller)
-    update_camera(camera, screen.size, scene)
+    update_camera(camera, size=screen.size, target=scene)
     return screen
 
 
-def update_camera(camera, size, target):
+@warn_on_args_to_kwargs(until_version="2.4.0")
+def update_camera(camera, *, size=None, target=None, view_dir=None, view_up=None):
     """
     Update the camera's view to encompass the target object or scene.
 
     If the target is a non-empty scene or another object, the camera adjusts
-    to show it. If the target is an empty scene, the camera's aspect ratio
-    is updated based on the provided size.
+    to show it.  If the target is an empty scene, the camera's aspect ratio
+    is updated based on the provided size.  At least one of *size* or
+    *target* must be given.
+
+    When *view_dir* or *view_up* are given they are forwarded to
+    ``camera.show_object`` so the caller can control the camera orientation
+    (see :func:`pygfx.PerspectiveCamera.show_object`).
 
     Parameters
     ----------
     camera : Camera
         The PyGfx camera object to update.
-    size : tuple
+    size : tuple, optional
         The size (width, height) of the viewport, used if the target is empty.
-    target : Object or Scene
-        The PyGfx object or scene the camera should focus on.
+    target : Object or Scene, optional
+        The PyGfx object or scene the camera should focus on.  Framing the
+        target takes precedence over *size* when both are given.
+    view_dir : array-like of float, optional
+        The direction from which the camera looks at the target as an
+        ``(x, y, z)`` sequence.  For example ``(0, 0, -1)`` looks along the
+        negative-Z axis (front view).  When *None* the current camera
+        direction is kept.
+    view_up : array-like of float, optional
+        The reference up direction as an ``(x, y, z)`` sequence.  For example
+        ``(0, 1, 0)`` treats the positive-Y axis as up.  When *None* the
+        current reference up is kept.
+
+    Raises
+    ------
+    ValueError
+        If neither *size* nor *target* is given.
     """
+    if size is None and target is None:
+        raise ValueError("update_camera needs either size or target, got neither")
+
     if isinstance(target, Scene):
         target = target.main_scene
 
@@ -464,10 +489,13 @@ def update_camera(camera, size, target):
     )
 
     if has_object and target.get_world_bounding_sphere() is not None:
-        camera.show_object(target)
-    elif size is not None:
-        camera.width = size[0]
-        camera.height = size[1]
+        camera.show_object(target, view_dir=view_dir, up=view_up)
+    else:
+        if size is not None:
+            camera.width = size[0]
+            camera.height = size[1]
+        if view_up is not None:
+            camera.world.reference_up = view_up
 
 
 def _get_scene_center(camera, scene):
@@ -557,7 +585,7 @@ def set_camera_from_axis(screen, axis_direction):
     camera.world.reference_up = _reference_up_for_axis(axis_direction)
     camera.world.position = new_pos
     camera.look_at(target)
-    update_camera(camera, None, screen.scene)
+    update_camera(camera, target=screen.scene)
 
 
 def update_viewports(screens, screen_bbs):
@@ -573,7 +601,7 @@ def update_viewports(screens, screen_bbs):
     """
     for screen, screen_bb in zip(screens, screen_bbs, strict=False):
         screen.bounding_box = screen_bb
-        update_camera(screen.camera, screen.size, screen.scene)
+        update_camera(screen.camera, size=screen.size, target=screen.scene)
 
 
 def render_screens(renderer, screens, *, stats=None, is_dirty=False):
@@ -1779,7 +1807,7 @@ class ShowManager:
             self._qt_app.processEvents()
 
         for screen in self.screens:
-            update_camera(screen.camera, screen.size, screen.scene)
+            update_camera(screen.camera, size=screen.size, target=screen.scene)
         self._draw_function()
         if self._qt_app is not None:
             self._qt_app.processEvents()
