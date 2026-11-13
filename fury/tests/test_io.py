@@ -1,13 +1,13 @@
 import os
 from os.path import join as pjoin
 from tempfile import TemporaryDirectory as InTemporaryDirectory
+import warnings
 
 # from PIL import Image
 import numpy as np
 import numpy.testing as npt
-
-# import pytest
 import polyxios as px
+import pytest
 
 # from fury.decorators import skip_osx
 from fury.data import fetch_viz_cubemaps, read_viz_cubemap
@@ -334,7 +334,7 @@ def test_save_load_image():
         "test.vtk",
     )
     npt.assert_raises(
-        IOError,
+        ValueError,
         save_image,
         np.random.randint(0, 255, size=(50, 3)),
         "test.vtk",
@@ -343,7 +343,7 @@ def test_save_load_image():
         dpi=(72, 72),
     )
     npt.assert_raises(
-        IOError,
+        ValueError,
         save_image,
         np.random.randint(0, 255, size=(50, 3)),
         "test.vtk",
@@ -352,7 +352,7 @@ def test_save_load_image():
         dpi=(72, 72),
     )
     npt.assert_raises(
-        IOError,
+        ValueError,
         save_image,
         np.random.randint(0, 255, size=(50, 3, 1, 1)),
         "test.png",
@@ -398,6 +398,202 @@ def test_save_load_image():
         "test.tiff",
         compression_type="invalid",
     )
+
+
+def test_save_image_dtype():
+    """Test saving images with different dtypes, auto-conversion, and roundtrip."""
+    with InTemporaryDirectory() as odir:
+        # 1. Roundtrip: 2D uint16 preserved with default dtype=None (PNG & TIFF)
+        data_u16 = np.arange(100, dtype=np.uint16).reshape((10, 10))
+        fname_u16_png = pjoin(odir, "test_u16.png")
+        fname_u16_tif = pjoin(odir, "test_u16.tiff")
+        save_image(data_u16, fname_u16_png)
+        save_image(data_u16, fname_u16_tif)
+        loaded_u16_png = load_image(fname_u16_png)
+        loaded_u16_tif = load_image(fname_u16_tif)
+        npt.assert_equal(loaded_u16_png.dtype, np.uint16)
+        npt.assert_array_equal(loaded_u16_png, data_u16)
+        npt.assert_equal(loaded_u16_tif.dtype, np.uint16)
+        npt.assert_array_equal(loaded_u16_tif, data_u16)
+
+        # 2. Roundtrip: 2D float32 preserved with default dtype=None (TIFF)
+        data_f32 = np.linspace(0.0, 1.0, 100, dtype=np.float32).reshape((10, 10))
+        fname_f32 = pjoin(odir, "test_f32_native.tiff")
+        save_image(data_f32, fname_f32)
+        loaded_f32 = load_image(fname_f32)
+        npt.assert_equal(loaded_f32.dtype, np.float32)
+        npt.assert_allclose(loaded_f32, data_f32, atol=1e-6)
+
+        # 3. Roundtrip: uint8 2D and 3D RGB preserved
+        data_u8_2d = np.arange(25, dtype=np.uint8).reshape((5, 5))
+        fname_u8_2d = pjoin(odir, "test_u8_2d.png")
+        save_image(data_u8_2d, fname_u8_2d)
+        loaded_u8_2d = load_image(fname_u8_2d)
+        npt.assert_equal(loaded_u8_2d.dtype, np.uint8)
+        npt.assert_array_equal(loaded_u8_2d, data_u8_2d)
+
+        # 4. In-range float64 RGB array converts to uint8 with NO warning (Issue #733)
+        data_f64 = np.zeros((20, 20, 3), dtype=np.float64)
+        data_f64[:, :, 0] = 200.0
+        data_f64[:, :, 1] = 100.0
+        fname_f64 = pjoin(odir, "test_f64.png")
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", UserWarning)
+            save_image(data_f64, fname_f64)
+        loaded = load_image(fname_f64)
+        npt.assert_equal(loaded.dtype, np.uint8)
+        npt.assert_equal(loaded[0, 0, :2], [200, 100])
+
+        # 5. Plain float64 all-zeros converts to uint8 with NO warning
+        data_zeros = np.zeros((10, 10), dtype=np.float64)
+        fname_zeros = pjoin(odir, "test_zeros.png")
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", UserWarning)
+            save_image(data_zeros, fname_zeros)
+        loaded_zeros = load_image(fname_zeros)
+        npt.assert_equal(loaded_zeros.dtype, np.uint8)
+        npt.assert_array_equal(loaded_zeros, 0)
+
+        # 6. Normalized float32 in [0.0, 1.0] scales to [0, 255] and warns
+        data_norm = np.array([[0.0, 0.5, 1.0]], dtype=np.float32)
+        fname_norm = pjoin(odir, "test_norm.png")
+        with pytest.warns(UserWarning, match="scaled to \\[0, 255\\]"):
+            save_image(data_norm, fname_norm)
+        loaded_norm = load_image(fname_norm)
+        npt.assert_equal(loaded_norm.dtype, np.uint8)
+        npt.assert_equal(loaded_norm[0], [0, 128, 255])
+
+        # 7. In-range integer converts to uint8 with NO warning
+        data_i32_inrange = np.array([[0, 128, 255]], dtype=np.int32)
+        fname_i32_inrange = pjoin(odir, "test_i32_inrange.png")
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", UserWarning)
+            save_image(data_i32_inrange, fname_i32_inrange)
+        loaded_i32_inrange = load_image(fname_i32_inrange)
+        npt.assert_equal(loaded_i32_inrange.dtype, np.uint8)
+        npt.assert_array_equal(loaded_i32_inrange[0], [0, 128, 255])
+
+        # 8. Out-of-bounds integer clips and warns
+        data_i32_oob = np.array([[[-10, 150, 300]]], dtype=np.int32)
+        fname_i32_oob = pjoin(odir, "test_i32_oob.png")
+        with pytest.warns(UserWarning, match="values will be clipped"):
+            save_image(data_i32_oob, fname_i32_oob)
+        loaded_i32_oob = load_image(fname_i32_oob)
+        npt.assert_equal(loaded_i32_oob.dtype, np.uint8)
+        npt.assert_equal(loaded_i32_oob[0, 0], [0, 150, 255])
+
+        # 9. Out-of-bounds float clips and warns
+        data_oob_float = np.array([[[-10.0, 100.0, 300.0]]], dtype=np.float64)
+        fname_oob_float = pjoin(odir, "test_oob_float.png")
+        with pytest.warns(UserWarning, match="values will be clipped"):
+            save_image(data_oob_float, fname_oob_float)
+        loaded_oob = load_image(fname_oob_float)
+        npt.assert_equal(loaded_oob.dtype, np.uint8)
+        npt.assert_equal(loaded_oob[0, 0], [0, 100, 255])
+
+        # 10. Boolean array converts with warning
+        data_bool = np.array([[True, False], [False, True]])
+        fname_bool = pjoin(odir, "test_bool.png")
+        with pytest.warns(UserWarning, match="Boolean image data"):
+            save_image(data_bool, fname_bool)
+        loaded_bool = load_image(fname_bool)
+        npt.assert_equal(loaded_bool.dtype, np.uint8)
+        npt.assert_array_equal(loaded_bool, [[255, 0], [0, 255]])
+
+        # 11. Float-to-float preserves values without scaling and without warning
+        data_f64_norm = np.array([[0.0, 0.5, 1.0]], dtype=np.float64)
+        fname_f32_cast = pjoin(odir, "test_f32_cast.tiff")
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", UserWarning)
+            save_image(data_f64_norm, fname_f32_cast, dtype=np.float32)
+        loaded_f32_cast = load_image(fname_f32_cast)
+        npt.assert_equal(loaded_f32_cast.dtype, np.float32)
+        npt.assert_allclose(loaded_f32_cast, [[0.0, 0.5, 1.0]], atol=1e-6)
+
+        # 12. Float to uint16: does NOT scale [0, 1], preserves values
+        data_f_to_u16 = np.array([[0.0, 1000.4, 60000.6]], dtype=np.float64)
+        fname_u16_cast = pjoin(odir, "test_u16_cast.tiff")
+        save_image(data_f_to_u16, fname_u16_cast, dtype=np.uint16)
+        loaded_u16_cast = load_image(fname_u16_cast)
+        npt.assert_equal(loaded_u16_cast.dtype, np.uint16)
+        npt.assert_array_equal(loaded_u16_cast, [[0, 1000, 60001]])
+
+        # 13. (H, W, 1) shape is supported and squeezed to 2D
+        data_1ch = np.zeros((10, 10, 1), dtype=np.uint8)
+        data_1ch[2:5, 2:5, 0] = 200
+        fname_1ch = pjoin(odir, "test_1ch.png")
+        save_image(data_1ch, fname_1ch)
+        loaded_1ch = load_image(fname_1ch)
+        npt.assert_equal(loaded_1ch.dtype, np.uint8)
+        npt.assert_equal(loaded_1ch.shape, (10, 10))
+
+        # 14. Validation errors: unified exception ValueError
+        # Empty array
+        empty_arr = np.zeros((0, 0, 3), dtype=np.uint8)
+        npt.assert_raises(ValueError, save_image, empty_arr, pjoin(odir, "empty.png"))
+
+        # Bad dimensions (1D and 4D)
+        npt.assert_raises(ValueError, save_image, np.zeros(10), pjoin(odir, "1d.png"))
+        npt.assert_raises(
+            ValueError, save_image, np.zeros((2, 2, 2, 2)), pjoin(odir, "4d.png")
+        )
+
+        # Bad channel count (3D with 2 channels)
+        npt.assert_raises(
+            ValueError, save_image, np.zeros((10, 10, 2)), pjoin(odir, "2ch.png")
+        )
+
+        # Unsupported dtype (complex)
+        complex_arr = np.zeros((10, 10), dtype=np.complex64)
+        npt.assert_raises(
+            ValueError, save_image, complex_arr, pjoin(odir, "complex.png")
+        )
+
+        # Invalid extension
+        npt.assert_raises(
+            ValueError, save_image, np.zeros((10, 10)), pjoin(odir, "bad_ext.xyz")
+        )
+
+        # Float containing NaN converted to integer
+        nan_arr = np.array([[np.nan, 10.0], [20.0, 30.0]])
+        npt.assert_raises(ValueError, save_image, nan_arr, pjoin(odir, "nan.png"))
+
+        # Combinations Pillow cannot write
+        # Float to PNG
+        npt.assert_raises(
+            ValueError,
+            save_image,
+            np.zeros((10, 10), dtype=np.float32),
+            pjoin(odir, "float.png"),
+            dtype=np.float32,
+        )
+
+        # 3D float to TIFF
+        npt.assert_raises(
+            ValueError,
+            save_image,
+            np.zeros((10, 10, 3), dtype=np.float32),
+            pjoin(odir, "float3d.tiff"),
+            dtype=np.float32,
+        )
+
+        # 16-bit to JPEG
+        npt.assert_raises(
+            ValueError,
+            save_image,
+            np.zeros((10, 10), dtype=np.uint16),
+            pjoin(odir, "u16.jpg"),
+            dtype=np.uint16,
+        )
+
+        # 3D 16-bit to PNG
+        npt.assert_raises(
+            ValueError,
+            save_image,
+            np.zeros((10, 10, 3), dtype=np.uint16),
+            pjoin(odir, "u16_3d.png"),
+            dtype=np.uint16,
+        )
 
 
 # @pytest.mark.skipif(
