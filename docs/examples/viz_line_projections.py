@@ -69,5 +69,5 @@ scene.add(line_actor)
 # Start the ShowManager to render the scene and allow interaction.
 
 show_m = window.ShowManager(scene=scene, title="FURY Line Projection Example")
-window.update_camera(show_m.screens[0].camera, None, scene)
+window.update_camera(show_m.screens[0].camera, target=scene)
 show_m.start()
