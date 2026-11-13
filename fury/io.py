@@ -2,8 +2,8 @@
 
 import os
 from urllib.request import urlretrieve
+import warnings
 
-# import warnings
 from PIL import Image
 import numpy as np
 import polyxios as px
@@ -108,11 +108,13 @@ def load_image(filename):
 
         if pil_image.mode in ["RGBA", "RGB", "L"]:
             image = np.asarray(pil_image)
+        elif pil_image.mode == "F":
+            image = np.array(pil_image, dtype=np.float32)
         elif pil_image.mode.startswith("I;16"):
             raw = pil_image.tobytes("raw", pil_image.mode)
             dtype = ">u2" if pil_image.mode.endswith("B") else "<u2"
             image = np.frombuffer(raw, dtype=dtype)
-            image.reshape(pil_image.size[::-1]).astype("=u2")
+            image = image.reshape(pil_image.size[::-1]).astype("=u2")
         else:
             try:
                 image = pil_image.convert("RGBA")
@@ -207,6 +209,7 @@ def save_image(
     compression_quality=75,
     compression_type="deflation",
     dpi=(72, 72),
+    dtype=None,
 ):
     """
     Save a 2D or 3D image to a file.
@@ -224,28 +227,183 @@ def save_image(
     dpi : float or tuple of float, optional
         Dots per inch (dpi) for saved image.
         Single values are applied as dpi for both dimensions.
+    dtype : numpy.dtype or type or None, optional
+        Data type to which the array will be converted before saving.
+        Default is None. When None, native supported types (uint8, 2D uint16
+        for PNG/TIFF, and 2D float32 for TIFF) are preserved, while other
+        types (e.g., float64, int64, bool) are converted to uint8.
+        If an explicit dtype is provided, the array is converted to that dtype.
     """
-    if arr.ndim > 3:
-        raise OSError("Image Dimensions should be <=3")
+    # 1. Validate the input
+    arr = np.asarray(arr)
+
+    if arr.size == 0:
+        raise ValueError("Cannot save an empty image array.")
+
+    if arr.ndim < 2 or arr.ndim > 3:
+        raise ValueError(f"Image dimensions must be 2 or 3, but got {arr.ndim}.")
+
+    if arr.ndim == 3 and arr.shape[2] not in (1, 3, 4):
+        raise ValueError(
+            f"3D image must have 1, 3, or 4 channels, but got {arr.shape[2]}."
+        )
+
+    if not (
+        np.issubdtype(arr.dtype, np.integer)
+        or np.issubdtype(arr.dtype, np.floating)
+        or np.issubdtype(arr.dtype, np.bool_)
+    ):
+        raise ValueError(
+            f"Cannot save image with unsupported array dtype '{arr.dtype}'."
+        )
+
+    allowed_extensions = ["png", "bmp", "jpeg", "jpg", "tiff", "tif"]
+    extension = get_extension(filename).lower()
+    if extension not in allowed_extensions:
+        raise ValueError(
+            f"Impossible to save the file {filename}: Unknown extension '{extension}'"
+        )
 
     if isinstance(dpi, (float, int)):
         dpi = (dpi, dpi)
 
-    allowed_extensions = ["png", "bmp", "jpeg", "jpg", "tiff", "tif"]
+    # Normalize (H, W, 1) to (H, W) for Pillow compatibility
+    if arr.ndim == 3 and arr.shape[2] == 1:
+        arr = arr[:, :, 0]
 
-    extension = get_extension(filename).lower()
+    # 2. Resolve the target dtype
+    if dtype is None:
+        if arr.dtype == np.uint8:
+            target_dtype = np.dtype(np.uint8)
+        elif (
+            arr.dtype == np.uint16
+            and arr.ndim == 2
+            and extension in ("png", "tiff", "tif")
+        ):
+            target_dtype = np.dtype(np.uint16)
+        elif arr.dtype == np.float32 and arr.ndim == 2 and extension in ("tiff", "tif"):
+            target_dtype = np.dtype(np.float32)
+        else:
+            target_dtype = np.dtype(np.uint8)
+    else:
+        target_dtype = np.dtype(dtype)
 
-    if extension.lower() not in allowed_extensions:
-        raise OSError(
-            f"Impossible to save the file {filename}: Unknown extension {extension}"
+        if not (
+            np.issubdtype(target_dtype, np.integer)
+            or np.issubdtype(target_dtype, np.floating)
+        ):
+            raise ValueError(
+                f"Unsupported target dtype '{target_dtype}' for image saving."
+            )
+
+        # Validate Pillow write capabilities
+        if np.issubdtype(target_dtype, np.floating):
+            if arr.ndim != 2:
+                raise ValueError(
+                    f"Floating-point images must be 2D; cannot write 3D float "
+                    f"image with shape {arr.shape}."
+                )
+            if extension not in ("tiff", "tif"):
+                raise ValueError(
+                    f"Cannot write floating-point images to '{extension}' format. "
+                    f"Only TIFF supports floating-point data."
+                )
+
+        if target_dtype == np.uint16:
+            if arr.ndim != 2:
+                raise ValueError(
+                    f"16-bit images must be 2D; cannot write 3D 16-bit image "
+                    f"with shape {arr.shape}."
+                )
+            if extension not in ("png", "tiff", "tif"):
+                raise ValueError(
+                    f"Cannot write 16-bit images to '{extension}' format. "
+                    f"Only PNG and TIFF support 16-bit data."
+                )
+
+        if extension in ("jpeg", "jpg", "bmp") and target_dtype != np.uint8:
+            raise ValueError(
+                f"'{extension}' format only supports uint8 data, got '{target_dtype}'."
+            )
+
+        if arr.ndim == 3 and target_dtype != np.uint8:
+            raise ValueError(
+                f"3D images only support uint8 data, got '{target_dtype}'."
+            )
+
+    # 3. Conversions and Warning Policy
+    if arr.dtype == np.bool_:
+        warnings.warn(
+            "Boolean image data is being converted to uint8.",
+            UserWarning,
+            stacklevel=2,
         )
+        if target_dtype == np.uint8:
+            arr = arr.astype(np.uint8) * 255
+        else:
+            arr = arr.astype(target_dtype)
+
+    elif np.issubdtype(arr.dtype, np.floating) and np.issubdtype(
+        target_dtype, np.integer
+    ):
+        if np.isnan(arr).any():
+            raise ValueError("Cannot convert float image containing NaN to integer.")
+
+        # Scale [0, 1] only when target is uint8
+        if target_dtype == np.uint8:
+            if arr.min() >= 0.0 and arr.max() <= 1.0 and arr.max() > 0.0:
+                arr = arr * 255.0
+                warnings.warn(
+                    "Floating-point image data in range [0, 1] was scaled to [0, 255].",
+                    UserWarning,
+                    stacklevel=2,
+                )
+
+        arr = np.round(arr)
+
+        info = np.iinfo(target_dtype)
+        if arr.min() < info.min or arr.max() > info.max:
+            warnings.warn(
+                f"Image data contains values outside [{info.min}, {info.max}]; "
+                f"values will be clipped.",
+                UserWarning,
+                stacklevel=2,
+            )
+            arr = np.clip(arr, info.min, info.max)
+
+        arr = arr.astype(target_dtype)
+
+    elif np.issubdtype(arr.dtype, np.integer) and np.issubdtype(
+        target_dtype, np.integer
+    ):
+        info = np.iinfo(target_dtype)
+        if arr.min() < info.min or arr.max() > info.max:
+            warnings.warn(
+                f"Integer image data contains values outside [{info.min}, {info.max}]; "
+                f"values will be clipped.",
+                UserWarning,
+                stacklevel=2,
+            )
+            arr = np.clip(arr, info.min, info.max)
+
+        arr = arr.astype(target_dtype)
+
+    elif np.issubdtype(arr.dtype, np.floating) and np.issubdtype(
+        target_dtype, np.floating
+    ):
+        arr = arr.astype(target_dtype)
+
+    elif np.issubdtype(arr.dtype, np.integer) and np.issubdtype(
+        target_dtype, np.floating
+    ):
+        arr = arr.astype(target_dtype)
 
     im = Image.fromarray(arr)
 
     save_kwargs = {"dpi": dpi}
 
     if extension in ("tiff", "tif"):
-        if compression_type is not None:
+        if compression_type is not None and im.mode != "F":
             compression_map = {
                 "lzw": "tiff_lzw",
                 "deflation": "tiff_deflate",
