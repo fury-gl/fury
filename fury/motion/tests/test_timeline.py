@@ -76,6 +76,57 @@ def test_timeline_updates_duration_for_later_child_keyframes():
     assert timeline.duration == 5
 
 
+def test_remove_animations_detaches_child_and_updates_timeline():
+    parent = Animation()
+    timeline = Timeline(animations=parent)
+
+    child = Animation()
+    child.set_position(0, [0, 0, 0])
+    child.set_position(5, [1, 1, 1])
+    parent.add_child_animation(child)
+
+    assert parent.duration == 5
+    assert timeline.duration == 5
+
+    parent.remove_animations()
+
+    assert parent.child_animations == []
+    assert child.parent_animation is None
+    assert child.timeline is None
+    assert parent.duration == 0
+    assert timeline.duration == 0
+
+    child.set_position(10, [2, 2, 2])
+
+    assert child.duration == 10
+    assert parent.duration == 0
+    assert timeline.duration == 0
+
+
+def test_remove_animations_preserves_grandchild_parent_relationship():
+    parent = Animation()
+    timeline = Timeline(animations=parent)
+    child = Animation()
+    grandchild = Animation()
+    grandchild.set_position(0, [0, 0, 0])
+    grandchild.set_position(7, [1, 1, 1])
+    child.add_child_animation(grandchild)
+    parent.add_child_animation(child)
+
+    assert parent.duration == 7
+    assert timeline.duration == 7
+
+    parent.remove_animations()
+
+    assert parent.child_animations == []
+    assert child.parent_animation is None
+    assert child.timeline is None
+    assert grandchild.parent_animation is child
+    assert grandchild.timeline is None
+    assert parent.duration == 0
+    assert timeline.duration == 0
+
+
 def test_timeline_with_animations_param():
     anim = Animation()
     anim.set_position(0, np.array([0, 0, 0]))

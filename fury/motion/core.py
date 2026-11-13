@@ -1077,7 +1077,14 @@ class Animation:
 
     def remove_animations(self):
         """Remove all child Animations from the Animation."""
+        timeline = self.timeline
+        for animation in self._animations:
+            animation.parent_animation = None
+            animation.timeline = None
         self._animations.clear()
+        self.update_duration()
+        if timeline is not None:
+            timeline.update_duration()
 
     def remove_actor(self, actor):
         """
