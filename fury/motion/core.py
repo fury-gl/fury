@@ -942,7 +942,12 @@ class Animation:
         animation._set_record_callback(self._record_callback)
         animation.update_motion_path()
         self._animations.append(animation)
+        timeline = self.timeline
+        if timeline is not None:
+            animation.timeline = timeline
         self.update_duration()
+        if timeline is not None:
+            timeline.update_duration()
 
     def add_actor(self, actor, *, static=False):
         """
@@ -1072,7 +1077,14 @@ class Animation:
 
     def remove_animations(self):
         """Remove all child Animations from the Animation."""
+        timeline = self.timeline
+        for animation in self._animations:
+            animation.parent_animation = None
+            animation.timeline = None
         self._animations.clear()
+        self.update_duration()
+        if timeline is not None:
+            timeline.update_duration()
 
     def remove_actor(self, actor):
         """
