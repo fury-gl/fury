@@ -112,6 +112,28 @@ def test_timeline_playback():
     assert tl.paused is True
 
 
+def test_timeline_pause_at_zero():
+    tl = Timeline(length=10)
+
+    tl.pause()
+    assert tl.current_timestamp == 0
+    assert tl.paused is True
+    assert tl.stopped is False
+    assert tl.playing is False
+
+    tl.seek(5)
+    tl.seek(0)
+    assert tl.paused is True
+    assert tl.stopped is False
+
+    tl.play()
+    assert tl.playing is True
+    assert tl.paused is False
+    tl.stop()
+    assert tl.stopped is True
+    assert tl.paused is False
+
+
 def test_timeline_play_updates_time():
     tl = Timeline(length=10)
 

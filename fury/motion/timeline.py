@@ -46,7 +46,7 @@ class Timeline:
         self._current_timestamp = 0
         self._speed = 1.0
         self._last_started_time = 0
-        self._playing = False
+        self._timeline_status = "stop"
         self._animations = []
         self._loop = loop
         self._length = length
@@ -133,7 +133,7 @@ class Timeline:
             self._last_started_time = (
                 perf_counter() - self._current_timestamp / self.speed
             )
-            self._playing = True
+            self._timeline_status = "play"
 
     def pause(self):
         """
@@ -142,7 +142,7 @@ class Timeline:
         Freeze the animation at its current timestamp.
         """
         self._current_timestamp = self.current_timestamp
-        self._playing = False
+        self._timeline_status = "pause"
 
     def stop(self):
         """
@@ -151,7 +151,7 @@ class Timeline:
         Reset the timeline to the beginning and stop playback.
         """
         self._current_timestamp = 0
-        self._playing = False
+        self._timeline_status = "stop"
         self.update(force=True)
 
     def restart(self):
@@ -162,7 +162,7 @@ class Timeline:
         """
         self._current_timestamp = 0
         self._last_started_time = perf_counter()
-        self._playing = True
+        self._timeline_status = "play"
         self.update(force=True)
 
     @property
@@ -212,6 +212,8 @@ class Timeline:
             self._last_started_time = perf_counter() - timestamp / self.speed
         else:
             self._current_timestamp = timestamp
+            if self.stopped and timestamp != 0:
+                self._timeline_status = "pause"
             self.update(force=True)
 
     def seek_percent(self, percent):
@@ -236,7 +238,7 @@ class Timeline:
         bool
             True if the Timeline is currently playing, False otherwise.
         """
-        return self._playing
+        return self._timeline_status == "play"
 
     @property
     def stopped(self):
@@ -246,10 +248,9 @@ class Timeline:
         Returns
         -------
         bool
-            True if the Timeline is stopped (not playing and at timestamp 0),
-            False otherwise.
+            True if the Timeline is stopped, False otherwise.
         """
-        return not self.playing and not self._current_timestamp
+        return self._timeline_status == "stop"
 
     @property
     def paused(self):
@@ -259,10 +260,9 @@ class Timeline:
         Returns
         -------
         bool
-            True if the Timeline is paused (not playing but at a non-zero timestamp),
-            False otherwise.
+            True if the Timeline is paused, False otherwise.
         """
-        return not self.playing and self._current_timestamp != 0
+        return self._timeline_status == "pause"
 
     @property
     def speed(self):
