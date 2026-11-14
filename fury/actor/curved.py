@@ -873,6 +873,11 @@ class StreamlinesActor(Line):
                 self._out_capacity,
             )
         )
+        self._line_thicknesses_buffer = (
+            None
+            if self._line_thicknesses_data is None
+            else Buffer(self._line_thicknesses_data)
+        )
         self._roi_mask_buffer = None
         self._roi_auto_detach = True
         self.roi_mask = roi_mask
@@ -918,7 +923,8 @@ class StreamlinesActor(Line):
         expanded = _expand_streamline_thicknesses(
             values, self._line_lengths, self._line_offsets, self._out_capacity
         )
-        self._line_thicknesses_data = expanded
+        self._line_thicknesses_data[:] = expanded
+        self._line_thicknesses_buffer.update_full()
         self._line_thicknesses = values
 
     @property
