@@ -71,6 +71,7 @@ def doctest_skip_parser(func):
 
 
 def warn_on_args_to_kwargs(
+    *,
     from_version="0.11.0",
     until_version="0.14.0",
 ):

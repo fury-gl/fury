@@ -96,7 +96,7 @@ def update_authors(*, file_path="AUTHORS.rst"):
     """
     print(f"--- Updating {file_path} file... ---")
     # Read the content of the authors.rst file
-    with open(file_path, "r", encoding="utf-8") as file:
+    with open(file_path, encoding="utf-8") as file:
         lines = file.readlines()
 
     # Find the index of the "Contributors" line
@@ -156,7 +156,7 @@ def update_release_history(
     """
     print("--- Updating release-history.rst file... ---")
     # Read the content of the release-history.rst file
-    with open(file_path, "r", encoding="utf-8") as file:
+    with open(file_path, encoding="utf-8") as file:
         lines = file.readlines()
 
     # Find the index to insert the new version
@@ -197,7 +197,7 @@ def check_license_year():
     """Check and update the LICENSE file with the current year."""
     print("--- Checking LICENSE year range... ---")
     current_year = datetime.datetime.now().year
-    with open("LICENSE", "r", encoding="utf-8") as f:
+    with open("LICENSE", encoding="utf-8") as f:
         lines = f.readlines()
     for i, line in enumerate(lines):
         if "Copyright (c)" in line:

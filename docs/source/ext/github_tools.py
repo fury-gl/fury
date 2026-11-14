@@ -86,7 +86,7 @@ def fetch_url(url):
     if GH_TOKEN:
         req.add_header("Authorization", f"token {GH_TOKEN}")
     try:
-        print("fetching %s" % url, file=sys.stderr)
+        print(f"fetching {url}", file=sys.stderr)
         # url = Request(url,
         #               headers={'Accept': 'application/vnd.github.v3+json',
         #                        'User-agent': 'Defined'})
@@ -165,11 +165,9 @@ def get_paged_request(url, response_key=None):
 def get_issues(project="fury-gl/fury", state="closed", pulls=False):
     """Get a list of the issues from the Github API."""
     which = "pulls" if pulls else "issues"
-    url = "https://api.github.com/repos/%s/%s?state=%s&per_page=%i" % (
-        project,
-        which,
-        state,
-        PER_PAGE,
+    url = (
+        f"https://api.github.com/repos/{project}/{which}"
+        f"?state={state}&per_page={PER_PAGE}"
     )
     return get_paged_request(url)
 
@@ -452,10 +450,10 @@ def report(issues, show_urls=False):
     if show_urls:
         for i in issues:
             role = "ghpull" if "merged_at" in i else "ghissue"
-            print("* :%s:`%d`: %s" % (role, i["number"], i["title"]))
+            print(f"* :{role}:`{i['number']}`: {i['title']}")
     else:
         for i in issues:
-            print("* %d: %s" % (i["number"], i["title"]))
+            print(f"* {i['number']}: {i['title']}")
 
 
 def get_all_versions(ignore="", project="fury-gl/fury"):
@@ -573,7 +571,7 @@ def github_stats(**kwargs):
         version = kwargs.get("version", "vx.x.x")
         fname = "releasev" + version + ".rst"
         fpath = os.path.join(os.path.dirname(__file__), "..", "release_notes", fname)
-        f = open(fpath, "w", encoding="utf-8")
+        f = open(fpath, "w", encoding="utf-8", newline="\n")
         orig_stdout = sys.stdout
         sys.stdout = f
         print(".. _{}".format(fname.replace(".rst", ":")))
@@ -604,7 +602,7 @@ def github_stats(**kwargs):
     else:
         since = datetime.now() - timedelta(days=days)
 
-    print("fetching GitHub stats since %s (tag: %s)" % (since, tag), file=sys.stderr)
+    print(f"fetching GitHub stats since {since} (tag: {tag})", file=sys.stderr)
     # turn off to play interactively without redownloading, use %run -i
     if 1:
         issues = issues_closed_since(since, pulls=False)
@@ -622,7 +620,7 @@ def github_stats(**kwargs):
     print()
     since_day = since.strftime("%Y/%m/%d")
     today = datetime.today().strftime("%Y/%m/%d")
-    print("GitHub stats for %s - %s (tag: %s)" % (since_day, today, tag))
+    print(f"GitHub stats for {since_day} - {today} (tag: {tag})")
     print()
     print(
         "These lists are automatically generated, and may be incomplete or"
@@ -646,8 +644,8 @@ def github_stats(**kwargs):
             print("No commits during this period.")
         else:
             print(
-                "The following %i authors contributed %i commits."
-                % (len(unique_authors), ncommits)
+                f"The following {len(unique_authors)} authors contributed "
+                f"{ncommits} commits."
             )
             print()
             print("\n".join(unique_authors))
@@ -655,16 +653,15 @@ def github_stats(**kwargs):
 
             print()
             print(
-                "We closed a total of %d issues, %d pull requests and %d"
-                " regular issues;\nthis is the full list (generated with"
-                " the script \n:file:`tools/github_stats.py`):"
-                % (n_total, n_pulls, n_issues)
+                f"We closed a total of {n_total} issues, {n_pulls} pull requests"
+                f" and {n_issues} regular issues;\nthis is the full list (generated"
+                " with the script \n:file:`tools/github_stats.py`):"
             )
             print()
-            print("Pull Requests (%d):\n" % n_pulls)
+            print(f"Pull Requests ({n_pulls}):\n")
             report(pulls, show_urls)
             print()
-            print("Issues (%d):\n" % n_issues)
+            print(f"Issues ({n_issues}):\n")
             report(issues, show_urls)
 
     if save:

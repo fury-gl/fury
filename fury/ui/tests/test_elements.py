@@ -29,7 +29,9 @@ def test_textured_button_2d_initialization():
     button = ui.TexturedButton2D(states=states, position=button_pos, size=button_size)
 
     npt.assert_equal(button.size, button_size)
-    npt.assert_array_equal(button.get_position(Anchor.LEFT, Anchor.TOP), button_pos)
+    npt.assert_array_equal(
+        button.get_position(x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP), button_pos
+    )
     assert "default" in button.texture_map
     assert "hover" in button.texture_map
     assert button.child is not None
@@ -524,8 +526,8 @@ def test_textbox_shift_uppercase():
     tb = ui.TextBox2D(width=10, height=1, text="")
     tb.edit_mode()
 
-    tb.handle_character("a", "a", ["Shift"])
-    tb.handle_character("b", "b", ["Shift"])
+    tb.handle_character("a", "a", modifiers=["Shift"])
+    tb.handle_character("b", "b", modifiers=["Shift"])
 
     assert tb._message == "AB"
 
@@ -535,8 +537,8 @@ def test_textbox_capslock_uppercase():
     tb = ui.TextBox2D(width=10, height=1, text="")
     tb.edit_mode()
 
-    tb.handle_character("a", "a", ["CapsLock"])
-    tb.handle_character("b", "b", ["CapsLock"])
+    tb.handle_character("a", "a", modifiers=["CapsLock"])
+    tb.handle_character("b", "b", modifiers=["CapsLock"])
 
     assert tb._message == "AB"
 
@@ -546,8 +548,8 @@ def test_textbox_shift_and_capslock_lowercase():
     tb = ui.TextBox2D(width=10, height=1, text="")
     tb.edit_mode()
 
-    tb.handle_character("a", "a", ["Shift", "CapsLock"])
-    tb.handle_character("b", "b", ["Shift", "CapsLock"])
+    tb.handle_character("a", "a", modifiers=["Shift", "CapsLock"])
+    tb.handle_character("b", "b", modifiers=["Shift", "CapsLock"])
 
     assert tb._message == "ab"
 
@@ -557,11 +559,11 @@ def test_textbox_shift_symbols():
     tb = ui.TextBox2D(width=20, height=1, text="")
     tb.edit_mode()
 
-    tb.handle_character("1", "1", ["Shift"])
-    tb.handle_character("2", "2", ["Shift"])
-    tb.handle_character("9", "9", ["Shift"])
-    tb.handle_character("-", "-", ["Shift"])
-    tb.handle_character(";", ";", ["Shift"])
+    tb.handle_character("1", "1", modifiers=["Shift"])
+    tb.handle_character("2", "2", modifiers=["Shift"])
+    tb.handle_character("9", "9", modifiers=["Shift"])
+    tb.handle_character("-", "-", modifiers=["Shift"])
+    tb.handle_character(";", ";", modifiers=["Shift"])
 
     assert tb._message == "!@(_:"
 
@@ -572,7 +574,7 @@ def test_textbox_shift_enter_newline():
     tb.edit_mode()
 
     tb.handle_character("a", "a")
-    result = tb.handle_character("Return", "", ["Shift"])
+    result = tb.handle_character("Return", "", modifiers=["Shift"])
 
     assert result is False
     assert "\n" in tb._message
@@ -1919,6 +1921,93 @@ def test_ui_combobox_2d_drag_events():
     assert combobox._is_dragging is False
     assert combobox._menu_visibility is True
     assert combobox._drag_offset is None
+
+
+def test_ui_combobox_2d_collapsed_allows_click_on_underlying_widget():
+    """Verify that clicking a widget behind a collapsed ComboBox reaches it."""
+    fetch_viz_icons()
+    scene = window.Scene()
+    underlying_clicked = []
+    underlying_btn = ui.Rectangle2D(position=(150, 150), size=(100, 40))
+    underlying_btn.on_left_mouse_button_clicked = lambda event: (
+        underlying_clicked.append(True)
+    )
+
+    cb = ui.ComboBox2D(
+        items=["Option 1", "Option 2"], position=(100, 250), size=(300, 200)
+    )
+
+    scene.add(cb)
+    scene.add(underlying_btn)
+
+    show_m = window.ShowManager(scene=scene, size=(800, 800), window_type="offscreen")
+    try:
+        show_m.render()
+        show_m.window.draw()
+
+        pick_pos = (180, 160)
+        pick_info = show_m.renderer.get_pick_info(pick_pos)
+        assert pick_info.get("world_object") in underlying_btn.actors
+        assert pick_info.get("world_object") is not cb.panel.background.actor
+
+        target_actor = pick_info["world_object"]
+        click_event = window.PointerEvent(
+            x=pick_pos[0],
+            y=pick_pos[1],
+            type=window.EventType.POINTER_DOWN,
+            target=target_actor,
+            button=1,
+        )
+        show_m.renderer.dispatch_event(click_event)
+        release_event = window.PointerEvent(
+            x=pick_pos[0],
+            y=pick_pos[1],
+            type=window.EventType.POINTER_UP,
+            target=target_actor,
+            button=1,
+        )
+        show_m.renderer.dispatch_event(release_event)
+        assert len(underlying_clicked) == 1
+
+        # Expand and collapse
+        mock_toggle_event = window.PointerEvent(
+            x=0, y=0, type=window.EventType.POINTER_DOWN, target="target"
+        )
+        cb.menu_toggle_callback(mock_toggle_event)
+        assert cb._menu_visibility is True
+
+        cb.drop_down_menu.selected = ["Option 2"]
+        cb.drop_down_menu.last_selection_idx = 1
+        cb.select_option_callback()
+        assert cb._menu_visibility is False
+
+        show_m.render()
+        show_m.window.draw()
+
+        pick_info_after = show_m.renderer.get_pick_info(pick_pos)
+        assert pick_info_after.get("world_object") in underlying_btn.actors
+        assert pick_info_after.get("world_object") is not cb.panel.background.actor
+
+        target_actor_after = pick_info_after["world_object"]
+        click_event2 = window.PointerEvent(
+            x=pick_pos[0],
+            y=pick_pos[1],
+            type=window.EventType.POINTER_DOWN,
+            target=target_actor_after,
+            button=1,
+        )
+        show_m.renderer.dispatch_event(click_event2)
+        release_event2 = window.PointerEvent(
+            x=pick_pos[0],
+            y=pick_pos[1],
+            type=window.EventType.POINTER_UP,
+            target=target_actor_after,
+            button=1,
+        )
+        show_m.renderer.dispatch_event(release_event2)
+        assert len(underlying_clicked) == 2
+    finally:
+        show_m.close()
 
 
 #     skip_osx,

@@ -36,7 +36,7 @@ def buffer_to_geometry(positions, **kwargs):
     return geo
 
 
-def line_buffer_separator(line_vertices, color=None):
+def line_buffer_separator(line_vertices, *, color=None):
     """
     Create a line buffer with separators between segments.
 
@@ -140,23 +140,38 @@ def rotate_vector(v, axis, angle):
     )
 
 
-def prune_colinear(arr, colinear_threshold=0.9999):
+def prune_colinear(arr, *, colinear_threshold=0.9999):
     """
     Prune colinear points from the array.
 
     Parameters
     ----------
-    arr : ndarray, shape (N, 3)
-        The input array of points.
+    arr : list, tuple, or ndarray, shape (N, 3)
+        The input sequence or array of points.
     colinear_threshold : float, optional
         The threshold for colinearity. Points are considered colinear if the
         cosine of the angle between them is greater than or equal to this value.
 
     Returns
     -------
-    ndarray, shape (3,)
+    ndarray, shape (M, 3)
         The pruned array with colinear points removed.
     """
+    if not isinstance(arr, (list, tuple, np.ndarray)):
+        raise ValueError(
+            f"arr must be a list, tuple, or ndarray. Got {type(arr).__name__}."
+        )
+
+    arr = np.asarray(arr)
+    if arr.ndim == 1 and arr.size == 0:
+        arr = arr.reshape((0, 3))
+
+    if arr.ndim != 2 or arr.shape[1] != 3:
+        raise ValueError(f"arr must have shape (N, 3), but got shape {arr.shape}.")
+
+    if len(arr) <= 2:
+        return arr.copy()
+
     keep = [arr[0]]
     for i in range(1, len(arr) - 1):
         v1 = arr[i] - keep[-1]
@@ -172,7 +187,7 @@ def prune_colinear(arr, colinear_threshold=0.9999):
     return np.stack(keep)
 
 
-def axes_for_dir(d, prev_x=None):
+def axes_for_dir(d, *, prev_x=None):
     """
     Compute the axes for a given direction vector.
 

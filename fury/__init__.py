@@ -31,7 +31,7 @@ gfx, _, _ = optional_package("pygfx", min_version="0.14.0")
 gfx_version = gfx.__version__
 
 
-def get_info(verbose=False):
+def get_info(*, verbose=False):
     """
     Return dict describing the context of this package.
 
@@ -51,7 +51,7 @@ def get_info(verbose=False):
     mpl, have_mpl, _ = optional_package("matplotlib")
     dipy, have_dipy, _ = optional_package("dipy")
 
-    install_type, commit_hash = pkg_commit_hash(dirname(__file__))
+    install_type, commit_hash = pkg_commit_hash(pkg_path=dirname(__file__))
 
     info = {
         "fury_version": __version__,
@@ -76,7 +76,7 @@ def get_info(verbose=False):
     return info
 
 
-def enable_warnings(warnings_origin=None):
+def enable_warnings(*, warnings_origin=None):
     """
     Enable global warnings.
 
@@ -91,7 +91,7 @@ def enable_warnings(warnings_origin=None):
         warnings.filterwarnings("default")
 
 
-def disable_warnings(warnings_origin=None):
+def disable_warnings(*, warnings_origin=None):
     """
     Disable global warnings.
 

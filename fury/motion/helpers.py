@@ -5,7 +5,7 @@ from scipy.spatial import transform
 
 
 def compose_transform_matrix(
-    position=None, rotation_quat=None, scale_factors=None, parent_matrix=None
+    *, position=None, rotation_quat=None, scale_factors=None, parent_matrix=None
 ):
     """
     Compose a 4x4 transformation matrix from position, rotation, and scale.

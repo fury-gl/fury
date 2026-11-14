@@ -79,8 +79,10 @@ mesh_vertices = mesh.geometry.positions.nitems
 
 labels = actor.text(
     [
-        f"Impostor\n{impostor_vertices} generated vertices\n"
-        f"{impostor_centers} stored center",
+        (
+            f"Impostor\n{impostor_vertices} generated vertices\n"
+            f"{impostor_centers} stored center"
+        ),
         f"Mesh\n{mesh_vertices} surface vertices",
     ],
     position=[(-2.0, -1.4, 0.0), (2.0, -1.4, 0.0)],

@@ -22,7 +22,9 @@ def test_cmp_pkg_version():
     npt.assert_equal(cmp_pkg_version(fury.__version__), 0)
     npt.assert_equal(cmp_pkg_version("0.0"), -1)
     npt.assert_equal(cmp_pkg_version("1000.1000.1"), 1)
-    npt.assert_equal(cmp_pkg_version(fury.__version__, fury.__version__), 0)
+    npt.assert_equal(
+        cmp_pkg_version(fury.__version__, pkg_version_str=fury.__version__), 0
+    )
     for test_ver, pkg_ver, exp_out in (
         ("1.0", "1.0", 0),
         ("1.0.0", "1.0", 0),
@@ -44,11 +46,11 @@ def test_cmp_pkg_version():
         ("1.2.1b", "1.2.1a", 1),
         ("1.2.1a", "1.2.1b", -1),
     ):
-        npt.assert_equal(cmp_pkg_version(test_ver, pkg_ver), exp_out)
+        npt.assert_equal(cmp_pkg_version(test_ver, pkg_version_str=pkg_ver), exp_out)
 
     npt.assert_raises(ValueError, cmp_pkg_version, "foo.2")
-    npt.assert_raises(ValueError, cmp_pkg_version, "foo.2", "1.0")
-    npt.assert_raises(ValueError, cmp_pkg_version, "1.0", "foo.2")
+    npt.assert_raises(ValueError, cmp_pkg_version, "foo.2", pkg_version_str="1.0")
+    npt.assert_raises(ValueError, cmp_pkg_version, "1.0", pkg_version_str="foo.2")
     npt.assert_raises(ValueError, cmp_pkg_version, "foo")
 
 
@@ -123,7 +125,7 @@ def test_deprecate_with_version():
     assert "Some text" in doc
 
     # Try some since and until versions
-    func = dec("foo", "0.2")(func_no_doc)
+    func = dec("foo", since="0.2")(func_no_doc)
     npt.assert_equal(func.__doc__, "foo\n\n* deprecated from version: 0.2\n")
     with clear_and_catch_warnings(record=True, modules=[my_mod]) as w:
         warnings.simplefilter("always")
@@ -144,14 +146,14 @@ def test_deprecate_with_version():
         func.__doc__,
         f"foo\n\n* Raises {ExpiredDeprecationError} as of version: 0.3\n",
     )
-    func = dec("foo", "0.2", "0.3")(func_no_doc)
+    func = dec("foo", since="0.2", until="0.3")(func_no_doc)
     npt.assert_raises(ExpiredDeprecationError, func)
     npt.assert_equal(
         func.__doc__,
         "foo\n\n* deprecated from version: 0.2\n"
         f"* Raises {ExpiredDeprecationError} as of version: 0.3\n",
     )
-    func = dec("foo", "0.2", "0.3")(func_doc_long)
+    func = dec("foo", since="0.2", until="0.3")(func_doc_long)
 
     # Calling the function should now raise, due to `until` having passed.
     npt.assert_raises(ExpiredDeprecationError, func)
@@ -199,32 +201,32 @@ def test_deprecated_argument():
     # Tests the decorator with function, method, staticmethod and classmethod.
     class CustomActor:
         @classmethod
-        @deprecated_params("height", "scale", "0.3")
+        @deprecated_params("height", new_name="scale", since="0.3")
         def test1(cls, scale):
             return scale
 
         @staticmethod
-        @deprecated_params("height", "scale", "0.3")
+        @deprecated_params("height", new_name="scale", since="0.3")
         def test2(scale):
             return scale
 
-        @deprecated_params("height", "scale", "0.3")
+        @deprecated_params("height", new_name="scale", since="0.3")
         def test3(self, scale):
             return scale
 
-        @deprecated_params("height", "scale", "0.3", "0.5")
+        @deprecated_params("height", new_name="scale", since="0.3", until="0.5")
         def test4(self, scale):
             return scale
 
-        @deprecated_params("height", "scale", "0.3", "10.0.0")
+        @deprecated_params("height", new_name="scale", since="0.3", until="10.0.0")
         def test5(self, scale):
             return scale
 
-    @deprecated_params("height", "scale", "0.3")
+    @deprecated_params("height", new_name="scale", since="0.3")
     def custom_actor(scale):
         return scale
 
-    @deprecated_params("height", "scale", "0.3", "0.5")
+    @deprecated_params("height", new_name="scale", since="0.3", until="0.5")
     def custom_actor_2(scale):
         return scale
 
@@ -257,11 +259,17 @@ def test_deprecated_argument():
 def test_deprecated_argument_in_kwargs():
     # To rename an argument that is consumed by "kwargs" the "arg_in_kwargs"
     # parameter is used.
-    @deprecated_params("height", "scale", "0.3", arg_in_kwargs=True)
+    @deprecated_params("height", new_name="scale", since="0.3", arg_in_kwargs=True)
     def test(**kwargs):
         return kwargs["scale"]
 
-    @deprecated_params("height", "scale", "0.3", "0.5", arg_in_kwargs=True)
+    @deprecated_params(
+        "height",
+        new_name="scale",
+        since="0.3",
+        until="0.5",
+        arg_in_kwargs=True,
+    )
     def test2(**kwargs):
         return kwargs["scale"]
 
@@ -285,11 +293,15 @@ def test_deprecated_argument_in_kwargs():
 
 
 def test_deprecated_argument_multi_deprecation():
-    @deprecated_params(["x", "y", "z"], ["a", "b", "c"], [0.3, 0.2, 0.4])
+    @deprecated_params(
+        ["x", "y", "z"],
+        new_name=["a", "b", "c"],
+        since=[0.3, 0.2, 0.4],
+    )
     def test(a, b, c):
         return a, b, c
 
-    @deprecated_params(["x", "y", "z"], ["a", "b", "c"], "0.3")
+    @deprecated_params(["x", "y", "z"], new_name=["a", "b", "c"], since="0.3")
     def test2(a, b, c):
         return a, b, c
 
@@ -308,46 +320,63 @@ def test_deprecated_argument_not_allowed_use():
     # arg_in_kwargs parameter. Without it it raises a TypeError.
     with pytest.raises(TypeError):
 
-        @deprecated_params("height", "scale", "0.3")
+        @deprecated_params("height", new_name="scale", since="0.3")
         def test1(**kwargs):
             return kwargs["scale"]
 
     # Cannot replace "*args".
     with pytest.raises(TypeError):
 
-        @deprecated_params("scale", "args", "0.3")
+        @deprecated_params("scale", new_name="args", since="0.3")
         def test2(*args):
             return args
 
     # Cannot replace "**kwargs".
     with pytest.raises(TypeError):
 
-        @deprecated_params("scale", "kwargs", "0.3")
+        @deprecated_params("scale", new_name="kwargs", since="0.3")
         def test3(**kwargs):
             return kwargs
 
     # wrong number of arguments
     with pytest.raises(ValueError):
 
-        @deprecated_params(["a", "b", "c"], ["x", "y"], "0.3")
+        @deprecated_params(["a", "b", "c"], new_name=["x", "y"], since="0.3")
         def test4(**kwargs):
             return kwargs
 
 
 def test_deprecated_argument_remove():
-    @deprecated_params("x", None, "0.3", alternative="test2.y")
+    @deprecated_params("x", new_name=None, since="0.3", alternative="test2.y")
     def test(dummy=11, x=3):
         return dummy, x
 
-    @deprecated_params("x", None, "0.3", "0.5", alternative="test2.y")
+    @deprecated_params(
+        "x",
+        new_name=None,
+        since="0.3",
+        until="0.5",
+        alternative="test2.y",
+    )
     def test2(dummy=11, x=3):
         return dummy, x
 
-    @deprecated_params(["dummy", "x"], None, "0.3", alternative="test2.y")
+    @deprecated_params(
+        ["dummy", "x"],
+        new_name=None,
+        since="0.3",
+        alternative="test2.y",
+    )
     def test3(dummy=11, x=3):
         return dummy, x
 
-    @deprecated_params(["dummy", "x"], None, "0.3", "0.5", alternative="test2.y")
+    @deprecated_params(
+        ["dummy", "x"],
+        new_name=None,
+        since="0.3",
+        until="0.5",
+        alternative="test2.y",
+    )
     def test4(dummy=11, x=3):
         return dummy, x
 

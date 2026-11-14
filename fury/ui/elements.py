@@ -69,7 +69,7 @@ class TexturedButton2D(Button2D):
         If True, the button behaves as a toggle switch.
     """
 
-    def __init__(self, states, position=(0, 0), size=(30, 30), is_toggle=False):
+    def __init__(self, states, *, position=(0, 0), size=(30, 30), is_toggle=False):
         """Initialize the textured button instance."""
         self.texture_map = self._load_textures(states)
         super().__init__(position=position, size=size, is_toggle=is_toggle)
@@ -140,6 +140,7 @@ class TextButton2D(Button2D):
     def __init__(
         self,
         label,
+        *,
         states=None,
         position=(0, 0),
         size=(100, 40),
@@ -263,7 +264,7 @@ class LineSlider2D(Slider2D):
         self._length = length
         self._line_width = line_width
 
-        super(LineSlider2D, self).__init__(
+        super().__init__(
             position=position,
             initial_value=initial_value,
             min_value=min_value,
@@ -281,7 +282,7 @@ class LineSlider2D(Slider2D):
 
     def _setup(self):
         """Set up the internal actors."""
-        super(LineSlider2D, self)._setup()
+        super()._setup()
         track_size = (
             (self._length, self._line_width)
             if self.orientation == "horizontal"
@@ -446,7 +447,7 @@ class PlaybackPanel(UI):
         self.on_progress_bar_changed = lambda x: None
         self.on_speed_changed = lambda x: None
 
-        super(PlaybackPanel, self).__init__(position=position, z_order=z_order)
+        super().__init__(position=position, z_order=z_order)
 
         self.loop() if loop else self.play_once()
         self.current_time = 0
@@ -931,7 +932,7 @@ class TextBox2D(UI):
         self._shift_pressed = False
         self._caps_lock_on = False
 
-        super(TextBox2D, self).__init__(
+        super().__init__(
             position=position,
             x_anchor=Anchor.LEFT,
             y_anchor=Anchor.TOP,
@@ -1070,7 +1071,7 @@ class TextBox2D(UI):
                 formatted_lines.extend(wrapped)
         return "\n".join(formatted_lines)
 
-    def handle_character(self, key, key_char, modifiers=None):
+    def handle_character(self, key, key_char, *, modifiers=None):
         """
         Handle button events.
 
@@ -1318,7 +1319,7 @@ class TextBox2D(UI):
         UIContext.active_ui = self.text
         self.render_text()
 
-    def blur_textbox(self, event=None):
+    def blur_textbox(self, event=None):  # pep3102: ignore
         """
         Handle blur event for textbox.
 
@@ -1370,7 +1371,7 @@ class TextBox2D(UI):
         if self._caps_lock_on and "CapsLock" not in modifiers:
             modifiers.append("CapsLock")
 
-        is_done = self.handle_character(key, key_char, modifiers)
+        is_done = self.handle_character(key, key_char, modifiers=modifiers)
         if is_done:
             self._has_focus = False
             UIContext.active_ui = None
@@ -1495,7 +1496,7 @@ class LineDoubleSlider2D(UI):
         self.track = None
         self.handles = []
         self.texts = []
-        super(LineDoubleSlider2D, self).__init__(position=position, z_order=z_order)
+        super().__init__(position=position, z_order=z_order)
 
     def _setup(self):
         """Set up the internal actors for the slider."""
@@ -1540,17 +1541,17 @@ class LineDoubleSlider2D(UI):
         self.handles[1].on_left_mouse_button_pressed = lambda e: self.handle_down(1)
 
         self.handles[0].on_left_mouse_button_dragged = lambda e: (
-            self.handle_move_callback(e, 0)
+            self.handle_move_callback(e, idx=0)
         )
         self.handles[1].on_left_mouse_button_dragged = lambda e: (
-            self.handle_move_callback(e, 1)
+            self.handle_move_callback(e, idx=1)
         )
 
         self.handles[0].on_left_mouse_button_released = lambda e: (
-            self.handle_release_callback(e, 0)
+            self.handle_release_callback(e, idx=0)
         )
         self.handles[1].on_left_mouse_button_released = lambda e: (
-            self.handle_release_callback(e, 1)
+            self.handle_release_callback(e, idx=1)
         )
 
         self._active_handle = None
@@ -1675,9 +1676,9 @@ class LineDoubleSlider2D(UI):
         dist1 = abs(ratio - self._ratios[1])
 
         idx = 0 if dist0 < dist1 else 1
-        self.handle_move_callback(event, idx)
+        self.handle_move_callback(event, idx=idx)
 
-    def handle_move_callback(self, event, idx=None):
+    def handle_move_callback(self, event, *, idx=None):
         """
         Handle mouse drag events to update the slider state.
 
@@ -1725,7 +1726,7 @@ class LineDoubleSlider2D(UI):
         self.on_moving_slider(self)
         self._update_actors_position()
 
-    def handle_release_callback(self, event, idx=None):
+    def handle_release_callback(self, event, *, idx=None):
         """
         Handle the release of the mouse button.
 
@@ -1971,7 +1972,7 @@ class RingSlider2D(Slider2D):
         self._track_outer_radius = slider_outer_radius
         self._angle = 0.0
 
-        super(RingSlider2D, self).__init__(
+        super().__init__(
             position=center,
             initial_value=initial_value,
             min_value=min_value,
@@ -1994,7 +1995,7 @@ class RingSlider2D(Slider2D):
         Create the slider's circle (Disk2D), the handle (Disk2D) and the
         text (TextBlock2D).
         """
-        super(RingSlider2D, self)._setup()
+        super()._setup()
         self.track = Disk2D(
             outer_radius=self._track_outer_radius,
             inner_radius=self._track_inner_radius,
@@ -2170,7 +2171,7 @@ class RangeSlider(UI):
 
         pos_x = min(range_slider_center[0], value_slider_center[0])
         pos_y = min(range_slider_center[1], value_slider_center[1])
-        super(RangeSlider, self).__init__(position=(pos_x, pos_y))
+        super().__init__(position=(pos_x, pos_y))
 
     def _setup(self):
         """Setup the internal range and value sliders."""
@@ -2367,7 +2368,7 @@ class ButtonGroup(UI):
         self.button_size = (int(font_size * 1.2), int(font_size * 1.2))
         self.button_label_gap = max(12, int(round(font_size * 0.8)))
 
-        super(ButtonGroup, self).__init__(position=position, z_order=z_order)
+        super().__init__(position=position, z_order=z_order)
 
         self.on_change = lambda group: None
 
@@ -2666,7 +2667,7 @@ class Checkbox(ButtonGroup):
         z_order=0,
     ):
         """Init class instance."""
-        super(Checkbox, self).__init__(
+        super().__init__(
             labels,
             checked_labels=checked_labels,
             orientation=orientation,
@@ -2734,7 +2735,7 @@ class RadioButton(ButtonGroup):
         if len(checked_labels) > 1:
             raise ValueError("Only one option can be preselected for radio buttons.")
 
-        super(RadioButton, self).__init__(
+        super().__init__(
             labels,
             checked_labels=checked_labels,
             orientation=orientation,
@@ -2898,7 +2899,7 @@ class ComboBox2D(UI):
             "pressed": read_viz_icons(fname="circle-up.png"),
         }
 
-        super(ComboBox2D, self).__init__(position=position, z_order=z_order)
+        super().__init__(position=position, z_order=z_order)
 
     def _setup(self):
         """
@@ -2944,6 +2945,8 @@ class ComboBox2D(UI):
         )
 
         self.panel = Panel2D(self.panel_size, opacity=0.0)
+        self.panel.background.actor.material.pick_write = False
+        self.panel.background.actor.material.depth_write = False
         self.panel.add_element(self.selection_box, self._sel_pos)
         self.panel.add_element(self.drop_down_button, self._btn_pos)
         self.panel.add_element(self.drop_down_menu, self._menu_pos)
@@ -3129,7 +3132,7 @@ class ComboBox2D(UI):
             elif isinstance(item, (str, Number)):
                 self.items.append(str(item))
             else:
-                raise TypeError("Invalid item instance {}".format(type(item)))
+                raise TypeError(f"Invalid item instance {type(item)}")
 
         self.drop_down_menu.values = self.items
         self.drop_down_menu.update_scrollbar()
@@ -3290,7 +3293,7 @@ class ListBox2D(UI):
         self.multiselection = multiselection
         self.last_selection_idx = 0
         self.reverse_scrolling = reverse_scrolling
-        super(ListBox2D, self).__init__()
+        super().__init__()
 
         denom = len(self.values) - self.nb_slots
         if not denom:
@@ -3694,7 +3697,7 @@ class ListBoxItem2D(UI):
 
         """
         self._item_size = size
-        super(ListBoxItem2D, self).__init__()
+        super().__init__()
         self._element = None
         self._on_select = on_select
         self.background.resize(size)
@@ -4715,7 +4718,7 @@ class Card2D(UI):
         self.border_width = border_width
         self.has_border = bool(border_width)
 
-        super(Card2D, self).__init__(position=position, z_order=z_order)
+        super().__init__(position=position, z_order=z_order)
 
         if self.maintain_aspect:
             self._new_size = (
@@ -5082,7 +5085,7 @@ class SpinBox(UI):
         self.max_column = max_column
         self.max_line = max_line
 
-        super(SpinBox, self).__init__(position=position)
+        super().__init__(position=position)
         self.value = initial_val
         self.resize(size)
 

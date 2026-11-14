@@ -18,7 +18,7 @@ class UIContextClass:
             The single, shared instance of `UIContextClass`.
         """
         if cls._instance is None:
-            cls._instance = super(UIContextClass, cls).__new__(cls)
+            cls._instance = super().__new__(cls)
             cls._instance._initialized = False
         return cls._instance
 

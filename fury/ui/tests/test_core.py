@@ -24,7 +24,9 @@ def test_rectangle2d_initialization_default():
     assert isinstance(rect.actor, Mesh)
     assert rect.actor in rect.actors
 
-    npt.assert_array_equal(rect.get_position(Anchor.LEFT, Anchor.BOTTOM), [0, 100])
+    npt.assert_array_equal(
+        rect.get_position(x_anchor=Anchor.LEFT, y_anchor=Anchor.BOTTOM), [0, 100]
+    )
 
 
 def test_rectangle2d_initialization_custom():
@@ -46,7 +48,9 @@ def test_rectangle2d_initialization_custom():
     )
 
     npt.assert_equal(rect.size, custom_size)
-    npt.assert_array_equal(rect.get_position(Anchor.LEFT, Anchor.TOP), custom_position)
+    npt.assert_array_equal(
+        rect.get_position(x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP), custom_position
+    )
     npt.assert_array_almost_equal(rect.color, custom_color)
     npt.assert_almost_equal(rect.opacity, custom_opacity)
     assert isinstance(rect.actor, Mesh)
@@ -134,7 +138,9 @@ def test_rounded_rectangle2d_initialization_default():
     assert isinstance(rect.actor, Mesh)
     assert rect.actor in rect.actors
 
-    npt.assert_array_equal(rect.get_position(Anchor.LEFT, Anchor.BOTTOM), [0, 100])
+    npt.assert_array_equal(
+        rect.get_position(x_anchor=Anchor.LEFT, y_anchor=Anchor.BOTTOM), [0, 100]
+    )
 
 
 def test_rounded_rectangle2d_initialization_custom():
@@ -158,7 +164,9 @@ def test_rounded_rectangle2d_initialization_custom():
     )
 
     npt.assert_equal(rect.size, custom_size)
-    npt.assert_array_equal(rect.get_position(Anchor.LEFT, Anchor.TOP), custom_position)
+    npt.assert_array_equal(
+        rect.get_position(x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP), custom_position
+    )
     npt.assert_array_almost_equal(rect.color, custom_color)
     npt.assert_almost_equal(rect.opacity, custom_opacity)
     npt.assert_almost_equal(rect.corner_radius, custom_radius)
@@ -250,7 +258,9 @@ def test_disk2d_initialization_default():
     """
     disk_ui = ui.Disk2D(outer_radius=10)
     npt.assert_equal(disk_ui.outer_radius, 10)
-    npt.assert_array_equal(disk_ui.get_position(Anchor.CENTER, Anchor.CENTER), [0, 0])
+    npt.assert_array_equal(
+        disk_ui.get_position(x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER), [0, 0]
+    )
     npt.assert_array_equal(disk_ui.color, [1, 1, 1])
     npt.assert_equal(disk_ui.opacity, 1.0)
     assert isinstance(disk_ui.actor, Mesh)
@@ -278,7 +288,8 @@ def test_disk2d_initialization_custom():
 
     npt.assert_equal(disk_ui.outer_radius, custom_radius)
     npt.assert_array_equal(
-        disk_ui.get_position(Anchor.CENTER, Anchor.CENTER), custom_center
+        disk_ui.get_position(x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER),
+        custom_center,
     )
     npt.assert_array_almost_equal(disk_ui.color, custom_color)
     npt.assert_almost_equal(disk_ui.opacity, custom_opacity)
@@ -628,7 +639,7 @@ def test_textblock2d_first_frame_layout(
 
         foreground_y, foreground_x = np.where(first_foreground)
         background_y, background_x = np.where(first_background)
-        x, y = block.get_position(Anchor.LEFT, Anchor.TOP)
+        x, y = block.get_position(x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP)
         expected_size = block.get_text_actor_size() if dynamic_bbox else (560, 160)
         npt.assert_allclose(
             (

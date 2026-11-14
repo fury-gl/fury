@@ -116,7 +116,7 @@ for p_data in planets_data:
     planet_file = read_viz_textures(filename)
 
     initial_pos = [float(pos), 0.0, 0.0]
-    actor_obj = actor.texture_on_sphere(planet_file, theta=60, phi=60)
+    actor_obj = actor.texture_on_sphere(texture=planet_file, theta=60, phi=60)
     actor_obj.local.scale = scale
     actor_obj.local.position = initial_pos
     scene.add(actor_obj)

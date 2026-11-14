@@ -1109,10 +1109,8 @@ class SphGlyph(Mesh):
             raise TypeError("The attribute 'coeffs' must be a numpy ndarray.")
         elif coeffs.ndim != 4:
             raise ValueError(
-                (
-                    "The attribute 'coeffs' must be a 4D numpy ndarray "
-                    "with shape (X, Y, Z, N)."
-                )
+                "The attribute 'coeffs' must be a 4D numpy ndarray "
+                "with shape (X, Y, Z, N)."
             )
         elif coeffs.shape[-1] < 1:
             raise ValueError(

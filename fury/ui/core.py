@@ -24,7 +24,7 @@ from fury.ui.helpers import (
 )
 
 
-class UI(object, metaclass=abc.ABCMeta):
+class UI(metaclass=abc.ABCMeta):
     """
     An umbrella class for all UI elements.
 
@@ -103,7 +103,7 @@ class UI(object, metaclass=abc.ABCMeta):
         self.z_order = z_order
 
         self._setup()  # Setup needed actors and sub UI components.
-        self.set_position(position, x_anchor, y_anchor)
+        self.set_position(position, x_anchor=x_anchor, y_anchor=y_anchor)
 
         self.left_button_state = "released"
         self.right_button_state = "released"
@@ -178,12 +178,12 @@ class UI(object, metaclass=abc.ABCMeta):
 
         if x_anchor not in [Anchor.LEFT, Anchor.CENTER, Anchor.RIGHT]:
             raise ValueError(
-                f"x_anchor should be one of these {', '.join([Anchor.LEFT, Anchor.CENTER, Anchor.RIGHT])} but received {x_anchor}"  # noqa: E501
+                f"x_anchor should be one of these {Anchor.LEFT}, {Anchor.CENTER}, {Anchor.RIGHT} but received {x_anchor}"  # noqa: E501
             )
 
         if y_anchor not in [Anchor.TOP, Anchor.CENTER, Anchor.BOTTOM]:
             raise ValueError(
-                f"y_anchor should be one of these {', '.join([Anchor.TOP, Anchor.CENTER, Anchor.BOTTOM])} but received {y_anchor}"  # noqa: E501
+                f"y_anchor should be one of these {Anchor.TOP}, {Anchor.CENTER}, {Anchor.BOTTOM} but received {y_anchor}"  # noqa: E501
             )
 
     def set_actor_position(self, actor, center_position, z_order, *, sub_order=0):
@@ -212,7 +212,7 @@ class UI(object, metaclass=abc.ABCMeta):
         actor.local.z = np.interp(z_order, UIContext.z_order_bounds, UI_Z_RANGE)
         actor.render_order = float(z_order * UI_SUBLAYER_SCALE + sub_order)
 
-    def set_position(self, coords, x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP):
+    def set_position(self, coords, *, x_anchor=Anchor.LEFT, y_anchor=Anchor.TOP):
         """
         Position this UI component according to the specified anchor.
 
@@ -236,6 +236,7 @@ class UI(object, metaclass=abc.ABCMeta):
 
     def get_position(
         self,
+        *,
         x_anchor=Anchor.LEFT,
         y_anchor=Anchor.TOP,
     ):
@@ -637,7 +638,7 @@ class Rectangle2D(UI):
         self, *, size=(100, 100), position=(0, 0), color=(1, 1, 1), opacity=1.0
     ):
         """Initialize a rectangle."""
-        super(Rectangle2D, self).__init__(position=position)
+        super().__init__(position=position)
         self.color = color
         self.opacity = opacity
         self.resize(size)
@@ -828,7 +829,7 @@ class RoundedRectangle2D(UI):
         opacity=1.0,
     ):
         """Initialize a rounded rectangle."""
-        super(RoundedRectangle2D, self).__init__(position=position)
+        super().__init__(position=position)
 
         self.color = color
         self.opacity = opacity
@@ -1054,7 +1055,7 @@ class Disk2D(UI):
         self.inner_radius = inner_radius
         self.outer_radius = outer_radius
 
-        super(Disk2D, self).__init__(
+        super().__init__(
             position=center, x_anchor=Anchor.CENTER, y_anchor=Anchor.CENTER
         )
 
@@ -1283,7 +1284,7 @@ class TextBlock2D(UI):
 
         self._justification = justification
         self._vertical_justification = vertical_justification
-        super(TextBlock2D, self).__init__(position=position)
+        super().__init__(position=position)
         self.have_bg = bool(bg_color)
         self.color = color
         self.background_color = bg_color
@@ -1508,7 +1509,7 @@ class TextBlock2D(UI):
         return self.actor.family
 
     @font_family.setter
-    def font_family(self, family="Arial"):
+    def font_family(self, family):
         """
         Set font family.
 
@@ -1843,7 +1844,7 @@ class Button2D(UI):
         If True, the button behaves as a toggle switch.
     """
 
-    def __init__(self, position=(0, 0), size=(30, 30), is_toggle=False):
+    def __init__(self, *, position=(0, 0), size=(30, 30), is_toggle=False):
         """Initialize the button instance."""
         self._dims = size
         self.child = None

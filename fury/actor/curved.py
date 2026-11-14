@@ -455,8 +455,8 @@ def cylinder(
     >>> show_manager.start()
     """
     n_centers = len(centers)
-    radii_arr = fp._normalize_geom_param(radii, n_centers, "radii")
-    height_arr = fp._normalize_geom_param(height, n_centers, "height")
+    radii_arr = fp._normalize_geom_param(radii, n_centers, param_name="radii")
+    height_arr = fp._normalize_geom_param(height, n_centers, param_name="height")
 
     all_uniform = np.all(radii_arr == radii_arr[0]) and np.all(
         height_arr == height_arr[0]
@@ -587,8 +587,8 @@ def cone(
     >>> show_manager.start()
     """
     n_centers = len(centers)
-    radii_arr = fp._normalize_geom_param(radii, n_centers, "radii")
-    height_arr = fp._normalize_geom_param(height, n_centers, "height")
+    radii_arr = fp._normalize_geom_param(radii, n_centers, param_name="radii")
+    height_arr = fp._normalize_geom_param(height, n_centers, param_name="height")
 
     all_uniform = np.all(radii_arr == radii_arr[0]) and np.all(
         height_arr == height_arr[0]

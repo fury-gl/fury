@@ -52,7 +52,7 @@ class Animation:
         self._scene = None
         self._start_time = perf_counter()
         self._length = length
-        self._duration = length if length else 0
+        self._duration = length or 0
         self._loop = loop
         self._current_timestamp = 0
         self._current_transform = np.identity(4, dtype=np.float32)
@@ -824,7 +824,7 @@ class Animation:
         """
         return self.get_value("position", t)
 
-    def get_rotation(self, t, as_quat=False):
+    def get_rotation(self, t, *, as_quat=False):
         """
         Return the interpolated rotation.
 
@@ -1114,7 +1114,7 @@ class Animation:
         """
         self._loop = loop
 
-    def add_update_callback(self, callback, prop=None):
+    def add_update_callback(self, callback, *, prop=None):
         """
         Add a function to be called each time animation is updated.
 
@@ -1344,9 +1344,7 @@ class CameraAnimation(Animation):
 
     def __init__(self, *, camera=None, length=None, loop=True, motion_path_res=None):
         """Initialize CameraAnimation."""
-        super(CameraAnimation, self).__init__(
-            length=length, loop=loop, motion_path_res=motion_path_res
-        )
+        super().__init__(length=length, loop=loop, motion_path_res=motion_path_res)
         self._camera = camera
 
     @property

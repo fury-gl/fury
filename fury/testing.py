@@ -250,7 +250,7 @@ class VisualTest:
         if target == current_target:
             self.events_counts[event.type] += 1
 
-    def monitor(self, ui_component, name=None):
+    def monitor(self, ui_component, *, name=None):
         """
         Register callbacks to monitor events on a UI component.
 
@@ -272,7 +272,7 @@ class VisualTest:
             name = ui_component.__class__.__name__
         self._ui_components[name] = ui_component
 
-    def snapshot_ui(self, name, ui_component, step=0):
+    def snapshot_ui(self, name, ui_component, *, step=0):
         """
         Capture current visual properties of a UI component.
 
@@ -300,7 +300,7 @@ class VisualTest:
             self._ui_snapshots[step_str] = {}
         self._ui_snapshots[step_str][name] = snapshot
 
-    def snapshot_all_ui(self, step=0):
+    def snapshot_all_ui(self, *, step=0):
         """
         Capture visual properties of all monitored UI components at a step.
 
@@ -404,6 +404,7 @@ class VisualTest:
         self,
         recording_filename,
         expected_filename,
+        *,
         size=(600, 600),
         title="FURY VisualTest",
         screen_config=None,
@@ -456,7 +457,7 @@ class VisualTest:
             # Final snapshot at the end of recording
             total_events = len(show_manager._recorded_events)
             self.snapshot_all_ui(step=total_events)
-            self.save(expected_filename, show_manager)
+            self.save(expected_filename, show_manager=show_manager)
         else:
             expected = self.load(expected_filename)
             expected_snapshots = expected._ui_snapshots
@@ -485,7 +486,7 @@ class VisualTest:
                     for name, snapshot in comp_snapshots.items():
                         self.validate_ui(step_str, name, snapshot)
 
-    def save(self, filename, show_manager=None):
+    def save(self, filename, *, show_manager=None):
         """
         Serialize event counts, UI snapshots, and window config to JSON.
 
@@ -662,7 +663,7 @@ class clear_and_catch_warnings(warnings.catch_warnings):
         """Initialize the context manager."""
         self.modules = set(modules).union(self.class_modules)
         self._warnreg_copies = {}
-        super(clear_and_catch_warnings, self).__init__(record=record)
+        super().__init__(record=record)
 
     def __enter__(self):
         """
@@ -678,7 +679,7 @@ class clear_and_catch_warnings(warnings.catch_warnings):
                 mod_reg = mod.__warningregistry__
                 self._warnreg_copies[mod] = mod_reg.copy()
                 mod_reg.clear()
-        return super(clear_and_catch_warnings, self).__enter__()
+        return super().__enter__()
 
     def __exit__(self, *exc_info):
         """
@@ -689,7 +690,7 @@ class clear_and_catch_warnings(warnings.catch_warnings):
         *exc_info : tuple
             Exception information, if any, raised in the context.
         """
-        super(clear_and_catch_warnings, self).__exit__(*exc_info)
+        super().__exit__(*exc_info)
         for mod in self.modules:
             if hasattr(mod, "__warningregistry__"):
                 mod.__warningregistry__.clear()
@@ -798,7 +799,7 @@ def get_all_actors(scene):
     return actors
 
 
-def record_events(show_manager, visual_test=None):
+def record_events(show_manager, *, visual_test=None):
     """
     Record user interaction events during a rendering session.
 
@@ -877,7 +878,7 @@ def record_events(show_manager, visual_test=None):
     show_manager.renderer.dispatch_event = wrapped_dispatch_event
 
 
-def record_events_to_file(show_manager, filename, visual_test=None):
+def record_events_to_file(show_manager, filename, *, visual_test=None):
     """
     Serialize recorded interaction events to an external file.
 
@@ -908,6 +909,7 @@ def record_events_to_file(show_manager, filename, visual_test=None):
 def play_events(
     show_manager,
     events,
+    *,
     visual_test=None,
     expected_ui_snapshots=None,
     show_simulation=False,
@@ -1017,6 +1019,7 @@ def play_events(
 def play_events_from_file(
     show_manager,
     filename,
+    *,
     visual_test=None,
     expected_ui_snapshots=None,
     show_simulation=False,
@@ -1044,7 +1047,7 @@ def play_events_from_file(
         with gzip.open(filename, "rt", encoding="utf-8") as f:
             events = json.loads(f.read())
     else:
-        with open(filename, "r", encoding="utf-8") as f:
+        with open(filename, encoding="utf-8") as f:
             events = json.loads(f.read())
 
     play_events(

@@ -63,7 +63,7 @@ class Panel2D(UI):
         self.has_border = has_border
         self._border_color = border_color
         self._border_width = border_width
-        super(Panel2D, self).__init__(position=position)
+        super().__init__(position=position)
         self.resize(size)
         self.alignment = align
         self.color = color
@@ -551,7 +551,7 @@ class TabPanel2D(UI):
         self.panel_size = size
         self._text_size = size
 
-        super(TabPanel2D, self).__init__(position=position)
+        super().__init__(position=position)
         self.title = title
         self.color = color
 
@@ -909,7 +909,7 @@ class TabUI(UI):
         self._drag_moved = False
         self._drag_threshold = 3
 
-        super(TabUI, self).__init__(position=position)
+        super().__init__(position=position)
 
     def _setup(self):
         """Set up the parent panel and tab panels."""
@@ -1082,7 +1082,7 @@ class TabUI(UI):
         if self.draggable:
             for element in [tab_panel.panel.background, tab_panel.text_block]:
                 element.on_left_mouse_button_pressed = lambda event, tab_idx=idx: (
-                    self.left_button_pressed(event, tab_idx)
+                    self.left_button_pressed(event, tab_idx=tab_idx)
                 )
                 element.on_left_mouse_button_dragged = self.left_button_dragged
                 element.on_left_mouse_button_released = lambda event: None
@@ -1272,7 +1272,7 @@ class TabUI(UI):
         self._validate_tab_idx(tab_idx)
         self.tabs[tab_idx].update_element(element, coords, anchor=anchor)
 
-    def left_button_pressed(self, event, tab_idx=None):
+    def left_button_pressed(self, event, *, tab_idx=None):
         """
         Start dragging the tab UI.
 
@@ -1874,7 +1874,7 @@ class ImageContainer2D(Rectangle2D):
         """
         self._img_path = img_path
 
-        super(ImageContainer2D, self).__init__(size=size, position=position)
+        super().__init__(size=size, position=position)
 
         if isinstance(img_path, np.ndarray):
             self.img = img_path

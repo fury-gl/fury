@@ -99,8 +99,11 @@ Run the development commands below from the repository root inside the
 6. Now you can make your changes locally::
 
     $ git add .
-    $ git commit -m "Your detailed description of your changes."
+    $ git commit -m "NF: Add a short imperative summary"
     $ git push origin name-of-your-bugfix-or-feature
+
+   Start the commit subject with one of the codes listed in
+   `Commit Message Codes`_ below; the ``commit-msg`` hook rejects other messages.
 
 7. Install the required packages for running the unittests and linting::
 
@@ -108,18 +111,88 @@ Run the development commands below from the repository root inside the
     $ pip install -r requirements/test.txt
     $ pip install -r requirements/style.txt
 
-8. Set up pre-commit hooks for automatic code formatting::
+8. Set up the pre-commit hooks. This step is required::
 
     $ pre-commit install
 
-   This will ensure that your code is automatically formatted according to the project's style guidelines before you push your changes.
+   The configuration sets ``default_install_hook_types``, so this single command
+   installs both the ``pre-commit`` hook (formatting and linting) and the
+   ``commit-msg`` hook (commit message codes).
 
-9. When you're done making changes, check that your changes pass ruff and pytest::
+9. When you're done making changes, check that your changes pass the hooks and pytest::
 
-    $ ruff check fury
+    $ pre-commit run --all-files
     $ pytest fury
 
 10. Submit a pull request through the GitHub website.
+
+Coding Style and Pre-commit Checks
+----------------------------------
+
+Hooks
+~~~~~
+
+``pre-commit run --all-files`` runs the following checks, which CI also runs:
+
+* Line endings: files are LF only, enforced by ``.gitattributes``
+  (``* text=auto eol=lf``) and the ``mixed-line-ending --fix=lf`` hook.
+* ``ruff-check`` and ``ruff-format``, with the rules selected in ``ruff.toml``.
+* ``codespell`` for spelling.
+* ``numpydoc-validation`` for NumPy-style docstrings.
+* ``mypy`` for type checking.
+* ``generate_requirements.py``, which regenerates ``requirements/*.txt`` from
+  ``pyproject.toml``.
+* ``enforce-pep3102-defaults``, described below.
+
+Keyword-only defaults
+~~~~~~~~~~~~~~~~~~~~~
+
+Parameters that have a default value go after a bare ``*``, so callers always
+name them (PEP 3102)::
+
+    def normalize_colors(colors, *, n_points=None): ...
+
+``docs/`` and ``fury/**/tests/`` are exempt. Add ``# pep3102: ignore`` on the
+``def`` line or on a decorator line only when a protocol or a framework calls
+the function positionally, for example a UI event callback invoked with the
+event. Run the check manually with::
+
+    $ python tools/check_pep3102.py <files>
+
+Commit Message Codes
+~~~~~~~~~~~~~~~~~~~~
+
+Start every commit subject with one of these codes, followed by a space:
+
+* ``BF:`` bug fix
+* ``RF:`` refactoring
+* ``NF:`` new feature
+* ``BW:`` addresses backward-compatibility
+* ``OPT:`` optimization
+* ``CI:`` continuous integration
+* ``MNT:`` maintenance tasks, such as release preparation
+* ``DOC:`` all kinds of documentation related commits
+* ``TEST:`` adding or changing tests
+* ``STYLE:`` PEP8 conformance, whitespace changes etc. that do not affect function
+* ``WIP:`` work in progress, not ready for merge
+
+The subject line must be 15 to 78 characters long, have no leading or trailing
+space, no trailing period, and be followed by a blank line. Subjects starting
+with ``Merge`` or ``Revert`` are also accepted. CI checks every commit of a
+pull request.
+
+To reference a GitHub issue, add ``Issue #XXXX`` to the pull request message;
+to close it, add ``Closes #XXXX``.
+
+Git blame
+~~~~~~~~~
+
+Bulk style commits are listed in ``.git-blame-ignore-revs``. To hide them from
+``git blame`` locally, run::
+
+    $ git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+GitHub applies the file automatically.
 
 Pull Request Guidelines
 -----------------------
@@ -220,7 +293,7 @@ Doing the release
 * Now it's time for the source release. Mark the release with an empty commit, just to leave a marker.
   It makes it easier to find the release when skimming through the git history::
 
-    git commit --allow-empty -m "REL: vX.Y.Z"
+    git commit --allow-empty -m "MNT: Release vX.Y.Z"
 
 * Tag the commit::
 

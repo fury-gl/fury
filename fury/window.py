@@ -6,13 +6,13 @@ windows using PyGfx. It includes classes and functions for handling
 scenes, cameras, controllers, and rendering multiple screens.
 """
 
+from collections.abc import Iterable
 from contextlib import ExitStack, contextmanager
 from dataclasses import dataclass
 from functools import reduce
 import logging
 import os
 import sys
-from typing import Iterable
 
 from PIL.Image import fromarray as image_from_array
 import numpy as np
@@ -577,7 +577,7 @@ def update_viewports(screens, screen_bbs):
         update_camera(screen.camera, screen.size, screen.scene)
 
 
-def render_screens(renderer, screens, stats=None, is_dirty=False):
+def render_screens(renderer, screens, *, stats=None, is_dirty=False):
     """
     Render multiple screens within a single renderer update cycle.
 
@@ -1017,18 +1017,16 @@ class ShowManager:
         list of Screen
             The list of created Screen objects.
         """
-        screens = []
-        for i in range(self._total_screens):
-            screens.append(
-                create_screen(
-                    self.renderer,
-                    scene=self._scene[i],
-                    camera=self._camera[i],
-                    controller=self._controller[i],
-                    camera_light=self._camera_light[i],
-                )
+        return [
+            create_screen(
+                self.renderer,
+                scene=self._scene[i],
+                camera=self._camera[i],
+                controller=self._controller[i],
+                camera_light=self._camera_light[i],
             )
-        return screens
+            for i in range(self._total_screens)
+        ]
 
     def _resize(self, size):
         """
@@ -1740,7 +1738,7 @@ class ShowManager:
             A NumPy array representing the captured image data (RGBA).
         """
         if self._is_qt:
-            qt_arr = self._qt_snapshot(fname)
+            qt_arr = self._qt_snapshot(fname=fname)
             if qt_arr is not None:
                 return qt_arr
 
@@ -1750,7 +1748,7 @@ class ShowManager:
             img.save(fname)
         return arr
 
-    def _qt_snapshot(self, fname=None):
+    def _qt_snapshot(self, *, fname=None):
         """
         Capture the full Qt widget/window instead of only the render canvas.
 
@@ -2118,9 +2116,9 @@ def analyze_snapshot(im, *, colors=None, find_objects=True, strel=None):
                 A formatted string report of the snapshot analysis.
             """
             msg = "Report:\n-------\n"
-            msg += "objects: {}\n".format(self.objects)
-            msg += "labels: \n{}\n".format(self.labels)
-            msg += "colors_found: {}\n".format(self.colors_found)
+            msg += f"objects: {self.objects}\n"
+            msg += f"labels: \n{self.labels}\n"
+            msg += f"colors_found: {self.colors_found}\n"
             return msg
 
     report = ReportSnapshot()

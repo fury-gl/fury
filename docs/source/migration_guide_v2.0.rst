@@ -269,8 +269,8 @@ The ``actor.image`` actor now supports directional parameters.
 
 ``actor.texture_on_sphere`` now returns a PyGfx-backed FURY ``Mesh``.
 Rename ``rgb`` to ``texture`` and replace ``interpolate=True/False`` with
-``interpolation="linear"/"nearest"``. Positional uint8 RGB/RGBA arrays remain
-supported.
+``interpolation="linear"/"nearest"``. ``texture`` is keyword-only; uint8 RGB/RGBA
+arrays remain supported.
 
 .. code-block:: python
 
@@ -644,6 +644,112 @@ v2.0.0 stabilization):
    * - ``fury.ui.SpinBox``
      - Pending UI port
 
+
+19. Keyword-Only Optional Arguments
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Optional parameters of the public APIs listed below must now be passed by
+keyword (PEP 3102). Passing them positionally raises ``TypeError``. This is
+enforced across ``fury`` by ``tools/check_pep3102.py`` in the pre-commit hooks.
+
+.. code-block:: python
+
+   # Before
+   colors = normalize_colors(colors, 4)
+   globe = actor.texture_on_sphere(image)
+
+   # After
+   colors = normalize_colors(colors, n_points=4)
+   globe = actor.texture_on_sphere(texture=image)
+
+.. list-table::
+   :header-rows: 1
+
+   * - API
+     - Newly keyword-only parameters
+   * - ``fury.get_info``
+     - ``verbose``
+   * - ``fury.enable_warnings``, ``fury.disable_warnings``
+     - ``warnings_origin``
+   * - ``fury.actor.texture_on_sphere``
+     - ``texture`` and all following parameters
+   * - ``fury.colormap.normalize_colors``
+     - ``n_points``
+   * - ``fury.decorators.warn_on_args_to_kwargs``
+     - ``from_version``, ``until_version``
+   * - ``fury.deprecator.cmp_pkg_version``
+     - ``pkg_version_str``
+   * - ``fury.deprecator.is_bad_version``
+     - ``version_comparator``
+   * - ``fury.deprecator.deprecate_with_version``
+     - ``since`` and all following parameters
+   * - ``fury.deprecator.deprecated_params``
+     - ``new_name`` and all following parameters
+   * - ``fury.geometry.line_buffer_separator``
+     - ``color``
+   * - ``fury.geometry.prune_colinear``
+     - ``colinear_threshold``
+   * - ``fury.geometry.axes_for_dir``
+     - ``prev_x``
+   * - ``fury.io.load_network``, ``fury.io.save_network``
+     - ``format``
+   * - ``fury.material.SphGlyphMaterial``
+     - ``n_coeffs``, ``scale``, ``shininess``, ``emissive``, ``specular``
+   * - ``fury.material.StreamlinesMaterial``
+     - ``outline_thickness``, ``outline_color``, ``roi_enabled``, ``roi_dim``
+   * - ``fury.material.RoundedRectangleMaterial``
+     - ``size``, ``corner_radius``
+   * - ``fury.material.NetworkMaterial``
+     - ``k``, ``damping``, ``speed``, ``repulsion_strength``, ``size``
+   * - ``fury.motion.Animation.get_rotation``
+     - ``as_quat``
+   * - ``fury.motion.Animation.add_update_callback``
+     - ``prop``
+   * - ``fury.motion.helpers.compose_transform_matrix``
+     - ``position``, ``rotation_quat``, ``scale_factors``, ``parent_matrix``
+   * - ``fury.network.Network``
+     - ``colors``, ``k``, ``damping``, ``repulsion_strength``, ``speed``,
+       ``point_size``, ``edge_opacity``
+   * - ``fury.pkg_info.pkg_commit_hash``
+     - ``pkg_path``
+   * - ``fury.primitive.prim_box``
+     - ``detailed``
+   * - ``fury.primitive.prim_superquadric``
+     - ``roundness``, ``sphere_name``
+   * - ``fury.testing.VisualTest.monitor``
+     - ``name``
+   * - ``fury.testing.VisualTest.snapshot_ui``, ``snapshot_all_ui``
+     - ``step``
+   * - ``fury.testing.VisualTest.record_or_test``
+     - ``size`` and all following parameters
+   * - ``fury.testing.VisualTest.save``
+     - ``show_manager``
+   * - ``fury.testing.record_events``, ``record_events_to_file``,
+       ``play_events``, ``play_events_from_file``
+     - ``visual_test`` and all following parameters
+   * - ``fury.ui.UI.set_position``, ``fury.ui.UI.get_position``
+     - ``x_anchor``, ``y_anchor``
+   * - ``fury.ui.Button2D``
+     - ``position``, ``size``, ``is_toggle``
+   * - ``fury.ui.TexturedButton2D``
+     - ``position``, ``size``, ``is_toggle``
+   * - ``fury.ui.TextButton2D``
+     - ``states``, ``position``, ``size``, ``font_size``, ``is_toggle``
+   * - ``fury.ui.TabUI.left_button_pressed``
+     - ``tab_idx``
+   * - ``fury.ui.TextBox2D.handle_character``
+     - ``modifiers``
+   * - ``fury.ui.LineDoubleSlider2D.handle_move_callback``,
+       ``handle_release_callback``
+     - ``idx``
+   * - ``fury.window.render_screens``
+     - ``stats``, ``is_dirty``
+
+.. note::
+
+   Callables passed to ``primitive.repeat_primitive_function`` receive the
+   ``func_args`` rows positionally, so ``prim_superquadric`` must be wrapped,
+   for example ``lambda roundness=(1, 1): prim_superquadric(roundness=roundness)``.
 
 Dependency Changes
 ~~~~~~~~~~~~~~~~~~

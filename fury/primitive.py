@@ -52,7 +52,7 @@ def faces_from_sphere_vertices(vertices):
         return faces
 
 
-def _normalize_geom_param(param, n_centers, param_name="parameter"):
+def _normalize_geom_param(param, n_centers, *, param_name="parameter"):
     """
     Normalize a geometry parameter to an array of length n_centers.
 
@@ -309,7 +309,7 @@ def prim_square():
     return vertices, triangles
 
 
-def prim_box(detailed=True):
+def prim_box(*, detailed=True):
     """
     Return vertices and triangles for a box geometry.
 
@@ -460,7 +460,7 @@ def prim_sphere(*, name="symmetric362", gen_faces=False, phi=None, theta=None):
     if phi is None or theta is None:
         fname = SPHERE_FILES.get(name)
         if fname is None:
-            raise ValueError('No sphere called "%s"' % name)
+            raise ValueError(f'No sphere called "{name}"')
         res = np.load(fname)
 
         verts = res["vertices"].copy()
@@ -468,8 +468,8 @@ def prim_sphere(*, name="symmetric362", gen_faces=False, phi=None, theta=None):
         faces = fix_winding_order(res["vertices"], faces, clockwise=True)
         return verts, faces
     else:
-        phi = phi if phi >= 3 else 3
-        theta = theta if theta >= 3 else 3
+        phi = max(phi, 3)
+        theta = max(theta, 3)
 
         u = np.linspace(0, 1, theta + 1)
         v = np.linspace(0, 1, phi + 1)
@@ -503,7 +503,7 @@ def prim_sphere(*, name="symmetric362", gen_faces=False, phi=None, theta=None):
         return verts, faces
 
 
-def prim_superquadric(roundness=(1, 1), sphere_name="symmetric362"):
+def prim_superquadric(*, roundness=(1, 1), sphere_name="symmetric362"):
     """
     Provide vertices and triangles of a superquadric.
 
@@ -1364,9 +1364,7 @@ def prim_disk(*, radius=0.5, sectors=36):
         z = 0.0
         vertices.append((x, y, z))
 
-    triangles = []
-    for i in range(1, sectors):
-        triangles.append((0, i, i + 1))
+    triangles = [(0, i, i + 1) for i in range(1, sectors)]
     triangles.append((0, sectors, 1))
 
     return np.array(vertices, dtype=np.float32), np.array(triangles, dtype=np.int32)
