@@ -1305,7 +1305,11 @@ class ShowManager:
         writer = None
         timeline_state = None
         if isinstance(animation, Timeline):
-            timeline_state = (animation.playing, animation.current_timestamp)
+            timeline_state = (
+                animation.playing,
+                animation.stopped,
+                animation.current_timestamp,
+            )
             if animation.playing:
                 animation.pause()
         try:
@@ -1334,10 +1338,12 @@ class ShowManager:
             for camera_animation, camera in camera_changes:
                 camera_animation.camera = camera
             if timeline_state is not None:
-                was_playing, current_timestamp = timeline_state
+                was_playing, was_stopped, current_timestamp = timeline_state
                 animation.seek(current_timestamp)
                 if was_playing:
                     animation.play()
+                elif was_stopped:
+                    animation.stop()
             show_m.window.close()
 
         return frames

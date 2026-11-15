@@ -202,6 +202,10 @@ class Timeline:
         timestamp : float
             The time in seconds to seek to. Will be clamped between 0 and the
             timeline duration.
+
+        Notes
+        ------
+        Seeking a stopped timeline to a nonzero timestamp pauses it.
         """
         # assuring timestamp value is in the timeline range
         if timestamp < 0:

@@ -81,6 +81,13 @@ def test_show_manager_record_animation(tmp_path):
         assert not np.array_equal(frames[0], frames[1])
         assert camera_animation.camera is original_camera
         assert timeline.playing
+        timeline.stop()
+        timeline.record(fname, fps=5)
+        assert timeline.stopped
+        timeline.seek(0.2)
+        timeline.record(fname, fps=5)
+        assert timeline.paused
+        assert timeline.current_timestamp == pytest.approx(0.2)
     finally:
         show_m.window.close()
 

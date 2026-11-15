@@ -284,3 +284,18 @@ def test_timeline_restart_resets_actor(loop, speed, state):
         compare_frame(
             [-2 + 0.4 * after_update, 0, 0], 0.4 * (after_update - before_update)
         )
+
+
+def test_seek_while_playing_and_end():
+    tl = Timeline(length=10, loop=False)
+    tl.play()
+    tl.seek(5)
+    assert tl.playing
+    assert 5 <= tl.current_timestamp < 6
+    tl.seek(10)
+    tl.update()
+    assert tl.paused
+    assert not tl.playing
+    tl.play()
+    assert tl.playing
+    assert tl.current_timestamp < 1
