@@ -92,6 +92,7 @@ def test_timeline_playback():
     tl = Timeline(length=10)
 
     assert tl.stopped is True
+    assert tl.paused is False
     assert tl.playing is False
 
     tl.play()
@@ -104,7 +105,33 @@ def test_timeline_playback():
 
     tl.stop()
     assert tl.stopped is True
+    assert tl.paused is False
     npt.assert_almost_equal(tl.current_timestamp, 0)
+
+    tl.seek(5)
+    assert tl.paused is True
+
+
+def test_timeline_pause_at_zero():
+    tl = Timeline(length=10)
+
+    tl.pause()
+    assert tl.current_timestamp == 0
+    assert tl.paused is True
+    assert tl.stopped is False
+    assert tl.playing is False
+
+    tl.seek(5)
+    tl.seek(0)
+    assert tl.paused is True
+    assert tl.stopped is False
+
+    tl.play()
+    assert tl.playing is True
+    assert tl.paused is False
+    tl.stop()
+    assert tl.stopped is True
+    assert tl.paused is False
 
 
 def test_timeline_play_updates_time():
@@ -257,3 +284,18 @@ def test_timeline_restart_resets_actor(loop, speed, state):
         compare_frame(
             [-2 + 0.4 * after_update, 0, 0], 0.4 * (after_update - before_update)
         )
+
+
+def test_seek_while_playing_and_end():
+    tl = Timeline(length=10, loop=False)
+    tl.play()
+    tl.seek(5)
+    assert tl.playing
+    assert 5 <= tl.current_timestamp < 6
+    tl.seek(10)
+    tl.update()
+    assert tl.paused
+    assert not tl.playing
+    tl.play()
+    assert tl.playing
+    assert tl.current_timestamp < 1
