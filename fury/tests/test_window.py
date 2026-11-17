@@ -28,7 +28,14 @@ from fury.lib import (
     imgui_bundle,
 )
 from fury.motion import Animation, CameraAnimation, Timeline
-from fury.ui import Rectangle2D, TextBlock2D, TextBox2D, TextButton2D, UIContext
+from fury.ui import (
+    Rectangle2D,
+    TextBlock2D,
+    TextBox2D,
+    TextButton2D,
+    UIContext,
+    UIContextState,
+)
 from fury.window import (
     Scene,
     ShowManager,
@@ -1312,19 +1319,16 @@ def test_skybox_actually_lights_a_metal():
 @pytest.fixture
 def ui_context():
     """
-    Restore global UI focus, hover, and canvas size after a test.
+    Run a test on a fresh UI state and leave a fresh one behind.
 
     Yields
     ------
     UIContextClass
-        The global UI context shared by all managers.
+        The UI context exposing the state of the last active manager.
     """
-    active, hot = UIContext.active_ui, UIContext.hot_ui
-    size = np.array(UIContext.canvas_size, copy=True)
+    UIContext.activate(UIContextState())
     yield UIContext
-    UIContext.active_ui = active
-    UIContext.hot_ui = hot
-    UIContext.canvas_size = size
+    UIContext.activate(UIContextState())
 
 
 def _loader_draw(show_m):
@@ -1626,6 +1630,65 @@ def test_loader_two_managers_use_own_canvas_size(ui_context):
         assert rows.size > 0
         assert rows.min() >= 10
         assert rows.max() <= 40
+    finally:
+        for manager in managers:
+            manager.close()
+
+
+def test_show_managers_place_event_ui_with_own_canvas_size(ui_context):
+    """UI moved by one window's events uses that window's canvas height."""
+    scene_a = Scene()
+    rect = Rectangle2D(size=(60, 30), position=(20, 20), color=(1, 0, 0))
+    scene_a.add(rect)
+    managers = [
+        ShowManager(
+            scene=scene_a, size=(400, 300), pixel_ratio=1, window_type="offscreen"
+        ),
+        ShowManager(size=(200, 100), pixel_ratio=1, window_type="offscreen"),
+    ]
+    manager_a, manager_b = managers
+    manager_a.window.add_event_handler(
+        lambda _event: rect.set_position((20, 40)), "key_down"
+    )
+    try:
+        _loader_draw(manager_a)
+        _loader_draw(manager_b)
+        _loader_key(manager_a, "key_down", "x")
+        image = _loader_draw(manager_a)
+        red = (image[..., 0] > 240) & (image[..., 1] < 20) & (image[..., 2] < 20)
+        rows = np.flatnonzero(red.any(axis=1))
+        assert (rows.min(), rows.max()) == (40, 69)
+    finally:
+        for manager in managers:
+            manager.close()
+
+
+def test_show_managers_route_keys_to_own_focus(ui_context):
+    """A key typed in one window never reaches a textbox focused in another."""
+    scene_a = Scene()
+    box = TextBox2D(width=20, height=3, text="Value", position=(20, 20))
+    scene_a.add(box)
+    managers = [
+        ShowManager(
+            scene=scene_a, size=(400, 300), pixel_ratio=1, window_type="offscreen"
+        ),
+        ShowManager(size=(200, 100), pixel_ratio=1, window_type="offscreen"),
+    ]
+    manager_a, manager_b = managers
+    try:
+        _loader_draw(manager_a)
+        _loader_draw(manager_b)
+        x, y = box.text.get_position()
+        _loader_click(manager_a, x + 5, y + 5)
+        assert box._has_focus
+
+        _loader_key(manager_b, "key_down", "a")
+        _loader_key(manager_b, "key_up", "a")
+        assert box._message == "Value"
+
+        _loader_key(manager_a, "key_down", "a")
+        _loader_key(manager_a, "key_up", "a")
+        assert box._message == "Valuea"
     finally:
         for manager in managers:
             manager.close()

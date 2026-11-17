@@ -55,7 +55,7 @@ from fury.lib import (
 )
 from fury.motion import Animation, CameraAnimation, Timeline
 from fury.optpkg import optional_package
-from fury.ui import UI, Loader2D, UIContext
+from fury.ui import UI, Loader2D, UIContext, UIContextState
 
 cv2, have_cv2, _ = optional_package(
     "cv2",
@@ -782,6 +782,7 @@ class ShowManager:
         self._window_type = self._setup_window(window_type)
         self._is_dragging = False
         self._drag_target = None
+        self._ui_state = UIContextState()
 
         if renderer is None:
             renderer = Renderer(self.window)
@@ -877,6 +878,7 @@ class ShowManager:
         size = self.renderer.logical_size
         if not all(value > 0 for value in size):
             size = tuple(max(1, value) for value in self.size)
+        UIContext.activate(self._ui_state)
         UIContext.canvas_size = size
         if self._loader is None:
             self._loader = Loader2D(size=size, message=message)
@@ -980,8 +982,11 @@ class ShowManager:
             Raw input or close event supplied by the canvas.
         """
         if event["event_type"] == "close":
+            # A closing (possibly garbage-collected) window must not become active.
             self._stop_loader(redraw=False)
-        elif not self.enable_events or self._loader_callback_name is not None:
+            return
+        UIContext.activate(self._ui_state)
+        if not self.enable_events or self._loader_callback_name is not None:
             event["stop_propagation"] = True
 
     def _resync_pointer_target(self, event):
@@ -1098,6 +1103,8 @@ class ShowManager:
         """
         if getattr(self, "_repeat_key_event", None) is not target_event:
             return
+
+        UIContext.activate(self._ui_state)
 
         if not UIContext.active_ui:
             self._repeat_key_event = None
@@ -1229,6 +1236,7 @@ class ShowManager:
         size : tuple
             The size (width, height) of the window in pixels.
         """
+        UIContext.activate(self._ui_state)
         self._on_resize(size)
         UIContext.canvas_size = size
         update_viewports(
@@ -1265,11 +1273,27 @@ class ShowManager:
         if name not in self._callbacks:
             return
 
+        UIContext.activate(self._ui_state)
+
         if self._is_qt:
             qcall_later(time, self._on_repeat_callback, *args)
         else:
             call_later(time, self._on_repeat_callback, *args)
         func(*args[3:])
+
+    def _run_callback(self, func, *args):
+        """
+        Run a one-shot callback with this manager's UI state active.
+
+        Parameters
+        ----------
+        func : callable
+            The function to be called.
+        *args : tuple
+            Arguments to pass to the function.
+        """
+        UIContext.activate(self._ui_state)
+        func(*args)
 
     def register_callback(self, func, time, repeat, name, *args):
         """
@@ -1306,9 +1330,9 @@ class ShowManager:
                 call_later(time, self._on_repeat_callback, *args)
         else:
             if self._is_qt:
-                qcall_later(time, func, *args)
+                qcall_later(time, self._run_callback, func, *args)
             else:
-                call_later(time, func, *args)
+                call_later(time, self._run_callback, func, *args)
 
     def cancel_callback(self, name):
         """
@@ -2131,6 +2155,7 @@ class ShowManager:
             self._stats = Stats(self.renderer)
             self._stats_initialized = True
 
+        UIContext.activate(self._ui_state)
         self._frame_count += 1
         update_layout = True if self._frame_count == 2 else False
         logical_size = self.renderer.logical_size

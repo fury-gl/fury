@@ -36,6 +36,7 @@ __all__ = [
     #     "rotate_2d",
     #     "wrap_overflow",
     "UIContext",
+    "UIContextState",
     "Anchor",
 ]
 
@@ -49,7 +50,7 @@ __all__ = [
 # from .core import UI, Button2D, Disk2D, Rectangle2D, TextBlock2D
 
 from .containers import ImageContainer2D, Panel2D, TabPanel2D, TabUI
-from .context import UIContext
+from .context import UIContext, UIContextState
 from .core import UI, Anchor, Disk2D, Rectangle2D, RoundedRectangle2D, TextBlock2D
 from .elements import (
     Card2D,
