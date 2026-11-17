@@ -90,6 +90,67 @@ PBR_MATERIALS = ("standard", "physical")
 DEFAULT_PBR_ROUGHNESS = 0.5
 
 
+def _shader_gated_property(name):
+    """
+    Create a MeshPhysicalMaterial property that recompiles the shader on change.
+
+    Parameters
+    ----------
+    name : str
+        Name of a ``MeshPhysicalMaterial`` strength property whose shader branch
+        pygfx compiles only when the value is non-zero.
+
+    Returns
+    -------
+    property
+        Property that mirrors ``name`` and tracks whether it is non-zero.
+    """
+    flag = f"{name}_enabled"
+
+    def fget(self):
+        """
+        Return the property value.
+
+        Parameters
+        ----------
+        self : PBRMaterial
+            Material being read.
+
+        Returns
+        -------
+        float
+            Current strength, ``0.0`` while the layer is disabled.
+        """
+        # Reading the flag while bindings are built makes pygfx recompile the
+        # shader when the flag flips.
+        if getattr(self._store, flag):
+            return getattr(MeshPhysicalMaterial, name).fget(self)
+        return 0.0
+
+    def fset(self, value):
+        """
+        Set the property value and track whether it is non-zero.
+
+        Parameters
+        ----------
+        self : PBRMaterial
+            Material being modified.
+        value : float
+            New strength.
+        """
+        getattr(MeshPhysicalMaterial, name).fset(self, value)
+        setattr(self._store, flag, bool(value))
+
+    return property(
+        fget,
+        fset,
+        doc=(
+            f"Strength of the {name} layer. Changing it between zero and "
+            "non-zero recompiles the shader."
+        ),
+    )
+
+
 def _create_mesh_material(
     *,
     material="phong",
@@ -207,7 +268,8 @@ def _create_mesh_material(
     ``coat_strength`` -> ``clearcoat``, ``coat_roughness`` ->
     ``clearcoat_roughness``, ``base_ior`` -> ``ior``, ``sheen_tint`` ->
     ``sheen_color``; ``roughness``, ``anisotropy``, ``anisotropy_rotation`` and
-    ``sheen`` keep their names.
+    ``sheen`` keep their names. ``fury.actor.manifest_pbr`` applies these
+    properties to existing actors or builds one object per center.
     """
     opacity = validate_opacity(opacity)
     color = validate_color(color, opacity, mode)
@@ -266,9 +328,117 @@ def _create_mesh_material(
     elif material == "standard":
         return MeshStandardMaterial(**args, **pbr_args)
     elif material == "physical":
-        return MeshPhysicalMaterial(**args, **pbr_args)
+        return PBRMaterial(**args, **pbr_args)
     else:
         raise ValueError(f"Unsupported material type: {material}")
+
+
+class PBRMaterial(MeshPhysicalMaterial):
+    """
+    Physically based mesh material whose layers can be enabled after drawing.
+
+    pygfx compiles the ``clearcoat``, ``sheen``, ``iridescence`` and
+    ``anisotropy`` shader branches only when the value is non-zero while the
+    material is first drawn. This subclass rebuilds the shader whenever one of
+    them changes between zero and non-zero, so setting it later takes effect.
+
+    Parameters
+    ----------
+    **kwargs : dict
+        Properties forwarded to ``MeshPhysicalMaterial``.
+    """
+
+    clearcoat = _shader_gated_property("clearcoat")
+    sheen = _shader_gated_property("sheen")
+    iridescence = _shader_gated_property("iridescence")
+    anisotropy = _shader_gated_property("anisotropy")
+
+    def __init__(self, **kwargs):
+        """
+        Initialize the material and track which shader layers are enabled.
+
+        Parameters
+        ----------
+        **kwargs : dict
+            Keyword arguments forwarded to ``MeshPhysicalMaterial``.
+        """
+        super().__init__(**kwargs)
+        # pygfx assigns ``_anisotropy`` directly instead of using the setter.
+        self._store.anisotropy_enabled = bool(
+            MeshPhysicalMaterial.anisotropy.fget(self)
+        )
+
+
+# pygfx deprecated ``vertex_colors``: its setter always raises.
+_PBR_PROPERTIES = tuple(
+    name
+    for name in dir(PBRMaterial)
+    if name != "vertex_colors" and getattr(getattr(PBRMaterial, name), "fset", None)
+)
+
+
+def _set_pbr_properties(material, properties):
+    """
+    Set PBR properties after checking that all of them exist and are writable.
+
+    Parameters
+    ----------
+    material : PBRMaterial
+        Material to modify.
+    properties : dict
+        ``PBRMaterial`` property names and values.
+
+    Raises
+    ------
+    ValueError
+        If a name is not a writable ``PBRMaterial`` property. Nothing is set
+        in that case.
+    """
+    unknown = sorted(set(properties) - set(_PBR_PROPERTIES))
+    if unknown:
+        raise ValueError(f"Unknown PBR material properties: {unknown}.")
+    for name, value in properties.items():
+        setattr(material, name, value)
+
+
+def _pbr_material_like(material, properties):
+    """
+    Create a PBR material that keeps the properties of another material.
+
+    Parameters
+    ----------
+    material : Material
+        Mesh material to read. Properties it never initialized, or that pygfx
+        derives until they are assigned such as ``depth_write``, are not copied.
+    properties : dict
+        ``PBRMaterial`` property names and values that override the copied ones.
+
+    Returns
+    -------
+    PBRMaterial
+        New material. Roughness starts at ``DEFAULT_PBR_ROUGHNESS`` like other
+        FURY PBR materials, unless ``material`` or ``properties`` set it.
+
+    Raises
+    ------
+    ValueError
+        If ``properties`` has a name that is not a writable ``PBRMaterial``
+        property.
+
+    Notes
+    -----
+    Properties are assigned through their setters because the constructor does
+    not accept every one of them.
+    """
+    like = PBRMaterial(roughness=DEFAULT_PBR_ROUGHNESS)
+    unset = object()
+    for name in _PBR_PROPERTIES:
+        if getattr(material, f"{name}_is_set", True):
+            value = getattr(material, name, unset)
+            if value is not unset:
+                setattr(like, name, value)
+    _set_pbr_properties(like, properties)
+    return like
 
 
 def _create_line_material(

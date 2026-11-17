@@ -1,5 +1,7 @@
 """Core actor functionality for FURY."""
 
+import inspect
+
 import numpy as np
 from scipy.spatial.transform import Rotation as Rot
 
@@ -11,10 +13,12 @@ from fury.geometry import (
 )
 from fury.io import load_image
 from fury.lib import (
+    Buffer,
     Geometry,
     ImageBasicMaterial,
     MeshBasicMaterial,
     MeshPhongMaterial,
+    MeshPhysicalMaterial,
     MeshStandardMaterial,
     PointsGaussianBlobMaterial,
     PointsMarkerMaterial,
@@ -23,9 +27,16 @@ from fury.lib import (
     Texture,
     gfx,
 )
-from fury.material import _create_line_material, _create_mesh_material
+from fury.material import (
+    PBRMaterial,
+    _create_line_material,
+    _create_mesh_material,
+    _pbr_material_like,
+    _set_pbr_properties,
+)
 import fury.primitive as fp
 from fury.transform import rotate, scale, translate
+from fury.utils import _anisotropy_tangents
 
 
 class Actor:
@@ -511,6 +522,274 @@ def actor_from_primitive(
         obj.local.position = centers[0]
     obj.prim_count = prim_count
     return obj
+
+
+def manifest_pbr(
+    actor,
+    *,
+    centers=None,
+    metalness=None,
+    roughness=None,
+    anisotropy=None,
+    anisotropy_rotation=None,
+    clearcoat=None,
+    clearcoat_roughness=None,
+    ior=None,
+    anisotropy_direction=(0.0, 1.0, 0.5),
+    material_params=None,
+    **actor_kwargs,
+):
+    """
+    Give an existing mesh a PBR material, or build one PBR object per center.
+
+    Parameters
+    ----------
+    actor : Mesh or callable
+        Either an existing mesh actor whose material is converted to a
+        :class:`fury.material.PBRMaterial`, or an actor factory such as
+        :func:`fury.actor.sphere` called once for all ``centers``.
+    centers : array_like, shape (N, 3), optional
+        Object centers, with ``N >= 1``. Required for an actor factory,
+        rejected for a mesh.
+    metalness : float, optional
+        Metalness shared by every object.
+    roughness : float, optional
+        Surface roughness shared by every object.
+    anisotropy : float, optional
+        Anisotropy strength shared by every object.
+    anisotropy_rotation : float, optional
+        Rotation of the anisotropy direction in radians.
+    clearcoat : float, optional
+        Clearcoat layer strength shared by every object.
+    clearcoat_roughness : float, optional
+        Roughness of the clearcoat layer.
+    ior : float, optional
+        Index of refraction.
+    anisotropy_direction : array_like, shape (3,), optional
+        Direction used to generate tangents. Each tangent is perpendicular to
+        this direction and to the surface normal. Only used when tangents are
+        generated, see Notes.
+    material_params : dict or list of dict, optional
+        Additional ``PBRMaterial`` properties such as ``sheen``,
+        ``sheen_color``, ``iridescence``, ``emissive`` or ``env_map``. The named
+        PBR arguments above are shared defaults and these entries override
+        them. A dict applies to every object; for an actor factory a list holds
+        one dict per center.
+    **actor_kwargs : dict
+        Keyword arguments forwarded to the actor factory, for example ``colors``
+        or ``radii``.
+
+    Returns
+    -------
+    PBRMaterial or Group
+        The material of the converted mesh, or a group with one mesh per center,
+        each owning its own material.
+
+    Raises
+    ------
+    TypeError
+        If ``actor`` is neither a mesh nor a suitable actor factory, the mesh
+        material cannot be converted, ``centers`` or actor keywords are given
+        with a mesh, ``material`` is passed to a factory, or the factory does
+        not return a mesh with one primitive per center.
+    ValueError
+        If ``centers`` or ``material_params`` have the wrong shape, a property
+        is unknown or read-only, or the factory output cannot be split into
+        equal per-center meshes.
+
+    Notes
+    -----
+    Arguments left as None keep the value already on the mesh material, so
+    converting a standard or physical material preserves its other properties,
+    including ``env_map`` and texture maps. For a new material they take the
+    ``PBRMaterial`` default.
+
+    Anisotropy needs tangents. When the geometry has none and the material has
+    no ``normal_map`` or ``clearcoat_normal_map``, tangents are generated and,
+    for an existing mesh, stored on its geometry, which may be shared with other
+    meshes. They are skipped with a normal map because pygfx would then build
+    the normal-map frame from the tangents instead of the UVs.
+
+    Property names map from FURY 0.x: ``metallic`` -> ``metalness``,
+    ``coat_strength`` -> ``clearcoat``, ``coat_roughness`` ->
+    ``clearcoat_roughness`` and ``base_ior`` -> ``ior``. ``coat_ior`` has no
+    pygfx equivalent. Call this before adding the actor to a ``Scene`` with a
+    skybox so the scene assigns its ``env_map`` to the new material, or pass
+    ``env_map`` in ``material_params``.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from fury import actor
+    >>> box = actor.box(np.zeros((1, 3)))
+    >>> material = actor.manifest_pbr(box, metalness=1.0, roughness=0.2)
+    >>> centers = np.array([[0, 0, 0], [3, 0, 0]])
+    >>> spheres = actor.manifest_pbr(
+    ...     actor.sphere,
+    ...     centers=centers,
+    ...     material_params=[{"metalness": 0.0}, {"metalness": 1.0}],
+    ... )
+    """
+    shared = {
+        name: value
+        for name, value in {
+            "metalness": metalness,
+            "roughness": roughness,
+            "anisotropy": anisotropy,
+            "anisotropy_rotation": anisotropy_rotation,
+            "clearcoat": clearcoat,
+            "clearcoat_roughness": clearcoat_roughness,
+            "ior": ior,
+        }.items()
+        if value is not None
+    }
+
+    if isinstance(actor, gfx.Mesh):
+        if centers is not None or actor_kwargs:
+            raise TypeError(
+                "centers and actor keyword arguments are only accepted when "
+                "actor is an actor factory."
+            )
+        if material_params is not None and not isinstance(material_params, dict):
+            raise ValueError(
+                "material_params must be a dict when actor is an existing mesh."
+            )
+        params = {**shared, **(material_params or {})}
+
+        material = actor.material
+        if type(material) is PBRMaterial:
+            _set_pbr_properties(material, params)
+        elif type(material) in (
+            MeshPhongMaterial,
+            MeshBasicMaterial,
+            MeshStandardMaterial,
+            MeshPhysicalMaterial,
+        ):
+            material = _pbr_material_like(material, params)
+            actor.material = material
+        else:
+            raise TypeError(
+                f"manifest_pbr cannot convert {type(material).__name__}; "
+                "only plain mesh materials are supported."
+            )
+
+        geometry = actor.geometry
+        if (
+            getattr(geometry, "tangents", None) is None
+            and material.normal_map is None
+            and material.clearcoat_normal_map is None
+        ):
+            normals = getattr(geometry, "normals", None)
+            geometry.tangents = Buffer(
+                _anisotropy_tangents(
+                    geometry.positions.data,
+                    geometry.indices.data.reshape(-1, 3),
+                    None if normals is None else normals.data,
+                    anisotropy_direction,
+                )
+            )
+        return material
+
+    if not callable(actor):
+        raise TypeError(
+            "actor must be a mesh actor or an actor factory such as fury.actor.sphere."
+        )
+
+    name = getattr(actor, "__name__", repr(actor))
+    if centers is None:
+        raise ValueError("centers is required when actor is an actor factory.")
+    centers = np.asarray(centers, dtype=np.float32)
+    if centers.ndim != 2 or centers.shape[1] != 3 or len(centers) == 0:
+        raise ValueError("centers must have shape (N, 3) with N >= 1.")
+    n = len(centers)
+
+    parameters = inspect.signature(actor).parameters
+    if "material" not in parameters or "material_params" not in parameters:
+        raise TypeError(f"{name} does not accept material and material_params.")
+    if "material" in actor_kwargs:
+        raise TypeError(
+            "material is set by manifest_pbr; pass PBR properties through its "
+            "arguments."
+        )
+    if "impostor" in parameters:
+        actor_kwargs.setdefault("impostor", False)
+
+    if material_params is None:
+        entries = [{}] * n
+    elif isinstance(material_params, dict):
+        entries = [material_params] * n
+    else:
+        entries = list(material_params)
+        if len(entries) != n:
+            raise ValueError(
+                "material_params must contain one dict per center: "
+                f"expected {n}, got {len(entries)}."
+            )
+        if not all(isinstance(entry, dict) for entry in entries):
+            raise ValueError("material_params entries must be dicts.")
+    per_object = [{**shared, **entry} for entry in entries]
+
+    template = actor(centers, material="physical", **actor_kwargs)
+    if not isinstance(template, gfx.Mesh) or getattr(template, "prim_count", None) != n:
+        raise TypeError(f"{name} did not return a mesh with one primitive per center.")
+
+    geometry = template.geometry
+    positions = geometry.positions.data
+    faces = geometry.indices.data.reshape(-1, 3)
+    if len(positions) % n or len(faces) % n:
+        raise ValueError(
+            f"{name} did not produce the same number of vertices and faces per center."
+        )
+    nv, nf = len(positions) // n, len(faces) // n
+    per_center = faces.reshape(n, nf, 3)
+    first = np.arange(n) * nv
+    if (per_center.min(axis=(1, 2)) < first).any() or (
+        per_center.max(axis=(1, 2)) >= first + nv
+    ).any():
+        raise ValueError(f"{name} did not produce equal per-center meshes.")
+
+    arrays = {
+        key: getattr(geometry, key).data
+        for key in ("positions", "normals", "colors", "texcoords")
+        if getattr(geometry, key, None) is not None
+    }
+    materials = [_pbr_material_like(template.material, params) for params in per_object]
+    normal_mapped = [
+        material.normal_map is not None or material.clearcoat_normal_map is not None
+        for material in materials
+    ]
+
+    factory_tangents = getattr(geometry, "tangents", None)
+    if factory_tangents is not None:
+        tangents = factory_tangents.data
+        skip_tangents = [False] * n
+    else:
+        tangents = None
+        if not all(normal_mapped):
+            tangents = _anisotropy_tangents(
+                positions, faces, arrays.get("normals"), anisotropy_direction
+            )
+        skip_tangents = normal_mapped
+
+    children = []
+    for i, material in enumerate(materials):
+        chunk = slice(i * nv, (i + 1) * nv)
+        child_arrays = {key: data[chunk] for key, data in arrays.items()}
+        if tangents is not None and not skip_tangents[i]:
+            child_arrays["tangents"] = tangents[chunk]
+        child = create_mesh(
+            geometry=buffer_to_geometry(
+                indices=faces[i * nf : (i + 1) * nf] - i * nv, **child_arrays
+            ),
+            material=material,
+        )
+        child.prim_count = 1
+        children.append(child)
+
+    group = Group()
+    group.local.matrix = template.local.matrix
+    group.add(*children)
+    return group
 
 
 def arrow(
