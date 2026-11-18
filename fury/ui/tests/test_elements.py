@@ -3174,3 +3174,160 @@ def test_radio_button_visual_snapshot():
     arr = window.snapshot(scene=scene, fname=None, return_array=True)
     report = window.analyze_snapshot(arr, find_objects=True)
     assert report.objects >= 1
+
+
+def test_filemenu_2d_initialization(tmp_path):
+    """Test FileMenu2D basic initialization and directory listing."""
+    import os
+
+    # Create a test directory structure
+    sub_dir = tmp_path / "subdir"
+    sub_dir.mkdir()
+    test_file = tmp_path / "test.txt"
+    test_file.write_text("hello")
+    test_py = tmp_path / "script.py"
+    test_py.write_text("pass")
+
+    filemenu = ui.FileMenu2D(
+        directory_path=str(tmp_path),
+        size=(200, 300),
+        extensions=["*"],
+    )
+
+    npt.assert_equal(filemenu.current_directory, str(tmp_path))
+    npt.assert_equal(filemenu.size, list(filemenu.listbox.size))
+
+    # Should have "../", "subdir", and the two files
+    names = [x[0] for x in filemenu.directory_contents]
+    assert "../" in names
+    assert "subdir" in names
+    assert "test.txt" in names
+    assert "script.py" in names
+
+
+def test_filemenu_2d_extension_filter(tmp_path):
+    """Test FileMenu2D filters files by extension."""
+    (tmp_path / "file.txt").write_text("hello")
+    (tmp_path / "file.py").write_text("pass")
+    (tmp_path / "file.md").write_text("# hi")
+
+    filemenu = ui.FileMenu2D(
+        directory_path=str(tmp_path),
+        size=(200, 300),
+        extensions=["txt", "md"],
+    )
+
+    file_entries = [x for x in filemenu.directory_contents if x[1] == "file"]
+    file_names = [x[0] for x in file_entries]
+
+    assert "file.txt" in file_names
+    assert "file.md" in file_names
+    assert "file.py" not in file_names
+
+
+def test_filemenu_2d_directory_navigation(tmp_path):
+    """Test FileMenu2D navigates into subdirectories."""
+    import os
+
+    sub_dir = tmp_path / "child"
+    sub_dir.mkdir()
+    (sub_dir / "inner.txt").write_text("inner")
+
+    filemenu = ui.FileMenu2D(
+        directory_path=str(tmp_path),
+        size=(200, 300),
+    )
+
+    # Find the slot displaying "child"
+    target_slot = None
+    for slot in filemenu.listbox.slots:
+        if slot.element == "child":
+            target_slot = slot
+            break
+
+    assert target_slot is not None
+
+    # Simulate directory click
+    filemenu.directory_click_callback(target_slot)
+
+    npt.assert_equal(
+        filemenu.current_directory, str(sub_dir)
+    )
+
+    # Now check the contents include inner.txt
+    names = [x[0] for x in filemenu.directory_contents]
+    assert "inner.txt" in names
+    assert "../" in names
+
+
+def test_filemenu_2d_slot_colors(tmp_path):
+    """Test FileMenu2D colors directories green and files blue."""
+    sub_dir = tmp_path / "adir"
+    sub_dir.mkdir()
+    (tmp_path / "afile.txt").write_text("hello")
+
+    filemenu = ui.FileMenu2D(
+        directory_path=str(tmp_path),
+        size=(200, 300),
+    )
+
+    # Find slots for a directory and a file
+    for idx, slot in enumerate(filemenu.listbox.slots):
+        if slot.element is None:
+            continue
+        list_idx = filemenu.listbox.view_offset + idx
+        if list_idx >= len(filemenu.directory_contents):
+            break
+        entry_type = filemenu.directory_contents[list_idx][1]
+        if entry_type == "directory":
+            npt.assert_array_almost_equal(slot.textblock.color, [0, 0.6, 0])
+        elif entry_type == "file":
+            npt.assert_array_almost_equal(slot.textblock.color, [0, 0, 0.7])
+
+
+def test_filemenu_2d_on_change_callback(tmp_path):
+    """Test FileMenu2D on_change fires when navigating directories."""
+    sub_dir = tmp_path / "sub"
+    sub_dir.mkdir()
+
+    filemenu = ui.FileMenu2D(
+        directory_path=str(tmp_path),
+        size=(200, 300),
+    )
+
+    callback_count = [0]
+
+    def on_change():
+        callback_count[0] += 1
+
+    filemenu.on_change = on_change
+
+    # Navigate into the subdirectory
+    target_slot = None
+    for slot in filemenu.listbox.slots:
+        if slot.element == "sub":
+            target_slot = slot
+            break
+
+    assert target_slot is not None
+    filemenu.directory_click_callback(target_slot)
+    npt.assert_equal(callback_count[0], 1)
+
+
+def test_filemenu_2d_get_all_file_names(tmp_path):
+    """Test FileMenu2D get_all_file_names returns dirs before files."""
+    sub_dir = tmp_path / "zdir"
+    sub_dir.mkdir()
+    (tmp_path / "afile.txt").write_text("hello")
+
+    filemenu = ui.FileMenu2D(
+        directory_path=str(tmp_path),
+        size=(200, 300),
+    )
+
+    contents = filemenu.get_all_file_names()
+    # Directories should come before files
+    dir_indices = [i for i, x in enumerate(contents) if x[1] == "directory"]
+    file_indices = [i for i, x in enumerate(contents) if x[1] == "file"]
+    if dir_indices and file_indices:
+        assert max(dir_indices) < min(file_indices)
