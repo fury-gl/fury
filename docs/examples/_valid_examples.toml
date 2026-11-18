@@ -48,6 +48,8 @@ files = [
     "viz_brownian_motion.py",
     "viz_network.py",
     "viz_read_mesh.py",
+    "viz_read_gltf.py",
+    "viz_save_gltf.py",
     "viz_flight_simulator.py",
     "viz_solar_system.py",
     "viz_helical_solar_system.py",
