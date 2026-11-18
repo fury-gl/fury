@@ -83,5 +83,5 @@ scene.add(roi_surface)
 show_manager = window.ShowManager(
     scene=scene, title="FURY Simple Streamline ROI", size=(800, 600)
 )
-window.update_camera(show_manager.screens[0].camera, None, scene)
+window.update_camera(show_manager.screens[0].camera, target=scene)
 show_manager.start()
