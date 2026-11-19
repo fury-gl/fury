@@ -1,6 +1,7 @@
 """UI components module."""
 
 __all__ = [
+    "Icon2D",
     "TexturedButton2D",
     "TextButton2D",
     "TextBox2D",
@@ -21,7 +22,10 @@ __all__ = [
 ]
 
 
+import difflib
 from numbers import Number
+import os
+import re
 from string import printable
 import textwrap
 import warnings
@@ -32,7 +36,7 @@ import numpy as np
 from fury.colormap import normalize_colors
 from fury.data import read_viz_icons
 from fury.io import get_extension, load_image, load_image_texture
-from fury.lib import EventType
+from fury.lib import EventType, Texture
 from fury.ui.containers import ImageContainer2D, Panel2D
 from fury.ui.context import UIContext
 from fury.ui.core import (
@@ -47,6 +51,14 @@ from fury.ui.core import (
 from fury.ui.helpers import clip_overflow
 
 TWO_PI = 2.0 * np.pi
+CARD_ACTION_SIZE = 24
+ICON_COLOR = "#444444"
+CARD_ACTION_COLORS = {
+    "default": "#6B7280",
+    "pressed": "#111827",
+    "selected": "#F43F5E",
+    "pressed-selected": "#E11D48",
+}
 
 LOWERS = r"`1234567890-=[]\;',./"
 UPPERS = r'~!@#$%^&*()_+{}|:"<>?'
@@ -60,13 +72,26 @@ class TexturedButton2D(Button2D):
     Parameters
     ----------
     states : dict
-        A mapping of state names to image file paths.
+        A mapping of state names to what the button shows in that state. Each
+        value is either an image file path, or a dictionary describing a Lucide
+        icon: ``{"icon": "heart", "color": "#F43F5E"}``. ``"icon"`` is the icon
+        name without extension and ``"color"`` its color, in any form accepted by
+        :func:`~fury.colormap.normalize_colors`, defaulting to the Lucide grey.
+        The optional ``"filled"`` boolean selects the filled version of the icon.
+        It defaults to True for the ``"selected"`` and ``"pressed-selected"``
+        states, so a toggled icon button turns solid, and to False otherwise.
     position : (float, float)
         Absolute coordinates (x, y) for placement.
     size : (int, int)
         Width and height in pixels.
     is_toggle : bool, optional
         If True, the button behaves as a toggle switch.
+
+    Raises
+    ------
+    ValueError
+        If a state dictionary has no ``"icon"`` key, or names an icon that is not
+        in the Lucide pack.
     """
 
     def __init__(self, states, *, position=(0, 0), size=(30, 30), is_toggle=False):
@@ -76,12 +101,12 @@ class TexturedButton2D(Button2D):
 
     def _load_textures(self, states):
         """
-        Load state images into PyGfx textures.
+        Load state images and icons into PyGfx textures.
 
         Parameters
         ----------
         states : dict
-            Dictionary of state names to image file paths.
+            Dictionary of state names to image file paths or icon dictionaries.
 
         Returns
         -------
@@ -89,8 +114,19 @@ class TexturedButton2D(Button2D):
             A dictionary containing loaded Texture objects.
         """
         loaded = {}
-        for name, fname in states.items():
-            loaded[name] = load_image_texture(fname)
+        for name, state in states.items():
+            if isinstance(state, dict):
+                if "icon" not in state:
+                    raise ValueError(f"State {name!r} has no 'icon' key: {state!r}.")
+                filled = state.get("filled", name in ("selected", "pressed-selected"))
+                icon = f"{state['icon']}-filled" if filled else state["icon"]
+                glyph = _lucide_glyph(icon)
+                glyph[..., :3] = np.rint(
+                    normalize_colors(state.get("color", ICON_COLOR))[0][:3] * 255
+                )
+                loaded[name] = Texture(glyph, dim=2, generate_mipmaps=True)
+            else:
+                loaded[name] = load_image_texture(state)
         return loaded
 
     def _setup(self):
@@ -114,6 +150,135 @@ class TexturedButton2D(Button2D):
         else:
             tint = 0.5 if self.is_pressed else (0.8 if self.is_hovered else 1.0)
             self.child.color = (tint, tint, tint)
+
+
+def _lucide_glyph(name):
+    """
+    Load a Lucide icon as a white glyph whose alpha channel is its coverage.
+
+    The pack stores each icon in a fixed grey. The white glyph lets the material
+    color, which multiplies the texture, set the displayed color exactly.
+
+    Parameters
+    ----------
+    name : str
+        Lucide icon name without extension, e.g. ``"house"``.
+
+    Returns
+    -------
+    ndarray
+        RGBA ``uint8`` image of the icon with RGB set to 255.
+
+    Raises
+    ------
+    ValueError
+        If the pack has no icon called ``name``. The message lists the closest
+        icon names.
+    """
+    path = None
+    if re.fullmatch(r"[a-z0-9-]+", str(name)):
+        path = read_viz_icons(fname=f"{name}.png")
+    if path is None or not os.path.isfile(path):
+        pack = os.path.dirname(read_viz_icons())
+        names = [
+            fname[: -len(".png")]
+            for fname in os.listdir(pack)
+            if fname.endswith(".png") and not fname.endswith("-pressed.png")
+        ]
+        message = f"Unknown Lucide icon {name!r}."
+        close = difflib.get_close_matches(str(name), names, n=3)
+        if close:
+            message += f" Did you mean: {', '.join(close)}?"
+        raise ValueError(message)
+    icon = load_image(path)
+    glyph = np.full_like(icon, 255)
+    glyph[..., 3] = icon[..., 3]
+    return glyph
+
+
+class Icon2D(ImageContainer2D):
+    """
+    Display a Lucide icon selected by name.
+
+    The icons come from the Lucide pack that FURY downloads on first use, see
+    https://lucide.dev/icons for the available names.
+
+    Parameters
+    ----------
+    name : str
+        Lucide icon name without extension, e.g. ``"house"`` or ``"arrow-up"``.
+    position : (float, float), optional
+        Absolute coordinates (x, y) of the top-left corner of the icon.
+    size : (int, int), optional
+        Width and height in pixels of the icon.
+    color : str, tuple, list or ndarray, optional
+        Color of the icon strokes in any form accepted by
+        :func:`~fury.colormap.normalize_colors`, such as a hex string or RGB
+        values in [0, 1] or [0, 255]. The default is the Lucide dark grey.
+
+    Attributes
+    ----------
+    name : str
+        Name of the displayed icon. Assigning a new name swaps the icon.
+    color : (float, float, float)
+        Color of the icon strokes. Assigning a new color, in any form accepted
+        by :func:`~fury.colormap.normalize_colors`, recolors the icon.
+
+    Raises
+    ------
+    ValueError
+        If ``name`` is not an icon of the Lucide pack.
+    """
+
+    def __init__(self, name, *, position=(0, 0), size=(24, 24), color=ICON_COLOR):
+        """
+        Initialize the icon with the glyph of the named Lucide icon.
+
+        Parameters
+        ----------
+        name : str
+            Lucide icon name without extension, e.g. ``"house"``.
+        position : (float, float), optional
+            Absolute coordinates (x, y) of the top-left corner of the icon.
+        size : (int, int), optional
+            Width and height in pixels of the icon.
+        color : str, tuple, list or ndarray, optional
+            Color of the icon strokes, in any form accepted by
+            :func:`~fury.colormap.normalize_colors`.
+        """
+        super().__init__(_lucide_glyph(name), position=position, size=size)
+        self.color = color
+        self._name = name
+
+    @property
+    def name(self):
+        """
+        Get the name of the displayed icon.
+
+        Returns
+        -------
+        str
+            Lucide icon name without extension.
+        """
+        return self._name
+
+    @name.setter
+    def name(self, name):
+        """
+        Display another Lucide icon.
+
+        Parameters
+        ----------
+        name : str
+            Lucide icon name without extension.
+
+        Raises
+        ------
+        ValueError
+            If ``name`` is not an icon of the Lucide pack.
+        """
+        self.set_img(_lucide_glyph(name))
+        self._name = name
 
 
 class TextButton2D(Button2D):
@@ -484,28 +649,31 @@ class PlaybackPanel(UI):
         )
 
         icon_play_pause = {
-            "default": read_viz_icons(fname="play3.png"),
-            "pressed": read_viz_icons(fname="pause2.png"),
+            "default": read_viz_icons(fname="play-filled.png"),
+            "pressed": read_viz_icons(fname="pause-filled.png"),
         }
         icon_loop = {
-            "default": read_viz_icons(fname="checkmark.png"),
-            "pressed": read_viz_icons(fname="infinite.png"),
+            "default": read_viz_icons(fname="check.png"),
+            "pressed": read_viz_icons(fname="infinity.png"),
         }
 
         self._play_pause_btn = TexturedButton2D(
             states=icon_play_pause, size=(25, 25), is_toggle=True
         )
         self._stop_btn = TexturedButton2D(
-            states={"default": read_viz_icons(fname="stop2.png")}, size=(25, 25)
+            states={"default": read_viz_icons(fname="square-filled.png")},
+            size=(25, 25),
         )
         self._loop_btn = TexturedButton2D(
             states=icon_loop, size=(25, 25), is_toggle=True
         )
         self._speed_up_btn = TexturedButton2D(
-            states={"default": read_viz_icons(fname="plus.png")}, size=(15, 15)
+            states={"default": read_viz_icons(fname="plus.png")},
+            size=(25, 25),
         )
         self._slow_down_btn = TexturedButton2D(
-            states={"default": read_viz_icons(fname="minus.png")}, size=(15, 15)
+            states={"default": read_viz_icons(fname="minus.png")},
+            size=(25, 25),
         )
 
         self._progress_bar = LineSlider2D(
@@ -521,9 +689,9 @@ class PlaybackPanel(UI):
         self.panel.add_element(self._play_pause_btn, (10, 10))
         self.panel.add_element(self._stop_btn, (45, 10))
         self.panel.add_element(self._loop_btn, (80, 10))
-        self.panel.add_element(self._slow_down_btn, (125, 15))
-        self.panel.add_element(self.speed_text, (157, 15), anchor="center")
-        self.panel.add_element(self._speed_up_btn, (195, 15))
+        self.panel.add_element(self._slow_down_btn, (120, 10))
+        self.panel.add_element(self.speed_text, (165, 22), anchor="center")
+        self.panel.add_element(self._speed_up_btn, (185, 10))
 
         self._play_pause_btn.on_clicked = self._play_pause_callback
         self._stop_btn.on_clicked = lambda e: self.stop()
@@ -2256,19 +2424,21 @@ class RangeSlider(UI):
         self.value_slider.max_value = self.range_slider.right_disk_value
 
 
-def _toggle_icon_states(name):
+def _toggle_icon_states(name, selected_name):
     """
     Build the four-state texture mapping for a toggle icon.
 
-    Uses the ``new_icons`` set, which provides an idle and a pressed image for
-    both the unselected and selected states of ``name`` (e.g. ``"checkbox"`` or
-    ``"circle"``): ``name.png``, ``name-selected.png``, ``name-pressed.png`` and
-    ``name-pressed-selected.png``.
+    Uses the Lucide icon pack, which provides an idle (``#444444``) and a pressed
+    (``#BBBBBB``) variant of both the unselected glyph ``name`` and the selected
+    glyph ``selected_name``: ``name.png``, ``selected_name.png``,
+    ``name-pressed.png`` and ``selected_name-pressed.png``.
 
     Parameters
     ----------
     name : str
-        Base name of the icon in the ``new_icons`` set.
+        Lucide icon name of the unselected glyph, e.g. ``"square"``.
+    selected_name : str
+        Lucide icon name of the selected glyph, e.g. ``"square-check"``.
 
     Returns
     -------
@@ -2277,12 +2447,10 @@ def _toggle_icon_states(name):
         ``"pressed-selected"`` to icon file paths.
     """
     return {
-        "default": read_viz_icons(style="new_icons", fname=f"{name}.png"),
-        "selected": read_viz_icons(style="new_icons", fname=f"{name}-selected.png"),
-        "pressed": read_viz_icons(style="new_icons", fname=f"{name}-pressed.png"),
-        "pressed-selected": read_viz_icons(
-            style="new_icons", fname=f"{name}-pressed-selected.png"
-        ),
+        "default": read_viz_icons(fname=f"{name}.png"),
+        "selected": read_viz_icons(fname=f"{selected_name}.png"),
+        "pressed": read_viz_icons(fname=f"{name}-pressed.png"),
+        "pressed-selected": read_viz_icons(fname=f"{selected_name}-pressed.png"),
     }
 
 
@@ -2376,8 +2544,9 @@ class ButtonGroup(UI):
         """
         Build the toggle-button icon states for this group.
 
-        The base implementation returns the checkbox icons. Subclasses override
-        this to provide their own icons, e.g. the radio button's circle icons.
+        The base implementation returns the Lucide ``square`` and ``square-check``
+        icons. Subclasses override this to provide their own icons, e.g. the radio
+        button's circle icons.
 
         Returns
         -------
@@ -2385,7 +2554,7 @@ class ButtonGroup(UI):
             Mapping of state names to icon file paths, as returned by
             :func:`_toggle_icon_states`.
         """
-        return _toggle_icon_states("checkbox")
+        return _toggle_icon_states("square", "square-check")
 
     def _setup(self):
         """Set up this UI component."""
@@ -2749,10 +2918,10 @@ class RadioButton(ButtonGroup):
 
     def _make_button_states(self):
         """
-        Build the radio button's circle icon states.
+        Build the radio button's Lucide circle icon states.
 
-        The ``circle`` icons show a ring when unselected and a ring with a
-        filled center dot when selected.
+        The ``circle`` icon shows a ring when unselected and ``circle-dot`` a ring
+        with a filled center dot when selected.
 
         Returns
         -------
@@ -2760,7 +2929,7 @@ class RadioButton(ButtonGroup):
             Mapping of state names to icon file paths, as returned by
             :func:`_toggle_icon_states`.
         """
-        return _toggle_icon_states("circle")
+        return _toggle_icon_states("circle", "circle-dot")
 
     def _handle_option_change(self, label):
         """
@@ -2895,8 +3064,8 @@ class ComboBox2D(UI):
         ) = self._calculate_layout(size)
 
         self._icon_files = {
-            "default": read_viz_icons(fname="circle-down.png"),
-            "pressed": read_viz_icons(fname="circle-up.png"),
+            "default": read_viz_icons(fname="circle-chevron-down.png"),
+            "pressed": read_viz_icons(fname="circle-chevron-up.png"),
         }
 
         super().__init__(position=position, z_order=z_order)
@@ -4650,6 +4819,10 @@ class Card2D(UI):
         Width of the border in pixels.
     maintain_aspect : bool, optional
         If True, the image is scaled to maintain its aspect ratio.
+    actions : sequence of str, optional
+        Lucide icon names shown as a row of icon buttons at the bottom of the
+        card, for example ``["heart", "bookmark"]``. Each one is a toggle
+        button, see the ``actions`` attribute to react to clicks.
     z_order : int, optional
         The stacking priority of the card.
 
@@ -4663,6 +4836,9 @@ class Card2D(UI):
         Displays the body text on the card.
     panel : :class:`Panel2D`
         The background panel that holds all card elements.
+    actions : dict
+        Maps each action icon name to its :class:`TexturedButton2D`. Empty when the
+        card has no actions.
     """
 
     def __init__(
@@ -4683,9 +4859,13 @@ class Card2D(UI):
         border_color=(1.0, 1.0, 1.0),
         border_width=0,
         maintain_aspect=False,
+        actions=None,
         z_order=0,
     ):
         """Initialize the Card2D instance."""
+        self._action_names = [] if actions is None else list(actions)
+        if len(set(self._action_names)) != len(self._action_names):
+            raise ValueError(f"Card actions must be unique, got {self._action_names}.")
         self._drag_offset = None
         self.image_path = image_path
         self._extension = get_extension(self.image_path)
@@ -4765,6 +4945,20 @@ class Card2D(UI):
         self.panel.add_element(self.title_box, (0, 0))
         self.panel.add_element(self.body_box, (0, 0))
 
+        self.actions = {
+            name: TexturedButton2D(
+                states={
+                    state: {"icon": name, "color": color}
+                    for state, color in CARD_ACTION_COLORS.items()
+                },
+                size=(CARD_ACTION_SIZE, CARD_ACTION_SIZE),
+                is_toggle=True,
+            )
+            for name in self._action_names
+        }
+        for button in self.actions.values():
+            self.panel.add_element(button, (0, 0))
+
         self._setup_drag_events()
         self._children.append(self.panel)
 
@@ -4841,6 +5035,11 @@ class Card2D(UI):
         self.image.resize(self._image_size)
         self.title_box.resize(_title_box_size)
         self.body_box.resize(_body_box_size)
+
+        action_y = int(size[1]) - bw - self.padding - CARD_ACTION_SIZE
+        for i, button in enumerate(self.actions.values()):
+            action_x = bw + self.padding + i * (CARD_ACTION_SIZE + self.padding)
+            self.panel.update_element(button, (action_x, action_y))
 
     def _update_actors_position(self):
         """Update the internal position of the UI element."""
@@ -5003,7 +5202,8 @@ class Card2D(UI):
         image_size = (img_w, img_h)
 
         text_area_w = max(_width - 2 * self.padding, 1)
-        remaining_h = max(_height - img_h - 3 * self.padding, 2)
+        footer_h = CARD_ACTION_SIZE + self.padding + bw if self._action_names else 0
+        remaining_h = max(_height - img_h - 3 * self.padding - footer_h, 2)
 
         title_h = max(int(remaining_h * 0.25), 1)
         body_h = max(remaining_h - title_h - self.padding, 1)
@@ -5102,10 +5302,10 @@ class SpinBox(UI):
 
         self.textbox = TextBox2D(width=self.max_column, height=self.max_line)
         self.increment_button = TexturedButton2D(
-            states={"default": read_viz_icons(fname="circle-up.png")}
+            states={"default": read_viz_icons(fname="circle-chevron-up.png")}
         )
         self.decrement_button = TexturedButton2D(
-            states={"default": read_viz_icons(fname="circle-down.png")}
+            states={"default": read_viz_icons(fname="circle-chevron-down.png")}
         )
 
         self.panel.add_element(self.textbox, (0, 0))

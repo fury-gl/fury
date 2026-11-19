@@ -33,6 +33,10 @@ NEW_ICONS_DATA_URL = (
     "https://raw.githubusercontent.com/fury-gl/fury-data/master/icons/new_icons/"
 )
 
+LUCIDE_ICONS_DATA_URL = (
+    "https://github.com/fury-gl/fury-data/releases/download/icons-lucide-1.70.0/"
+)
+
 CUBEMAP_DATA_URL = (
     "https://raw.githubusercontent.com/fury-gl/fury-data/master/cubemaps/"
 )
@@ -508,6 +512,18 @@ fetch_viz_icons = _make_fetcher(
     unzip=True,
 )
 
+fetch_viz_lucide_icons = _make_fetcher(
+    "fetch_viz_lucide_icons",
+    pjoin(fury_home, "icons"),
+    LUCIDE_ICONS_DATA_URL,
+    ["lucide.tar.gz"],
+    ["lucide.tar.gz"],
+    sha_list=["73B4CC970F8B62AF9D8CC1E90E00A45A103F9086FF8C56DA2CB55800BF47C09E"],
+    data_size="4225KB",
+    doc="Download the Lucide icon pack used by FURY UI elements",
+    unzip=True,
+)
+
 fetch_viz_new_icons = _make_fetcher(
     "fetch_viz_new_icons",
     pjoin(fury_home, "icons", "new_icons"),
@@ -761,14 +777,15 @@ def read_viz_cubemap(name, *, suffix_type=1, ext=".jpg"):
 
 
 @warn_on_args_to_kwargs()
-def read_viz_icons(*, style="icomoon", fname="infinity.png"):
+def read_viz_icons(*, style="lucide", fname="infinity.png"):
     """
     Read specific icon from specific style.
 
     Parameters
     ----------
     style : str
-        Current icon style. Default is icomoon.
+        Current icon style: ``"lucide"``, ``"icomoon"`` or ``"new_icons"``.
+        Default is lucide.
     fname : str
         Filename of icon. This should be found in folder HOME/.fury/style/.
         Default is infinity.png.
@@ -778,13 +795,18 @@ def read_viz_icons(*, style="icomoon", fname="infinity.png"):
     path : str
         Complete path of icon.
     """
-    if not os.path.isdir(pjoin(fury_home, "icons", style)):
+    folder = pjoin(fury_home, "icons", style)
+    path = pjoin(folder, fname)
+    if style == "lucide":
+        # Extracting again restores icons missing from an older pack revision.
+        if not os.path.isfile(path):
+            fetch_viz_lucide_icons()
+    elif not os.path.isdir(folder):
         if style == "icomoon":
             fetch_viz_icons()
         elif style == "new_icons":
             fetch_viz_new_icons()
-    folder = pjoin(fury_home, "icons", style)
-    return pjoin(folder, fname)
+    return path
 
 
 def read_viz_models(fname):

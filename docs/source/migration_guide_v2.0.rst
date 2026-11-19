@@ -532,6 +532,52 @@ consider an ImGui panel as a temporary substitute until they are ported.
 All other 0.12.x UI components have a PyGfx-backed equivalent listed
 above.
 
+Icons: Lucide pack and ``read_viz_icons``
+-----------------------------------------
+
+**Summary**
+
+The UI icons (``PlaybackPanel``, ``Checkbox``, ``RadioButton``, ``ComboBox2D``,
+``SpinBox``) now come from the `Lucide <https://lucide.dev>`_ icon pack
+(ISC license, with a subset derived from Feather under the MIT license). The
+pack is downloaded on first use from a ``fury-gl/fury-data`` release asset and
+cached in ``~/.fury/icons/lucide``. Every icon is available as ``<name>.png``,
+``<name>-pressed.png`` and ``<name>-filled.png``.
+
+``fury.data.read_viz_icons`` now defaults to ``style="lucide"`` instead of
+``"icomoon"``. A call that relied on the old default with an icomoon file name
+now returns a path that does not exist.
+
+.. code-block:: python
+
+   # FURY 0.12.x
+   path = read_viz_icons(fname="home3.png")
+
+   # FURY 2.0
+   path = read_viz_icons(fname="house.png")                      # Lucide
+   path = read_viz_icons(style="icomoon", fname="home3.png")     # legacy set
+
+.. list-table::
+   :header-rows: 1
+   :widths: 50 50
+
+   * - Legacy icomoon / new_icons file
+     - Lucide file
+   * - ``play3.png``, ``pause2.png``, ``stop2.png``
+     - ``play.png``, ``pause.png``, ``square.png``
+   * - ``checkmark.png``, ``infinite.png``
+     - ``check.png``, ``infinity.png``
+   * - ``circle-up.png``, ``circle-down.png``
+     - ``circle-chevron-up.png``, ``circle-chevron-down.png``
+   * - ``circle-left.png``, ``circle-right.png``
+     - ``circle-chevron-left.png``, ``circle-chevron-right.png``
+   * - ``home3.png``, ``like.png``
+     - ``house.png``, ``heart.png``
+
+``fetch_viz_icons`` and ``fetch_viz_new_icons`` are unchanged, so the legacy
+sets stay available through ``style="icomoon"`` and ``style="new_icons"``.
+Icon names are listed at https://lucide.dev/icons.
+
 
 13. FPS Display and Control
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

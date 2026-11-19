@@ -7,7 +7,8 @@ import numpy as np
 import numpy.testing as npt
 
 from fury import ui, window
-from fury.data import DATA_DIR, fetch_viz_icons, fetch_viz_new_icons, read_viz_icons
+from fury.data import DATA_DIR, read_viz_icons
+from fury.io import load_image
 from fury.lib import KeyboardEvent
 from fury.testing import VisualTest
 from fury.ui.helpers import Anchor
@@ -15,12 +16,10 @@ from fury.ui.helpers import Anchor
 
 def test_textured_button_2d_initialization():
     """Test TexturedButton2D initialization and texture loading."""
-    fetch_viz_icons()
-
     states = {
-        "default": read_viz_icons(fname="play3.png"),
-        "hover": read_viz_icons(fname="pause2.png"),
-        "pressed": read_viz_icons(fname="stop2.png"),
+        "default": read_viz_icons(fname="play.png"),
+        "hover": read_viz_icons(fname="pause.png"),
+        "pressed": read_viz_icons(fname="square.png"),
     }
 
     button_size = (50, 50)
@@ -39,10 +38,9 @@ def test_textured_button_2d_initialization():
 
 def test_textured_button_state_updates():
     """Test if TexturedButton2D updates its visual state on interaction."""
-    fetch_viz_icons()
     states = {
-        "default": read_viz_icons(fname="play3.png"),
-        "hover": read_viz_icons(fname="pause2.png"),
+        "default": read_viz_icons(fname="play.png"),
+        "hover": read_viz_icons(fname="pause.png"),
     }
 
     button = ui.TexturedButton2D(states=states, size=(40, 40))
@@ -1748,7 +1746,6 @@ def test_range_slider_size_vertical():
 
 def test_ui_combobox_2d_initialization_and_properties():
     """Test ComboBox2D initialization, default parameters, layout, and properties."""
-    fetch_viz_icons()
     values = ["Item0", "Item1", "Item2"]
 
     combobox = ui.ComboBox2D(
@@ -1821,7 +1818,6 @@ def test_ui_combobox_2d_initialization_and_properties():
 
 def test_ui_combobox_2d_interaction():
     """Test menu toggle, selection, and callbacks."""
-    fetch_viz_icons()
     combobox = ui.ComboBox2D(items=["A", "B", "C"])
 
     # Test Toggle
@@ -1862,7 +1858,6 @@ def test_ui_combobox_2d_interaction():
 
 def test_ui_combobox_2d_visibility():
     """Test set_visibility logic."""
-    fetch_viz_icons()
     combobox = ui.ComboBox2D(items=["A", "B", "C"])
 
     combobox.set_visibility(False)
@@ -1880,7 +1875,6 @@ def test_ui_combobox_2d_visibility():
 
 def test_ui_combobox_2d_drag_events():
     """Test drag properties and operations."""
-    fetch_viz_icons()
     combobox = ui.ComboBox2D(items=["A"], position=(10, 10), draggable=True)
 
     event_press = window.PointerEvent(
@@ -1925,7 +1919,6 @@ def test_ui_combobox_2d_drag_events():
 
 def test_ui_combobox_2d_collapsed_allows_click_on_underlying_widget():
     """Verify that clicking a widget behind a collapsed ComboBox reaches it."""
-    fetch_viz_icons()
     scene = window.Scene()
     underlying_clicked = []
     underlying_btn = ui.Rectangle2D(position=(150, 150), size=(100, 40))
@@ -2259,8 +2252,6 @@ def test_ui_combobox_2d_collapsed_allows_click_on_underlying_widget():
 
 def test_spinbox_initialization():
     """Test SpinBox initial value clamping and child components."""
-    fetch_viz_icons()
-
     spinbox = ui.SpinBox(size=(300, 200), min_val=-20, max_val=10, step=2)
 
     npt.assert_equal(spinbox.value, 10)
@@ -2273,8 +2264,6 @@ def test_spinbox_initialization():
 
 def test_spinbox_value_clamping():
     """Test that SpinBox values are clamped to [min_val, max_val]."""
-    fetch_viz_icons()
-
     spinbox = ui.SpinBox(size=(300, 200), min_val=-20, max_val=10, step=2)
 
     spinbox.value = 5
@@ -2298,8 +2287,6 @@ def test_spinbox_value_clamping():
 
 def test_spinbox_buttons():
     """Test increment and decrement buttons step the value and fire on_change."""
-    fetch_viz_icons()
-
     spinbox = ui.SpinBox(min_val=0, max_val=10, initial_val=4, step=3)
     changes = []
     spinbox.on_change = lambda sb: changes.append(sb.value)
@@ -2316,8 +2303,6 @@ def test_spinbox_buttons():
 
 def test_spinbox_textbox_input():
     """Test typed textbox input updates the value when focus is lost."""
-    fetch_viz_icons()
-
     spinbox = ui.SpinBox(min_val=0, max_val=100, initial_val=50)
     changes = []
     spinbox.on_change = lambda sb: changes.append(sb.value)
@@ -2339,8 +2324,6 @@ def test_spinbox_textbox_input():
 
 def test_spinbox_textbox_signed_and_invalid_input():
     """Test negative, whitespace and invalid typed input."""
-    fetch_viz_icons()
-
     spinbox = ui.SpinBox(min_val=-20, max_val=20, initial_val=0)
 
     spinbox.textbox.set_message("-5")
@@ -2363,8 +2346,6 @@ def test_spinbox_textbox_signed_and_invalid_input():
 
 def test_spinbox_float_values():
     """Test float bounds, step and typed input."""
-    fetch_viz_icons()
-
     spinbox = ui.SpinBox(min_val=-1.5, max_val=2.5, initial_val=0.5, step=0.5)
 
     spinbox.increment_button.do_click()
@@ -2389,8 +2370,6 @@ def test_spinbox_float_values():
 
 def test_spinbox_precision():
     """Test float values are rounded to ``precision`` decimal places."""
-    fetch_viz_icons()
-
     spinbox = ui.SpinBox(min_val=0, max_val=1, initial_val=0.1, step=0.1)
     spinbox.increment_button.do_click()
     spinbox.increment_button.do_click()
@@ -2413,8 +2392,6 @@ def test_spinbox_precision():
 
 def test_spinbox_resize():
     """Test SpinBox resize updates child sizes and layout."""
-    fetch_viz_icons()
-
     spinbox = ui.SpinBox(size=(160, 40), padding=4)
 
     spinbox.resize((200, 50))
@@ -2432,8 +2409,6 @@ def test_spinbox_resize():
 
 def test_spinbox_padding():
     """Test that the padding argument sets the gaps instead of being overwritten."""
-    fetch_viz_icons()
-
     spinbox = ui.SpinBox(size=(160, 40), padding=8)
     npt.assert_equal(spinbox.padding, 8)
     npt.assert_equal((24, 24), spinbox.button_size)
@@ -2576,8 +2551,7 @@ def test_listbox_2d_resize():
 
 def test_ui_card2d_initialization():
     """Test Card2D initialization and layout logic."""
-    fetch_viz_icons()
-    img_path = read_viz_icons(fname="play3.png")
+    img_path = read_viz_icons(fname="play.png")
 
     card = ui.Card2D(
         image_path=img_path,
@@ -2607,8 +2581,7 @@ def test_ui_card2d_initialization():
 
 def test_ui_card2d_properties():
     """Test Card2D getters and setters."""
-    fetch_viz_icons()
-    img_path = read_viz_icons(fname="play3.png")
+    img_path = read_viz_icons(fname="play.png")
 
     card = ui.Card2D(
         image_path=img_path,
@@ -2635,8 +2608,7 @@ def test_ui_card2d_properties():
 
 def test_ui_card2d_resize():
     """Test Card2D resize propagates to internal components."""
-    fetch_viz_icons()
-    img_path = read_viz_icons(fname="play3.png")
+    img_path = read_viz_icons(fname="play.png")
 
     card = ui.Card2D(image_path=img_path, size=(200, 200), border_width=0, padding=0)
 
@@ -2652,8 +2624,7 @@ def test_ui_card2d_resize():
 
 def test_ui_card2d_events():
     """Test Card2D dragging events."""
-    fetch_viz_icons()
-    img_path = read_viz_icons(fname="play3.png")
+    img_path = read_viz_icons(fname="play.png")
 
     card = ui.Card2D(image_path=img_path, position=(10, 10))
 
@@ -2673,11 +2644,10 @@ def test_ui_card2d_events():
 
 
 def test_ui_textured_button_2d_visual(recording=False):
-    fetch_viz_icons()
     states = {
-        "default": read_viz_icons(fname="play3.png"),
-        "hover": read_viz_icons(fname="stop2.png"),
-        "pressed": read_viz_icons(fname="pause2.png"),
+        "default": read_viz_icons(fname="play.png"),
+        "hover": read_viz_icons(fname="square.png"),
+        "pressed": read_viz_icons(fname="pause.png"),
     }
     button = ui.TexturedButton2D(states=states, size=(50, 50), position=(300, 300))
 
@@ -2849,8 +2819,7 @@ def test_ui_listbox2d_visual(recording=False):
 
 
 def test_ui_card2d_visual(recording=False):
-    fetch_viz_icons()
-    img_path = read_viz_icons(fname="play3.png")
+    img_path = read_viz_icons(fname="play.png")
     card = ui.Card2D(
         image_path=img_path, size=(200, 250), border_width=1, position=(300, 300)
     )
@@ -2880,9 +2849,8 @@ def test_button_group_not_public_but_subclasses_are():
     assert hasattr(ui, "RadioButton")
 
 
-def test_checkbox_uses_new_checkbox_state_icons():
-    """Checkbox buttons load the four new_icons checkbox state textures."""
-    fetch_viz_new_icons()
+def test_checkbox_uses_lucide_state_icons():
+    """Checkbox buttons load the four Lucide square state textures."""
     checkbox = ui.Checkbox(labels=["A"])
 
     button = checkbox.options["A"][0]
@@ -2892,9 +2860,8 @@ def test_checkbox_uses_new_checkbox_state_icons():
     )
 
 
-def test_radio_button_uses_new_circle_state_icons():
-    """RadioButton buttons load the four new_icons circle state textures."""
-    fetch_viz_new_icons()
+def test_radio_button_uses_lucide_state_icons():
+    """RadioButton buttons load the four Lucide circle state textures."""
     radio = ui.RadioButton(labels=["A"])
 
     button = radio.options["A"][0]
@@ -2906,14 +2873,11 @@ def test_radio_button_uses_new_circle_state_icons():
 
 def test_toggle_button_resolves_selected_state_icons():
     """A four-state toggle button resolves keys from selected x interaction."""
-    fetch_viz_new_icons()
     states = {
-        "default": read_viz_icons(style="new_icons", fname="checkbox.png"),
-        "selected": read_viz_icons(style="new_icons", fname="checkbox-selected.png"),
-        "pressed": read_viz_icons(style="new_icons", fname="checkbox-pressed.png"),
-        "pressed-selected": read_viz_icons(
-            style="new_icons", fname="checkbox-pressed-selected.png"
-        ),
+        "default": read_viz_icons(fname="square.png"),
+        "selected": read_viz_icons(fname="square-check.png"),
+        "pressed": read_viz_icons(fname="square-pressed.png"),
+        "pressed-selected": read_viz_icons(fname="square-check-pressed.png"),
     }
     button = ui.TexturedButton2D(states=states, size=(24, 24), is_toggle=True)
 
@@ -3174,3 +3138,239 @@ def test_radio_button_visual_snapshot():
     arr = window.snapshot(scene=scene, fname=None, return_array=True)
     report = window.analyze_snapshot(arr, find_objects=True)
     assert report.objects >= 1
+
+
+def test_icon2d_shows_named_icon():
+    """Icon2D displays the coverage of the named Lucide icon at the given size."""
+    icon = ui.Icon2D("house", position=(10, 20), size=(48, 48))
+    pack_img = load_image(read_viz_icons(fname="house.png"))
+
+    npt.assert_equal(icon.name, "house")
+    npt.assert_array_equal(icon.size, (48, 48))
+    npt.assert_array_equal(icon.img[..., 3], pack_img[..., 3])
+    npt.assert_array_equal(icon.img[..., :3], 255)
+
+
+def test_icon2d_name_setter_swaps_icon():
+    """Assigning a new name replaces the displayed image."""
+    icon = ui.Icon2D("play")
+    play_alpha = icon.img[..., 3]
+
+    icon.name = "pause"
+
+    npt.assert_equal(icon.name, "pause")
+    pause_img = load_image(read_viz_icons(fname="pause.png"))
+    npt.assert_array_equal(icon.img[..., 3], pause_img[..., 3])
+    assert not np.array_equal(icon.img[..., 3], play_alpha)
+
+
+def test_icon2d_color_accepts_any_normalize_colors_form():
+    """Icon2D renders the Lucide grey by default and accepts any color form."""
+    kwargs = {"position": (20, 20), "size": (128, 128)}
+    default = ui.Icon2D("square", **kwargs)
+    npt.assert_allclose(default.color, 68 / 255)
+
+    icons = [
+        (default, (68, 68, 68)),
+        (ui.Icon2D("square", color="#00FF00", **kwargs), (0, 255, 0)),
+        (ui.Icon2D("square", color=(0, 255, 0), **kwargs), (0, 255, 0)),
+        (ui.Icon2D("square", color=(0.0, 1.0, 0.0), **kwargs), (0, 255, 0)),
+    ]
+    recolored = ui.Icon2D("square", **kwargs)
+    recolored.color = "#00FF00"
+    icons.append((recolored, (0, 255, 0)))
+
+    for icon, expected in icons:
+        scene = window.Scene(background=(1, 1, 1, 1))
+        scene.add(icon)
+        arr = window.snapshot(scene=scene, fname=None, return_array=True)
+        rgb = arr[..., :3].reshape(-1, 3).astype(int)
+        npt.assert_allclose(rgb[rgb.sum(axis=1).argmin()], expected, atol=3)
+
+
+def test_icon2d_unknown_name():
+    """Unknown icon names raise a ValueError that suggests close matches."""
+    with npt.assert_raises_regex(ValueError, "Did you mean: .*house"):
+        ui.Icon2D("hous")
+
+    icon = ui.Icon2D("play")
+    with npt.assert_raises_regex(ValueError, "Unknown Lucide icon"):
+        icon.name = "not-an-icon-name"
+    npt.assert_equal(icon.name, "play")
+
+
+def test_textured_button_2d_icon_states():
+    """Icon states are tinted per state and each state may use another icon."""
+    states = {
+        "default": {"icon": "heart", "color": "#102030"},
+        "hover": {"icon": "heart", "color": (64, 80, 96)},
+        "pressed": {"icon": "bookmark", "color": (1.0, 0.0, 0.0)},
+    }
+    button = ui.TexturedButton2D(states=states, is_toggle=True)
+
+    def shown_glyph():
+        """
+        Read the displayed texture of the button.
+
+        Returns
+        -------
+        tuple of ndarray
+            The alpha channel and the unique RGB colors of the painted pixels.
+        """
+        data = button.child.actor.material.map.texture.data
+        return data[..., 3], np.unique(data[data[..., 3] > 0, :3], axis=0)
+
+    heart_alpha, colors = shown_glyph()
+    npt.assert_array_equal(colors, [(16, 32, 48)])
+
+    button.is_hovered = True
+    button.update_visual_state()
+    alpha, colors = shown_glyph()
+    npt.assert_array_equal(colors, [(64, 80, 96)])
+    npt.assert_array_equal(alpha, heart_alpha)
+
+    button.do_click()
+    alpha, colors = shown_glyph()
+    npt.assert_array_equal(colors, [(255, 0, 0)])
+    assert not np.array_equal(alpha, heart_alpha)
+
+    with npt.assert_raises_regex(ValueError, "Unknown Lucide icon"):
+        ui.TexturedButton2D(states={"default": {"icon": "not-an-icon-name"}})
+
+
+def test_card2d_actions_are_toggle_buttons_below_the_text():
+    """Card2D builds one toggle icon button per action, in a footer row."""
+    card = ui.Card2D(
+        read_viz_icons(fname="play.png"),
+        title_text="Title",
+        body_text="Body",
+        size=(300, 320),
+        actions=["heart", "bookmark"],
+    )
+
+    npt.assert_equal(list(card.actions), ["heart", "bookmark"])
+    heart, bookmark = card.actions.values()
+    assert isinstance(heart, ui.TexturedButton2D)
+
+    heart_x, heart_y = heart.get_position()
+    bookmark_x, bookmark_y = bookmark.get_position()
+    body_x, body_y = card.body_box.get_position()
+    npt.assert_equal(heart_y, bookmark_y)
+    assert bookmark_x > heart_x
+    assert heart_y >= body_y + card.body_box.size[1]
+    assert heart_y + heart.size[1] <= card.get_position()[1] + card.card_size[1]
+
+    heart.do_click()
+    npt.assert_equal(heart.toggled, True)
+    npt.assert_equal(bookmark.toggled, False)
+
+
+def test_card2d_without_actions_has_no_footer():
+    """A card without actions leaves the room an action row would take."""
+    image = read_viz_icons(fname="play.png")
+    plain = ui.Card2D(image, size=(300, 320))
+    with_actions = ui.Card2D(image, size=(300, 320), actions=["heart"])
+
+    npt.assert_equal(plain.actions, {})
+    assert plain.body_box.size[1] > with_actions.body_box.size[1]
+
+
+def test_textured_button_2d_selected_icon_states_are_filled():
+    """Selected icon states show the filled glyph unless told otherwise."""
+    states = {
+        "default": {"icon": "heart"},
+        "selected": {"icon": "heart", "color": "#F43F5E"},
+        "pressed-selected": {"icon": "heart", "filled": False},
+    }
+    button = ui.TexturedButton2D(states=states, is_toggle=True)
+
+    def painted_pixels(state):
+        """
+        Count the pixels a state texture paints.
+
+        Parameters
+        ----------
+        state : str
+            Name of the button state.
+
+        Returns
+        -------
+        int
+            Number of pixels with a non-zero alpha.
+        """
+        return np.count_nonzero(button.texture_map[state].data[..., 3])
+
+    assert painted_pixels("selected") > painted_pixels("default")
+    npt.assert_equal(painted_pixels("pressed-selected"), painted_pixels("default"))
+
+    button.do_click()
+    shown = button.child.actor.material.map.texture.data
+    npt.assert_array_equal(shown, button.texture_map["selected"].data)
+    npt.assert_array_equal(
+        np.unique(shown[shown[..., 3] > 0, :3], axis=0), [(244, 63, 94)]
+    )
+
+
+def test_icon2d_filled_variant():
+    """The ``-filled`` suffix selects the filled version of any icon."""
+    outline = ui.Icon2D("star")
+    filled = ui.Icon2D("star-filled")
+
+    npt.assert_equal(filled.name, "star-filled")
+    assert np.count_nonzero(filled.img[..., 3]) > np.count_nonzero(outline.img[..., 3])
+
+
+def test_card2d_toggled_action_is_filled_and_highlighted():
+    """A liked card action turns into the solid highlighted icon."""
+    card = ui.Card2D(read_viz_icons(fname="play.png"), actions=["heart"])
+    heart = card.actions["heart"]
+
+    idle = heart.child.actor.material.map.texture.data
+    heart.do_click()
+    liked = heart.child.actor.material.map.texture.data
+
+    assert np.count_nonzero(liked[..., 3]) > np.count_nonzero(idle[..., 3])
+    npt.assert_array_equal(
+        np.unique(liked[liked[..., 3] > 0, :3], axis=0), [(244, 63, 94)]
+    )
+
+
+def test_card2d_actions_with_float_sizes_and_borders():
+    """Action buttons stay laid out for aspect-ratio cards and float sizes."""
+    image = read_viz_icons(fname="play.png")
+    actions = ["heart", "bookmark"]
+
+    aspect = ui.Card2D(image, maintain_aspect=True, actions=actions)
+    floats = ui.Card2D(image, size=(300.0, 320.0), actions=actions)
+    floats.resize((310.0, 330.0))
+    bordered = ui.Card2D(image, size=(300, 320), border_width=12, actions=actions)
+
+    for card in (aspect, floats, bordered):
+        heart, bookmark = card.actions.values()
+        assert bookmark.get_position()[0] > heart.get_position()[0]
+        npt.assert_equal(heart.get_position()[1], bookmark.get_position()[1])
+
+    border = bordered.border_width
+    heart = bordered.actions["heart"]
+    assert heart.get_position()[0] >= bordered.get_position()[0] + border
+    body = bordered.body_box
+    assert heart.get_position()[1] >= body.get_position()[1] + body.size[1]
+
+
+def test_card2d_actions_must_be_unique():
+    """Repeating an action name is an error instead of a silent merge."""
+    with npt.assert_raises_regex(ValueError, "unique"):
+        ui.Card2D(read_viz_icons(fname="play.png"), actions=["heart", "heart"])
+
+
+def test_icon_names_must_look_like_lucide_names():
+    """Names that are not lowercase Lucide names never reach the file system."""
+    for name in ("../icomoon/home3", "C:/Windows/x", "House", ""):
+        with npt.assert_raises_regex(ValueError, "Unknown Lucide icon"):
+            ui.Icon2D(name)
+
+
+def test_icon_state_needs_an_icon_key():
+    """A state dictionary without an icon name is a ValueError."""
+    with npt.assert_raises_regex(ValueError, "no 'icon' key"):
+        ui.TexturedButton2D(states={"default": {"color": "#FF0000"}})
