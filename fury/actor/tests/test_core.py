@@ -10,11 +10,17 @@ from fury.actor import (
     create_axes_helper,
 )
 from fury.actor.tests._helpers import (
+    CENTERS,
     PHYSICAL_ONLY_PARAMS,
     assert_rejects_pbr_params_on_phong,
     assert_supports_pbr,
+    render_manager,
+    render_snapshot,
+    snapshot_mask,
     validate_actors,
 )
+from fury.lib import DirectionalLight, Texture
+from fury.material import PBRMaterial
 from fury.primitive import prim_square
 
 
@@ -464,3 +470,282 @@ def test_actor_from_primitive_rejects_physical_params_on_standard():
             material="standard",
             material_params={"clearcoat": 1.0},
         )
+
+
+def test_manifest_pbr_converts_existing_mesh():
+    box = actor.box(CENTERS, colors=(1, 0, 0))
+    flat_shading = box.material.flat_shading
+    pick_write = box.material.pick_write
+    alpha_mode = box.material.alpha_mode
+
+    mat = actor.manifest_pbr(
+        box, metalness=0.8, roughness=0.3, material_params={"sheen": 0.5}
+    )
+
+    assert mat is box.material
+    assert type(mat) is PBRMaterial
+    assert mat.metalness == pytest.approx(0.8)
+    assert mat.roughness == pytest.approx(0.3)
+    assert mat.sheen == pytest.approx(0.5)
+    assert mat.flat_shading == flat_shading
+    assert mat.pick_write == pick_write
+    assert mat.alpha_mode == alpha_mode
+    tangents = box.geometry.tangents.data
+    assert tangents.shape == (len(box.geometry.positions.data), 4)
+    assert np.isfinite(tangents).all()
+
+
+def test_manifest_pbr_updates_pbr_material_in_place():
+    sphere = actor.sphere(CENTERS, impostor=False, material="physical")
+    before = sphere.material
+
+    assert actor.manifest_pbr(sphere, clearcoat=1.0) is before
+    assert before.clearcoat == 1.0
+
+
+def test_manifest_pbr_factory_builds_one_mesh_per_center(caplog):
+    centers = np.array([[-5, 0, 0], [0, 0, 0], [5, 0, 0]], dtype=np.float32)
+    colors = np.eye(3)
+    metalness = (0.0, 0.5, 1.0)
+
+    group = actor.manifest_pbr(
+        actor.sphere,
+        centers=centers,
+        roughness=0.2,
+        material_params=[{"metalness": m} for m in metalness],
+        colors=colors,
+        radii=1,
+    )
+
+    assert isinstance(group, actor.Group)
+    assert len(group.children) == 3
+    assert len({id(child.material) for child in group.children}) == 3
+    for i, child in enumerate(group.children):
+        assert type(child.material) is PBRMaterial
+        assert child.material.metalness == pytest.approx(metalness[i])
+        assert child.material.roughness == pytest.approx(0.2)
+        assert child.prim_count == 1
+        child_colors = child.geometry.colors.data
+        np.testing.assert_allclose(
+            child_colors[:, :3], np.tile(colors[i], (len(child_colors), 1))
+        )
+        positions = child.geometry.positions.data
+        midpoint = (positions.min(axis=0) + positions.max(axis=0)) / 2
+        np.testing.assert_allclose(midpoint, centers[i], atol=1e-4)
+    assert "impostor" not in caplog.text
+
+
+def test_manifest_pbr_factory_shared_dict_gives_independent_materials():
+    group = actor.manifest_pbr(
+        actor.sphere,
+        centers=np.array([[0, 0, 0], [5, 0, 0]]),
+        material_params={"clearcoat": 1.0},
+    )
+    first, second = group.children
+
+    first.material.clearcoat = 0.0
+
+    assert second.material.clearcoat == 1.0
+
+
+def test_manifest_pbr_anisotropy_renders_on_primitive_spheres():
+    images = []
+    for strength in (0.0, 1.0):
+        group = actor.manifest_pbr(
+            actor.sphere,
+            centers=CENTERS,
+            metalness=1.0,
+            roughness=0.4,
+            anisotropy=strength,
+            radii=3,
+            phi=48,
+            theta=48,
+        )
+        sun = DirectionalLight(intensity=3)
+        sun.local.position = (5, 5, 10)
+        with render_manager(group, sun, width=8) as show_m:
+            images.append(render_snapshot(show_m))
+
+    assert snapshot_mask(images[0]).any()
+    assert snapshot_mask(images[1]).any()
+    diff = np.abs(images[0][..., :3].astype(float) - images[1][..., :3].astype(float))
+    assert diff.mean() > 0.1
+
+
+def _crossed_boxes(centers, material, material_params=None):
+    """
+    Build boxes whose first face points into the next center's vertices.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+        Box centers.
+    material : str
+        Material type forwarded to ``actor.box``.
+    material_params : dict or None
+        Material properties forwarded to ``actor.box``.
+
+    Returns
+    -------
+    Mesh
+        Box mesh that cannot be split into independent per-center meshes.
+    """
+    boxes = actor.box(centers, material=material, material_params=material_params)
+    faces = boxes.geometry.indices.data.reshape(-1, 3)
+    faces[0] = faces[-1]
+    return boxes
+
+
+@pytest.mark.parametrize(
+    "call, error, match",
+    [
+        (
+            lambda: actor.manifest_pbr(
+                actor.sphere,
+                centers=CENTERS,
+                material_params=[{}, {}],
+            ),
+            ValueError,
+            "one dict per center",
+        ),
+        (
+            lambda: actor.manifest_pbr(
+                actor.sphere, centers=CENTERS, material_params={"shininess": 1}
+            ),
+            ValueError,
+            "Unknown PBR material properties",
+        ),
+        (
+            lambda: actor.manifest_pbr(
+                actor.sphere, centers=CENTERS, material_params={"uniform_buffer": 1}
+            ),
+            ValueError,
+            "Unknown PBR material properties",
+        ),
+        (
+            lambda: actor.manifest_pbr(actor.sphere, centers=np.zeros((0, 3))),
+            ValueError,
+            "N >= 1",
+        ),
+        (
+            lambda: actor.manifest_pbr(actor.sphere, centers=np.zeros((2, 2))),
+            ValueError,
+            "shape \\(N, 3\\)",
+        ),
+        (
+            lambda: actor.manifest_pbr(
+                _crossed_boxes, centers=np.array([[0, 0, 0], [5, 0, 0]])
+            ),
+            ValueError,
+            "equal per-center meshes",
+        ),
+        (
+            lambda: actor.manifest_pbr(actor.sphere(CENTERS)),
+            TypeError,
+            "cannot convert",
+        ),
+        (
+            lambda: actor.manifest_pbr(actor.point, centers=CENTERS),
+            TypeError,
+            "does not accept material and material_params",
+        ),
+        (
+            lambda: actor.manifest_pbr(actor.sphere, centers=CENTERS, material="phong"),
+            TypeError,
+            "material is set by manifest_pbr",
+        ),
+        (
+            lambda: actor.manifest_pbr(actor.box(CENTERS), centers=CENTERS),
+            TypeError,
+            "only accepted when actor is an actor factory",
+        ),
+        (
+            lambda: actor.manifest_pbr(42),
+            TypeError,
+            "must be a mesh actor or an actor factory",
+        ),
+    ],
+)
+def test_manifest_pbr_rejects_invalid_input(call, error, match):
+    with pytest.raises(error, match=match):
+        call()
+
+
+def test_manifest_pbr_rejected_update_leaves_material_unchanged():
+    sphere = actor.sphere(CENTERS, impostor=False, material="physical")
+
+    with pytest.raises(ValueError, match="uniform_buffer"):
+        actor.manifest_pbr(sphere, clearcoat=1.0, material_params={"uniform_buffer": 1})
+
+    assert sphere.material.clearcoat == 0.0
+
+
+@pytest.mark.parametrize("material", ["standard", "physical"])
+def test_manifest_pbr_keeps_unspecified_pbr_properties(material):
+    sphere = actor.sphere(
+        CENTERS,
+        impostor=False,
+        material=material,
+        material_params={"metalness": 1.0, "roughness": 0.1, "emissive": (1, 0, 0)},
+    )
+
+    mat = actor.manifest_pbr(sphere, clearcoat=1.0)
+
+    assert type(mat) is PBRMaterial
+    assert mat.metalness == pytest.approx(1.0)
+    assert mat.roughness == pytest.approx(0.1)
+    assert tuple(mat.emissive)[:3] == pytest.approx((1, 0, 0))
+    assert mat.clearcoat == 1.0
+
+
+def test_manifest_pbr_keeps_base_properties_when_converting_phong():
+    box = actor.box(CENTERS, colors=(1, 0, 0), opacity=0.5)
+    color = tuple(box.material.color)
+    opacity = box.material.opacity
+
+    mat = actor.manifest_pbr(box)
+
+    assert tuple(mat.color) == pytest.approx(color)
+    assert mat.opacity == pytest.approx(opacity)
+    assert mat.roughness == pytest.approx(0.5)
+
+
+def test_manifest_pbr_layer_can_be_switched_off_again():
+    sphere = actor.sphere(CENTERS, impostor=False, material="physical")
+
+    actor.manifest_pbr(sphere, clearcoat=1.0, anisotropy=1.0)
+    actor.manifest_pbr(sphere, clearcoat=0.0, anisotropy=0.0)
+
+    assert sphere.material.clearcoat == 0.0
+    assert sphere.material.anisotropy == 0.0
+
+
+def test_manifest_pbr_skips_generated_tangents_with_normal_map():
+    normal_map = Texture(np.full((2, 2, 3), 128, dtype=np.uint8), dim=2)
+    plain = actor.sphere(CENTERS, impostor=False)
+    mapped = actor.sphere(CENTERS, impostor=False)
+
+    actor.manifest_pbr(plain, anisotropy=1.0)
+    actor.manifest_pbr(
+        mapped, anisotropy=1.0, material_params={"normal_map": normal_map}
+    )
+
+    assert plain.geometry.tangents is not None
+    assert getattr(mapped.geometry, "tangents", None) is None
+
+
+def test_manifest_pbr_factory_skips_tangents_only_for_normal_mapped_children():
+    normal_map = Texture(np.full((2, 2, 3), 128, dtype=np.uint8), dim=2)
+
+    group = actor.manifest_pbr(
+        actor.sphere,
+        centers=np.array([[0, 0, 0], [5, 0, 0]]),
+        material_params=[{"normal_map": normal_map}, {}],
+    )
+    mapped, plain = group.children
+
+    assert getattr(mapped.geometry, "tangents", None) is None
+    assert plain.geometry.tangents.data.shape == (
+        len(plain.geometry.positions.data),
+        4,
+    )

@@ -19,7 +19,7 @@ from fury.lib import (
     MeshStandardMaterial,
     TextureMap,
 )
-from fury.material import DEFAULT_PBR_ROUGHNESS
+from fury.material import DEFAULT_PBR_ROUGHNESS, PBRMaterial
 from fury.utils import generate_planar_uvs
 
 
@@ -288,7 +288,7 @@ def test_surface_single_color_opacity_multiplies_alpha():
         ("phong", MeshPhongMaterial),
         ("basic", MeshBasicMaterial),
         ("standard", MeshStandardMaterial),
-        ("physical", MeshPhysicalMaterial),
+        ("physical", PBRMaterial),
     ],
 )
 def test_surface_material_selection(name, expected):

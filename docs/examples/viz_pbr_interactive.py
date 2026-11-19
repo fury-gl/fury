@@ -35,6 +35,11 @@ thing you notice:
 * **Iridescence** is a thin film whose interference colours are drowned by a
   saturated albedo. It needs a dark, smooth dielectric to show its rainbow
   shift. Try the *Soap bubble* preset.
+* **Glass** is transparent, which no reflectance setting can fake: an opaque
+  dielectric with a low roughness reads as polished marble. The *Glass* preset
+  instead drops the opacity so the skybox shows through, keeps the body nearly
+  black so only the reflections remain, and lets a clearcoat add the second
+  highlight a glass surface shows.
 """
 
 import numpy as np
@@ -109,27 +114,6 @@ INITIAL = {
     "emissive_intensity": 0.0,
 }
 
-###############################################################################
-# Four of those properties -- ``clearcoat``, ``sheen``, ``anisotropy`` and
-# ``iridescence`` -- are shader gates as much as they are values. pygfx compiles
-# each of their branches into the shader only when the property is non-zero at
-# the time the material is first drawn; a later write lands in the uniform
-# buffer and never triggers a rebuild. Left at 0.0 they are compiled out for
-# good, and their sliders -- along with every preset that leans on them -- move
-# without changing a pixel. Flooring them at a value far too small to see keeps
-# each branch in the shader, ready for the slider to drive.
-
-SHADER_GATED = ("clearcoat", "sheen", "anisotropy", "iridescence")
-GATE_EPSILON = 1e-6
-
-
-def gated(name, value):
-    """Keep a shader-gated property non-zero so its branch stays compiled."""
-    if name in SHADER_GATED:
-        return max(value, GATE_EPSILON)
-    return value
-
-
 # The public factory supplies smooth radial normals, split UV endpoints and
 # pole-safe tangents. Without an image, material color and environment reflections
 # remain in control, including when anisotropy is enabled by a preset.
@@ -137,7 +121,7 @@ sphere_actor = actor.texture_on_sphere(
     phi=96,
     theta=96,
     material="physical",
-    material_params={name: gated(name, value) for name, value in INITIAL.items()},
+    material_params=dict(INITIAL),
 )
 sphere_actor.local.scale = 8.0
 
@@ -167,7 +151,7 @@ def _set(name):
     """Build a callback that writes a slider's value onto the material."""
 
     def apply(slider):
-        setattr(material, name, gated(name, slider.value))
+        setattr(material, name, slider.value)
 
     return apply
 
@@ -342,6 +326,22 @@ for tab_index, (_title, rows) in enumerate(TABS):
 # is the thing you notice, then pushes the new values back into the sliders so
 # the panel keeps telling the truth.
 
+# Glass keeps its reflections at full strength while the body fades out. The
+# default ``'blend'`` mode also scales the colour by the opacity, which would
+# fade the highlights and rim along with everything else; sourcing the colour
+# with ``one`` instead leaves only the alpha to reveal the skybox behind.
+GLASS_ALPHA_CONFIG = {
+    "method": "blended",
+    "color_op": "add",
+    "alpha_op": "add",
+    "color_constant": (0, 0, 0),
+    "alpha_constant": 0,
+    "color_src": "one",
+    "color_dst": "one-minus-src-alpha",
+    "alpha_src": "one",
+    "alpha_dst": "one-minus-src-alpha",
+}
+
 PRESETS = [
     (
         "Polished metal",
@@ -392,22 +392,33 @@ PRESETS = [
     (
         "Glass",
         {
-            "color": (0.85, 0.92, 0.95, 1.0),
+            "color": (0.03, 0.07, 0.06, 1.0),
             "metalness": 0.0,
             "roughness": 0.02,
-            "ior": 1.8,
-            "specular_intensity": 1.0,
+            "ior": 1.5,
+            "env_map_intensity": 1.5,
+            "clearcoat": 1.0,
+            "clearcoat_roughness": 0.0,
+            "opacity": 0.2,
+            # Only the outside surface: the far side would blend over the
+            # near one in triangle order and muddy the reflections.
+            "side": "front",
+            "alpha_config": GLASS_ALPHA_CONFIG,
         },
     ),
 ]
 
 #: Every property a preset may touch, with the value to fall back to when it
 #: does not mention one. Without this a preset would inherit whatever the last
-#: one left behind.
+#: one left behind. ``alpha_mode`` comes before the others on purpose: assigning
+#: it restores the stock blending that Glass replaces through ``alpha_config``.
 PRESET_DEFAULTS = {
     "color": BASE_COLOR,
     "sheen_color": (1.0, 1.0, 1.0),
     "iridescence_thickness_range": (100.0, 400.0),
+    "alpha_mode": "blend",
+    "opacity": 1.0,
+    "side": "both",
     **INITIAL,
 }
 
@@ -437,7 +448,7 @@ def apply_preset(values):
     settings = dict(PRESET_DEFAULTS)
     settings.update(values)
     for name, value in settings.items():
-        setattr(material, name, gated(name, value))
+        setattr(material, name, value)
 
     for slider, (label, *_rest) in zip(sliders, SLIDER_ROWS, strict=True):
         if label.startswith("Iridescence film"):

@@ -1,12 +1,14 @@
 import numpy as np
 import pytest
 
-from fury import material, window
+from fury import actor, material, window
 from fury.actor import create_mesh
 from fury.data import read_viz_cubemap
 from fury.geometry import buffer_to_geometry
 from fury.io import load_cube_map_texture
 from fury.lib import (
+    AmbientLight,
+    DirectionalLight,
     ImageBasicMaterial,
     LineArrowMaterial,
     LineMaterial,
@@ -23,6 +25,7 @@ from fury.lib import (
     TextureMap,
 )
 from fury.material import (
+    PBRMaterial,
     SphGlyphMaterial,
     StreamlinesMaterial,
     VectorFieldArrowMaterial,
@@ -1058,3 +1061,71 @@ def test_physical_only_properties_pass_through(param, value):
     # The same property must be refused by 'standard', which cannot express it.
     with pytest.raises(ValueError, match="Use material='physical'"):
         _create_mesh_material(material="standard", **{param: value})
+
+
+def test_create_mesh_material_physical_returns_pbr_material():
+    assert type(_create_mesh_material(material="physical")) is PBRMaterial
+
+
+def _snapshot_mean_rgb_diff(obj, name, value):
+    """
+    Measure how much a material property change alters the rendered image.
+
+    Parameters
+    ----------
+    obj : Mesh
+        Lit mesh whose material receives the change.
+    name : str
+        Material property to set.
+    value : float
+        New property value.
+
+    Returns
+    -------
+    float
+        Mean absolute RGB difference between the snapshots before and after.
+
+    Raises
+    ------
+    AssertionError
+        If the mesh is not visible before or after the change, which would make
+        the difference meaningless.
+    """
+    sun = DirectionalLight(intensity=3)
+    sun.local.position = (10, 10, 10)
+    scene = window.Scene(lights=[AmbientLight(), sun])
+    scene.add(obj)
+    show_m = window.ShowManager(scene=scene, size=(128, 128), window_type="offscreen")
+    try:
+        show_m.screens[0].camera.show_object(obj, scale=1.0)
+        show_m.render()
+        show_m.window.draw()
+        before = show_m.snapshot(fname=None)
+        setattr(obj.material, name, value)
+        show_m.render()
+        show_m.window.draw()
+        after = show_m.snapshot(fname=None)
+    finally:
+        show_m.close()
+    # A shader that fails to rebuild can blank the mesh and fake a large change.
+    assert window.analyze_snapshot(before, find_objects=True).objects >= 1
+    assert window.analyze_snapshot(after, find_objects=True).objects >= 1
+    return np.abs(before[..., :3].astype(float) - after[..., :3].astype(float)).mean()
+
+
+@pytest.mark.parametrize(
+    "name, setup",
+    [
+        ("clearcoat", {}),
+        ("sheen", {"sheen_color": (1, 1, 1)}),
+        ("iridescence", {}),
+        ("anisotropy", {"metalness": 1.0}),
+    ],
+)
+def test_pbr_material_gated_feature_toggle_rerenders(name, setup):
+    obj = actor.texture_on_sphere(
+        material="physical", material_params={"roughness": 0.6, **setup}
+    )
+    obj.material.color = (0.8, 0.1, 0.1)
+
+    assert _snapshot_mean_rgb_diff(obj, name, 1.0) > 0.5

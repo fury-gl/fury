@@ -256,12 +256,6 @@ from .io import (
 # #     YLayout as YLayout,
 # #     ZLayout as ZLayout,
 # # )
-# # from .material import (
-# #     __PBRParams as __PBRParams,
-# #     manifest_pbr as manifest_pbr,
-# #     manifest_principled as manifest_principled,
-# #     manifest_standard as manifest_standard,
-# # )
 # # from .molecular import (
 # #     Molecule as Molecule,
 # #     PTable as PTable,

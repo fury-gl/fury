@@ -2,6 +2,7 @@
 
 __all__ = [
     "actor_from_primitive",
+    "manifest_pbr",
     "line",
     "sphere",
     "ellipsoid",
@@ -99,6 +100,7 @@ from .core import (
     create_point,
     create_text,
     line,
+    manifest_pbr,
 )
 from .curved import cone, cylinder, ellipsoid, sphere, streamlines, streamtube
 from .planar import (
