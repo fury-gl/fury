@@ -13,8 +13,8 @@ from fury.lib import (
     load_wgsl,
 )
 from fury.material import (
+    StreamlineBakedMaterial,
     StreamlinesMaterial,
-    _StreamlineBakedMaterial,
 )
 
 
@@ -244,7 +244,7 @@ class StreamlinesShader(LineShader):
         needs_update = bool(getattr(wobject, "_needs_gpu_update", False))
         auto_detach = bool(getattr(mat, "auto_detach", True))
         if (
-            isinstance(mat, _StreamlineBakedMaterial)
+            isinstance(mat, StreamlineBakedMaterial)
             and auto_detach
             and not needs_update
         ):
@@ -983,13 +983,13 @@ class _StreamtubeRenderShader(MeshPhongShader):
         """
         try:
             # Import here to avoid circular dependency
-            from fury.material import StreamtubeMaterial, _StreamtubeBakedMaterial
+            from fury.material import StreamtubeBakedMaterial, StreamtubeMaterial
 
             mat = getattr(wobject, "material", None)
             needs_update = bool(getattr(wobject, "_needs_gpu_update", False))
             auto_detach = bool(getattr(mat, "auto_detach", True))
             if (
-                isinstance(mat, _StreamtubeBakedMaterial)
+                isinstance(mat, StreamtubeBakedMaterial)
                 and auto_detach
                 and not needs_update
             ):

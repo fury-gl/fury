@@ -120,7 +120,7 @@ def test_actor_opacity_invalid_values_raise(sphere_actor, invalid_opacity):
 def test_create_mesh():
     positions = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2]]).astype("float32")
     geo = geometry.buffer_to_geometry(positions)
-    mat = material._create_mesh_material(
+    mat = material.create_mesh_material(
         material="phong", color=(1, 0, 0), opacity=0.5, mode="auto"
     )
     mesh = actor.create_mesh(geometry=geo, material=mat)
@@ -131,7 +131,7 @@ def test_create_mesh():
 def test_create_point():
     vertices = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2]]).astype("float32")
     geo = geometry.buffer_to_geometry(vertices)
-    mat = material._create_points_material(
+    mat = material.create_points_material(
         material="basic", color=(1, 0, 0), opacity=0.5, mode="auto"
     )
     point = actor.create_point(geometry=geo, material=mat)
@@ -141,7 +141,7 @@ def test_create_point():
 
 def test_create_text():
     text = "FURY"
-    mat = material._create_text_material(color=(1, 0, 0), opacity=0.5)
+    mat = material.create_text_material(color=(1, 0, 0), opacity=0.5)
     text_obj = actor.create_text(text=text, material=mat)
     assert text_obj.material == mat
     assert isinstance(text_obj, Text)
@@ -149,7 +149,7 @@ def test_create_text():
 
 def test_create_image():
     img_data = np.random.rand(128, 128)
-    mat = material._create_image_material()
+    mat = material.create_image_material()
     image_obj = actor.create_image(image_input=img_data, material=mat)
     assert image_obj.material == mat
     assert isinstance(image_obj, ActorImage)
