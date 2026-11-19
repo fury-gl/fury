@@ -3,7 +3,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 .codex
-AGENTS.md
 
 # C extensions
 *.so
