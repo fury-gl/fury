@@ -14,7 +14,8 @@
 
 ## Introduce Yourself
 
-<!-- Especially if you are new to the FURY community, please introduce yourself.
+<!-- This section is required, unless you are a FURY maintainer or collaborator.
+Especially if you are new to the FURY community, please introduce yourself.
 How do you use FURY, what prompted you to make this contribution?
 Getting to know you helps us build trust in your judgement and welcome you into
 the community. -->

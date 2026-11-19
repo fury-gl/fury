@@ -20,6 +20,10 @@ pull request description or work summary you generate:
 This is a mandatory requirement, not optional. Pull requests without the
 disclosure are closed without review.
 
+The "Introduce Yourself" section is also required unless the author is a FURY
+maintainer or collaborator. Do not write it on behalf of the author: ask them
+how they use FURY and what prompted the contribution, and use their words.
+
 ## Working on an issue
 
 Before working on any issue, run `gh issue view <number> --repo fury-gl/fury`

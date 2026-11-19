@@ -7,7 +7,8 @@ Each subcommand is called by a workflow in ``.github/workflows``:
 - ``scan-pull-requests``: for every open pull request updated in the last
   ``--window`` minutes, close it if it comes from an early contributor and
   closes an issue still labeled ``state: needs triage``, and otherwise comment
-  when its "AI Usage Disclosure" section is missing or not filled.
+  when its "AI Usage Disclosure" or "Introduce Yourself" section is missing or
+  not filled.
 - ``autoclose``: warn pull requests labeled ``autoclose`` and close them once
   the label is older than ``AUTOCLOSE_DAYS`` days.
 - ``sync-triage-warning``: label blank issues with ``state: needs triage`` and
@@ -50,6 +51,8 @@ AI_USED_OPTION = "I used AI assistance for"
 AI_TOOL_LINE = re.compile(r"AI tool\(s\) used:[ \t]*(\S.*)?$", re.MULTILINE)
 HTML_COMMENT = re.compile(r"<!--.*?-->", re.DOTALL)
 AI_CHECK_MARKER = "<!-- fury-ai-disclosure-check -->"
+INTRO_SECTION_HEADING = "Introduce Yourself"
+INTRO_CHECK_MARKER = "<!-- fury-introduction-check -->"
 AUTOCLOSE_MARKER = "<!-- fury-autoclose-warning -->"
 
 TRIAGE_BANNER = (
@@ -106,6 +109,32 @@ AI_DISCLOSURE_RESOLVED = (
     f"{AI_CHECK_MARKER}\n"
     f'Thank you, the "{AI_SECTION_HEADING}" section is now filled. '
     ":white_check_mark:"
+)
+
+INTRO_PROBLEMS = {
+    "missing": (
+        f'The "{INTRO_SECTION_HEADING}" section of the pull request template is '
+        "missing from the description."
+    ),
+    "empty": f'The "{INTRO_SECTION_HEADING}" section is empty.',
+}
+
+INTRO_REQUEST = (
+    f"{INTRO_CHECK_MARKER}\n"
+    "Thank you for your pull request.\n\n"
+    "{problem}\n\n"
+    "Please edit the description of this pull request and introduce yourself "
+    f'in the "{INTRO_SECTION_HEADING}" section of the [pull request template]'
+    f"({PR_TEMPLATE_URL}): how do you use FURY, and what prompted you to make "
+    "this contribution? Getting to know you helps us build trust in your "
+    "judgement and welcome you into the community. This comment updates itself "
+    "once the section is filled."
+)
+
+INTRO_RESOLVED = (
+    f"{INTRO_CHECK_MARKER}\n"
+    f'Thank you for introducing yourself in the "{INTRO_SECTION_HEADING}" '
+    "section. :white_check_mark:"
 )
 
 AUTOCLOSE_WARNING = (
@@ -207,6 +236,29 @@ def check_ai_disclosure(*, body):
     tool = AI_TOOL_LINE.search(section)
     if ai_used and (tool is None or tool.group(1) is None):
         return "no_tool"
+    return None
+
+
+def check_introduction(*, body):
+    """
+    Check the "Introduce Yourself" section of a pull request description.
+
+    Parameters
+    ----------
+    body : str or None
+        Pull request description.
+
+    Returns
+    -------
+    str or None
+        Key of ``INTRO_PROBLEMS`` describing the problem, or None when the
+        section is filled.
+    """
+    section = extract_section(body=body or "", heading=INTRO_SECTION_HEADING)
+    if section is None:
+        return "missing"
+    if not HTML_COMMENT.sub("", section).strip():
+        return "empty"
     return None
 
 
@@ -545,7 +597,67 @@ def enforce_linked_issue(*, pr):
     return True
 
 
-def enforce_ai_disclosure(*, pr):
+def sync_check_comment(*, number, comments, marker, message):
+    """
+    Post or update the bot comment of a pull request that starts with a marker.
+
+    Parameters
+    ----------
+    number : int
+        Pull request number.
+    comments : list of dict
+        Comments of the pull request.
+    marker : str
+        Hidden marker that starts the bot comment.
+    message : str or None
+        New comment body, starting with ``marker``. None when no comment is
+        needed.
+    """
+    previous = next((c for c in comments if c["body"].startswith(marker)), None)
+    if message is None or (previous is not None and previous["body"] == message):
+        return
+    if previous is None:
+        comment(number=number, body=message)
+    else:
+        api(
+            method="PATCH",
+            url=f"{repo_url()}/issues/comments/{previous['id']}",
+            data={"body": message},
+        )
+
+
+def check_message(*, comments, marker, problem, problems, request, resolved):
+    """
+    Build the bot comment for a section check.
+
+    Parameters
+    ----------
+    comments : list of dict
+        Comments of the pull request.
+    marker : str
+        Hidden marker that starts the bot comment.
+    problem : str or None
+        Key of ``problems``, None when the section is filled.
+    problems : dict
+        Description of each problem.
+    request : str
+        Comment template with a ``{problem}`` field.
+    resolved : str
+        Comment posted once the problem is fixed.
+
+    Returns
+    -------
+    str or None
+        Comment body, or None when no comment was posted and none is needed.
+    """
+    if problem is not None:
+        return request.format(problem=problems[problem])
+    if any(c["body"].startswith(marker) for c in comments):
+        return resolved
+    return None
+
+
+def enforce_ai_disclosure(*, pr, comments):
     """
     Post, update or resolve the AI disclosure comment of a pull request.
 
@@ -553,33 +665,60 @@ def enforce_ai_disclosure(*, pr):
     ----------
     pr : dict
         Pull request, as an item of the search API.
+    comments : list of dict
+        Comments of the pull request.
     """
-    if is_bot(user=pr["user"]):
-        return
     problem = check_ai_disclosure(body=pr["body"])
-    previous = next(
-        (
-            c
-            for c in list_comments(number=pr["number"])
-            if c["body"].startswith(AI_CHECK_MARKER)
-        ),
-        None,
-    )
-    if problem is None:
-        message = None if previous is None else AI_DISCLOSURE_RESOLVED
-    else:
+    if problem is not None:
         print(f"#{pr['number']}: AI disclosure problem '{problem}'")
-        message = AI_DISCLOSURE_REQUEST.format(problem=AI_DISCLOSURE_PROBLEMS[problem])
-    if message is None or (previous is not None and previous["body"] == message):
+    message = check_message(
+        comments=comments,
+        marker=AI_CHECK_MARKER,
+        problem=problem,
+        problems=AI_DISCLOSURE_PROBLEMS,
+        request=AI_DISCLOSURE_REQUEST,
+        resolved=AI_DISCLOSURE_RESOLVED,
+    )
+    sync_check_comment(
+        number=pr["number"],
+        comments=comments,
+        marker=AI_CHECK_MARKER,
+        message=message,
+    )
+
+
+def enforce_introduction(*, pr, comments):
+    """
+    Post, update or resolve the introduction comment of a pull request.
+
+    Maintainers and collaborators are exempt.
+
+    Parameters
+    ----------
+    pr : dict
+        Pull request, as an item of the search API.
+    comments : list of dict
+        Comments of the pull request.
+    """
+    if pr["author_association"] in TRUSTED_ASSOCIATIONS:
         return
-    if previous is None:
-        comment(number=pr["number"], body=message)
-    else:
-        api(
-            method="PATCH",
-            url=f"{repo_url()}/issues/comments/{previous['id']}",
-            data={"body": message},
-        )
+    problem = check_introduction(body=pr["body"])
+    if problem is not None:
+        print(f"#{pr['number']}: introduction problem '{problem}'")
+    message = check_message(
+        comments=comments,
+        marker=INTRO_CHECK_MARKER,
+        problem=problem,
+        problems=INTRO_PROBLEMS,
+        request=INTRO_REQUEST,
+        resolved=INTRO_RESOLVED,
+    )
+    sync_check_comment(
+        number=pr["number"],
+        comments=comments,
+        marker=INTRO_CHECK_MARKER,
+        message=message,
+    )
 
 
 def run_each(*, items, action):
@@ -624,15 +763,18 @@ def scan_pull_requests(*, window):
 
     def check(*, item):
         """
-        Close a pull request on a triage issue, else check its disclosure.
+        Close a pull request on a triage issue, else check its description.
 
         Parameters
         ----------
         item : dict
             Pull request, as an item of the search API.
         """
-        if not enforce_linked_issue(pr=item):
-            enforce_ai_disclosure(pr=item)
+        if enforce_linked_issue(pr=item) or is_bot(user=item["user"]):
+            return
+        comments = list_comments(number=item["number"])
+        enforce_ai_disclosure(pr=item, comments=comments)
+        enforce_introduction(pr=item, comments=comments)
 
     run_each(items=prs, action=check)
 

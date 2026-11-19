@@ -119,6 +119,10 @@ visualization goals. It is not suitable for automatic processing by AI tools.
   <https://github.com/fury-gl/fury/blob/master/.github/PULL_REQUEST_TEMPLATE.md>`_,
   including when no AI tool was used. A bot comments on pull requests where
   this section is missing or not filled.
+* **Introducing yourself is required.** Unless you are a FURY maintainer or
+  collaborator, fill the "Introduce Yourself" section of the pull request
+  template: how you use FURY and what prompted your contribution. A bot
+  comments on pull requests where this section is missing or empty.
 * AI-generated text in issues, pull request descriptions and comments is
   allowed if you disclose it. You remain responsible for its content: keep it
   concise, accurate and specific to your change. Long, generic or inaccurate
