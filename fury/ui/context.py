@@ -3,8 +3,37 @@
 import numpy as np
 
 
+class UIContextState:
+    """
+    Hold the interaction and canvas state of one window.
+
+    Attributes
+    ----------
+    hot_ui : UI or None
+        UI element currently under the pointer.
+    active_ui : UI or None
+        UI element currently receiving keyboard input.
+    canvas_size : numpy.ndarray
+        Canvas `(width, height)` dimensions in pixels.
+    """
+
+    def __init__(self):
+        """Initialize an empty state with the default canvas size."""
+        self.hot_ui = None
+        self.active_ui = None
+        self.canvas_size = np.array([800, 800])
+
+
 class UIContextClass:
-    """Manage global UI context."""
+    """
+    Expose the UI state of the active window.
+
+    Notes
+    -----
+    Each `ShowManager` owns a `UIContextState` and activates it whenever it
+    handles input, resizes, draws, or runs its callbacks. Focus, hover, and
+    canvas size therefore never leak between windows. Z-order bounds are shared.
+    """
 
     _instance = None
 
@@ -26,12 +55,21 @@ class UIContextClass:
         """Initialize the UIContext singleton."""
         if self._initialized:
             return
-        self._hot_ui = None
-        self._active_ui = None
-        self._canvas_size = np.array([800, 800])
+        self._state = UIContextState()
         self._z_max = 1
         self._z_min = -1
         self._initialized = True
+
+    def activate(self, state):
+        """
+        Make a window's state the one exposed by this context.
+
+        Parameters
+        ----------
+        state : UIContextState
+            State owned by the window that is about to run UI code.
+        """
+        self._state = state
 
     @property
     def hot_ui(self):
@@ -43,7 +81,7 @@ class UIContextClass:
         UI or None
             UI element that is currently hot, or `None` if no element is hot.
         """
-        return self._hot_ui
+        return self._state.hot_ui
 
     @hot_ui.setter
     def hot_ui(self, element):
@@ -55,7 +93,7 @@ class UIContextClass:
         element : UI or None
             UI element that is currently hot, or `None` if no element is hot.
         """
-        self._hot_ui = element
+        self._state.hot_ui = element
 
     @property
     def active_ui(self):
@@ -67,7 +105,7 @@ class UIContextClass:
         UI or None
             UI element that is currently active, or `None` if no element is active.
         """
-        return self._active_ui
+        return self._state.active_ui
 
     @active_ui.setter
     def active_ui(self, element):
@@ -79,7 +117,7 @@ class UIContextClass:
         element : UI or None
             UI element that is currently active, or `None` if no element is active.
         """
-        self._active_ui = element
+        self._state.active_ui = element
 
     @property
     def canvas_size(self):
@@ -91,7 +129,7 @@ class UIContextClass:
         numpy.ndarray
             Canvas `(width, height)` dimensions.
         """
-        return self._canvas_size
+        return self._state.canvas_size
 
     @canvas_size.setter
     def canvas_size(self, size):
@@ -103,9 +141,7 @@ class UIContextClass:
         size : (int, int)
             Canvas `(width, height)` dimensions.
         """
-        size = np.array(size)
-        if not np.array_equal(self._canvas_size, size):
-            self._canvas_size = size
+        self._state.canvas_size = np.array(size)
 
     @property
     def z_order_bounds(self):
