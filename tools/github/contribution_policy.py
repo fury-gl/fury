@@ -20,6 +20,7 @@ The workflows provide ``GITHUB_TOKEN`` and ``GITHUB_REPOSITORY``.
 
 import argparse
 from datetime import UTC, datetime, timedelta
+from functools import cache
 import json
 import os
 import re
@@ -36,7 +37,7 @@ NOT_READY_LABEL = "linked issue not ready"
 AUTOCLOSE_LABEL = "autoclose"
 AUTOCLOSE_DAYS = 14
 MIN_MERGED_PRS = 5
-TRUSTED_ASSOCIATIONS = frozenset({"OWNER", "MEMBER", "COLLABORATOR"})
+MAINTAINER_ROLES = frozenset({"admin", "maintain", "write", "triage"})
 
 CONTRIBUTING_URL = "https://github.com/fury-gl/fury/blob/master/CONTRIBUTING.rst"
 TRIAGE_URL = f"{CONTRIBUTING_URL}#issues-needing-triage"
@@ -563,6 +564,29 @@ def count_merged_prs(*, login):
     return api(method="GET", url=search(query=query))["total_count"]
 
 
+@cache
+def is_maintainer(*, login):
+    """
+    Tell whether a user is a maintainer or collaborator of the repository.
+
+    ``author_association`` is not used: with the ``GITHUB_TOKEN`` of a
+    workflow, organization members with a private membership are reported as
+    ``CONTRIBUTOR``.
+
+    Parameters
+    ----------
+    login : str
+        GitHub login.
+
+    Returns
+    -------
+    bool
+        True for users with the triage, write, maintain or admin role.
+    """
+    payload = api(method="GET", url=f"{repo_url()}/collaborators/{login}/permission")
+    return payload["role_name"] in MAINTAINER_ROLES
+
+
 def enforce_linked_issue(*, pr):
     """
     Close a pull request that closes an issue still needing triage.
@@ -577,7 +601,7 @@ def enforce_linked_issue(*, pr):
     bool
         True when the pull request was closed.
     """
-    if pr["author_association"] in TRUSTED_ASSOCIATIONS:
+    if is_maintainer(login=pr["user"]["login"]):
         return False
     not_ready = [
         issue["number"]
@@ -700,7 +724,7 @@ def enforce_introduction(*, pr, comments):
     comments : list of dict
         Comments of the pull request.
     """
-    if pr["author_association"] in TRUSTED_ASSOCIATIONS:
+    if is_maintainer(login=pr["user"]["login"]):
         return
     problem = check_introduction(body=pr["body"])
     if problem is not None:
