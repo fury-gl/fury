@@ -1,0 +1,52 @@
+name: First interaction
+
+on:
+  - pull_request_target
+  - issues
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.repository == 'fury-gl/fury'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
+
+    steps:
+      - uses: actions/first-interaction@1c4688942c71f71d4f5502a26ea67c331730fa4d # v3.1
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          issue_message: |
+            :pray: Thank you for contributing an issue !
+
+            :rocket: **We are glad that you are finding FURY useful !**
+
+            This is an automatic message. Allow for time for FURY maintainers to be able to read the issue and comment on it.
+
+            If asking for help or advice, please ask on our [Discord community](https://discord.gg/6btFPPj): issues are intended to request new features or to report bugs.
+
+            :no_entry: New issues are labeled `state: needs triage` until a maintainer triages them. Please do not open a pull request for this issue before the label is removed.
+
+            :book: Please read our [CODE OF CONDUCT](https://github.com/fury-gl/fury/blob/master/.github/CODE_OF_CONDUCT.md) and our [CONTRIBUTING guidelines](https://github.com/fury-gl/fury/blob/master/CONTRIBUTING.rst) if you have not done that already.
+
+          pr_message: |
+            :pray: Thank you for contributing a pull request !
+
+            :rocket: **We are glad that you are finding FURY useful !**
+
+            This is an automatic message. Allow for time for FURY maintainers to be able to read this pull request and comment on it.
+
+            :white_check_mark: Note that we require the **code formatting**, **testing** and **documentation builds** to **pass** in order to merge your pull request.
+
+            GitHub will report on the status of each aspect as the builds become available. **Please, check their status and make the appropriate changes as necessary**.
+
+            :mag: It is **your responsibility** to ensure that the above checks pass to have your pull request reviewed in a timely manner and merged.
+
+            :robot: Please fill every section of the [pull request template](https://github.com/fury-gl/fury/blob/master/.github/PULL_REQUEST_TEMPLATE.md). The **AI Usage Disclosure** section is **mandatory**, even if you did not use any AI tool. See our [Automated Contributions Policy](https://github.com/fury-gl/fury/blob/master/CONTRIBUTING.rst#automated-contributions-policy).
+
+            :no_entry: Do not open a pull request against an issue labeled `state: needs triage`: it will be closed automatically.
+
+            :book: Please read our [CODE OF CONDUCT](https://github.com/fury-gl/fury/blob/master/.github/CODE_OF_CONDUCT.md) and our [CONTRIBUTING guidelines](https://github.com/fury-gl/fury/blob/master/CONTRIBUTING.rst) if you have not done that already.
