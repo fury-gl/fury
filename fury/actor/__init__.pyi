@@ -68,6 +68,7 @@ __all__ = [
     "contour_from_volume",
     "contour_from_roi",
     "contour_from_label",
+    "taubin_smooth",
     "read_buffer",
     "create_axes_helper",
 ]
@@ -143,4 +144,5 @@ from .utils import (
     set_group_visibility,
     set_opacity,
     show_slices,
+    taubin_smooth,
 )
