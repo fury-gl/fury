@@ -46,6 +46,7 @@ files = [
     "viz_streamlines_thickness.py",
     "viz_contour.py",
     "viz_brownian_motion.py",
+    "viz_boids.py",
     "viz_network.py",
     "viz_read_mesh.py",
     "viz_flight_simulator.py",
