@@ -40,6 +40,10 @@ class Panel2D(UI):
         Alignment of the panel with respect to the overall screen.
     """
 
+    _resize_target_width = 10
+    _resize_highlight_width = 2
+    _resize_highlight_color = (0.55, 0.85, 0.65)
+
     def __init__(
         self,
         size,
@@ -69,6 +73,7 @@ class Panel2D(UI):
         self.color = color
         self.opacity = opacity
         self._drag_offset = None
+        self._resize_edge = None
 
     def _setup(self):
         """
@@ -80,6 +85,57 @@ class Panel2D(UI):
         self._elements = []
         self.element_offsets = []
         self.background = Rectangle2D(size=(1, 1))
+
+        self.resize_targets = {
+            "left": Rectangle2D(
+                size=(self._resize_target_width, 1),
+                opacity=0,
+            ),
+            "right": Rectangle2D(
+                size=(self._resize_target_width, 1),
+                opacity=0,
+            ),
+            "top": Rectangle2D(
+                size=(1, self._resize_target_width),
+                opacity=0,
+            ),
+            "bottom": Rectangle2D(
+                size=(1, self._resize_target_width),
+                opacity=0,
+            ),
+        }
+        self.resize_highlights = {
+            "left": Rectangle2D(
+                size=(self._resize_highlight_width, 1),
+                color=self._resize_highlight_color,
+            ),
+            "right": Rectangle2D(
+                size=(self._resize_highlight_width, 1),
+                color=self._resize_highlight_color,
+            ),
+            "top": Rectangle2D(
+                size=(1, self._resize_highlight_width),
+                color=self._resize_highlight_color,
+            ),
+            "bottom": Rectangle2D(
+                size=(1, self._resize_highlight_width),
+                color=self._resize_highlight_color,
+            ),
+        }
+        for side, target in self.resize_targets.items():
+            target.on_hover = lambda event, side=side: self._highlight_resize_edge(
+                side, True
+            )
+            target.on_dishover = lambda event, side=side: self._highlight_resize_edge(
+                side, False
+            )
+            target.on_left_mouse_button_pressed = lambda event, side=side: (
+                self._resize_edge_pressed(event, side)
+            )
+            target.on_left_mouse_button_dragged = self._resize_edge_dragged
+            self.add_element(target, (0, 0), _is_internal=True)
+            self.resize_highlights[side].set_visibility(False)
+            self.add_element(self.resize_highlights[side], (0, 0), _is_internal=True)
 
         if self.has_border:
             self.borders = {
@@ -119,6 +175,10 @@ class Panel2D(UI):
         actors = []
 
         actors.extend(self.background.actors)
+        for target in self.resize_targets.values():
+            actors.extend(target.actors)
+        for highlight in self.resize_highlights.values():
+            actors.extend(highlight.actors)
         if self.has_border:
             for border in self.borders.values():
                 actors.extend(border.actors)
@@ -166,6 +226,8 @@ class Panel2D(UI):
 
             self.update_border_coords()
 
+        self._update_resize_target_geometry()
+
     def _update_actors_position(self):
         """Update the position of the internal actors."""
         coords = self.get_position()
@@ -173,12 +235,67 @@ class Panel2D(UI):
         for element, offset in self.element_offsets:
             if element == self.background:
                 element.z_order = self.z_order
+            elif element in self.resize_targets.values():
+                element.z_order = self.z_order + 2
+            elif element in self.resize_highlights.values():
+                element.z_order = self.z_order + 3
             elif self.has_border and element in self.borders.values():
                 element.z_order = self.z_order + 1
             else:
                 element.z_order = self.z_order + 2
 
             element.set_position(coords + offset)
+
+        self._update_resize_target_geometry()
+
+    def _update_resize_target_geometry(self):
+        """Keep resize hit areas and highlights outside the panel edges."""
+        width, height = self.size
+        target_width = self._resize_target_width
+        highlight_width = self._resize_highlight_width
+        highlight_offset = (target_width - highlight_width) / 2
+        target_height = max(height - 2 * target_width, 1)
+        target_length = max(width - 2 * target_width, 1)
+        position = self.get_position()
+
+        geometry = {
+            "left": (
+                (target_width, target_height),
+                (-target_width, target_width),
+                (highlight_width, target_height),
+                (-target_width + highlight_offset, target_width),
+            ),
+            "right": (
+                (target_width, target_height),
+                (width, target_width),
+                (highlight_width, target_height),
+                (width + highlight_offset, target_width),
+            ),
+            "top": (
+                (target_length, target_width),
+                (target_width, -target_width),
+                (target_length, highlight_width),
+                (target_width, -target_width + highlight_offset),
+            ),
+            "bottom": (
+                (target_length, target_width),
+                (target_width, height),
+                (target_length, highlight_width),
+                (target_width, height + highlight_offset),
+            ),
+        }
+        for side, (
+            target_size,
+            target_offset,
+            highlight_size,
+            highlight_offset,
+        ) in geometry.items():
+            target = self.resize_targets[side]
+            target.resize(target_size)
+            target.set_position(position + target_offset)
+            highlight = self.resize_highlights[side]
+            highlight.resize(highlight_size)
+            highlight.set_position(position + highlight_offset)
 
     def set_visibility(self, visibility):
         """
@@ -370,6 +487,74 @@ class Panel2D(UI):
             click_position = np.array([event.x, event.y])
             new_position = click_position - self._drag_offset
             self.set_position(new_position)
+
+    def _highlight_resize_edge(self, side, highlighted):
+        """
+        Highlight or restore one resize edge.
+
+        Parameters
+        ----------
+        side : str
+            The panel edge being highlighted.
+        highlighted : bool
+            Whether the edge should be highlighted.
+        """
+        self.resize_highlights[side].set_visibility(highlighted)
+
+    def _resize_edge_pressed(self, event, side):
+        """
+        Begin resizing the panel from one edge.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The pointer event that starts the resize.
+        side : str
+            The panel edge being resized.
+        """
+        self._resize_edge = side
+        self._resize_start = np.array([event.x, event.y])
+        self._resize_start_size = self.size.astype(float)
+        self._resize_start_position = self.get_position().astype(float)
+
+    def _resize_edge_dragged(self, event):
+        """
+        Resize the panel while an edge target is dragged.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The pointer event generated during the resize drag.
+        """
+        if self._resize_edge is None:
+            return
+
+        pointer = np.array([event.x, event.y])
+        delta = pointer - self._resize_start
+        size = self._resize_start_size.copy()
+        position = self._resize_start_position.copy()
+        if self._resize_edge == "left":
+            size[0] -= delta[0]
+            position[0] += delta[0]
+        elif self._resize_edge == "right":
+            size[0] += delta[0]
+        elif self._resize_edge == "top":
+            size[1] -= delta[1]
+            position[1] += delta[1]
+        else:
+            size[1] += delta[1]
+
+        size = np.maximum(size, 1)
+        if self._resize_edge == "left":
+            position[0] = self._resize_start_position[0] + (
+                self._resize_start_size[0] - size[0]
+            )
+        elif self._resize_edge == "top":
+            position[1] = self._resize_start_position[1] + (
+                self._resize_start_size[1] - size[1]
+            )
+        self.set_position(position)
+        self.resize(size)
 
     def re_align(self, window_size_change):
         """
