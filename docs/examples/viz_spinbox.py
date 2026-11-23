@@ -13,14 +13,8 @@ textbox, type a number and press Enter. The value is always clamped to
 ##############################################################################
 # First, let's import the necessary modules.
 
-from fury.data import fetch_viz_icons
 from fury.ui import SpinBox, TextBlock2D
 from fury.window import Scene, ShowManager
-
-##############################################################################
-# Fetch the bundled icon set used for the up/down buttons.
-
-fetch_viz_icons()
 
 ##############################################################################
 # Create a Scene.
