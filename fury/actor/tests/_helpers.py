@@ -9,12 +9,11 @@ import pytest
 
 from fury import actor, window
 from fury.lib import (
-    MeshPhysicalMaterial,
     MeshStandardMaterial,
     OrthographicCamera,
     PerspectiveCamera,
 )
-from fury.material import DEFAULT_PBR_ROUGHNESS
+from fury.material import DEFAULT_PBR_ROUGHNESS, PBRMaterial
 
 # --- Shared real inputs for visibility/snapshot tests -----------------------
 
@@ -285,7 +284,7 @@ def validate_actors(actor_type="actor_name", prim_count=1, **kwargs):
 #: PBR material name -> the pygfx class the actor must end up with.
 PBR_MATERIAL_TYPES = {
     "standard": MeshStandardMaterial,
-    "physical": MeshPhysicalMaterial,
+    "physical": PBRMaterial,
 }
 
 #: Properties only MeshPhysicalMaterial understands, reached through the

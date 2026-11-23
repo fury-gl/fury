@@ -318,6 +318,59 @@ def tangents_from_direction_of_anisotropy(normals, direction):
     return normalize_v3(np.cross(normals, binormals))
 
 
+def _anisotropy_tangents(positions, faces, normals, direction):
+    """
+    Compute per-vertex tangents perpendicular to an anisotropy direction.
+
+    Parameters
+    ----------
+    positions : ndarray, shape (V, 3)
+        Vertex positions.
+    faces : ndarray, shape (F, 3)
+        Triangle indices.
+    normals : ndarray, shape (V, 3) or None
+        Vertex normals. Computed from ``positions`` and ``faces`` when None.
+    direction : array_like, shape (3,)
+        Non-zero direction. Each tangent is perpendicular to it and to the
+        vertex normal.
+
+    Returns
+    -------
+    ndarray, shape (V, 4)
+        Float32 tangents with a handedness of +1 in the last column.
+
+    Raises
+    ------
+    ValueError
+        If ``direction`` is not a non-zero 3D vector.
+
+    Notes
+    -----
+    Vertices whose normal is parallel to ``direction`` (for example sphere poles)
+    use the world axis least aligned with ``direction`` instead.
+    """
+    direction = np.asarray(direction, dtype=np.float32)
+    if direction.shape != (3,) or not np.any(direction):
+        raise ValueError("anisotropy_direction must be a non-zero 3D vector.")
+
+    fallback = np.eye(3, dtype=np.float32)[np.argmin(np.abs(direction))]
+    with np.errstate(invalid="ignore", divide="ignore"):
+        if normals is None:
+            normals = normals_from_v_f(positions, faces)
+        tangents = tangents_from_direction_of_anisotropy(normals, direction)
+        degenerate = ~np.isfinite(tangents).all(axis=1)
+        if degenerate.any():
+            tangents[degenerate] = tangents_from_direction_of_anisotropy(
+                normals[degenerate], fallback
+            )
+            tangents[~np.isfinite(tangents).all(axis=1)] = fallback
+
+    result = np.empty((len(tangents), 4), np.float32)
+    result[:, :3] = tangents
+    result[:, 3] = 1
+    return result
+
+
 def triangle_order(vertices, face):
     """
     Determine the winding order of a given triangle face.
