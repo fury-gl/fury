@@ -45,7 +45,7 @@ def box(
     material_params : dict, optional
         Extra properties forwarded to the material, e.g.
         ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
-        :func:`fury.material._create_mesh_material` for the supported keys.
+        :func:`fury.material.create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the boxes should be pickable in a 3D scene.
     detailed : bool, optional
@@ -131,7 +131,7 @@ def frustum(
     material_params : dict, optional
         Extra properties forwarded to the material, e.g.
         ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
-        :func:`fury.material._create_mesh_material` for the supported keys.
+        :func:`fury.material.create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the frustums should be pickable in a 3D scene.
     wireframe : bool, optional
@@ -214,7 +214,7 @@ def tetrahedron(
     material_params : dict, optional
         Extra properties forwarded to the material, e.g.
         ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
-        :func:`fury.material._create_mesh_material` for the supported keys.
+        :func:`fury.material.create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the tetrahedrons should be pickable in a 3D scene.
     wireframe : bool, optional
@@ -297,7 +297,7 @@ def icosahedron(
     material_params : dict, optional
         Extra properties forwarded to the material, e.g.
         ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
-        :func:`fury.material._create_mesh_material` for the supported keys.
+        :func:`fury.material.create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the icosahedrons should be pickable in a 3D scene.
     wireframe : bool, optional
@@ -380,7 +380,7 @@ def rhombicuboctahedron(
     material_params : dict, optional
         Extra properties forwarded to the material, e.g.
         ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
-        :func:`fury.material._create_mesh_material` for the supported keys.
+        :func:`fury.material.create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the rhombicuboctahedrons should be pickable in a 3D scene.
     wireframe : bool, optional
@@ -464,7 +464,7 @@ def triangularprism(
     material_params : dict, optional
         Extra properties forwarded to the material, e.g.
         ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
-        :func:`fury.material._create_mesh_material` for the supported keys.
+        :func:`fury.material.create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the triangular prisms should be pickable in a 3D scene.
     wireframe : bool, optional
@@ -547,7 +547,7 @@ def pentagonalprism(
     material_params : dict, optional
         Extra properties forwarded to the material, e.g.
         ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
-        :func:`fury.material._create_mesh_material` for the supported keys.
+        :func:`fury.material.create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the pentagonal prisms should be pickable in a 3D scene.
     wireframe : bool, optional
@@ -630,7 +630,7 @@ def octagonalprism(
     material_params : dict, optional
         Extra properties forwarded to the material, e.g.
         ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
-        :func:`fury.material._create_mesh_material` for the supported keys.
+        :func:`fury.material.create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the octagonal prisms should be pickable in a 3D scene.
     wireframe : bool, optional
@@ -716,7 +716,7 @@ def superquadric(
     material_params : dict, optional
         Extra properties forwarded to the material, e.g.
         ``{'metalness': 1.0, 'roughness': 0.2}`` for the PBR materials. See
-        :func:`fury.material._create_mesh_material` for the supported keys.
+        :func:`fury.material.create_mesh_material` for the supported keys.
     enable_picking : bool, optional
         Whether the superquadrics should be pickable in a 3D scene.
     wireframe : bool, optional

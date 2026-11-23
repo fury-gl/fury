@@ -289,7 +289,7 @@ PBR_MATERIAL_TYPES = {
 }
 
 #: Properties only MeshPhysicalMaterial understands, reached through the
-#: ``**kwargs`` passthrough of ``_create_mesh_material``.
+#: ``**kwargs`` passthrough of ``create_mesh_material``.
 PHYSICAL_ONLY_PARAMS = {
     "ior": 1.6,
     "clearcoat": 1.0,
