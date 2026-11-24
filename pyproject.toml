@@ -67,7 +67,11 @@ window = ["PySide6", "jupyter-rfb", "imgui_bundle"]
 plot = ["matplotlib>=3.9.0"]
 medical = ["dipy", "nibabel"]
 compute = ["numba"]
-optional = ["fury[window, plot, medical, compute]", "opencv-python"]
+optional = [
+    "fury[window, plot, medical, compute]",
+    "opencv-python",
+    "imageio[ffmpeg]>=2.0.0",
+]
 dev = [
     "gitpython",
     "twine",

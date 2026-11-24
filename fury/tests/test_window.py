@@ -50,7 +50,9 @@ def sample_actor():
     return actor
 
 
-@pytest.mark.skipif(not window.have_cv2, reason="OpenCV is required for mp4 export")
+@pytest.mark.skipif(
+    not window.have_imageio, reason="ImageIO with FFmpeg is required for mp4 export"
+)
 def test_show_manager_record_animation(tmp_path):
     scene = Scene()
     show_m = ShowManager(scene=scene, size=(64, 64), window_type="offscreen")
