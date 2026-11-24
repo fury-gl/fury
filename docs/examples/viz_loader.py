@@ -47,9 +47,9 @@ scene.add(status, load_button)
 show_m = ShowManager(scene=scene, size=(800, 800), title="FURY Loader Example")
 
 ###############################################################################
-# Calling ``show_loader`` again while the loader is visible only changes the
-# message. Calling it without ``message`` keeps the spinner and removes the
-# text.
+# Calling :meth:`fury.window.ShowManager.show_loader` again while the loader is
+# visible only changes the message. Calling it without ``message`` keeps the
+# spinner and removes the text.
 
 
 def update_message():

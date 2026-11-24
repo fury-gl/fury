@@ -59,6 +59,38 @@ SHIFT_TRANS = str.maketrans(LOWERS, UPPERS)
 LOADER_DEGREES_PER_SECOND = 200
 
 
+def _validate_loader_size(size):
+    """
+    Validate and normalize the loader dimensions.
+
+    Parameters
+    ----------
+    size : (float, float)
+        Width and height in logical pixels.
+
+    Returns
+    -------
+    ndarray
+        Two positive finite dimensions.
+
+    Raises
+    ------
+    ValueError
+        If `size` is not two positive finite numbers.
+    """
+    try:
+        dimensions = np.asarray(size, dtype=float)
+    except (TypeError, ValueError, OverflowError):
+        raise ValueError("size must contain two positive finite values") from None
+    if (
+        dimensions.shape != (2,)
+        or not np.all(np.isfinite(dimensions))
+        or np.any(dimensions <= 0)
+    ):
+        raise ValueError("size must contain two positive finite values")
+    return dimensions
+
+
 class Loader2D(UI):
     """
     A three-arc spinner with a dimming overlay and optional message.
@@ -85,39 +117,12 @@ class Loader2D(UI):
         """Initialize the loader's visuals, message, and animation phase."""
         if message is not None and not isinstance(message, str):
             raise TypeError("message must be a string or None")
-        self._dims = self._validate_size(size)
+        self._dims = _validate_loader_size(size)
         self._message = message or ""
         self._phase = 0.0
         self._visible = True
         super().__init__(position=position)
         self.set_visibility(True)
-
-    @staticmethod
-    def _validate_size(size):
-        """
-        Validate and normalize the loader dimensions.
-
-        Parameters
-        ----------
-        size : (float, float)
-            Width and height in logical pixels.
-
-        Returns
-        -------
-        ndarray
-            Two positive finite dimensions.
-        """
-        try:
-            dimensions = np.asarray(size, dtype=float)
-        except (TypeError, ValueError, OverflowError):
-            raise ValueError("size must contain two positive finite values") from None
-        if (
-            dimensions.shape != (2,)
-            or not np.all(np.isfinite(dimensions))
-            or np.any(dimensions <= 0)
-        ):
-            raise ValueError("size must contain two positive finite values")
-        return dimensions
 
     def _setup(self):
         """Create the overlay, message, and three arc meshes."""
@@ -228,7 +233,7 @@ class Loader2D(UI):
         size : (float, float)
             Positive finite width and height in logical pixels.
         """
-        dimensions = self._validate_size(size)
+        dimensions = _validate_loader_size(size)
         self._dims = dimensions
         self.overlay.resize(dimensions)
         self._update_actors_position()

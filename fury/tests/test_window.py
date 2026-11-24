@@ -44,7 +44,6 @@ from fury.window import (
     analyze_snapshot,
     calculate_screen_sizes,
     create_screen,
-    render_screens,
     set_camera_from_axis,
     show,
     update_camera,
@@ -347,18 +346,6 @@ def test_screen_bounding_box():
     assert screen.bounding_box == (100, 100, 600, 600)
 
 
-def test_render_screens_positional_options_warn(recwarn):
-    """Passing stats or is_dirty positionally still renders but warns."""
-    renderer = Renderer(OffscreenCanvas())
-    screens = [create_screen(renderer)]
-
-    render_screens(renderer, screens, stats=None, is_dirty=True)
-    assert not [w for w in recwarn if "render_screens" in str(w.message)]
-
-    with pytest.warns(UserWarning, match="render_screens"):
-        render_screens(renderer, screens, None, True)
-
-
 def test_show_manager_initialization_default():
     """Test ShowManager initialization with default parameters."""
     show_m = ShowManager(window_type="offscreen")
@@ -532,14 +519,14 @@ def test_show_manager_set_enable_events(ui_context):
         scene=scene, size=(160, 120), pixel_ratio=1, window_type="offscreen"
     )
     try:
-        _loader_draw(show_m)
+        loader_draw(show_m)
         show_m.set_enable_events(False)
-        _loader_click(show_m, 50, 40)
+        loader_click(show_m, 50, 40)
         assert clicks == []
         assert not show_m.screens[0].controller.enabled
 
         show_m.set_enable_events(True)
-        _loader_click(show_m, 50, 40)
+        loader_click(show_m, 50, 40)
         assert clicks == [button]
         assert show_m.screens[0].controller.enabled
     finally:
@@ -1331,7 +1318,7 @@ def ui_context():
     UIContext.activate(UIContextState())
 
 
-def _loader_draw(show_m):
+def loader_draw(show_m):
     """
     Process submitted canvas events and capture the rendered frame.
 
@@ -1350,7 +1337,7 @@ def _loader_draw(show_m):
     return show_m.snapshot()
 
 
-def _loader_pointer(show_m, event_type, x, y, *, button=0, buttons=()):
+def loader_pointer(show_m, event_type, x, y, *, button=0, buttons=()):
     """
     Submit a complete pointer event and draw its observable effects.
 
@@ -1383,7 +1370,7 @@ def _loader_pointer(show_m, event_type, x, y, *, button=0, buttons=()):
     show_m.window.draw()
 
 
-def _loader_click(show_m, x, y):
+def loader_click(show_m, x, y):
     """
     Submit a pointer move followed by a complete left-button click.
 
@@ -1394,12 +1381,12 @@ def _loader_click(show_m, x, y):
     x, y : float
         Click position in logical pixels.
     """
-    _loader_pointer(show_m, "pointer_move", x, y)
-    _loader_pointer(show_m, "pointer_down", x, y, button=1, buttons=(1,))
-    _loader_pointer(show_m, "pointer_up", x, y, button=1)
+    loader_pointer(show_m, "pointer_move", x, y)
+    loader_pointer(show_m, "pointer_down", x, y, button=1, buttons=(1,))
+    loader_pointer(show_m, "pointer_up", x, y, button=1)
 
 
-def _loader_key(show_m, event_type, key, *, modifiers=()):
+def loader_key(show_m, event_type, key, *, modifiers=()):
     """
     Dispatch keyboard input through the canvas and render its effects.
 
@@ -1417,10 +1404,10 @@ def _loader_key(show_m, event_type, key, *, modifiers=()):
     show_m.window.submit_event(
         {"event_type": event_type, "key": key, "modifiers": modifiers}
     )
-    _loader_draw(show_m)
+    loader_draw(show_m)
 
 
-def _loader_assert_arc_pixels(image, *, center, pixel_ratio=1, outer_radius=72):
+def loader_assert_arc_pixels(image, *, center, pixel_ratio=1, outer_radius=72):
     """
     Require all three undimmed arcs at the expected logical center and radii.
 
@@ -1473,26 +1460,26 @@ def test_loader_dims_canvas_blocks_input_and_restores(ui_context):
         window_type="offscreen",
     )
     try:
-        original = _loader_draw(show_m)
+        original = loader_draw(show_m)
         show_m.show_loader()
-        loading = _loader_draw(show_m)
+        loading = loader_draw(show_m)
         for y, x in ((8, 8), (8, 628), (350, 8), (350, 628)):
             assert np.all(loading[y, x, :3] < original[y, x, :3])
-        _loader_assert_arc_pixels(loading, center=(320, 180))
+        loader_assert_arc_pixels(loading, center=(320, 180))
 
-        _loader_click(show_m, 60, 55)
+        loader_click(show_m, 60, 55)
         assert clicks == []
         assert not any(screen.controller.enabled for screen in show_m.screens)
 
         show_m.hide_loader()
-        np.testing.assert_array_equal(_loader_draw(show_m), original)
+        np.testing.assert_array_equal(loader_draw(show_m), original)
         assert all(screen.controller.enabled for screen in show_m.screens)
-        _loader_click(show_m, 60, 55)
+        loader_click(show_m, 60, 55)
         assert clicks == [button]
 
         show_m.show_loader()
         show_m.window.set_logical_size(800, 400)
-        _loader_assert_arc_pixels(_loader_draw(show_m), center=(400, 200))
+        loader_assert_arc_pixels(loader_draw(show_m), center=(400, 200))
     finally:
         show_m.close()
 
@@ -1506,18 +1493,18 @@ def test_loader_textbox_shift_released_while_blocked(ui_context):
         scene=scene, size=(400, 300), pixel_ratio=1, window_type="offscreen"
     )
     try:
-        _loader_draw(show_m)
+        loader_draw(show_m)
         x, y = textbox.text.get_position()
-        _loader_click(show_m, x + 5, y + 5)
+        loader_click(show_m, x + 5, y + 5)
         assert textbox._has_focus
 
-        _loader_key(show_m, "key_down", "Shift", modifiers=("Shift",))
+        loader_key(show_m, "key_down", "Shift", modifiers=("Shift",))
         show_m.show_loader()
-        _loader_key(show_m, "key_up", "Shift")
+        loader_key(show_m, "key_up", "Shift")
         show_m.hide_loader()
 
-        _loader_key(show_m, "key_down", "a")
-        _loader_key(show_m, "key_up", "a")
+        loader_key(show_m, "key_down", "a")
+        loader_key(show_m, "key_up", "a")
         assert textbox._message == "a"
         assert ui_context.active_ui is textbox.text
     finally:
@@ -1538,19 +1525,19 @@ def test_loader_hover_recovers_on_same_button(ui_context):
         scene=scene, size=(400, 300), pixel_ratio=1, window_type="offscreen"
     )
     try:
-        _loader_draw(show_m)
-        _loader_pointer(show_m, "pointer_move", 35, 35)
-        hovered = _loader_draw(show_m)
+        loader_draw(show_m)
+        loader_pointer(show_m, "pointer_move", 35, 35)
+        hovered = loader_draw(show_m)
         assert button.is_hovered
         np.testing.assert_array_equal(hovered[35, 35, :3], (0, 255, 0))
 
         show_m.show_loader()
-        _loader_draw(show_m)
+        loader_draw(show_m)
         show_m.hide_loader()
         assert not button.is_hovered
 
-        _loader_pointer(show_m, "pointer_move", 36, 35)
-        recovered = _loader_draw(show_m)
+        loader_pointer(show_m, "pointer_move", 36, 35)
+        recovered = loader_draw(show_m)
         assert button.is_hovered
         np.testing.assert_array_equal(recovered[35, 35], hovered[35, 35])
     finally:
@@ -1569,22 +1556,22 @@ def test_loader_press_without_move_blurs_textbox(ui_context):
         scene=scene, size=(400, 300), pixel_ratio=1, window_type="offscreen"
     )
     try:
-        _loader_draw(show_m)
+        loader_draw(show_m)
         x, y = textbox.text.get_position()
-        _loader_click(show_m, x + 5, y + 5)
+        loader_click(show_m, x + 5, y + 5)
         assert textbox._has_focus
 
-        _loader_pointer(show_m, "pointer_move", 260, 55)
+        loader_pointer(show_m, "pointer_move", 260, 55)
         show_m.show_loader()
-        _loader_draw(show_m)
+        loader_draw(show_m)
         show_m.hide_loader()
-        _loader_pointer(show_m, "pointer_down", 260, 55, button=1, buttons=(1,))
-        _loader_pointer(show_m, "pointer_up", 260, 55, button=1)
+        loader_pointer(show_m, "pointer_down", 260, 55, button=1, buttons=(1,))
+        loader_pointer(show_m, "pointer_up", 260, 55, button=1)
         assert clicks == [button]
         assert not textbox._has_focus
 
-        _loader_key(show_m, "key_down", "a")
-        _loader_key(show_m, "key_up", "a")
+        loader_key(show_m, "key_down", "a")
+        loader_key(show_m, "key_up", "a")
         assert textbox._message == "Value"
     finally:
         show_m.close()
@@ -1610,22 +1597,22 @@ def test_loader_two_managers_use_own_canvas_size(ui_context):
     ]
     manager_a, manager_b = managers
     try:
-        _loader_draw(manager_a)
-        _loader_draw(manager_b)
-        _loader_draw(manager_b)
+        loader_draw(manager_a)
+        loader_draw(manager_b)
+        loader_draw(manager_b)
 
         manager_a.show_loader(message="Preparing")
-        _loader_assert_arc_pixels(_loader_draw(manager_a), center=(200, 150))
+        loader_assert_arc_pixels(loader_draw(manager_a), center=(200, 150))
         manager_b.show_loader()
-        _loader_assert_arc_pixels(
-            _loader_draw(manager_b), center=(100, 50), outer_radius=25
+        loader_assert_arc_pixels(
+            loader_draw(manager_b), center=(100, 50), outer_radius=25
         )
-        _loader_assert_arc_pixels(_loader_draw(manager_a), center=(200, 150))
+        loader_assert_arc_pixels(loader_draw(manager_a), center=(200, 150))
 
         manager_b.hide_loader()
         text.message = "Hello there"
-        _loader_draw(manager_a)
-        image = _loader_draw(manager_b)
+        loader_draw(manager_a)
+        image = loader_draw(manager_b)
         rows = np.flatnonzero(np.all(image[..., :3] > 200, axis=-1).any(axis=1))
         assert rows.size > 0
         assert rows.min() >= 10
@@ -1651,10 +1638,10 @@ def test_show_managers_place_event_ui_with_own_canvas_size(ui_context):
         lambda _event: rect.set_position((20, 40)), "key_down"
     )
     try:
-        _loader_draw(manager_a)
-        _loader_draw(manager_b)
-        _loader_key(manager_a, "key_down", "x")
-        image = _loader_draw(manager_a)
+        loader_draw(manager_a)
+        loader_draw(manager_b)
+        loader_key(manager_a, "key_down", "x")
+        image = loader_draw(manager_a)
         red = (image[..., 0] > 240) & (image[..., 1] < 20) & (image[..., 2] < 20)
         rows = np.flatnonzero(red.any(axis=1))
         assert (rows.min(), rows.max()) == (40, 69)
@@ -1676,18 +1663,18 @@ def test_show_managers_route_keys_to_own_focus(ui_context):
     ]
     manager_a, manager_b = managers
     try:
-        _loader_draw(manager_a)
-        _loader_draw(manager_b)
+        loader_draw(manager_a)
+        loader_draw(manager_b)
         x, y = box.text.get_position()
-        _loader_click(manager_a, x + 5, y + 5)
+        loader_click(manager_a, x + 5, y + 5)
         assert box._has_focus
 
-        _loader_key(manager_b, "key_down", "a")
-        _loader_key(manager_b, "key_up", "a")
+        loader_key(manager_b, "key_down", "a")
+        loader_key(manager_b, "key_up", "a")
         assert box._message == "Value"
 
-        _loader_key(manager_a, "key_down", "a")
-        _loader_key(manager_a, "key_up", "a")
+        loader_key(manager_a, "key_down", "a")
+        loader_key(manager_a, "key_up", "a")
         assert box._message == "Valuea"
     finally:
         for manager in managers:
@@ -1758,19 +1745,19 @@ def test_loader_blocks_imgui_input():
         imgui_draw_function=draw_gui,
     )
     try:
-        _loader_draw(show_m)
-        _loader_draw(show_m)
+        loader_draw(show_m)
+        loader_draw(show_m)
         x, y = state["position"]
-        _loader_click(show_m, x, y)
+        loader_click(show_m, x, y)
         assert state["checked"]
 
         show_m.show_loader(message="Working")
-        _loader_click(show_m, x, y)
+        loader_click(show_m, x, y)
         assert state["checked"]
 
         show_m.hide_loader()
-        _loader_draw(show_m)
-        _loader_click(show_m, x, y)
+        loader_draw(show_m)
+        loader_click(show_m, x, y)
         assert not state["checked"]
     finally:
         show_m.close()

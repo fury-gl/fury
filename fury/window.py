@@ -20,7 +20,6 @@ from scipy import ndimage
 
 from fury.actor import Group
 from fury.actor.core import create_axes_helper
-from fury.decorators import warn_on_args_to_kwargs
 from fury.io import load_image
 from fury.lib import (
     AmbientLight,
@@ -578,7 +577,6 @@ def update_viewports(screens, screen_bbs):
         update_camera(screen.camera, screen.size, screen.scene)
 
 
-@warn_on_args_to_kwargs(from_version="2.0.0", until_version="2.2.0")
 def render_screens(renderer, screens, *, stats=None, is_dirty=False, overlay=None):
     """
     Render multiple screens within a single renderer update cycle.
@@ -870,6 +868,7 @@ class ShowManager:
         Held input is cancelled while focus and lock toggles are preserved.
         Hover and click targeting resume on the next accepted pointer movement or
         press.
+        ImGui output is not drawn while the loader is visible.
         """
         if message is not None and not isinstance(message, str):
             raise TypeError("message must be a string or None")
@@ -956,6 +955,7 @@ class ShowManager:
         """
         Release held input and mark the pointer target stale without changing focus.
         """
+        UIContext.activate(self._ui_state)
         self._repeat_key_event = None
         self._is_dragging = False
         self._drag_target = None
