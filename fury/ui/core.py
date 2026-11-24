@@ -101,6 +101,7 @@ class UI(metaclass=abc.ABCMeta):
         self._children = []
         self._anchors = [x_anchor, y_anchor]
         self.z_order = z_order
+        self._hover_needs_sync = False
 
         self._setup()  # Setup needed actors and sub UI components.
         self.set_position(position, x_anchor=x_anchor, y_anchor=y_anchor)
@@ -131,6 +132,15 @@ class UI(metaclass=abc.ABCMeta):
         self.on_focus = lambda event: None
         self.on_blur = lambda event: None
         self.on_wheel = lambda event: None
+
+    def _reset_interaction_state(self):
+        """Cancel held mouse input and invalidate hover without changing focus."""
+        self.left_button_state = "released"
+        self.right_button_state = "released"
+        self.middle_button_state = "released"
+        self._hover_needs_sync = True
+        if UIContext.hot_ui is self:
+            UIContext.hot_ui = None
 
     @abc.abstractmethod
     def _setup(self):
@@ -372,6 +382,7 @@ class UI(metaclass=abc.ABCMeta):
         actor.add_event_handler(self.mouse_button_down_callback, EventType.POINTER_DOWN)
         actor.add_event_handler(self.mouse_button_up_callback, EventType.POINTER_UP)
         actor.add_event_handler(self.mouse_move_callback, EventType.POINTER_DRAG)
+        actor.add_event_handler(self._sync_hover_state, EventType.POINTER_MOVE)
         actor.add_event_handler(self.key_press_callback, EventType.KEY_DOWN)
         actor.add_event_handler(self.key_release_callback, EventType.KEY_UP)
         actor.add_event_handler(self.pointer_enter_callback, EventType.POINTER_ENTER)
@@ -592,6 +603,18 @@ class UI(metaclass=abc.ABCMeta):
             self.on_wheel(event)
         event.stop_propagation()
 
+    def _sync_hover_state(self, event):
+        """
+        Restore invalidated hover from a newly picked pointer movement.
+
+        Parameters
+        ----------
+        event : PointerEvent
+            The real pointer movement targeting this component.
+        """
+        if self._hover_needs_sync:
+            self.pointer_enter_callback(event.copy(type=EventType.POINTER_ENTER))
+
     def pointer_enter_callback(self, event):
         """
         Handle pointer enter event.
@@ -601,6 +624,7 @@ class UI(metaclass=abc.ABCMeta):
         event : PointerEvent
             The PyGfx pointer event object.
         """
+        self._hover_needs_sync = False
         UIContext.hot_ui = self
         self.on_hover(event)
 
@@ -613,6 +637,7 @@ class UI(metaclass=abc.ABCMeta):
         event : PointerEvent
             The PyGfx pointer event object.
         """
+        self._hover_needs_sync = False
         if UIContext.hot_ui is self:
             UIContext.hot_ui = None
         self.on_dishover(event)
@@ -1866,6 +1891,14 @@ class Button2D(UI):
 
         self.resize(size)
         self.update_visual_state()
+
+    def _reset_interaction_state(self):
+        """Cancel transient button feedback while preserving toggle state."""
+        super()._reset_interaction_state()
+        if self.is_pressed or self.is_hovered:
+            self.is_pressed = False
+            self.is_hovered = False
+            self.update_visual_state()
 
     @property
     def enabled(self):

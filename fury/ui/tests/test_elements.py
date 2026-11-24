@@ -5,6 +5,7 @@ import warnings
 
 import numpy as np
 import numpy.testing as npt
+import pytest
 
 from fury import ui, window
 from fury.data import DATA_DIR, fetch_viz_icons, fetch_viz_new_icons, read_viz_icons
@@ -3174,3 +3175,90 @@ def test_radio_button_visual_snapshot():
     arr = window.snapshot(scene=scene, fname=None, return_array=True)
     report = window.analyze_snapshot(arr, find_objects=True)
     assert report.objects >= 1
+
+
+def test_loader_rendering_message_and_visibility():
+    """A reusable loader dims its scene without dimming its arcs or message."""
+    scene = window.Scene(background=(0.3, 0.4, 0.2))
+    show_m = window.ShowManager(
+        scene=scene, size=(320, 240), pixel_ratio=1, window_type="offscreen"
+    )
+    try:
+        show_m.window.draw()
+        original = show_m.snapshot()
+        loader = ui.Loader2D(size=(320, 240), message="Reading\nvolume")
+        scene.add(loader)
+        show_m.window.draw()
+        initial = show_m.snapshot()
+
+        assert np.all(initial[8:20, 8:20, :3] > 0)
+        assert np.all(initial[8:20, 8:20, :3] < original[8:20, 8:20, :3])
+        text_region = initial[180:, :, :3]
+        assert np.count_nonzero(np.all(text_region > 220, axis=-1)) > 20
+        blue_pixels = (
+            (initial[..., 2] > 240) & (initial[..., 0] < 20) & (initial[..., 1] < 20)
+        )
+        blue_y, blue_x = np.nonzero(blue_pixels)
+        blue_distances = np.hypot(blue_x + 0.5 - 160, blue_y + 0.5 - 120)
+        assert blue_distances.min() > 54
+        assert 59 < blue_distances.max() < 61
+
+        loader.advance(0.25)
+        show_m.window.draw()
+        advanced = show_m.snapshot()
+        assert not np.array_equal(initial[68:173, 108:213], advanced[68:173, 108:213])
+        npt.assert_array_equal(initial[:40], advanced[:40])
+        npt.assert_array_equal(initial[180:], advanced[180:])
+
+        loader.message = None
+        show_m.window.draw()
+        empty = show_m.snapshot()
+        assert loader.message == ""
+        assert not np.any(np.all(empty[180:, :, :3] > 220, axis=-1))
+        npt.assert_array_equal(empty[:173], advanced[:173])
+
+        loader.set_visibility(False)
+        loader.message = "Ready\nagain"
+        show_m.window.draw()
+        npt.assert_array_equal(show_m.snapshot(), original)
+        assert all(not arc.visible for arc in loader.arcs)
+        assert not loader.overlay.actor.visible
+        assert not loader.text.actor.visible
+
+        loader.set_visibility(True)
+        show_m.window.draw()
+        restored = show_m.snapshot()
+        npt.assert_array_equal(restored[:173], advanced[:173])
+        assert np.count_nonzero(np.all(restored[180:, :, :3] > 220, axis=-1)) > 20
+    finally:
+        show_m.close()
+
+
+@pytest.mark.parametrize("size", [(0, 240), (np.nan, 240), (320,), None])
+def test_loader_rejects_invalid_size(size):
+    """Invalid sizes are rejected at construction and leave a loader unchanged."""
+    size_error = "size must contain two positive finite values"
+    with pytest.raises(ValueError, match=size_error):
+        ui.Loader2D(size=size)
+
+    loader = ui.Loader2D(size=(320, 240))
+    with pytest.raises(ValueError, match=size_error):
+        loader.resize(size)
+    npt.assert_array_equal(loader.size, (320, 240))
+
+
+def test_loader_rejects_invalid_message_and_time():
+    """Invalid messages and elapsed times are rejected without changing the loader."""
+    message_error = "message must be a string or None"
+    with pytest.raises(TypeError, match=message_error):
+        ui.Loader2D(message=12)
+
+    loader = ui.Loader2D(message="Still reading")
+    with pytest.raises(TypeError, match=message_error):
+        loader.message = 1
+    assert loader.message == "Still reading"
+    for delta_time in (-0.1, np.nan, None):
+        with pytest.raises(
+            ValueError, match="delta_time must be finite and non-negative"
+        ):
+            loader.advance(delta_time)
