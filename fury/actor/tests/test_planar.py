@@ -24,6 +24,47 @@ def test_disk():
     validate_actors(centers=centers, colors=colors, actor_type="disk", sectors=8)
 
 
+def test_scalar_bar():
+    vertical = actor.scalar_bar(
+        "viridis",
+        value_range=(-1.0, 1.0),
+        title="Speed",
+        n_ticks=3,
+        n_colors=8,
+    )
+    assert isinstance(vertical, Group)
+    assert len(vertical.children) == 5
+
+    horizontal = actor.scalar_bar(
+        np.array([[1.0, 0.0, 0.0], [0.0, 0.0, 1.0]]),
+        orientation="horizontal",
+        n_ticks=0,
+        title="",
+        n_colors=4,
+    )
+    assert isinstance(horizontal, Group)
+    assert len(horizontal.children) == 1
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "message"),
+    [
+        ({"orientation": "diagonal"}, "orientation"),
+        ({"value_range": (1.0,)}, "value_range"),
+        ({"value_range": (1.0, 1.0)}, "value_range"),
+        ({"n_ticks": 1}, "n_ticks"),
+        ({"n_colors": 1}, "n_colors"),
+        ({"length": 0.0}, "length and thickness"),
+        ({"thickness": 0.0}, "length and thickness"),
+        ({"position": (0.0, 0.0)}, "position"),
+        ({"colormap": np.ones((1, 3))}, "colormap"),
+    ],
+)
+def test_scalar_bar_invalid_arguments(kwargs, message):
+    with pytest.raises(ValueError, match=message):
+        actor.scalar_bar(**kwargs)
+
+
 def test_triangle():
     centers = np.array([[0, 0, 0]])
     colors = np.array([[1, 0, 0]])
