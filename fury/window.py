@@ -2062,12 +2062,17 @@ def snapshot(
         scene = Scene()
         scene.add(*actors)
 
+
     show_m = ShowManager(
         scene=scene, screen_config=screen_config, window_type="offscreen"
     )
-    show_m.render()
-    show_m.window.draw()
-    arr = show_m.snapshot(fname=fname)
+    try:
+        show_m.render()
+        show_m.window.draw()
+        arr = show_m.snapshot(fname=fname)
+    finally:
+        for screen in show_m.screens:
+            screen.scene.remove(screen.camera)
 
     if return_array:
         return arr
