@@ -13,7 +13,7 @@ from fury.actor import (
     create_point,
     create_text,
 )
-from fury.colormap import normalize_colors
+from fury.colormap import create_colormap, normalize_colors
 from fury.geometry import (
     buffer_to_geometry,
     line_buffer_separator,
@@ -952,6 +952,191 @@ def ring(
         enable_picking=enable_picking,
         have_tiled_verts=True,
     )
+
+
+def scalar_bar(
+    colormap="viridis",
+    *,
+    value_range=(0.0, 1.0),
+    title="",
+    n_ticks=5,
+    length=3.0,
+    thickness=0.3,
+    position=(0.0, 0.0, 0.0),
+    orientation="vertical",
+    n_colors=256,
+    font_size=0.25,
+    label_color=(1.0, 1.0, 1.0),
+    fmt="{:.3g}",
+    opacity=None,
+):
+    """
+    Create a scalar bar (colorbar legend) with tick labels and an optional title.
+
+    The bar is a stack of ``n_colors`` flat squares colored by the colormap,
+    so it renders as a smooth gradient. Tick labels are evenly spaced
+    between ``value_range[0]`` and ``value_range[1]``.
+
+    Parameters
+    ----------
+    colormap : str or ndarray, shape (M, 3) or (M, 4), optional
+        Name of a colormap known to FURY (see ``fury.colormap.create_colormap``,
+        e.g. 'viridis', 'plasma', 'inferno') or an explicit array of RGB(A)
+        colors ordered from the minimum to the maximum value.
+    value_range : tuple (2,), optional
+        ``(vmin, vmax)`` data values mapped to the two ends of the bar.
+    title : str, optional
+        Title drawn above the bar. An empty string draws no title.
+    n_ticks : int, optional
+        Number of tick labels, including both ends. Use 0 for no labels.
+    length : float, optional
+        Length of the bar along its main axis, in world units.
+    thickness : float, optional
+        Thickness of the bar across its main axis, in world units.
+    position : tuple (3,), optional
+        Position of the center of the bar.
+    orientation : {'vertical', 'horizontal'}, optional
+        Direction of the bar. Values increase along +y for 'vertical' and
+        along +x for 'horizontal'.
+    n_colors : int, optional
+        Number of color steps used to draw the gradient.
+    font_size : float, optional
+        Font size of the labels and the title, in world units.
+    label_color : tuple (3,) or (4,), optional
+        Color of the labels and the title.
+    fmt : str, optional
+        ``str.format`` pattern used to print the tick values.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque).
+
+    Returns
+    -------
+    Group
+        A group holding the color bar, the tick labels and the title.
+
+    Raises
+    ------
+    ValueError
+        If ``orientation``, ``value_range``, ``n_ticks``, ``n_colors``,
+        ``length``, ``thickness`` or ``colormap`` is invalid.
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> scene = window.Scene()
+    >>> bar = actor.scalar_bar("plasma", value_range=(0, 100), title="Speed")
+    >>> _ = scene.add(bar)
+    >>> show_manager = window.ShowManager(scene=scene, size=(600, 600))
+    >>> show_manager.start()
+    """
+    orientation = str(orientation).lower()
+    if orientation not in ("vertical", "horizontal"):
+        raise ValueError(
+            f"orientation must be 'vertical' or 'horizontal'. Got {orientation}."
+        )
+    if len(value_range) != 2:
+        raise ValueError(f"value_range must have 2 elements. Got {value_range}.")
+    vmin, vmax = float(value_range[0]), float(value_range[1])
+    if not vmin < vmax:
+        raise ValueError(f"value_range must satisfy min < max. Got {value_range}.")
+    if int(n_ticks) != n_ticks or n_ticks < 0 or n_ticks == 1:
+        raise ValueError(f"n_ticks must be 0 or an integer >= 2. Got {n_ticks}.")
+    if int(n_colors) != n_colors or n_colors < 2:
+        raise ValueError(f"n_colors must be an integer >= 2. Got {n_colors}.")
+    if length <= 0 or thickness <= 0:
+        raise ValueError("length and thickness must be positive.")
+    if len(position) != 3:
+        raise ValueError(f"position must have 3 elements. Got {position}.")
+
+    n_colors = int(n_colors)
+    n_ticks = int(n_ticks)
+    px, py, pz = (float(c) for c in position)
+
+    # Colors of the gradient, ordered from vmin to vmax.
+    if isinstance(colormap, str):
+        colors = create_colormap(
+            np.linspace(0.0, 1.0, n_colors), name=colormap, auto=False
+        )
+    else:
+        cmap = np.asarray(colormap, dtype=np.float32)
+        if cmap.ndim != 2 or cmap.shape[1] not in (3, 4) or len(cmap) < 2:
+            raise ValueError(
+                "colormap must be a name or an array of shape (M, 3) or (M, 4) "
+                f"with M >= 2. Got shape {cmap.shape}."
+            )
+        cmap = cmap[:, :3]
+        if cmap.max() > 1.0:
+            cmap = cmap / 255.0
+        src = np.linspace(0.0, 1.0, len(cmap))
+        dst = np.linspace(0.0, 1.0, n_colors)
+        colors = np.stack([np.interp(dst, src, cmap[:, c]) for c in range(3)], axis=1)
+
+    # Geometry of the color steps. A slight overlap hides seams between steps.
+    step = length / n_colors
+    offsets = -length / 2.0 + step * (np.arange(n_colors) + 0.5)
+    centers = np.zeros((n_colors, 3), dtype=np.float32)
+    if orientation == "vertical":
+        centers[:, 0] = px
+        centers[:, 1] = py + offsets
+        scales = (thickness, step * 1.02, 1.0)
+    else:
+        centers[:, 0] = px + offsets
+        centers[:, 1] = py
+        scales = (step * 1.02, thickness, 1.0)
+    centers[:, 2] = pz
+
+    bar = square(
+        centers,
+        colors=colors,
+        scales=scales,
+        opacity=opacity,
+        material="basic",
+        enable_picking=False,
+    )
+
+    group = Group()
+    group.add(bar)
+
+    pad = 0.5 * font_size
+    if n_ticks:
+        fractions = np.linspace(0.0, 1.0, n_ticks)
+        values = vmin + fractions * (vmax - vmin)
+        for frac, value in zip(fractions, values, strict=True):
+            along = -length / 2.0 + frac * length
+            if orientation == "vertical":
+                pos = (px + thickness / 2.0 + pad, py + along, pz)
+                anchor = "middle-left"
+            else:
+                pos = (px + along, py - thickness / 2.0 - pad, pz)
+                anchor = "top-center"
+            group.add(
+                text(
+                    fmt.format(value),
+                    colors=label_color,
+                    position=pos,
+                    font_size=font_size,
+                    anchor=anchor,
+                    opacity=1.0 if opacity is None else opacity,
+                )
+            )
+
+    if title:
+        if orientation == "vertical":
+            pos = (px, py + length / 2.0 + pad, pz)
+        else:
+            pos = (px, py + thickness / 2.0 + pad, pz)
+        group.add(
+            text(
+                title,
+                colors=label_color,
+                position=pos,
+                font_size=font_size,
+                anchor="bottom-center",
+                opacity=1.0 if opacity is None else opacity,
+            )
+        )
+
+    return group
 
 
 class LineProjection(Points):
