@@ -14,6 +14,7 @@ from fury.actor import (
     set_group_visibility,
     set_opacity,
     show_slices,
+    taubin_smooth,
     vector_field_slicer,
 )
 from fury.actor.slicer import _create_chunked_ellipsoid_field
@@ -412,3 +413,102 @@ def test_read_buffer_requires_underlying_wgpu_buffer(group_line_projection, sync
 def test_read_buffer_rejects_non_buffer_instance():
     with pytest.raises(ValueError, match="Expected a wgpu.Buffer instance."):
         actor_utils.read_buffer(np.zeros((2, 3), dtype=np.float32))
+
+
+def _bumpy_grid(*, size=7):
+    """
+    Build a flat triangulated square grid with a unit bump at its center.
+
+    Parameters
+    ----------
+    size : int, optional
+        Number of vertices along each side of the grid.
+
+    Returns
+    -------
+    vertices : ndarray, shape (size*size, 3)
+        Grid vertices in the z=0 plane, except the center vertex at z=1.
+    faces : ndarray, shape (2*(size-1)**2, 3)
+        Triangle vertex indices.
+    """
+    xs, ys = np.meshgrid(np.arange(size, dtype=float), np.arange(size, dtype=float))
+    vertices = np.column_stack((xs.ravel(), ys.ravel(), np.zeros(size * size)))
+    vertices[(size // 2) * size + size // 2, 2] = 1.0
+
+    ids = np.arange(size * size).reshape(size, size)
+    lower_left = ids[:-1, :-1].ravel()
+    lower_right = ids[:-1, 1:].ravel()
+    upper_left = ids[1:, :-1].ravel()
+    upper_right = ids[1:, 1:].ravel()
+    faces = np.concatenate(
+        (
+            np.column_stack((lower_left, lower_right, upper_right)),
+            np.column_stack((lower_left, upper_right, upper_left)),
+        )
+    )
+    return vertices, faces
+
+
+def test_taubin_smooth_zero_iterations_returns_unchanged_copy():
+    """Zero passes return equal values in a new array."""
+    vertices, faces = _bumpy_grid()
+    original = vertices.copy()
+
+    smoothed = taubin_smooth(vertices, faces, 0)
+
+    np.testing.assert_array_equal(smoothed, original)
+    smoothed += 1.0
+    np.testing.assert_array_equal(vertices, original)
+
+
+def test_taubin_smooth_flattens_bump_progressively():
+    """More passes flatten the bump further and never modify the input."""
+    vertices, faces = _bumpy_grid()
+    original = vertices.copy()
+
+    heights = [
+        np.abs(taubin_smooth(vertices, faces, passes)[:, 2]).max()
+        for passes in (1, 5, 20)
+    ]
+
+    assert heights[0] < 1.0
+    assert heights[0] > heights[1] > heights[2]
+    np.testing.assert_array_equal(vertices, original)
+
+
+def test_taubin_smooth_keeps_flat_mesh_in_plane():
+    """A planar mesh stays planar after smoothing."""
+    vertices, faces = _bumpy_grid()
+    vertices[:, 2] = 0.0
+
+    smoothed = taubin_smooth(vertices, faces, 10)
+
+    np.testing.assert_allclose(smoothed[:, 2], 0.0, atol=1e-12)
+
+
+def test_taubin_smooth_leaves_unreferenced_vertices_unchanged():
+    """Vertices that belong to no face stay put and never become NaN."""
+    vertices, faces = _bumpy_grid()
+    vertices = np.vstack((vertices, [[40.0, -3.0, 7.0]]))
+
+    smoothed = taubin_smooth(vertices, faces, 10)
+
+    np.testing.assert_array_equal(smoothed[-1], vertices[-1])
+
+
+def test_taubin_smooth_supports_quads():
+    """Quad meshes are smoothed along their edges like triangle meshes."""
+    vertices, _ = _bumpy_grid()
+    ids = np.arange(49).reshape(7, 7)
+    quads = np.column_stack(
+        (
+            ids[:-1, :-1].ravel(),
+            ids[:-1, 1:].ravel(),
+            ids[1:, 1:].ravel(),
+            ids[1:, :-1].ravel(),
+        )
+    )
+
+    smoothed = taubin_smooth(vertices, quads, 5)
+
+    assert 0.0 < np.abs(smoothed[:, 2]).max() < 1.0
