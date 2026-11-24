@@ -25,7 +25,7 @@ from fury.transform import cart2sphere
 _FACE_QUAD_OFFSETS = np.array(
     [
         [[0, 0, 0], [0, 1, 0], [0, 1, 1], [0, 0, 1]],  # axis 0 (YZ plane)
-        [[0, 0, 0], [1, 0, 0], [1, 0, 1], [0, 0, 1]],  # axis 1 (XZ plane)
+        [[0, 0, 0], [0, 0, 1], [1, 0, 1], [1, 0, 0]],  # axis 1 (XZ plane)
         [[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]],  # axis 2 (XY plane)
     ],
     dtype=np.int8,
