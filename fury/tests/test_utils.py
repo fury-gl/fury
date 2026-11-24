@@ -656,6 +656,25 @@ def test_voxel_mesh_by_object_face_orientation():
         assert len(np.unique(face)) == 3
 
 
+@pytest.mark.parametrize("triangulate", [False, True], ids=["quads", "triangles"])
+def test_voxel_mesh_by_object_faces_point_outward(triangulate):
+    """Every face normal points from its object voxel into empty space."""
+    volume = np.zeros((6, 7, 8), dtype=np.uint8)
+    volume[1:4, 1:5, 1:6] = 1
+    volume[1:3, 3:5, 4:6] = 0
+
+    mesh = voxel_mesh_by_object(volume, triangulate=triangulate)[1]
+    corners = mesh["verts"][mesh["faces"]]
+    normals = np.cross(corners[:, 1] - corners[:, 0], corners[:, 2] - corners[:, 0])
+    normals /= np.linalg.norm(normals, axis=1, keepdims=True)
+    centers = corners.mean(axis=1)
+
+    inside = np.floor(centers - 0.5 * normals).astype(int)
+    outside = np.floor(centers + 0.5 * normals).astype(int)
+    assert np.all(volume[tuple(inside.T)] == 1)
+    assert np.all(volume[tuple(outside.T)] == 0)
+
+
 def test_voxel_mesh_by_object_large_volume():
     """Test with a larger volume to ensure scalability."""
     from fury.utils import voxel_mesh_by_object
