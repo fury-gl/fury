@@ -619,6 +619,7 @@ def test_show_manager_snapshot(tmpdir, sample_actor):
     assert report.objects == 1
 
 
+
 def test_show_manager_snapshot_multiple_screens(tmpdir, sample_actor):
     """Test taking a snapshot with multiple screens."""
     fname = tmpdir.join("snapshot_multiple.png")
@@ -1343,3 +1344,15 @@ def test_skybox_actually_lights_a_metal():
 
     assert unlit < 10
     assert lit > 200
+def test_snapshot_does_not_modify_scene():
+    """Test that snapshot does not add cameras to the original scene."""
+    scene = Scene()
+    original_children = tuple(scene.main_scene.children)
+
+    window.snapshot(scene=scene, fname=None, return_array=True)
+
+    assert tuple(scene.main_scene.children) == original_children
+
+    window.snapshot(scene=scene, fname=None, return_array=True)
+
+    assert tuple(scene.main_scene.children) == original_children
