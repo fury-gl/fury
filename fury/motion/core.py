@@ -8,6 +8,7 @@ import numpy as np
 from scipy.spatial import transform
 
 from fury.lib import WorldObject
+from fury.motion.gpu import _GPUKeyframeTrack
 from fury.motion.helpers import compose_transform_matrix
 from fury.motion.interpolator import (
     linear_interpolator,
@@ -57,6 +58,7 @@ class Animation:
         self._current_timestamp = 0
         self._current_transform = np.identity(4, dtype=np.float32)
         self._max_timestamp = 0
+        self._gpu_tracks = {}
         self._added_to_scene = True
         self._motion_path_res = motion_path_res
         self._motion_path_actor = None
@@ -276,14 +278,139 @@ class Animation:
             args = interp.get("args", {})
             self.set_interpolator(attrib, interp_base, **args)
 
+        self._register_timestamp(timestamp)
+        self.update_animation(time=0)
+        self.update_motion_path()
+
+    def _register_timestamp(self, timestamp):
+        """
+        Extend the animation duration to include a timestamp.
+
+        Parameters
+        ----------
+        timestamp : float
+            Timestamp that the animation must cover.
+        """
         if timestamp > self._max_timestamp:
             self._max_timestamp = timestamp
             if self._timeline is not None:
                 self._timeline.update_duration()
             else:
                 self.update_duration()
+
+    def set_gpu_keyframes(
+        self,
+        name,
+        keyframes,
+        *,
+        actor=None,
+        interpolation="linear",
+        repeat=None,
+        channels=None,
+        scale=None,
+    ):
+        """
+        Animate an actor buffer on the GPU from keyframes.
+
+        Keyframes are uploaded once. Each tick only the current time is sent to
+        the GPU, where a compute shader writes the target vertex buffer.
+
+        Parameters
+        ----------
+        name : str
+            Either a predefined GPU attribute of the actor (listed in
+            ``actor.gpu_attributes``, e.g. ``"centers"`` for billboards) or the
+            name of a float32 geometry buffer (e.g. ``"positions"``).
+        keyframes : dict
+            Mapping of timestamp to the values of ALL elements at that time:
+            arrays of shape ``(N,)`` or ``(N, C)``. ``C`` must be 1 or the
+            number of written channels.
+        actor : WorldObject, optional
+            Target actor. Optional when the animation has a single actor; an
+            actor not yet in the animation is added.
+        interpolation : {"linear", "cubic"}, optional
+            Interpolation between keyframes. Time is clamped to the first and
+            last keyframe.
+        repeat : int, optional
+            Buffer rows written per element. Not allowed for predefined
+            attributes. Defaults to 1.
+        channels : sequence of int, optional
+            Buffer columns written. Not allowed for predefined attributes.
+            Defaults to all columns.
+        scale : float, optional
+            Multiplier applied to the values on write. Not allowed for
+            predefined attributes. Defaults to 1.
+
+        Raises
+        ------
+        ValueError
+            If the arguments are invalid, the name already has CPU keyframes,
+            or another GPU track writes the same buffer channels.
+
+        Notes
+        -----
+        The CPU ``.data`` of the buffer is synced lazily, by evaluating the same
+        curve on the CPU, when ``get_bounding_box()`` or
+        :meth:`sync_gpu_buffers` is called. Nothing is read back from the GPU.
+        Per-attribute ``add_update_callback(prop=name)`` is not supported for
+        GPU tracks.
+
+        Examples
+        --------
+        >>> animation.set_gpu_keyframes(
+        ...     "centers", {0: c0, 5: c1}, interpolation="cubic"
+        ... )  # doctest: +SKIP
+        """
+        if actor is None:
+            if len(self._actors) != 1:
+                raise ValueError(
+                    f"actor must be given when the Animation has "
+                    f"{len(self._actors)} actors"
+                )
+            actor = self._actors[0]
+        elif actor not in self._actors:
+            self.add_actor(actor)
+
+        if self._data.get(name, {}).get("keyframes"):
+            raise ValueError(f"{name!r} already has CPU keyframes")
+
+        if name in self._gpu_tracks:
+            self._gpu_tracks.pop(name).detach()
+
+        track = _GPUKeyframeTrack(
+            actor,
+            name,
+            keyframes,
+            interpolation=interpolation,
+            repeat=repeat,
+            channels=channels,
+            scale=scale,
+        )
+        for other in self._gpu_tracks.values():
+            if (
+                other.actor is actor
+                and other.buffer is track.buffer
+                and set(other.channels) & set(track.channels)
+            ):
+                track.detach()
+                raise ValueError(
+                    f"{name!r} writes the same buffer channels as {other.name!r}"
+                )
+
+        self._gpu_tracks[name] = track
+        self._register_timestamp(float(track.times[-1]))
         self.update_animation(time=0)
-        self.update_motion_path()
+
+    def sync_gpu_buffers(self):
+        """
+        Sync the CPU copy of every GPU-animated buffer.
+
+        Writes the values currently drawn into each target buffer's ``.data``
+        (and the actor's CPU attribute for predefined attributes), so CPU code
+        reading ``.data`` sees them. No GPU readback is involved.
+        """
+        for track in self._gpu_tracks.values():
+            track.sync_to_cpu()
 
     def set_keyframes(self, attrib, keyframes):
         """
@@ -584,6 +711,8 @@ class Animation:
         ndarray or float or bool
             The interpolated value of the attribute at the given timestamp.
         """
+        if attrib in self._gpu_tracks:
+            return self._gpu_tracks[attrib].evaluate(timestamp)
         value = (
             self._data.get(attrib, {}).get("interpolator", {}).get("func")(timestamp)
         )
@@ -603,6 +732,9 @@ class Animation:
         ndarray or float or bool
             The interpolated value of the attribute at the current timestamp.
         """
+        if attrib in self._gpu_tracks:
+            track = self._gpu_tracks[attrib]
+            return track.evaluate(track.time)
         return (
             self._data.get(attrib)
             .get("interpolator")
@@ -1226,6 +1358,9 @@ class Animation:
                             if colors_data.shape[-1] >= 3:
                                 colors_data[:, :3] = color
                                 actor.geometry.colors.update_range()
+
+            for track in self._gpu_tracks.values():
+                track.set_time(time)
 
         for attrib in self._data:
             callbacks = self._data.get(attrib, {}).get("callbacks", [])

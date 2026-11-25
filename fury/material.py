@@ -10,6 +10,7 @@ from fury.lib import (
     LineSegmentMaterial,
     LineThinMaterial,
     LineThinSegmentMaterial,
+    Material,
     MeshBasicMaterial,
     MeshPhongMaterial,
     MeshPhysicalMaterial,
@@ -1743,4 +1744,85 @@ class NetworkMaterial(PointsMaterial):
             The new repulsion strength multiplier.
         """
         self.uniform_buffer.data["repulsion_strength"] = v
+        self.uniform_buffer.update_full()
+
+
+class GPUKeyframeMaterial(Material):
+    """
+    Material carrying the time uniform of a GPU keyframe animation.
+
+    Parameters
+    ----------
+    scale : float, optional
+        Multiplier applied to the interpolated values when they are written to
+        the target buffer.
+    **kwargs : dict, optional
+        Extra keyword arguments forwarded to ``Material``.
+    """
+
+    uniform_type = dict(Material.uniform_type, time="f4", scale="f4")
+
+    def __init__(self, *, scale=1.0, **kwargs):
+        """
+        Initialize the GPU keyframe material.
+
+        Parameters
+        ----------
+        scale : float, optional
+            Multiplier applied to the interpolated values on write.
+        **kwargs : dict, optional
+            Extra keyword arguments forwarded to ``Material``.
+        """
+        super().__init__(**kwargs)
+        self.time = 0.0
+        self.scale = scale
+
+    @property
+    def time(self):
+        """
+        Get the animation time sampled by the compute shader.
+
+        Returns
+        -------
+        float
+            The current animation time.
+        """
+        return float(self.uniform_buffer.data["time"])
+
+    @time.setter
+    def time(self, v):
+        """
+        Set the animation time sampled by the compute shader.
+
+        Parameters
+        ----------
+        v : float
+            The new animation time.
+        """
+        self.uniform_buffer.data["time"] = v
+        self.uniform_buffer.update_full()
+
+    @property
+    def scale(self):
+        """
+        Get the multiplier applied to interpolated values.
+
+        Returns
+        -------
+        float
+            The value multiplier.
+        """
+        return float(self.uniform_buffer.data["scale"])
+
+    @scale.setter
+    def scale(self, v):
+        """
+        Set the multiplier applied to interpolated values.
+
+        Parameters
+        ----------
+        v : float
+            The new value multiplier.
+        """
+        self.uniform_buffer.data["scale"] = v
         self.uniform_buffer.update_full()

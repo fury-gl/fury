@@ -17,8 +17,15 @@ from fury.io import load_cube_map_texture
 # The Plan
 # ========
 #
-# The plan here is to animate, scale, and translate 50 spheres randomly, then
-# show ``FURY`` text at the end.
+# The plan here is to animate, scale, and translate many spheres (count set by
+# ``n_spheres``) randomly using a single sphere actor animated entirely on the
+# GPU, then show ``FURY`` text at the end.
+
+###############################################################################
+# Number of spheres to animate. Change this value to animate more or fewer
+# spheres; everything below adapts to it.
+
+n_spheres = 100000
 
 ###############################################################################
 # Let's fetch and load a skybox texture.
@@ -30,9 +37,7 @@ cube_map = load_cube_map_texture(texture_files)
 scene = fury.window.Scene(skybox=cube_map)
 
 showm = fury.window.ShowManager(
-    scene=scene,
-    size=(900, 768),
-    pixel_ratio=2,
+    scene=scene, size=(900, 768), pixel_ratio=2, show_fps=True
 )
 
 ###############################################################################
@@ -75,32 +80,37 @@ text_anim.set_opacity(35, 1.0)
 timeline.add_animation(text_anim)
 
 ###############################################################################
-# Creating and animating 50 spheres
-# =================================
+# Creating and animating spheres on the GPU
+# =========================================
+#
+# One impostor sphere actor holds all ``n_spheres`` spheres. Keyframes for
+# every sphere are uploaded to the GPU once; each frame only the current time
+# is sent and a compute shader writes the sphere centers and radii into the
+# actor's vertex buffers.
 
-for _ in range(50):
-    ###########################################################################
-    # Create a sphere actor centered at the origin with random color and radius.
-    sphere_actor = fury.actor.sphere(
-        np.array([[0, 0, 0]]),
-        colors=np.random.random([1, 3]),
-        radii=np.random.random(1) * 0.5 + 0.1,
-    )
+base_radii = np.random.random(n_spheres) * 0.5 + 0.1
 
-    ###########################################################################
-    # Create one animation for this sphere.
-    animation = Animation(actors=sphere_actor)
+sphere_actor = fury.actor.sphere(
+    np.zeros((n_spheres, 3)),
+    colors=np.random.random((n_spheres, 3)),
+    radii=base_radii,
+)
 
-    ###########################################################################
-    # Generate random position and scale values every two seconds.
-    for t in range(0, 50, 2):
-        animation.set_position(t, np.random.random(3) * 30 - np.array([15, 0, 15]))
-        animation.set_scale(t, np.repeat(np.random.random(1), 3))
+###############################################################################
+# Each keyframe value holds the state of ALL spheres at that time:
+# ``(n_spheres, 3)`` centers and ``(n_spheres,)`` radii.
 
-    ###########################################################################
-    # Change the position interpolator to cubic spline interpolation.
-    animation.set_position_interpolator(cubic_spline_interpolator)
-    timeline.add_animation(animation)
+keyframe_times = range(0, 50, 2)
+center_keyframes = {
+    t: np.random.random((n_spheres, 3)) * 30 - np.array([15, 0, 15])
+    for t in keyframe_times
+}
+radius_keyframes = {t: base_radii * np.random.random(n_spheres) for t in keyframe_times}
+
+animation = Animation(actors=sphere_actor)
+animation.set_gpu_keyframes("centers", center_keyframes, interpolation="cubic")
+animation.set_gpu_keyframes("radii", radius_keyframes)
+timeline.add_animation(animation)
 
 ###############################################################################
 # Animating the camera

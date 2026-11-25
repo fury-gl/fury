@@ -1242,3 +1242,137 @@ class NetworkComputeShader(BaseShader):
             The layout compute kernel source code string.
         """
         return load_wgsl("network_compute.wgsl", package_name="fury.wgsl")
+
+
+class GPUKeyframeComputeShader(BaseShader):
+    """
+    Compute shader interpolating keyframes into an actor vertex buffer.
+
+    Parameters
+    ----------
+    wobject : ~fury.motion.gpu._GPUKeyframeAnimator
+        The animator object holding the keyframe track and GPU buffers.
+    """
+
+    type = "compute"
+
+    def __init__(self, wobject):
+        """
+        Initialize the compute shader instance.
+
+        Parameters
+        ----------
+        wobject : ~fury.motion.gpu._GPUKeyframeAnimator
+            The animator object holding the keyframe track and GPU buffers.
+        """
+        super().__init__(wobject)
+        track = wobject.track
+        groups = int(ceil(track.n_elements / 64))
+        self._x_groups = min(groups, 65535)
+        self._y_groups = int(ceil(groups / self._x_groups))
+        self["workgroup_size"] = (64, 1, 1)
+        self["n_elements"] = track.n_elements
+        self["n_keys"] = track.times.shape[0]
+        self["repeat"] = track.repeat
+        self["stride"] = track.stride
+        self["value_components"] = track.values.shape[2]
+        self["channels"] = list(track.channels)
+        self["interpolation"] = track.interpolation
+        self["target_vec"] = track.stride in (2, 4)
+        self["row_threads"] = self._x_groups * 64
+
+    def get_render_info(self, wobject, _shared):
+        """
+        Get workgroup dispatch sizing metrics for the compute pipeline.
+
+        Parameters
+        ----------
+        wobject : ~fury.motion.gpu._GPUKeyframeAnimator
+            The animator object being dispatched.
+        _shared : Any
+            Shared context pipeline references.
+
+        Returns
+        -------
+        dict
+            A dictionary containing workgroup dimension sizes.
+        """
+        return {"indices": (self._x_groups, self._y_groups, 1)}
+
+    def get_bindings(self, wobject, _shared, _scene):
+        """
+        Define pipeline data resources for the compute stage.
+
+        Parameters
+        ----------
+        wobject : ~fury.motion.gpu._GPUKeyframeAnimator
+            The animator object providing buffer bindings.
+        _shared : Any
+            Shared context pipeline references.
+        _scene : Any
+            The scene object context.
+
+        Returns
+        -------
+        dict
+            A layout dictionary mapping bind group index to bindings.
+        """
+        bindings = {
+            0: Binding(
+                "u_material",
+                "buffer/uniform",
+                wobject.material.uniform_buffer,
+                "COMPUTE",
+            ),
+            1: Binding(
+                "s_times",
+                "buffer/read_only_storage",
+                wobject.times_buffer,
+                "COMPUTE",
+            ),
+            2: Binding(
+                "s_values",
+                "buffer/read_only_storage",
+                wobject.values_buffer,
+                "COMPUTE",
+            ),
+            3: Binding("s_target", "buffer/storage", wobject.track.buffer, "COMPUTE"),
+        }
+        if wobject.slopes_buffer is not None:
+            bindings[4] = Binding(
+                "s_slopes",
+                "buffer/read_only_storage",
+                wobject.slopes_buffer,
+                "COMPUTE",
+            )
+        self.define_bindings(0, bindings)
+        return {0: bindings}
+
+    def get_pipeline_info(self, _wobject, _shared):
+        """
+        Return an empty pipeline structure map configuration.
+
+        Parameters
+        ----------
+        _wobject : ~fury.motion.gpu._GPUKeyframeAnimator
+            The animator object.
+        _shared : Any
+            Shared pipeline context metadata.
+
+        Returns
+        -------
+        dict
+            An empty dictionary.
+        """
+        return {}
+
+    def get_code(self):
+        """
+        Get the WGSL compute kernel source.
+
+        Returns
+        -------
+        str
+            The compute kernel source code string.
+        """
+        return load_wgsl("gpu_keyframe_compute.wgsl", package_name="fury.wgsl")
