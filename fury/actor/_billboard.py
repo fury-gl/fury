@@ -141,7 +141,45 @@ class BillboardActor(Mesh):
         The material used to render the billboard.
     **kwargs : dict
         Additional keyword arguments forwarded to :class:`Mesh`.
+
+    Attributes
+    ----------
+    gpu_attributes : dict
+        GPU keyframe attributes usable with
+        :meth:`~fury.motion.Animation.set_gpu_keyframes`: ``"centers"``,
+        ``"sizes"``, ``"radii"`` (written as diameters) and ``"colors"``.
     """
+
+    gpu_attributes = {
+        "centers": {
+            "buffer": "positions",
+            "repeat": 6,
+            "channels": (0, 1, 2),
+            "scale": 1.0,
+            "cpu_attribute": "billboard_centers",
+        },
+        "sizes": {
+            "buffer": "normals",
+            "repeat": 6,
+            "channels": (0, 1),
+            "scale": 1.0,
+            "cpu_attribute": "billboard_sizes",
+        },
+        "radii": {
+            "buffer": "normals",
+            "repeat": 6,
+            "channels": (0, 1),
+            "scale": 2.0,
+            "cpu_attribute": "billboard_sizes",
+        },
+        "colors": {
+            "buffer": "colors",
+            "repeat": 6,
+            "channels": None,
+            "scale": 1.0,
+            "cpu_attribute": None,
+        },
+    }
 
     def __init__(self, *, geometry=None, material=None, **kwargs):
         """Initialize a Billboard actor."""
@@ -189,11 +227,12 @@ class BillboardActor(Mesh):
         ndarray, shape (2, 3), or None
             Axis-aligned bounding box as ``[[min, min, min], [max, max, max]]``.
         """
+        parent_aabb = super().get_bounding_box()
         centers = self._billboard_centers
         sizes = self._billboard_sizes
 
         if centers.size == 0 or sizes.size == 0:
-            return super().get_bounding_box()
+            return parent_aabb
 
         half_extents = sizes.max(axis=1) / 2.0
 
@@ -204,7 +243,6 @@ class BillboardActor(Mesh):
         aabb[0] = expanded_min.min(axis=0)
         aabb[1] = expanded_max.max(axis=0)
 
-        parent_aabb = super().get_bounding_box()
         if parent_aabb is not None:
             aabb[0] = np.minimum(aabb[0], parent_aabb[0])
             aabb[1] = np.maximum(aabb[1], parent_aabb[1])
