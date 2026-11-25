@@ -1,6 +1,7 @@
 """Test containers module."""
 
 from os.path import join as pjoin
+from types import SimpleNamespace
 
 import numpy as np
 import numpy.testing as npt
@@ -32,7 +33,8 @@ def test_panel2d_initialization_with_border():
     assert isinstance(panel.borders["left"], ui.Rectangle2D)
     assert len(panel.borders) == 4
 
-    assert len(panel._elements) == 5
+    assert panel.background in panel._elements
+    assert all(border in panel._elements for border in panel.borders.values())
 
     npt.assert_equal(panel.borders["left"].size, (10, 160))
     npt.assert_equal(panel.borders["right"].size, (10, 160))
@@ -104,6 +106,99 @@ def test_panel2d_resize_and_border_sync():
     npt.assert_equal(panel.borders["right"].size, (5, 155))
     npt.assert_equal(panel.borders["top"].size, (305, 5))
     npt.assert_equal(panel.borders["bottom"].size, (305, 5))
+
+
+def test_panel2d_resize_targets_and_hover_highlighting():
+    """Test edge targets and their hover visibility callbacks."""
+    panel = ui.Panel2D(size=(100, 80))
+    sides = {"left", "right", "top", "bottom"}
+
+    assert set(panel.resize_targets) == sides
+    assert set(panel.resize_highlights) == sides
+    for element in (*panel.resize_targets.values(), *panel.resize_highlights.values()):
+        assert isinstance(element, ui.Rectangle2D)
+        assert element in panel._elements
+        assert element not in panel._children
+
+    event = SimpleNamespace()
+    for side, target in panel.resize_targets.items():
+        target.on_hover(event)
+        assert {
+            name: highlight.actors[0].visible
+            for name, highlight in panel.resize_highlights.items()
+        } == {name: name == side for name in sides}
+
+        target.on_dishover(event)
+        assert not any(
+            highlight.actors[0].visible
+            for highlight in panel.resize_highlights.values()
+        )
+
+
+def test_panel2d_edge_resize_behavior():
+    """Test edge press state, resizing, minimum size, and geometry sync."""
+    cases = [
+        ("right", (20, 0), (120, 80), (40, 60), None),
+        ("right", (-20, 0), (80, 80), (40, 60), None),
+        ("left", (20, 0), (80, 80), (60, 60), "right"),
+        ("bottom", (0, 15), (100, 95), (40, 60), None),
+        ("top", (0, 15), (100, 65), (40, 75), "bottom"),
+    ]
+    for side, delta, expected_size, expected_position, fixed_edge in cases:
+        panel = ui.Panel2D(size=(100, 80), position=(40, 60))
+        start = SimpleNamespace(x=25, y=35)
+        drag = SimpleNamespace(x=start.x + delta[0], y=start.y + delta[1])
+
+        panel.resize_targets[side].on_left_mouse_button_pressed(start)
+        assert panel._resize_edge == side
+        npt.assert_array_equal(panel._resize_start, (25, 35))
+        npt.assert_array_equal(panel._resize_start_size, (100, 80))
+        npt.assert_array_equal(panel._resize_start_position, (40, 60))
+        panel.resize_targets[side].on_left_mouse_button_dragged(drag)
+
+        npt.assert_array_equal(panel.size, expected_size)
+        npt.assert_array_equal(panel.get_position(), expected_position)
+        if fixed_edge == "right":
+            assert panel.get_position()[0] + panel.size[0] == 140
+        elif fixed_edge == "bottom":
+            assert panel.get_position()[1] + panel.size[1] == 140
+
+    for side, delta, dimension, fixed_edge in [
+        ("left", (200, 0), 0, "right"),
+        ("top", (0, 200), 1, "bottom"),
+    ]:
+        panel = ui.Panel2D(size=(100, 80), position=(40, 60))
+        start = SimpleNamespace(x=25, y=35)
+        drag = SimpleNamespace(x=start.x + delta[0], y=start.y + delta[1])
+        panel.resize_targets[side].on_left_mouse_button_pressed(start)
+        panel.resize_targets[side].on_left_mouse_button_dragged(drag)
+
+        assert panel.size[dimension] == 1
+        if fixed_edge == "right":
+            assert panel.get_position()[0] + panel.size[0] == 140
+        else:
+            assert panel.get_position()[1] + panel.size[1] == 140
+
+    panel = ui.Panel2D(size=(100, 80), position=(20, 30))
+    panel.resize((140, 110))
+    expected = {
+        "left": ((10, 90), (10, 40), (2, 90), (14, 40)),
+        "right": ((10, 90), (160, 40), (2, 90), (164, 40)),
+        "top": ((120, 10), (30, 20), (120, 2), (30, 24)),
+        "bottom": ((120, 10), (30, 140), (120, 2), (30, 144)),
+    }
+    for side, (
+        target_size,
+        target_position,
+        highlight_size,
+        highlight_position,
+    ) in expected.items():
+        target = panel.resize_targets[side]
+        highlight = panel.resize_highlights[side]
+        npt.assert_array_equal(target.size, target_size)
+        npt.assert_array_equal(target.get_position(), target_position)
+        npt.assert_array_equal(highlight.size, highlight_size)
+        npt.assert_array_equal(highlight.get_position(), highlight_position)
 
 
 def test_panel2d_add_remove_element():
